@@ -1,0 +1,18 @@
+# Compiled objects.
+/obj
+
+# Generated library.
+/lib
+
+# 3rd-party libraries.
+/sbg/3rd-party/gtest/usr/
+
+# Test files. 
+/sbg/test/GraphTest
+/sbg/test/PrintGraphs
+
+# Compile/Autoconf files.
+config.*
+configure
+Makefile
+/autom4te.cache

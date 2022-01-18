@@ -1,0 +1,33 @@
+name: C/C++ CI
+
+on:
+  push:
+  pull_request:
+    branches: [ sb-graph-dev ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install deps.
+      run: | 
+        sudo apt-get update
+        sudo apt-get install autoconf
+        sudo apt-get install boost1.71
+        sudo apt-get install cmake 
+        sudo apt-get install g++
+        sudo apt-get install libginac-dev
+          
+    - name: Build
+      working-directory: ./
+      run: |
+        autoconf
+        ./configure
+        make 
+
+    - name: Tests
+      working-directory: ./
+      run: make test

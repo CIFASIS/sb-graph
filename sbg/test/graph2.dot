@@ -1,0 +1,19 @@
+digraph G{
+    ratio="fill"
+    node[shape="ellipse"]
+    V1 [label="{ V1 Dom: {[1:1:1]} }"]
+    V2 [label="{ V2 Dom: {[2:1:2]} }"]
+    V3 [label="{ V3 Dom: {[3:1:3]} }"]
+    V4 [label="{ V4 Dom: {[1001:1:2000]} }"]
+    V5 [label="{ V5 Dom: {[2001:1:3000]} }"]
+    V6 [label="{ V6 Dom: {[3001:1:4000]} }"]
+    V7 [label="{ V7 Dom: {[4001:1:5000]} }"]
+    
+V1 -> V4 [label="{ E1 mapF: [({[1:1:1]}, [0 * x + 1])] mapU: [({[1:1:1]}, [0 * x + 1001])] }", arrowhead="none"]
+    V2 -> V3 [label="{ E2 mapF: [({[2:1:2]}, [0 * x + 2])] mapU: [({[2:1:2]}, [0 * x + 3])] }", arrowhead="none"]
+    V5 -> V6 [label="{ E3 mapF: [({[3:1:1002]}, [1 * x + 1998])] mapU: [({[3:1:1002]}, [1 * x + 2998])] }", arrowhead="none"]
+    V5 -> V4 [label="{ E4 mapF: [({[1003:1:2001]}, [1 * x + 998])] mapU: [({[1003:1:2001]}, [1 * x -1])] }", arrowhead="none"]
+    V7 -> V3 [label="{ E5 mapF: [({[2002:1:2002]}, [1 * x + 1999])] mapU: [({[2002:1:2002]}, [0 * x + 3])] }", arrowhead="none"]
+    V7 -> V7 [label="{ E6 mapF: [({[2003:1:3001]}, [1 * x + 1998])] mapU: [({[2003:1:3001]}, [1 * x + 1999])] }", arrowhead="none"]
+    
+}

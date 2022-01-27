@@ -21,23 +21,64 @@
 
 namespace SBG {
 
+struct LinearMap {
+  int constant;
+  int slope;
+  std::string iterator;
+  bool operator<(const LinearMap &other) const {
+    if (constant == other.constant) {
+      return slope < other.slope;
+    } 
+    return constant < other.constant;
+  }
+
+};
+
+typedef std::vector<LinearMap> LinearMaps;
+
+struct VariableUsage {
+  std::string name;
+  LinearMaps usage;
+  bool operator<(const VariableUsage &other) const {
+    if (name == other.name) {
+      for (unsigned int dim = 0; dim < usage.size(); dim++) {
+        if (usage[dim] < other.usage[dim])
+          return true;
+      }
+      return false;
+    }
+    return name < other.name;  
+  }
+};
+
+struct RangeDef {
+  std::string iterator;
+  int begin;
+  int step;
+  int end;
+};
+
 struct EquationInfo {
-  int desc;
+  std::vector<RangeDef> size;
+  std::set<VariableUsage> var_usage;
 };
 
 struct VariableInfo {
-  int desc;
+  std::string name;
+  std::vector<int> size;
+  bool is_state;
 };
 
 typedef std::list<EquationInfo> Equations;
 typedef std::list<VariableInfo> Variables;
 
-
 class MatchingGraphBuilder {
   public:
   MatchingGraphBuilder(Equations equations, Variables variables);
+  MatchingGraphBuilder(Equations equations, Variables variables, std::string model_name);
   ~MatchingGraphBuilder() = default;
-  virtual SBG::SBGraph makeGraph();
+
+  virtual SBG::SBGraph build();
 
   protected:
   typedef std::pair<SBG::PWLMap, SBG::PWLMap> MatchingMaps;
@@ -47,9 +88,8 @@ class MatchingGraphBuilder {
   SBG::Set buildSet(SBG::MultiInterval variable);
   SBG::SetVertexDesc addVertex(std::string vertex_name, SBG::Set set, SBG::SBGraph& graph);
   void addEquation(EquationInfo eq, std::string id, SBG::Set set, SBG::SBGraph& graph);
-  //Real getValue(Expression exp);
   SBG::PWLMap buildPWLMap(SBG::ORD_REALS constants, SBG::ORD_REALS slopes, SBG::Set dom);
-  MatchingMaps generatePWLMaps(EquationInfo exp, SBG::Set dom, SBG::Set unk_dom, int offset, std::string eq_id, size_t max_dim);
+  MatchingMaps generatePWLMaps(VariableUsage var_usage, SBG::Set dom, SBG::Set unk_dom, int offset, std::string eq_id, size_t max_dim);
   SBG::Set generateMapDom(SBG::Set dom, SBG::Set unk_dom, int offset, size_t max_dim);
   void addDims(size_t max_dim, size_t exp_dim, SBG::MultiInterval& intervals, int offset);
   void addDims(size_t max_dim, size_t exp_dim, SBG::ORD_REALS& constant, SBG::ORD_REALS& slope);
@@ -58,10 +98,14 @@ class MatchingGraphBuilder {
   typedef std::pair<SBG::SetVertexDesc, EquationInfo> EquationDesc; 
   typedef std::map<std::string, int> Usage;
   typedef std::map<std::string, Usage> EqUsage;
+  typedef std::map<std::string, SBG::SetVertexDesc> VarUsage;
 
-  std::list<SBG::SetVertexDesc> _U;
+  VarUsage _U;
   std::list<EquationDesc> _F;
   EqUsage _eq_usage;
+  Equations _equations;
+  Variables _variables;
+  std::string _model_name;
 };
 
 }  // namespace SBG

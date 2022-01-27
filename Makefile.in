@@ -28,8 +28,8 @@ $(BUILD_DIR)/%.o : %.cpp
 	$(CC) $(INCLUDES) $(CXXFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<
 	$(CC) $(INCLUDES) -c $< -o $@ $(CXXFLAGS)
 
-$(LIB_SBGRAPH): | create-folders $(SBG_OBJ)   
-	$(AR) rcs $(LIB_SBGRAPH) $(SBG_OBJ)
+$(LIB_SBGRAPH): | create-folders $(SBG_OBJ) $(BUILDERS_OBJ)   
+	$(AR) rcs $(LIB_SBGRAPH) $(SBG_OBJ) $(BUILDERS_OBJ)
 
 lib-gtest: | create-folders 
 ifeq ("$(wildcard $(3RD_PARTY_DIR)/gtest/usr/lib)","")
@@ -42,7 +42,6 @@ ifeq ("$(wildcard $(3RD_PARTY_DIR)/gtest/usr/lib)","")
 endif
 
 create-folders::
-	@mkdir -p $(ROOT)/bin
 	@mkdir -p $(ROOT)/lib
 	@mkdir -p $(OBJ_DIR)
 	@mkdir -p $(BUILD_DIR)
@@ -50,7 +49,7 @@ create-folders::
 test: $(SBG_GRAPH_TEST)
 
 clean:
-	$(RM) -rf $(OBJ_DIR) $(LIB_SBGRAPH) $(ROOT)/bin $(ROOT)/lib
+	$(RM) -rf $(OBJ_DIR) $(LIB_SBGRAPH) $(ROOT)/lib
 
 help:
 	@echo "make MODE=<Debug|Release> "

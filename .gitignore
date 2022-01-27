@@ -11,6 +11,9 @@
 /sbg/test/GraphTest
 /sbg/test/PrintGraphs
 
+# Examples
+/examples/*
+
 # Compile/Autoconf files.
 config.*
 configure

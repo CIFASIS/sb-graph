@@ -383,7 +383,6 @@ void MatchingStruct::directedMinReach(PWLMap sideMap)
   std::cout << "rmap: " << rmap << "\n\n";
 }
 
-//Set MatchingStruct::SBGComponentMatching()
 std::pair<Set, bool> MatchingStruct::SBGMatching()
 {
   debugInit();

@@ -14,6 +14,7 @@ SBG_ROOT := sbg
   	$(SBG_ROOT)/atom_pw_map.cpp \
   	$(SBG_ROOT)/pw_map.cpp
 
+include sbg/graph_builders/Makefile.include
 include sbg/test/Makefile.include
 
 # Objects

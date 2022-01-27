@@ -1,0 +1,13 @@
+# The Directories, Source, Includes, Objects, Binary 
+SBG_DIR         := sbg
+BUILDERS_DIR    := $(SBG_DIR)/graph_builders
+
+# Sources
+	BUILDERS_SRC := \
+	$(BUILDERS_DIR)/matching_graph_builder.cpp
+
+# Objects
+BUILDERS_OBJ=$(addprefix $(BUILD_DIR)/, $(BUILDERS_SRC:.cpp=.o))
+
+create-folders::
+	@mkdir -p $(BUILD_DIR)/$(BUILDERS_DIR)

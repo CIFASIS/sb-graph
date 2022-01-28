@@ -19,10 +19,10 @@
 
 #pragma once
 
-#include <sbg/defs.h>
-#include <sbg/interval.h>
-#include <sbg/multi_interval.h>
-#include <sbg/lmap.h>
+#include <sbg/defs.hpp>
+#include <sbg/interval.hpp>
+#include <sbg/multi_interval.hpp>
+#include <sbg/lmap.hpp>
 
 namespace SBG {
 

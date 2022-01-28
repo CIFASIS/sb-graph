@@ -18,7 +18,7 @@
  ******************************************************************************/
 
 #include <boost/graph/subgraph.hpp>
-#include <sbg/sbg_algorithms.h>
+#include <sbg/sbg_algorithms.hpp>
 
 #include <chrono>
 #include <time.h>

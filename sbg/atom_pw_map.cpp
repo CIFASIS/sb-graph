@@ -19,7 +19,7 @@
 
 #include <boost/foreach.hpp>
 
-#include <sbg/atom_pw_map.h>
+#include <sbg/atom_pw_map.hpp>
 
 namespace SBG {
 

@@ -17,60 +17,10 @@
 
  ******************************************************************************/
 
-#include <sbg/sbg.h>
+#include <sbg/sbg_io.hpp>
+#include <sbg/sbg.hpp>
 
 namespace SBG {
-
-struct LinearMap {
-  int constant;
-  int slope;
-  std::string iterator;
-  bool operator<(const LinearMap& other) const
-  {
-    if (constant == other.constant) {
-      return slope < other.slope;
-    }
-    return constant < other.constant;
-  }
-};
-
-typedef std::vector<LinearMap> LinearMaps;
-
-struct VariableUsage {
-  std::string name;
-  LinearMaps usage;
-  bool operator<(const VariableUsage& other) const
-  {
-    if (name == other.name) {
-      for (unsigned int dim = 0; dim < usage.size(); dim++) {
-        if (usage[dim] < other.usage[dim]) return true;
-      }
-      return false;
-    }
-    return name < other.name;
-  }
-};
-
-struct RangeDef {
-  std::string iterator;
-  int begin;
-  int step;
-  int end;
-};
-
-struct EquationInfo {
-  std::vector<RangeDef> size;
-  std::set<VariableUsage> var_usage;
-};
-
-struct VariableInfo {
-  std::string name;
-  std::vector<int> size;
-  bool is_state;
-};
-
-typedef std::list<EquationInfo> Equations;
-typedef std::list<VariableInfo> Variables;
 
 class MatchingGraphBuilder {
   public:

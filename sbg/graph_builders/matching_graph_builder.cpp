@@ -19,8 +19,8 @@
 
 #include <boost/foreach.hpp>
 
-#include <sbg/graph_builders/matching_graph_builder.h>
-#include <sbg/sbg_printer.h>
+#include <sbg/graph_builders/matching_graph_builder.hpp>
+#include <sbg/sbg_printer.hpp>
 
 namespace SBG {
 MatchingGraphBuilder::MatchingGraphBuilder(Equations equations, Variables variables)

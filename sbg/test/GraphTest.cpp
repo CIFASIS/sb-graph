@@ -22,9 +22,9 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/included/unit_test.hpp>
 
-#include <sbg/sbg.h>
-#include <sbg/sbg_algorithms.h>
-#include <sbg/sbg_printer.h>
+#include <sbg/sbg.hpp>
+#include <sbg/sbg_algorithms.hpp>
+#include <sbg/sbg_printer.hpp>
 
 using namespace boost::unit_test;
 

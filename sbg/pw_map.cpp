@@ -22,7 +22,7 @@
 
 #include <boost/foreach.hpp>
 
-#include <sbg/pw_map.h>
+#include <sbg/pw_map.hpp>
 
 namespace SBG {
 

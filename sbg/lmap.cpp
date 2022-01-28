@@ -19,8 +19,8 @@
 
 #include <boost/foreach.hpp>
 
-#include <sbg/defs.h>
-#include <sbg/lmap.h>
+#include <sbg/defs.hpp>
+#include <sbg/lmap.hpp>
 
 namespace SBG {
 

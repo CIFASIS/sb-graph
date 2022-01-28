@@ -1,8 +1,21 @@
 /*****************************************************************************
- 
-    This file is part of the Set-Based Graph library.
 
-******************************************************************************/
+ This file is part of Set--Based Graph Library.
+
+ SBG Library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ SBG Library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
 
 #include <boost/foreach.hpp>
 
@@ -12,8 +25,7 @@ namespace SBG {
 
 // MultiIntervals ---------------------------------------------------------------------------------
 
-#define INTERS_TYPE                  \
-   typename MI_TEMP_TYPE::Intervals
+#define INTERS_TYPE typename MI_TEMP_TYPE::Intervals
 
 MI_TEMPLATE
 MI_TEMP_TYPE::MultiInterImp1() : ndim_(0), inters_() {}
@@ -24,7 +36,7 @@ MI_TEMP_TYPE::MultiInterImp1(INTERS_TYPE inters)
   bool areEmptyInters = false;
 
   BOOST_FOREACH (INTER_IMP i, inters)
-   if (i.empty()) areEmptyInters = true;
+    if (i.empty()) areEmptyInters = true;
 
   if (areEmptyInters) {
     Intervals emptyInters;
@@ -79,7 +91,7 @@ int MI_TEMP_TYPE::card()
 {
   int res = 1;
 
-  BOOST_FOREACH (INTER_IMP i, inters()) 
+  BOOST_FOREACH (INTER_IMP i, inters())
     res *= i.card();
 
   if (inters().empty()) res = 0;
@@ -98,8 +110,7 @@ MI_TEMP_TYPE MI_TEMP_TYPE::cap(MI_TEMP_TYPE mi2)
     BOOST_FOREACH (INTER_IMP i1, inters()) {
       INTER_IMP capres = i1.cap(*it2);
 
-      if (capres.empty()) 
-        return MultiInterImp1();
+      if (capres.empty()) return MultiInterImp1();
 
       itres = res.insert(itres, capres);
       ++itres;
@@ -235,8 +246,8 @@ MI_TEMP_TYPE MI_TEMP_TYPE::normalize(MI_TEMP_TYPE mi2)
   IntervalsIt it2 = mi2.inters_ref().begin();
 
   if (ndim() == mi2.ndim()) {
-    int diffCount = 0; // Count of different intervals through dimensions
-    int dimDiff = 0; // Last dimension with spoted difference
+    int diffCount = 0;  // Count of different intervals through dimensions
+    int dimDiff = 0;    // Last dimension with spoted difference
     INTER_IMP i1;
     INTER_IMP i2;
     for (int j = 0; j < ndim(); j++) {
@@ -254,8 +265,7 @@ MI_TEMP_TYPE MI_TEMP_TYPE::normalize(MI_TEMP_TYPE mi2)
     if (diffCount == 1) {
       INTER_IMP normalized = i1.normalize(i2);
 
-      if (!normalized.empty())
-        return mi2.replace(normalized, dimDiff);
+      if (!normalized.empty()) return mi2.replace(normalized, dimDiff);
     }
   }
 
@@ -302,13 +312,13 @@ MI_TEMP_TYPE MI_TEMP_TYPE::replace(INTER_IMP i, int dim)
 }
 
 MI_TEMPLATE
-bool MI_TEMP_TYPE::operator==(const MI_TEMP_TYPE &other) const { return inters() == other.inters(); } 
+bool MI_TEMP_TYPE::operator==(const MI_TEMP_TYPE &other) const { return inters() == other.inters(); }
 
 MI_TEMPLATE
-bool MI_TEMP_TYPE::operator!=(const MI_TEMP_TYPE &other) const { return inters() != other.inters(); } 
+bool MI_TEMP_TYPE::operator!=(const MI_TEMP_TYPE &other) const { return inters() != other.inters(); }
 
 MI_TEMPLATE
-bool MI_TEMP_TYPE::operator<(const MI_TEMP_TYPE &other) const 
+bool MI_TEMP_TYPE::operator<(const MI_TEMP_TYPE &other) const
 {
   typename Intervals::const_iterator iti2 = other.inters().begin();
 
@@ -327,7 +337,7 @@ size_t MI_TEMP_TYPE::hash()
 {
   size_t seed = 0;
   boost::hash_combine(seed, card());
-  return seed; 
+  return seed;
 }
 
 template struct MultiInterImp1<OrdCT, UnordCT, Interval, INT>;
@@ -358,9 +368,10 @@ std::ostream &operator<<(std::ostream &out, const MI_TEMP_TYPE &mi)
 
 template std::ostream &operator<<(std::ostream &out, const MultiInterval &mi);
 
-size_t hash_value(const MultiInterval &mi) { 
+size_t hash_value(const MultiInterval &mi)
+{
   MultiInterval aux = mi;
-  return aux.hash(); 
+  return aux.hash();
 }
 
 std::ostream &operator<<(std::ostream &out, const UNORD_MI &mis)
@@ -375,7 +386,7 @@ std::ostream &operator<<(std::ostream &out, const UNORD_MI &mis)
   else if (auxmis.size() > 1) {
     auxmis.erase(mi1);
 
-    BOOST_FOREACH (MultiInterval mi, auxmis) 
+    BOOST_FOREACH (MultiInterval mi, auxmis)
       out << mi << ", ";
     out << mi1;
   }
@@ -384,4 +395,4 @@ std::ostream &operator<<(std::ostream &out, const UNORD_MI &mis)
   return out;
 }
 
-} // namespace SBG
+}  // namespace SBG

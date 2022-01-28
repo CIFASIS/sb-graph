@@ -1,8 +1,21 @@
 /*****************************************************************************
- 
-    This file is part of the Set-Based Graph library.
 
-******************************************************************************/
+ This file is part of Set--Based Graph Library.
+
+ SBG Library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ SBG Library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
 
 #pragma once
 
@@ -22,19 +35,17 @@ namespace SBG {
 
 // Set-vertex --------------------------------------------------------------------------------------
 
-#define SET_VERTEX_TEMPLATE       \
-  template<typename DESC>
+#define SET_VERTEX_TEMPLATE template <typename DESC>
 
-#define SETV_TEMP_TYPE \
-  SetVertexImp<DESC>
+#define SETV_TEMP_TYPE SetVertexImp<DESC>
 
 SET_VERTEX_TEMPLATE
 struct SetVertexImp {
-  member_class(std::string, name); // For pretty-printing
-  member_class(int, id); // Unique identifier
-  member_class(Set, range); // Vertices of the set-vertex
-  member_class(int, index); // For debugging
-  member_class(DESC, desc); // Description
+  member_class(std::string, name);  // For pretty-printing
+  member_class(int, id);            // Unique identifier
+  member_class(Set, range);         // Vertices of the set-vertex
+  member_class(int, index);         // For debugging
+  member_class(DESC, desc);         // Description
 
   SetVertexImp();
   SetVertexImp(std::string name, Set range);
@@ -50,20 +61,18 @@ typedef SetVertexImp<SVDesc> SetVertex;
 
 // Set-edge ----------------------------------------------------------------------------------------
 
-#define SET_EDGE_TEMPLATE       \
-  template<typename DESC>
+#define SET_EDGE_TEMPLATE template <typename DESC>
 
-#define SETE_TEMP_TYPE \
-  SetEdgeImp<DESC>
+#define SETE_TEMP_TYPE SetEdgeImp<DESC>
 
 SET_EDGE_TEMPLATE
 struct SetEdgeImp {
-  member_class(std::string, name); // For pretty-printing
-  member_class(int, id); // Unique identifier
-  member_class(PWLMap, map_f); // Map from edges to "left" vertices
-  member_class(PWLMap, map_u); // Map from edges to "right" vertices
-  member_class(int, index); // For debugging
-  member_class(DESC, desc); // Description
+  member_class(std::string, name);  // For pretty-printing
+  member_class(int, id);            // Unique identifier
+  member_class(PWLMap, map_f);      // Map from edges to "left" vertices
+  member_class(PWLMap, map_u);      // Map from edges to "right" vertices
+  member_class(int, index);         // For debugging
+  member_class(DESC, desc);         // Description
 
   SetEdgeImp();
   SetEdgeImp(std::string name, PWLMap map_f, PWLMap map_u);
@@ -90,4 +99,3 @@ typedef boost::graph_traits<SBGraph>::edge_iterator EdgeIt;
 typedef boost::graph_traits<SBGraph>::out_edge_iterator OutEdgeIt;
 
 }  // namespace SBG
-

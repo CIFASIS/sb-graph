@@ -1,8 +1,21 @@
 /*****************************************************************************
- 
-    This file is part of the Set-Based Graph library.
 
-******************************************************************************/
+ This file is part of Set--Based Graph Library.
+
+ SBG Library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ SBG Library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
 
 #include <iostream>
 #include <boost/foreach.hpp>
@@ -17,7 +30,7 @@ INTER_TEMPLATE
 INTER_TEMP_TYPE::IntervalImp1(){};
 
 INTER_TEMPLATE
-INTER_TEMP_TYPE::IntervalImp1(bool empty) : lo_(-1), step_(-1), hi_(-1), empty_(empty) {};
+INTER_TEMP_TYPE::IntervalImp1(bool empty) : lo_(-1), step_(-1), hi_(-1), empty_(empty){};
 
 INTER_TEMPLATE
 INTER_TEMP_TYPE::IntervalImp1(INT lo, INT step, INT hi)
@@ -32,10 +45,10 @@ INTER_TEMP_TYPE::IntervalImp1(INT lo, INT step, INT hi)
       hi_ = hi - rem;
     }
 
-    else if (lo <= hi && hi == Inf) 
+    else if (lo <= hi && hi == Inf)
       hi_ = Inf;
 
-    else 
+    else
       empty_ = true;
   }
 
@@ -96,12 +109,11 @@ bool INTER_TEMP_TYPE::isIn(INT x)
 }
 
 INTER_TEMPLATE
-int INTER_TEMP_TYPE::card() 
+int INTER_TEMP_TYPE::card()
 {
   int res = 0;
 
-  if (step() != 0)
-    res = (hi() - lo()) / step() + 1;
+  if (step() != 0) res = (hi() - lo()) / step() + 1;
 
   return res;
 }
@@ -196,10 +208,10 @@ INTER_TEMP_TYPE INTER_TEMP_TYPE::normalize(INTER_TEMP_TYPE i2)
   INT h2 = i2.hi();
 
   if (st == i2.step()) {
-    if (h + st == l2 || isIn(l2)) 
+    if (h + st == l2 || isIn(l2))
       return IntervalImp1(l, st, h2);
 
-    else if (h2 + st == l || i2.isIn(l)) 
+    else if (h2 + st == l || i2.isIn(l))
       return IntervalImp1(l2, st, h);
   }
 
@@ -207,16 +219,13 @@ INTER_TEMP_TYPE INTER_TEMP_TYPE::normalize(INTER_TEMP_TYPE i2)
 }
 
 INTER_TEMPLATE
-bool INTER_TEMP_TYPE::operator==(const INTER_TEMP_TYPE &other) const 
+bool INTER_TEMP_TYPE::operator==(const INTER_TEMP_TYPE &other) const
 {
   return (lo() == other.lo()) && (step() == other.step()) && (hi() == other.hi()) && (empty() == other.empty());
 }
 
 INTER_TEMPLATE
-bool INTER_TEMP_TYPE::operator!=(const INTER_TEMP_TYPE &other) const
-{
-  return !(*this == other);
-}
+bool INTER_TEMP_TYPE::operator!=(const INTER_TEMP_TYPE &other) const { return !(*this == other); }
 
 template struct IntervalImp1<UnordCT>;
 
@@ -229,11 +238,11 @@ std::ostream &operator<<(std::ostream &out, const INTER_TEMP_TYPE &i)
 
 template std::ostream &operator<<(std::ostream &out, const Interval &i);
 
-size_t hash_value(const Interval &inter) 
-{ 
+size_t hash_value(const Interval &inter)
+{
   size_t seed = 0;
   boost::hash_combine(seed, inter.lo());
-  return seed; 
+  return seed;
 }
 
 std::ostream &operator<<(std::ostream &out, const ORD_INTERS &inters)
@@ -243,8 +252,7 @@ std::ostream &operator<<(std::ostream &out, const ORD_INTERS &inters)
     out << *(inters.begin());
 
   else if (inters.size() > 1) {
-    for (auto it = inters.begin(); std::next(it) != inters.end(); it++) 
-      out << *it << ", ";
+    for (auto it = inters.begin(); std::next(it) != inters.end(); it++) out << *it << ", ";
     out << *(std::prev(inters.end()));
   }
   out << "]";
@@ -281,6 +289,6 @@ std::ostream &operator<<(std::ostream &out, const UNORD_INTERS &inters)
 //
 // template struct IntervalImp2<UnordCT>; --- If it is a template class
 //
-// Then modify hash_value implementation for Interval 
+// Then modify hash_value implementation for Interval
 
-} // namespace SBG
+}  // namespace SBG

@@ -1,8 +1,21 @@
 /*****************************************************************************
- 
-    This file is part of the Set-Based Graph library.
 
-******************************************************************************/
+ This file is part of Set--Based Graph Library.
+
+ SBG Library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ SBG Library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
 
 #pragma once
 
@@ -13,17 +26,14 @@ namespace SBG {
 
 // Sets --------------------------------------------------------------------------------------------
 
-#define SET_TEMPLATE                                                           \
-  template <template<typename T, typename = std::allocator<T>> class ORD_CT,   \
-            template <typename Value,                                          \
-                      typename Hash = boost::hash<Value>,                      \
-                      typename Pred = std::equal_to<Value>,                    \
-                      typename Alloc = std::allocator<Value>>                  \
-            class UNORD_CT,                                                    \
+#define SET_TEMPLATE                                                                                            \
+  template <template <typename T, typename = std::allocator<T>> class ORD_CT,                                   \
+            template <typename Value, typename Hash = boost::hash<Value>, typename Pred = std::equal_to<Value>, \
+                      typename Alloc = std::allocator<Value>>                                                   \
+            class UNORD_CT,                                                                                     \
             typename MI_IMP, typename INT_IMP>
 
-#define SET_TEMP_TYPE                                        \
-  SetImp1<ORD_CT, UNORD_CT, MI_IMP, INT_IMP>
+#define SET_TEMP_TYPE SetImp1<ORD_CT, UNORD_CT, MI_IMP, INT_IMP>
 
 SET_TEMPLATE
 struct SetImp1 {
@@ -72,4 +82,4 @@ printable_temp(SET_TEMPLATE, SET_TEMP_TYPE);
 Set createSet(Interval i);
 Set createSet(MultiInterval mi);
 
-} // namespace SBG
+}  // namespace SBG

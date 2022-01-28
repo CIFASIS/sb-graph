@@ -1,8 +1,21 @@
 /*****************************************************************************
- 
-    This file is part of the Set-Based Graph library.
 
-******************************************************************************/
+ This file is part of Set--Based Graph Library.
+
+ SBG Library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ SBG Library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
 
 #include <iostream>
 
@@ -14,8 +27,7 @@ namespace SBG {
 
 // Sets -------------------------------------------------------------------------------------------
 
-#define AS_TYPE                  \
-   typename SET_TEMP_TYPE::AtomSets
+#define AS_TYPE typename SET_TEMP_TYPE::AtomSets
 
 SET_TEMPLATE
 SET_TEMP_TYPE::SetImp1() : ndim_(0), asets_() {}
@@ -30,7 +42,7 @@ SET_TEMP_TYPE::SetImp1(AtomSets asets)
     int dim1 = (*(asets.begin())).ndim();
     bool equalDims = true;
     // Check if all atomic sets have the same dimension
-    BOOST_FOREACH (MI_IMP as, asets) 
+    BOOST_FOREACH (MI_IMP as, asets)
       if (dim1 != as.ndim()) equalDims = false;
 
     if (equalDims && dim1 != 0) {
@@ -89,7 +101,7 @@ bool SET_TEMP_TYPE::empty()
 SET_TEMPLATE
 bool SET_TEMP_TYPE::isIn(ORD_CT<INT_IMP> elem)
 {
-  BOOST_FOREACH (MI_IMP as, asets()) 
+  BOOST_FOREACH (MI_IMP as, asets())
     if (as.isIn(elem)) return true;
 
   return false;
@@ -106,7 +118,7 @@ int SET_TEMP_TYPE::card()
   return res;
 }
 
-SET_TEMPLATE 
+SET_TEMPLATE
 bool SET_TEMP_TYPE::subseteq(SET_TEMP_TYPE set2)
 {
   SetImp1 sdiff = (*this).diff(set2);
@@ -202,11 +214,11 @@ ORD_CT<INT_IMP> SET_TEMP_TYPE::minElem()
 
   MI_IMP min = *(asets_ref().begin());
 
-  BOOST_FOREACH (MI_IMP as1, asets()) 
+  BOOST_FOREACH (MI_IMP as1, asets())
     if (as1.minElem() < min.minElem()) min = as1;
 
   return min.minElem();
-} 
+}
 
 SET_TEMPLATE
 ORD_CT<INT_IMP> SET_TEMP_TYPE::maxElem()
@@ -217,11 +229,11 @@ ORD_CT<INT_IMP> SET_TEMP_TYPE::maxElem()
 
   MI_IMP max = *(asets_ref().begin());
 
-  BOOST_FOREACH (MI_IMP as1, asets()) 
+  BOOST_FOREACH (MI_IMP as1, asets())
     if (max.maxElem() < as1.maxElem()) max = as1;
 
   return max.maxElem();
-} 
+}
 
 SET_TEMPLATE
 SET_TEMP_TYPE SET_TEMP_TYPE::normalize()
@@ -230,12 +242,12 @@ SET_TEMP_TYPE SET_TEMP_TYPE::normalize()
   UNORD_CT<MI_IMP> toInsert, toDelete;
 
   UNORD_CT<MI_IMP> empty;
-  
+
   do {
     bool first = true;
     toInsert = empty;
     toDelete = empty;
- 
+
     SetImp1 aux(res);
     BOOST_FOREACH (MI_IMP as1, res) {
       BOOST_FOREACH (MI_IMP as2, res) {
@@ -245,19 +257,18 @@ SET_TEMP_TYPE SET_TEMP_TYPE::normalize()
           toInsert.insert(normalized);
           toDelete.insert(as1);
           toDelete.insert(as2);
- 
+
           first = false;
         }
       }
     }
 
-    BOOST_FOREACH (MI_IMP ins, toInsert) 
+    BOOST_FOREACH (MI_IMP ins, toInsert)
       res.insert(ins);
 
-    BOOST_FOREACH (MI_IMP del, toDelete) 
+    BOOST_FOREACH (MI_IMP del, toDelete)
       res.erase(del);
-  }
-  while (!toDelete.empty());
+  } while (!toDelete.empty());
 
   return SetImp1(res);
 }
@@ -285,20 +296,16 @@ bool SET_TEMP_TYPE::operator==(const SET_TEMP_TYPE &other) const
   SetImp1 diff1 = aux1.diff(aux2);
   SetImp1 diff2 = aux2.diff(aux1);
 
-  if (diff1.empty() && diff2.empty())
-    return true;
+  if (diff1.empty() && diff2.empty()) return true;
 
-  return false; 
+  return false;
 }
 
 SET_TEMPLATE
-bool SET_TEMP_TYPE::operator!=(const SET_TEMP_TYPE &other) const
-{
-  return !(*this == other); 
-}
+bool SET_TEMP_TYPE::operator!=(const SET_TEMP_TYPE &other) const { return !(*this == other); }
 
 SET_TEMPLATE
-bool SET_TEMP_TYPE::operator<(const SET_TEMP_TYPE &other) const 
+bool SET_TEMP_TYPE::operator<(const SET_TEMP_TYPE &other) const
 {
   SetImp1 aux1 = *this;
   SetImp1 aux2 = other;
@@ -325,7 +332,7 @@ size_t SET_TEMP_TYPE::hash()
 {
   size_t seed = 0;
   boost::hash_combine(seed, asets_ref().size());
-  return seed; 
+  return seed;
 }
 
 template struct SetImp1<OrdCT, UnordCT, MultiInterval, INT>;
@@ -364,9 +371,10 @@ std::ostream &operator<<(std::ostream &out, const SET_TEMP_TYPE &set)
 
 template std::ostream &operator<<(std::ostream &out, const Set &set);
 
-size_t hash_value(const Set &set) { 
+size_t hash_value(const Set &set)
+{
   Set aux = set;
-  return aux.hash(); 
+  return aux.hash();
 }
 
 Set createSet(Interval i)
@@ -387,4 +395,4 @@ Set createSet(MultiInterval mi)
   return s;
 }
 
-} // namespace SBG
+}  // namespace SBG

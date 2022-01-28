@@ -36,74 +36,74 @@
  *   stair := stair - 1;
  *  end when;
  * end bball_downstairs;
-******************************************************************************/
+ ******************************************************************************/
 
 #include <sbg/graph_builders/matching_graph_builder.h>
 #include <sbg/sbg_algorithms.h>
 
 int main()
 {
-    SBG::Equations equations;
-    SBG::Variables variables;
+  SBG::Equations equations;
+  SBG::Variables variables;
 
-    std::vector<std::string> var_names = { "x", "vx", "y", "vy"};
+  std::vector<std::string> var_names = {"x", "vx", "y", "vy"};
 
-    // Add model variables.
-    for (std::string var_name : var_names) {
-        SBG::VariableInfo v;
-        v.name = var_name;
-        v.is_state = true;
-        variables.push_back(v);
-    }
+  // Add model variables.
+  for (std::string var_name : var_names) {
+    SBG::VariableInfo v;
+    v.name = var_name;
+    v.is_state = true;
+    variables.push_back(v);
+  }
 
-    // Add model equations.
-    
-    // eq1 -> der(y) = vy;
-    SBG::EquationInfo eq1;
-    SBG::VariableUsage var_usage_eq1_1;
-    var_usage_eq1_1.name = "y";
-    SBG::VariableUsage var_usage_eq1_2;
-    var_usage_eq1_2.name = "vy";
-    eq1.var_usage.insert(var_usage_eq1_1);
-    eq1.var_usage.insert(var_usage_eq1_2);
-    
-    // eq2 -> der(vy) = -9.8 - 0.1 * vy - contact * ((y - stair) *1e6+ vy * 30);
-    SBG::EquationInfo eq2;
-    SBG::VariableUsage var_usage_eq2_1;
-    var_usage_eq2_1.name = "vy";
-    SBG::VariableUsage var_usage_eq2_2;
-    var_usage_eq2_2.name = "y";
-    eq2.var_usage.insert(var_usage_eq2_2);
-    eq2.var_usage.insert(var_usage_eq2_1);
+  // Add model equations.
 
-    // eq3 -> der(x) = vx;
-    SBG::EquationInfo eq3;
-    SBG::VariableUsage var_usage_eq3_1;
-    var_usage_eq3_1.name = "x";
-    SBG::VariableUsage var_usage_eq3_2;
-    var_usage_eq3_2.name = "vx";
-    eq3.var_usage.insert(var_usage_eq3_1);
-    eq3.var_usage.insert(var_usage_eq3_2);
-    
-    // eq4 -> der(vx) = -0.1 * vx;
-    SBG::EquationInfo eq4;
-    SBG::VariableUsage var_usage_eq4_1;
-    var_usage_eq4_1.name = "vx";
-    eq4.var_usage.insert(var_usage_eq4_1);
-    
-    // Insert model equations.
-    equations.push_back(eq1);
-    equations.push_back(eq2);
-    equations.push_back(eq3);
-    equations.push_back(eq4);
-    
-    // Build matching graph.
-    SBG::MatchingGraphBuilder graph_builder(equations, variables);
-    SBG::SBGraph graph = graph_builder.build();
+  // eq1 -> der(y) = vy;
+  SBG::EquationInfo eq1;
+  SBG::VariableUsage var_usage_eq1_1;
+  var_usage_eq1_1.name = "y";
+  SBG::VariableUsage var_usage_eq1_2;
+  var_usage_eq1_2.name = "vy";
+  eq1.var_usage.insert(var_usage_eq1_1);
+  eq1.var_usage.insert(var_usage_eq1_2);
 
-    // Compute matching.
-    MatchingStruct matching(graph);
+  // eq2 -> der(vy) = -9.8 - 0.1 * vy - contact * ((y - stair) *1e6+ vy * 30);
+  SBG::EquationInfo eq2;
+  SBG::VariableUsage var_usage_eq2_1;
+  var_usage_eq2_1.name = "vy";
+  SBG::VariableUsage var_usage_eq2_2;
+  var_usage_eq2_2.name = "y";
+  eq2.var_usage.insert(var_usage_eq2_2);
+  eq2.var_usage.insert(var_usage_eq2_1);
 
-    matching.SBGMatching();
-    return 0;
+  // eq3 -> der(x) = vx;
+  SBG::EquationInfo eq3;
+  SBG::VariableUsage var_usage_eq3_1;
+  var_usage_eq3_1.name = "x";
+  SBG::VariableUsage var_usage_eq3_2;
+  var_usage_eq3_2.name = "vx";
+  eq3.var_usage.insert(var_usage_eq3_1);
+  eq3.var_usage.insert(var_usage_eq3_2);
+
+  // eq4 -> der(vx) = -0.1 * vx;
+  SBG::EquationInfo eq4;
+  SBG::VariableUsage var_usage_eq4_1;
+  var_usage_eq4_1.name = "vx";
+  eq4.var_usage.insert(var_usage_eq4_1);
+
+  // Insert model equations.
+  equations.push_back(eq1);
+  equations.push_back(eq2);
+  equations.push_back(eq3);
+  equations.push_back(eq4);
+
+  // Build matching graph.
+  SBG::MatchingGraphBuilder graph_builder(equations, variables);
+  SBG::SBGraph graph = graph_builder.build();
+
+  // Compute matching.
+  MatchingStruct matching(graph);
+
+  matching.SBGMatching();
+  return 0;
 }

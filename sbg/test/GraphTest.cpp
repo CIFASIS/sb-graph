@@ -1,21 +1,21 @@
 /*****************************************************************************
 
-    This file is part of Modelica C Compiler.
+ This file is part of Set--Based Graph Library.
 
-    Modelica C Compiler is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+ SBG Library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-    Modelica C Compiler is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+ SBG Library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with Modelica C Compiler.  If not, see <http://www.gnu.org/licenses/>.
+ You should have received a copy of the GNU General Public License
+ along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
-******************************************************************************/
+ ******************************************************************************/
 
 #include <iostream>
 
@@ -230,7 +230,9 @@ void TestIntMin1()
 
   INT res1 = i.minElem();
 
-  BOOST_REQUIRE_MESSAGE(res1 == 10, "\n" << "min(" << i << ")" << " = " << res1 << "\nExpected: " << 10);
+  BOOST_REQUIRE_MESSAGE(res1 == 10, "\n"
+                                        << "min(" << i << ")"
+                                        << " = " << res1 << "\nExpected: " << 10);
 }
 
 // -- MultiIntervals --------------------------------------------------------------//
@@ -956,8 +958,9 @@ void TestSetCap2()
   Set res1 = s1.cap(s2);
   Set res2 = s2.cap(s1);
 
-  BOOST_REQUIRE_MESSAGE(res1 == res2 && res1.empty() && res2.empty(), 
-                        "\n" << s1 << "\ncap\n" << s2 << "\n=\n" << res1 << "\nExpected empty set");
+  BOOST_REQUIRE_MESSAGE(res1 == res2 && res1.empty() && res2.empty(), "\n" << s1 << "\ncap\n"
+                                                                           << s2 << "\n=\n"
+                                                                           << res1 << "\nExpected empty set");
 }
 
 void TestSetCap3()
@@ -1025,8 +1028,7 @@ void TestSetCap3()
   res3.addAtomSet(as4);
   res3.addAtomSet(as5);
 
-  BOOST_REQUIRE_MESSAGE(res1 == res2 && res2 == res3
-                        , "\n" << s1 << "\ncap\n" << s2 << "\n=\n" << res1 << "\nExpected: " << res3);
+  BOOST_REQUIRE_MESSAGE(res1 == res2 && res2 == res3, "\n" << s1 << "\ncap\n" << s2 << "\n=\n" << res1 << "\nExpected: " << res3);
 }
 
 void TestSetCap4()
@@ -1296,7 +1298,7 @@ void TestSetNormalize1()
   mi3.addInter(i1);
   mi3.addInter(i3);
   mi3.addInter(i1);
- 
+
   MultiInterval as3(mi3);
 
   Interval i4(21, 1, 80);
@@ -1506,8 +1508,9 @@ void TestAtomPWImage1()
 
   MultiInterval res2(mi2);
 
-  BOOST_REQUIRE_MESSAGE(res1 == res2, 
-                        "\nimage(" << pwatom1 << ", " << as1 << ")" << "\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1 == res2, "\nimage(" << pwatom1 << ", " << as1 << ")"
+                                                 << "\n=\n"
+                                                 << res1 << "\nExpected: " << res2);
 }
 
 void TestAtomPWImage2()
@@ -1546,8 +1549,9 @@ void TestAtomPWImage2()
 
   MultiInterval res2;
 
-  BOOST_REQUIRE_MESSAGE(res1 == res2, 
-                        "\nimage(" << pwatom1 << ", " << as2 << ")" << "\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1 == res2, "\nimage(" << pwatom1 << ", " << as2 << ")"
+                                                 << "\n=\n"
+                                                 << res1 << "\nExpected: " << res2);
 }
 
 void TestAtomPWImage3()
@@ -1595,8 +1599,9 @@ void TestAtomPWImage3()
 
   MultiInterval res2(mi3);
 
-  BOOST_REQUIRE_MESSAGE(res1 == res2, 
-                        "\nimage(" << pwatom1 << ", " << as2 << ")" << "\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1 == res2, "\nimage(" << pwatom1 << ", " << as2 << ")"
+                                                 << "\n=\n"
+                                                 << res1 << "\nExpected: " << res2);
 }
 
 void TestAtomPWImage4()
@@ -1626,8 +1631,9 @@ void TestAtomPWImage4()
   MultiInterval res2(mi2);
 
   BOOST_CHECK(res1 == res2);
-  BOOST_REQUIRE_MESSAGE(res1 == res2, 
-                        "\nimage(" << pwatom1 << ", " << as1 << ")" << "\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1 == res2, "\nimage(" << pwatom1 << ", " << as1 << ")"
+                                                 << "\n=\n"
+                                                 << res1 << "\nExpected: " << res2);
 }
 
 void TestAtomPWPre1()
@@ -1675,8 +1681,9 @@ void TestAtomPWPre1()
 
   MultiInterval res2(mi3);
 
-  BOOST_REQUIRE_MESSAGE(res1 == res2, 
-                        "\npre(" << pwatom1 << ", " << as2 << ")" << "\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1 == res2, "\npre(" << pwatom1 << ", " << as2 << ")"
+                                               << "\n=\n"
+                                               << res1 << "\nExpected: " << res2);
 }
 
 void TestAtomPWPre2()
@@ -1724,8 +1731,9 @@ void TestAtomPWPre2()
 
   MultiInterval res2(mi3);
 
-  BOOST_REQUIRE_MESSAGE(res1 == res2, 
-                        "\npre(" << pwatom1 << ", " << as2 << ")" << "\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1 == res2, "\npre(" << pwatom1 << ", " << as2 << ")"
+                                               << "\n=\n"
+                                               << res1 << "\nExpected: " << res2);
 }
 
 void TestAtomPWPre3()
@@ -1764,8 +1772,9 @@ void TestAtomPWPre3()
 
   MultiInterval res2;
 
-  BOOST_REQUIRE_MESSAGE(res1 == res2, 
-                        "\npre(" << pwatom1 << ", " << as2 << ")" << "\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1 == res2, "\npre(" << pwatom1 << ", " << as2 << ")"
+                                               << "\n=\n"
+                                               << res1 << "\nExpected: " << res2);
 }
 
 void TestAtomPWPre4()
@@ -1796,14 +1805,15 @@ void TestAtomPWPre4()
 
   MultiInterval res2 = as1;
 
-  BOOST_REQUIRE_MESSAGE(res1 == res2, 
-                        "\npre(" << pwatom1 << ", " << as2 << ")" << "\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1 == res2, "\npre(" << pwatom1 << ", " << as2 << ")"
+                                               << "\n=\n"
+                                               << res1 << "\nExpected: " << res2);
 }
 
 void TestAtomPWPre5()
 {
   Interval i1(32, 1, 32);
-  
+
   MultiInterval mi1;
   mi1.addInter(i1);
   mi1.addInter(i1);
@@ -1813,23 +1823,24 @@ void TestAtomPWPre5()
   LMap lm1;
   lm1.addGO(-1, 32);
   lm1.addGO(-1, 32);
- 
+
   AtomPWLMap pwatom1(as1, lm1);
 
   Interval zero(0, 1, 0);
-  
+
   MultiInterval mi2;
   mi2.addInter(zero);
   mi2.addInter(zero);
 
   MultiInterval as2(mi2);
 
-  MultiInterval res1  = pwatom1.preImage(as2);
+  MultiInterval res1 = pwatom1.preImage(as2);
 
   MultiInterval res2 = as1;
 
-  BOOST_REQUIRE_MESSAGE(res1 == res2, 
-                        "\npre(" << pwatom1 << ", " << as2 << ")" << "\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1 == res2, "\npre(" << pwatom1 << ", " << as2 << ")"
+                                               << "\n=\n"
+                                               << res1 << "\nExpected: " << res2);
 }
 
 // -- Piece wise linear maps -------------------------------------------------//
@@ -1966,8 +1977,9 @@ void TestPWLMapImage1()
 
   Set res2 = s1.cup(s3);
 
-  BOOST_REQUIRE_MESSAGE(res1 == res2, 
-                        "\nimage(" << pw1 << ", " << aux << ")" << "\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1 == res2, "\nimage(" << pw1 << ", " << aux << ")"
+                                                 << "\n=\n"
+                                                 << res1 << "\nExpected: " << res2);
 }
 
 void TestPWLMapImage2()
@@ -2032,8 +2044,9 @@ void TestPWLMapImage2()
 
   Set res2 = s1;
 
-  BOOST_REQUIRE_MESSAGE(res1 == res2, 
-                        "\nimage(" << pw1 << ", " << s1 << ")" << "\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1 == res2, "\nimage(" << pw1 << ", " << s1 << ")"
+                                                 << "\n=\n"
+                                                 << res1 << "\nExpected: " << res2);
 }
 
 void TestPWLMapPre1()
@@ -2117,8 +2130,9 @@ void TestPWLMapPre1()
   res2.addAtomSet(as2);
   res2.addAtomSet(as6);
 
-  BOOST_REQUIRE_MESSAGE(res1 == res2, 
-                        "\npre(" << pw1 << ", " << s3 << ")" << "\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1 == res2, "\npre(" << pw1 << ", " << s3 << ")"
+                                               << "\n=\n"
+                                               << res1 << "\nExpected: " << res2);
 }
 
 void TestPWLMapPre2()
@@ -2166,8 +2180,9 @@ void TestPWLMapPre2()
   Set res2;
   res2.addAtomSet(as1);
 
-  BOOST_REQUIRE_MESSAGE(res1 == res2, 
-                        "\npre(" << pw1 << ", " << s2 << ")" << "\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1 == res2, "\npre(" << pw1 << ", " << s2 << ")"
+                                               << "\n=\n"
+                                               << res1 << "\nExpected: " << res2);
 }
 
 void TestPWLMapComp1()
@@ -2270,8 +2285,7 @@ void TestPWLMapComp1()
   res2.addSetLM(s5, lm4);
   res2.addSetLM(s6, lm2);
 
-  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), 
-                        "\n" << pw1 << "\n°\n" << pw2 << "\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), "\n" << pw1 << "\n°\n" << pw2 << "\n=\n" << res1 << "\nExpected: " << res2);
 }
 
 void TestPWLMapComp2()
@@ -2344,10 +2358,8 @@ void TestPWLMapComp2()
 
   PWLMap res2;
 
-  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), 
-                        "\n" << pw1 << "\n°\n" << pw1 << "\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), "\n" << pw1 << "\n°\n" << pw1 << "\n=\n" << res1 << "\nExpected: " << res2);
 }
-
 
 void TestPWLMapCombine1()
 {
@@ -2435,8 +2447,7 @@ void TestPWLMapCombine1()
   res2.addSetLM(s2, lm2);
   res2.addSetLM(s5, lm3);
 
-  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), 
-                        "\ncombine(" << pw1 << ",\n        " << pw2 << ")\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), "\ncombine(" << pw1 << ",\n        " << pw2 << ")\n=\n" << res1 << "\nExpected: " << res2);
 }
 
 void TestMinAS1()
@@ -2487,8 +2498,8 @@ void TestMinAS1()
   res2.addSetLM(s1, lm2);
   res2.addSetLM(s2, lm1);
 
-  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), 
-                        "\nmin(" << as1 << ",  " << lm1 << ", " << lm2 << ")\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), "\nmin(" << as1 << ",  " << lm1 << ", " << lm2 << ")\n=\n"
+                                                          << res1 << "\nExpected: " << res2);
 }
 
 void TestMinAS2()
@@ -2522,8 +2533,8 @@ void TestMinAS2()
   PWLMap res2;
   res2.addSetLM(s1, lm2);
 
-  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), 
-                        "\nmin(" << as1 << ",  " << lm1 << ", " << lm2 << ")\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), "\nmin(" << as1 << ",  " << lm1 << ", " << lm2 << ")\n=\n"
+                                                          << res1 << "\nExpected: " << res2);
 }
 
 void TestMinSet1()
@@ -2589,8 +2600,8 @@ void TestMinSet1()
   res2.addSetLM(s3, lm1);
   res2.addSetLM(s2, lm2);
 
-  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), 
-                        "\nmin(" << s1 << ",  " << lm1 << ", " << lm2 << ")\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), "\nmin(" << s1 << ",  " << lm1 << ", " << lm2 << ")\n=\n"
+                                                          << res1 << "\nExpected: " << res2);
 }
 
 void TestMinSet2()
@@ -2633,8 +2644,8 @@ void TestMinSet2()
   PWLMap res2;
   res2.addSetLM(s1, lm1);
 
-  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), 
-                        "\nmin(" << s1 << ",  " << lm1 << ", " << lm2 << ")\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), "\nmin(" << s1 << ",  " << lm1 << ", " << lm2 << ")\n=\n"
+                                                          << res1 << "\nExpected: " << res2);
 }
 
 void TestMinMap1()
@@ -2786,8 +2797,7 @@ void TestMinMap1()
   res2.addSetLM(s7, lm2);
   res2.addSetLM(s5, lm1);
 
-  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), 
-                        "\nmin(" << pw1 << "\n,\n" << pw2 << ")\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), "\nmin(" << pw1 << "\n,\n" << pw2 << ")\n=\n" << res1 << "\nExpected: " << res2);
 }
 
 void TestReduce1()
@@ -2903,8 +2913,7 @@ void TestReduce1()
   res2.addSetLM(s4, lm4);
   res2.addSetLM(s5, lm5);
 
-  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), 
-                        "\nreduceN(" << pw1 << ", 2)\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), "\nreduceN(" << pw1 << ", 2)\n=\n" << res1 << "\nExpected: " << res2);
 }
 
 void TestMinAdjComp1()
@@ -2977,8 +2986,7 @@ void TestMinAdjComp1()
 
   PWLMap res2 = pw2.compPW(pw1);
 
-  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), 
-                        "\nminAdj(" << pw1 << ",\n" << pw2 << "\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), "\nminAdj(" << pw1 << ",\n" << pw2 << "\n=\n" << res1 << "\nExpected: " << res2);
 }
 
 void TestMinAdjComp2()
@@ -3051,8 +3059,7 @@ void TestMinAdjComp2()
 
   PWLMap res2;
 
-  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), 
-                        "\nminAdj(" << pw1 << ",\n" << pw2 << "\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), "\nminAdj(" << pw1 << ",\n" << pw2 << "\n=\n" << res1 << "\nExpected: " << res2);
 }
 
 void TestMinAdjComp3()
@@ -3150,8 +3157,7 @@ void TestMinAdjComp3()
 
   res2.addSetLM(s4, lm2);
 
-  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), 
-                        "\nminAdj(" << pw1 << ",\n" << pw2 << "\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), "\nminAdj(" << pw1 << ",\n" << pw2 << "\n=\n" << res1 << "\nExpected: " << res2);
 }
 
 void TestMinAdjComp4()
@@ -3240,8 +3246,7 @@ void TestMinAdjComp4()
 
   res2.addSetLM(s4, lm4);
 
-  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), 
-                        "\nminAdj(" << pw1 << ",\n" << pw2 << "\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), "\nminAdj(" << pw1 << ",\n" << pw2 << "\n=\n" << res1 << "\nExpected: " << res2);
 }
 
 void TestMinAdj1()
@@ -3381,8 +3386,7 @@ void TestMinAdj1()
   res2.addSetLM(s6, lm3);
   res2.addSetLM(s7, lm4);
 
-  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), 
-                        "\nminAdj(" << pw1 << ",\n" << pw2 << "\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), "\nminAdj(" << pw1 << ",\n" << pw2 << "\n=\n" << res1 << "\nExpected: " << res2);
 }
 
 void TestPWLMapInf1()
@@ -3623,7 +3627,7 @@ void TestRC1()
 
   Interval i28(3001, 1, 3999);
   Set s28 = createSet(i28);
-  
+
   LMap lm28;
   lm28.addGO(1.0, -1999.0);
 
@@ -3861,7 +3865,7 @@ void TestGraph3c()
 
   Interval i28(3001, 1, 3999);
   Set s28 = createSet(i28);
-  
+
   LMap lm28;
   lm28.addGO(1.0, -1999.0);
 
@@ -4177,8 +4181,8 @@ void Test2D()
 
   Interval i30(1, 1, 1);
   MultiInterval mi30;
-  mi30.addInter(i30); 
-  mi30.addInter(i30); 
+  mi30.addInter(i30);
+  mi30.addInter(i30);
   Set s30 = createSet(mi30);
 
   LMap lm30;
@@ -4604,7 +4608,7 @@ void TestMatching1()
   BOOST_CHECK(std::get<1>(res));
 }
 
-// Example with recursive path that starts at the "middle" 
+// Example with recursive path that starts at the "middle"
 void TestMatching2()
 {
   INT N = 1000000;
@@ -4644,7 +4648,7 @@ void TestMatching2()
   LMap lm1;
   lm1.addGO(0, 1);
   LMap lm2;
-  lm2.addGO(0, N + N/2);
+  lm2.addGO(0, N + N / 2);
   PWLMap mapE1f;
   mapE1f.addSetLM(domE1, lm1);
   PWLMap mapE1u;
@@ -4656,7 +4660,7 @@ void TestMatching2()
   mi5.addInter(i5);
   MultiInterval as5(mi5);
   Set domE2a;
-  domE2a.addAtomSet(as5); 
+  domE2a.addAtomSet(as5);
 
   Interval i6(N + 1, 1, 2 * N - 1);
   MultiInterval mi6;
@@ -4669,7 +4673,7 @@ void TestMatching2()
   lm3.addGO(1, 0);
   LMap lm4;
   lm4.addGO(1, N - 1);
-  
+
   LMap lm5;
   lm5.addGO(1, (-N) + 1);
   LMap lm6;
@@ -4707,7 +4711,7 @@ void TestMatching2()
   std::pair<Set, bool> res = match.SBGMatching();
 
   BOOST_CHECK(std::get<1>(res));
-} 
+}
 
 // A case that with the v10 implementation of matching,
 // there are cycles, and the algorithm doesn't converge
@@ -4917,16 +4921,16 @@ void TestMatching3()
   mapE10u.addSetLM(s18, lm20);
   SetEdge E10("E10", 10, mapE10f, mapE10u, 0);
 
-  g[e1] = E1; 
-  g[e2] = E2; 
-  g[e3] = E3; 
-  g[e4] = E4; 
-  g[e5] = E5; 
-  g[e6] = E6; 
-  g[e7] = E7; 
-  g[e8] = E8; 
-  g[e9] = E9; 
-  g[e10] = E10; 
+  g[e1] = E1;
+  g[e2] = E2;
+  g[e3] = E3;
+  g[e4] = E4;
+  g[e5] = E5;
+  g[e6] = E6;
+  g[e7] = E7;
+  g[e8] = E8;
+  g[e9] = E9;
+  g[e10] = E10;
 
   MatchingStruct match(g);
   std::pair<Set, bool> res = match.SBGMatching();
@@ -4942,22 +4946,22 @@ void TestMatching4()
 
   SBGraph g;
 
-  SetVertexDesc v1 = boost::add_vertex(g); // u[i, j]
-  SetVertexDesc v2 = boost::add_vertex(g); // eq1[1, 1]
-  SetVertexDesc v3 = boost::add_vertex(g); // eq2[i, 1]
-  SetVertexDesc v4 = boost::add_vertex(g); // eq3[1, j]
-  SetVertexDesc v5 = boost::add_vertex(g); // eq4[i, j]
+  SetVertexDesc v1 = boost::add_vertex(g);  // u[i, j]
+  SetVertexDesc v2 = boost::add_vertex(g);  // eq1[1, 1]
+  SetVertexDesc v3 = boost::add_vertex(g);  // eq2[i, 1]
+  SetVertexDesc v4 = boost::add_vertex(g);  // eq3[1, j]
+  SetVertexDesc v5 = boost::add_vertex(g);  // eq4[i, j]
 
-  SetEdgeDesc e1; // u[1, 1] <-> eq1[1, 1]
+  SetEdgeDesc e1;  // u[1, 1] <-> eq1[1, 1]
   bool b1;
   boost::tie(e1, b1) = boost::add_edge(v1, v2, g);
-  SetEdgeDesc e2; // u[i, 1] <-> eq2[i, 1] U u[i-1, 1] <-> eq2[i, 1]
+  SetEdgeDesc e2;  // u[i, 1] <-> eq2[i, 1] U u[i-1, 1] <-> eq2[i, 1]
   bool b2;
   boost::tie(e2, b2) = boost::add_edge(v1, v3, g);
-  SetEdgeDesc e3; // u[1, j] <-> eq3[1, j] U u[1, j-1] <-> eq3[1, j]
+  SetEdgeDesc e3;  // u[1, j] <-> eq3[1, j] U u[1, j-1] <-> eq3[1, j]
   bool b3;
   boost::tie(e3, b3) = boost::add_edge(v1, v4, g);
-  SetEdgeDesc e4; // u[i, j] <-> eq4[i, j] U u[i-1, j] <-> eq4[i, j] U u[i, j-1] <-> eq4[i, j]
+  SetEdgeDesc e4;  // u[i, j] <-> eq4[i, j] U u[i-1, j] <-> eq4[i, j] U u[i, j-1] <-> eq4[i, j]
   bool b4;
   boost::tie(e4, b4) = boost::add_edge(v1, v5, g);
 
@@ -4969,18 +4973,18 @@ void TestMatching4()
 
   int offEq2i = offEq1 + szEq1 + 1;
   int szEq2i = N - 2;
-  int offEq2j = offEq1 + szEq1 + 1; 
+  int offEq2j = offEq1 + szEq1 + 1;
   int szEq2j = 0;
 
   int offEq3i = offEq2i + szEq2i + 1;
-  int szEq3i = 0; 
+  int szEq3i = 0;
   int offEq3j = offEq2j + szEq2j + 1;
   int szEq3j = N - 2;
 
-  int offEq4 = offEq3i + szEq3i + 1; 
+  int offEq4 = offEq3i + szEq3i + 1;
   int szEq4 = N - 2;
- 
-  // u[i, j] 
+
+  // u[i, j]
   Interval i1(offV1, 1, offV1 + szV1);
   MultiInterval mi1;
   mi1.addInter(i1);
@@ -5091,10 +5095,10 @@ void TestMatching4()
   mi7.addInter(i9);
   mi7.addInter(i10);
   Set s7 = createSet(mi7);
-  LMap lm3; // to eq2[i, 1]
+  LMap lm3;  // to eq2[i, 1]
   lm3.addGO(1, offEq2i - offE2i_1);
   lm3.addGO(1, offEq2j - offE2j_1);
-  LMap lm4; // to u[i, 1]
+  LMap lm4;  // to u[i, 1]
   lm4.addGO(1, offV1 + 1 - offE2i_1);
   lm4.addGO(1, offV1 - offE2j_1);
 
@@ -5105,10 +5109,10 @@ void TestMatching4()
   mi8.addInter(i11);
   mi8.addInter(i12);
   Set s8 = createSet(mi8);
-  LMap lm5; // to eq2[i, 1] 
+  LMap lm5;  // to eq2[i, 1]
   lm5.addGO(1, offEq2i - offE2i_2);
   lm5.addGO(1, offEq2j - offE2j_2);
-  LMap lm6; // to u[i-1, j]
+  LMap lm6;  // to u[i-1, j]
   lm6.addGO(1, offV1 - offE2i_2);
   lm6.addGO(1, offV1 - offE2j_2);
 
@@ -5127,10 +5131,10 @@ void TestMatching4()
   mi9.addInter(i13);
   mi9.addInter(i14);
   Set s9 = createSet(mi9);
-  LMap lm7; // to eq3[1, j]
+  LMap lm7;  // to eq3[1, j]
   lm7.addGO(1, offEq3i - offE3i_1);
   lm7.addGO(1, offEq3j - offE3j_1);
-  LMap lm8; // to u[1, j]
+  LMap lm8;  // to u[1, j]
   lm8.addGO(1, offV1 - offE3i_1);
   lm8.addGO(1, offV1 + 1 - offE3j_1);
 
@@ -5141,10 +5145,10 @@ void TestMatching4()
   mi10.addInter(i15);
   mi10.addInter(i16);
   Set s10 = createSet(mi10);
-  LMap lm9; // to eq3[1, j]
-  lm9.addGO(1, offEq3i - offE3i_2); 
+  LMap lm9;  // to eq3[1, j]
+  lm9.addGO(1, offEq3i - offE3i_2);
   lm9.addGO(1, offEq3j - offE3j_2);
-  LMap lm10; // to u[1, j-1]
+  LMap lm10;  // to u[1, j-1]
   lm10.addGO(1, offV1 - offE3i_2);
   lm10.addGO(1, offV1 - offE3j_2);
 
@@ -5163,10 +5167,10 @@ void TestMatching4()
   mi11.addInter(i17);
   mi11.addInter(i18);
   Set s11 = createSet(mi11);
-  LMap lm11; // to eq4[i, j]
+  LMap lm11;  // to eq4[i, j]
   lm11.addGO(1, offEq4 - offE4i_1);
   lm11.addGO(1, offEq4 - offE4j_1);
-  LMap lm12; // to u[i, j]
+  LMap lm12;  // to u[i, j]
   lm12.addGO(1, offV1 + 1 - offE4i_1);
   lm12.addGO(1, offV1 + 1 - offE4j_1);
 
@@ -5177,10 +5181,10 @@ void TestMatching4()
   mi12.addInter(i19);
   mi12.addInter(i20);
   Set s12 = createSet(mi12);
-  LMap lm13; // to eq4[i, j]
+  LMap lm13;  // to eq4[i, j]
   lm13.addGO(1, offEq4 - offE4i_2);
   lm13.addGO(1, offEq4 - offE4j_2);
-  LMap lm14; // to u[i-1, j]
+  LMap lm14;  // to u[i-1, j]
   lm14.addGO(1, offV1 - offE4i_2);
   lm14.addGO(1, offV1 + 1 - offE4j_2);
 
@@ -5191,10 +5195,10 @@ void TestMatching4()
   mi13.addInter(i21);
   mi13.addInter(i22);
   Set s13 = createSet(mi13);
-  LMap lm15; // to eq4[i, j]
+  LMap lm15;  // to eq4[i, j]
   lm15.addGO(1, offEq4 - offE4i_3);
   lm15.addGO(1, offEq4 - offE4j_3);
-  LMap lm16; // to u[i, j-1]
+  LMap lm16;  // to u[i, j-1]
   lm16.addGO(1, offV1 + 1 - offE4i_3);
   lm16.addGO(1, offV1 - offE4j_3);
 
@@ -5203,15 +5207,15 @@ void TestMatching4()
   mapE4f.addSetLM(s12, lm13);
   mapE4f.addSetLM(s13, lm15);
   PWLMap mapE4u;
-  mapE4u.addSetLM(s11, lm12); 
-  mapE4u.addSetLM(s12, lm14); 
-  mapE4u.addSetLM(s13, lm16); 
+  mapE4u.addSetLM(s11, lm12);
+  mapE4u.addSetLM(s12, lm14);
+  mapE4u.addSetLM(s13, lm16);
   SetEdge E4("E4", 4, mapE4f, mapE4u, 0);
 
-  g[e1] = E1; 
-  g[e2] = E2; 
-  g[e3] = E3; 
-  g[e4] = E4; 
+  g[e1] = E1;
+  g[e2] = E2;
+  g[e3] = E3;
+  g[e4] = E4;
 
   MatchingStruct match(g);
   std::pair<Set, bool> res = match.SBGMatching();
@@ -5228,10 +5232,10 @@ void TestMatching5()
 
   SBGraph g;
 
-  SetVertexDesc v1 = boost::add_vertex(g); // Unknowns in the recursion, connected to a minimum vertex
-  SetVertexDesc v2 = boost::add_vertex(g); // Minimum vertex on the left side
-  SetVertexDesc v3 = boost::add_vertex(g); // Vertices on the left side in the recursion
-  SetVertexDesc v4 = boost::add_vertex(g); // "Start" of recursion
+  SetVertexDesc v1 = boost::add_vertex(g);  // Unknowns in the recursion, connected to a minimum vertex
+  SetVertexDesc v2 = boost::add_vertex(g);  // Minimum vertex on the left side
+  SetVertexDesc v3 = boost::add_vertex(g);  // Vertices on the left side in the recursion
+  SetVertexDesc v4 = boost::add_vertex(g);  // "Start" of recursion
 
   SetEdgeDesc e1;
   bool b1;
@@ -5246,7 +5250,7 @@ void TestMatching5()
   int offV1 = 1;
   int szV1 = N - 1;
 
-  int offV2 = offV1 + szV1 + 1; 
+  int offV2 = offV1 + szV1 + 1;
   int szV2 = 0;
 
   int offV3 = offV2 + szV2 + 1;
@@ -5282,7 +5286,7 @@ void TestMatching5()
   mi4.addInter(i4);
   Set s4 = createSet(mi4);
   SetVertex V4("start", 4, s4, 0);
-    
+
   g[v1] = V1;
   g[v2] = V2;
   g[v3] = V3;
@@ -5293,7 +5297,7 @@ void TestMatching5()
 
   int offE2_1 = offE1 + szE1 + 1;
   int szE2_1 = N - 2;
-  
+
   int offE2_2 = offE2_1 + szE2_1 + 1;
   int szE2_2 = N - 2;
 
@@ -5314,8 +5318,8 @@ void TestMatching5()
   PWLMap mapE1u;
   mapE1u.addSetLM(s5, lm2);
   SetEdge E1("E1", 1, mapE1f, mapE1u, 0);
- 
-  // Edges in recursion 
+
+  // Edges in recursion
   Interval i6(offE2_1, 1, offE2_1 + szE2_1);
   MultiInterval mi6;
   mi6.addInter(i6);
@@ -5357,9 +5361,9 @@ void TestMatching5()
   mapE3u.addSetLM(s8, lm8);
   SetEdge E3("E3", 3, mapE3f, mapE3u, 0);
 
-  g[e1] = E1; 
-  g[e2] = E2; 
-  g[e3] = E3; 
+  g[e1] = E1;
+  g[e2] = E2;
+  g[e3] = E3;
 
   MatchingStruct match(g);
   std::pair<Set, bool> res = match.SBGMatching();
@@ -5473,7 +5477,7 @@ test_suite *init_unit_test_suite(int, char *[])
 
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestRC1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestGraph3c));
-  //framework::master_test_suite().add(BOOST_TEST_CASE(&Test2D));
+  // framework::master_test_suite().add(BOOST_TEST_CASE(&Test2D));
 
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching2));

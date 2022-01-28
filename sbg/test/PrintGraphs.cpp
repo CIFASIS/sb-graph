@@ -1,28 +1,29 @@
 /*****************************************************************************
 
-    This file is part of Modelica C Compiler.
+ This file is part of Set--Based Graph Library.
 
-    Modelica C Compiler is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+ SBG Library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-    Modelica C Compiler is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+ SBG Library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with Modelica C Compiler.  If not, see <http://www.gnu.org/licenses/>.
+ You should have received a copy of the GNU General Public License
+ along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
-******************************************************************************/
+ ******************************************************************************/
 
 #include <sbg/sbg.h>
 #include <sbg/sbg_printer.h>
 
 using namespace SBG;
 
-int main(){
+int main()
+{
   float offSp = 0;
   float offSn = 1;
   float offGp = 2;
@@ -77,8 +78,8 @@ int main(){
   PWLMap mapE1rp;
   mapE1rp.addSetLM(domE1, lm2);
   SetEdge E1("E1", 1, mapE1sp, mapE1rp, 0);
- 
-  Interval i9(1 + offE2, 1, offE3); 
+
+  Interval i9(1 + offE2, 1, offE3);
   Set domE2 = createSet(i9);
   LMap lm3;
   lm3.addGO(0, 1 + offSn);
@@ -114,7 +115,7 @@ int main(){
   mapE4rp.addSetLM(domE4, lm8);
   SetEdge E4("E4", 4, mapE4rn, mapE4rp, 0);
 
-  Interval i12(1 + offE5, 1, 1 + offE5 + offRp - 1); 
+  Interval i12(1 + offE5, 1, 1 + offE5 + offRp - 1);
   Set domE5 = createSet(i12);
   LMap lm9;
   lm9.addGO(1, offCn - offE5);
@@ -147,7 +148,7 @@ int main(){
   SetEdgeDesc e1;
   bool b1;
   boost::tie(e1, b1) = boost::add_edge(v1, v4, g1);
-  SetEdgeDesc e2; 
+  SetEdgeDesc e2;
   bool b2;
   boost::tie(e2, b2) = boost::add_edge(v2, v3, g1);
   SetEdgeDesc e3;
@@ -171,7 +172,7 @@ int main(){
   gp1.printGraph(fn1);
 
   /**********************************************************************/
- 
+
   float offsp = 0;
   float offsn = 1;
   float offgp = 2;
@@ -242,7 +243,7 @@ int main(){
   Interval ii10(1 + offEE3, 1, offEE4);
   Set domEE3 = createSet(ii10);
   LMap llm5;
-  llm5.addGO(1, offrn - offEE3); 
+  llm5.addGO(1, offrn - offEE3);
   LMap llm6;
   llm6.addGO(1, offcp - offEE3);
   PWLMap mmapE3rn;
@@ -284,7 +285,7 @@ int main(){
   PWLMap mmapE6cn;
   mmapE6cn.addSetLM(domEE6, llm11);
   PWLMap mmapE6cn2;
-  mmapE6cn2.addSetLM(domEE6, llm12); 
+  mmapE6cn2.addSetLM(domEE6, llm12);
   SetEdge EE6("E6", 1, mmapE6cn, mmapE6cn2, 0);
 
   SBGraph g2;
@@ -308,7 +309,7 @@ int main(){
   SetEdgeDesc ee1;
   bool bb1;
   boost::tie(ee1, bb1) = boost::add_edge(vv1, vv4, g2);
-  SetEdgeDesc ee2; 
+  SetEdgeDesc ee2;
   bool bb2;
   boost::tie(ee2, bb2) = boost::add_edge(vv2, vv3, g2);
   SetEdgeDesc ee3;

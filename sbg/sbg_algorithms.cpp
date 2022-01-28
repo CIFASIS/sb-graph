@@ -1,8 +1,21 @@
 /*****************************************************************************
- 
-    This file is part of the Set-Based Graph library.
 
-******************************************************************************/
+ This file is part of Set--Based Graph Library.
+
+ SBG Library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ SBG Library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
 
 #include <boost/graph/subgraph.hpp>
 #include <sbg/sbg_algorithms.h>
@@ -79,26 +92,24 @@ PWLMap connectedComponents(SBGraph g)
 
 // Minimum reachable ------------------------------------------------------------------------------
 
-bool eqId(Set dom, LMap lm) 
+bool eqId(Set dom, LMap lm)
 {
   ORD_REALS::iterator itg = lm.gain_ref().begin();
   ORD_REALS::iterator ito = lm.offset_ref().begin();
 
-  for (int i = 0; i < lm.ndim(); i++) 
-    if (*itg != 1 || *ito != 0)
-      return false;
+  for (int i = 0; i < lm.ndim(); i++)
+    if (*itg != 1 || *ito != 0) return false;
 
   return true;
 }
 
-bool notEqId(Set dom, LMap lm) 
+bool notEqId(Set dom, LMap lm)
 {
   ORD_REALS::iterator itg = lm.gain_ref().begin();
   ORD_REALS::iterator ito = lm.offset_ref().begin();
 
-  for (int i = 0; i < lm.ndim(); i++) 
-    if (*itg != 1 || *ito != 0)
-      return true;
+  for (int i = 0; i < lm.ndim(); i++)
+    if (*itg != 1 || *ito != 0) return true;
 
   return false;
 }
@@ -111,8 +122,7 @@ PWLMap updateMap(Set V, PWLMap currentMap, PWLMap newMap, PWLMap offMap)
 {
   Interval i(0, 1, 0);
   MultiInterval mi;
-  for (int j = 0; j < currentMap.ndim(); j++)
-    mi.addInter(i);
+  for (int j = 0; j < currentMap.ndim(); j++) mi.addInter(i);
   Set zero = createSet(mi);
 
   PWLMap offCurrent = offMap.compPW(currentMap);
@@ -121,14 +131,15 @@ PWLMap updateMap(Set V, PWLMap currentMap, PWLMap newMap, PWLMap offMap)
   PWLMap deltaMap = offCurrent.diffMap(offNew);
   Set notUpdateVerts = deltaMap.preImage(zero);
   Set updateVerts = V.diff(notUpdateVerts);
- 
+
   PWLMap resMap = newMap.restrictMap(updateVerts);
   resMap = resMap.combine(currentMap.restrictMap(notUpdateVerts));
 
   return resMap;
 }
 
-std::pair<PWLMap, PWLMap> recursion(int n, Set ER, Set V, Set E, PWLMap Emap, PWLMap map_D, PWLMap map_B, PWLMap currentSmap, PWLMap currentSEmap, PWLMap currentRmap)
+std::pair<PWLMap, PWLMap> recursion(int n, Set ER, Set V, Set E, PWLMap Emap, PWLMap map_D, PWLMap map_B, PWLMap currentSmap,
+                                    PWLMap currentSEmap, PWLMap currentRmap)
 {
   // *** Initialization
   std::cout << "ER: " << ER << "\n\n";
@@ -136,12 +147,11 @@ std::pair<PWLMap, PWLMap> recursion(int n, Set ER, Set V, Set E, PWLMap Emap, PW
   PWLMap Vid(V);
 
   PWLMap newSmap;
-  PWLMap newRmap; // Minimum reachable map
+  PWLMap newRmap;  // Minimum reachable map
 
   Interval i(0, 1, 0);
   MultiInterval mi;
-  for (int j = 0; j < map_D.ndim(); j++)
-    mi.addInter(i);
+  for (int j = 0; j < map_D.ndim(); j++) mi.addInter(i);
   Set zero = createSet(mi);
 
   // *** Traverse graph
@@ -155,20 +165,20 @@ std::pair<PWLMap, PWLMap> recursion(int n, Set ER, Set V, Set E, PWLMap Emap, PW
     semapNth = semapNth.compPW(originalSEmap);
   }
 
-  Set ERplus = Emap.preImage(Emap.image(Erec)); // Edges that share sub-set-edges with those in Erec
+  Set ERplus = Emap.preImage(Emap.image(Erec));  // Edges that share sub-set-edges with those in Erec
   ERplus = ERplus.cap(E);
-  
+
   PWLMap tildeD = map_D.restrictMap(ERplus);
   PWLMap tildeB = map_B.restrictMap(ERplus);
-  PWLMap smapPlus = tildeD.compPW(tildeB.minInv(tildeB.image())); // Successor map through ERplus
+  PWLMap smapPlus = tildeD.compPW(tildeB.minInv(tildeB.image()));  // Successor map through ERplus
 
   Set finalsRec = map_D.image(semapNth.image(ER));
   PWLMap finalsRecMap(finalsRec);
-  smapPlus = finalsRecMap.combine(smapPlus); // Preserve the successors of the final vertices
+  smapPlus = finalsRecMap.combine(smapPlus);  // Preserve the successors of the final vertices
 
-  PWLMap rmapPlus = currentRmap.compPW(smapPlus.mapInf(n)); // Minimum reachable through ERplus
+  PWLMap rmapPlus = currentRmap.compPW(smapPlus.mapInf(n));  // Minimum reachable through ERplus
   newSmap = smapPlus.combine(currentSmap);
-  newRmap = currentRmap.minMap(rmapPlus); // New minimum reachable map
+  newRmap = currentRmap.minMap(rmapPlus);  // New minimum reachable map
   newRmap = newRmap.combine(currentRmap);
 
   return std::pair<PWLMap, PWLMap>(newSmap, newRmap);
@@ -181,8 +191,7 @@ PWLMap minReach1(Set V, PWLMap map_D, PWLMap map_B, PWLMap currentSmap, PWLMap c
 
   Interval i(0, 1, 0);
   MultiInterval mi;
-  for (int j = 0; j < map_D.ndim(); j++)
-    mi.addInter(i);
+  for (int j = 0; j < map_D.ndim(); j++) mi.addInter(i);
   Set zero = createSet(mi);
 
   PWLMap Vid(V);
@@ -191,8 +200,8 @@ PWLMap minReach1(Set V, PWLMap map_D, PWLMap map_B, PWLMap currentSmap, PWLMap c
   Set idVerts = idCurrentSmap.diffMap(currentRmap).preImage(zero);
   Set usableVerts = idVerts.cup(currentSmap.filterMap(notEqId).wholeDom());
 
-  PWLMap adjSmap = map_B.minAdjMap(map_D, currentRmap); // Get minimum adjacent vertex with minimum representative
-  PWLMap newSmap = adjSmap.minMap(currentSmap.restrictMap(usableVerts), currentRmap); // Old successor vs new successor  
+  PWLMap adjSmap = map_B.minAdjMap(map_D, currentRmap);  // Get minimum adjacent vertex with minimum representative
+  PWLMap newSmap = adjSmap.minMap(currentSmap.restrictMap(usableVerts), currentRmap);  // Old successor vs new successor
   newSmap = updateMap(V, currentSmap, newSmap, currentRmap);
   newSmap = newSmap.combine(adjSmap);
   newSmap = newSmap.combine(currentSmap);
@@ -205,13 +214,12 @@ std::pair<PWLMap, PWLMap> minReachable(int nmax, Set V, Set E, PWLMap Vmap, PWLM
 {
   // *** Initialization
 
-  PWLMap newSmap; // Successors map
-  PWLMap newRmap; // Minimum reachable map
+  PWLMap newSmap;  // Successors map
+  PWLMap newRmap;  // Minimum reachable map
 
   Interval i(0, 1, 0);
   MultiInterval mi;
-  for (int j = 0; j < map_D.ndim(); j++)
-    mi.addInter(i);
+  for (int j = 0; j < map_D.ndim(); j++) mi.addInter(i);
   Set zero = createSet(mi);
 
   map_D = map_D.restrictMap(E);
@@ -227,21 +235,21 @@ std::pair<PWLMap, PWLMap> minReachable(int nmax, Set V, Set E, PWLMap Vmap, PWLM
   PWLMap Eid(E);
   PWLMap newSEmap = Eid;
 
-  Set Vc; // Vertices that changed its successor
-  Set Ec; // Edges that changed its successor
+  Set Vc;  // Vertices that changed its successor
+  Set Ec;  // Edges that changed its successor
 
   // *** Traverse graph
   do {
     oldSmap = newSmap;
-    newSmap = minReach1(V, map_D, map_B, newSmap, newRmap); // Get successor
-    newRmap = newSmap.mapInf(1); // Get representative
+    newSmap = minReach1(V, map_D, map_B, newSmap, newRmap);  // Get successor
+    newRmap = newSmap.mapInf(1);                             // Get representative
 
-    PWLMap deltaSmap = newSmap.diffMap(oldSmap); 
-    Vc = V.diff(deltaSmap.preImage(zero)); // Vertices that changed its successor
-  
+    PWLMap deltaSmap = newSmap.diffMap(oldSmap);
+    Vc = V.diff(deltaSmap.preImage(zero));  // Vertices that changed its successor
+
     if (!Vc.empty()) {
       oldSEmap = newSEmap;
-      Set Esucc = newSmap.compPW(map_B).diffMap(map_D).preImage(zero); // Edges that connect vertices with successors
+      Set Esucc = newSmap.compPW(map_B).diffMap(map_D).preImage(zero);  // Edges that connect vertices with successors
       newSEmap = (map_B.restrictMap(Esucc).minInv(newSmap.image())).compPW(map_D.restrictMap(Esucc));
       newSEmap = newSEmap.combine(oldSEmap);
 
@@ -249,7 +257,7 @@ std::pair<PWLMap, PWLMap> minReachable(int nmax, Set V, Set E, PWLMap Vmap, PWLM
       Ec = E.diff(deltaSEmap.preImage(zero));
 
       int n = 1;
-      Set ER; // Recursive edges that changed its successor
+      Set ER;  // Recursive edges that changed its successor
       PWLMap se2map = newSEmap.compPW(newSEmap);
       PWLMap semapNth = se2map;
       do {
@@ -258,12 +266,11 @@ std::pair<PWLMap, PWLMap> minReachable(int nmax, Set V, Set E, PWLMap Vmap, PWLM
         semapNth = semapNth.compPW(newSEmap);
 
         n++;
-      }
-      while(ER.empty() && n < nmax);
+      } while (ER.empty() && n < nmax);
 
       // *** Handle recursion
       ER = ER.cap(Ec);
-      if (!ER.empty()) { 
+      if (!ER.empty()) {
         ER = createSet(*(ER.asets().begin()));
 
         Set oldSubsetEdge = Emap.image(ER);
@@ -275,17 +282,16 @@ std::pair<PWLMap, PWLMap> minReachable(int nmax, Set V, Set E, PWLMap Vmap, PWLM
         }
       }
     }
-  }
-  while (!Vc.empty());
+  } while (!Vc.empty());
 
-  return std::pair<PWLMap, PWLMap> (newSmap, newRmap);
+  return std::pair<PWLMap, PWLMap>(newSmap, newRmap);
 }
 
 // Matching ---------------------------------------------------------------------------------------
 
 MatchingStruct::MatchingStruct(SBGraph garg)
 {
-  g = garg; 
+  g = garg;
 
   BOOST_FOREACH (SetEdgeDesc ei, edges(g)) {
     PWLMap fmap = (g[ei]).map_f();
@@ -314,8 +320,7 @@ MatchingStruct::MatchingStruct(SBGraph garg)
     allVertices.addAtomSets(vi.range_ref().asets());
 
     LMap lm;
-    for (int i = 0; i < dims; i++) 
-      lm.addGO(0, vi.id());
+    for (int i = 0; i < dims; i++) lm.addGO(0, vi.id());
     vmap.addSetLM(vi.range(), lm);
   }
   Vmap = vmap;
@@ -329,13 +334,12 @@ MatchingStruct::MatchingStruct(SBGraph garg)
     BOOST_FOREACH (Set sf, ei.map_f_ref().dom()) {
       BOOST_FOREACH (Set su, ei.map_u_ref().dom()) {
         Set uf = sf.cap(su);
- 
+
         if (!uf.empty()) {
           LMap lm;
-          for (int i = 0; i < dims; i++) 
-            lm.addGO(0, eCount);
+          for (int i = 0; i < dims; i++) lm.addGO(0, eCount);
           emap.addSetLM(uf, lm);
-  
+
           ++eCount;
         }
       }
@@ -367,7 +371,7 @@ void MatchingStruct::directedMinReach(PWLMap sideMap)
   Set VSide = mmapSide.image(allVertices);
   PWLMap mmapSideInv = mmapSide.minInv(mmapSide.image());
 
-  // Offset image of Vmap, mapD and mapB according to mmapSide 
+  // Offset image of Vmap, mapD and mapB according to mmapSide
   PWLMap VmapSide = Vmap.offsetDomMap(mmapSide);
   PWLMap mapDSide = mmapSide.compPW(mapD);
   PWLMap mapBSide = mmapSide.compPW(mapB);
@@ -391,8 +395,7 @@ std::pair<Set, bool> MatchingStruct::SBGMatching()
 
   Interval i(0, 1, 0);
   MultiInterval mi;
-  for (int j = 0; j < mapF.ndim(); j++)
-    mi.addInter(i);
+  for (int j = 0; j < mapF.ndim(); j++) mi.addInter(i);
   Set zero = createSet(mi);
 
   PWLMap idMap(allVertices);
@@ -413,7 +416,7 @@ std::pair<Set, bool> MatchingStruct::SBGMatching()
 
     // Leave edges in paths that reach unmatched left vertices
     PWLMap auxB = mapB.restrictMap(mapD.preImage(smap.filterMap(notEqId).image()));
-    Set edgesInPaths = smap.compPW(auxB).diffMap(mapD).preImage(zero); // Edges that connect vertices with successors
+    Set edgesInPaths = smap.compPW(auxB).diffMap(mapD).preImage(zero);  // Edges that connect vertices with successors
     Ed = edgesInPaths.cap(tildeEd);
 
     // *** Backward direction
@@ -429,7 +432,7 @@ std::pair<Set, bool> MatchingStruct::SBGMatching()
 
     // Leave edges in paths that reach unmatched left and right vertices
     auxB = mapB.restrictMap(mapD.preImage(smap.filterMap(notEqId).image()));
-    edgesInPaths = smap.compPW(auxB).diffMap(mapD).preImage(zero); // Edges that connect vertices with successors
+    edgesInPaths = smap.compPW(auxB).diffMap(mapD).preImage(zero);  // Edges that connect vertices with successors
     Ed = Ed.cap(edgesInPaths).cap(tildeEd);
 
     mapB = mapD;
@@ -458,8 +461,7 @@ std::pair<Set, bool> MatchingStruct::SBGMatching()
     mmap = idUnmatched.combine(mmap);
 
     debugStep();
-  }
-  while (!diffMatched.empty() && !Ed.empty());
+  } while (!diffMatched.empty() && !Ed.empty());
 
   matchedE = mapD.preImage(U);
   return std::pair<Set, bool>(matchedE, U.diff(matchedV).empty());
@@ -500,9 +502,8 @@ void MatchingStruct::debugStep()
 
         Set inter1 = mapF.image(s1).cap(mapF.image(s2));
         Set inter2 = mapU.image(s1).cap(mapU.image(s2));
- 
-        if (!inter1.empty() || !inter2.empty())
-          std::cout << "adj: " << as1 << " | " << as2 << "\n\n";
+
+        if (!inter1.empty() || !inter2.empty()) std::cout << "adj: " << as1 << " | " << as2 << "\n\n";
       }
     }
   }

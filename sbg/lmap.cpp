@@ -1,8 +1,21 @@
 /*****************************************************************************
- 
-    This file is part of the Set-Based Graph library.
 
-******************************************************************************/
+ This file is part of Set--Based Graph Library.
+
+ SBG Library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ SBG Library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
 
 #include <boost/foreach.hpp>
 
@@ -13,8 +26,7 @@ namespace SBG {
 
 // Linear maps ------------------------------------------------------------------------------------
 
-#define ORD_NUMS_TYPE                  \
-   typename LM_TEMP_TYPE::OrdNumeric
+#define ORD_NUMS_TYPE typename LM_TEMP_TYPE::OrdNumeric
 
 LM_TEMPLATE
 LM_TEMP_TYPE::LMapImp1() : ndim_(0), gain_(), offset_() {}
@@ -195,11 +207,11 @@ LM_TEMP_TYPE LM_TEMP_TYPE::addLM(LM_TEMP_TYPE lm2)
       ++ito;
       ++itg2;
       ++ito2;
-    } 
+    }
   }
 
   LMapImp1 aux(resg, reso);
-  return LMapImp1(resg, reso);  
+  return LMapImp1(resg, reso);
 }
 
 LM_TEMPLATE
@@ -224,23 +236,23 @@ LM_TEMP_TYPE LM_TEMP_TYPE::diffLM(LM_TEMP_TYPE lm2)
       ++ito;
       ++itg2;
       ++ito2;
-    } 
+    }
   }
 
   LMapImp1 aux(resg, reso);
-  return LMapImp1(resg, reso);  
+  return LMapImp1(resg, reso);
 }
 
 LM_TEMPLATE
-bool LM_TEMP_TYPE::operator==(const LM_TEMP_TYPE &other) const
-{
-  return gain() == other.gain() && offset() == other.offset();
-}
+bool LM_TEMP_TYPE::operator==(const LM_TEMP_TYPE &other) const { return gain() == other.gain() && offset() == other.offset(); }
 
 template struct LMapImp1<OrdCT, REAL>;
 
-template<typename REAL_IMP>
-std::string mapOper(REAL_IMP &cte) { return (cte >= 0) ? "+ " : ""; }
+template <typename REAL_IMP>
+std::string mapOper(REAL_IMP &cte)
+{
+  return (cte >= 0) ? "+ " : "";
+}
 
 template std::string mapOper<REAL>(REAL &cte);
 
@@ -275,4 +287,4 @@ std::ostream &operator<<(std::ostream &out, const LM_TEMP_TYPE &lm)
 
 template std::ostream &operator<<(std::ostream &out, const LMap &lm);
 
-} // namespace SBG
+}  // namespace SBG

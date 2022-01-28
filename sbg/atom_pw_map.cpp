@@ -1,8 +1,21 @@
 /*****************************************************************************
- 
-    This file is part of the Set-Based Graph library.
 
-******************************************************************************/
+ This file is part of Set--Based Graph Library.
+
+ SBG Library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ SBG Library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
 
 #include <boost/foreach.hpp>
 
@@ -40,14 +53,11 @@ APW_TEMP_TYPE::AtomPWLMapImp1(MI_IMP dom, LM_IMP lmap)
       REAL_IMP auxHi = i.hi() * (*itg) + (*ito);
 
       if (*itg < Inf) {
-        if (auxLo != (int)auxLo && i.lo()) 
-          incompatible = true;
+        if (auxLo != (int)auxLo && i.lo()) incompatible = true;
 
-        if (auxStep != (int)auxStep && i.step()) 
-          incompatible = true;
+        if (auxStep != (int)auxStep && i.step()) incompatible = true;
 
-        if (auxHi != (int)auxHi && i.hi()) 
-          incompatible = true;
+        if (auxHi != (int)auxHi && i.hi()) incompatible = true;
 
         ++itg;
         ++ito;
@@ -73,8 +83,8 @@ APW_TEMP_TYPE::AtomPWLMapImp1(MI_IMP dom, MI_IMP image)
   lmap_ = LM_IMP();
 
   if (!dom.empty()) {
-    typename ORD_CT<INTER_IMP>::iterator itdom = dom.inters_ref().begin(); 
-    typename ORD_CT<INTER_IMP>::iterator itim = image.inters_ref().begin(); 
+    typename ORD_CT<INTER_IMP>::iterator itdom = dom.inters_ref().begin();
+    typename ORD_CT<INTER_IMP>::iterator itim = image.inters_ref().begin();
 
     ORD_CT<REAL_IMP> g;
     typename ORD_CT<REAL_IMP>::iterator itg = g.begin();
@@ -83,19 +93,19 @@ APW_TEMP_TYPE::AtomPWLMapImp1(MI_IMP dom, MI_IMP image)
 
     while (itdom != dom.inters_ref().end()) {
       if ((*itdom).card() == (*itim).card()) {
-        REAL_IMP transformGain = (*itim).step() / (*itdom).step(); 
-        REAL_IMP transformOff = (*itim).lo() - transformGain * (*itdom).lo(); 
+        REAL_IMP transformGain = (*itim).step() / (*itdom).step();
+        REAL_IMP transformOff = (*itim).lo() - transformGain * (*itdom).lo();
 
         itg = g.insert(itg, transformGain);
         ++itg;
         ito = o.insert(ito, transformOff);
         ++ito;
-      } 
+      }
 
-      else 
+      else
         break;
- 
-      ++itdom; 
+
+      ++itdom;
       ++itim;
     }
 
@@ -131,9 +141,8 @@ MI_IMP APW_TEMP_TYPE::image(MI_IMP as)
     REAL_IMP auxLo = capi.lo() * (*itg) + (*ito);
     REAL_IMP auxStep = capi.step() * (*itg);
     REAL_IMP auxHi = capi.hi() * (*itg) + (*ito);
-  
-    if (auxLo == auxHi)
-      auxStep = 1;
+
+    if (auxLo == auxHi) auxStep = 1;
 
     if (*itg < Inf) {
       if (auxLo >= Inf)
@@ -187,10 +196,7 @@ MI_IMP APW_TEMP_TYPE::preImage(MI_IMP as)
 }
 
 APW_TEMPLATE
-bool APW_TEMP_TYPE::operator==(const APW_TEMP_TYPE &other) const
-{
-  return dom() == other.dom() && lmap() == other.lmap();
-}
+bool APW_TEMP_TYPE::operator==(const APW_TEMP_TYPE &other) const { return dom() == other.dom() && lmap() == other.lmap(); }
 
 template struct AtomPWLMapImp1<OrdCT, LMap, MultiInterval, Interval, INT, REAL>;
 
@@ -203,4 +209,4 @@ std::ostream &operator<<(std::ostream &out, const APW_TEMP_TYPE &atompw)
 
 template std::ostream &operator<<(std::ostream &out, const AtomPWLMap &atompw);
 
-} // namespace SBG
+}  // namespace SBG

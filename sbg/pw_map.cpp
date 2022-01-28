@@ -1,8 +1,21 @@
 /*****************************************************************************
- 
-    This file is part of the Set-Based Graph library.
 
-******************************************************************************/
+ This file is part of Set--Based Graph Library.
+
+ SBG Library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ SBG Library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
 
 #include <utility>
 #include <omp.h>
@@ -15,11 +28,9 @@ namespace SBG {
 
 // Piecewise linear maps --------------------------------------------------------------------------
 
-#define SETS_TYPE                  \
-   typename PW_TEMP_TYPE::Sets
+#define SETS_TYPE typename PW_TEMP_TYPE::Sets
 
-#define LMAPS_TYPE                 \
-   typename PW_TEMP_TYPE::LMaps
+#define LMAPS_TYPE typename PW_TEMP_TYPE::LMaps
 
 PW_TEMPLATE
 PW_TEMP_TYPE::PWLMapImp1() {}
@@ -148,10 +159,7 @@ SET_IMP PW_TEMP_TYPE::image(SET_IMP s)
 }
 
 PW_TEMPLATE
-SET_IMP PW_TEMP_TYPE::image()
-{
-  return image(wholeDom());
-}
+SET_IMP PW_TEMP_TYPE::image() { return image(wholeDom()); }
 
 PW_TEMPLATE
 SET_IMP PW_TEMP_TYPE::preImage(SET_IMP s)
@@ -229,8 +237,7 @@ PW_TEMP_TYPE PW_TEMP_TYPE::compPW(int n)
   PWLMapImp1 res = *this;
   PWLMapImp1 original = *this;
 
-  for (int i = 1; i < n; i++)
-    res = res.compPW(original);
+  for (int i = 1; i < n; i++) res = res.compPW(original);
 
   return res;
 }
@@ -340,11 +347,10 @@ PW_TEMP_TYPE PW_TEMP_TYPE::minInv(SET_IMP s)
   return res;
 }
 
-
 // This function calculates if pw1 and pw2 are equivalent
 // (have the same whole dom, and the image of each dom is
 // the same)
-// e.g. [({1:1:10}, [1 * x + 0])] and 
+// e.g. [({1:1:10}, [1 * x + 0])] and
 //      [({1:1:3}, [1 * x + 0]), ({4:1:10}, [1 * x + 0])]
 //      are equivalent
 // but [({1:1:10}, [1 * x + 0])] and
@@ -364,7 +370,7 @@ bool PW_TEMP_TYPE::equivalentPW(PW_TEMP_TYPE pw2)
       LMaps lm2 = pw2.lmap();
       LMapsIt itlm2 = lm2.begin();
 
-      BOOST_FOREACH (SET_IMP d2, pw2.dom()) { 
+      BOOST_FOREACH (SET_IMP d2, pw2.dom()) {
         SET_IMP domcap = d1.cap(d2);
 
         if (!domcap.empty()) {
@@ -376,8 +382,7 @@ bool PW_TEMP_TYPE::equivalentPW(PW_TEMP_TYPE pw2)
           SET_IMP im1 = auxpw1.image(domcap);
           SET_IMP im2 = auxpw2.image(domcap);
 
-          if (im1 != im2)
-            return false;
+          if (im1 != im2) return false;
         }
 
         ++itlm2;
@@ -422,7 +427,7 @@ PW_TEMP_TYPE PW_TEMP_TYPE::restrictMap(SET_IMP newdom)
 }
 
 // Append doms and maps of arguments to the current PWLMap
-PW_TEMPLATE 
+PW_TEMPLATE
 PW_TEMP_TYPE PW_TEMP_TYPE::concat(PW_TEMP_TYPE pw2)
 {
   SetsIt itdom = dom_ref().end();
@@ -490,9 +495,8 @@ PW_TEMP_TYPE PW_TEMP_TYPE::filterMap(bool (*f)(SET_IMP dom, LM_IMP lm))
   SetsIt itdom = dom_ref().begin();
   LMapsIt itlm = lmap_ref().begin();
 
-  for(unsigned int i = 0; i < dom_ref().size(); i++) {
-    if (f(*itdom, *itlm))
-      res.addSetLM(*itdom, *itlm);
+  for (unsigned int i = 0; i < dom_ref().size(); i++) {
+    if (f(*itdom, *itlm)) res.addSetLM(*itdom, *itlm);
 
     ++itdom;
     ++itlm;
@@ -521,32 +525,32 @@ PW_TEMP_TYPE PW_TEMP_TYPE::offsetDomMap(PW_TEMP_TYPE pw2)
 // This operation applies an offset to each linear expression
 // of the map.
 PW_TEMPLATE
-PW_TEMP_TYPE PW_TEMP_TYPE::offsetImageMap(ORD_CT<INT_IMP> offElem) 
+PW_TEMP_TYPE PW_TEMP_TYPE::offsetImageMap(ORD_CT<INT_IMP> offElem)
 {
   LMaps lmres;
   LMapsIt itlmres = lmres.begin();
 
-  if ((int) offElem.size() == ndim()) {
+  if ((int)offElem.size() == ndim()) {
     typename ORD_CT<INT_IMP>::iterator itelem = offElem.begin();
     BOOST_FOREACH (LM_IMP lmi, lmap()) {
       ORD_CT<REAL_IMP> reso;
       typename ORD_CT<REAL_IMP>::iterator itreso = reso.begin();
 
       BOOST_FOREACH (REAL_IMP oi, lmi.offset()) {
-        itreso = reso.insert(itreso, oi + (REAL_IMP) *itelem);
+        itreso = reso.insert(itreso, oi + (REAL_IMP)*itelem);
         ++itreso;
       }
 
-      itlmres = lmres.insert(itlmres, LM_IMP(lmi.gain(), reso)); 
+      itlmres = lmres.insert(itlmres, LM_IMP(lmi.gain(), reso));
       ++itlmres;
     }
-  } 
+  }
 
   return PWLMapImp1(dom(), lmres);
 }
 
 // This operation adds two maps. In the
-// intersection of the domains, the linear map will be 
+// intersection of the domains, the linear map will be
 // the substraction of both linear maps
 PW_TEMPLATE
 PW_TEMP_TYPE PW_TEMP_TYPE::addMap(PW_TEMP_TYPE pw2)
@@ -554,7 +558,7 @@ PW_TEMP_TYPE PW_TEMP_TYPE::addMap(PW_TEMP_TYPE pw2)
   Sets domres;
   SetsIt itdom = domres.begin();
   LMaps lmres;
-  LMapsIt itlm = lmres.begin(); 
+  LMapsIt itlm = lmres.begin();
 
   if (ndim() == pw2.ndim()) {
     LMapsIt itlm1 = lmap_ref().begin();
@@ -583,7 +587,7 @@ PW_TEMP_TYPE PW_TEMP_TYPE::addMap(PW_TEMP_TYPE pw2)
 }
 
 // This operation substracts one map from another. In the
-// intersection of the domains, the linear map will be 
+// intersection of the domains, the linear map will be
 // the substraction of both linear maps
 PW_TEMPLATE
 PW_TEMP_TYPE PW_TEMP_TYPE::diffMap(PW_TEMP_TYPE pw2)
@@ -591,7 +595,7 @@ PW_TEMP_TYPE PW_TEMP_TYPE::diffMap(PW_TEMP_TYPE pw2)
   Sets domres;
   SetsIt itdom = domres.begin();
   LMaps lmres;
-  LMapsIt itlm = lmres.begin(); 
+  LMapsIt itlm = lmres.begin();
 
   if (ndim() == pw2.ndim()) {
     LMapsIt itlm1 = lmap_ref().begin();
@@ -669,8 +673,7 @@ PW_TEMP_TYPE PW_TEMP_TYPE::normalize()
       newDom = *itdom1;
 
       while (itdom2 != dom_ref().end()) {
-        if (*itlm1 == *itlm2) 
-            newDom = newDom.cup(*itdom2);
+        if (*itlm1 == *itlm2) newDom = newDom.cup(*itdom2);
 
         ++itdom2;
         ++itlm2;
@@ -725,7 +728,7 @@ void PW_TEMP_TYPE::minMapAtomSet(MI_IMP dom, LM_IMP lm1, LM_IMP lm2, LM_IMP lm3,
 
   Sets domRes;
   LMaps lmRes;
-  
+
   // Base case
   if (lm31 == lm42 && lm1 == lm2) {
     domRes.insert(domRes.begin(), sAux);
@@ -828,7 +831,7 @@ void PW_TEMP_TYPE::minMapAtomSet(MI_IMP dom, LM_IMP lm1, LM_IMP lm2)
 
   if (lm1.ndim() == lm2.ndim()) {
     LM_IMP idlm(lm1.ndim());
-    res.minMapAtomSet(dom, lm1, lm2, idlm, idlm); 
+    res.minMapAtomSet(dom, lm1, lm2, idlm, idlm);
   }
 
   set_dom(res.dom());
@@ -939,12 +942,12 @@ void PW_TEMP_TYPE::minMapSet(SET_IMP dom, LM_IMP lm1, LM_IMP lm2, PWLMapImp1 pw3
 
       BOOST_FOREACH (SET_IMP d2, pw3.dom()) {
         d2 = d2.cap(im2);
-        if (!d2.empty()) { 
+        if (!d2.empty()) {
           SET_IMP pre2 = pw2.preImage(d2);
 
           SET_IMP d = pre1.cap(pre2).cap(dom);
           if (!d.empty()) {
-            minMapSet(d, lm1, lm2, *itlm31, *itlm32); 
+            minMapSet(d, lm1, lm2, *itlm31, *itlm32);
             res = (*this).combine(res);
           }
         }
@@ -967,7 +970,7 @@ void PW_TEMP_TYPE::minMapSet(SET_IMP dom, LM_IMP lm1, LM_IMP lm2)
 
   if (lm1.ndim() == lm2.ndim()) {
     LM_IMP idlm(lm1.ndim());
-    res.minMapSet(dom, lm1, lm2, idlm, idlm); 
+    res.minMapSet(dom, lm1, lm2, idlm, idlm);
   }
 
   set_dom(res.dom());
@@ -1015,7 +1018,7 @@ PW_TEMP_TYPE PW_TEMP_TYPE::minMap(PW_TEMP_TYPE pw2)
 PW_TEMPLATE
 PW_TEMP_TYPE PW_TEMP_TYPE::minMap(PW_TEMP_TYPE pw2, PW_TEMP_TYPE pw1)
 {
-  PWLMapImp1 res; 
+  PWLMapImp1 res;
 
   LMaps lm1 = lmap();
   LMapsIt itl1 = lm1.begin();
@@ -1032,12 +1035,12 @@ PW_TEMP_TYPE PW_TEMP_TYPE::minMap(PW_TEMP_TYPE pw2, PW_TEMP_TYPE pw1)
           PWLMapImp1 aux;
           aux.minMapSet(dom, *itl1, *itl2, pw1);
 
-          if (res.empty()) { 
+          if (res.empty()) {
             res.set_dom(aux.dom());
             res.set_lmap(aux.lmap());
           }
 
-          else 
+          else
             res = aux.combine(res);
         }
 
@@ -1139,7 +1142,7 @@ PW_TEMP_TYPE PW_TEMP_TYPE::minAdjCompMap(PW_TEMP_TYPE pw2, PW_TEMP_TYPE pw1)
       BOOST_FOREACH (REAL invgi, lminv.gain()) {
         if (invgi >= Inf) {
           itnewinvg = newinvg.insert(itnewinvg, 0);
-          itnewinvo = newinvo.insert(itnewinvo, (REAL) (*itmindom));
+          itnewinvo = newinvo.insert(itnewinvo, (REAL)(*itmindom));
         }
 
         else {
@@ -1343,7 +1346,7 @@ PW_TEMP_TYPE PW_TEMP_TYPE::reduceMapN(int dim)
 
         // Map's image is in adom, reduction is plausible
         if (INT_IMP(off) % stint == 0) {
-        // Is convenient to partition the interval?
+          // Is convenient to partition the interval?
           if (((hiint - loint) / stint) > (off * off)) {
             Sets news;
             SetsIt itnews = news.begin();
@@ -1353,8 +1356,7 @@ PW_TEMP_TYPE PW_TEMP_TYPE::reduceMapN(int dim)
             // Partition of the interval
             for (int k = 1; k <= off; k++) {
               REAL_IMP newoff = loint + k + *ito - 1;
-              if (*ito > 0)
-                newoff = hiint + k + *ito - 1;
+              if (*ito > 0) newoff = hiint + k + *ito - 1;
 
               LM_IMP newlmap = (*itlm).replace(0, newoff, dim);
               INTER_IMP newinter(loint + k - 1, off, hiint);
@@ -1369,8 +1371,7 @@ PW_TEMP_TYPE PW_TEMP_TYPE::reduceMapN(int dim)
             }
 
             PWLMapImp1 newmap(news, newl);
-            if (!newmap.empty())
-              res = res.concat(newmap);
+            if (!newmap.empty()) res = res.concat(newmap);
           }
         }
       }
@@ -1419,15 +1420,14 @@ PW_TEMP_TYPE PW_TEMP_TYPE::mapInf(int n)
 
     else {
       for (int j = 1; j <= res.ndim(); ++j) res = res.reduceMapN(j);
-      
+
       do {
         oldRes = res;
         res = res.compPW(res);
 
         for (int j = 1; j <= res.ndim(); ++j) res = res.reduceMapN(j);
-        //res = res.normalize();
-      }
-      while (!oldRes.equivalentPW(res));
+        // res = res.normalize();
+      } while (!oldRes.equivalentPW(res));
     }
   }
 
@@ -1435,10 +1435,7 @@ PW_TEMP_TYPE PW_TEMP_TYPE::mapInf(int n)
 }
 
 PW_TEMPLATE
-bool PW_TEMP_TYPE::operator==(const PW_TEMP_TYPE &other) const
-{
-  return dom() == other.dom() && lmap() == other.lmap();
-}
+bool PW_TEMP_TYPE::operator==(const PW_TEMP_TYPE &other) const { return dom() == other.dom() && lmap() == other.lmap(); }
 
 template struct PWLMapImp1<OrdCT, UnordCT, AtomPWLMap, LMap, Set, MultiInterval, Interval, INT, REAL>;
 
@@ -1476,4 +1473,4 @@ std::ostream &operator<<(std::ostream &out, const PW_TEMP_TYPE &pw)
 
 template std::ostream &operator<<(std::ostream &out, const PWLMap &pw);
 
-} // namespace SBG
+}  // namespace SBG

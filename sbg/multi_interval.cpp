@@ -19,7 +19,7 @@
 
 #include <boost/foreach.hpp>
 
-#include <sbg/multi_interval.h>
+#include <sbg/multi_interval.hpp>
 
 namespace SBG {
 

@@ -21,7 +21,7 @@
 
 #include <boost/foreach.hpp>
 
-#include <sbg/set.h>
+#include <sbg/set.hpp>
 
 namespace SBG {
 

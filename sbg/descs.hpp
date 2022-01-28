@@ -19,26 +19,24 @@
 
 #pragma once
 
-#include <sbg/sbg.h>
-
-using namespace std;
+#include <sbg/defs.hpp>
 
 namespace SBG {
-class GraphPrinter {
-  public:
-  GraphPrinter(const SBGraph &g, const int mod);
 
-  void printGraph(std::string name);
+// Set-vertex --------------------------------------------------------------------------------------
 
-  private:
-  int depth;
-  const SBGraph &graph;
-  const int mode;
+struct SVDesc {
+  member_class(std::string, text);
 
-  void printVertices(stringstream &stri);
-  void printEdges(stringstream &stri);
-  std::string vPrinter(SetVertex v);
-  std::string vLabelPrinter(SetVertex v);
-  std::string ePrinter(SetEdge e);
+  SVDesc();
 };
+
+// Set-edge ----------------------------------------------------------------------------------------
+
+struct SEDesc {
+  member_class(std::string, text);
+
+  SEDesc();
+};
+
 }  // namespace SBG

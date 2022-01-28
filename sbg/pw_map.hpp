@@ -21,12 +21,12 @@
 
 #include <iostream>
 
-#include <sbg/defs.h>
-#include <sbg/interval.h>
-#include <sbg/multi_interval.h>
-#include <sbg/set.h>
-#include <sbg/lmap.h>
-#include <sbg/atom_pw_map.h>
+#include <sbg/defs.hpp>
+#include <sbg/interval.hpp>
+#include <sbg/multi_interval.hpp>
+#include <sbg/set.hpp>
+#include <sbg/lmap.hpp>
+#include <sbg/atom_pw_map.hpp>
 
 namespace SBG {
 

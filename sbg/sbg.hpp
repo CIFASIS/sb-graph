@@ -22,14 +22,14 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/subgraph.hpp>
 
-#include <sbg/descs.h>
-#include <sbg/defs.h>
-#include <sbg/interval.h>
-#include <sbg/multi_interval.h>
-#include <sbg/set.h>
-#include <sbg/lmap.h>
-#include <sbg/atom_pw_map.h>
-#include <sbg/pw_map.h>
+#include <sbg/descs.hpp>
+#include <sbg/defs.hpp>
+#include <sbg/interval.hpp>
+#include <sbg/multi_interval.hpp>
+#include <sbg/set.hpp>
+#include <sbg/lmap.hpp>
+#include <sbg/atom_pw_map.hpp>
+#include <sbg/pw_map.hpp>
 
 namespace SBG {
 

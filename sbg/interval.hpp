@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include <sbg/defs.h>
+#include <sbg/defs.hpp>
 
 namespace SBG {
 

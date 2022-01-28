@@ -19,8 +19,8 @@
 
 #pragma once
 
-#include <sbg/defs.h>
-#include <sbg/interval.h>
+#include <sbg/defs.hpp>
+#include <sbg/interval.hpp>
 
 namespace SBG {
 

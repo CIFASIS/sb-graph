@@ -24,7 +24,7 @@
 #include <boost/foreach.hpp>
 #include <boost/unordered_set.hpp>
 
-#include <sbg/sbg.h>
+#include <sbg/sbg.hpp>
 
 using namespace SBG;
 

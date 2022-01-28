@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <sbg/descs.h>
+#include <sbg/descs.hpp>
 
 namespace SBG {
 

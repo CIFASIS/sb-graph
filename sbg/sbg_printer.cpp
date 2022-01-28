@@ -25,7 +25,7 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <sbg/sbg_printer.h>
+#include <sbg/sbg_printer.hpp>
 
 using namespace std;
 

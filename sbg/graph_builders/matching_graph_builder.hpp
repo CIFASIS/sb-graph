@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <sbg/sbg_io.hpp>
+#include <sbg/graph_builders/matching_io.hpp>
 #include <sbg/sbg.hpp>
 
 namespace SBG {

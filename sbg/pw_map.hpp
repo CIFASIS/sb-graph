@@ -21,7 +21,7 @@
 
 #include <iostream>
 
-#include <sbg/defs.hpp>
+#include <sbg/util/defs.hpp>
 #include <sbg/interval.hpp>
 #include <sbg/multi_interval.hpp>
 #include <sbg/set.hpp>

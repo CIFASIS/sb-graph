@@ -19,7 +19,7 @@
 
 #include <boost/foreach.hpp>
 
-#include <sbg/defs.hpp>
+#include <sbg/util/defs.hpp>
 #include <sbg/lmap.hpp>
 
 namespace SBG {

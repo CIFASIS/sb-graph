@@ -20,6 +20,7 @@
 #include <boost/foreach.hpp>
 
 #include <sbg/graph_builders/matching_graph_builder.hpp>
+#include <sbg/util/logger.hpp>
 #include <sbg/sbg_printer.hpp>
 
 namespace SBG {
@@ -166,7 +167,7 @@ MatchingGraphBuilder::MatchingMaps MatchingGraphBuilder::generatePWLMaps(Variabl
     int range_init_value = usage[map.iterator];
     int set_vertex_offset = map.slope * offset;
     int map_first_value = map.constant + map.slope * range_init_value + set_vertex_init;
-    std::cout << set_vertex_init << " " << range_init_value << " " << map_first_value << " " << set_vertex_offset << std::endl;
+    LOG << set_vertex_init << " " << range_init_value << " " << map_first_value << " " << set_vertex_offset << std::endl;
     constant_pwl_map_u_it = constant_pwl_map_u.insert(constant_pwl_map_u_it, map_first_value - set_vertex_offset);
     slope_pwl_map_u_it = slope_pwl_map_u.insert(slope_pwl_map_u_it, map.slope);
     min_elem++;
@@ -225,19 +226,17 @@ SBGraph MatchingGraphBuilder::build()
     SetVertexDesc eq_vertex_desc = eq_desc.first;
     SetVertex eq_vertex = graph[eq_vertex_desc];
     SBG::Set dom = eq_vertex.range();
-    // Add printers for debug
-    //    std::cout << "Matched exps for: " << unknown_vertex.name() << " in " << eq_desc.second << std::endl;
-    //    std::cout << "Equation dom: " << dom << std::endl;
     EquationInfo eq_info = eq_desc.second;
     for (VariableUsage var_usage : eq_info.var_usage) {
       SetVertexDesc unknown_vertex_desc = _U[var_usage.name];
       SBG::Set unk_dom = graph[unknown_vertex_desc].range();
-      // std::cout << "Expression: " << exp << std::endl;
+      LOG << "Expression: " << var_usage << std::endl;
+      LOG << "Equation dom: " << dom << std::endl;
       MatchingMaps maps = generatePWLMaps(var_usage, dom, unk_dom, set_edge_offset, eq_vertex.name(), max_dim);
       set_edge_offset += dom.card();
       std::string edge_name = "E_" + std::to_string(edge_id++);
-      std::cout << "MapF: " << maps.first << std::endl;
-      std::cout << "MapU: " << maps.second << std::endl;
+      LOG << "MapF: " << maps.first << std::endl;
+      LOG << "MapU: " << maps.second << std::endl;
       SetEdge edge(edge_name, num_edges(graph) + 1, maps.first, maps.second, 0);
       SetEdgeDesc e;
       bool b;

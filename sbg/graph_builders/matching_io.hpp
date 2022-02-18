@@ -17,6 +17,10 @@
 
  ******************************************************************************/
 
+#pragma once
+
+#include <ostream>
+
 #include <sbg/sbg.hpp>
 
 namespace SBG {
@@ -34,7 +38,11 @@ struct LinearMap {
   }
 };
 
+std::ostream &operator<<(std::ostream &out, LinearMap &lm);
+
 typedef std::vector<LinearMap> LinearMaps;
+
+std::ostream &operator<<(std::ostream &out, LinearMaps &lms);
 
 struct VariableUsage {
   std::string name;
@@ -50,6 +58,8 @@ struct VariableUsage {
     return name < other.name;
   }
 };
+
+std::ostream &operator<<(std::ostream &out, VariableUsage &var_usage);
 
 struct RangeDef {
   std::string iterator;

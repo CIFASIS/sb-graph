@@ -17,26 +17,45 @@
 
  ******************************************************************************/
 
-#pragma once
-
-#include <sbg/util/defs.hpp>
+#include <sbg/graph_builders/matching_io.hpp>
 
 namespace SBG {
 
-// Set-vertex --------------------------------------------------------------------------------------
+std::ostream &operator<<(std::ostream &out, LinearMap &lm)
+{
+  if(lm.slope == 1) {
+    out << lm.iterator;
+  } else if (lm.slope != 0) {
+    out << lm.slope << " * " << lm.iterator;
+  }
+  if (lm.constant > 0) {
+    out << " + " << lm.constant;
+  } else if (lm.constant < 0) {
+    out << lm.constant;
+  }
+  return out;
+}
 
-struct SVDesc {
-  member_class(std::string, text);
+std::ostream &operator<<(std::ostream &out, LinearMaps &lms)
+{
+  if(lms.empty()) {
+    return out;
+  }
+  unsigned int size = lms.size()-1;
+  unsigned int i = 0;
+  out << "[";
+  while(i < size) {
+    out << lms[i] << ",";
+    i++;
+  } 
+  out << lms[size] << "]";
+  return out;
+}
 
-  SVDesc();
-};
-
-// Set-edge ----------------------------------------------------------------------------------------
-
-struct SEDesc {
-  member_class(std::string, text);
-
-  SEDesc();
-};
+std::ostream &operator<<(std::ostream &out, VariableUsage &var_usage)
+{
+  out << var_usage.name << var_usage.usage;
+  return out;
+}
 
 }  // namespace SBG

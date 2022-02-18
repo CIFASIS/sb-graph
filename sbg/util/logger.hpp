@@ -19,24 +19,26 @@
 
 #pragma once
 
-#include <sbg/util/defs.hpp>
+#include <fstream>
+#include <string>
 
 namespace SBG {
 
-// Set-vertex --------------------------------------------------------------------------------------
+#define LOG Logger::instance().log
 
-struct SVDesc {
-  member_class(std::string, text);
+class Logger {
+  public:
+  static Logger& instance()
+  {
+    static Logger _instance;
+    return _instance;
+  }
 
-  SVDesc();
+  ~Logger();
+
+  std::ofstream log;
+
+  private:
+  Logger();
 };
-
-// Set-edge ----------------------------------------------------------------------------------------
-
-struct SEDesc {
-  member_class(std::string, text);
-
-  SEDesc();
-};
-
 }  // namespace SBG

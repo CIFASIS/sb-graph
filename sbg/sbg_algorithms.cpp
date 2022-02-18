@@ -19,6 +19,7 @@
 
 #include <boost/graph/subgraph.hpp>
 #include <sbg/sbg_algorithms.hpp>
+#include <sbg/util/logger.hpp>
 
 #include <chrono>
 #include <time.h>
@@ -142,7 +143,7 @@ std::pair<PWLMap, PWLMap> recursion(int n, Set ER, Set V, Set E, PWLMap Emap, PW
                                     PWLMap currentSEmap, PWLMap currentRmap)
 {
   // *** Initialization
-  std::cout << "ER: " << ER << "\n\n";
+  LOG << "ER: " << ER << "\n\n";
 
   PWLMap Vid(V);
 
@@ -383,8 +384,8 @@ void MatchingStruct::directedMinReach(PWLMap sideMap)
   PWLMap directedRmap = std::get<1>(p);
   rmap = mmapSideInv.compPW(directedRmap.compPW(mmapSide));
 
-  std::cout << "smap: " << smap << "\n\n";
-  std::cout << "rmap: " << rmap << "\n\n";
+  LOG << "smap: " << smap << "\n\n";
+  LOG << "rmap: " << rmap << "\n\n";
 }
 
 std::pair<Set, bool> MatchingStruct::SBGMatching()
@@ -469,7 +470,7 @@ std::pair<Set, bool> MatchingStruct::SBGMatching()
 
 void MatchingStruct::debugInit()
 {
-  std::cout << "\n\n";
+  LOG << "\n\n";
   BOOST_FOREACH (SetVertexDesc vi, vertices(g)) {
     SetVertex v = g[vi];
     Set vs = v.range();
@@ -477,22 +478,22 @@ void MatchingStruct::debugInit()
     Set e1 = mapF.preImage(vs);
     Set e2 = mapU.preImage(vs);
 
-    std::cout << "-------\n";
-    std::cout << v << " | " << e1 << " | " << e2 << "\n";
+    LOG << "-------\n";
+    LOG << v << " | " << e1 << " | " << e2 << "\n";
   }
-  std::cout << "-------\n\n";
+  LOG << "-------\n\n";
 
-  std::cout << "Vmap: " << Vmap << "\n\n";
-  std::cout << "Emap: " << Emap << "\n\n";
+  LOG << "Vmap: " << Vmap << "\n\n";
+  LOG << "Emap: " << Emap << "\n\n";
 
-  std::cout << "*******************************\n\n";
+  LOG << "*******************************\n\n";
 }
 
 void MatchingStruct::debugStep()
 {
   bool diffMatched = (U.diff(matchedV)).empty();
-  std::cout << "matchedE: " << matchedE << "\n";
-  std::cout << "matched all unknowns: " << diffMatched << "\n\n";
+  LOG << "matchedE: " << matchedE << "\n";
+  LOG << "matched all unknowns: " << diffMatched << "\n\n";
 
   BOOST_FOREACH (MultiInterval as1, matchedE.asets()) {
     BOOST_FOREACH (MultiInterval as2, matchedE.asets()) {
@@ -503,7 +504,7 @@ void MatchingStruct::debugStep()
         Set inter1 = mapF.image(s1).cap(mapF.image(s2));
         Set inter2 = mapU.image(s1).cap(mapU.image(s2));
 
-        if (!inter1.empty() || !inter2.empty()) std::cout << "adj: " << as1 << " | " << as2 << "\n\n";
+        if (!inter1.empty() || !inter2.empty()) LOG << "adj: " << as1 << " | " << as2 << "\n\n";
       }
     }
   }

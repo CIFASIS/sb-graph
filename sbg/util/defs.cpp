@@ -19,7 +19,7 @@
 
 #include <iostream>
 
-#include <sbg/defs.hpp>
+#include <sbg/util/defs.hpp>
 
 namespace SBG {
 

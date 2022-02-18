@@ -28,8 +28,8 @@ $(BUILD_DIR)/%.o : %.cpp
 	$(CC) $(INCLUDES) $(CXXFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<
 	$(CC) $(INCLUDES) -c $< -o $@ $(CXXFLAGS)
 
-$(LIB_SBGRAPH): | create-folders $(SBG_OBJ) $(BUILDERS_OBJ)   
-	$(AR) rcs $(LIB_SBGRAPH) $(SBG_OBJ) $(BUILDERS_OBJ)
+$(LIB_SBGRAPH): | create-folders $(SBG_OBJ) $(BUILDERS_OBJ) $(UTIL_OBJ)   
+	$(AR) rcs $(LIB_SBGRAPH) $(SBG_OBJ) $(BUILDERS_OBJ) $(UTIL_OBJ)
 
 lib-gtest: | create-folders 
 ifeq ("$(wildcard $(3RD_PARTY_DIR)/gtest/usr/lib)","")

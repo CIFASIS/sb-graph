@@ -38,8 +38,8 @@
  *
  **********************************************************************/
 
-#include <sbg/graph_builders/matching_graph_builder.h>
-#include <sbg/sbg_algorithms.h>
+#include <sbg/graph_builders/matching_graph_builder.hpp>
+#include <sbg/sbg_algorithms.hpp>
 
 int main()
 {

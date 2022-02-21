@@ -8,8 +8,14 @@
 /sbg/3rd-party/gtest/usr/
 
 # Test files. 
-/sbg/test/GraphTest
-/sbg/test/PrintGraphs
+/sbg/test/utest/GraphTest
+/sbg/test/utest/PrintGraphs
+/sbg/test/utest/*.dot
+/sbg/test/utest/*.log
+/sbg/test/stest/test_data/*
+/sbg/test/stest/bin/*
+/sbg/test/stest/obj/*
+
 
 # Examples
 /examples/*

@@ -1,14 +1,16 @@
 # The Directories, Source, Includes, Objects, Binary 
 SBG_DIR         := sbg
 TEST_DIR        := sbg/test
-GRP_TEST        := sbg/test/GraphTest
-GRP_PRINT_TEST  := sbg/test/PrintGraphs
+UTEST_DIR       := $(TEST_DIR)/utest
+STEST_DIR       := $(TEST_DIR)/stest
+GRP_TEST        := $(UTEST_DIR)/GraphTest
+GRP_PRINT_TEST  := $(UTEST_DIR)/PrintGraphs
 SBG_GRAPH_TEST  := test-sbg-graph
 
 all: $(GRP_TEST) $(GRP_PRINT_TEST) 
 
 GRP_TEST_SRC := \
-    $(TEST_DIR)/GraphTest.cpp \
+    $(UTEST_DIR)/GraphTest.cpp \
     $(SBG_DIR)/util/defs.cpp \
     $(SBG_DIR)/util/logger.cpp \
     $(SBG_DIR)/interval.cpp \
@@ -23,7 +25,7 @@ GRP_TEST_SRC := \
     $(SBG_DIR)/sbg_printer.cpp 
 
 GRP_PRINT_TEST_SRC := \
-    $(TEST_DIR)/PrintGraphs.cpp \
+    $(UTEST_DIR)/PrintGraphs.cpp \
     $(SBG_DIR)/util/defs.cpp \
     $(SBG_DIR)/interval.cpp \
     $(SBG_DIR)/multi_interval.cpp \
@@ -42,6 +44,8 @@ GRP_PRINT_TEST_OBJ=$(addprefix $(BUILD_DIR)/, $(GRP_PRINT_TEST_SRC:.cpp=.o))
 
 create-folders::
 	@mkdir -p $(BUILD_DIR)/sbg/test
+	@mkdir -p $(BUILD_DIR)/sbg/test/utest
+	@mkdir -p $(BUILD_DIR)/sbg/test/stest
 
 $(GRP_TEST): $(GRP_TEST_OBJ)
 	$(CXX) $(INCLUDES) $(CXXFLAGS) -o $(GRP_TEST) $(GRP_TEST_OBJ) $(LIBS)
@@ -51,6 +55,12 @@ $(GRP_PRINT_TEST): $(GRP_PRINT_TEST_OBJ)
 
 $(SBG_GRAPH_TEST):
 	@echo RUNNING SBG GRAPHS UNIT TESTS
-	@cd $(TEST_DIR) && ./GraphTest
-	@cd $(TEST_DIR) && ./PrintGraphs 
+	@cd $(UTEST_DIR) && ./GraphTest
+	@cd $(UTEST_DIR) && ./PrintGraphs 
+	@echo Done
+	@echo BUILDING SBG GRAPHS SYSTEM TESTS
+	@cd $(STEST_DIR) && $(MAKE) bin/test-sbg 
+	@echo Done
+	@echo RUNNING SBG GRAPHS SYSTEM TESTS
+	@cd $(STEST_DIR) && $(MAKE) test-sbg 
 	@echo Done

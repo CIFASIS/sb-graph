@@ -46,10 +46,10 @@ create-folders::
 	@mkdir -p $(OBJ_DIR)
 	@mkdir -p $(BUILD_DIR)
 
-test: $(SBG_GRAPH_TEST)
+test: lib-gtest $(SBG_GRAPH_TEST)
 
 clean:
-	$(RM) -rf $(OBJ_DIR) $(LIB_SBGRAPH) $(ROOT)/lib
+	$(RM) -rf $(OBJ_DIR) $(LIB_SBGRAPH) $(ROOT)/lib $(3RD_PARTY_DIR)/gtest/usr
 
 help:
 	@echo "make MODE=<Debug|Release> "

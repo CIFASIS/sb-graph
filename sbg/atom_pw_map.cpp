@@ -16,10 +16,9 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
-
 #include <boost/foreach.hpp>
 
-#include <sbg/atom_pw_map.hpp>
+#include <sbg/atom_pw_map.h>
 
 namespace SBG {
 
@@ -142,6 +141,12 @@ MI_IMP APW_TEMP_TYPE::image(MI_IMP as)
     REAL_IMP auxStep = capi.step() * (*itg);
     REAL_IMP auxHi = capi.hi() * (*itg) + (*ito);
 
+    if (*itg < 0) {
+      auxLo = capi.hi() * (*itg) + (*ito);
+      auxStep = capi.step() * (-*itg);
+      auxHi = capi.lo() * (*itg) + (*ito);
+    }
+
     if (auxLo == auxHi) auxStep = 1;
 
     if (*itg < Inf) {
@@ -177,6 +182,9 @@ MI_IMP APW_TEMP_TYPE::image(MI_IMP as)
 
   return MI_IMP(res);
 }
+
+APW_TEMPLATE
+MI_IMP APW_TEMP_TYPE::image() { return image(dom()); }
 
 APW_TEMPLATE
 MI_IMP APW_TEMP_TYPE::preImage(MI_IMP as)

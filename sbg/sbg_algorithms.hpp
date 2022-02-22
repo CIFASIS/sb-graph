@@ -16,7 +16,6 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
-
 #pragma once
 
 #include <iostream>
@@ -35,31 +34,38 @@ PWLMap connectedComponents(SBGraph g);
 // Minimum reachable -----------------------------------------------------------------------------
 
 std::pair<PWLMap, PWLMap> recursion(int n, Set ER, Set V, Set E, PWLMap Emap, PWLMap map_D, PWLMap map_B, PWLMap currentSmap,
-                                    PWLMap currentSEmap, PWLMap currentRmap);
+                                    PWLMap currentSEmap, PWLMap currentRmap, PWLMap m_map);
 PWLMap minReach1(Set V, PWLMap map_D, PWLMap map_B, PWLMap currentSmap, PWLMap currentRmap);
-std::pair<PWLMap, PWLMap> minReachable(int nmax, Set V, Set E, PWLMap Vmap, PWLMap Emap, PWLMap map_D, PWLMap map_B);
+std::tuple<PWLMap, PWLMap, PWLMap> minReachable(int nmax, Set V, Set E, PWLMap Vmap, PWLMap Emap, PWLMap map_D, PWLMap map_B, PWLMap m_map);
 
 // Matching of undirected SBGraphs ---------------------------------------------------------------
 
 struct MatchingStruct {
   MatchingStruct(SBGraph g);
 
+  Set getManyToOne();
+  void offsetMaps(PWLMap sideMap);
+  void shortPaths(Set U, Set E);
   void directedMinReach(PWLMap sideMap);
-  Set SBGComponentMatching();
+  void SBGMatchingShortStep(Set E);
+  void SBGMatchingMinStep(Set E);
+  void SBGMatchingShort();
+  void SBGMatchingMin();
   std::pair<Set, bool> SBGMatching();
 
   private:
   SBGraph g;
   Set F;
   Set U;
+  Set initU;
   PWLMap Vmap;  // Map from vertices to set-vertices
   PWLMap Emap;  // Map from edges to set-edges
 
   Set allEdges;
   Set Ed;  // Allowed edges in each step
   Set allVertices;
-  int nmax;
-  OrdCT<INT> maxV;
+  int nmax;         // Number of set-vertices of the SBG
+  OrdCT<INT> maxV;  // Value of maximum vertex of the SBG
 
   PWLMap mapF;  // "Left" maps
   PWLMap mapU;  // "Right" maps
@@ -70,9 +76,18 @@ struct MatchingStruct {
   Set unmatchedV;
   Set matchedE;
 
-  PWLMap smap;  // Successors map
-  PWLMap rmap;  // Representatives map
-  PWLMap mmap;  // Offset map
+  PWLMap smap;   // Successors map
+  PWLMap semap;  // Edge's successors map
+  PWLMap rmap;   // Representatives map
+  PWLMap mmap;   // Offset map
+
+  // Auxiliary maps and sets, that are used to offset vertices for the search
+  Set VSide;
+  PWLMap mmapSide;
+  PWLMap mmapSideInv;
+  PWLMap VmapSide;
+  PWLMap mapDSide;
+  PWLMap mapBSide;
 
   void debugInit();
   void debugStep();

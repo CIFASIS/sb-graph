@@ -16,7 +16,6 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
-
 #include <utility>
 #include <omp.h>
 
@@ -33,10 +32,10 @@ namespace SBG {
 #define LMAPS_TYPE typename PW_TEMP_TYPE::LMaps
 
 PW_TEMPLATE
-PW_TEMP_TYPE::PWLMapImp1() {}
+PW_TEMP_TYPE::PWLMapImp1() : ndim_(0) {}
 
 PW_TEMPLATE
-PW_TEMP_TYPE::PWLMapImp1(SETS_TYPE dom, LMAPS_TYPE lmap)
+PW_TEMP_TYPE::PWLMapImp1(SETS_TYPE dom, LMAPS_TYPE lmap) : ndim_(0)
 {
   LMapsIt itl = lmap.begin();
   int dim1 = (*(dom.begin())).ndim();
@@ -401,29 +400,32 @@ bool PW_TEMP_TYPE::equivalentPW(PW_TEMP_TYPE pw2)
 PW_TEMPLATE
 PW_TEMP_TYPE PW_TEMP_TYPE::restrictMap(SET_IMP newdom)
 {
-  Sets resdom;
-  SetsIt itresdom = resdom.begin();
-  LMaps reslm;
-  LMapsIt itreslm = reslm.begin();
+  if (!newdom.empty()) {
+    Sets resdom;
+    SetsIt itresdom = resdom.begin();
+    LMaps reslm;
+    LMapsIt itreslm = reslm.begin();
 
-  SetsIt itdom = dom_ref().begin();
-  LMapsIt itlm = lmap_ref().begin();
+    SetsIt itdom = dom_ref().begin();
+    LMapsIt itlm = lmap_ref().begin();
 
-  for (; itdom != dom_ref().end(); ++itdom) {
-    SET_IMP scap = newdom.cap(*itdom);
+    for (; itdom != dom_ref().end(); ++itdom) {
+      SET_IMP scap = newdom.cap(*itdom);
 
-    if (!scap.empty()) {
-      itresdom = resdom.insert(itresdom, scap);
-      ++itresdom;
-      itreslm = reslm.insert(itreslm, *itlm);
-      ++itreslm;
+      if (!scap.empty()) {
+        itresdom = resdom.insert(itresdom, scap);
+        ++itresdom;
+        itreslm = reslm.insert(itreslm, *itlm);
+        ++itreslm;
+      }
+
+      ++itlm;
     }
 
-    ++itlm;
+    return PWLMapImp1(resdom, reslm);
   }
 
-  PWLMapImp1 res(resdom, reslm);
-  return res;
+  return PWLMapImp1();
 }
 
 // Append doms and maps of arguments to the current PWLMap
@@ -1355,14 +1357,15 @@ PW_TEMP_TYPE PW_TEMP_TYPE::reduceMapN(int dim)
 
             // Partition of the interval
             for (int k = 1; k <= off; k++) {
-              REAL_IMP newoff = loint + k + *ito - 1;
-              if (*ito > 0) newoff = hiint + k + *ito - 1;
-
-              LM_IMP newlmap = (*itlm).replace(0, newoff, dim);
               INTER_IMP newinter(loint + k - 1, off, hiint);
               MI_IMP auxas = mi.replace(newinter, dim);
               SET_IMP newset;
               newset.addAtomSet(auxas);
+
+              REAL_IMP newoff = newinter.lo() + *ito;
+              if (*ito > 0) newoff = newinter.hi() + *ito;
+
+              LM_IMP newlmap = (*itlm).replace(0, newoff, dim);
 
               itnews = news.insert(itnews, newset);
               ++itnews;
@@ -1426,7 +1429,6 @@ PW_TEMP_TYPE PW_TEMP_TYPE::mapInf(int n)
         res = res.compPW(res);
 
         for (int j = 1; j <= res.ndim(); ++j) res = res.reduceMapN(j);
-        // res = res.normalize();
       } while (!oldRes.equivalentPW(res));
     }
   }

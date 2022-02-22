@@ -27,18 +27,20 @@ namespace SBG {
 
 // Piecewise atomic linear maps -----------------------------------------------------------------
 
-#define APW_TEMPLATE                                                                                                                \
-  template <template <typename T, typename = std::allocator<T>> class ORD_CT, typename LM_IMP, typename MI_IMP, typename INTER_IMP, \
+#define APW_TEMPLATE                                                               \
+  template <template<typename T, typename = std::allocator<T>> class ORD_CT,       \
+            typename LM_IMP, typename MI_IMP, typename INTER_IMP,                  \
             typename INT_IMP, typename REAL_IMP>
 
-#define APW_TEMP_TYPE AtomPWLMapImp1<ORD_CT, LM_IMP, MI_IMP, INTER_IMP, INT_IMP, REAL_IMP>
+#define APW_TEMP_TYPE                                                    \
+  AtomPWLMapImp1<ORD_CT, LM_IMP, MI_IMP, INTER_IMP, INT_IMP, REAL_IMP>
 
 APW_TEMPLATE
 struct AtomPWLMapImp1 {
   member_class(MI_IMP, dom);
   member_class(LM_IMP, lmap);
 
-  AtomPWLMapImp1();
+  AtomPWLMapImp1(); 
   AtomPWLMapImp1(MI_IMP d, LM_IMP l);
   AtomPWLMapImp1(MI_IMP dom, MI_IMP image);
 
@@ -55,4 +57,4 @@ typedef AtomPWLMapImp1<OrdCT, LMap, MultiInterval, Interval, INT, REAL> AtomPWLM
 
 printable_temp(APW_TEMPLATE, APW_TEMP_TYPE);
 
-}  // namespace SBG
+} // namespace SBG

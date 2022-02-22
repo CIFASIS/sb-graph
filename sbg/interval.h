@@ -24,12 +24,15 @@ namespace SBG {
 
 // Intervals --------------------------------------------------------------------------------------
 
-#define INTER_TEMPLATE                                                                                          \
-  template <template <typename Value, typename Hash = boost::hash<Value>, typename Pred = std::equal_to<Value>, \
-                      typename Alloc = std::allocator<Value>>                                                   \
+#define INTER_TEMPLATE                                                    \
+  template <template <typename Value,                                     \
+                      typename Hash = boost::hash<Value>,                 \
+                      typename Pred = std::equal_to<Value>,               \
+                      typename Alloc = std::allocator<Value>>             \
             class UNORD_CT>
 
-#define INTER_TEMP_TYPE IntervalImp1<UNORD_CT>
+#define INTER_TEMP_TYPE                                        \
+  IntervalImp1<UNORD_CT>
 
 INTER_TEMPLATE
 struct IntervalImp1 {
@@ -78,4 +81,4 @@ typedef UnordCT<Interval> UNORD_INTERS;
 std::ostream &operator<<(std::ostream &out, const ORD_INTERS &inters);
 std::ostream &operator<<(std::ostream &out, const UNORD_INTERS &inters);
 
-}  // namespace SBG
+} // namespace SBG

@@ -16,7 +16,7 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
-#include <sbg/descs.h>
+#include <sbg/descs.hpp>
 
 namespace SBG {
 

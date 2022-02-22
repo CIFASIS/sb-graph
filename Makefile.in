@@ -41,15 +41,21 @@ ifeq ("$(wildcard $(3RD_PARTY_DIR)/gtest/usr/lib)","")
 	rm -rf $(3RD_PARTY_DIR)/gtest/build
 endif
 
+install: | create-folders
+	@echo "Installing SBG library headers."
+	@install $(ROOT)/sbg/*.hpp $(ROOT)/include/
+	@echo "Done."
+
 create-folders::
 	@mkdir -p $(ROOT)/lib
+	@mkdir -p $(ROOT)/include
 	@mkdir -p $(OBJ_DIR)
 	@mkdir -p $(BUILD_DIR)
 
 test: lib-gtest $(SBG_GRAPH_TEST)
 
 clean:
-	$(RM) -rf $(OBJ_DIR) $(LIB_SBGRAPH) $(ROOT)/lib $(3RD_PARTY_DIR)/gtest/usr
+	$(RM) -rf $(OBJ_DIR) $(LIB_SBGRAPH) $(ROOT)/lib $(ROOT)/include $(3RD_PARTY_DIR)/gtest/usr
 
 help:
 	@echo "make MODE=<Debug|Release> "

@@ -16,11 +16,10 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
-
 #include <iostream>
 #include <boost/foreach.hpp>
 
-#include <sbg/interval.hpp>
+#include <sbg/interval.h>
 
 namespace SBG {
 
@@ -221,7 +220,13 @@ INTER_TEMP_TYPE INTER_TEMP_TYPE::normalize(INTER_TEMP_TYPE i2)
 INTER_TEMPLATE
 bool INTER_TEMP_TYPE::operator==(const INTER_TEMP_TYPE &other) const
 {
-  return (lo() == other.lo()) && (step() == other.step()) && (hi() == other.hi()) && (empty() == other.empty());
+  INT l = lo(), ol = other.lo();
+  INT s = step(), os = other.step();
+  INT h = hi(), oh = other.hi();
+
+  bool cond1 = l == h && l == ol && h == oh;
+  bool cond2 = (l == ol) && (s == os) && (h == oh) && (empty() == other.empty());
+  return cond1 || cond2;
 }
 
 INTER_TEMPLATE

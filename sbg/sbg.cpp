@@ -16,7 +16,6 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
-
 #include <sbg/sbg.hpp>
 
 namespace SBG {

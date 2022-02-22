@@ -16,40 +16,26 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
-#include <iostream>
+#pragma once
 
 #include <sbg/util/defs.hpp>
 
 namespace SBG {
 
-std::ostream &operator<<(std::ostream &out, const ORD_INTS &nums)
-{
-  out << "[";
-  if (nums.size() == 1)
-    out << *(nums.begin());
+// Set-vertex --------------------------------------------------------------------------------------
 
-  else if (nums.size() > 1) {
-    for (auto it = nums.begin(); std::next(it) != nums.end(); it++) out << *it << ", ";
-    out << *(nums.end());
-  }
-  out << "]";
+struct SVDesc {
+  member_class(std::string, text);
 
-  return out;
-}
+  SVDesc();
+};
 
-std::ostream &operator<<(std::ostream &out, const ORD_REALS &nums)
-{
-  out << "[";
-  if (nums.size() == 1)
-    out << *(nums.begin());
+// Set-edge ----------------------------------------------------------------------------------------
 
-  else if (nums.size() > 1) {
-    for (auto it = nums.begin(); std::next(it) != nums.end(); it++) out << *it << ", ";
-    out << *(nums.end());
-  }
-  out << "]";
+struct SEDesc {
+  member_class(std::string, text);
 
-  return out;
-}
+  SEDesc();
+};
 
-}  // namespace SBG
+} // namespace SBG

@@ -43,12 +43,17 @@ endif
 
 install: | create-folders
 	@echo "Installing SBG library headers."
-	@install $(ROOT)/sbg/*.hpp $(ROOT)/include/
+	@install $(ROOT)/sbg/*.hpp $(ROOT)/include/sbg
+	@install $(ROOT)/sbg/util/*.hpp $(ROOT)/include/sbg/util
+	@install $(ROOT)/sbg/graph_builders/*.hpp $(ROOT)/include/sbg/graph_builders
 	@echo "Done."
 
 create-folders::
 	@mkdir -p $(ROOT)/lib
 	@mkdir -p $(ROOT)/include
+	@mkdir -p $(ROOT)/include/sbg
+	@mkdir -p $(ROOT)/include/sbg/util
+	@mkdir -p $(ROOT)/include/sbg/graph_builders	
 	@mkdir -p $(OBJ_DIR)
 	@mkdir -p $(BUILD_DIR)
 

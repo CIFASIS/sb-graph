@@ -5,7 +5,8 @@ BUILDERS_DIR    := $(SBG_DIR)/graph_builders
 # Sources
 	BUILDERS_SRC := \
 	$(BUILDERS_DIR)/matching_graph_builder.cpp \
-	$(BUILDERS_DIR)/matching_io.cpp
+	$(BUILDERS_DIR)/matching_io.cpp \
+	$(BUILDERS_DIR)/ordinary_graph_builder.cpp
 
 # Objects
 BUILDERS_OBJ=$(addprefix $(BUILD_DIR)/, $(BUILDERS_SRC:.cpp=.o))

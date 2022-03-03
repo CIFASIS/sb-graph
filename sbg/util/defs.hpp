@@ -48,6 +48,11 @@ std::ostream &operator<<(std::ostream &out, const ORD_REALS &nums);
   void set_##Y(X x);       \
   X &Y##_ref();
 
+#define member_imp(C, X, Y)          \
+  X C::Y() const { return Y##_; }    \
+  void C::set_##Y(X x) { Y##_ = x; } \
+  X &C::Y##_ref() { return Y##_; }
+
 #define member_imp_temp(T, C, X, Y)    \
   T X C::Y() const { return Y##_; }    \
   T void C::set_##Y(X x) { Y##_ = x; } \

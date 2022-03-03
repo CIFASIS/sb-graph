@@ -220,6 +220,24 @@ ORD_CT<INT_IMP> MI_TEMP_TYPE::minElem()
 }
 
 MI_TEMPLATE
+ORD_CT<INT_IMP> MI_TEMP_TYPE::nextElem(ORD_CT<INT_IMP> cur)
+{
+  ORD_CT<INT_IMP> res;
+  typename ORD_CT<INT_IMP>::iterator itres = res.begin();
+  typename ORD_CT<INT_IMP>::iterator itcur = cur.begin();
+
+  BOOST_FOREACH (INTER_IMP i, inters()) {
+    if (i.empty()) return ORD_CT<INT_IMP>();
+
+    itres = res.insert(itres, i.nextElem(*itcur));
+    ++itres;
+    ++itcur;
+  }
+
+  return res;
+}
+
+MI_TEMPLATE
 ORD_CT<INT_IMP> MI_TEMP_TYPE::maxElem()
 {
   ORD_CT<INT_IMP> res;

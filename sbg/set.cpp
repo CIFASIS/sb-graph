@@ -220,6 +220,19 @@ ORD_CT<INT_IMP> SET_TEMP_TYPE::minElem()
 }
 
 SET_TEMPLATE
+ORD_CT<INT_IMP> SET_TEMP_TYPE::nextElem(ORD_CT<INT_IMP> cur)
+{
+  ORD_CT<INT_IMP> res;
+
+  if (empty()) return res;
+  assert(asets().size() == 1);
+
+  MI_IMP aset = *(asets_ref().begin());
+
+  return aset.nextElem(cur);
+}
+
+SET_TEMPLATE
 ORD_CT<INT_IMP> SET_TEMP_TYPE::maxElem()
 {
   ORD_CT<INT_IMP> res;

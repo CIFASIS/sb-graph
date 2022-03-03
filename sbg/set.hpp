@@ -60,6 +60,8 @@ struct SetImp1 {
   SetImp1 cup(SetImp1 set2);
 
   ORD_CT<INT_IMP> minElem();
+  ORD_CT<INT_IMP> nextElem(ORD_CT<INT_IMP> cur);
+  // ORD_CT<INT_IMP> nextElem(UNORD_CT<ORD_CT<INT_IMP>> cur);
   ORD_CT<INT_IMP> maxElem();
 
   SetImp1 normalize();

@@ -53,6 +53,7 @@ struct IntervalImp1 {
   IntervalImp1 offset(int off);
 
   INT minElem();
+  INT nextElem(INT cur);
   INT maxElem();
 
   IntervalImp1 normalize(IntervalImp1 i2);

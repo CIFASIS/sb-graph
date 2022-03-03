@@ -195,6 +195,9 @@ INTER_TEMPLATE
 INT INTER_TEMP_TYPE::minElem() { return lo(); }
 
 INTER_TEMPLATE
+INT INTER_TEMP_TYPE::nextElem(INT cur) { return cur + step(); }
+
+INTER_TEMPLATE
 INT INTER_TEMP_TYPE::maxElem() { return hi(); }
 
 INTER_TEMPLATE

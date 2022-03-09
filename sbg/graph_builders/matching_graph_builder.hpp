@@ -17,6 +17,8 @@
 
  ******************************************************************************/
 
+#pragma once
+
 #include <sbg/graph_builders/matching_io.hpp>
 #include <sbg/sbg.hpp>
 

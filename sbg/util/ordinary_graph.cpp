@@ -17,9 +17,13 @@
 
  ******************************************************************************/
 
+#include <fstream>
+
 #include <sbg/util/ordinary_graph.hpp>
 
 namespace OG {
+
+using namespace std;
 
 // Vertex --------------------------------------------------------------------------------------
 
@@ -53,6 +57,98 @@ std::ostream &operator<<(std::ostream &out, const Edge &e)
 {
   out << e.name() << ": " << e.id() << "\n";
   return out;
+}
+
+// Simple printer definition ------------------------------------------------------------------
+
+#define MAKE_SPACE \
+  for (int __i = 0; __i < depth; __i++) stri << " ";
+#define TAB_SPACE 2
+#define INSERT_TAB depth += TAB_SPACE;
+#define DELETE_TAB depth -= TAB_SPACE;
+
+GraphPrinter::GraphPrinter(const Graph &g) : graph(g), depth(0){};
+
+void GraphPrinter::printGraph(std::string name)
+{
+  stringstream stri;
+  ofstream out(name.c_str());
+
+  stri << "digraph G{" << endl;
+  INSERT_TAB
+  MAKE_SPACE
+  stri << "  ratio=\"fill\"" << endl;
+  MAKE_SPACE
+  stri << "  node[shape=\"ellipse\"]" << endl;
+  INSERT_TAB
+  MAKE_SPACE
+
+  // Vertices printing
+  printVertices(stri);
+  stri << "\n";
+
+  DELETE_TAB
+  DELETE_TAB
+
+  INSERT_TAB
+  INSERT_TAB
+  stringstream colors;
+
+  DELETE_TAB
+  stri << colors.str();
+  DELETE_TAB
+
+  INSERT_TAB
+  INSERT_TAB
+
+  // Edge printing
+  printEdges(stri);
+
+  DELETE_TAB
+  DELETE_TAB
+  stri << "\n";
+  stri << "}" << endl;
+  out << stri.str();
+  out.close();
+}
+
+void GraphPrinter::printVertices(stringstream &stri)
+{
+  VertexIt vi, vi_end;
+  for (boost::tie(vi, vi_end) = boost::vertices(graph); vi != vi_end; ++vi) {
+    stri << vPrinter(graph[*vi]) << " [label=\"" << vLabelPrinter(graph[*vi]) << "\"]";
+    stri << "\n";
+    MAKE_SPACE
+  }
+}
+
+void GraphPrinter::printEdges(stringstream &stri)
+{
+  EdgeIt ei, ei_end;
+  for (boost::tie(ei, ei_end) = boost::edges(graph); ei != ei_end; ++ei) {
+    VertexDesc v1 = boost::source(*ei, graph);
+    VertexDesc v2 = boost::target(*ei, graph);
+    stri << vPrinter(graph[v1]) << " -> " << vPrinter(graph[v2]);
+    stri << " [label=\"" << ePrinter(graph[*ei]) << "\", arrowhead=\"none\"]";
+    stri << "\n";
+    MAKE_SPACE
+  }
+}
+
+std::string GraphPrinter::vPrinter(Vertex v) { return v.name(); }
+
+std::string GraphPrinter::vLabelPrinter(Vertex v)
+{
+  std::stringstream label;
+  label << "{ " << v.name() << " }";
+  return label.str();
+}
+
+std::string GraphPrinter::ePrinter(Edge e)
+{
+  std::stringstream label;
+  label << "{ " << e.name() << " }";
+  return label.str();
 }
 
 }  // namespace OG

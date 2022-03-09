@@ -20,6 +20,7 @@
 
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/subgraph.hpp>
+#include <sstream>
 
 #include <sbg/util/defs.hpp>
 
@@ -55,11 +56,28 @@ std::ostream &operator<<(std::ostream &out, const Edge &e);
 
 // Ordinary Graph definition----------------------------------------------------------------------------
 
-typedef boost::adjacency_list<boost::listS, boost::listS, boost::undirectedS, Vertex, Edge> Graph;
+typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS, Vertex, Edge> Graph;
 typedef Graph::vertex_descriptor VertexDesc;
 typedef boost::graph_traits<Graph>::vertex_iterator VertexIt;
 typedef Graph::edge_descriptor EdgeDesc;
 typedef boost::graph_traits<Graph>::edge_iterator EdgeIt;
 typedef boost::graph_traits<Graph>::out_edge_iterator OutEdgeIt;
+
+class GraphPrinter {
+  public:
+  GraphPrinter(const Graph &g);
+
+  void printGraph(std::string name);
+
+  private:
+  int depth;
+  const Graph &graph;
+
+  void printVertices(std::stringstream &stri);
+  void printEdges(std::stringstream &stri);
+  std::string vPrinter(Vertex v);
+  std::string vLabelPrinter(Vertex v);
+  std::string ePrinter(Edge e);
+};
 
 }  // namespace OG

@@ -68,6 +68,8 @@ struct SetImp1 {
 
   SetImp1 crossProd(SetImp1 set2);
 
+  ORD_CT<SET_TEMP_TYPE> atomize();
+
   eq_class(SetImp1);
   neq_class(SetImp1);
   lt_class(SetImp1);

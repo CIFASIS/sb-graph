@@ -33,8 +33,6 @@ class OrdinaryGraphBuilder {
 
   protected:
   OG::VertexDesc addVertex(std::string vertex_name, OG::Graph& graph);
-  SBG::VertexIt findSetVertex(SBG::SBGraph& graph, SBG::Set matched);
-  SBG::SetVertex wholeVertex(SBG::SBGraph& graph, SBG::Set matched_subset);
   std::string getNodeName(std::string name, SBG::ORD_INTS elems);
 
   SBG::SBGraph _sb_graph;

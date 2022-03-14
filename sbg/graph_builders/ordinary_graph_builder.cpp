@@ -21,6 +21,7 @@
 
 #include <sbg/graph_builders/ordinary_graph_builder.hpp>
 #include <sbg/util/defs.hpp>
+#include <sbg/util/node_finder.hpp>
 
 namespace OG {
 
@@ -79,32 +80,6 @@ OG::VertexDesc OrdinaryGraphBuilder::addVertex(std::string vertex_name, OG::Grap
   _vertex_map[vertex_name] = v;
   graph[v] = V;
   return v;
-}
-
-SBG::VertexIt OrdinaryGraphBuilder::findSetVertex(SBG::SBGraph& graph, SBG::Set matched)
-{
-  // Find the set-vertex where matched subset is included
-  SBG::VertexIt vi_start, vi_end;
-  boost::tie(vi_start, vi_end) = vertices(graph);
-
-  for (; vi_start != vi_end; ++vi_start) {
-    SBG::SetVertex v = graph[*vi_start];
-    SBG::Set vs = v.range();
-    SBG::Set inter = vs.cap(matched);
-    if (!inter.empty()) {
-      return vi_start;
-    }
-  }
-  // A given subset should be included in one of the graph vertex, this should never happen.
-  assert(false);
-  return vi_start;
-}
-
-SBG::SetVertex OrdinaryGraphBuilder::wholeVertex(SBG::SBGraph& graph, SBG::Set matched_subset)
-{
-  // Find the set-vertex where the matched subset is included
-  SBG::VertexIt matched_vertex = findSetVertex(graph, matched_subset);
-  return graph[*matched_vertex];
 }
 
 std::string OrdinaryGraphBuilder::getNodeName(std::string name, SBG::ORD_INTS elems)

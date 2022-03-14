@@ -20,17 +20,39 @@
 #include <boost/foreach.hpp>
 
 #include <sbg/graph_builders/matching_graph_builder.hpp>
+#include <sbg/util/node_finder.hpp>
 #include <sbg/util/logger.hpp>
 #include <sbg/sbg_printer.hpp>
 
 namespace SBG {
+
+using namespace SBG::IO;
+
 MatchingGraphBuilder::MatchingGraphBuilder(Equations equations, Variables variables)
-    : _U(), _F(), _eq_usage(), _equations(equations), _variables(variables), _model_name("matching_graph.dot")
+    : _U(),
+      _F(),
+      _eq_usage(),
+      _equations(equations),
+      _variables(variables),
+      _model_name("matching_graph.dot"),
+      _graph(),
+      _node_map(),
+      _eq_offset_map(),
+      _var_offset_map()
 {
 }
 
 MatchingGraphBuilder::MatchingGraphBuilder(Equations equations, Variables variables, std::string model_name)
-    : _U(), _F(), _eq_usage(), _equations(equations), _variables(variables), _model_name(model_name)
+    : _U(),
+      _F(),
+      _eq_usage(),
+      _equations(equations),
+      _variables(variables),
+      _model_name(model_name),
+      _graph(),
+      _node_map(),
+      _eq_offset_map(),
+      _var_offset_map()
 {
 }
 
@@ -58,7 +80,7 @@ void MatchingGraphBuilder::addDims(size_t max_dim, size_t exp_dim, ORD_REALS &co
 
 SBG::Set MatchingGraphBuilder::buildSet(VariableInfo variable, int offset, size_t max_dim)
 {
-  std::vector<int> dims = variable.size;
+  std::vector<int> dims = variable.size();
   MultiInterval variable_intervals;
   if (dims.empty()) {
     addDims(max_dim, 0, variable_intervals, offset);
@@ -77,18 +99,18 @@ SBG::Set MatchingGraphBuilder::buildSet(EquationInfo eq, std::string eq_id, int 
 {
   Usage usage;
   MultiInterval equation_intervals;
-  if (eq.size.empty()) {
+  if (eq.size().empty()) {
     addDims(max_dim, 0, equation_intervals, offset);
   } else {
-    std::vector<RangeDef> ranges = eq.size;
+    std::vector<RangeDef> ranges = eq.size();
     for (RangeDef range : ranges) {
-      REAL lower = range.begin;
-      REAL step = range.step;
-      REAL upper = range.end;
+      REAL lower = range.begin();
+      REAL step = range.step();
+      REAL upper = range.end();
       REAL end = offset + upper - lower;
       Interval interval(offset, step, end);
       equation_intervals.addInter(interval);
-      usage[range.iterator] = lower;
+      usage[range.iterator()] = lower;
     }
     addDims(max_dim, ranges.size(), equation_intervals, offset);
     _eq_usage[eq_id] = usage;
@@ -117,17 +139,19 @@ SBG::Set MatchingGraphBuilder::generateMapDom(SBG::Set dom, SBG::Set unk_dom, in
   return createSet(edge_set_intervals);
 }
 
-SetVertexDesc MatchingGraphBuilder::addVertex(std::string vertex_name, SBG::Set set, SBGraph &graph)
+SetVertexDesc MatchingGraphBuilder::addVertex(std::string vertex_name, SBG::Set set, int vec_id)
 {
-  SetVertex V(vertex_name, num_vertices(graph) + 1, set, 0);
-  SetVertexDesc v = boost::add_vertex(graph);
-  graph[v] = V;
+  int node_id = num_vertices(_graph) + 1;
+  SetVertex V(vertex_name, node_id, set, 0);
+  SetVertexDesc v = boost::add_vertex(_graph);
+  _node_map[node_id] = vec_id;
+  _graph[v] = V;
   return v;
 }
 
-void MatchingGraphBuilder::addEquation(EquationInfo eq, std::string id, SBG::Set set, SBGraph &graph)
+void MatchingGraphBuilder::addEquation(EquationInfo eq, std::string id, SBG::Set set, int vec_id)
 {
-  _F.push_back(std::make_pair(addVertex(id, set, graph), eq));
+  _F.push_back(std::make_pair(addVertex(id, set, vec_id), eq));
 }
 
 PWLMap MatchingGraphBuilder::buildPWLMap(ORD_REALS constants, ORD_REALS slopes, SBG::Set dom)
@@ -156,29 +180,29 @@ MatchingGraphBuilder::MatchingMaps MatchingGraphBuilder::generatePWLMaps(Variabl
   ORD_REALS::iterator slope_pwl_map_f_it = slope_pwl_map_f.begin();
 
   SBG::ORD_INTS init_elems = unk_dom.minElem();
-  assert(init_elems.size() == var_usage.usage.size() || var_usage.usage.size() == 0);
+  assert(init_elems.size() == var_usage.usage().size() || var_usage.usage().size() == 0);
   SBG::ORD_INTS::iterator min_elem = init_elems.begin();
   SBG::Set map_dom = generateMapDom(dom, unk_dom, offset, max_dim);
   int map_offset = offset - 1;
 
-  for (LinearMap map : var_usage.usage) {
+  for (LinearMap map : var_usage.usage()) {
     SBG::INT set_vertex_init = *min_elem - 1;
     Usage usage = _eq_usage[eq_id];
-    int range_init_value = usage[map.iterator];
-    int set_vertex_offset = map.slope * offset;
-    int map_first_value = map.constant + map.slope * range_init_value + set_vertex_init;
+    int range_init_value = usage[map.iterator()];
+    int set_vertex_offset = map.slope() * offset;
+    int map_first_value = map.constant() + map.slope() * range_init_value + set_vertex_init;
     LOG << set_vertex_init << " " << range_init_value << " " << map_first_value << " " << set_vertex_offset << std::endl;
     constant_pwl_map_u_it = constant_pwl_map_u.insert(constant_pwl_map_u_it, map_first_value - set_vertex_offset);
-    slope_pwl_map_u_it = slope_pwl_map_u.insert(slope_pwl_map_u_it, map.slope);
+    slope_pwl_map_u_it = slope_pwl_map_u.insert(slope_pwl_map_u_it, map.slope());
     min_elem++;
   }
-  if (var_usage.usage.empty()) {  // Scalar variable.
+  if (var_usage.usage().empty()) {  // Scalar variable.
     SBG::INT set_vertex_init = *min_elem - 1;
     constant_pwl_map_u_it = constant_pwl_map_u.insert(constant_pwl_map_u_it, -map_offset + set_vertex_init);
     slope_pwl_map_u_it = slope_pwl_map_u.insert(slope_pwl_map_u_it, 1);
     addDims(max_dim, 1, constant_pwl_map_u, slope_pwl_map_u);
   } else {
-    addDims(max_dim, var_usage.usage.size(), constant_pwl_map_u, slope_pwl_map_u);
+    addDims(max_dim, var_usage.usage().size(), constant_pwl_map_u, slope_pwl_map_u);
   }
   for (SBG::INT init : dom.minElem()) {
     SBG::INT set_vertex_init = init - 1;
@@ -192,31 +216,34 @@ MatchingGraphBuilder::MatchingMaps MatchingGraphBuilder::generatePWLMaps(Variabl
 
 SBGraph MatchingGraphBuilder::build()
 {
-  SBGraph graph;
   size_t max_dim = 1;
   // Get max dim defined in the model.
   for (VariableInfo var_info : _variables) {
-    if (var_info.size.size() > max_dim) {
-      max_dim = var_info.size.size();
+    if (var_info.size().size() > max_dim) {
+      max_dim = var_info.size().size();
     }
   }
 
   int set_vertex_offset = 1;
+  int vec_id = 0;
   // Build unknown nodes.
   for (VariableInfo var_info : _variables) {
     SBG::Set vertex_dom = buildSet(var_info, set_vertex_offset, max_dim);
-    _U[var_info.name] = addVertex(var_info.name, vertex_dom, graph);
+    _var_offset_map[vec_id] = set_vertex_offset;
+    _U[var_info.name()] = addVertex(var_info.name(), vertex_dom, vec_id++);
     set_vertex_offset += vertex_dom.card();
   }
 
   // Build equation nodes.
   int id = 1;
+  vec_id = 0;
   for (EquationInfo eq_info : _equations) {
     SBG::Set vertex_dom;
     std::string eq_name = "eq_" + std::to_string(id++);
+    _eq_offset_map[vec_id] = set_vertex_offset;
     vertex_dom = buildSet(eq_info, eq_name, set_vertex_offset, max_dim);
     set_vertex_offset += vertex_dom.card();
-    addEquation(eq_info, eq_name, vertex_dom, graph);
+    addEquation(eq_info, eq_name, vertex_dom, vec_id++);
   }
 
   // Build edges.
@@ -224,12 +251,12 @@ SBGraph MatchingGraphBuilder::build()
   unsigned int edge_id = 1;
   for (EquationDesc eq_desc : _F) {
     SetVertexDesc eq_vertex_desc = eq_desc.first;
-    SetVertex eq_vertex = graph[eq_vertex_desc];
+    SetVertex eq_vertex = _graph[eq_vertex_desc];
     SBG::Set dom = eq_vertex.range();
     EquationInfo eq_info = eq_desc.second;
-    for (VariableUsage var_usage : eq_info.var_usage) {
-      SetVertexDesc unknown_vertex_desc = _U[var_usage.name];
-      SBG::Set unk_dom = graph[unknown_vertex_desc].range();
+    for (VariableUsage var_usage : eq_info.var_usage()) {
+      SetVertexDesc unknown_vertex_desc = _U[var_usage.name()];
+      SBG::Set unk_dom = _graph[unknown_vertex_desc].range();
       LOG << "Expression: " << var_usage << std::endl;
       LOG << "Equation dom: " << dom << std::endl;
       MatchingMaps maps = generatePWLMaps(var_usage, dom, unk_dom, set_edge_offset, eq_vertex.name(), max_dim);
@@ -237,18 +264,56 @@ SBGraph MatchingGraphBuilder::build()
       std::string edge_name = "E_" + std::to_string(edge_id++);
       LOG << "MapF: " << maps.first << std::endl;
       LOG << "MapU: " << maps.second << std::endl;
-      SetEdge edge(edge_name, num_edges(graph) + 1, maps.first, maps.second, 0);
+      SetEdge edge(edge_name, num_edges(_graph) + 1, maps.first, maps.second, 0);
       SetEdgeDesc e;
       bool b;
-      boost::tie(e, b) = boost::add_edge(eq_vertex_desc, unknown_vertex_desc, graph);
-      graph[e] = edge;
+      boost::tie(e, b) = boost::add_edge(eq_vertex_desc, unknown_vertex_desc, _graph);
+      _graph[e] = edge;
     }
   }
-  SBG::GraphPrinter printer(graph, 0);
+  SBG::GraphPrinter printer(_graph, 0);
 
   printer.printGraph("matching_graph.dot");
 
-  return graph;
+  return _graph;
+}
+
+std::vector<RangeDef> MatchingGraphBuilder::generateRange(SBG::Set dom, int offset)
+{
+  std::vector<RangeDef> ranges;
+  SBG::ORD_INTS dom_init = dom.minElem();
+  SBG::ORD_INTS dom_end = dom.maxElem();
+  for (INT i : dom_init) {
+    RangeDef d = {"", i - offset + 1, 1, 1};
+    ranges.push_back(d);
+  }
+  int p = 0;
+  for (INT i : dom_end) {
+    ranges[p++].set_end(i - offset + 1);
+  }
+  return ranges;
+}
+
+Matching MatchingGraphBuilder::computeMatchingInfo(SBG::Set matched_edges)
+{
+  Matching matching_info;
+  for (SBG::Set aset : matched_edges.atomize()) {
+    SBG::EdgeIt edge_it = findSetEdge(_graph, aset);
+    SBG::SetEdge edge = _graph[*edge_it];
+    // Find F dom vertex.
+    SBG::Set f_range = edge.map_f().image(aset);
+    SBG::SetVertex F = wholeVertex(_graph, f_range);
+    // Find U dom vertex.
+    SBG::Set u_range = edge.map_u().image(aset);
+    SBG::SetVertex U = wholeVertex(_graph, u_range);
+    MatchingInfo matched_set;
+    matched_set.set_eq_id(_node_map[F.id()]);
+    matched_set.set_eq_range(generateRange(f_range, _eq_offset_map[matched_set.eq_id()]));
+    matched_set.set_var_id(_node_map[U.id()]);
+    matched_set.set_var_range(generateRange(u_range, _var_offset_map[matched_set.var_id()]));
+    matching_info.push_back(matched_set);
+  }
+  return matching_info;
 }
 
 }  // namespace SBG

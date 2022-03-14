@@ -36,60 +36,56 @@
  *   stair := stair - 1;
  *  end when;
  * end bball_downstairs;
+ *
+ * COMPILE COMMAND:
+ * g++ bball_downstairs.c -o bball_downstairs -I../../ -L../../lib -lsbgraph
+ *
  ******************************************************************************/
 
 #include <sbg/graph_builders/matching_graph_builder.hpp>
 #include <sbg/sbg_algorithms.hpp>
 
+using namespace SBG;
+using namespace SBG::IO;
+
 int main()
 {
-  SBG::Equations equations;
-  SBG::Variables variables;
+  Equations equations;
+  Variables variables;
 
   std::vector<std::string> var_names = {"x", "vx", "y", "vy"};
 
   // Add model variables.
   for (std::string var_name : var_names) {
-    SBG::VariableInfo v;
-    v.name = var_name;
-    v.is_state = true;
+    VariableInfo v(var_name, std::vector<int>(), true);
     variables.push_back(v);
   }
 
   // Add model equations.
 
   // eq1 -> der(y) = vy;
-  SBG::EquationInfo eq1;
-  SBG::VariableUsage var_usage_eq1_1;
-  var_usage_eq1_1.name = "y";
-  SBG::VariableUsage var_usage_eq1_2;
-  var_usage_eq1_2.name = "vy";
-  eq1.var_usage.insert(var_usage_eq1_1);
-  eq1.var_usage.insert(var_usage_eq1_2);
+  EquationInfo eq1;
+  VariableUsage var_usage_eq1;
+  var_usage_eq1.set_name("y");
+  eq1.var_usage_ref().insert(var_usage_eq1);
 
   // eq2 -> der(vy) = -9.8 - 0.1 * vy - contact * ((y - stair) *1e6+ vy * 30);
-  SBG::EquationInfo eq2;
-  SBG::VariableUsage var_usage_eq2_1;
-  var_usage_eq2_1.name = "vy";
-  SBG::VariableUsage var_usage_eq2_2;
-  var_usage_eq2_2.name = "y";
-  eq2.var_usage.insert(var_usage_eq2_2);
-  eq2.var_usage.insert(var_usage_eq2_1);
+  EquationInfo eq2;
+  VariableUsage var_usage_eq2;
+  var_usage_eq2.set_name("vy");
+  eq2.var_usage_ref().insert(var_usage_eq2);
 
   // eq3 -> der(x) = vx;
-  SBG::EquationInfo eq3;
-  SBG::VariableUsage var_usage_eq3_1;
-  var_usage_eq3_1.name = "x";
-  SBG::VariableUsage var_usage_eq3_2;
-  var_usage_eq3_2.name = "vx";
-  eq3.var_usage.insert(var_usage_eq3_1);
-  eq3.var_usage.insert(var_usage_eq3_2);
+  EquationInfo eq3;
+  VariableUsage var_usage_eq3;
+  var_usage_eq3.set_name("x");
+  eq3.var_usage_ref().insert(var_usage_eq3);
 
   // eq4 -> der(vx) = -0.1 * vx;
-  SBG::EquationInfo eq4;
-  SBG::VariableUsage var_usage_eq4_1;
-  var_usage_eq4_1.name = "vx";
-  eq4.var_usage.insert(var_usage_eq4_1);
+  EquationInfo eq4;
+  VariableUsage var_usage_eq4;
+  var_usage_eq4.set_name("vx");
+  eq4.var_usage_ref().insert(var_usage_eq4);
 
   // Insert model equations.
   equations.push_back(eq1);
@@ -98,12 +94,19 @@ int main()
   equations.push_back(eq4);
 
   // Build matching graph.
-  SBG::MatchingGraphBuilder graph_builder(equations, variables);
-  SBG::SBGraph graph = graph_builder.build();
+  MatchingGraphBuilder graph_builder(equations, variables);
+  SBGraph graph = graph_builder.build();
 
   // Compute matching.
   MatchingStruct matching(graph);
 
-  matching.SBGMatching();
+  std::pair<SBG::Set, bool> res = matching.SBGMatching();
+  std::cout << "Generated matching:\n";
+  std::cout << get<0>(res) << "\n\n";
+  if (get<1>(res)) {
+    std::cout << ">>> Matched all unknowns\n";
+    Matching matching_info = graph_builder.computeMatchingInfo(get<0>(res));
+    std::cout << matching_info;
+  }
   return 0;
 }

@@ -51,66 +51,59 @@
 #include <sbg/graph_builders/matching_graph_builder.hpp>
 #include <sbg/sbg_algorithms.hpp>
 
+using namespace SBG;
+using namespace SBG::IO;
+
 int main()
 {
-  SBG::Equations equations;
-  SBG::Variables variables;
+  Equations equations;
+  Variables variables;
 
   std::vector<std::string> state_var_names = {"iL", "uC"};
   std::vector<std::string> alg_var_names = {"iD", "s"};
 
   // Add model variables.
   for (std::string var_name : state_var_names) {
-    SBG::VariableInfo v;
-    v.name = var_name;
-    v.is_state = true;
+    VariableInfo v(var_name, std::vector<int>(), true);
     variables.push_back(v);
   }
 
   for (std::string var_name : alg_var_names) {
-    SBG::VariableInfo v;
-    v.name = var_name;
-    v.is_state = false;
+    VariableInfo v(var_name, std::vector<int>(), true);
     variables.push_back(v);
   }
 
   // Add model equations.
 
   // eq1 -> iD=(iL*Rs-U)/(Rs+Rd);
-  SBG::EquationInfo eq1;
-  SBG::VariableUsage var_usage_eq1_1;
-  var_usage_eq1_1.name = "iD";
-  SBG::VariableUsage var_usage_eq1_2;
-  var_usage_eq1_2.name = "iL";
-  eq1.var_usage.insert(var_usage_eq1_1);
-  eq1.var_usage.insert(var_usage_eq1_2);
+  EquationInfo eq1;
+  VariableUsage var_usage_eq1;
+  var_usage_eq1.set_name("iD");
+  eq1.var_usage_ref().insert(var_usage_eq1);
 
   // eq2 -> s=diodeon*iD+(1-diodeon)*iD*Rd;
-  SBG::EquationInfo eq2;
-  SBG::VariableUsage var_usage_eq2_1;
-  var_usage_eq2_1.name = "s";
-  SBG::VariableUsage var_usage_eq2_2;
-  var_usage_eq2_2.name = "iD";
-  eq2.var_usage.insert(var_usage_eq2_1);
-  eq2.var_usage.insert(var_usage_eq2_2);
+  EquationInfo eq2;
+  VariableUsage var_usage_eq2_1;
+  var_usage_eq2_1.set_name("s");
+  VariableUsage var_usage_eq2_2;
+  var_usage_eq2_2.set_name("iD");
+  eq2.var_usage_ref().insert(var_usage_eq2_1);
+  eq2.var_usage_ref().insert(var_usage_eq2_2);
 
   // eq3 -> der(iL) = (-iD*Rd- uC)/L;
-  SBG::EquationInfo eq3;
-  SBG::VariableUsage var_usage_eq3_1;
-  var_usage_eq3_1.name = "iL";
-  SBG::VariableUsage var_usage_eq3_2;
-  var_usage_eq3_2.name = "iD";
-  eq3.var_usage.insert(var_usage_eq3_1);
-  eq3.var_usage.insert(var_usage_eq3_2);
+  EquationInfo eq3;
+  VariableUsage var_usage_eq3_1;
+  var_usage_eq3_1.set_name("iL");
+  VariableUsage var_usage_eq3_2;
+  var_usage_eq3_2.set_name("iD");
+  eq3.var_usage_ref().insert(var_usage_eq3_1);
+  eq3.var_usage_ref().insert(var_usage_eq3_2);
 
   // eq4 -> der(uC) = (iL - uC/R)/C;
-  SBG::EquationInfo eq4;
-  SBG::VariableUsage var_usage_eq4_1;
-  var_usage_eq4_1.name = "uC";
-  SBG::VariableUsage var_usage_eq4_2;
-  var_usage_eq4_2.name = "iD";
-  eq4.var_usage.insert(var_usage_eq4_1);
-  eq4.var_usage.insert(var_usage_eq4_2);
+  EquationInfo eq4;
+  VariableUsage var_usage_eq4_1;
+  var_usage_eq4_1.set_name("uC");
+  eq4.var_usage_ref().insert(var_usage_eq4_1);
 
   // Insert model equations.
   equations.push_back(eq1);
@@ -119,12 +112,20 @@ int main()
   equations.push_back(eq4);
 
   // Build matching graph.
-  SBG::MatchingGraphBuilder graph_builder(equations, variables);
-  SBG::SBGraph graph = graph_builder.build();
+  MatchingGraphBuilder graph_builder(equations, variables);
+  SBGraph graph = graph_builder.build();
 
   // Compute matching.
   MatchingStruct matching(graph);
 
-  matching.SBGMatching();
+  std::pair<SBG::Set, bool> res = matching.SBGMatching();
+  std::cout << "Generated matching:\n";
+  std::cout << get<0>(res) << "\n\n";
+  if (get<1>(res)) {
+    std::cout << ">>> Matched all unknowns\n";
+    Matching matching_info = graph_builder.computeMatchingInfo(get<0>(res));
+    std::cout << matching_info;
+  }
+
   return 0;
 }

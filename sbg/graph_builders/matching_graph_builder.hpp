@@ -26,28 +26,31 @@ namespace SBG {
 
 class MatchingGraphBuilder {
   public:
-  MatchingGraphBuilder(Equations equations, Variables variables);
-  MatchingGraphBuilder(Equations equations, Variables variables, std::string model_name);
+  MatchingGraphBuilder(IO::Equations equations, IO::Variables variables);
+  MatchingGraphBuilder(IO::Equations equations, IO::Variables variables, std::string model_name);
   ~MatchingGraphBuilder() = default;
 
   virtual SBG::SBGraph build();
 
+  virtual IO::Matching computeMatchingInfo(SBG::Set matched_edges);
+
   protected:
   typedef std::pair<SBG::PWLMap, SBG::PWLMap> MatchingMaps;
 
-  SBG::Set buildSet(VariableInfo variable, int offset, size_t max_dim);
-  SBG::Set buildSet(EquationInfo eq, std::string eq_id, int offset, size_t max_dim);
+  SBG::Set buildSet(IO::VariableInfo variable, int offset, size_t max_dim);
+  SBG::Set buildSet(IO::EquationInfo eq, std::string eq_id, int offset, size_t max_dim);
   SBG::Set buildSet(SBG::MultiInterval variable);
-  SBG::SetVertexDesc addVertex(std::string vertex_name, SBG::Set set, SBG::SBGraph& graph);
-  void addEquation(EquationInfo eq, std::string id, SBG::Set set, SBG::SBGraph& graph);
+  SBG::SetVertexDesc addVertex(std::string vertex_name, SBG::Set set, int vec_id);
+  void addEquation(IO::EquationInfo eq, std::string id, SBG::Set set, int vec_id);
   SBG::PWLMap buildPWLMap(SBG::ORD_REALS constants, SBG::ORD_REALS slopes, SBG::Set dom);
-  MatchingMaps generatePWLMaps(VariableUsage var_usage, SBG::Set dom, SBG::Set unk_dom, int offset, std::string eq_id, size_t max_dim);
+  MatchingMaps generatePWLMaps(IO::VariableUsage var_usage, SBG::Set dom, SBG::Set unk_dom, int offset, std::string eq_id, size_t max_dim);
   SBG::Set generateMapDom(SBG::Set dom, SBG::Set unk_dom, int offset, size_t max_dim);
   void addDims(size_t max_dim, size_t exp_dim, SBG::MultiInterval& intervals, int offset);
   void addDims(size_t max_dim, size_t exp_dim, SBG::ORD_REALS& constant, SBG::ORD_REALS& slope);
+  std::vector<IO::RangeDef> generateRange(SBG::Set dom, int offset);
 
   private:
-  typedef std::pair<SBG::SetVertexDesc, EquationInfo> EquationDesc;
+  typedef std::pair<SBG::SetVertexDesc, IO::EquationInfo> EquationDesc;
   typedef std::map<std::string, int> Usage;
   typedef std::map<std::string, Usage> EqUsage;
   typedef std::map<std::string, SBG::SetVertexDesc> VarUsage;
@@ -55,9 +58,13 @@ class MatchingGraphBuilder {
   VarUsage _U;
   std::list<EquationDesc> _F;
   EqUsage _eq_usage;
-  Equations _equations;
-  Variables _variables;
+  IO::Equations _equations;
+  IO::Variables _variables;
   std::string _model_name;
+  SBG::SBGraph _graph;
+  IO::NodeMap _node_map;
+  std::map<int, int> _eq_offset_map;
+  std::map<int, int> _var_offset_map;
 };
 
 }  // namespace SBG

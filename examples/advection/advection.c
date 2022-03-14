@@ -35,55 +35,58 @@
  *  end for;
  * end advection;
  *
+ * COMPILE COMMAND:
+ * g++ advection.c -o advection -I../../ -L../../lib -lsbgraph
  *
  **********************************************************************/
 
 #include <sbg/graph_builders/matching_graph_builder.hpp>
 #include <sbg/sbg_algorithms.hpp>
 
+using namespace SBG;
+using namespace SBG::IO;
+
 int main()
 {
-  SBG::Equations equations;
-  SBG::Variables variables;
+  Equations equations;
+  Variables variables;
 
   // Add model variables.
-  SBG::VariableInfo u;
-  u.name = "u";
-  u.size = {20000};
-  u.is_state = true;
+  VariableInfo u("u", {20000}, true);
   variables.push_back(u);
 
   // Add model equations.
 
   // eq1 -> der(u[1])=(-u[1]+1)*N-mu*u[1]*(u[1]-alpha)*(u[1]-1);
-  SBG::EquationInfo eq1;
-  SBG::VariableUsage var_usage_eq1;
-  var_usage_eq1.name = "u";
-  eq1.var_usage.insert(var_usage_eq1);
+  EquationInfo eq1;
+  VariableUsage var_usage_eq1("u", {LinearMap(1, 0, "")});
+  eq1.var_usage_ref().insert(var_usage_eq1);
 
   // eq2 -> der(u[j])=(-u[j]+u[j-1])*N-mu*u[j]*(u[j]-alpha)*(u[j]-1);
-  SBG::EquationInfo eq2;
-  SBG::VariableUsage var_usage_eq2_1;
-  var_usage_eq2_1.name = "u";
-  var_usage_eq2_1.usage = {{0, 1, "j"}};
-  SBG::VariableUsage var_usage_eq2_2;
-  var_usage_eq2_2.name = "u";
-  var_usage_eq2_2.usage = {{-1, 1, "j"}};
-  eq2.size = {{"j", 2, 1, 20000}};
-  eq2.var_usage.insert(var_usage_eq2_1);
-  eq2.var_usage.insert(var_usage_eq2_2);
+  EquationInfo eq2;
+  VariableUsage var_usage_eq2("u", {LinearMap(0, 1, "j")});
+  eq2.set_size({RangeDef("j", 2, 1, 20000)});
+  eq2.var_usage_ref().insert(var_usage_eq2);
 
   // Insert model equations.
   equations.push_back(eq1);
   equations.push_back(eq2);
 
   // Build matching graph.
-  SBG::MatchingGraphBuilder graph_builder(equations, variables);
-  SBG::SBGraph graph = graph_builder.build();
+  MatchingGraphBuilder graph_builder(equations, variables);
+  SBGraph graph = graph_builder.build();
 
   // Compute matching.
   MatchingStruct matching(graph);
 
-  matching.SBGMatching();
+  std::pair<SBG::Set, bool> res = matching.SBGMatching();
+  std::cout << "Generated matching:\n";
+  std::cout << get<0>(res) << "\n\n";
+  if (get<1>(res)) {
+    std::cout << ">>> Matched all unknowns\n";
+    Matching matching_info = graph_builder.computeMatchingInfo(get<0>(res));
+    std::cout << matching_info;
+  }
+
   return 0;
 }

@@ -20,23 +20,11 @@
 #pragma once
 
 #include <sbg/sbg.hpp>
-#include <sbg/util/ordinary_graph.hpp>
 
-namespace OG {
+namespace SBG {
 
-class OrdinaryGraphBuilder {
-  public:
-  OrdinaryGraphBuilder(SBG::SBGraph graph);
-  ~OrdinaryGraphBuilder() = default;
+SBG::EdgeIt findSetEdge(SBG::SBGraph& graph, SBG::Set matched);
+SBG::VertexIt findSetVertex(SBG::SBGraph& graph, SBG::Set matched);
+SBG::SetVertex wholeVertex(SBG::SBGraph& graph, SBG::Set matched_subset);
 
-  virtual OG::Graph build();
-
-  protected:
-  OG::VertexDesc addVertex(std::string vertex_name, OG::Graph& graph);
-  std::string getNodeName(std::string name, SBG::ORD_INTS elems);
-
-  SBG::SBGraph _sb_graph;
-  std::map<std::string, OG::VertexDesc> _vertex_map;
-};
-
-}  // namespace OG
+}  // namespace SBG

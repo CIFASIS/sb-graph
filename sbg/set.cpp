@@ -347,6 +347,18 @@ size_t SET_TEMP_TYPE::hash()
   return seed;
 }
 
+SET_TEMPLATE
+ORD_CT<SET_TEMP_TYPE> SET_TEMP_TYPE::atomize()
+{
+  ORD_CT<SET_TEMP_TYPE> atomize;
+
+  for (MI_IMP as : asets()) {
+    SetImp1 s(as);
+    atomize.push_back(s);
+  }
+  return atomize;
+}
+
 template struct SetImp1<OrdCT, UnordCT, MultiInterval, INT>;
 
 SET_TEMPLATE

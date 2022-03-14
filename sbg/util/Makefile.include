@@ -6,7 +6,8 @@ UTIL_DIR    := $(SBG_DIR)/util
 	UTIL_SRC := \
 	$(UTIL_DIR)/defs.cpp \
     $(UTIL_DIR)/logger.cpp \
-	$(UTIL_DIR)/ordinary_graph.cpp
+	$(UTIL_DIR)/ordinary_graph.cpp \
+	$(UTIL_DIR)/node_finder.cpp
 
 # Objects
 UTIL_OBJ=$(addprefix $(BUILD_DIR)/, $(UTIL_SRC:.cpp=.o))

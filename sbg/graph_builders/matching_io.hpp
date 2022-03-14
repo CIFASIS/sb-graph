@@ -21,21 +21,22 @@
 
 #include <ostream>
 
+#include <sbg/util/defs.hpp>
 #include <sbg/sbg.hpp>
 
 namespace SBG {
 
+namespace IO {
+
 struct LinearMap {
-  int constant;
-  int slope;
-  std::string iterator;
-  bool operator<(const LinearMap& other) const
-  {
-    if (constant == other.constant) {
-      return slope < other.slope;
-    }
-    return constant < other.constant;
-  }
+  LinearMap();
+  LinearMap(int constant, int slope, std::string iterator);
+
+  member_class(std::string, iterator);
+  member_class(int, constant);
+  member_class(int, slope);
+
+  bool operator<(const LinearMap &other) const;
 };
 
 std::ostream &operator<<(std::ostream &out, LinearMap &lm);
@@ -45,41 +46,65 @@ typedef std::vector<LinearMap> LinearMaps;
 std::ostream &operator<<(std::ostream &out, LinearMaps &lms);
 
 struct VariableUsage {
-  std::string name;
-  LinearMaps usage;
-  bool operator<(const VariableUsage& other) const
-  {
-    if (name == other.name) {
-      for (unsigned int dim = 0; dim < usage.size(); dim++) {
-        if (usage[dim] < other.usage[dim]) return true;
-      }
-      return false;
-    }
-    return name < other.name;
-  }
+  VariableUsage();
+  VariableUsage(std::string name, LinearMaps usage);
+
+  member_class(std::string, name);
+  member_class(LinearMaps, usage);
+
+  bool operator<(const VariableUsage &other) const;
 };
 
 std::ostream &operator<<(std::ostream &out, VariableUsage &var_usage);
 
 struct RangeDef {
-  std::string iterator;
-  int begin;
-  int step;
-  int end;
+  RangeDef();
+  RangeDef(std::string iterator, int begin, int step, int end);
+
+  member_class(std::string, iterator);
+  member_class(int, begin);
+  member_class(int, step);
+  member_class(int, end);
 };
 
+std::ostream &operator<<(std::ostream &out, RangeDef &range);
+std::ostream &operator<<(std::ostream &out, std::vector<RangeDef> &ranges);
+
 struct EquationInfo {
-  std::vector<RangeDef> size;
-  std::set<VariableUsage> var_usage;
+  EquationInfo();
+  EquationInfo(std::vector<RangeDef> size, std::set<VariableUsage> var_usage);
+
+  member_class(std::vector<RangeDef>, size);
+  member_class(std::set<VariableUsage>, var_usage);
 };
 
 struct VariableInfo {
-  std::string name;
-  std::vector<int> size;
-  bool is_state;
+  VariableInfo();
+  VariableInfo(std::string name, std::vector<int> size, bool is_state);
+
+  member_class(std::string, name);
+  member_class(std::vector<int>, size);
+  member_class(bool, is_state);
 };
 
-typedef std::list<EquationInfo> Equations;
-typedef std::list<VariableInfo> Variables;
+struct MatchingInfo {
+  MatchingInfo();
+  MatchingInfo(int eq_id, std::vector<RangeDef> eq_range, int var_id, std::vector<RangeDef> var_range);
+
+  member_class(int, eq_id);
+  member_class(std::vector<RangeDef>, eq_range);
+  member_class(int, var_id);
+  member_class(std::vector<RangeDef>, var_range);
+};
+
+typedef std::vector<EquationInfo> Equations;
+typedef std::vector<VariableInfo> Variables;
+typedef std::vector<MatchingInfo> Matching;
+typedef std::map<int, int> NodeMap;
+
+std::ostream &operator<<(std::ostream &out, MatchingInfo &matching_info);
+std::ostream &operator<<(std::ostream &out, Matching &matching);
+
+}  // namespace IO
 
 }  // namespace SBG

@@ -189,7 +189,8 @@ SET_IMP PW_TEMP_TYPE::preImage(SET_IMP s)
 PW_TEMPLATE
 PW_TEMP_TYPE PW_TEMP_TYPE::compPW(PW_TEMP_TYPE pw2)
 {
-  PWLMap aux = (*this).normalize();
+  PWLMapImp1 aux = *this;
+  aux = aux.normalize();
   pw2 = pw2.normalize();
 
   LMapsIt itlm1 = aux.lmap_ref().begin();
@@ -203,31 +204,134 @@ PW_TEMP_TYPE PW_TEMP_TYPE::compPW(PW_TEMP_TYPE pw2)
   SET_IMP auxDom;
   SET_IMP newDom;
 
-  BOOST_FOREACH (SET_IMP d1, aux.dom()) {
-    itlm2 = pw2.lmap_ref().begin();
+  if (aux.equivalentPW(pw2)) {
+    PWLMap notId;
 
-    BOOST_FOREACH (SET_IMP d2, pw2.dom()) {
-      auxDom = pw2.image(d2);
-      auxDom = auxDom.cap(d1);
-      auxDom = pw2.preImage(auxDom);
-      newDom = auxDom.cap(d2);
-
-      if (!newDom.empty()) {
-        LM_IMP newLM((*itlm1).compose(*itlm2));
-
-        itress = ress.insert(itress, newDom);
+    for (SetsIt itdom1 = aux.dom_ref().begin(); itdom1 != aux.dom_ref().end(); ++itdom1) {
+      if ((*itlm1).isId()) {
+        itress = ress.insert(itress, *itdom1);
         ++itress;
-        itreslm = reslm.insert(itreslm, newLM);
+        itreslm = reslm.insert(itreslm, *itlm1);
         ++itreslm;
+
+        SET_IMP pre1 = aux.preImage(*itdom1).diff(*itdom1);
+
+        if (!pre1.empty()) {
+          itlm2 = aux.lmap_ref().begin();
+          for (SetsIt itdom2 = aux.dom_ref().begin(); itdom2 != aux.dom_ref().end(); ++itdom2) {
+            SET_IMP inter = pre1.cap(*itdom2);
+
+            if (!inter.empty()) {
+              itress = ress.insert(itress, inter);
+              ++itress;
+              itreslm = reslm.insert(itreslm, *itlm2);
+              ++itreslm;
+            }
+
+            ++itlm2;
+          }
+        }
       }
 
-      ++itlm2;
+      else {
+        Set dom1;
+
+        BOOST_FOREACH (MI_IMP mi, (*itdom1).asets()) {
+          APW_IMP atom(mi, *itlm1);
+
+          if (atom.isId()) {
+            SET_IMP atomDom;
+            atomDom.addAtomSet(mi);
+            itress = ress.insert(itress, atomDom);
+            ++itress;
+            itreslm = reslm.insert(itreslm, *itlm1);
+            ++itreslm;
+
+            SET_IMP pre1 = aux.preImage(atomDom);
+
+            if (!pre1.empty()) {
+              itlm2 = aux.lmap_ref().begin();
+              for (SetsIt itdom2 = aux.dom_ref().begin(); itdom2 != aux.dom_ref().end(); ++itdom2) {
+                SET_IMP inter = pre1.cap(*itdom2);
+
+                if (!inter.empty()) {
+                  itress = ress.insert(itress, inter);
+                  ++itress;
+                  itreslm = reslm.insert(itreslm, *itlm2);
+                  ++itreslm;
+                }
+
+                ++itlm2;
+              }
+            }
+          }
+
+          else
+            dom1.addAtomSet(mi);
+        }
+
+        if (!dom1.empty()) notId.addSetLM(dom1, *itlm1);
+      }
+
+      ++itlm1;
     }
 
-    ++itlm1;
+    itlm1 = notId.lmap_ref().begin();
+    for (SetsIt itdom1 = notId.dom_ref().begin(); itdom1 != notId.dom_ref().end(); ++itdom1) {
+      itlm2 = aux.lmap_ref().begin();
+      SET_IMP pre1 = preImage(*itdom1);
+
+      if (!pre1.empty()) {
+        for (SetsIt itdom2 = aux.dom_ref().begin(); itdom2 != aux.dom_ref().end(); ++itdom2) {
+          SET_IMP inter = pre1.cap(*itdom2);
+
+          if (!inter.empty()) {
+            LM_IMP newLM((*itlm1).compose(*itlm2));
+
+            itress = ress.insert(itress, inter);
+            ++itress;
+            itreslm = reslm.insert(itreslm, newLM);
+            ++itreslm;
+          }
+
+          ++itlm2;
+        }
+      }
+
+      ++itlm1;
+    }
   }
 
-  return PWLMapImp1(ress, reslm);
+  else {
+    itlm1 = aux.lmap_ref().begin();
+
+    BOOST_FOREACH (SET_IMP d1, aux.dom()) {
+      itlm2 = pw2.lmap_ref().begin();
+
+      BOOST_FOREACH (SET_IMP d2, pw2.dom()) {
+        auxDom = pw2.image(d2);
+        auxDom = auxDom.cap(d1);
+        auxDom = pw2.preImage(auxDom);
+        newDom = auxDom.cap(d2);
+
+        if (!newDom.empty()) {
+          LM_IMP newLM((*itlm1).compose(*itlm2));
+
+          itress = ress.insert(itress, newDom);
+          ++itress;
+          itreslm = reslm.insert(itreslm, newLM);
+          ++itreslm;
+        }
+
+        ++itlm2;
+      }
+
+      ++itlm1;
+    }
+  }
+
+  PWLMapImp1 res(ress, reslm);
+  return res;
 }
 
 PW_TEMPLATE

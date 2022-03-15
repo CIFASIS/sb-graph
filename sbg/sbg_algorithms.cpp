@@ -265,13 +265,19 @@ std::tuple<PWLMap, PWLMap, PWLMap> minReachable(int nmax, Set V, Set E, PWLMap V
       Set ER;  // Recursive edges that changed its successor
       PWLMap se2map = newSEmap.compPW(newSEmap);
       PWLMap semapNth = se2map;
+
+      Set visitedEdges = newSEmap.wholeDom().cup(newSEmap.image());
+      Set oldSubsetEdges, visitedSubsetEdges = Emap.image(visitedEdges);
       do {
         PWLMap deltaEmap = Emap.compPW(semapNth.filterMap(notEqId)).diffMap(Emap);
         ER = deltaEmap.preImage(zero);
         semapNth = semapNth.compPW(newSEmap);
 
+        visitedEdges = newSEmap.image(visitedEdges);
+        oldSubsetEdges = visitedSubsetEdges;
+        visitedSubsetEdges = Emap.image(visitedEdges);
         n++;
-      } while (ER.empty() && n < nmax);
+      } while (ER.empty() && oldSubsetEdges.cap(visitedSubsetEdges).empty());
 
       // *** Handle recursion
       ER = ER.cap(Ec);
@@ -426,7 +432,7 @@ void MatchingStruct::offsetMaps(PWLMap sideMap)
   mapBSide = mmapSide.compPW(mapB);
 }
 
-void MatchingStruct::shortPaths(Set U, Set E)
+void MatchingStruct::shortPathsLeft(Set D, Set E)
 {
   PWLMap idMap(allVertices);
   PWLMap map_D = mapD.restrictMap(E);
@@ -435,26 +441,60 @@ void MatchingStruct::shortPaths(Set U, Set E)
   smap = idMap;
   rmap = idMap;
 
-  Set C = U;  // Vertices that reach U
+  Set C = D;  // Vertices that reach D
+  int k = 0;
+
+  Set P;
+
+  Set allowedEdges = E;
+
+  do {
+    map_D = map_D.restrictMap(allowedEdges);
+    map_B = map_B.restrictMap(allowedEdges);
+
+    P = map_B.image(map_D.preImage(C)).diff(C);
+    Set EP = map_D.preImage(C).cap(map_B.preImage(P));
+    PWLMap mapBP = map_B.restrictMap(EP);
+    PWLMap Vmin = mapBP.minInv(P);
+    PWLMap smapP = map_D.compPW(Vmin);
+    smap = smapP.combine(smap);
+    PWLMap rmapP = rmap.compPW(smapP);
+    rmap = rmapP.combine(rmap);
+
+    C = C.cup(P);
+    Set usedSubsetEdges = Emap.compPW(Vmin).image(P);
+    allowedEdges = allowedEdges.diff(Emap.preImage(usedSubsetEdges));
+    k++;
+  } while (!P.empty());
+}
+
+void MatchingStruct::shortPathsRight(Set D, Set E)
+{
+  PWLMap idMap(allVertices);
+  PWLMap map_D = mapD.restrictMap(E);
+  PWLMap map_B = mapB.restrictMap(E);
+
+  smap = idMap;
+  rmap = idMap;
+
+  Set C = D;  // Vertices that reach D
   int k = 0;
 
   Set P;
 
   do {
-    Set P = map_B.image(map_D.preImage(C)).diff(C);
+    P = map_B.image(map_D.preImage(C)).diff(C);
     Set EP = map_D.preImage(C).cap(map_B.preImage(P));
     PWLMap mapBP = map_B.restrictMap(EP);
-    PWLMap smapP = map_D.compPW(mapBP.minInv(mapBP.image()));
+    PWLMap Vmin = mapBP.minInv(P);
+    PWLMap smapP = map_D.compPW(Vmin);
     smap = smapP.combine(smap);
     PWLMap rmapP = rmap.compPW(smapP);
     rmap = rmapP.combine(rmap);
 
     C = C.cup(P);
     k++;
-  } while (k < nmax || !P.empty());
-
-  LOG << "smapshort: " << smap << "\n\n";
-  LOG << "rmapshort: " << rmap << "\n\n";
+  } while (!P.empty());
 }
 
 void MatchingStruct::directedMinReach(PWLMap sideMap)
@@ -483,27 +523,18 @@ void MatchingStruct::SBGMatchingShortStep(Set E)
 
   // *** Forward direction
 
-  shortPaths(unmatchedV.cap(F), Ed);
-
-  // Get edges that reach unmatched vertices in forward direction
-  // Set tildeV = rmap.preImage(F.cap(unmatchedV));
-  // Set tildeEd = mapU.preImage(tildeV).cup(mapF.preImage(tildeV));
+  shortPathsLeft(unmatchedV.cap(F), Ed);
 
   // Leave edges in paths that reach unmatched left vertices
   PWLMap auxB = mapB.restrictMap(mapD.preImage(smap.filterMap(notEqId).image()));
   Ed = smap.compPW(auxB).diffMap(mapD).preImage(zero);  // Edges that connect vertices with successors
-  // Ed = edgesInPaths.cap(tildeEd);
 
   // *** Backward direction
 
   PWLMap auxMapD = mapD;
   mapD = mapB;
   mapB = auxMapD;
-  shortPaths(unmatchedV.cap(U), Ed);
-
-  // Get edges that reach unmatched vertices in backward direction
-  // tildeV = rmap.preImage(U.cap(unmatchedV));
-  // tildeEd = mapU.preImage(tildeV).cup(mapF.preImage(tildeV));
+  shortPathsRight(unmatchedV.cap(U), Ed);
 
   // Leave edges in paths that reach unmatched left and right vertices
   auxB = mapB.restrictMap(mapD.preImage(smap.filterMap(notEqId).image()));
@@ -630,7 +661,6 @@ void MatchingStruct::SBGMatchingMin()
   do {
     SBGMatchingMinStep(allEdges);
     diffMatched = U.diff(matchedV);
-    LOG << diffMatched << "\n\n";
   } while (!diffMatched.empty() && !Ed.empty());
 
   LOG << "matchedmin: " << matchedE << "\n\n";

@@ -11,6 +11,10 @@ BUILD_DIR    	:= $(OBJ_DIR)/release
 ifeq ($(MODE),Debug)
 BUILD_DIR    	:= $(OBJ_DIR)/debug
 endif
+prefix 			?= /usr/local
+exec_prefix     ?= @prefix@
+includedir      ?= @prefix@/include
+libdir          ?= $(exec_prefix)/lib
 
 # Flags, Libraries and Includes
 INCLUDES := -I.
@@ -43,17 +47,20 @@ endif
 
 install: | create-folders
 	@echo "Installing SBG library headers."
-	@install $(ROOT)/sbg/*.hpp $(ROOT)/include/sbg
-	@install $(ROOT)/sbg/util/*.hpp $(ROOT)/include/sbg/util
-	@install $(ROOT)/sbg/graph_builders/*.hpp $(ROOT)/include/sbg/graph_builders
+	@echo @includedir@
+	@install $(ROOT)/sbg/*.hpp @includedir@/sbg
+	@install $(ROOT)/sbg/util/*.hpp @includedir@/sbg/util
+	@install $(ROOT)/sbg/graph_builders/*.hpp @includedir@/sbg/graph_builders
+	@install $(ROOT)/lib/libsbgraph.a @libdir@/
 	@echo "Done."
 
 create-folders::
 	@mkdir -p $(ROOT)/lib
-	@mkdir -p $(ROOT)/include
-	@mkdir -p $(ROOT)/include/sbg
-	@mkdir -p $(ROOT)/include/sbg/util
-	@mkdir -p $(ROOT)/include/sbg/graph_builders	
+	@mkdir -p @libdir@
+	@mkdir -p @includedir@
+	@mkdir -p @includedir@/sbg
+	@mkdir -p @includedir@/sbg/util
+	@mkdir -p @includedir@/sbg/graph_builders	
 	@mkdir -p $(OBJ_DIR)
 	@mkdir -p $(BUILD_DIR)
 

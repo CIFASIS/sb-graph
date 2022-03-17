@@ -21,10 +21,7 @@ jobs:
         sudo apt-get install g++
         sudo apt-get install libginac-dev
     - name: Dump GitHub context
-      env:
-        GITHUB_CONTEXT: ${{ toJson(env) }}
-      run: echo "$GITHUB_CONTEXT"
-      
+      run: echo "$GITHUB_WORKSPACE"
     - name: Build
       working-directory: ./
       run: |

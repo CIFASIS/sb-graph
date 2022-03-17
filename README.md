@@ -1,4 +1,4 @@
-# Set Based Graph 1.0
+# Set--Based Graph Library 1.0
 
 Set--Based Graphs (SBGs) are regular graphs in which the vertices and edges are grouped in sets allowing
 sometimes a compact representation. SBG were introduced and formally defined [here](https://dl.acm.org/doi/abs/10.1145/3365984.3365991)
@@ -43,7 +43,7 @@ The simplest way to compile this package is:
      source code directory by typing `make clean`.  
 
 ## Examples:			   
-The [examples](https://github.com/CIFASIS/sb-graph/tree/sb-graph-dev/examples) folder contains three simple use cases of the **matching algorithm** defined in the library, including the use of the [IO](https://github.com/CIFASIS/sb-graph/tree/sb-graph-dev/sbg/graph_builders) interface defined for the matching structures.
+The [examples](https://github.com/CIFASIS/sb-graph/tree/sb-graph-dev/examples) folder contains three simple use cases of the **matching algorithm** defined in the library, including the use of the [IO](https://github.com/CIFASIS/sb-graph/blob/sb-graph-dev/sbg/graph_builders/matching_io.hpp) interface defined for the matching structures.
 All the examples are based on simple Modelica models, for instance [advection.c](https://github.com/CIFASIS/sb-graph/blob/sb-graph-dev/examples/advection/advection.c) shows a simple use case for the following model:   
 
 ```

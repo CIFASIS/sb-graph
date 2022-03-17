@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.68])
 AC_LANG([C++])
-AC_INIT([SBGraph], [0.1], [fernandez@cifasis-conicet.gov.ar])
+AC_INIT([SBGraph], [1.0], [fernandez@cifasis-conicet.gov.ar])
 #AC_CONFIG_MACRO_DIR([macros])
 m4_include([macros/ax_boost_base.m4])
 m4_include([macros/ax_cxx_compile_stdcxx.m4])

@@ -25,7 +25,7 @@ jobs:
       working-directory: ./
       run: |
         autoconf
-        ./configure --prefix=$GITHUB_WORKSPACE
+        ./configure --prefix=${GITHUB_WORKSPACE}
         make 
 
     - name: Tests

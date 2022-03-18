@@ -45,7 +45,7 @@ ifeq ("$(wildcard $(3RD_PARTY_DIR)/gtest/usr/lib)","")
 	rm -rf $(3RD_PARTY_DIR)/gtest/build
 endif
 
-install: | create-folders
+install: | install-folders
 	@echo "Installing SBG library headers."
 	@echo ${prefix}
 	@install $(ROOT)/sbg/*.hpp $(includedir)/sbg
@@ -54,13 +54,15 @@ install: | create-folders
 	@install $(ROOT)/lib/libsbgraph.a $(libdir)/
 	@echo "Done."
 
-create-folders::
-	@mkdir -p $(ROOT)/lib
+install-folders:
 	@mkdir -p $(libdir)
 	@mkdir -p $(includedir)
 	@mkdir -p $(includedir)/sbg
 	@mkdir -p $(includedir)/sbg/util
 	@mkdir -p $(includedir)/sbg/graph_builders	
+
+create-folders::
+	@mkdir -p $(ROOT)/lib
 	@mkdir -p $(OBJ_DIR)
 	@mkdir -p $(BUILD_DIR)
 

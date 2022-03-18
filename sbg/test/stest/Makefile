@@ -11,7 +11,7 @@ GOOGLE_TEST_INSTALL = $(ROOT_DIR)/3rd-party/gtest
 GOOGLE_TEST_LIB = gtest
 GOOGLE_MOCK_LIB = gmock
 GOOGLE_TEST_INCLUDE = $(GOOGLE_TEST_INSTALL)/usr/include
-LIB 		+= -lginac -lcln -lgmp  
+LIB 		+= -lgmp  
 G++ = g++
 G++_FLAGS = -c -Wall -I $(GOOGLE_TEST_INCLUDE) -std=c++11
 LD_FLAGS = -L $(GOOGLE_TEST_INSTALL)/usr/lib -l $(GOOGLE_TEST_LIB) -l $(GOOGLE_MOCK_LIB) -l pthread 

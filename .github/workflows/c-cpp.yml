@@ -19,15 +19,13 @@ jobs:
         sudo apt-get install boost1.71
         sudo apt-get install cmake 
         sudo apt-get install g++
-        sudo apt-get install libginac-dev
-    - name: Dump GitHub context
-      run: echo "$GITHUB_WORKSPACE"
+
     - name: Build
       working-directory: ./
       run: |
         autoconf
         ./configure 
-        make prefix=$GITHUB_WORKSPACE
+        make
 
     - name: Tests
       working-directory: ./

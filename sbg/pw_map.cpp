@@ -957,8 +957,8 @@ void PW_TEMP_TYPE::minMapSet(SET_IMP dom, LM_IMP lm1, LM_IMP lm2, LM_IMP lm3, LM
   LM_IMP lres1;
   LM_IMP lres2;
 
-  UNORD_CT<MI_IMP> asets = dom.asets();
-  typename UNORD_CT<MI_IMP>::iterator itas = asets.begin();
+  UNIQUE_ORD_CT<MI_IMP> asets = dom.asets();
+  typename UNIQUE_ORD_CT<MI_IMP>::iterator itas = asets.begin();
 
   if (!dom.empty()) {
     PWLMapImp1 aux;
@@ -1543,7 +1543,7 @@ PW_TEMP_TYPE PW_TEMP_TYPE::mapInf(int n)
 PW_TEMPLATE
 bool PW_TEMP_TYPE::operator==(const PW_TEMP_TYPE &other) const { return dom() == other.dom() && lmap() == other.lmap(); }
 
-template struct PWLMapImp1<OrdCT, UnordCT, AtomPWLMap, LMap, Set, MultiInterval, Interval, INT, REAL>;
+template struct PWLMapImp1<OrdCT, UniqueOrdCT, UnordCT, AtomPWLMap, LMap, Set, MultiInterval, Interval, INT, REAL>;
 
 PW_TEMPLATE
 std::ostream &operator<<(std::ostream &out, const PW_TEMP_TYPE &pw)

@@ -44,6 +44,7 @@ struct MultiInterImp1 {
 
   MultiInterImp1();
   MultiInterImp1(Intervals is);
+  MultiInterImp1(ORD_CT<INT> v);
 
   void addInter(INTER_IMP i);
   bool empty();
@@ -76,6 +77,7 @@ size_t hash_value(const MultiInterval &mi);
 printable_temp(MI_TEMPLATE, MI_TEMP_TYPE);
 
 typedef UnordCT<MultiInterval> UNORD_MI;
+typedef UniqueOrdCT<MultiInterval> UNIQUE_MI;
 
 std::ostream &operator<<(std::ostream &out, const UNORD_MI &mis);
 

@@ -29,10 +29,13 @@ typedef double REAL;
 #define Inf std::numeric_limits<INT>::max()
 
 template <typename T, class = std::allocator<T>>
-using OrdCT = std::list<T>;  // Ord stands for ordered container
+using OrdCT = std::list<T>;  // Ordered container, with duplicates
+
+template <class T, class Compare = std::less<T>, class Alloc = std::allocator<T>>
+using UniqueOrdCT = std::set<T>; // Ordered container, without duplicates
 
 template <typename Value, typename Hash = boost::hash<Value>, typename Pred = std::equal_to<Value>, typename Alloc = std::allocator<Value>>
-using UnordCT = boost::unordered_set<Value>;  // Unord stands for unordered container
+using UnordCT = boost::unordered_set<Value>;  // Unordered container without duplicates
 
 typedef OrdCT<INT> ORD_INTS;
 typedef OrdCT<REAL> ORD_REALS;

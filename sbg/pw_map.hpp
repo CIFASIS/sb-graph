@@ -34,12 +34,13 @@ namespace SBG {
 
 #define PW_TEMPLATE                                                                                             \
   template <template <typename T, typename = std::allocator<T>> class ORD_CT,                                   \
+            template<typename T, typename = std::less<T>, typename = std::allocator<T>> class UNIQUE_ORD_CT,    \
             template <typename Value, typename Hash = boost::hash<Value>, typename Pred = std::equal_to<Value>, \
                       typename Alloc = std::allocator<Value>>                                                   \
             class UNORD_CT,                                                                                     \
             typename APW_IMP, typename LM_IMP, typename SET_IMP, typename MI_IMP, typename INTER_IMP, typename INT_IMP, typename REAL_IMP>
 
-#define PW_TEMP_TYPE PWLMapImp1<ORD_CT, UNORD_CT, APW_IMP, LM_IMP, SET_IMP, MI_IMP, INTER_IMP, INT_IMP, REAL_IMP>
+#define PW_TEMP_TYPE PWLMapImp1<ORD_CT, UNIQUE_ORD_CT, UNORD_CT, APW_IMP, LM_IMP, SET_IMP, MI_IMP, INTER_IMP, INT_IMP, REAL_IMP>
 
 PW_TEMPLATE
 struct PWLMapImp1 {
@@ -106,7 +107,7 @@ struct PWLMapImp1 {
   eq_class(PWLMapImp1);
 };
 
-typedef PWLMapImp1<OrdCT, UnordCT, AtomPWLMap, LMap, Set, MultiInterval, Interval, INT, REAL> PWLMap;
+typedef PWLMapImp1<OrdCT, UniqueOrdCT, UnordCT, AtomPWLMap, LMap, Set, MultiInterval, Interval, INT, REAL> PWLMap;
 
 printable_temp(PW_TEMPLATE, PW_TEMP_TYPE);
 

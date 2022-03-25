@@ -73,7 +73,7 @@ The makefile script accepts the following options:
 
 The makefile script accepts the following targets:
 
-	* test: 		Builds and run integration and unit tests.
+  * test: 		Builds and run integration and unit tests.
 
 ## Examples:			   
 The [examples](https://github.com/CIFASIS/sb-graph/tree/sb-graph-dev/examples) folder contains three simple use cases of the **matching algorithm** defined in the library, including the use of the [IO](https://github.com/CIFASIS/sb-graph/blob/sb-graph-dev/sbg/graph_builders/matching_io.hpp) interface defined for the matching structures.

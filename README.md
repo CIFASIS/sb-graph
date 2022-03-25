@@ -1,4 +1,4 @@
-# Set--Based Graph Library
+# Set-Based Graph Library
 
 Set-based graphs (SB-Graphs) are regular graphs in which the vertices and edges are grouped in sets allowing sometimes a compact representation. When the compact representation is feasible, it is possible to develop new versions of traditional algorithms that take advantage of the structure of SB-Graphs, with a cost that is independent on the size of the sets of vertices and edges. Current algorithms for SB-Graphs:
 
@@ -59,7 +59,7 @@ The simplest way to compile this package is:
 
 The makefile script accepts the following options:
 
-	* MODE = <Debug|Release> 	When set to Debug (default), adds the compiler's debug flags.
+  * MODE = <Debug|Release> 	When set to Debug (default), adds the compiler's debug flags.
 
 	* prefix = <Installation prefix path> 	Set the prefix installation path, default: /usr/local.
 

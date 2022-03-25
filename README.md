@@ -61,7 +61,7 @@ The makefile script accepts the following options:
 
   * MODE = <Debug|Release> 	When set to Debug (default), adds the compiler's debug flags.
 
-	* prefix = <Installation prefix path> 	Set the prefix installation path, default: /usr/local.
+  * prefix = <Installation prefix path> 	Set the prefix installation path, default: /usr/local.
 
   * exec_prefix = <Binaries installation path> 	Set the binaries installation path, default: /usr/local.
 

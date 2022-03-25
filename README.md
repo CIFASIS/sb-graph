@@ -28,11 +28,11 @@ These are generic installation instructions.
 In order to be able to install and compile SBG Library, 
 the following  dependencies must be installed: 
 
-    * autoconf
-    * boost1.71
-    * cmake
-    * g++
-    * make     
+  * autoconf
+  * boost1.71
+  * cmake
+  * g++
+  * make     
 
 ## Basic Installation
 

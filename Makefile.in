@@ -66,6 +66,14 @@ create-folders::
 	@mkdir -p $(OBJ_DIR)
 	@mkdir -p $(BUILD_DIR)
 
+.PHONY: doc
+
+doc:
+	@mkdir -p $(ROOT)/doc
+	@mkdir -p $(ROOT)/doc/html
+	@mkdir -p $(ROOT)/doc/latex
+	doxygen sbg/SBG.doxyfile
+
 test: lib-gtest $(SBG_GRAPH_TEST)
 
 clean:

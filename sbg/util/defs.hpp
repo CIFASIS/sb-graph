@@ -42,6 +42,20 @@ std::ostream &operator<<(std::ostream &out, const ORD_REALS &nums);
 
 // Helpful macros ---------------------------------------------------------------------------------
 
+/**
+ * @brief Define a variable member of a class and the getters and setters.
+ *
+ * The macro takes two parameters:
+ *  + The variable type @c X.
+ *  + The name of the variable @c Y.
+ *
+ * It will define the folowwing:
+ *  + A member variable called: @c Y_
+ *  + An constant getter method: @c Y()
+ *  + A setter method: @c set_Y()
+ *  + A getter ref method @c Y_ref()
+ *
+ */
 #define member_class(X, Y) \
   X Y##_;                  \
   X Y() const;             \

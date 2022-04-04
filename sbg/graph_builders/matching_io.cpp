@@ -101,10 +101,10 @@ member_imp(RangeDef, int, step);
 member_imp(RangeDef, int, end);
 
 EquationInfo::EquationInfo() : size_(), var_usage_() {}
-EquationInfo::EquationInfo(std::vector<RangeDef> size, std::set<VariableUsage> var_usage) : size_(size), var_usage_(var_usage) {}
+EquationInfo::EquationInfo(Ranges size, VariableUsages var_usage) : size_(size), var_usage_(var_usage) {}
 
-member_imp(EquationInfo, std::vector<RangeDef>, size);
-member_imp(EquationInfo, std::set<VariableUsage>, var_usage);
+member_imp(EquationInfo, Ranges, size);
+member_imp(EquationInfo, VariableUsages, var_usage);
 
 VariableInfo::VariableInfo() : name_(), size_(), is_state_(true) {}
 VariableInfo::VariableInfo(std::string name, std::vector<int> size, bool is_state) : name_(name), size_(size), is_state_(is_state) {}
@@ -114,15 +114,15 @@ member_imp(VariableInfo, std::vector<int>, size);
 member_imp(VariableInfo, bool, is_state);
 
 MatchingInfo::MatchingInfo() : eq_id_(0), eq_range_(), var_id_(0), var_range_() {}
-MatchingInfo::MatchingInfo(int eq_id, std::vector<RangeDef> eq_range, int var_id, std::vector<RangeDef> var_range)
+MatchingInfo::MatchingInfo(int eq_id, Ranges eq_range, int var_id, Ranges var_range)
     : eq_id_(eq_id), eq_range_(eq_range), var_id_(var_id), var_range_(var_range)
 {
 }
 
 member_imp(MatchingInfo, int, eq_id);
-member_imp(MatchingInfo, std::vector<RangeDef>, eq_range);
+member_imp(MatchingInfo, Ranges, eq_range);
 member_imp(MatchingInfo, int, var_id);
-member_imp(MatchingInfo, std::vector<RangeDef>, var_range);
+member_imp(MatchingInfo, Ranges, var_range);
 
 std::ostream &operator<<(std::ostream &out, MatchingInfo &matching_info)
 {

@@ -46,6 +46,10 @@
  *      diodeon:=0;
  *   end when;
  * end buck;
+ *
+ * COMPILE COMMAND:
+ * g++ buck.c -o buck -lsbgraph
+ *
  ***************************************************************************************************/
 
 #include <sbg/graph_builders/matching_graph_builder.hpp>

@@ -19,14 +19,13 @@ jobs:
         sudo apt-get install boost1.71
         sudo apt-get install cmake 
         sudo apt-get install g++
-        sudo apt-get install libginac-dev
-          
+
     - name: Build
       working-directory: ./
       run: |
         autoconf
-        ./configure
-        make 
+        ./configure 
+        make
 
     - name: Tests
       working-directory: ./

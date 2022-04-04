@@ -38,7 +38,7 @@
  * end bball_downstairs;
  *
  * COMPILE COMMAND:
- * g++ bball_downstairs.c -o bball_downstairs -I../../ -L../../lib -lsbgraph
+ * g++ bball_downstairs.c -o bball_downstairs -lsbgraph
  *
  ******************************************************************************/
 

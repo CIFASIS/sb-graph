@@ -36,7 +36,7 @@
  * end advection;
  *
  * COMPILE COMMAND:
- * g++ advection.c -o advection -I../../ -L../../lib -lsbgraph
+ * g++ advection.c -o advection -lsbgraph
  *
  **********************************************************************/
 

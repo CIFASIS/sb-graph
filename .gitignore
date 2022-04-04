@@ -16,6 +16,8 @@
 /sbg/test/stest/bin/*
 /sbg/test/stest/obj/*
 
+# Doc files.
+/doc/*
 
 # Examples
 /examples/*

@@ -524,6 +524,7 @@ void MatchingStruct::SBGMatchingShortStep(Set E)
   // *** Forward direction
 
   shortPathsLeft(unmatchedV.cap(F), Ed);
+  PWLMap rmapl = rmap;
 
   // Leave edges in paths that reach unmatched left vertices
   PWLMap auxB = mapB.restrictMap(mapD.preImage(smap.filterMap(notEqId).image()));
@@ -538,7 +539,8 @@ void MatchingStruct::SBGMatchingShortStep(Set E)
 
   // Leave edges in paths that reach unmatched left and right vertices
   auxB = mapB.restrictMap(mapD.preImage(smap.filterMap(notEqId).image()));
-  Set edgesInPaths = smap.compPW(auxB).diffMap(mapD).preImage(zero);  // Edges that connect vertices with successors
+  PWLMap qmap = rmap.compPW(auxB).diffMap(rmap.compPW(rmapl.compPW(auxB)));
+  Set edgesInPaths = qmap.preImage(zero);  // Edges in augmenting paths that connect vertices with successors
   Ed = Ed.cap(edgesInPaths);
 
   mapB = mapD;
@@ -574,15 +576,12 @@ void MatchingStruct::SBGMatchingMinStep(Set E)
   // *** Forward direction
 
   directedMinReach(mapU);
-
-  // Get edges that reach unmatched vertices in forward direction
-  Set tildeV = rmap.preImage(F.cap(unmatchedV));
-  Set tildeEd = mapU.preImage(tildeV).cup(mapF.preImage(tildeV));
+  PWLMap rmapl = rmap.restrictMap(rmap.preImage(unmatchedV));  // Rmap for vertices that reach unmatched left vertices
 
   // Leave edges in paths that reach unmatched left vertices
   PWLMap auxB = mapB.restrictMap(mapD.preImage(smap.filterMap(notEqId).image()));
   Set edgesInPaths = smap.compPW(auxB).diffMap(mapD).preImage(zero);  // Edges that connect vertices with successors
-  Ed = edgesInPaths.cap(tildeEd);
+  Ed = edgesInPaths;
 
   // *** Backward direction
 
@@ -591,14 +590,15 @@ void MatchingStruct::SBGMatchingMinStep(Set E)
   mapB = auxMapD;
   directedMinReach(mapF);
 
-  // Get edges that reach unmatched vertices in backward direction
-  tildeV = rmap.preImage(U.cap(unmatchedV));
-  tildeEd = mapU.preImage(tildeV).cup(mapF.preImage(tildeV));
-
   // Leave edges in paths that reach unmatched left and right vertices
+  Set rightU = rmap.preImage(unmatchedV);  // Vertices that reach unmatched right vertices
+  rmap = rmap.restrictMap(rightU);
+  smap = smap.restrictMap(rightU);
+
   auxB = mapB.restrictMap(mapD.preImage(smap.filterMap(notEqId).image()));
-  edgesInPaths = smap.compPW(auxB).diffMap(mapD).preImage(zero);  // Edges that connect vertices with successors
-  Ed = Ed.cap(edgesInPaths).cap(tildeEd);
+  PWLMap qmap = rmap.compPW(auxB).diffMap(rmap.compPW(rmapl.compPW(auxB)));
+  edgesInPaths = qmap.preImage(zero);  // Edges in augmenting paths that connect vertices with successors
+  Ed = Ed.cap(edgesInPaths);
 
   mapB = mapD;
   mapD = auxMapD;

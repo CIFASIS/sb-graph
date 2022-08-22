@@ -18,6 +18,7 @@
  ******************************************************************************/
 #pragma once
 
+#include <boost/range/combine.hpp>
 #include <boost/config.hpp>
 #include <boost/unordered_set.hpp>
 
@@ -46,7 +47,9 @@ std::ostream &operator<<(std::ostream &out, const ORD_REALS &nums);
 // Helpful macros ---------------------------------------------------------------------------------
 
 #define member_class(X, Y) \
+private:                   \
   X Y##_;                  \
+public:                    \
   X Y() const;             \
   void set_##Y(X x);       \
   X &Y##_ref();
@@ -67,5 +70,10 @@ std::ostream &operator<<(std::ostream &out, const ORD_REALS &nums);
 #define gt_class(X) bool operator>(const X &other) const;
 
 #define printable_temp(T, X) T std::ostream &operator<<(std::ostream &out, const X &);
+
+// Helpful functions ------------------------------------------------------------------------------
+
+#define parallel_foreach2(X, Y) for (auto&& items : boost::combine(X, Y))
+#define parallel_foreach3(X, Y) for (auto&& items : boost::combine(X, Y))
 
 }  // namespace SBG

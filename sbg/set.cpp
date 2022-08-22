@@ -39,6 +39,9 @@ SET_TEMP_TYPE1::SetImp1(MI_IMP as) : ndim_(as.ndim()) { asets_ref().insert(as); 
 SET_TEMPLATE1
 SET_TEMP_TYPE1::SetImp1(AtomSets asets)
 {
+  set_asets(AtomSets());
+  set_ndim(0);
+
   if (!asets.empty()) {
     int dim1 = (*(asets.begin())).ndim();
     bool equalDims = true;
@@ -47,20 +50,9 @@ SET_TEMP_TYPE1::SetImp1(AtomSets asets)
       if (dim1 != as.ndim()) equalDims = false;
 
     if (equalDims && dim1 != 0) {
-      asets_ = asets;
-      ndim_ = dim1;
+      set_asets(asets);
+      set_ndim(dim1);
     }
-
-    else {
-      AtomSets emptyASets;
-      asets_ = emptyASets;
-      ndim_ = 0;
-    }
-  }
-
-  else {
-    asets_ = asets;
-    ndim_ = 0;
   }
 }
 
@@ -73,8 +65,8 @@ SET_TEMP_TYPE1::SetImp1(ORD_CT<INT> v)
   if (!v.empty())
     asets.insert(asets.begin(), as);
 
-  asets_ = asets;
-  ndim_ = as.ndim();
+  set_asets(asets);
+  set_ndim(as.ndim());
 }
 
 member_imp_temp(SET_TEMPLATE1, SET_TEMP_TYPE1, AS_TYPE1, asets);
@@ -84,11 +76,11 @@ SET_TEMPLATE1
 void SET_TEMP_TYPE1::addAtomSet(MI_IMP aset2)
 {
   if (!aset2.empty() && aset2.ndim() == ndim() && !empty())
-    asets_.insert(aset2);
+    asets().insert(asets().end(), aset2);
 
   else if (!aset2.empty() && empty()) {
-    asets_.insert(aset2);
-    ndim_ = aset2.ndim();
+    asets().insert(asets().end(), aset2);
+    set_ndim(aset2.ndim());
   }
 }
 
@@ -104,12 +96,10 @@ bool SET_TEMP_TYPE1::empty()
 {
   if (asets_ref().empty()) return true;
 
-  bool res = true;
-  BOOST_FOREACH (MI_IMP as, asets()) {
-    if (!as.empty()) res = false;
-  }
+  BOOST_FOREACH (MI_IMP as, asets()) 
+    if (as.empty()) return true;
 
-  return res;
+  return false;
 }
 
 SET_TEMPLATE1
@@ -133,35 +123,17 @@ int SET_TEMP_TYPE1::card()
 }
 
 SET_TEMPLATE1 
-bool SET_TEMP_TYPE1::subseteq(SET_TEMP_TYPE1 set2)
-{
-  SetImp1 sdiff = (*this).diff(set2);
-
-  if (sdiff.empty()) return true;
-
-  return false;
-}
+bool SET_TEMP_TYPE1::subseteq(SET_TEMP_TYPE1 set2) { return (*this).cap(set2) == set2; }
 
 SET_TEMPLATE1
-bool SET_TEMP_TYPE1::subset(SET_TEMP_TYPE1 set2)
-{
-  SetImp1 sdiff1 = (*this).diff(set2);
-  SetImp1 sdiff2 = set2.diff(*this);
-
-  if (sdiff1.empty() && !sdiff2.empty()) return true;
-
-  return false;
-}
+bool SET_TEMP_TYPE1::subset(SET_TEMP_TYPE1 set2) { return set2 != *this && set2.cap(*this) == set2; }
 
 SET_TEMPLATE1
 SET_TEMP_TYPE1 SET_TEMP_TYPE1::cap(SET_TEMP_TYPE1 set2)
 {
   MI_IMP aux1, aux2;
 
-  if (empty() || set2.empty()) {
-    SetImp1 emptyRes;
-    return emptyRes;
-  }
+  if (empty() || set2.empty()) return SetImp1();
 
   AtomSets res;
 
@@ -398,16 +370,14 @@ SET_TEMPLATE2
 SET_TEMP_TYPE2::SetImp2() : ndim_(0), asets_() {}
 
 SET_TEMPLATE2
-SET_TEMP_TYPE2::SetImp2(MI_IMP as) : ndim_(as.ndim())
-{
-  AtomSets empty;
-  empty.insert(as);
-  asets_ = empty;
-}
+SET_TEMP_TYPE2::SetImp2(MI_IMP as) : ndim_(as.ndim()) { asets_ref().insert(as); }
 
 SET_TEMPLATE2
 SET_TEMP_TYPE2::SetImp2(AtomSets asets)
 {
+  set_asets(AtomSets());
+  set_ndim(0);
+
   if (!asets.empty()) {
     int dim1 = (*(asets.begin())).ndim();
     bool equalDims = true;
@@ -416,31 +386,18 @@ SET_TEMP_TYPE2::SetImp2(AtomSets asets)
       if (dim1 != as.ndim()) equalDims = false;
 
     if (equalDims && dim1 != 0) {
-      AtomSets aux;
-
-      BOOST_FOREACH (MI_IMP as, asets)
-        aux.insert(as);
-
-      asets_ = aux;
-      ndim_ = dim1;
+      set_asets(asets);
+      set_ndim(dim1);
     }
-
-    else {
-      AtomSets emptyASets;
-      asets_ = emptyASets;
-      ndim_ = 0;
-    }
-  }
-
-  else {
-    asets_ = asets;
-    ndim_ = 0;
   }
 }
 
 SET_TEMPLATE2
 SET_TEMP_TYPE2::SetImp2(UNORD_CT<MI_IMP> asets)
 {
+  set_asets(AtomSets());
+  set_ndim(0);
+
   if (!asets.empty()) {
     int dim1 = (*(asets.begin())).ndim();
     bool equalDims = true;
@@ -449,44 +406,26 @@ SET_TEMP_TYPE2::SetImp2(UNORD_CT<MI_IMP> asets)
       if (dim1 != as.ndim()) equalDims = false;
 
     if (equalDims && dim1 != 0) {
-      AtomSets aux;
+      BOOST_FOREACH (MI_IMP mi, asets)
+        asets_ref().insert(mi);
 
-      BOOST_FOREACH (MI_IMP as, asets)
-        aux.insert(as);
-
-      asets_ = aux;
-      ndim_ = dim1;
+      set_ndim(dim1);
     }
-
-    else {
-      AtomSets emptyASets;
-      asets_ = emptyASets;
-      ndim_ = 0;
-    }
-  }
-
-  else {
-    AtomSets aux;
-
-    BOOST_FOREACH (MI_IMP as, asets)
-      aux.insert(as);
-
-    asets_ = aux;
-    ndim_ = 0;
   }
 }
 
 SET_TEMPLATE2
 SET_TEMP_TYPE2::SetImp2(ORD_CT<INT> v)
 {
-  AtomSets asets;
+  set_asets(AtomSets());
+  set_ndim(0);
+
   MI_IMP as(v);
 
-  if (!v.empty())
-    asets.insert(as);
-
-  asets_ = asets;
-  ndim_ = as.ndim();
+  if (!v.empty()) {
+    asets().insert(as);
+    set_ndim(as.ndim());
+  }
 }
 
 member_imp_temp(SET_TEMPLATE2, SET_TEMP_TYPE2, AS_TYPE2, asets);
@@ -496,11 +435,11 @@ SET_TEMPLATE2
 void SET_TEMP_TYPE2::addAtomSet(MI_IMP aset2)
 {
   if (!aset2.empty() && aset2.ndim() == ndim() && !empty())
-    asets_.insert(aset2);
+    asets_ref().insert(aset2);
 
   else if (!aset2.empty() && empty()) {
-    asets_.insert(aset2);
-    ndim_ = aset2.ndim();
+    asets_ref().insert(aset2);
+    set_ndim(aset2.ndim());
   }
 }
 
@@ -516,12 +455,10 @@ bool SET_TEMP_TYPE2::empty()
 {
   if (asets_ref().empty()) return true;
 
-  bool res = true;
-  BOOST_FOREACH (MI_IMP as, asets()) {
-    if (!as.empty()) res = false;
-  }
+  BOOST_FOREACH (MI_IMP as, asets())
+    if (as.empty()) return true;
 
-  return res;
+  return false;
 }
 
 SET_TEMPLATE2
@@ -543,6 +480,8 @@ int SET_TEMP_TYPE2::card()
 
   return res;
 }
+
+// Continue from here
 
 SET_TEMPLATE2 
 bool SET_TEMP_TYPE2::subseteq(SET_TEMP_TYPE2 set2)
@@ -683,7 +622,7 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::normalize()
   UNIQUE_ORD_CT<MI_IMP> toInsert, toDelete;
 
   UNIQUE_ORD_CT<MI_IMP> empty;
-  
+
   do {
     bool first = true;
     toInsert = empty;
@@ -748,13 +687,10 @@ bool SET_TEMP_TYPE2::operator==(const SET_TEMP_TYPE2 &other) const
 {
   SetImp2 aux1 = *this;
   SetImp2 aux2 = other;
-  SetImp2 diff1 = aux1.diff(aux2);
-  SetImp2 diff2 = aux2.diff(aux1);
 
-  if (diff1.empty() && diff2.empty())
-    return true;
+  if (aux1.asets() == aux2.asets()) return true;
 
-  return false; 
+  return aux1.normalize().asets() == aux2.normalize().asets(); 
 }
 
 SET_TEMPLATE2
@@ -784,14 +720,6 @@ bool SET_TEMP_TYPE2::operator<(const SET_TEMP_TYPE2 &other) const
   }
 
   return false;
-}
-
-SET_TEMPLATE2
-size_t SET_TEMP_TYPE2::hash()
-{
-  size_t seed = 0;
-  boost::hash_combine(seed, asets_ref().size());
-  return seed; 
 }
 
 template struct SetImp2<OrdCT, UniqueOrdCT, UnordCT, MultiInterval, INT>;
@@ -833,8 +761,12 @@ std::ostream &operator<<(std::ostream &out, const SET_TEMP_TYPE2 &set)
 template std::ostream &operator<<(std::ostream &out, const Set &set);
 
 size_t hash_value(const Set &set) { 
-  Set aux = set;
-  return aux.hash(); 
+  std::size_t seed = 0;
+
+  BOOST_FOREACH (MultiInterval mi, set.asets())
+    boost::hash_combine(seed, hash_value(mi));
+
+  return seed;
 }
 
 Set createSet(Interval i)

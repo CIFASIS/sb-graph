@@ -66,7 +66,7 @@ struct IntervalImp1 {
 // struct IntervalImp2 { ... }
 //
 typedef IntervalImp1<UnordCT> Interval;
-size_t hash_value(const Interval &inter);
+std::size_t hash_value(const Interval &inter);
 
 // >>>>> To change implementation of Interval:
 // typedef IntervalImp2 Interval;

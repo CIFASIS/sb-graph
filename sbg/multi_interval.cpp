@@ -24,34 +24,32 @@ namespace SBG {
 
 // MultiIntervals ---------------------------------------------------------------------------------
 
-#define INTERS_TYPE typename MI_TEMP_TYPE::Intervals
-
 MI_TEMPLATE
-MI_TEMP_TYPE::MultiInterImp1() : ndim_(0), inters_() {}
+MI_TEMP_TYPE::MultiInterImp1() : ndim_(0), inters_(Intervals()) {}
 
 MI_TEMPLATE
 MI_TEMP_TYPE::MultiInterImp1(INTERS_TYPE inters)
 {
+  set_inters(Intervals());
+  set_ndim(0);
+
   bool areEmptyInters = false;
 
   BOOST_FOREACH (INTER_IMP i, inters)
     if (i.empty()) areEmptyInters = true;
 
-  if (areEmptyInters) {
-    Intervals emptyInters;
-    inters_ = emptyInters;
-    ndim_ = 0;
-  }
-
-  else {
-    inters_ = inters;
-    ndim_ = inters.size();
+  if (!areEmptyInters) {
+    set_inters(inters);
+    set_ndim(inters.size());
   }
 }
 
 MI_TEMPLATE
 MI_TEMP_TYPE::MultiInterImp1(ORD_CT<INT> v)
 {
+  set_inters(Intervals());
+  set_ndim(0);
+
   if (v.size() > 0) {
     Intervals inters;
     IntervalsIt itints = inters.begin();
@@ -61,13 +59,8 @@ MI_TEMP_TYPE::MultiInterImp1(ORD_CT<INT> v)
       ++itints;
     }
 
-    inters_ = inters;
-    ndim_ = inters.size();
-  }
-
-  else {
-    inters_ = Intervals();
-    ndim_ = 0;
+    set_inters(inters);
+    set_ndim(inters.size());
   }
 }
 
@@ -77,32 +70,27 @@ member_imp_temp(MI_TEMPLATE, MI_TEMP_TYPE, int, ndim);
 MI_TEMPLATE
 void MI_TEMP_TYPE::addInter(INTER_IMP i)
 {
-  if (!i.empty()) {
-    inters_.insert(inters_.end(), i);
-    ++ndim_;
-  }
+  inters_ref().insert(inters_ref().end(), i);
+  set_ndim(ndim() + 1);
 }
 
 MI_TEMPLATE
 bool MI_TEMP_TYPE::empty()
-{
-  if (inters().empty()) return true;
+{ 
+  BOOST_FOREACH (INTER_IMP i, inters())
+    if (i.empty())
+      return true;
 
-  return false;
+  return inters().empty();
 }
 
 MI_TEMPLATE
 bool MI_TEMP_TYPE::isIn(ORD_CT<INT_IMP> elem)
 {
-  IntervalsIt it2 = inters_ref().begin();
-
   if ((int)elem.size() != ndim()) return false;
 
-  BOOST_FOREACH (INT_IMP n, elem) {
-    if (!(*it2).isIn(n)) return false;
-
-    ++it2;
-  }
+  parallel_foreach2 (elem, inters_ref()) 
+    if (!(boost::get<1>(items)).isIn(boost::get<0>(items))) return false;
 
   return true;
 }
@@ -110,12 +98,12 @@ bool MI_TEMP_TYPE::isIn(ORD_CT<INT_IMP> elem)
 MI_TEMPLATE
 int MI_TEMP_TYPE::card()
 {
+  if (inters().empty()) return 0;
+
   int res = 1;
 
   BOOST_FOREACH (INTER_IMP i, inters())
     res *= i.card();
-
-  if (inters().empty()) res = 0;
 
   return res;
 }
@@ -123,56 +111,55 @@ int MI_TEMP_TYPE::card()
 MI_TEMPLATE
 MI_TEMP_TYPE MI_TEMP_TYPE::cap(MI_TEMP_TYPE mi2)
 {
-  Intervals res;
-  IntervalsIt itres = res.begin();
+  MultiInterImp1 res;
 
-  IntervalsIt it2 = mi2.inters_ref().begin();
+  if (empty() || mi2.empty()) return MultiInterImp1();
+
   if (ndim() == mi2.ndim()) {
-    BOOST_FOREACH (INTER_IMP i1, inters()) {
-      INTER_IMP capres = i1.cap(*it2);
+    parallel_foreach2 (inters_ref(), mi2.inters_ref()) {
+      INTER_IMP capres = boost::get<0>(items).cap(boost::get<1>(items));
 
       if (capres.empty()) return MultiInterImp1();
 
-      itres = res.insert(itres, capres);
-      ++itres;
-
-      ++it2;
+      res.addInter(capres);
     }
   }
 
-  return MultiInterImp1(res);
+  return res;
 }
 
 MI_TEMPLATE
 UNORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::diff(MI_TEMP_TYPE mi2)
 {
-  MultiInterImp1 capmis = cap(mi2);
-
   UNORD_CT<MultiInterImp1> resmis;
-
-  // First multi-interval is empty
-  if (inters_ref().empty()) return resmis;
 
   if (ndim() != mi2.ndim()) return resmis;
 
-  // Empty intersection
-  if (capmis.empty()) {
+  if (empty()) return resmis;
+
+  if (mi2.empty()) {
     resmis.insert(*this);
     return resmis;
   }
 
-  // Multi-intervals are the same
+  MultiInterImp1 capmis = cap(mi2);
+
+  // First MI is contained by the second MI
   if (inters() == capmis.inters()) return resmis;
+
+  // Empty intersection, no need of computation
+  if (capmis.empty()) {
+    resmis.insert(*this);
+    return resmis;
+  }
 
   // Differences of each dimension
   IntervalsIt itcap = capmis.inters_ref().begin();
   ORD_CT<UNORD_CT<INTER_IMP>> diffs;
   typename ORD_CT<UNORD_CT<INTER_IMP>>::iterator itdiffs = diffs.begin();
 
-  BOOST_FOREACH (INTER_IMP i, inters()) {
-    itdiffs = diffs.insert(itdiffs, i.diff(*itcap));
-
-    ++itcap;
+  parallel_foreach2 (inters_ref(), capmis.inters_ref()) {
+    itdiffs = diffs.insert(itdiffs, boost::get<0>(items).diff(boost::get<1>(items)));
     ++itdiffs;
   }
 
@@ -187,32 +174,21 @@ UNORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::diff(MI_TEMP_TYPE mi2)
     BOOST_FOREACH (INTER_IMP ith, nthdiff) {
       if (!ith.empty()) {
         Intervals resi;
-        IntervalsIt itresi = resi.begin();
 
         itcap = capmis.inters_ref().begin();
+        IntervalsIt itcapbeg = itcap;
 
         // Complete with intersection before nth dimension (so the MIs in the result are disjoint)
         if (count > 0) {
-          for (int j = 0; j < count; j++) {
-            itresi = resi.insert(itresi, *itcap);
-            ++itresi;
-
-            ++itcap;
-          }
+          std::advance(itcap, count);
+          resi.insert(resi.begin(), itcapbeg, itcap);
         }
 
         // Complete nth dimension with interval in the difference
-        itresi = resi.insert(itresi, ith);
-        ++itresi;
+        resi.insert(resi.end(), ith);
 
         // Complete the rest of dimensions with intervals of the first argument
-        IntervalsIt auxit1 = it1;
-        while (auxit1 != inters_ref().end()) {
-          itresi = resi.insert(itresi, *auxit1);
-          ++itresi;
-
-          ++auxit1;
-        }
+        resi.insert(resi.end(), it1, inters_ref().end());
 
         resmis.insert(MultiInterImp1(resi));
       }
@@ -229,13 +205,11 @@ MI_TEMPLATE
 ORD_CT<INT_IMP> MI_TEMP_TYPE::minElem()
 {
   ORD_CT<INT_IMP> res;
-  typename ORD_CT<INT_IMP>::iterator itres = res.begin();
 
   BOOST_FOREACH (INTER_IMP i, inters()) {
     if (i.empty()) return ORD_CT<INT_IMP>();
 
-    itres = res.insert(itres, i.minElem());
-    ++itres;
+    res.insert(res.end(), i.minElem());
   }
 
   return res;
@@ -245,14 +219,12 @@ MI_TEMPLATE
 ORD_CT<INT_IMP> MI_TEMP_TYPE::nextElem(ORD_CT<INT_IMP> cur)
 {
   ORD_CT<INT_IMP> res;
-  typename ORD_CT<INT_IMP>::iterator itres = res.begin();
   typename ORD_CT<INT_IMP>::iterator itcur = cur.begin();
 
   BOOST_FOREACH (INTER_IMP i, inters()) {
     if (i.empty()) return ORD_CT<INT_IMP>();
 
-    itres = res.insert(itres, i.nextElem(*itcur));
-    ++itres;
+    res.insert(res.end(), i.nextElem(*itcur));
     ++itcur;
   }
 
@@ -263,13 +235,11 @@ MI_TEMPLATE
 ORD_CT<INT_IMP> MI_TEMP_TYPE::maxElem()
 {
   ORD_CT<INT_IMP> res;
-  typename ORD_CT<INT_IMP>::iterator itres = res.begin();
 
   BOOST_FOREACH (INTER_IMP i, inters()) {
     if (i.empty()) return ORD_CT<INT_IMP>();
 
-    itres = res.insert(itres, i.maxElem());
-    ++itres;
+    res.insert(res.end(), i.maxElem());
   }
 
   return res;
@@ -283,6 +253,8 @@ MI_TEMP_TYPE MI_TEMP_TYPE::normalize(MI_TEMP_TYPE mi2)
 {
   IntervalsIt it1 = inters_ref().begin();
   IntervalsIt it2 = mi2.inters_ref().begin();
+
+  if (*this == mi2) return mi2;
 
   if (ndim() == mi2.ndim()) {
     int diffCount = 0;  // Count of different intervals through dimensions
@@ -315,17 +287,9 @@ MI_TEMPLATE
 MI_TEMP_TYPE MI_TEMP_TYPE::crossProd(MI_TEMP_TYPE mi2)
 {
   Intervals res;
-  IntervalsIt itres = res.begin();
 
-  BOOST_FOREACH (INTER_IMP i, inters()) {
-    itres = res.insert(itres, i);
-    ++itres;
-  }
-
-  BOOST_FOREACH (INTER_IMP i, mi2.inters()) {
-    itres = res.insert(itres, i);
-    ++itres;
-  }
+  res.insert(res.end(), inters_ref().begin(), inters_ref().end());
+  res.insert(res.end(), mi2.inters_ref().begin(), mi2.inters_ref().end());
 
   return MultiInterImp1(res);
 }
@@ -359,24 +323,14 @@ bool MI_TEMP_TYPE::operator!=(const MI_TEMP_TYPE &other) const { return inters()
 MI_TEMPLATE
 bool MI_TEMP_TYPE::operator<(const MI_TEMP_TYPE &other) const
 {
-  typename Intervals::const_iterator iti2 = other.inters().begin();
+  MultiInterImp1 aux1 = *this;
+  MultiInterImp1 aux2 = other;
 
-  BOOST_FOREACH (INTER_IMP i1, inters()) {
-    INTER_IMP aux = *iti2;
-    if (i1.minElem() < aux.minElem()) return true;
-
-    ++iti2;
+  parallel_foreach2 (aux1.inters_ref(), aux2.inters_ref()) {
+    if (boost::get<0>(items).minElem() < boost::get<1>(items).minElem()) return true;
   }
 
   return false;
-}
-
-MI_TEMPLATE
-size_t MI_TEMP_TYPE::hash()
-{
-  size_t seed = 0;
-  boost::hash_combine(seed, card());
-  return seed;
 }
 
 template struct MultiInterImp1<OrdCT, UnordCT, Interval, INT>;
@@ -407,10 +361,14 @@ std::ostream &operator<<(std::ostream &out, const MI_TEMP_TYPE &mi)
 
 template std::ostream &operator<<(std::ostream &out, const MultiInterval &mi);
 
-size_t hash_value(const MultiInterval &mi)
+std::size_t hash_value(const MultiInterval &mi)
 {
-  MultiInterval aux = mi;
-  return aux.hash();
+  std::size_t seed = 0;
+
+  BOOST_FOREACH (Interval i, mi.inters())
+    boost::hash_combine(seed, hash_value(i));
+
+  return seed;
 }
 
 std::ostream &operator<<(std::ostream &out, const UNORD_MI &mis)

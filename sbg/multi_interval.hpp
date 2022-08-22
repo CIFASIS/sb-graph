@@ -18,6 +18,10 @@
  ******************************************************************************/
 #pragma once
 
+#include <iostream>
+
+#include <boost/tuple/tuple.hpp>
+
 #include <sbg/util/defs.hpp>
 #include <sbg/interval.hpp>
 
@@ -67,12 +71,10 @@ struct MultiInterImp1 {
   eq_class(MultiInterImp1);
   neq_class(MultiInterImp1);
   lt_class(MultiInterImp1);
-
-  size_t hash();
 };
 
 typedef MultiInterImp1<OrdCT, UnordCT, Interval, INT> MultiInterval;
-size_t hash_value(const MultiInterval &mi);
+std::size_t hash_value(const MultiInterval &mi);
 
 printable_temp(MI_TEMPLATE, MI_TEMP_TYPE);
 
@@ -80,5 +82,7 @@ typedef UnordCT<MultiInterval> UNORD_MI;
 typedef UniqueOrdCT<MultiInterval> UNIQUE_MI;
 
 std::ostream &operator<<(std::ostream &out, const UNORD_MI &mis);
+
+#define INTERS_TYPE typename MI_TEMP_TYPE::Intervals
 
 }  // namespace SBG

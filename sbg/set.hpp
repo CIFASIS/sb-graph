@@ -138,8 +138,6 @@ struct SetImp2 {
   eq_class(SetImp2);
   neq_class(SetImp2);
   lt_class(SetImp2);
-
-  size_t hash();
 };
 
 printable_temp(SET_TEMPLATE2, SET_TEMP_TYPE2);
@@ -147,9 +145,9 @@ printable_temp(SET_TEMPLATE2, SET_TEMP_TYPE2);
 // Chosen implementation ---------------------------------------------------------------------------
 
 typedef SetImp2<OrdCT, UniqueOrdCT, UnordCT, MultiInterval, INT> Set;
-size_t hash_value(const Set &set);
+std::size_t hash_value(const Set &set);
 
 Set createSet(Interval i);
 Set createSet(MultiInterval mi);
 
-}  // namespace SBG
+} // namespace SBG

@@ -32,23 +32,23 @@ member_imp(LinearMap, int, slope);
 
 bool LinearMap::operator<(const LinearMap &other) const
 {
-  if (constant_ == other.constant_) {
-    return slope_ < other.slope_;
+  if (constant() == other.constant()) {
+    return slope() < other.slope();
   }
-  return constant_ < other.constant_;
+  return constant() < other.constant();
 }
 
 std::ostream &operator<<(std::ostream &out, LinearMap &lm)
 {
-  if (lm.slope_ == 1) {
-    out << lm.iterator_;
-  } else if (lm.slope_ != 0) {
-    out << lm.slope_ << " * " << lm.iterator_;
+  if (lm.slope() == 1) {
+    out << lm.iterator();
+  } else if (lm.slope() != 0) {
+    out << lm.slope() << " * " << lm.iterator();
   }
-  if (lm.constant_ > 0) {
-    out << " + " << lm.constant_;
-  } else if (lm.constant_ < 0) {
-    out << lm.constant_;
+  if (lm.constant() > 0) {
+    out << " + " << lm.constant();
+  } else if (lm.constant() < 0) {
+    out << lm.constant();
   }
   return out;
 }

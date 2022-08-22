@@ -247,7 +247,7 @@ void TestMultiCreation1()
   res1.addInter(i2);
   res1.addInter(i2);
 
-  BOOST_REQUIRE_MESSAGE(!res1.empty(), "\n" << res1 << " shouldn't be empty");
+  BOOST_REQUIRE_MESSAGE(res1.empty(), "\n" << res1 << " should be empty");
 }
 
 void TestMultiCreation2()
@@ -310,7 +310,7 @@ void TestMultiEmpty3()
   mi.addInter(i2);
   mi.addInter(i3);
 
-  BOOST_REQUIRE_MESSAGE(!mi.empty(), "\n" << mi << " shouldn't be empty");
+  BOOST_REQUIRE_MESSAGE(mi.empty(), "\n" << mi << " should be empty");
 }
 
 void TestMultiQuery1()
@@ -807,6 +807,25 @@ void TestMultiReplace2()
   BOOST_REQUIRE_MESSAGE(res1 == res2, "\nreplace(" << mi1 << ", 4) = " << res1 << "\nExpected: " << res2);
 }
 
+void TestMultiLt1()
+{
+  Interval i1(100, 1, 105);
+  Interval i2(200, 3, 230);
+  Interval i3(235, 1, 400);
+
+  MultiInterval mi1;
+  mi1.addInter(i1);
+  mi1.addInter(i2);
+  mi1.addInter(i3);
+
+  MultiInterval mi2;
+  mi2.addInter(i1);
+  mi2.addInter(i3);
+  mi2.addInter(i1);
+
+  BOOST_REQUIRE_MESSAGE(mi1 < mi2, "\n" << mi1 << " should be < than " << mi2);
+}
+
 // -- Sets -------------------------------------------------------------------//
 
 void TestSetCreation1()
@@ -820,8 +839,6 @@ void TestSetCreation1()
   mi1.addInter(i2);
   mi1.addInter(i3);
 
-  MultiInterval as1(mi1);
-
   Interval i4(0, 1, 10);
 
   MultiInterval mi2;
@@ -829,15 +846,13 @@ void TestSetCreation1()
   mi2.addInter(i4);
   mi2.addInter(i4);
 
-  MultiInterval as2(mi2);
-
   Set s1;
-  s1.addAtomSet(as1);
-  s1.addAtomSet(as2);
+  s1.addAtomSet(mi1);
+  s1.addAtomSet(mi2);
 
   UNORD_MI res2;
-  res2.insert(as1);
-  res2.insert(as2);
+  res2.insert(mi2);
+  res2.insert(mi1);
 
   Set s2(res2);
 
@@ -851,22 +866,58 @@ void TestCompSets1()
   MultiInterval mi1;
   mi1.addInter(i1);
 
-  MultiInterval as1(mi1);
-
   Set s1;
-  s1.addAtomSet(as1);
+  s1.addAtomSet(mi1);
 
   Interval i2(0, 1, 20);
 
   MultiInterval mi2;
   mi2.addInter(i2);
 
-  MultiInterval as2(mi2);
-
   Set s2;
-  s2.addAtomSet(as2);
+  s2.addAtomSet(mi2);
 
   BOOST_REQUIRE_MESSAGE(s1 != s2, "\n" << s1 << "\nshouldn't be equal to\n" << s2);
+}
+
+void TestCompSets2()
+{
+  Interval i1(1, 1, 10);
+ 
+  MultiInterval mi1;
+  mi1.addInter(i1);
+
+  Interval i2(11, 1, 20);
+  
+  MultiInterval mi2; 
+  mi2.addInter(i2);
+
+  Interval i5(30, 1, 40);
+
+  MultiInterval mi5;
+  mi5.addInter(i5);
+ 
+  Set s1;
+  s1.addAtomSet(mi1);
+  s1.addAtomSet(mi5);
+  s1.addAtomSet(mi2);
+
+  Interval i3(1, 1, 5);
+ 
+  MultiInterval mi3;
+  mi3.addInter(i3);
+
+  Interval i4(6, 1, 20);
+
+  MultiInterval mi4;
+  mi4.addInter(i4);
+
+  Set s2;
+  s2.addAtomSet(mi3);
+  s2.addAtomSet(mi4);
+  s2.addAtomSet(mi5);
+
+  BOOST_REQUIRE_MESSAGE(s1 == s2, "\n" << s1 << "\nshould be equal to\n" << s2);
 }
 
 void TestSetEmpty1()
@@ -885,7 +936,7 @@ void TestSetEmpty1()
   Set s2;
   s2.addAtomSet(as3);
 
-  BOOST_REQUIRE_MESSAGE(!s2.empty(), "\n" << s2 << " shouldn't be empty");
+  BOOST_REQUIRE_MESSAGE(s2.empty(), "\n" << s2 << " should be empty");
 }
 
 void TestAddASets1()
@@ -6560,9 +6611,11 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMultiMin1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMultiReplace1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMultiReplace2));
+  framework::master_test_suite().add(BOOST_TEST_CASE(&TestMultiLt1));
 
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetCreation1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestCompSets1));
+  framework::master_test_suite().add(BOOST_TEST_CASE(&TestCompSets2));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetEmpty1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestAddASets1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetCap1));
@@ -6575,6 +6628,7 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetMin2));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetNormalize1));
 
+/*
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestLMCreation1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestLMCompose1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestLMCompose2));
@@ -6631,6 +6685,7 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching10));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching11));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching12));
+*/
 
   return 0;
 }

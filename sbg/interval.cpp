@@ -34,36 +34,30 @@ INTER_TEMP_TYPE::IntervalImp1(bool empty) : lo_(-1), step_(-1), hi_(-1), empty_(
 INTER_TEMPLATE
 INTER_TEMP_TYPE::IntervalImp1(INT lo, INT step, INT hi)
 {
-  if (lo >= 0 && step > 0 && hi >= 0) {
-    empty_ = false;
-    lo_ = lo;
-    step_ = step;
+  set_lo(-1);
+  set_step(-1);
+  set_hi(-1);
+  set_empty(true);
 
-    if (lo <= hi && hi < Inf) {
+  if (lo >= 0 && step > 0 && hi >= lo) {
+    set_empty(false);
+    set_lo(lo);
+    set_step(step);
+
+    if (hi < Inf) {
       int rem = std::fmod(hi - lo, step);
-      hi_ = hi - rem;
+      set_hi(hi - rem);
     }
 
-    else if (lo <= hi && hi == Inf)
-      hi_ = Inf;
-
     else
-      empty_ = true;
+      set_hi(Inf);
   }
 
   else if (lo >= 0 && step == 0 && hi == lo) {
-    empty_ = false;
-    lo_ = lo;
-    hi_ = hi;
-    step_ = 1;
-  }
-
-  else {
-    // WARNING("Subscripts should be positive");
-    lo_ = -1;
-    step_ = -1;
-    hi_ = -1;
-    empty_ = true;
+    set_empty(false);
+    set_lo(lo);
+    set_hi(hi);
+    set_step(1);
   }
 };
 
@@ -167,7 +161,7 @@ UNORD_CT<INTER_TEMP_TYPE> INTER_TEMP_TYPE::diff(INTER_TEMP_TYPE i2)
 
   // "Before" intersection
   if (lo() < capres.lo()) {
-    IntervalImp1 aux = IntervalImp1(lo(), 1, capres.lo() - 1);
+    IntervalImp1 aux = IntervalImp1(lo(), step(), capres.lo() - 1);
     IntervalImp1 left = cap(aux);
     res.insert(left);
   }
@@ -183,7 +177,7 @@ UNORD_CT<INTER_TEMP_TYPE> INTER_TEMP_TYPE::diff(INTER_TEMP_TYPE i2)
 
   // "After" intersection
   if (hi() > capres.hi()) {
-    IntervalImp1 aux = IntervalImp1(capres.hi() + 1, 1, hi());
+    IntervalImp1 aux = IntervalImp1(capres.hi() + step(), step(), hi());
     IntervalImp1 right = cap(aux);
     res.insert(right);
   }
@@ -249,7 +243,11 @@ template std::ostream &operator<<(std::ostream &out, const Interval &i);
 size_t hash_value(const Interval &inter)
 {
   size_t seed = 0;
+
   boost::hash_combine(seed, inter.lo());
+  boost::hash_combine(seed, inter.step());
+  boost::hash_combine(seed, inter.hi());
+
   return seed;
 }
 

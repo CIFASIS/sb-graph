@@ -219,13 +219,11 @@ MI_TEMPLATE
 ORD_CT<INT_IMP> MI_TEMP_TYPE::nextElem(ORD_CT<INT_IMP> cur)
 {
   ORD_CT<INT_IMP> res;
-  typename ORD_CT<INT_IMP>::iterator itcur = cur.begin();
 
-  BOOST_FOREACH (INTER_IMP i, inters()) {
-    if (i.empty()) return ORD_CT<INT_IMP>();
+  parallel_foreach2 (inters_ref(), cur) {
+    if (boost::get<0>(items).empty()) return ORD_CT<INT_IMP>();
 
-    res.insert(res.end(), i.nextElem(*itcur));
-    ++itcur;
+    res.insert(res.end(), boost::get<0>(items).nextElem(boost::get<1>(items)));
   }
 
   return res;

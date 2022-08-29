@@ -483,6 +483,8 @@ int SET_TEMP_TYPE2::card()
 
 // Continue from here
 
+
+// TODO
 SET_TEMPLATE2 
 bool SET_TEMP_TYPE2::subseteq(SET_TEMP_TYPE2 set2)
 {
@@ -493,6 +495,7 @@ bool SET_TEMP_TYPE2::subseteq(SET_TEMP_TYPE2 set2)
   return false;
 }
 
+// TODO
 SET_TEMPLATE2
 bool SET_TEMP_TYPE2::subset(SET_TEMP_TYPE2 set2)
 {
@@ -507,24 +510,39 @@ bool SET_TEMP_TYPE2::subset(SET_TEMP_TYPE2 set2)
 SET_TEMPLATE2
 SET_TEMP_TYPE2 SET_TEMP_TYPE2::cap(SET_TEMP_TYPE2 set2)
 {
-  MI_IMP aux1, aux2;
+  if (empty() || set2.empty()) 
+    return SetImp2();
 
-  if (empty() || set2.empty()) {
-    SetImp2 emptyRes;
-    return emptyRes;
+  if (asets() == set2.asets())
+    return *this;
+
+  MI_IMP aux1, aux2, aux3;
+  SetImp2 res;
+  auto it1 = asets_ref().begin(), it2 = set2.asets_ref().begin();
+
+  for (; it1 != asets_ref().end();) {
+    aux1 = *it1;
+    aux2 = *it2;
+
+    res.addAtomSet(aux1.cap(aux2));
+
+    aux3 = *(std::next(it2));
+    if (maxElem() < aux3.minElem())
+      break;
+
+    else if (std::next(it2) != set2.asets_ref().end())
+      ++it2;
   }
 
-  AtomSets res;
+  --it1;
+  aux1 = *it1;
+  for(; it2 != set2.asets_ref().end(); ++it2) {
+    aux2 = *it2;
 
-  BOOST_FOREACH (MI_IMP as1, asets()) {
-    BOOST_FOREACH (MI_IMP as2, set2.asets()) {
-      MI_IMP capres = as1.cap(as2);
-
-      if (!capres.empty()) res.insert(capres);
-    }
+    res.addAtomSet(aux1.cap(aux2));
   }
 
-  return SetImp2(res);
+  return res;
 }
 
 SET_TEMPLATE2

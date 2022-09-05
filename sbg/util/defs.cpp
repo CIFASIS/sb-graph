@@ -29,8 +29,9 @@ std::ostream &operator<<(std::ostream &out, const ORD_INTS &nums)
     out << *(nums.begin());
 
   else if (nums.size() > 1) {
-    for (auto it = nums.begin(); std::next(it) != nums.end(); it++) out << *it << ", ";
-    out << *(nums.end());
+    auto it = nums.begin();
+    for (; std::next(it) != nums.end(); it++) out << *it << ", ";
+    out << *it;
   }
   out << "]";
 
@@ -44,8 +45,9 @@ std::ostream &operator<<(std::ostream &out, const ORD_REALS &nums)
     out << *(nums.begin());
 
   else if (nums.size() > 1) {
-    for (auto it = nums.begin(); std::next(it) != nums.end(); it++) out << *it << ", ";
-    out << *(nums.end());
+    auto it = nums.begin();
+    for (; std::next(it) != nums.end(); it++) out << *it << ", ";
+    out << *it;
   }
   out << "]";
 

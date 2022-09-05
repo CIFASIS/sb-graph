@@ -147,13 +147,14 @@ INTER_TEMP_TYPE INTER_TEMP_TYPE::cap(INTER_TEMP_TYPE i2)
 }
 
 INTER_TEMPLATE
-UNORD_CT<INTER_TEMP_TYPE> INTER_TEMP_TYPE::diff(INTER_TEMP_TYPE i2)
+UNIQUE_ORD_CT<INTER_TEMP_TYPE> INTER_TEMP_TYPE::diff(INTER_TEMP_TYPE i2)
 {
-  UNORD_CT<IntervalImp1> res;
+  UNIQUE_ORD_CT<IntervalImp1> res;
   IntervalImp1 capres = cap(i2);
 
   if (capres.empty()) {
-    res.insert(*this);
+    IntervalImp1 aux = *this;
+    res.insert(aux);
     return res;
   }
 
@@ -229,7 +230,10 @@ bool INTER_TEMP_TYPE::operator==(const INTER_TEMP_TYPE &other) const
 INTER_TEMPLATE
 bool INTER_TEMP_TYPE::operator!=(const INTER_TEMP_TYPE &other) const { return !(*this == other); }
 
-template struct IntervalImp1<UnordCT>;
+INTER_TEMPLATE
+bool INTER_TEMP_TYPE::operator<(const INTER_TEMP_TYPE &other) const { return lo() < other.lo(); }
+
+template struct IntervalImp1<UniqueOrdCT>;
 
 INTER_TEMPLATE
 std::ostream &operator<<(std::ostream &out, const INTER_TEMP_TYPE &i)
@@ -262,6 +266,21 @@ std::ostream &operator<<(std::ostream &out, const ORD_INTERS &inters)
     out << *(std::prev(inters.end()));
   }
   out << "]";
+
+  return out;
+}
+
+std::ostream &operator<<(std::ostream &out, const UNIQUE_ORD_INTERS &inters)
+{
+  out << "{¿";
+  if (inters.size() == 1)
+    out << *(inters.begin());
+
+  else if (inters.size() > 1) {
+    for (auto it = inters.begin(); std::next(it) != inters.end(); it++) out << *it << ", ";
+    out << *(std::prev(inters.end()));
+  }
+  out << "?}";
 
   return out;
 }

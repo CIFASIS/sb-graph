@@ -128,7 +128,7 @@ SBG::Set MatchingGraphBuilder::buildSet(EquationInfo eq, std::string eq_id, int 
 SBG::Set MatchingGraphBuilder::generateMapDom(SBG::Set dom, SBG::Set unk_dom, int offset, size_t max_dim)
 {
   MultiInterval edge_set_intervals;
-  SBG::UNIQUE_MI atom_sets = dom.asets();
+  SBG::UNIQUE_ORD_MI atom_sets = dom.asets();
   BOOST_FOREACH (MultiInterval dom_intervals, atom_sets) {
     BOOST_FOREACH (Interval inter, dom_intervals.inters()) {
       REAL end = inter.card() + offset - 1;

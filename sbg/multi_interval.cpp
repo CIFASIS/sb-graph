@@ -128,10 +128,11 @@ MI_TEMP_TYPE MI_TEMP_TYPE::cap(MI_TEMP_TYPE mi2)
   return res;
 }
 
+// TODO: ver si se puede aprovechar el ordenamiento
 MI_TEMPLATE
-UNORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::diff(MI_TEMP_TYPE mi2)
+UNIQUE_ORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::diff(MI_TEMP_TYPE mi2)
 {
-  UNORD_CT<MultiInterImp1> resmis;
+  UNIQUE_ORD_CT<MultiInterImp1> resmis;
 
   if (ndim() != mi2.ndim()) return resmis;
 
@@ -155,8 +156,8 @@ UNORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::diff(MI_TEMP_TYPE mi2)
 
   // Differences of each dimension
   IntervalsIt itcap = capmis.inters_ref().begin();
-  ORD_CT<UNORD_CT<INTER_IMP>> diffs;
-  typename ORD_CT<UNORD_CT<INTER_IMP>>::iterator itdiffs = diffs.begin();
+  ORD_CT<UNIQUE_ORD_CT<INTER_IMP>> diffs;
+  typename ORD_CT<UNIQUE_ORD_CT<INTER_IMP>>::iterator itdiffs = diffs.begin();
 
   parallel_foreach2 (inters_ref(), capmis.inters_ref()) {
     itdiffs = diffs.insert(itdiffs, boost::get<0>(items).diff(boost::get<1>(items)));
@@ -169,7 +170,7 @@ UNORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::diff(MI_TEMP_TYPE mi2)
 
   int count = 0;
   // Traverse dimensions
-  BOOST_FOREACH (UNORD_CT<INTER_IMP> nthdiff, diffs) {
+  BOOST_FOREACH (UNIQUE_ORD_CT<INTER_IMP> nthdiff, diffs) {
     // Intervals in the difference of nth dimension
     BOOST_FOREACH (INTER_IMP ith, nthdiff) {
       if (!ith.empty()) {
@@ -190,7 +191,7 @@ UNORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::diff(MI_TEMP_TYPE mi2)
         // Complete the rest of dimensions with intervals of the first argument
         resi.insert(resi.end(), it1, inters_ref().end());
 
-        resmis.insert(MultiInterImp1(resi));
+        resmis.insert(resmis.end(), MultiInterImp1(resi));
       }
     }
 
@@ -325,13 +326,16 @@ bool MI_TEMP_TYPE::operator<(const MI_TEMP_TYPE &other) const
   MultiInterImp1 aux2 = other;
 
   parallel_foreach2 (aux1.inters_ref(), aux2.inters_ref()) {
-    if (boost::get<0>(items).minElem() < boost::get<1>(items).minElem()) return true;
+    auto elem1 = boost::get<0>(items).minElem(), elem2 = boost::get<1>(items).minElem();
+    if (elem1 < elem2) return true;
+
+    else if (elem2 < elem1) return false;
   }
 
   return false;
 }
 
-template struct MultiInterImp1<OrdCT, UnordCT, Interval, INT>;
+template struct MultiInterImp1<OrdCT, UniqueOrdCT, Interval, INT>;
 
 MI_TEMPLATE
 std::ostream &operator<<(std::ostream &out, const MI_TEMP_TYPE &mi)
@@ -367,6 +371,26 @@ std::size_t hash_value(const MultiInterval &mi)
     boost::hash_combine(seed, hash_value(i));
 
   return seed;
+}
+
+std::ostream &operator<<(std::ostream &out, const UNIQUE_ORD_MI &mis)
+{
+  UNIQUE_ORD_MI auxmis = mis;
+  MultiInterval mi1 = *(mis.begin());
+
+  out << "{¿";
+  if (auxmis.size() == 1)
+    out << mi1;
+
+  else if (auxmis.size() > 1) {
+    auto itmi = auxmis.begin();
+    for (; std::next(itmi) != auxmis.end(); ++itmi)
+      out << *itmi << ", ";
+    out << *itmi;
+  }
+  out << "?}";
+
+  return out;
 }
 
 std::ostream &operator<<(std::ostream &out, const UNORD_MI &mis)

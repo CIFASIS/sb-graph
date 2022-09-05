@@ -25,11 +25,9 @@ namespace SBG {
 // Intervals --------------------------------------------------------------------------------------
 
 #define INTER_TEMPLATE                                                                                          \
-  template <template <typename Value, typename Hash = boost::hash<Value>, typename Pred = std::equal_to<Value>, \
-                      typename Alloc = std::allocator<Value>>                                                   \
-            class UNORD_CT>
+  template <template<typename T, typename = std::less<T>, typename = std::allocator<T>> class UNIQUE_ORD_CT>
 
-#define INTER_TEMP_TYPE IntervalImp1<UNORD_CT>
+#define INTER_TEMP_TYPE IntervalImp1<UNIQUE_ORD_CT>
 
 INTER_TEMPLATE
 struct IntervalImp1 {
@@ -48,7 +46,7 @@ struct IntervalImp1 {
   bool isIn(INT x);
   int card();
   IntervalImp1 cap(IntervalImp1 i2);
-  UNORD_CT<IntervalImp1> diff(IntervalImp1 i2);
+  UNIQUE_ORD_CT<IntervalImp1> diff(IntervalImp1 i2);
 
   IntervalImp1 offset(int off);
 
@@ -60,12 +58,13 @@ struct IntervalImp1 {
 
   eq_class(IntervalImp1);
   neq_class(IntervalImp1);
+  lt_class(IntervalImp1);
 };
 
 // >>>>> To add new implementation, add:
 // struct IntervalImp2 { ... }
 //
-typedef IntervalImp1<UnordCT> Interval;
+typedef IntervalImp1<UniqueOrdCT> Interval;
 std::size_t hash_value(const Interval &inter);
 
 // >>>>> To change implementation of Interval:
@@ -74,9 +73,11 @@ std::size_t hash_value(const Interval &inter);
 printable_temp(INTER_TEMPLATE, INTER_TEMP_TYPE);
 
 typedef OrdCT<Interval> ORD_INTERS;
+typedef UniqueOrdCT<Interval> UNIQUE_ORD_INTERS;
 typedef UnordCT<Interval> UNORD_INTERS;
 
 std::ostream &operator<<(std::ostream &out, const ORD_INTERS &inters);
+std::ostream &operator<<(std::ostream &out, const UNIQUE_ORD_INTERS &inters);
 std::ostream &operator<<(std::ostream &out, const UNORD_INTERS &inters);
 
 }  // namespace SBG

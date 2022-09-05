@@ -148,10 +148,12 @@ SET_TEMP_TYPE1 SET_TEMP_TYPE1::cap(SET_TEMP_TYPE1 set2)
   return SetImp1(res);
 }
 
+// TODO: corregir
 SET_TEMPLATE1
 SET_TEMP_TYPE1 SET_TEMP_TYPE1::diff(SET_TEMP_TYPE1 set2)
 {
   SetImp1 res;
+/*
   AtomSets capres = cap(set2).asets();
 
   if (!capres.empty()) {
@@ -176,6 +178,7 @@ SET_TEMP_TYPE1 SET_TEMP_TYPE1::diff(SET_TEMP_TYPE1 set2)
 
   else
     res.addAtomSets(asets());
+*/
 
   return res;
 }
@@ -444,6 +447,18 @@ void SET_TEMP_TYPE2::addAtomSet(MI_IMP aset2)
 }
 
 SET_TEMPLATE2
+void SET_TEMP_TYPE2::addLastAtomSet(MI_IMP aset2)
+{
+  if (!aset2.empty() && aset2.ndim() == ndim() && !empty())
+    asets_ref().insert(asets_ref().end(), aset2);
+
+  else if (!aset2.empty() && empty()) {
+    asets_ref().insert(aset2);
+    set_ndim(aset2.ndim());
+  }
+}
+
+SET_TEMPLATE2
 void SET_TEMP_TYPE2::addAtomSets(AS_TYPE2 sets2)
 {
   BOOST_FOREACH (MI_IMP as, sets2)
@@ -481,7 +496,6 @@ int SET_TEMP_TYPE2::card()
   return res;
 }
 
-// Continue from here
 
 
 // TODO
@@ -516,60 +530,56 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::cap(SET_TEMP_TYPE2 set2)
   if (asets() == set2.asets())
     return *this;
 
-  MI_IMP aux1, aux2, aux3;
+  MI_IMP aux1, aux2;
   SetImp2 res;
   auto it1 = asets_ref().begin(), it2 = set2.asets_ref().begin();
 
-  for (; it1 != asets_ref().end();) {
+  for (; it1 != asets_ref().end() && it2 != set2.asets_ref().end();) {
     aux1 = *it1;
     aux2 = *it2;
 
-    res.addAtomSet(aux1.cap(aux2));
+    res.addLastAtomSet(aux1.cap(aux2)); 
 
-    aux3 = *(std::next(it2));
-    if (maxElem() < aux3.minElem())
-      break;
+    if (aux1.maxElem() < aux2.maxElem())
+      ++it1;
 
-    else if (std::next(it2) != set2.asets_ref().end())
+    else
       ++it2;
-  }
-
-  --it1;
-  aux1 = *it1;
-  for(; it2 != set2.asets_ref().end(); ++it2) {
-    aux2 = *it2;
-
-    res.addAtomSet(aux1.cap(aux2));
   }
 
   return res;
 }
 
+// Continue from here
+
 SET_TEMPLATE2
 SET_TEMP_TYPE2 SET_TEMP_TYPE2::diff(SET_TEMP_TYPE2 set2)
 {
   SetImp2 res;
-  AtomSets capres = cap(set2).asets();
+  SetImp2 cap = cap(set2);
 
-  if (!capres.empty()) {
+  MI_IMP aux1, auxcap;
+  auto itcap = cap.asets_ref().begin();
+  
+  if (!cap.empty()) {
     BOOST_FOREACH (MI_IMP as1, asets()) {
-      AtomSets aux;
-      aux.insert(as1);
+      SetImp2 partial1(as1); 
+      auto it1 = partial1.begin();
 
-      BOOST_FOREACH (MI_IMP as2, capres) {
-        SetImp2 newSets;
+      for (; it1 != partial1.end() && itcap != cap.asets_ref().end();) {
+        aux1 = *it1;
+        auxcap = *itcap;
 
-        BOOST_FOREACH (MI_IMP as3, aux) {
-          UnordAtomSets diffres = as3.diff(as2);
-          BOOST_FOREACH (MI_IMP d, diffres)
-            newSets.addAtomSet(d);
-            //newSets.addAtomSets(diffres);
-        }
+        if (!aux1.cap(auxcap).empty())
+          BOOST_FOREACH (MI_IMP mi, aux1.diff(auxcap))
+            partial1.addLastAtomSet(mi); 
 
-        aux = newSets.asets();
+        if (aux1.maxElem() < auxcap.maxElem())
+          ++it1;
+
+        else
+          ++itcap;
       }
-
-      res.addAtomSets(aux);
     }
   }
 

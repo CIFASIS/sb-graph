@@ -113,6 +113,7 @@ struct SetImp2 {
   SetImp2(ORD_CT<INT> v);
 
   void addAtomSet(MI_IMP aset2);
+  void addLastAtomSet(MI_IMP aset2);
   void addAtomSets(AtomSets sets2);
 
   bool empty();

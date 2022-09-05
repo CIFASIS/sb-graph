@@ -162,12 +162,12 @@ void TestIntDiff1()
   Interval i1(0, 2, 30);
   Interval i2(true);
 
-  UNORD_INTERS res1 = i1.diff(i2);
+  UNIQUE_ORD_INTERS res1 = i1.diff(i2);
 
-  UNORD_INTERS res2;
+  UNIQUE_ORD_INTERS res2;
   res2.insert(i1);
 
-  BOOST_REQUIRE_MESSAGE(res1 == res2, "\n" << i1 << " - " << i2 << " = " << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1 == res2, "\n" << i1 << "\n-\n" << i2 << "\n= " << res1 << "\nExpected: " << res2);
 }
 
 void TestIntDiff2()
@@ -175,20 +175,20 @@ void TestIntDiff2()
   Interval i1(0, 2, 30);
   Interval i2(10, 3, 40);
 
-  UNORD_INTERS res1 = i1.diff(i2);
+  UNIQUE_ORD_INTERS res1 = i1.diff(i2);
 
   Interval i3(0, 2, 8);
   Interval i4(12, 6, 24);
   Interval i5(14, 6, 26);
   Interval i6(30, 2, 30);
 
-  UNORD_INTERS res2;
+  UNIQUE_ORD_INTERS res2;
   res2.insert(i3);
   res2.insert(i4);
   res2.insert(i5);
   res2.insert(i6);
 
-  BOOST_REQUIRE_MESSAGE(res1 == res2, "\n" << i1 << " - " << i2 << " = " << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1 == res2, "\n" << i1 << "\n-\n" << i2 << "\n= " << res1 << "\nExpected: " << res2);
 }
 
 void TestIntDiff3()
@@ -196,20 +196,20 @@ void TestIntDiff3()
   Interval i1(0, 2, Inf);
   Interval i2(10, 3, 40);
 
-  UNORD_INTERS res1 = i1.diff(i2);
+  UNIQUE_ORD_INTERS res1 = i1.diff(i2);
 
   Interval i3(0, 2, 8);
   Interval i4(12, 6, 36);
   Interval i5(14, 6, 38);
   Interval i6(42, 2, Inf);
 
-  UNORD_INTERS res2;
+  UNIQUE_ORD_INTERS res2;
   res2.insert(i3);
   res2.insert(i4);
   res2.insert(i5);
   res2.insert(i6);
 
-  BOOST_REQUIRE_MESSAGE(res1 == res2, "\n" << i1 << " - " << i2 << " = " << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1 == res2, "\n" << i1 << "\n-\n" << i2 << " = " << res1 << "\nExpected: " << res2);
 }
 
 void TestIntDiff4()
@@ -217,9 +217,9 @@ void TestIntDiff4()
   Interval i1(0, 1, 10);
   Interval i2(true);
 
-  UNORD_INTERS res1 = i1.diff(i1);
+  UNIQUE_ORD_INTERS res1 = i1.diff(i1);
 
-  UNORD_INTERS res2;
+  UNIQUE_ORD_INTERS res2;
 
   BOOST_REQUIRE_MESSAGE(res1 == res2, "\n" << i1 << " - " << i2 << " = " << res1 << "\nExpected: " << res2);
 }
@@ -523,7 +523,7 @@ void TestMultiDiff1()
   mi2.addInter(i5);
   mi2.addInter(i6);
 
-  UNORD_MI res1 = mi1.diff(mi2);
+  UNIQUE_ORD_MI res1 = mi1.diff(mi2);
 
   Interval i7(0, 2, 6);
 
@@ -569,7 +569,7 @@ void TestMultiDiff1()
   mi8.addInter(i13);
   mi8.addInter(i14);
 
-  UNORD_MI res2;
+  UNIQUE_ORD_MI res2;
   res2.insert(mi3);
   res2.insert(mi4);
   res2.insert(mi5);
@@ -577,7 +577,7 @@ void TestMultiDiff1()
   res2.insert(mi7);
   res2.insert(mi8);
 
-  BOOST_REQUIRE_MESSAGE(res1 == res2, "\n" << mi1 << " - " << mi2 << " = " << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1 == res2, "\n" << mi1 << "\n-\n" << mi2 << "\n= " << res1 << "\nExpected: " << res2);
 }
 
 void TestMultiDiff2()
@@ -600,7 +600,7 @@ void TestMultiDiff2()
   mi2.addInter(i5);
   mi2.addInter(i6);
 
-  UNORD_MI res1 = mi1.diff(mi2);
+  UNIQUE_ORD_MI res1 = mi1.diff(mi2);
 
   Interval i7(0, 2, 6);
 
@@ -638,14 +638,14 @@ void TestMultiDiff2()
   mi7.addInter(i12);
   mi7.addInter(i3);
 
-  UNORD_MI res2;
+  UNIQUE_ORD_MI res2;
   res2.insert(mi3);
   res2.insert(mi4);
   res2.insert(mi5);
   res2.insert(mi6);
   res2.insert(mi7);
 
-  BOOST_REQUIRE_MESSAGE(res1 == res2, "\n" << mi1 << " - " << mi2 << " = " << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1 == res2, "\n" << mi1 << "\n-\n" << mi2 << "\n= " << res1 << "\nExpected: " << res2);
 }
 
 void TestMultiDiff3()
@@ -668,7 +668,7 @@ void TestMultiDiff3()
   mi2.addInter(i5);
   mi2.addInter(i6);
 
-  UNORD_MI res1 = mi1.diff(mi2);
+  UNIQUE_ORD_MI res1 = mi1.diff(mi2);
 
   BOOST_REQUIRE_MESSAGE(res1.empty(), "\n" << mi1 << " - " << mi2 << " = " << res1 << " should be empty");
 }
@@ -682,7 +682,7 @@ void TestMultiDiff4()
   mi1.addInter(i1);
   mi1.addInter(i2);
 
-  UNORD_MI res1 = mi1.diff(mi1);
+  UNIQUE_ORD_MI res1 = mi1.diff(mi1);
 
   BOOST_REQUIRE_MESSAGE(res1.empty(), "\n" << mi1 << " - " << mi1 << " = " << res1 << " should be empty");
 }
@@ -703,7 +703,7 @@ void TestMultiDiff5()
   mi2.addInter(i3);
   mi2.addInter(i4);
 
-  UNORD_MI res1 = mi1.diff(mi2);
+  UNIQUE_ORD_MI res1 = mi1.diff(mi2);
 
   BOOST_REQUIRE_MESSAGE(res1.empty(), "\n" << mi1 << " - " << mi2 << " = " << res1 << " should be empty");
 }
@@ -1079,6 +1079,7 @@ void TestSetCap3()
   res3.addAtomSet(as4);
   res3.addAtomSet(as5);
 
+
   BOOST_REQUIRE_MESSAGE(res1 == res2 && res2 == res3, "\n" << s1 << "\ncap\n" << s2 << "\n=\n" << res1 << "\nExpected: " << res3);
 }
 
@@ -1235,7 +1236,7 @@ void TestSetDiff2()
   res2.addAtomSet(as8);
   res2.addAtomSet(as9);
 
-  BOOST_REQUIRE_MESSAGE(res1 == res2, "\n" << s1 << "\n-\n" << s2 << "\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1 == res2, "\n" << s2 << "\n-\n" << s1 << "\n=\n" << res1 << "\nExpected: " << res2);
 }
 
 void TestSetMin1()

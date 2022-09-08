@@ -122,7 +122,7 @@ struct SetImp2 {
   int card();
   bool subseteq(SetImp2 set2);
   bool subset(SetImp2 set2);
-  SetImp2 linearTraverse(SetImp2 set2, SetImp2 (SetImp2::*f)(SetImp2));
+  SetImp2 linearTraverse(SetImp2 set2, AtomSets (*f)(MI_IMP, MI_IMP));
   SetImp2 cap(SetImp2 set2);
   SetImp2 diff(SetImp2 set2);
   SetImp2 cup(SetImp2 set2);

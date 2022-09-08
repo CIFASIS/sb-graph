@@ -199,6 +199,11 @@ UNIQUE_ORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::diff(MI_TEMP_TYPE mi2)
     ++it1;
   }
 
+  std::cout << *this << " | " << mi2  << "\n";
+  BOOST_FOREACH (MultiInterImp1 aux, resmis)
+    std::cout << "- " << aux << "\n";
+  std::cout << "\n";
+
   return resmis;
 }
 

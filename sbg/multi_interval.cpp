@@ -199,11 +199,6 @@ UNIQUE_ORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::diff(MI_TEMP_TYPE mi2)
     ++it1;
   }
 
-  std::cout << *this << " | " << mi2  << "\n";
-  BOOST_FOREACH (MultiInterImp1 aux, resmis)
-    std::cout << "- " << aux << "\n";
-  std::cout << "\n";
-
   return resmis;
 }
 
@@ -381,8 +376,13 @@ std::size_t hash_value(const MultiInterval &mi)
 std::ostream &operator<<(std::ostream &out, const UNIQUE_ORD_MI &mis)
 {
   UNIQUE_ORD_MI auxmis = mis;
-  MultiInterval mi1 = *(mis.begin());
 
+  if (auxmis.size() == 0) {
+    out << "{¿ ?}";
+    return out;
+  }
+
+  MultiInterval mi1 = *(mis.begin());
   out << "{¿";
   if (auxmis.size() == 1)
     out << mi1;
@@ -401,8 +401,13 @@ std::ostream &operator<<(std::ostream &out, const UNIQUE_ORD_MI &mis)
 std::ostream &operator<<(std::ostream &out, const UNORD_MI &mis)
 {
   UNORD_MI auxmis = mis;
-  MultiInterval mi1 = *(mis.begin());
 
+  if (auxmis.size() == 0) {
+    out << "{¿ ?}";
+    return out;
+  }
+
+  MultiInterval mi1 = *(mis.begin());
   out << "{";
   if (auxmis.size() == 1)
     out << mi1;

@@ -115,6 +115,7 @@ struct SetImp2 {
   void addAtomSet(MI_IMP aset2);
   void addLastAtomSet(MI_IMP aset2);
   void addAtomSets(AtomSets sets2);
+  void addAtomSetsEnd(AtomSets sets2);
 
   bool empty();
 
@@ -122,8 +123,9 @@ struct SetImp2 {
   int card();
   bool subseteq(SetImp2 set2);
   bool subset(SetImp2 set2);
-  SetImp2 linearTraverse(SetImp2 set2, AtomSets (*f)(MI_IMP, MI_IMP));
+  SetImp2 linearTraverseCap(SetImp2 set2);
   SetImp2 cap(SetImp2 set2);
+  SetImp2 linearTraverseDiff(SetImp2 capsets);
   SetImp2 diff(SetImp2 set2);
   SetImp2 cup(SetImp2 set2);
 

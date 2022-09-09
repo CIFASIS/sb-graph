@@ -466,6 +466,13 @@ void SET_TEMP_TYPE2::addAtomSets(AS_TYPE2 sets2)
 }
 
 SET_TEMPLATE2
+void SET_TEMP_TYPE2::addAtomSetsEnd(AS_TYPE2 sets2)
+{
+  BOOST_FOREACH (MI_IMP as, sets2)
+    asets_ref().insert(asets_ref().end(), as);
+}
+
+SET_TEMPLATE2
 bool SET_TEMP_TYPE2::empty()
 {
   if (asets_ref().empty()) return true;
@@ -522,7 +529,7 @@ bool SET_TEMP_TYPE2::subset(SET_TEMP_TYPE2 set2)
 }
 
 SET_TEMPLATE2
-SET_TEMP_TYPE2 SET_TEMP_TYPE2::linearTraverse(SET_TEMP_TYPE2 set2, AtomSets (*f)(MI_IMP, MI_IMP))
+SET_TEMP_TYPE2 SET_TEMP_TYPE2::linearTraverseCap(SET_TEMP_TYPE2 set2)
 {
   MI_IMP aux1, aux2;
   SetImp2 res;
@@ -533,8 +540,7 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::linearTraverse(SET_TEMP_TYPE2 set2, AtomSets (*f)
     aux1 = *it1;
     aux2 = *it2;
 
-    BOOST_FOREACH (MI_IMP as, f(aux1, aux2))
-      res.addLastAtomSet(as);
+    res.addLastAtomSet(aux1.cap(aux2));
 
     if (aux1.maxElem() < aux2.maxElem()) 
       ++it1; 
@@ -552,8 +558,7 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::linearTraverse(SET_TEMP_TYPE2 set2, AtomSets (*f)
     for (; it2 != end2; ++it2) {
       aux2 = *it2;
 
-      BOOST_FOREACH (MI_IMP as, f(aux1, aux2))
-        res.addLastAtomSet(as);
+      res.addLastAtomSet(aux1.cap(aux2));
     }
   }
 
@@ -564,17 +569,9 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::linearTraverse(SET_TEMP_TYPE2 set2, AtomSets (*f)
     for (; it1 != end1; ++it1) {
       aux1 = *it1;
 
-      BOOST_FOREACH (MI_IMP as, f(aux1, aux2))
-        res.addLastAtomSet(as);
+      res.addLastAtomSet(aux1.cap(aux2));
     }
   }
-
-  return res;
-}
-
-UNIQUE_ORD_MI capmi(MultiInterval mi1, MultiInterval mi2) {
-  UNIQUE_ORD_MI res;  
-  res.insert(mi1.cap(mi2));
 
   return res;
 }
@@ -588,10 +585,83 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::cap(SET_TEMP_TYPE2 set2)
   if (asets() == set2.asets())
     return *this;
 
-  return linearTraverse(set2, &capmi);
+  return linearTraverseCap(set2);
 }
 
 // Continue from here
+
+SET_TEMPLATE2
+SET_TEMP_TYPE2 SET_TEMP_TYPE2::linearTraverseDiff(SET_TEMP_TYPE2 capsets)
+{
+  MI_IMP aux1, auxcap;
+  SetImp2 res;
+  auto it1 = asets_ref().begin(), itcap = capsets.asets_ref().begin();
+  auto end1 = asets_ref().end(), endcap = capsets.asets_ref().end();
+
+  AtomSets partial;
+  partial.insert(*it1);
+
+  for (; it1 != end1 && itcap != endcap;) {
+    aux1 = *it1;
+    auxcap = *itcap;
+
+    std::cout << aux1 << " | " << auxcap << "\n"; 
+    std::cout << "partial1: " << partial << "\n";
+
+    SetImp2 newSets;
+
+    BOOST_FOREACH (MI_IMP p, partial)
+      newSets.addAtomSetsEnd(p.diff(auxcap));
+
+    //partial = newSets.asets();
+    partial = AtomSets();
+    BOOST_FOREACH (MI_IMP n, newSets.asets_ref())
+      partial.insert(n);
+    std::cout << "partial2: " << partial << "\n\n";
+
+    if (aux1.maxElem() < auxcap.maxElem()) {
+      res.addAtomSetsEnd(partial);
+
+      ++it1;
+
+      if (it1 != end1) {
+        partial = AtomSets();
+        partial.insert(*it1);
+      }
+    }
+
+    else
+      ++itcap;
+  }
+
+  if (it1 == end1 && itcap == endcap) return res;
+
+  if (it1 == end1) {
+    --it1;
+    aux1 = *it1;
+
+    for (; itcap != endcap; ++itcap) {
+      auxcap = *itcap;
+
+      BOOST_FOREACH (MI_IMP as, capsets.asets())
+        res.addLastAtomSet(as);
+    }
+  }
+
+  if (itcap == endcap) {
+    --itcap;
+    auxcap = *itcap;
+
+    for (; it1 != end1; ++it1) {
+      aux1 = *it1;
+
+      BOOST_FOREACH (MI_IMP as, capsets.asets())
+        res.addLastAtomSet(as);
+    }
+  }
+
+  return res;
+}
 
 SET_TEMPLATE2
 SET_TEMP_TYPE2 SET_TEMP_TYPE2::diff(SET_TEMP_TYPE2 set2)
@@ -608,10 +678,8 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::diff(SET_TEMP_TYPE2 set2)
 
   SetImp2 capsets = cap(set2);
 
-  MI_IMP aux1, auxcap;
-  
   if (!capsets.empty()) 
-    res = linearTraverse(set2, capmi);
+    res = linearTraverseDiff(capsets);
 
   else
     res.addAtomSets(asets());

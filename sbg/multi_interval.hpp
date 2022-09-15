@@ -54,6 +54,7 @@ struct MultiInterImp1 {
   bool isIn(ORD_CT<INT_IMP> elem);
   int card();
   MultiInterImp1 cap(MultiInterImp1 mi2);
+  UNIQUE_ORD_CT<MultiInterImp1> complement();
   UNIQUE_ORD_CT<MultiInterImp1> diff(MultiInterImp1 mi2);
 
   ORD_CT<INT_IMP> minElem();

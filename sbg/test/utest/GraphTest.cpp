@@ -16,6 +16,7 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
+#include <chrono>
 #include <iostream>
 
 #include <boost/test/unit_test.hpp>
@@ -6563,6 +6564,60 @@ void TestMatching12()
   BOOST_CHECK(std::get<1>(res));
 }
 
+// -- Performance tests ------------------------------------------------------//
+
+template <class Clock>
+class stopwatch
+{
+    const typename Clock::time_point m_start;
+public:
+    stopwatch() :
+        m_start(Clock::now())
+    {}
+    typename Clock::duration elapsed() const {
+        return Clock::now() - m_start;
+    }
+};
+
+void TimeInterDiff1()
+{
+  const stopwatch<std::chrono::high_resolution_clock> c;  
+
+  Interval i1(1, 1000, 10000000);
+  Interval i2(1, 1001, 10000000);
+
+  i1.diff(i2);
+
+  std::chrono::duration<double> time = c.elapsed();
+  std::cout << "\ntime inter diff 1 = " << time.count();
+
+  BOOST_CHECK(true);
+}
+
+void TimeMultiDiff1()
+{
+  const stopwatch<std::chrono::high_resolution_clock> c;  
+
+  Interval i1(1, 1000, 10000000);
+  Interval i2(1, 1001, 10000000);
+  Interval i3(5, 1002, 10000000);
+
+  MultiInterval mi1;
+  mi1.addInter(i1);
+  mi1.addInter(i1);
+
+  MultiInterval mi2;
+  mi2.addInter(i2);
+  mi2.addInter(i3);
+
+  mi1.diff(mi2);
+
+  std::chrono::duration<double> time = c.elapsed();
+  std::cout << "\ntime multi diff 1 = " << time.count();
+
+  BOOST_CHECK(true);
+}
+
 //____________________________________________________________________________//
 
 test_suite *init_unit_test_suite(int, char *[])
@@ -6687,6 +6742,9 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching11));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching12));
 */
+
+  framework::master_test_suite().add(BOOST_TEST_CASE(&TimeInterDiff1));
+  framework::master_test_suite().add(BOOST_TEST_CASE(&TimeMultiDiff1));
 
   return 0;
 }

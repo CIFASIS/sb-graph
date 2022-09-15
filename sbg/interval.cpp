@@ -147,6 +147,28 @@ INTER_TEMP_TYPE INTER_TEMP_TYPE::cap(INTER_TEMP_TYPE i2)
 }
 
 INTER_TEMPLATE
+UNIQUE_ORD_CT<INTER_TEMP_TYPE> INTER_TEMP_TYPE::complement()
+{
+  UNIQUE_ORD_CT<IntervalImp1> res;
+
+  if (empty()) return res;
+
+  // "Before" interval
+  if (lo() > 0) res.insert(res.end(), IntervalImp1(0, 1, lo() - 1));
+
+  // "During" interval
+  if (step() > 1) {
+    for (int i = 1; i < step(); i++)
+      res.insert(res.end(), IntervalImp1(lo() + i, step(), hi()));
+  }
+
+  // "After" interval
+  res.insert(res.end(), IntervalImp1(hi() + 1, 1, Inf));
+  
+  return res;
+}
+
+INTER_TEMPLATE
 UNIQUE_ORD_CT<INTER_TEMP_TYPE> INTER_TEMP_TYPE::diff(INTER_TEMP_TYPE i2)
 {
   UNIQUE_ORD_CT<IntervalImp1> res;

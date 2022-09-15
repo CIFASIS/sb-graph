@@ -128,6 +128,20 @@ MI_TEMP_TYPE MI_TEMP_TYPE::cap(MI_TEMP_TYPE mi2)
   return res;
 }
 
+MI_TEMPLATE
+UNIQUE_ORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::complement()
+{
+  UNIQUE_ORD_CT<MultiInterImp1> resmis;
+
+  if (empty()) return resmis;
+
+  BOOST_FOREACH (INTER_IMP ith, inters()) {
+    break;     
+  }
+
+  return resmis;
+}
+
 // TODO: ver si se puede aprovechar el ordenamiento
 MI_TEMPLATE
 UNIQUE_ORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::diff(MI_TEMP_TYPE mi2)

@@ -46,6 +46,7 @@ struct IntervalImp1 {
   bool isIn(INT x);
   int card();
   IntervalImp1 cap(IntervalImp1 i2);
+  UNIQUE_ORD_CT<IntervalImp1> complement();
   UNIQUE_ORD_CT<IntervalImp1> diff(IntervalImp1 i2);
 
   IntervalImp1 offset(int off);

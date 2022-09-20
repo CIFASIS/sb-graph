@@ -6614,8 +6614,54 @@ void TimeMultiDiff1()
 
   std::chrono::duration<double> time = c.elapsed();
   std::cout << "\ntime multi diff 1 = " << time.count();
+}
 
-  BOOST_CHECK(true);
+void TimeMultiDiff2()
+{
+  const stopwatch<std::chrono::high_resolution_clock> c;  
+
+  Interval i1(1000, 1000, 100000000);
+ 
+  MultiInterval mi1;
+  mi1.addInter(i1);
+  mi1.addInter(i1);
+
+  Interval i2(5, 1001, 100000000);
+
+  MultiInterval mi2;
+  mi2.addInter(i2);
+  mi2.addInter(i2);
+
+  mi1.diff(mi2);
+  std::chrono::duration<double> time = c.elapsed();
+  //std::cout << "\n" << i1.diff(i2) << "\n"; 
+  //std::cout << mi1.diff(mi2); 
+
+  std::cout << "\ntime multi diff 2 = " << time.count();
+}
+
+void TimeSetCap1()
+{
+  int N = 10000;
+
+  Set s1;
+  Set s2;
+
+  for (int i = 0; i < N; i++) {
+    //Interval i1(10 * i, 1, 10 + 10 * i);
+    MultiInterval mi1;
+    mi1.addInter(Interval(10 * i, 1, 10 + 10 * i));
+    s1.addAtomSet(mi1);
+
+    MultiInterval mi2;
+    mi2.addInter(Interval(5 + 10 * i, 1, 15 + 10 * i));
+    s2.addAtomSet(mi2);
+  }
+
+  const stopwatch<std::chrono::high_resolution_clock> c;
+  s1.cap(s2);
+  std::chrono::duration<double> time = c.elapsed();
+  std::cout << "\ntime set cap 1 = " << time.count();
 }
 
 //____________________________________________________________________________//
@@ -6745,6 +6791,8 @@ test_suite *init_unit_test_suite(int, char *[])
 
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeInterDiff1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeMultiDiff1));
+  framework::master_test_suite().add(BOOST_TEST_CASE(&TimeMultiDiff2));
+  framework::master_test_suite().add(BOOST_TEST_CASE(&TimeSetCap1));
 
   return 0;
 }

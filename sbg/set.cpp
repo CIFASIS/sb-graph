@@ -590,6 +590,7 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::cap(SET_TEMP_TYPE2 set2)
 
 // Continue from here
 
+/*
 SET_TEMPLATE2
 SET_TEMP_TYPE2 SET_TEMP_TYPE2::linearTraverseDiff(SET_TEMP_TYPE2 capsets)
 {
@@ -662,6 +663,7 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::linearTraverseDiff(SET_TEMP_TYPE2 capsets)
 
   return res;
 }
+*/
 
 SET_TEMPLATE2
 SET_TEMP_TYPE2 SET_TEMP_TYPE2::diff(SET_TEMP_TYPE2 set2)
@@ -678,8 +680,28 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::diff(SET_TEMP_TYPE2 set2)
 
   SetImp2 capsets = cap(set2);
 
-  if (!capsets.empty()) 
-    res = linearTraverseDiff(capsets);
+  //if (!capsets.empty()) 
+  //  res = linearTraverseDiff(capsets);
+
+  if (!capsets.empty()) {
+    BOOST_FOREACH (MI_IMP as1, asets()) {
+      AtomSets aux;
+      aux.insert(as1);
+
+      BOOST_FOREACH (MI_IMP as2, capsets.asets()) {
+        SetImp2 newSets;
+
+        BOOST_FOREACH (MI_IMP as3, aux) {
+          AtomSets diffres = as3.diff(as2);
+          newSets.addAtomSets(diffres);
+        }
+
+        aux = newSets.asets();
+      }
+
+      res.addAtomSets(aux);
+    }
+  }
 
   else
     res.addAtomSets(asets());

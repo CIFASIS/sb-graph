@@ -128,6 +128,7 @@ MI_TEMP_TYPE MI_TEMP_TYPE::cap(MI_TEMP_TYPE mi2)
   return res;
 }
 
+/*
 MI_TEMPLATE
 UNIQUE_ORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::complement()
 {
@@ -141,6 +142,91 @@ UNIQUE_ORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::complement()
 
   return resmis;
 }
+*/
+
+// TODO: ver si se puede aprovechar el ordenamiento
+/*
+MI_TEMPLATE
+UNIQUE_ORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::diff(MI_TEMP_TYPE mi2)
+{
+  UNIQUE_ORD_CT<MultiInterImp1> resmis;
+
+  if (ndim() != mi2.ndim()) return resmis;
+
+  if (empty()) return resmis;
+
+  if (mi2.empty()) {
+    resmis.insert(*this);
+    return resmis;
+  }
+
+  MultiInterImp1 capmis = cap(mi2);
+
+  // First MI is contained by the second MI
+  if (inters() == capmis.inters()) return resmis;
+
+  // Empty intersection, no need of computation
+  if (capmis.empty()) {
+    resmis.insert(*this);
+    return resmis;
+  }
+
+  // Differences of each dimension
+  IntervalsIt itcap = capmis.inters_ref().begin();
+  ORD_CT<UNIQUE_ORD_CT<INTER_IMP>> diffs;
+  typename ORD_CT<UNIQUE_ORD_CT<INTER_IMP>>::iterator itdiffs = diffs.begin();
+
+  parallel_foreach2 (inters_ref(), capmis.inters_ref()) {
+    itdiffs = diffs.insert(itdiffs, boost::get<0>(items).diff(boost::get<1>(items)));
+    ++itdiffs;
+  }
+
+  IntervalsIt it1 = inters_ref().begin();
+  ++it1;
+  itdiffs = diffs.begin();
+
+  int count = 0;
+  UNIQUE_ORD_CT<MultiInterImp1> toEnd;
+  // Traverse dimensions
+  BOOST_FOREACH (UNIQUE_ORD_CT<INTER_IMP> nthdiff, diffs) {
+    // Intervals in the difference of ith dimension
+    BOOST_FOREACH (INTER_IMP ith, nthdiff) {
+      if (!ith.empty()) {
+        Intervals resi;
+
+        itcap = capmis.inters_ref().begin();
+        IntervalsIt itcapbeg = itcap;
+
+        // Complete with intersection before ith dimension (so the MIs in the result are disjoint)
+        if (count > 0) {
+          std::advance(itcap, count);
+          resi.insert(resi.begin(), itcapbeg, itcap);
+        }
+
+        // Complete ith dimension with interval in the difference
+        resi.insert(resi.end(), ith);
+
+        // Complete the rest of dimensions with intervals of the first argument
+        resi.insert(resi.end(), it1, inters_ref().end());
+
+        if (it1->minElem() < ith.minElem())
+          toEnd.insert(toEnd.begin(), MultiInterImp1(resi));
+
+        else
+          resmis.insert(resmis.end(), MultiInterImp1(resi));
+      }
+    }
+
+    ++count;
+    ++it1;
+  }
+
+  BOOST_FOREACH (MultiInterImp1 t, toEnd)
+    resmis.insert(resmis.end(), t);
+
+  return resmis;
+}
+*/
 
 // TODO: ver si se puede aprovechar el ordenamiento
 MI_TEMPLATE
@@ -185,7 +271,7 @@ UNIQUE_ORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::diff(MI_TEMP_TYPE mi2)
   int count = 0;
   // Traverse dimensions
   BOOST_FOREACH (UNIQUE_ORD_CT<INTER_IMP> nthdiff, diffs) {
-    // Intervals in the difference of nth dimension
+    // Intervals in the difference of ith dimension
     BOOST_FOREACH (INTER_IMP ith, nthdiff) {
       if (!ith.empty()) {
         Intervals resi;
@@ -193,19 +279,19 @@ UNIQUE_ORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::diff(MI_TEMP_TYPE mi2)
         itcap = capmis.inters_ref().begin();
         IntervalsIt itcapbeg = itcap;
 
-        // Complete with intersection before nth dimension (so the MIs in the result are disjoint)
+        // Complete with intersection before ith dimension (so the MIs in the result are disjoint)
         if (count > 0) {
           std::advance(itcap, count);
           resi.insert(resi.begin(), itcapbeg, itcap);
         }
 
-        // Complete nth dimension with interval in the difference
+        // Complete ith dimension with interval in the difference
         resi.insert(resi.end(), ith);
 
         // Complete the rest of dimensions with intervals of the first argument
         resi.insert(resi.end(), it1, inters_ref().end());
 
-        resmis.insert(resmis.end(), MultiInterImp1(resi));
+        resmis.insert(MultiInterImp1(resi));
       }
     }
 
@@ -215,6 +301,7 @@ UNIQUE_ORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::diff(MI_TEMP_TYPE mi2)
 
   return resmis;
 }
+
 
 MI_TEMPLATE
 ORD_CT<INT_IMP> MI_TEMP_TYPE::minElem()

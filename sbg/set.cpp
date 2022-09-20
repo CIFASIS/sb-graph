@@ -437,10 +437,10 @@ member_imp_temp(SET_TEMPLATE2, SET_TEMP_TYPE2, int, ndim);
 SET_TEMPLATE2
 void SET_TEMP_TYPE2::addAtomSet(MI_IMP aset2)
 {
-  if (!aset2.empty() && aset2.ndim() == ndim() && !empty())
+  if (!aset2.empty() && aset2.ndim() == ndim() && !asets_ref().empty())
     asets_ref().insert(aset2);
 
-  else if (!aset2.empty() && empty()) {
+  else if (!aset2.empty() && asets_ref().empty()) {
     asets_ref().insert(aset2);
     set_ndim(aset2.ndim());
   }
@@ -449,10 +449,10 @@ void SET_TEMP_TYPE2::addAtomSet(MI_IMP aset2)
 SET_TEMPLATE2
 void SET_TEMP_TYPE2::addLastAtomSet(MI_IMP aset2)
 {
-  if (!aset2.empty() && aset2.ndim() == ndim() && !empty())
+  if (!aset2.empty() && aset2.ndim() == ndim() && !asets_ref().empty()) 
     asets_ref().insert(asets_ref().end(), aset2);
 
-  else if (!aset2.empty() && empty()) {
+  else if (!aset2.empty() && asets_ref().empty()) {
     asets_ref().insert(aset2);
     set_ndim(aset2.ndim());
   }
@@ -469,18 +469,14 @@ SET_TEMPLATE2
 void SET_TEMP_TYPE2::addAtomSetsEnd(AS_TYPE2 sets2)
 {
   BOOST_FOREACH (MI_IMP as, sets2)
-    asets_ref().insert(asets_ref().end(), as);
+    if (!as.empty())
+      asets_ref().insert(asets_ref().end(), as);
 }
 
 SET_TEMPLATE2
 bool SET_TEMP_TYPE2::empty()
 {
-  if (asets_ref().empty()) return true;
-
-  BOOST_FOREACH (MI_IMP as, asets())
-    if (as.empty()) return true;
-
-  return false;
+  return asets_ref().empty();
 }
 
 SET_TEMPLATE2
@@ -540,7 +536,8 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::linearTraverseCap(SET_TEMP_TYPE2 set2)
     aux1 = *it1;
     aux2 = *it2;
 
-    res.addLastAtomSet(aux1.cap(aux2));
+    MI_IMP capaux = aux1.cap(aux2);
+    res.addLastAtomSet(capaux);
 
     if (aux1.maxElem() < aux2.maxElem()) 
       ++it1; 
@@ -683,6 +680,7 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::diff(SET_TEMP_TYPE2 set2)
   //if (!capsets.empty()) 
   //  res = linearTraverseDiff(capsets);
 
+  int i = 0;
   if (!capsets.empty()) {
     BOOST_FOREACH (MI_IMP as1, asets()) {
       AtomSets aux;
@@ -694,6 +692,7 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::diff(SET_TEMP_TYPE2 set2)
         BOOST_FOREACH (MI_IMP as3, aux) {
           AtomSets diffres = as3.diff(as2);
           newSets.addAtomSets(diffres);
+          ++i;
         }
 
         aux = newSets.asets();
@@ -766,38 +765,17 @@ ORD_CT<INT_IMP> SET_TEMP_TYPE2::maxElem()
 SET_TEMPLATE2
 SET_TEMP_TYPE2 SET_TEMP_TYPE2::normalize()
 {
-  UNIQUE_ORD_CT<MI_IMP> res = asets();
-  UNIQUE_ORD_CT<MI_IMP> toInsert, toDelete;
+  UNIQUE_ORD_CT<MI_IMP> res;
 
-  UNIQUE_ORD_CT<MI_IMP> empty;
+  if (empty()) return SetImp2(res);
 
-  do {
-    bool first = true;
-    toInsert = empty;
-    toDelete = empty;
- 
-    SetImp2 aux(res);
-    BOOST_FOREACH (MI_IMP as1, res) {
-      BOOST_FOREACH (MI_IMP as2, res) {
-        MI_IMP normalized = as1.normalize(as2);
+  MI_IMP normStart = *(asets().begin());
 
-        if (!normalized.empty() && first && as1 != as2) {
-          toInsert.insert(normalized);
-          toDelete.insert(as1);
-          toDelete.insert(as2);
- 
-          first = false;
-        }
-      }
-    }
+  for (auto it = asets().begin(); std::next(it) != asets().begin(); ++it) {
+    MI_IMP mi = *it;
 
-    BOOST_FOREACH (MI_IMP ins, toInsert) 
-      res.insert(ins);
-
-    BOOST_FOREACH (MI_IMP del, toDelete) 
-      res.erase(del);
+    normStart.normalize(mi);
   }
-  while (!toDelete.empty());
 
   return SetImp2(res);
 }
@@ -836,9 +814,10 @@ bool SET_TEMP_TYPE2::operator==(const SET_TEMP_TYPE2 &other) const
   SetImp2 aux1 = *this;
   SetImp2 aux2 = other;
 
-  if (aux1.asets() == aux2.asets()) return true;
+  //if (aux1.asets() == aux2.asets()) return true;
 
-  return aux1.normalize().asets() == aux2.normalize().asets(); 
+  //return aux1.normalize().asets() == aux2.normalize().asets(); 
+  return aux1.asets() == aux2.asets();
 }
 
 SET_TEMPLATE2

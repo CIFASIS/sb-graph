@@ -16,7 +16,6 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
-#include <chrono>
 #include <iostream>
 
 #include <boost/test/unit_test.hpp>
@@ -6566,19 +6565,6 @@ void TestMatching12()
 
 // -- Performance tests ------------------------------------------------------//
 
-template <class Clock>
-class stopwatch
-{
-    const typename Clock::time_point m_start;
-public:
-    stopwatch() :
-        m_start(Clock::now())
-    {}
-    typename Clock::duration elapsed() const {
-        return Clock::now() - m_start;
-    }
-};
-
 void TimeInterDiff1()
 {
   const stopwatch<std::chrono::high_resolution_clock> c;  
@@ -6664,6 +6650,30 @@ void TimeSetCap1()
   std::cout << "\ntime set cap 1 = " << time.count();
 }
 
+void TimeSetDiff1()
+{
+  int N = 1000;
+
+  Set s1;
+  Set s2;
+
+  for (int i = 0; i < N; i++) {
+    //Interval i1(10 * i, 1, 10 + 10 * i);
+    MultiInterval mi1;
+    mi1.addInter(Interval(10 * i, 1, 10 + 10 * i));
+    s1.addAtomSet(mi1);
+
+    MultiInterval mi2;
+    mi2.addInter(Interval(5 + 10 * i, 1, 15 + 10 * i));
+    s2.addAtomSet(mi2);
+  }
+
+  const stopwatch<std::chrono::high_resolution_clock> c;
+  s1.diff(s2);
+  std::chrono::duration<double> time = c.elapsed();
+  std::cout << "\ntime set diff 1 = " << time.count();
+}
+
 //____________________________________________________________________________//
 
 test_suite *init_unit_test_suite(int, char *[])
@@ -6724,13 +6734,13 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetCap2));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetCap3));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetCap4));
+/*
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetDiff1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetDiff2));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetMin1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetMin2));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetNormalize1));
 
-/*
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestLMCreation1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestLMCompose1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestLMCompose2));
@@ -6787,12 +6797,13 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching10));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching11));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching12));
-*/
 
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeInterDiff1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeMultiDiff1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeMultiDiff2));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeSetCap1));
+*/
+  framework::master_test_suite().add(BOOST_TEST_CASE(&TimeSetDiff1));
 
   return 0;
 }

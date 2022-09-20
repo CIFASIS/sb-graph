@@ -18,6 +18,8 @@
  ******************************************************************************/
 #pragma once
 
+#include <chrono>
+
 #include <boost/range/combine.hpp>
 #include <boost/config.hpp>
 #include <boost/unordered_set.hpp>
@@ -43,6 +45,19 @@ typedef OrdCT<REAL> ORD_REALS;
 
 std::ostream &operator<<(std::ostream &out, const ORD_INTS &nums);
 std::ostream &operator<<(std::ostream &out, const ORD_REALS &nums);
+
+template <class Clock>
+class stopwatch
+{
+    const typename Clock::time_point m_start;
+public:
+    stopwatch() :
+        m_start(Clock::now())
+    {}
+    typename Clock::duration elapsed() const {
+        return Clock::now() - m_start;
+    }
+};
 
 // Helpful macros ---------------------------------------------------------------------------------
 

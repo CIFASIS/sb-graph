@@ -45,6 +45,7 @@ struct MultiInterImp1 {
   member_class(int, ndim);
 
   MultiInterImp1();
+  MultiInterImp1(INTER_IMP i);
   MultiInterImp1(Intervals is);
   MultiInterImp1(ORD_CT<INT> v);
 
@@ -53,8 +54,9 @@ struct MultiInterImp1 {
 
   bool isIn(ORD_CT<INT_IMP> elem);
   int card();
-  MultiInterImp1 cap(MultiInterImp1 mi2);
+  void complete(INTER_IMP i, INT_IMP dim);
   UNIQUE_ORD_CT<MultiInterImp1> complement();
+  MultiInterImp1 cap(MultiInterImp1 mi2);
   UNIQUE_ORD_CT<MultiInterImp1> diff(MultiInterImp1 mi2);
 
   ORD_CT<INT_IMP> minElem();

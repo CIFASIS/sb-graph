@@ -524,6 +524,35 @@ bool SET_TEMP_TYPE2::subset(SET_TEMP_TYPE2 set2)
   return false;
 }
 
+// Continue from here
+SET_TEMPLATE2
+SET_TEMP_TYPE2 SET_TEMP_TYPE2::complement()
+{
+  SetImp2 res;
+
+  if (empty()) res.addLastAtomSet(MI_IMP(INTER_IMP(0, 1, Inf)));
+
+  else {
+    auto firstmi = *(asets().begin());
+    UNIQUE_ORD_CT<MI_IMP> c = firstmi.complement();
+
+    BOOST_FOREACH (MI_IMP mi, c)
+      res.addLastAtomSet(mi);
+
+    BOOST_FOREACH (MI_IMP mi, asets()) {
+      UNIQUE_ORD_CT<MI_IMP> c = mi.complement();
+      SetImp2 si; 
+
+      BOOST_FOREACH (MI_IMP mi, c)
+        si.addLastAtomSet(mi);
+ 
+      res = res.cap(si);
+    }
+  }
+
+  return res;
+}
+
 SET_TEMPLATE2
 SET_TEMP_TYPE2 SET_TEMP_TYPE2::linearTraverseCap(SET_TEMP_TYPE2 set2)
 {
@@ -585,7 +614,6 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::cap(SET_TEMP_TYPE2 set2)
   return linearTraverseCap(set2);
 }
 
-// Continue from here
 
 /*
 SET_TEMPLATE2
@@ -660,7 +688,6 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::linearTraverseDiff(SET_TEMP_TYPE2 capsets)
 
   return res;
 }
-*/
 
 SET_TEMPLATE2
 SET_TEMP_TYPE2 SET_TEMP_TYPE2::diff(SET_TEMP_TYPE2 set2)
@@ -701,6 +728,31 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::diff(SET_TEMP_TYPE2 set2)
       res.addAtomSets(aux);
     }
   }
+
+  else
+    res.addAtomSets(asets());
+
+  return res;
+}
+*/
+
+SET_TEMPLATE2
+SET_TEMP_TYPE2 SET_TEMP_TYPE2::diff(SET_TEMP_TYPE2 set2)
+{
+  SetImp2 res;
+
+  if (ndim() != set2.ndim()) return res;
+
+  if (empty()) return res;
+
+  if (set2.empty()) return *this;
+
+  if (*this == set2) return res;
+
+  SetImp2 capsets = cap(set2);
+
+  if (!capsets.empty()) 
+    res = cap(set2.complement());
 
   else
     res.addAtomSets(asets());
@@ -808,6 +860,7 @@ UNIQUE_ORD_CT<SET_TEMP_TYPE2> SET_TEMP_TYPE2::atomize()
   return atomize;
 }
 
+// TODO: decomment normalized sets
 SET_TEMPLATE2
 bool SET_TEMP_TYPE2::operator==(const SET_TEMP_TYPE2 &other) const
 {
@@ -849,7 +902,7 @@ bool SET_TEMP_TYPE2::operator<(const SET_TEMP_TYPE2 &other) const
   return false;
 }
 
-template struct SetImp2<OrdCT, UniqueOrdCT, UnordCT, MultiInterval, INT>;
+template struct SetImp2<OrdCT, UniqueOrdCT, UnordCT, MultiInterval, Interval, INT>;
 
 SET_TEMPLATE2
 std::ostream &operator<<(std::ostream &out, const SET_TEMP_TYPE2 &set)

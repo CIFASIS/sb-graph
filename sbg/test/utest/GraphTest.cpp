@@ -976,6 +976,45 @@ void TestAddASets1()
   BOOST_REQUIRE_MESSAGE(s1 == s2, "\n" << s1 << "\nshould be equal to\n" << s2);
 }
 
+void TestSetComplement1()
+{
+  Interval i1(5, 1, 10);
+  MultiInterval mi1(i1);
+
+  Interval i2(15, 1, 25);
+  MultiInterval mi2(i2);
+
+  Interval i3(50, 1, 100);
+  MultiInterval mi3(i3);
+
+  Set s;
+  s.addAtomSet(mi1);
+  s.addAtomSet(mi2);
+  s.addAtomSet(mi3);
+
+  Set res1 = s.complement();
+
+  Interval i4(0, 1, 4);
+  MultiInterval mi4(i4);
+
+  Interval i5(11, 1, 14);
+  MultiInterval mi5(i5);
+
+  Interval i6(26, 1, 49);
+  MultiInterval mi6(i6);
+
+  Interval i7(101, 1, Inf);
+  MultiInterval mi7(i7);
+
+  Set res2;
+  res2.addAtomSet(mi4);
+  res2.addAtomSet(mi5);
+  res2.addAtomSet(mi6);
+  res2.addAtomSet(mi7);
+
+  BOOST_REQUIRE_MESSAGE(res1 == res2, "\n" << res1 << "\nshould be equal to\n" << res2);
+}
+
 void TestSetCap1()
 {
   Set s1;
@@ -6652,13 +6691,12 @@ void TimeSetCap1()
 
 void TimeSetDiff1()
 {
-  int N = 1000;
+  int N = 10000;
 
   Set s1;
   Set s2;
 
   for (int i = 0; i < N; i++) {
-    //Interval i1(10 * i, 1, 10 + 10 * i);
     MultiInterval mi1;
     mi1.addInter(Interval(10 * i, 1, 10 + 10 * i));
     s1.addAtomSet(mi1);
@@ -6668,10 +6706,39 @@ void TimeSetDiff1()
     s2.addAtomSet(mi2);
   }
 
+  std::cout << "\n";
+  std::cout << s1 << "\n\n";
+  std::cout << s2 << "\n\n";
+  std::cout << s2.complement() << "\n\n";
+  std::cout << s1.diff(s2) << "\n\n";
+
   const stopwatch<std::chrono::high_resolution_clock> c;
   s1.diff(s2);
   std::chrono::duration<double> time = c.elapsed();
   std::cout << "\ntime set diff 1 = " << time.count();
+}
+
+void TimeSetDiff2()
+{
+  int N = 10000;
+
+  Set s1;
+  Set s2;
+
+  for (int i = 0; i < N; i++) {
+    MultiInterval mi1;
+    mi1.addInter(Interval(10 * i, 1, 5 + 10 * i));
+    s1.addAtomSet(mi1);
+
+    MultiInterval mi2;
+    mi2.addInter(Interval(5 + 10 * i, 1, 10 + 10 * i));
+    s2.addAtomSet(mi2);
+  }
+
+  const stopwatch<std::chrono::high_resolution_clock> c;
+  s1.diff(s2);
+  std::chrono::duration<double> time = c.elapsed();
+  std::cout << "\ntime set diff 2 = " << time.count();
 }
 
 //____________________________________________________________________________//
@@ -6730,11 +6797,12 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestCompSets2));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetEmpty1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestAddASets1));
+  framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetComplement1));
+/*
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetCap1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetCap2));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetCap3));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetCap4));
-/*
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetDiff1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetDiff2));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetMin1));
@@ -6802,8 +6870,9 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeMultiDiff1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeMultiDiff2));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeSetCap1));
-*/
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeSetDiff1));
+  framework::master_test_suite().add(BOOST_TEST_CASE(&TimeSetDiff2));
+*/
 
   return 0;
 }

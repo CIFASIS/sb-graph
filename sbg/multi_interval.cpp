@@ -28,6 +28,21 @@ MI_TEMPLATE
 MI_TEMP_TYPE::MultiInterImp1() : ndim_(0), inters_(Intervals()) {}
 
 MI_TEMPLATE
+MI_TEMP_TYPE::MultiInterImp1(INTER_IMP i)
+{
+  set_inters(Intervals());
+  set_ndim(0);
+
+  if (!i.empty()) {
+    Intervals inters;
+    inters.insert(inters.begin(), i);
+
+    set_inters(inters);
+    set_ndim(1);
+  }
+}
+
+MI_TEMPLATE
 MI_TEMP_TYPE::MultiInterImp1(INTERS_TYPE inters)
 {
   set_inters(Intervals());
@@ -128,7 +143,21 @@ MI_TEMP_TYPE MI_TEMP_TYPE::cap(MI_TEMP_TYPE mi2)
   return res;
 }
 
-/*
+MI_TEMPLATE
+void MI_TEMP_TYPE::complete(INTER_IMP i, INT_IMP dim)
+{
+  INTER_IMP infinter(0, 1, Inf);
+  INT_IMP n = ndim();
+
+  for (int j = 1; j < dim; j++) 
+    addInter(infinter);
+
+  addInter(i);
+
+  for (int j = dim+1; j <= n; j++)
+    addInter(infinter);
+}
+
 MI_TEMPLATE
 UNIQUE_ORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::complement()
 {
@@ -136,97 +165,37 @@ UNIQUE_ORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::complement()
 
   if (empty()) return resmis;
 
-  BOOST_FOREACH (INTER_IMP ith, inters()) {
-    break;     
-  }
-
-  return resmis;
-}
-*/
-
-// TODO: ver si se puede aprovechar el ordenamiento
-/*
-MI_TEMPLATE
-UNIQUE_ORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::diff(MI_TEMP_TYPE mi2)
-{
-  UNIQUE_ORD_CT<MultiInterImp1> resmis;
-
-  if (ndim() != mi2.ndim()) return resmis;
-
-  if (empty()) return resmis;
-
-  if (mi2.empty()) {
-    resmis.insert(*this);
-    return resmis;
-  }
-
-  MultiInterImp1 capmis = cap(mi2);
-
-  // First MI is contained by the second MI
-  if (inters() == capmis.inters()) return resmis;
-
-  // Empty intersection, no need of computation
-  if (capmis.empty()) {
-    resmis.insert(*this);
-    return resmis;
-  }
-
-  // Differences of each dimension
-  IntervalsIt itcap = capmis.inters_ref().begin();
-  ORD_CT<UNIQUE_ORD_CT<INTER_IMP>> diffs;
-  typename ORD_CT<UNIQUE_ORD_CT<INTER_IMP>>::iterator itdiffs = diffs.begin();
-
-  parallel_foreach2 (inters_ref(), capmis.inters_ref()) {
-    itdiffs = diffs.insert(itdiffs, boost::get<0>(items).diff(boost::get<1>(items)));
-    ++itdiffs;
-  }
-
-  IntervalsIt it1 = inters_ref().begin();
-  ++it1;
-  itdiffs = diffs.begin();
-
-  int count = 0;
   UNIQUE_ORD_CT<MultiInterImp1> toEnd;
-  // Traverse dimensions
-  BOOST_FOREACH (UNIQUE_ORD_CT<INTER_IMP> nthdiff, diffs) {
-    // Intervals in the difference of ith dimension
-    BOOST_FOREACH (INTER_IMP ith, nthdiff) {
-      if (!ith.empty()) {
-        Intervals resi;
-
-        itcap = capmis.inters_ref().begin();
-        IntervalsIt itcapbeg = itcap;
-
-        // Complete with intersection before ith dimension (so the MIs in the result are disjoint)
-        if (count > 0) {
-          std::advance(itcap, count);
-          resi.insert(resi.begin(), itcapbeg, itcap);
-        }
-
-        // Complete ith dimension with interval in the difference
-        resi.insert(resi.end(), ith);
-
-        // Complete the rest of dimensions with intervals of the first argument
-        resi.insert(resi.end(), it1, inters_ref().end());
-
-        if (it1->minElem() < ith.minElem())
-          toEnd.insert(toEnd.begin(), MultiInterImp1(resi));
-
-        else
-          resmis.insert(resmis.end(), MultiInterImp1(resi));
+  int dim = 1;
+  BOOST_FOREACH (INTER_IMP ith, inters()) {
+    if (ith.isIn(0)) {
+      BOOST_FOREACH (INTER_IMP c, ith.complement()) {
+        MultiInterImp1 auxmi;
+        auxmi.set_ndim(ndim());
+       
+        auxmi.complete(c, dim);
+        toEnd.insert(toEnd.begin(), auxmi);
       }
     }
 
-    ++count;
-    ++it1;
+    else {
+      BOOST_FOREACH (INTER_IMP c, ith.complement()) {
+        MultiInterImp1 auxmi;
+        auxmi.set_ndim(ndim());
+       
+        auxmi.complete(c, dim);
+        resmis.insert(resmis.end(), auxmi);
+      }
+    }
+
+    dim++;
   }
 
-  BOOST_FOREACH (MultiInterImp1 t, toEnd)
-    resmis.insert(resmis.end(), t);
-
+  BOOST_FOREACH (MultiInterImp1 mi, toEnd)
+    resmis.insert(resmis.end(), mi);
+  
   return resmis;
 }
-*/
 
 // TODO: ver si se puede aprovechar el ordenamiento
 MI_TEMPLATE

@@ -91,10 +91,10 @@ printable_temp(SET_TEMPLATE1, SET_TEMP_TYPE1);
                       typename Pred = std::equal_to<Value>,                    \
                       typename Alloc = std::allocator<Value>>                  \
             class UNORD_CT,                                                    \
-            typename MI_IMP, typename INT_IMP>
+            typename MI_IMP, typename INTER_IMP, typename INT_IMP>
 
 #define SET_TEMP_TYPE2                                        \
-  SetImp2<ORD_CT, UNIQUE_ORD_CT, UNORD_CT, MI_IMP, INT_IMP>
+  SetImp2<ORD_CT, UNIQUE_ORD_CT, UNORD_CT, MI_IMP, INTER_IMP, INT_IMP>
 
 SET_TEMPLATE2
 struct SetImp2 {
@@ -123,6 +123,7 @@ struct SetImp2 {
   int card();
   bool subseteq(SetImp2 set2);
   bool subset(SetImp2 set2);
+  SetImp2 complement();
   SetImp2 linearTraverseCap(SetImp2 set2);
   SetImp2 cap(SetImp2 set2);
   SetImp2 linearTraverseDiff(SetImp2 capsets);
@@ -148,7 +149,7 @@ printable_temp(SET_TEMPLATE2, SET_TEMP_TYPE2);
 
 // Chosen implementation ---------------------------------------------------------------------------
 
-typedef SetImp2<OrdCT, UniqueOrdCT, UnordCT, MultiInterval, INT> Set;
+typedef SetImp2<OrdCT, UniqueOrdCT, UnordCT, MultiInterval, Interval, INT> Set;
 std::size_t hash_value(const Set &set);
 
 Set createSet(Interval i);

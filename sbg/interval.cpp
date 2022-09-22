@@ -142,6 +142,7 @@ INTER_TEMP_TYPE INTER_TEMP_TYPE::cap(INTER_TEMP_TYPE i2)
     return IntervalImp1(true);
 
   if (newLo < 0) return IntervalImp1(true);
+ 
 
   return IntervalImp1(newLo, newStep, newEnd);
 }

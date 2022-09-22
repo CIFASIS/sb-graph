@@ -140,6 +140,7 @@ MI_TEMP_TYPE MI_TEMP_TYPE::cap(MI_TEMP_TYPE mi2)
     }
   }
 
+
   return res;
 }
 
@@ -174,6 +175,7 @@ UNIQUE_ORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::complement()
         auxmi.set_ndim(ndim());
        
         auxmi.complete(c, dim);
+        auxmi.set_ndim(ndim());
         toEnd.insert(toEnd.begin(), auxmi);
       }
     }
@@ -184,6 +186,7 @@ UNIQUE_ORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::complement()
         auxmi.set_ndim(ndim());
        
         auxmi.complete(c, dim);
+        auxmi.set_ndim(ndim());
         resmis.insert(resmis.end(), auxmi);
       }
     }

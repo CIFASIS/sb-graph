@@ -6720,7 +6720,7 @@ void TimeSetDiff1()
 
 void TimeSetDiff2()
 {
-  int N = 10000;
+  int N = 1000;
 
   Set s1;
   Set s2;
@@ -6871,8 +6871,8 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeMultiDiff2));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeSetCap1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeSetDiff1));
-  framework::master_test_suite().add(BOOST_TEST_CASE(&TimeSetDiff2));
 */
+  framework::master_test_suite().add(BOOST_TEST_CASE(&TimeSetDiff2));
 
   return 0;
 }

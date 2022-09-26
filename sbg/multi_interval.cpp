@@ -187,7 +187,7 @@ UNIQUE_ORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::complement()
        
         auxmi.complete(c, dim);
         auxmi.set_ndim(ndim());
-        resmis.insert(resmis.end(), auxmi);
+        resmis.insert(auxmi);
       }
     }
 
@@ -196,7 +196,7 @@ UNIQUE_ORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::complement()
 
   BOOST_FOREACH (MultiInterImp1 mi, toEnd)
     resmis.insert(resmis.end(), mi);
-  
+
   return resmis;
 }
 
@@ -400,6 +400,13 @@ bool MI_TEMP_TYPE::operator<(const MI_TEMP_TYPE &other) const
 
   parallel_foreach2 (aux1.inters_ref(), aux2.inters_ref()) {
     auto elem1 = boost::get<0>(items).minElem(), elem2 = boost::get<1>(items).minElem();
+    if (elem1 < elem2) return true;
+
+    else if (elem2 < elem1) return false;
+  }
+
+  parallel_foreach2 (aux1.inters_ref(), aux2.inters_ref()) {
+    auto elem1 = boost::get<0>(items).maxElem(), elem2 = boost::get<1>(items).maxElem();
     if (elem1 < elem2) return true;
 
     else if (elem2 < elem1) return false;

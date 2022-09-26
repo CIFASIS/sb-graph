@@ -533,20 +533,39 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::complement()
   if (empty()) res.addLastAtomSet(MI_IMP(INTER_IMP(0, 1, Inf)));
 
   else {
-    auto firstmi = *(asets().begin());
-    UNIQUE_ORD_CT<MI_IMP> c = firstmi.complement();
+    if (ndim() == 1) {
+      INT_IMP last = 0;
+      BOOST_FOREACH (MI_IMP mi, asets()) {
+        auto i = mi.inters().begin();
+        INT_IMP lo = i->lo(), hi = i->hi();
+ 
+        if (lo - last > 1 || lo == 1)
+          res.addLastAtomSet(INTER_IMP(last, 1, lo - 1));
+      
+        // TODO: complemento during interval
 
-    BOOST_FOREACH (MI_IMP mi, c)
-      res.addLastAtomSet(mi);
-
-    BOOST_FOREACH (MI_IMP mi, asets()) {
-      UNIQUE_ORD_CT<MI_IMP> c = mi.complement();
-      SetImp2 si; 
+        last = hi + 1;
+      }
+ 
+      res.addLastAtomSet(INTER_IMP(last, 1, Inf));
+    }
+ 
+    else {
+      auto firstmi = *(asets().begin());
+      UNIQUE_ORD_CT<MI_IMP> c = firstmi.complement();
 
       BOOST_FOREACH (MI_IMP mi, c)
-        si.addLastAtomSet(mi);
+        res.addLastAtomSet(mi);
+
+      BOOST_FOREACH (MI_IMP mi, asets()) {
+        UNIQUE_ORD_CT<MI_IMP> c = mi.complement();
+        SetImp2 si; 
+
+        BOOST_FOREACH (MI_IMP mi, c)
+          si.addLastAtomSet(mi);
  
-      res = res.cap(si);
+        res = res.cap(si);
+      }
     }
   }
 
@@ -598,6 +617,8 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::linearTraverseCap(SET_TEMP_TYPE2 set2)
       res.addLastAtomSet(aux1.cap(aux2));
     }
   }
+
+  std::cout << *this << "\n" << set2 << "\n" << res << "\n\n";
 
   return res;
 }

@@ -1015,6 +1015,45 @@ void TestSetComplement1()
   BOOST_REQUIRE_MESSAGE(res1 == res2, "\n" << res1 << "\nshould be equal to\n" << res2);
 }
 
+void TestSetComplement2()
+{
+  Interval i1(5, 1, 20);
+  Interval i2(7, 1, 9);
+
+  MultiInterval mi1;
+  mi1.addInter(i1);
+  mi1.addInter(i2);
+
+  Interval i3(10, 1, 15);
+  Interval i4(10, 1, 13);
+
+  MultiInterval mi2;
+  mi2.addInter(i3);
+  mi2.addInter(i4);
+  
+  Set s;
+  s.addLastAtomSet(mi1);
+  s.addLastAtomSet(mi2);
+
+  Set res1 = s.complement();
+
+  Interval i5(0, 1, 4);
+  Interval i6(0, 1, Inf);
+  
+  MultiInterval mi3; 
+  mi3.addInter(i5);
+  mi3.addInter(i6);
+ 
+  Interval i7(0, 1, 6);
+
+  MultiInterval mi4;
+  mi4.addInter(i6);
+  mi4.addInter(i7);
+
+  //BOOST_REQUIRE_MESSAGE(res1 == res2, "\n" << res1 << "\nshould be equal to\n" << res2);
+  std::cout << "\n" << res1 << "\n";
+}
+
 void TestSetCap1()
 {
   Set s1;
@@ -6720,7 +6759,7 @@ void TimeSetDiff1()
 
 void TimeSetDiff2()
 {
-  int N = 1000;
+  int N = 10000;
 
   Set s1;
   Set s2;
@@ -6798,6 +6837,7 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetEmpty1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestAddASets1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetComplement1));
+  framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetComplement2));
 /*
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetCap1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetCap2));
@@ -6871,8 +6911,8 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeMultiDiff2));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeSetCap1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeSetDiff1));
-*/
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeSetDiff2));
+*/
 
   return 0;
 }

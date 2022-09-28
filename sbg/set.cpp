@@ -499,8 +499,6 @@ int SET_TEMP_TYPE2::card()
   return res;
 }
 
-
-
 // TODO
 SET_TEMPLATE2 
 bool SET_TEMP_TYPE2::subseteq(SET_TEMP_TYPE2 set2)
@@ -524,7 +522,6 @@ bool SET_TEMP_TYPE2::subset(SET_TEMP_TYPE2 set2)
   return false;
 }
 
-// Continue from here
 SET_TEMPLATE2
 SET_TEMP_TYPE2 SET_TEMP_TYPE2::complement()
 {
@@ -537,12 +534,15 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::complement()
       INT_IMP last = 0;
       BOOST_FOREACH (MI_IMP mi, asets()) {
         auto i = mi.inters().begin();
-        INT_IMP lo = i->lo(), hi = i->hi();
+        INT_IMP lo = i->lo(), st = i->step(), hi = i->hi();
  
         if (lo - last > 1 || lo == 1)
           res.addLastAtomSet(INTER_IMP(last, 1, lo - 1));
       
-        // TODO: complemento during interval
+        if (st > 1) {
+          for (int i = 1; i < st; i++)
+            res.addLastAtomSet(INTER_IMP(lo + i, st, hi));
+        }
 
         last = hi + 1;
       }
@@ -618,144 +618,30 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::linearTraverseCap(SET_TEMP_TYPE2 set2)
     }
   }
 
-  std::cout << *this << "\n" << set2 << "\n" << res << "\n\n";
-
   return res;
 }
 
 SET_TEMPLATE2
 SET_TEMP_TYPE2 SET_TEMP_TYPE2::cap(SET_TEMP_TYPE2 set2)
 {
-  if (empty() || set2.empty()) 
-    return SetImp2();
+  if (empty() || set2.empty()) return SetImp2();
 
-  if (asets() == set2.asets())
-    return *this;
+  if (asets() == set2.asets()) return *this;
 
-  return linearTraverseCap(set2);
+  if (ndim() == 1) return linearTraverseCap(set2);
+
+  AtomSets res;
+
+  BOOST_FOREACH (MI_IMP as1, asets()) {
+    BOOST_FOREACH (MI_IMP as2, set2.asets()) {
+      MI_IMP capres = as1.cap(as2);
+
+      if (!capres.empty()) res.insert(capres);
+    }
+  }
+
+  return SetImp2(res);
 }
-
-
-/*
-SET_TEMPLATE2
-SET_TEMP_TYPE2 SET_TEMP_TYPE2::linearTraverseDiff(SET_TEMP_TYPE2 capsets)
-{
-  MI_IMP aux1, auxcap;
-  SetImp2 res;
-  auto it1 = asets_ref().begin(), itcap = capsets.asets_ref().begin();
-  auto end1 = asets_ref().end(), endcap = capsets.asets_ref().end();
-
-  AtomSets partial;
-  partial.insert(*it1);
-
-  for (; it1 != end1 && itcap != endcap;) {
-    aux1 = *it1;
-    auxcap = *itcap;
-
-    std::cout << aux1 << " | " << auxcap << "\n"; 
-    std::cout << "partial1: " << partial << "\n";
-
-    SetImp2 newSets;
-
-    BOOST_FOREACH (MI_IMP p, partial)
-      newSets.addAtomSetsEnd(p.diff(auxcap));
-
-    //partial = newSets.asets();
-    partial = AtomSets();
-    BOOST_FOREACH (MI_IMP n, newSets.asets_ref())
-      partial.insert(n);
-    std::cout << "partial2: " << partial << "\n\n";
-
-    if (aux1.maxElem() < auxcap.maxElem()) {
-      res.addAtomSetsEnd(partial);
-
-      ++it1;
-
-      if (it1 != end1) {
-        partial = AtomSets();
-        partial.insert(*it1);
-      }
-    }
-
-    else
-      ++itcap;
-  }
-
-  if (it1 == end1 && itcap == endcap) return res;
-
-  if (it1 == end1) {
-    --it1;
-    aux1 = *it1;
-
-    for (; itcap != endcap; ++itcap) {
-      auxcap = *itcap;
-
-      BOOST_FOREACH (MI_IMP as, capsets.asets())
-        res.addLastAtomSet(as);
-    }
-  }
-
-  if (itcap == endcap) {
-    --itcap;
-    auxcap = *itcap;
-
-    for (; it1 != end1; ++it1) {
-      aux1 = *it1;
-
-      BOOST_FOREACH (MI_IMP as, capsets.asets())
-        res.addLastAtomSet(as);
-    }
-  }
-
-  return res;
-}
-
-SET_TEMPLATE2
-SET_TEMP_TYPE2 SET_TEMP_TYPE2::diff(SET_TEMP_TYPE2 set2)
-{
-  SetImp2 res;
-
-  if (ndim() != set2.ndim()) return res;
-
-  if (empty()) return res;
-
-  if (set2.empty()) return *this;
-
-  if (*this == set2) return res;
-
-  SetImp2 capsets = cap(set2);
-
-  //if (!capsets.empty()) 
-  //  res = linearTraverseDiff(capsets);
-
-  int i = 0;
-  if (!capsets.empty()) {
-    BOOST_FOREACH (MI_IMP as1, asets()) {
-      AtomSets aux;
-      aux.insert(as1);
-
-      BOOST_FOREACH (MI_IMP as2, capsets.asets()) {
-        SetImp2 newSets;
-
-        BOOST_FOREACH (MI_IMP as3, aux) {
-          AtomSets diffres = as3.diff(as2);
-          newSets.addAtomSets(diffres);
-          ++i;
-        }
-
-        aux = newSets.asets();
-      }
-
-      res.addAtomSets(aux);
-    }
-  }
-
-  else
-    res.addAtomSets(asets());
-
-  return res;
-}
-*/
 
 SET_TEMPLATE2
 SET_TEMP_TYPE2 SET_TEMP_TYPE2::diff(SET_TEMP_TYPE2 set2)
@@ -781,6 +667,7 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::diff(SET_TEMP_TYPE2 set2)
   return res;
 }
 
+// TODO
 SET_TEMPLATE2
 SET_TEMP_TYPE2 SET_TEMP_TYPE2::cup(SET_TEMP_TYPE2 set2)
 {
@@ -792,6 +679,7 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::cup(SET_TEMP_TYPE2 set2)
   return res;
 }
 
+// TODO
 SET_TEMPLATE2
 ORD_CT<INT_IMP> SET_TEMP_TYPE2::minElem()
 {
@@ -820,6 +708,7 @@ ORD_CT<INT_IMP> SET_TEMP_TYPE2::nextElem(ORD_CT<INT_IMP> cur)
   return aset.nextElem(cur);
 }
 
+// TODO
 SET_TEMPLATE2
 ORD_CT<INT_IMP> SET_TEMP_TYPE2::maxElem()
 {
@@ -835,6 +724,7 @@ ORD_CT<INT_IMP> SET_TEMP_TYPE2::maxElem()
   return max.maxElem();
 } 
 
+// TODO continue here
 SET_TEMPLATE2
 SET_TEMP_TYPE2 SET_TEMP_TYPE2::normalize()
 {

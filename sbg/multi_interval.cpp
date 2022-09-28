@@ -145,18 +145,15 @@ MI_TEMP_TYPE MI_TEMP_TYPE::cap(MI_TEMP_TYPE mi2)
 }
 
 MI_TEMPLATE
-void MI_TEMP_TYPE::complete(INTER_IMP i, INT_IMP dim)
+MI_TEMP_TYPE MI_TEMP_TYPE::complete(INTER_IMP i, INT_IMP dim)
 {
   INTER_IMP infinter(0, 1, Inf);
-  INT_IMP n = ndim();
+  MultiInterImp1 res = replace(i, dim);
 
-  for (int j = 1; j < dim; j++) 
-    addInter(infinter);
+  for (int j = dim + 1; j <= ndim(); j++)
+    res = res.replace(infinter, j);
 
-  addInter(i);
-
-  for (int j = dim+1; j <= n; j++)
-    addInter(infinter);
+  return res;
 }
 
 MI_TEMPLATE
@@ -169,24 +166,17 @@ UNIQUE_ORD_CT<MI_TEMP_TYPE> MI_TEMP_TYPE::complement()
   UNIQUE_ORD_CT<MultiInterImp1> toEnd;
   int dim = 1;
   BOOST_FOREACH (INTER_IMP ith, inters()) {
+    INTER_IMP prev(0, 1, Inf);
     if (ith.isIn(0)) {
       BOOST_FOREACH (INTER_IMP c, ith.complement()) {
-        MultiInterImp1 auxmi;
-        auxmi.set_ndim(ndim());
-       
-        auxmi.complete(c, dim);
-        auxmi.set_ndim(ndim());
+        MultiInterImp1 auxmi = complete(c, dim);
         toEnd.insert(toEnd.begin(), auxmi);
       }
     }
 
     else {
       BOOST_FOREACH (INTER_IMP c, ith.complement()) {
-        MultiInterImp1 auxmi;
-        auxmi.set_ndim(ndim());
-       
-        auxmi.complete(c, dim);
-        auxmi.set_ndim(ndim());
+        MultiInterImp1 auxmi = complete(c, dim);
         resmis.insert(auxmi);
       }
     }

@@ -499,7 +499,6 @@ int SET_TEMP_TYPE2::card()
   return res;
 }
 
-// TODO
 SET_TEMPLATE2 
 bool SET_TEMP_TYPE2::subseteq(SET_TEMP_TYPE2 set2)
 {
@@ -510,7 +509,6 @@ bool SET_TEMP_TYPE2::subseteq(SET_TEMP_TYPE2 set2)
   return false;
 }
 
-// TODO
 SET_TEMPLATE2
 bool SET_TEMP_TYPE2::subset(SET_TEMP_TYPE2 set2)
 {
@@ -654,7 +652,7 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::diff(SET_TEMP_TYPE2 set2)
 
   if (set2.empty()) return *this;
 
-  if (*this == set2) return res;
+  if (this->asets() == set2.asets()) return res;
 
   SetImp2 capsets = cap(set2);
 
@@ -667,32 +665,24 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::diff(SET_TEMP_TYPE2 set2)
   return res;
 }
 
-// TODO
 SET_TEMPLATE2
 SET_TEMP_TYPE2 SET_TEMP_TYPE2::cup(SET_TEMP_TYPE2 set2)
 {
   SetImp2 res = *this;
   SetImp2 aux = set2.diff(*this);
 
-  if (!aux.empty()) res.addAtomSets(aux.asets());
+  if (!aux.empty()) res.addAtomSetsEnd(aux.asets());
 
   return res;
 }
 
-// TODO
 SET_TEMPLATE2
 ORD_CT<INT_IMP> SET_TEMP_TYPE2::minElem()
 {
-  ORD_CT<INT_IMP> res;
+  if (empty()) return ORD_CT<INT_IMP>();
 
-  if (empty()) return res;
-
-  MI_IMP min = *(asets_ref().begin());
-
-  BOOST_FOREACH (MI_IMP as1, asets()) 
-    if (as1.minElem() < min.minElem()) min = as1;
-
-  return min.minElem();
+  auto aux = *(asets_ref().begin());
+  return aux.minElem();
 } 
 
 SET_TEMPLATE2
@@ -708,39 +698,19 @@ ORD_CT<INT_IMP> SET_TEMP_TYPE2::nextElem(ORD_CT<INT_IMP> cur)
   return aset.nextElem(cur);
 }
 
-// TODO
 SET_TEMPLATE2
 ORD_CT<INT_IMP> SET_TEMP_TYPE2::maxElem()
 {
-  ORD_CT<INT_IMP> res;
+  if (empty()) return ORD_CT<INT_IMP>();
 
-  if (empty()) return res;
-
-  MI_IMP max = *(asets_ref().begin());
-
-  BOOST_FOREACH (MI_IMP as1, asets()) 
-    if (max.maxElem() < as1.maxElem()) max = as1;
-
-  return max.maxElem();
+  auto aux = *(asets_ref().end());
+  return aux.maxElem();
 } 
 
-// TODO continue here
 SET_TEMPLATE2
 SET_TEMP_TYPE2 SET_TEMP_TYPE2::normalize()
 {
-  UNIQUE_ORD_CT<MI_IMP> res;
-
-  if (empty()) return SetImp2(res);
-
-  MI_IMP normStart = *(asets().begin());
-
-  for (auto it = asets().begin(); std::next(it) != asets().begin(); ++it) {
-    MI_IMP mi = *it;
-
-    normStart.normalize(mi);
-  }
-
-  return SetImp2(res);
+  return *this;
 }
 
 SET_TEMPLATE2
@@ -771,17 +741,13 @@ UNIQUE_ORD_CT<SET_TEMP_TYPE2> SET_TEMP_TYPE2::atomize()
   return atomize;
 }
 
-// TODO: decomment normalized sets
 SET_TEMPLATE2
 bool SET_TEMP_TYPE2::operator==(const SET_TEMP_TYPE2 &other) const
 {
   SetImp2 aux1 = *this;
   SetImp2 aux2 = other;
 
-  //if (aux1.asets() == aux2.asets()) return true;
-
-  //return aux1.normalize().asets() == aux2.normalize().asets(); 
-  return aux1.asets() == aux2.asets();
+  return aux1.diff(aux2).empty() && aux2.diff(aux1).empty();
 }
 
 SET_TEMPLATE2

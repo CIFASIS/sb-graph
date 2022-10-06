@@ -173,10 +173,11 @@ SET_IMP PW_TEMP_TYPE::preImage(SET_IMP s)
     BOOST_FOREACH (MI_IMP as1, ss.asets()) {
       APW_IMP auxMap(as1, *itl);
 
-      BOOST_FOREACH (MI_IMP as2, s.asets())
+      BOOST_FOREACH (MI_IMP as2, s.asets()) {
         partialRes.addAtomSet(auxMap.preImage(as2));
+      }
     }
-
+  
     res = res.cup(partialRes);
 
     ++itl;

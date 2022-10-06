@@ -6846,7 +6846,7 @@ void TimeSetDiff2()
 test_suite *init_unit_test_suite(int, char *[])
 {
   framework::master_test_suite().p_name.value = "Set Based Graphs";
-
+/*
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestIntCreation1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestIntCreation2));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestIntCreation3));
@@ -6909,7 +6909,6 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetMin2));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetNormalize1));
 
-/*
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestLMCreation1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestLMCompose1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestLMCompose2));
@@ -6949,12 +6948,14 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMinAdjComp4));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMinAdj1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestPWLMapInf1));
+*/
 
-  framework::master_test_suite().add(BOOST_TEST_CASE(&TestRC1));
-  framework::master_test_suite().add(BOOST_TEST_CASE(&TestGraph3c));
+  //framework::master_test_suite().add(BOOST_TEST_CASE(&TestRC1));
+  //framework::master_test_suite().add(BOOST_TEST_CASE(&TestGraph3c));
   // framework::master_test_suite().add(BOOST_TEST_CASE(&Test2D));
 
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching1));
+/*
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching2));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching3));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching4));

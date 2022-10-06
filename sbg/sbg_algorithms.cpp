@@ -681,6 +681,7 @@ std::pair<Set, bool> MatchingStruct::SBGMatching()
 void MatchingStruct::debugInit()
 {
   LOG << "\n\n";
+  LOG << mapF << "\n\n" << mapU << "\n\n";
   BOOST_FOREACH (SetVertexDesc vi, vertices(g)) {
     SetVertex v = g[vi];
     Set vs = v.range();

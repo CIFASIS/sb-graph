@@ -646,13 +646,13 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::diff(SET_TEMP_TYPE2 set2)
 {
   SetImp2 res;
 
-  if (ndim() != set2.ndim()) return res;
-
   if (empty()) return res;
 
   if (set2.empty()) return *this;
 
   if (this->asets() == set2.asets()) return res;
+
+  if (ndim() != set2.ndim()) return res;
 
   SetImp2 capsets = cap(set2);
 
@@ -669,7 +669,7 @@ SET_TEMPLATE2
 SET_TEMP_TYPE2 SET_TEMP_TYPE2::cup(SET_TEMP_TYPE2 set2)
 {
   SetImp2 res = *this;
-  SetImp2 aux = set2.diff(*this);
+  SetImp2 aux = set2.diff(res);
 
   if (!aux.empty()) res.addAtomSetsEnd(aux.asets());
 
@@ -703,7 +703,9 @@ ORD_CT<INT_IMP> SET_TEMP_TYPE2::maxElem()
 {
   if (empty()) return ORD_CT<INT_IMP>();
 
-  auto aux = *(asets_ref().end());
+  auto itend = asets_ref().end();
+  std::advance(itend, -1);
+  auto aux = *itend;
   return aux.maxElem();
 } 
 

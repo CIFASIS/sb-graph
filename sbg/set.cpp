@@ -474,10 +474,7 @@ void SET_TEMP_TYPE2::addAtomSetsEnd(AS_TYPE2 sets2)
 }
 
 SET_TEMPLATE2
-bool SET_TEMP_TYPE2::empty()
-{
-  return asets_ref().empty();
-}
+bool SET_TEMP_TYPE2::empty() { return asets_ref().empty(); }
 
 SET_TEMPLATE2
 bool SET_TEMP_TYPE2::isIn(ORD_CT<INT_IMP> elem)
@@ -646,16 +643,23 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::diff(SET_TEMP_TYPE2 set2)
 {
   SetImp2 res;
 
+  //std::cout << *this << " * " << set2 << "\n";
+
+  //std::cout << "Caso 1\n";
   if (empty()) return res;
 
+  //std::cout << "Caso 2\n";
   if (set2.empty()) return *this;
 
+  //std::cout << "Caso 3\n";
   if (this->asets() == set2.asets()) return res;
 
+  //std::cout << "Caso 4\n";
   if (ndim() != set2.ndim()) return res;
 
   SetImp2 capsets = cap(set2);
 
+  //std::cout << "Caso 5\n";
   if (!capsets.empty()) 
     res = cap(set2.complement());
 
@@ -669,9 +673,13 @@ SET_TEMPLATE2
 SET_TEMP_TYPE2 SET_TEMP_TYPE2::cup(SET_TEMP_TYPE2 set2)
 {
   SetImp2 res = *this;
+
+  if (set2.empty()) return res;
+
   SetImp2 aux = set2.diff(res);
 
-  if (!aux.empty()) res.addAtomSetsEnd(aux.asets());
+  //TODO: ver cómo hacer para agregar al final
+  if (!aux.empty()) res.addAtomSets(aux.asets());
 
   return res;
 }

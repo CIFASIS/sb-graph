@@ -559,6 +559,8 @@ PW_TEMP_TYPE PW_TEMP_TYPE::concat(PW_TEMP_TYPE pw2)
 PW_TEMPLATE
 PW_TEMP_TYPE PW_TEMP_TYPE::combine(PW_TEMP_TYPE pw2)
 {
+  std::cout << *this << "\n\n";
+  std::cout << pw2 << "\n\n";
   Sets sres = dom();
   SetsIt its = sres.end();
   LMaps lres = lmap();
@@ -591,6 +593,7 @@ PW_TEMP_TYPE PW_TEMP_TYPE::combine(PW_TEMP_TYPE pw2)
   }
 
   PWLMapImp1 res(sres, lres);
+  std::cout << res << "\n-----\n";
   return res;
 }
 

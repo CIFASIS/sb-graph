@@ -2638,7 +2638,89 @@ void TestPWLMapCombine1()
   res2.addSetLM(s2, lm2);
   res2.addSetLM(s5, lm3);
 
-  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), "\ncombine(" << pw1 << ",\n        " << pw2 << ")\n=\n" << res1 << "\nExpected: " << res2);
+  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), "\ncombine(" << pw1 << ",\n" << pw2 << ")\n=\n" << res1 << "\nExpected: " << res2);
+}
+
+void TestPWLMapCombine2()
+{
+  MultiInterval mi1(Interval(3, 1, 3));
+  MultiInterval mi2(Interval(4, 1, 500));
+  MultiInterval mi3(Interval(503, 1, 999));
+  MultiInterval mi4(Interval(1000, 1, 1000));
+
+  Set s1;
+  s1.addAtomSet(mi1);
+  s1.addAtomSet(mi2);
+  s1.addAtomSet(mi3);
+  s1.addAtomSet(mi4);
+
+  LMap lm1;
+  lm1.addGO(1, 998);
+
+  MultiInterval mi5(Interval(1002, 1, 1002));
+  MultiInterval mi6(Interval(1003, 1, 1498));
+  MultiInterval mi7(Interval(1499, 1, 1499));
+  MultiInterval mi8(Interval(1501, 1, 1501));
+  MultiInterval mi9(Interval(1502, 1, 1997));
+  MultiInterval mi10(Interval(1998, 1, 1998));
+
+  Set s2;
+  s2.addAtomSet(mi5);
+  s2.addAtomSet(mi6);
+  s2.addAtomSet(mi7);
+  s2.addAtomSet(mi8);
+  s2.addAtomSet(mi9);
+  s2.addAtomSet(mi10);
+
+  LMap lm2;
+  lm2.addGO(1, -999);
+
+  PWLMap pw1;
+  pw1.addSetLM(s1, lm1);
+  pw1.addSetLM(s2, lm2);
+
+  MultiInterval mi11(Interval(1, 1, 1));
+  MultiInterval mi12(Interval(2, 1, 1000));
+  MultiInterval mi13(Interval(1001, 1, 1999));
+
+  Set s3;
+  s3.addAtomSet(mi11);
+  s3.addAtomSet(mi12);
+  s3.addAtomSet(mi13);
+
+  LMap lm3;
+  lm3.addGO(1, 0);
+
+  PWLMap pw2;
+  pw2.addSetLM(s3, lm3);
+ 
+  PWLMap res1 = pw1.combine(pw2);
+
+  PWLMap res2; 
+
+  MultiInterval mi14(Interval(1, 1, 1));
+  MultiInterval mi15(Interval(2, 1, 2));
+  MultiInterval mi16(Interval(501, 1, 502));
+  MultiInterval mi17(Interval(1001, 1, 1001));
+  MultiInterval mi18(Interval(1500, 1, 1500));
+  MultiInterval mi19(Interval(1999, 1, 1999));
+
+  Set s4;
+  s4.addAtomSet(mi14);
+  s4.addAtomSet(mi15);
+  s4.addAtomSet(mi16);
+  s4.addAtomSet(mi17);
+  s4.addAtomSet(mi18);
+  s4.addAtomSet(mi19);
+
+  LMap lm4;
+  lm4.addGO(1, 0);
+
+  res2.addSetLM(s1, lm1);
+  res2.addSetLM(s2, lm2);
+  res2.addSetLM(s4, lm4);
+
+  BOOST_REQUIRE_MESSAGE(res1.equivalentPW(res2), "\ncombine(" << pw1 << ",\n" << pw2 << ")\n=\n" << res1 << "\nExpected: " << res2);
 }
 
 void TestMinAS1()
@@ -6846,7 +6928,7 @@ void TimeSetDiff2()
 test_suite *init_unit_test_suite(int, char *[])
 {
   framework::master_test_suite().p_name.value = "Set Based Graphs";
-/*
+
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestIntCreation1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestIntCreation2));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestIntCreation3));
@@ -6935,6 +7017,7 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestPWLMapComp1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestPWLMapComp2));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestPWLMapCombine1));
+  framework::master_test_suite().add(BOOST_TEST_CASE(&TestPWLMapCombine2));
 
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMinAS1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMinAS2));
@@ -6948,15 +7031,13 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMinAdjComp4));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMinAdj1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestPWLMapInf1));
-*/
 
   //framework::master_test_suite().add(BOOST_TEST_CASE(&TestRC1));
   //framework::master_test_suite().add(BOOST_TEST_CASE(&TestGraph3c));
   // framework::master_test_suite().add(BOOST_TEST_CASE(&Test2D));
 
-  //framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching1));
+  framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching2));
-/*
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching3));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching4));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching5));
@@ -6967,6 +7048,7 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching10));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching11));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching12));
+/*
 
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeInterDiff1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeMultiDiff1));

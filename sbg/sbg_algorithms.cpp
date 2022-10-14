@@ -144,7 +144,6 @@ std::pair<PWLMap, PWLMap> recursion(int n, Set ER, Set V, Set E, PWLMap Emap, PW
 {
   // *** Initialization
   LOG << "ER: " << ER << "\n\n";
-  //std::cout << "ER: " << ER << "\n\n";
 
   PWLMap Vid(V);
 
@@ -159,8 +158,6 @@ std::pair<PWLMap, PWLMap> recursion(int n, Set ER, Set V, Set E, PWLMap Emap, PW
   Set zero = createSet(mi);
 
   // *** Traverse graph
-  //std::cout << currentSEmap << "\n\n";
-
   PWLMap semapNth = currentSEmap;
   Set Erec = ER;
   PWLMap originalSmap = currentSmap;
@@ -258,9 +255,7 @@ std::tuple<PWLMap, PWLMap, PWLMap> minReachable(int nmax, Set V, Set E, PWLMap V
       oldSEmap = newSEmap;
       Set Esucc = newSmap.compPW(map_B).diffMap(map_D).preImage(zero);  // Edges that connect vertices with successors
       newSEmap = (map_B.restrictMap(Esucc).minInv(newSmap.image())).compPW(map_D.restrictMap(Esucc));
-      //std::cout << "newSEmap:\n" << newSEmap << "\n\n";
       newSEmap = newSEmap.combine(oldSEmap);
-      std::cout << "newSEmap:\n" << newSEmap << "\n\n";
 
       PWLMap deltaSEmap = newSEmap.diffMap(oldSEmap);
       Ec = E.diff(deltaSEmap.preImage(zero));

@@ -531,7 +531,7 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::complement()
         auto i = mi.inters().begin();
         INT_IMP lo = i->lo(), st = i->step(), hi = i->hi();
  
-        if (lo - last > 1 || lo == 1)
+        if (lo - last >= 1 || lo == 1)
           res.addLastAtomSet(INTER_IMP(last, 1, lo - 1));
       
         if (st > 1) {
@@ -643,23 +643,16 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::diff(SET_TEMP_TYPE2 set2)
 {
   SetImp2 res;
 
-  //std::cout << *this << " * " << set2 << "\n";
-
-  //std::cout << "Caso 1\n";
   if (empty()) return res;
 
-  //std::cout << "Caso 2\n";
   if (set2.empty()) return *this;
 
-  //std::cout << "Caso 3\n";
   if (this->asets() == set2.asets()) return res;
 
-  //std::cout << "Caso 4\n";
   if (ndim() != set2.ndim()) return res;
 
   SetImp2 capsets = cap(set2);
 
-  //std::cout << "Caso 5\n";
   if (!capsets.empty()) 
     res = cap(set2.complement());
 

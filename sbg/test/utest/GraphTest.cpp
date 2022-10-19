@@ -6873,35 +6873,6 @@ void TimeSetCap1()
 
 void TimeSetDiff1()
 {
-  int N = 10000;
-
-  Set s1;
-  Set s2;
-
-  for (int i = 0; i < N; i++) {
-    MultiInterval mi1;
-    mi1.addInter(Interval(10 * i, 1, 10 + 10 * i));
-    s1.addAtomSet(mi1);
-
-    MultiInterval mi2;
-    mi2.addInter(Interval(5 + 10 * i, 1, 15 + 10 * i));
-    s2.addAtomSet(mi2);
-  }
-
-  std::cout << "\n";
-  std::cout << s1 << "\n\n";
-  std::cout << s2 << "\n\n";
-  std::cout << s2.complement() << "\n\n";
-  std::cout << s1.diff(s2) << "\n\n";
-
-  const stopwatch<std::chrono::high_resolution_clock> c;
-  s1.diff(s2);
-  std::chrono::duration<double> time = c.elapsed();
-  std::cout << "\ntime set diff 1 = " << time.count();
-}
-
-void TimeSetDiff2()
-{
   int N = 1000;
 
   Set s1;
@@ -6917,10 +6888,81 @@ void TimeSetDiff2()
     s2.addAtomSet(mi2);
   }
 
+/*
+  std::cout << "\n";
+  std::cout << s1 << "\n\n";
+  std::cout << s2 << "\n\n";
+  std::cout << s2.complement() << "\n\n";
+  std::cout << s1.diff(s2) << "\n\n";
+*/
+
   const stopwatch<std::chrono::high_resolution_clock> c;
   s1.diff(s2);
   std::chrono::duration<double> time = c.elapsed();
-  std::cout << "\ntime set diff 2 = " << time.count();
+  std::cout << "\ntime set diff 1 = " << time.count();
+}
+
+void TimeMapInf1()
+{
+  int N = 10;
+
+  MultiInterval mi1(Interval(0, 1, 5));
+
+  Set s1;
+  s1.addAtomSet(mi1); 
+
+  Set s2;
+
+  for (int i = 1; i < N; i++) {
+    MultiInterval mi2;
+    mi2.addInter(Interval(10 * i, 1, 5 + 10 * i));
+    s2.addAtomSet(mi2);
+  }
+
+  LMap lm1;
+  lm1.addGO(1, 0);
+
+  LMap lm2;
+  lm2.addGO(1, -5);
+
+  PWLMap pw1;
+  pw1.addSetLM(s1, lm1);
+  pw1.addSetLM(s2, lm2);
+
+  const stopwatch<std::chrono::high_resolution_clock> c;
+  pw1.mapInf(1);
+  std::chrono::duration<double> time = c.elapsed();
+  std::cout << "\ntime map inf 1 = " << time.count();
+  
+  //std::cout << "\n\n" << pw1;
+  //std::cout << "\n\n" << pw1.mapInf(1) << "\n";
+}
+
+void TimeMapInf2()
+{
+  int N = 10;
+
+  Set s1;
+
+  for (int i = 1; i < N; i++) {
+    MultiInterval mi1;
+    mi1.addInter(Interval(10 * i, 1, 5 + 10 * i));
+    s1.addAtomSet(mi1);
+  }
+
+  LMap lm1;
+  lm1.addGO(1, -5);
+
+  PWLMap pw1;
+  pw1.addSetLM(s1, lm1);
+
+  const stopwatch<std::chrono::high_resolution_clock> c;
+  pw1.mapInf(1);
+  std::chrono::duration<double> time = c.elapsed();
+  std::cout << "\ntime map inf 2 = " << time.count();
+  
+  std::cout << "\n\n" << pw1;
+  std::cout << "\n\n" << pw1.mapInf(1) << "\n";
 }
 
 //____________________________________________________________________________//
@@ -7048,15 +7090,14 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching10));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching11));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching12));
-/*
 
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeInterDiff1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeMultiDiff1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeMultiDiff2));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeSetCap1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeSetDiff1));
-  framework::master_test_suite().add(BOOST_TEST_CASE(&TimeSetDiff2));
-*/
+  framework::master_test_suite().add(BOOST_TEST_CASE(&TimeMapInf1));
+  framework::master_test_suite().add(BOOST_TEST_CASE(&TimeMapInf2));
 
   return 0;
 }

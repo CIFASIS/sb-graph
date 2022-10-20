@@ -63,7 +63,7 @@ PW_TEMP_TYPE::PWLMapImp1(SETS_TYPE dom, LMAPS_TYPE lmap) : ndim_(0)
     else {
       dom_ = dom;
       lmap_ = lmap;
-      ndim_ = dim1;
+      set_ndim(dim1);
     }
   }
 
@@ -190,9 +190,10 @@ SET_IMP PW_TEMP_TYPE::preImage(SET_IMP s)
 PW_TEMPLATE
 PW_TEMP_TYPE PW_TEMP_TYPE::compPW(PW_TEMP_TYPE pw2)
 {
+
   PWLMapImp1 aux = *this;
-  aux = aux.normalize();
-  pw2 = pw2.normalize();
+  //aux = aux.normalize();
+  //pw2 = pw2.normalize();
 
   LMapsIt itlm1 = aux.lmap_ref().begin();
   LMapsIt itlm2 = pw2.lmap_ref().begin();
@@ -331,7 +332,10 @@ PW_TEMP_TYPE PW_TEMP_TYPE::compPW(PW_TEMP_TYPE pw2)
     }
   }
 
+
+  // Revisar el caso donde conjunto o mapas son vacíos
   PWLMapImp1 res(ress, reslm);
+  if (res.empty()) res.set_ndim(this->ndim());
   return res;
 }
 
@@ -1533,7 +1537,9 @@ PW_TEMP_TYPE PW_TEMP_TYPE::mapInf(int n)
         oldRes = res;
         res = res.compPW(res);
 
-        for (int j = 1; j <= res.ndim(); ++j) res = res.reduceMapN(j);
+        for (int j = 1; j <= res.ndim(); ++j) {
+          res = res.reduceMapN(j);
+        }
       } while (!oldRes.equivalentPW(res));
     }
   }

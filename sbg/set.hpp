@@ -128,6 +128,7 @@ struct SetImp2 {
   SetImp2 cap(SetImp2 set2);
   SetImp2 linearTraverseDiff(SetImp2 capsets);
   SetImp2 diff(SetImp2 set2);
+  SetImp2 linearTraverseCup(SetImp2 set2);
   SetImp2 cup(SetImp2 set2);
 
   ORD_CT<INT_IMP> minElem();

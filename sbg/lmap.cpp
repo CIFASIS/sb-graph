@@ -31,19 +31,14 @@ LM_TEMPLATE
 LM_TEMP_TYPE::LMapImp1() : ndim_(0), gain_(), offset_() {}
 
 LM_TEMPLATE
-LM_TEMP_TYPE::LMapImp1(ORD_NUMS_TYPE gain, ORD_NUMS_TYPE offset) : ndim_(0)
+LM_TEMP_TYPE::LMapImp1(ORD_NUMS_TYPE gain, ORD_NUMS_TYPE offset) : ndim_(0), gain_(), offset_()
 {
   OrdNumeric emptyNum;
 
   if (gain.size() == offset.size()) {
-    gain_ = gain;
-    offset_ = offset;
-    ndim_ = gain.size();
-  }
-
-  else {
-    gain_ = emptyNum;
-    offset_ = emptyNum;
+    set_gain(gain);
+    set_offset(offset);
+    set_ndim(gain.size());
   }
 }
 

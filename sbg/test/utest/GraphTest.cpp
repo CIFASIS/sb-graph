@@ -6961,8 +6961,35 @@ void TimeMapInf2()
   std::chrono::duration<double> time = c.elapsed();
   std::cout << "\ntime map inf 2 = " << time.count();
   
+  //std::cout << "\n\n" << pw1;
+  //std::cout << "\n\n" << pw1.mapInf(1) << "\n";
+}
+
+void TimeMapInf3()
+{
+  int N = 2;
+
+  Set s1;
+
+  for (int i = 1; i < N; i++) {
+    MultiInterval mi1;
+    mi1.addInter(Interval(100 * i + (i-1) * 5, 1, 100 + (i-1) * 5 + 100 * i));
+    s1.addAtomSet(mi1);
+  }
+
+  LMap lm1;
+  lm1.addGO(1, -5);
+
+  PWLMap pw1;
+  pw1.addSetLM(s1, lm1);
+
   std::cout << "\n\n" << pw1;
   std::cout << "\n\n" << pw1.mapInf(1) << "\n";
+
+  const stopwatch<std::chrono::high_resolution_clock> c;
+  pw1.mapInf(1);
+  std::chrono::duration<double> time = c.elapsed();
+  std::cout << "\ntime map inf 3 = " << time.count();
 }
 
 //____________________________________________________________________________//
@@ -7029,6 +7056,7 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetCap4));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetDiff1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetDiff2));
+  //framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetCup1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetMin1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetMin2));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetNormalize1));
@@ -7091,6 +7119,7 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching11));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching12));
 
+/*
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeInterDiff1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeMultiDiff1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeMultiDiff2));
@@ -7098,6 +7127,8 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeSetDiff1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeMapInf1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TimeMapInf2));
+  framework::master_test_suite().add(BOOST_TEST_CASE(&TimeMapInf3));
+*/
 
   return 0;
 }

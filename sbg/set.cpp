@@ -663,6 +663,50 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::diff(SET_TEMP_TYPE2 set2)
 }
 
 SET_TEMPLATE2
+SET_TEMP_TYPE2 SET_TEMP_TYPE2::linearTraverseCup(SET_TEMP_TYPE2 set2)
+{
+  MI_IMP aux1, aux2;
+  SetImp2 res;
+  auto it1 = asets_ref().begin(), it2 = set2.asets_ref().begin();
+  auto end1 = asets_ref().end(), end2 = set2.asets_ref().end();
+
+  for (; it1 != end1 && it2 != end2;) {
+    aux1 = *it1;
+    aux2 = *it2;
+
+    if (aux1.maxElem() < aux2.maxElem()) { 
+      res.addLastAtomSet(aux1);
+      ++it1; 
+    }
+
+    else {
+      res.addLastAtomSet(aux2);
+      ++it2;
+    }
+  }
+
+  if (it1 == end1 && it2 == end2) return res;
+
+  if (it1 == end1) {
+    for (; it2 != end2; ++it2) {
+      aux2 = *it2;
+
+      res.addLastAtomSet(aux2);
+    }
+  }
+
+  if (it2 == end2) {
+    for (; it1 != end1; ++it1) {
+      aux1 = *it1;
+
+      res.addLastAtomSet(aux1);
+    }
+  }
+
+  return res;
+}
+
+SET_TEMPLATE2
 SET_TEMP_TYPE2 SET_TEMP_TYPE2::cup(SET_TEMP_TYPE2 set2)
 {
   SetImp2 res = *this;
@@ -671,8 +715,7 @@ SET_TEMP_TYPE2 SET_TEMP_TYPE2::cup(SET_TEMP_TYPE2 set2)
 
   SetImp2 aux = set2.diff(res);
 
-  //TODO: ver cómo hacer para agregar al final
-  if (!aux.empty()) res.addAtomSets(aux.asets());
+  if (!aux.empty()) res = res.linearTraverseCup(aux);
 
   return res;
 }

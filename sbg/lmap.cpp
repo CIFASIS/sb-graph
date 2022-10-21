@@ -57,9 +57,9 @@ LM_TEMP_TYPE::LMapImp1(int ndim)
     ++ito;
   }
 
-  gain_ = g;
-  offset_ = o;
-  ndim_ = ndim;
+  set_gain(g);
+  set_offset(o);
+  set_ndim(ndim);
 }
 
 member_imp_temp(LM_TEMPLATE, LM_TEMP_TYPE, ORD_NUMS_TYPE, gain);
@@ -69,15 +69,15 @@ member_imp_temp(LM_TEMPLATE, LM_TEMP_TYPE, int, ndim);
 LM_TEMPLATE
 void LM_TEMP_TYPE::addGO(REAL_IMP g, REAL_IMP o)
 {
-  gain_.insert(gain_.end(), g);
-  offset_.insert(offset_.end(), o);
-  ++ndim_;
+  gain().insert(gain_ref().end(), g);
+  offset().insert(offset_ref().end(), o);
+  set_ndim(ndim() + 1);
 }
 
 LM_TEMPLATE
 bool LM_TEMP_TYPE::empty()
 {
-  if (gain_ref().empty() && offset_ref().empty()) return true;
+  if (gain_ref().empty() || offset_ref().empty()) return true;
 
   return false;
 }
@@ -104,24 +104,23 @@ LM_TEMP_TYPE LM_TEMP_TYPE::replace(REAL_IMP g, REAL_IMP o, int dim)
   OrdNumeric reso;
   OrdNumericIt itreso = reso.begin();
 
-  OrdNumericIt itg = gain_ref().begin();
-  OrdNumericIt ito = offset_ref().begin();
+  int i = 1;
+  parallel_foreach2 (gain_ref(), offset_ref()) {
+    REAL_IMP origg = boost::get<0>(items), origo = boost::get<1>(items);
 
-  for (int i = 1; i <= ndim(); i++) {
     if (i == dim) {
       itresg = resg.insert(itresg, g);
       itreso = reso.insert(itreso, o);
     }
 
     else {
-      itresg = resg.insert(itresg, *itg);
-      itreso = reso.insert(itreso, *ito);
+      itresg = resg.insert(itresg, origg);
+      itreso = reso.insert(itreso, origo);
     }
 
-    ++itg;
-    ++ito;
     ++itresg;
     ++itreso;
+    ++i;
   }
 
   return LMapImp1(resg, reso);
@@ -135,27 +134,24 @@ LM_TEMP_TYPE LM_TEMP_TYPE::compose(LM_TEMP_TYPE lm2)
   OrdNumeric reso;
   OrdNumericIt itreso = reso.begin();
 
-  OrdNumericIt ito1 = offset_ref().begin();
-  OrdNumericIt itg2 = lm2.gain_ref().begin();
-  OrdNumericIt ito2 = lm2.offset_ref().begin();
-
   if (ndim() == lm2.ndim()) {
-    BOOST_FOREACH (REAL_IMP g1i, gain()) {
-      itresg = resg.insert(itresg, g1i * (*itg2));
-      ++itresg;
-      itreso = reso.insert(itreso, (*ito2) * g1i + (*ito1));
-      ++itreso;
+    parallel_foreach2(gain_ref(), lm2.gain_ref()) {
+      REAL_IMP g1 = boost::get<0>(items), g2 = boost::get<1>(items);
 
-      ++ito1;
-      ++itg2;
-      ++ito2;
+      itresg = resg.insert(itresg, g1 * g2);
+      ++itresg;
+    }
+
+    parallel_foreach3(gain_ref(), offset_ref(), lm2.offset_ref()) {
+      REAL_IMP g1 = boost::get<0>(items);
+      REAL_IMP o1 = boost::get<1>(items), o2 = boost::get<2>(items);
+     
+      itreso = reso.insert(itreso, o2 * g1 + o1);
+      ++itreso;
     }
   }
 
-  else {
-    LMapImp1 aux;
-    return aux;
-  }
+  else return LMapImp1();
 
   return LMapImp1(resg, reso);
 }
@@ -168,26 +164,21 @@ LM_TEMP_TYPE LM_TEMP_TYPE::invLMap()
   OrdNumeric reso;
   OrdNumericIt itreso = reso.begin();
 
-  OrdNumericIt ito1 = offset_ref().begin();
-
-  BOOST_FOREACH (REAL_IMP g1i, gain()) {
-    if (g1i != 0) {
-      itresg = resg.insert(itresg, 1 / g1i);
-      ++itresg;
-
-      itreso = reso.insert(itreso, -(*ito1) / g1i);
-      ++itreso;
+  parallel_foreach2 (gain_ref(), offset_ref()) {
+    REAL_IMP origg = boost::get<0>(items), origo = boost::get<1>(items);
+ 
+    if (origg != 0) {
+      itresg = resg.insert(itresg, 1 / origg);
+      itreso = reso.insert(itreso, -origo / origg);
     }
 
     else {
       itresg = resg.insert(itresg, Inf);
-      ++itresg;
-
       itreso = reso.insert(itreso, -Inf);
-      ++itreso;
     }
 
-    ++ito1;
+    ++itresg;
+    ++itreso;
   }
 
   return LMapImp1(resg, reso);
@@ -202,53 +193,32 @@ LM_TEMP_TYPE LM_TEMP_TYPE::addLM(LM_TEMP_TYPE lm2)
   OrdNumericIt itreso = reso.begin();
 
   if (ndim() == lm2.ndim()) {
-    OrdNumericIt ito = offset_ref().begin();
-    OrdNumericIt itg2 = lm2.gain_ref().begin();
-    OrdNumericIt ito2 = lm2.offset_ref().begin();
+    parallel_foreach4 (gain_ref(), offset_ref(), lm2.gain_ref(), lm2.offset_ref()) {
+      REAL_IMP g1 = boost::get<0>(items), o1 = boost::get<1>(items);
+      REAL_IMP g2 = boost::get<2>(items), o2 = boost::get<3>(items);
 
-    BOOST_FOREACH (REAL_IMP gi, gain()) {
-      itresg = resg.insert(itresg, gi + *itg2);
+      itresg = resg.insert(itresg, g1 + g2);
       ++itresg;
-      itreso = reso.insert(itreso, *ito + *ito2);
+      itreso = reso.insert(itreso, o1 + o2);
       ++itreso;
-
-      ++ito;
-      ++itg2;
-      ++ito2;
     }
   }
 
-  LMapImp1 aux(resg, reso);
   return LMapImp1(resg, reso);
 }
 
 LM_TEMPLATE
 LM_TEMP_TYPE LM_TEMP_TYPE::diffLM(LM_TEMP_TYPE lm2)
 {
-  OrdNumeric resg;
-  OrdNumericIt itresg = resg.begin();
-  OrdNumeric reso;
-  OrdNumericIt itreso = reso.begin();
+  LMapImp1 negativeLm2;
 
-  if (ndim() == lm2.ndim()) {
-    OrdNumericIt ito = offset_ref().begin();
-    OrdNumericIt itg2 = lm2.gain_ref().begin();
-    OrdNumericIt ito2 = lm2.offset_ref().begin();
+  parallel_foreach2 (lm2.gain_ref(), lm2.offset_ref()) {
+    REAL_IMP g2 = boost::get<0>(items), o2 = boost::get<1>(items);
 
-    BOOST_FOREACH (REAL_IMP gi, gain()) {
-      itresg = resg.insert(itresg, gi - *itg2);
-      ++itresg;
-      itreso = reso.insert(itreso, *ito - *ito2);
-      ++itreso;
-
-      ++ito;
-      ++itg2;
-      ++ito2;
-    }
+    negativeLm2.addGO(-g2, -o2);
   }
 
-  LMapImp1 aux(resg, reso);
-  return LMapImp1(resg, reso);
+  return this->addLM(negativeLm2);
 }
 
 LM_TEMPLATE

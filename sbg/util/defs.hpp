@@ -89,6 +89,7 @@ public:                    \
 // Helpful functions ------------------------------------------------------------------------------
 
 #define parallel_foreach2(X, Y) for (auto&& items : boost::combine(X, Y))
-#define parallel_foreach3(X, Y) for (auto&& items : boost::combine(X, Y))
+#define parallel_foreach3(X, Y, Z) for (auto&& items : boost::combine(X, Y, Z))
+#define parallel_foreach4(W, X, Y, Z) for (auto&& items : boost::combine(W, X, Y, Z))
 
 }  // namespace SBG

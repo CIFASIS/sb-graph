@@ -33,8 +33,6 @@ LM_TEMP_TYPE::LMapImp1() : ndim_(0), gain_(), offset_() {}
 LM_TEMPLATE
 LM_TEMP_TYPE::LMapImp1(ORD_NUMS_TYPE gain, ORD_NUMS_TYPE offset) : ndim_(0), gain_(), offset_()
 {
-  OrdNumeric emptyNum;
-
   if (gain.size() == offset.size()) {
     set_gain(gain);
     set_offset(offset);
@@ -43,7 +41,7 @@ LM_TEMP_TYPE::LMapImp1(ORD_NUMS_TYPE gain, ORD_NUMS_TYPE offset) : ndim_(0), gai
 }
 
 LM_TEMPLATE
-LM_TEMP_TYPE::LMapImp1(int ndim)
+LM_TEMP_TYPE::LMapImp1(int ndim) : ndim_(ndim)
 {
   OrdNumeric g;
   OrdNumericIt itg = g.begin();
@@ -59,7 +57,6 @@ LM_TEMP_TYPE::LMapImp1(int ndim)
 
   set_gain(g);
   set_offset(o);
-  set_ndim(ndim);
 }
 
 member_imp_temp(LM_TEMPLATE, LM_TEMP_TYPE, ORD_NUMS_TYPE, gain);

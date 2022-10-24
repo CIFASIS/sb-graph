@@ -35,6 +35,12 @@ namespace SBG {
 
 APW_TEMPLATE
 struct AtomPWLMapImp1 {
+  typedef ORD_CT<REAL_IMP> OrdReals;
+  typedef typename OrdReals::iterator OrdRealsIt;
+  typedef ORD_CT<INTER_IMP> Intervals;
+  typedef typename Intervals::iterator IntervalsIt;
+  
+
   member_class(MI_IMP, dom);
   member_class(LM_IMP, lmap);
 

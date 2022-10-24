@@ -25,75 +25,53 @@ namespace SBG {
 // Atomic piecewise linear maps -------------------------------------------------------------------
 
 APW_TEMPLATE
-APW_TEMP_TYPE::AtomPWLMapImp1() {}
+APW_TEMP_TYPE::AtomPWLMapImp1() : dom_(), lmap_() {}
 
 APW_TEMPLATE
-APW_TEMP_TYPE::AtomPWLMapImp1(MI_IMP dom, LM_IMP lmap)
+APW_TEMP_TYPE::AtomPWLMapImp1(MI_IMP dom, LM_IMP lmap) : dom_(), lmap_() 
 {
-  MI_IMP emptyAS;
-  LM_IMP emptyLM;
-
-  if (dom.ndim() != lmap.ndim()) {
-    dom_ = emptyAS;
-    lmap_ = emptyLM;
-  }
-
-  else {
-    ORD_CT<INTER_IMP> inters = dom.inters();
-    ORD_CT<REAL_IMP> g = lmap.gain();
-    typename ORD_CT<REAL_IMP>::iterator itg = g.begin();
-    ORD_CT<REAL_IMP> o = lmap.offset();
-    typename ORD_CT<REAL_IMP>::iterator ito = o.begin();
+  if (dom.ndim() == lmap.ndim()) {
     bool incompatible = false;
 
-    BOOST_FOREACH (INTER_IMP i, inters) {
-      REAL_IMP auxLo = i.lo() * (*itg) + (*ito);
-      REAL_IMP auxStep = i.step() * (*itg);
-      REAL_IMP auxHi = i.hi() * (*itg) + (*ito);
+    parallel_foreach3 (lmap.gain_ref(), lmap.offset_ref(), dom.inters_ref()) {
+      REAL_IMP g = boost::get<0>(items), o = boost::get<1>(items);
+      INTER_IMP i = boost::get<2>(items);
 
-      if (*itg < Inf) {
+      REAL_IMP auxLo = i.lo() * g + o;
+      REAL_IMP auxStep = i.step() * g;
+      REAL_IMP auxHi = i.hi() * g + o;
+
+      if (g < Inf) {
         if (auxLo != (int)auxLo && i.lo()) incompatible = true;
 
         if (auxStep != (int)auxStep && i.step()) incompatible = true;
 
         if (auxHi != (int)auxHi && i.hi()) incompatible = true;
-
-        ++itg;
-        ++ito;
       }
     }
 
-    if (incompatible) {
-      dom_ = emptyAS;
-      lmap_ = emptyLM;
-    }
-
-    else {
-      dom_ = dom;
-      lmap_ = lmap;
+    if (!incompatible) {
+      set_dom(dom);
+      set_lmap(lmap);
     }
   }
 }
 
 APW_TEMPLATE
-APW_TEMP_TYPE::AtomPWLMapImp1(MI_IMP dom, MI_IMP image)
+APW_TEMP_TYPE::AtomPWLMapImp1(MI_IMP dom, MI_IMP image) : dom_(dom), lmap_()
 {
-  dom_ = dom;
-  lmap_ = LM_IMP();
-
   if (!dom.empty()) {
-    typename ORD_CT<INTER_IMP>::iterator itdom = dom.inters_ref().begin();
-    typename ORD_CT<INTER_IMP>::iterator itim = image.inters_ref().begin();
+    OrdReals g;
+    OrdRealsIt itg = g.begin();
+    OrdReals o;
+    OrdRealsIt ito = o.begin();
 
-    ORD_CT<REAL_IMP> g;
-    typename ORD_CT<REAL_IMP>::iterator itg = g.begin();
-    ORD_CT<REAL_IMP> o;
-    typename ORD_CT<REAL_IMP>::iterator ito = o.begin();
+    parallel_foreach2 (dom.inters_ref(), image.inters_ref()) {
+      INTER_IMP d = boost::get<0>(items), im = boost::get<1>(items);
 
-    while (itdom != dom.inters_ref().end()) {
-      if ((*itdom).card() == (*itim).card()) {
-        REAL_IMP transformGain = (*itim).step() / (*itdom).step();
-        REAL_IMP transformOff = (*itim).lo() - transformGain * (*itdom).lo();
+      if (d.card() == im.card()) {
+        REAL_IMP transformGain = im.step() / d.step();
+        REAL_IMP transformOff = im.lo() - transformGain * d.lo();
 
         itg = g.insert(itg, transformGain);
         ++itg;
@@ -103,12 +81,9 @@ APW_TEMP_TYPE::AtomPWLMapImp1(MI_IMP dom, MI_IMP image)
 
       else
         break;
-
-      ++itdom;
-      ++itim;
     }
 
-    lmap_ = LM_IMP(g, o);
+    set_lmap(LM_IMP(g, o));
   }
 }
 
@@ -116,7 +91,7 @@ member_imp_temp(APW_TEMPLATE, APW_TEMP_TYPE, MI_IMP, dom);
 member_imp_temp(APW_TEMPLATE, APW_TEMP_TYPE, LM_IMP, lmap);
 
 APW_TEMPLATE
-bool APW_TEMP_TYPE::empty() { return dom_ref().empty() && lmap_ref().empty(); }
+bool APW_TEMP_TYPE::empty() { return dom_ref().empty() || lmap_ref().empty(); }
 
 APW_TEMPLATE
 bool APW_TEMP_TYPE::isId()
@@ -129,35 +104,34 @@ bool APW_TEMP_TYPE::isId()
 APW_TEMPLATE
 MI_IMP APW_TEMP_TYPE::image(MI_IMP as)
 {
-  ORD_CT<INTER_IMP> inters = (as.cap(dom())).inters();
-  ORD_CT<REAL_IMP> g = lmap_ref().gain();
-  typename ORD_CT<REAL_IMP>::iterator itg = g.begin();
-  ORD_CT<REAL_IMP> o = lmap_ref().offset();
-  typename ORD_CT<REAL_IMP>::iterator ito = o.begin();
+  Intervals res;
+  IntervalsIt itres = res.begin();
 
-  ORD_CT<INTER_IMP> res;
-  typename ORD_CT<INTER_IMP>::iterator itres = res.begin();
+  Intervals inters = (as.cap(dom())).inters();
 
   if (dom_ref().empty()) return MI_IMP();
 
-  BOOST_FOREACH (INTER_IMP capi, inters) {
+  parallel_foreach3 (lmap_ref().gain_ref(), lmap_ref().offset_ref(), inters) {
+    REAL_IMP g = boost::get<0>(items), o = boost::get<1>(items);
+    INTER_IMP capi = boost::get<2>(items);
+
     INT_IMP newLo;
     INT_IMP newStep;
     INT_IMP newHi;
 
-    REAL_IMP auxLo = capi.lo() * (*itg) + (*ito);
-    REAL_IMP auxStep = capi.step() * (*itg);
-    REAL_IMP auxHi = capi.hi() * (*itg) + (*ito);
+    REAL_IMP auxLo = capi.lo() * g + o;
+    REAL_IMP auxStep = capi.step() * g;
+    REAL_IMP auxHi = capi.hi() * g + o;
 
-    if (*itg < 0) {
-      auxLo = capi.hi() * (*itg) + (*ito);
-      auxStep = capi.step() * (-*itg);
-      auxHi = capi.lo() * (*itg) + (*ito);
+    if (g < 0) {
+      auxLo = capi.hi() * g + o;
+      auxStep = capi.step() * (-g);
+      auxHi = capi.lo() * g + o;
     }
 
     if (auxLo == auxHi) auxStep = 1;
 
-    if (*itg < Inf) {
+    if (g < Inf) {
       if (auxLo >= Inf)
         newLo = Inf;
       else
@@ -180,12 +154,8 @@ MI_IMP APW_TEMP_TYPE::image(MI_IMP as)
       newHi = Inf;
     }
 
-    INTER_IMP aux1(newLo, newStep, newHi);
-    itres = res.insert(itres, aux1);
+    itres = res.insert(itres, INTER_IMP(newLo, newStep, newHi));
     ++itres;
-
-    ++itg;
-    ++ito;
   }
 
   return MI_IMP(res);

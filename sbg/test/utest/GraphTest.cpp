@@ -1464,65 +1464,27 @@ void TestSetMin2()
 
 void TestSetNormalize1()
 {
-  Interval i1(1, 1, 10);
+  MultiInterval mi1(Interval(1, 1, 100));
+  MultiInterval mi2(Interval(101, 1, 300));
+  MultiInterval mi3(Interval(500, 2, 600));
+  MultiInterval mi4(Interval(602, 2, 800));
 
-  MultiInterval mi1;
-  mi1.addInter(i1);
-  mi1.addInter(i1);
-  mi1.addInter(i1);
+  Set s1;
+  s1.addLastAtomSet(mi1);
+  s1.addLastAtomSet(mi2);
+  s1.addLastAtomSet(mi3);
+  s1.addLastAtomSet(mi4);
 
-  MultiInterval as1(mi1);
+  Set res1 = s1.normalize();
 
-  Interval i2(11, 1, 20);
+  MultiInterval mi5(Interval(1, 1, 300));
+  MultiInterval mi6(Interval(500, 2, 800));
 
-  MultiInterval mi2;
-  mi2.addInter(i1);
-  mi2.addInter(i2);
-  mi2.addInter(i1);
+  Set res2; 
+  res2.addLastAtomSet(mi5);
+  res2.addLastAtomSet(mi6);
 
-  MultiInterval as2(mi2);
-
-  Interval i3(500, 3, 1000);
-
-  MultiInterval mi3;
-  mi3.addInter(i1);
-  mi3.addInter(i3);
-  mi3.addInter(i1);
-
-  MultiInterval as3(mi3);
-
-  Interval i4(21, 1, 80);
-
-  MultiInterval mi4;
-  mi4.addInter(i1);
-  mi4.addInter(i4);
-  mi4.addInter(i1);
-
-  MultiInterval as4(mi4);
-
-  Set s;
-  s.addAtomSet(as1);
-  s.addAtomSet(as2);
-  s.addAtomSet(as3);
-  s.addAtomSet(as4);
-
-  Set res1 = s.normalize();
-
-  Interval i5(1, 1, 80);
-
-  MultiInterval mi5;
-  mi5.addInter(i1);
-  mi5.addInter(i5);
-  mi5.addInter(i1);
-
-  MultiInterval as5(mi5);
-
-  Set res2;
-  res2.addAtomSet(as3);
-  res2.addAtomSet(as5);
-
-  //BOOST_CHECK(res1 == res2);
-  BOOST_CHECK(true);
+  BOOST_CHECK(res1 == res2);
 }
 
 // -- LinearMaps -------------------------------------------------------------------//

@@ -32,7 +32,7 @@ namespace SBG {
 // Piecewise linear maps ------------------------------------------------------------------------
 // A compact piecewise linear map is a piecewise linear map which has only one Set and one LMap
 
-#define PW_TEMPLATE                                                                                             \
+#define PW_TEMPLATE1                                                                                            \
   template <template <typename T, typename = std::allocator<T>> class ORD_CT,                                   \
             template<typename T, typename = std::less<T>, typename = std::allocator<T>> class UNIQUE_ORD_CT,    \
             template <typename Value, typename Hash = boost::hash<Value>, typename Pred = std::equal_to<Value>, \
@@ -40,9 +40,9 @@ namespace SBG {
             class UNORD_CT,                                                                                     \
             typename APW_IMP, typename LM_IMP, typename SET_IMP, typename MI_IMP, typename INTER_IMP, typename INT_IMP, typename REAL_IMP>
 
-#define PW_TEMP_TYPE PWLMapImp1<ORD_CT, UNIQUE_ORD_CT, UNORD_CT, APW_IMP, LM_IMP, SET_IMP, MI_IMP, INTER_IMP, INT_IMP, REAL_IMP>
+#define PW_TEMP_TYPE1 PWLMapImp1<ORD_CT, UNIQUE_ORD_CT, UNORD_CT, APW_IMP, LM_IMP, SET_IMP, MI_IMP, INTER_IMP, INT_IMP, REAL_IMP>
 
-PW_TEMPLATE
+PW_TEMPLATE1
 struct PWLMapImp1 {
   typedef ORD_CT<SET_IMP> Sets;
   typedef typename ORD_CT<SET_IMP>::iterator SetsIt;
@@ -107,8 +107,90 @@ struct PWLMapImp1 {
   eq_class(PWLMapImp1);
 };
 
-typedef PWLMapImp1<OrdCT, UniqueOrdCT, UnordCT, AtomPWLMap, LMap, Set, MultiInterval, Interval, INT, REAL> PWLMap;
+printable_temp(PW_TEMPLATE1, PW_TEMP_TYPE1);
 
-printable_temp(PW_TEMPLATE, PW_TEMP_TYPE);
+// Implementation 2: canonic maps ------------------------------------------------------------------
+
+#define PW_TEMPLATE2                                                                                            \
+  template <template <typename T, typename = std::allocator<T>> class ORD_CT,                                   \
+            template<typename T, typename = std::less<T>, typename = std::allocator<T>> class UNIQUE_ORD_CT,    \
+            template <typename Value, typename Hash = boost::hash<Value>, typename Pred = std::equal_to<Value>, \
+                      typename Alloc = std::allocator<Value>>                                                   \
+            class UNORD_CT,                                                                                     \
+            typename APW_IMP, typename LM_IMP, typename SET_IMP, typename MI_IMP, typename INTER_IMP, typename INT_IMP, typename REAL_IMP>
+
+#define PW_TEMP_TYPE2 PWLMapImp2<ORD_CT, UNIQUE_ORD_CT, UNORD_CT, APW_IMP, LM_IMP, SET_IMP, MI_IMP, INTER_IMP, INT_IMP, REAL_IMP>
+
+PW_TEMPLATE2
+struct PWLMapImp2 {
+  typedef ORD_CT<SET_IMP> Sets;
+  typedef typename ORD_CT<SET_IMP>::iterator SetsIt;
+  typedef ORD_CT<LM_IMP> LMaps;
+  typedef typename ORD_CT<LM_IMP>::iterator LMapsIt;
+
+  member_class(Sets, dom);
+  member_class(LMaps, lmap);
+  member_class(int, ndim);
+
+  PWLMapImp2();
+  PWLMapImp2(Sets d, LMaps l);
+  PWLMapImp2(SET_IMP s);  // Dom is s, the map is the id map
+
+  void addSetLM(SET_IMP s, LM_IMP lm);
+  void addLMSet(LM_IMP lm, SET_IMP s);
+
+  bool empty();
+
+  SET_IMP wholeDom();
+  SET_IMP image(SET_IMP s);
+  SET_IMP image();
+  SET_IMP preImage(SET_IMP s);
+  PWLMapImp2 compPW(PWLMapImp2 pw2);
+  PWLMapImp2 compPW(int n);
+  PWLMapImp2 minInvCompact(SET_IMP s);
+  PWLMapImp2 minInv(SET_IMP s);
+
+  bool equivalentPW(PWLMapImp2 pw2);
+
+  PWLMapImp2 restrictMap(SET_IMP newdom);
+
+  PWLMapImp2 concat(PWLMapImp2 pw2);
+  PWLMapImp2 combine(PWLMapImp2 pw2);
+
+  PWLMapImp2 filterMap(bool (*f)(SET_IMP dom, LM_IMP lm));
+
+  PWLMapImp2 offsetDomMap(PWLMapImp2 pw2);
+  PWLMapImp2 offsetImageMap(ORD_CT<INT_IMP> off);
+  PWLMapImp2 addMap(PWLMapImp2 pw2);
+  PWLMapImp2 diffMap(PWLMapImp2 pw2);
+
+  PWLMapImp2 atomize();
+  PWLMapImp2 normalize();
+
+  void minMapAtomSet(MI_IMP dom, LM_IMP lm1, LM_IMP lm2, LM_IMP lm3, LM_IMP lm4);
+  void minMapAtomSet(MI_IMP dom, LM_IMP lm1, LM_IMP lm2);
+  void minMapSet(SET_IMP dom, LM_IMP lm1, LM_IMP lm2, LM_IMP lm3, LM_IMP lm4);
+  void minMapSet(SET_IMP dom, LM_IMP lm1, LM_IMP lm2, PWLMapImp2 pw3);
+  void minMapSet(SET_IMP dom, LM_IMP lm1, LM_IMP lm2);
+  PWLMapImp2 minMap(PWLMapImp2 pw2, PWLMapImp2 pw1);
+  PWLMapImp2 minMap(PWLMapImp2 pw2);
+
+  PWLMapImp2 minAdjCompMap(PWLMapImp2 pw2, PWLMapImp2 pw1);
+  PWLMapImp2 minAdjCompMap(PWLMapImp2 pw1);
+  PWLMapImp2 minAdjMap(PWLMapImp2 pw2, PWLMapImp2 pw1);
+  PWLMapImp2 minAdjMap(PWLMapImp2 pw1);
+
+  PWLMapImp2 reduceMapN(int dim);
+  PWLMapImp2 mapInf(int n);
+
+  eq_class(PWLMapImp2);
+};
+
+printable_temp(PW_TEMPLATE2, PW_TEMP_TYPE2);
+
+// Chosen implementation ---------------------------------------------------------------------------
+
+typedef PWLMapImp2<OrdCT, UniqueOrdCT, UnordCT, AtomPWLMap, LMap, Set, MultiInterval, Interval, INT, REAL> PWLMap;
+
 
 }  // namespace SBG

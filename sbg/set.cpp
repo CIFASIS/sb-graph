@@ -363,7 +363,6 @@ std::ostream &operator<<(std::ostream &out, const SET_TEMP_TYPE1 &set)
   return out;
 }
 
-
 // Implementation 2: Canonic Sets -----------------------------------------------------------------
 
 #define AS_TYPE2                  \
@@ -756,7 +755,32 @@ ORD_CT<INT_IMP> SET_TEMP_TYPE2::maxElem()
 SET_TEMPLATE2
 SET_TEMP_TYPE2 SET_TEMP_TYPE2::normalize()
 {
-  return *this;
+  SetImp2 res;
+
+  if (ndim() == 1) {
+    if (!empty()) {
+      MI_IMP first = *(asets().begin());
+
+      BOOST_FOREACH (MI_IMP mi, asets()) {
+        MI_IMP partial = first.normalize(mi);
+
+        if (partial.empty()) { 
+          res.addLastAtomSet(first);
+          first = mi;
+        }
+
+        else
+          first = partial;
+      }
+
+      res.addLastAtomSet(first);
+    } 
+  }
+
+  else
+    return *this;
+
+  return res;
 }
 
 SET_TEMPLATE2
@@ -792,6 +816,8 @@ bool SET_TEMP_TYPE2::operator==(const SET_TEMP_TYPE2 &other) const
 {
   SetImp2 aux1 = *this;
   SetImp2 aux2 = other;
+
+  if (aux1.ndim() == 1 && aux2.ndim() == 1) return aux1.normalize().asets() == aux2.normalize().asets();
 
   return aux1.diff(aux2).empty() && aux2.diff(aux1).empty();
 }

@@ -227,6 +227,8 @@ INTER_TEMP_TYPE INTER_TEMP_TYPE::normalize(INTER_TEMP_TYPE i2)
   INT l2 = i2.lo();
   INT h2 = i2.hi();
 
+  if (*this == i2) return i2;
+
   if (st == i2.step()) {
     if (h + st == l2 || isIn(l2))
       return IntervalImp1(l, st, h2);

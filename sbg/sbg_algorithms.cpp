@@ -632,12 +632,16 @@ void MatchingStruct::SBGMatchingShort()
 {
   Set diffMatched, allowedEdges = allEdges.diff(getManyToOne());
 
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
   do {
     SBGMatchingShortStep(allowedEdges);
     diffMatched = U.diff(matchedV);
   } while (!diffMatched.empty() && !Ed.empty());
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
-  LOG << "matchedshort: " << matchedE << "\n\n";
+  LOG << "matchedshort: " << matchedE << std::endl;
+  LOG << "Elapsed time short matching = ";
+  LOG << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl << std::endl;
 
   if (diffMatched.empty()) return;
 
@@ -660,7 +664,12 @@ void MatchingStruct::SBGMatchingMin()
   Set diffMatched;
 
   do {
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     SBGMatchingMinStep(allEdges);
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    LOG << "Elapsed time min matching = ";
+    LOG << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl << std::endl;
+
     diffMatched = U.diff(matchedV);
   } while (!diffMatched.empty() && !Ed.empty());
 

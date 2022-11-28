@@ -719,3 +719,90 @@ void MatchingStruct::debugStep()
     }
   }
 }
+
+// SCC --------------------------------------------------------------------------------------------
+
+// Initialization
+SCCStruct::SCCStruct(DSBGraph garg)
+{
+  g = garg;
+
+  BOOST_FOREACH (SetEdgeDesc ei, edges(g)) {
+    PWLMap dmap = (g[ei]).map_d();
+    PWLMap bmap = (g[ei]).map_b();
+
+    mapD = mapD.concat(dmap);
+    mapB = mapB.concat(bmap);
+  }
+
+  Set emptySet;
+  Ediff = emptySet;
+
+  Set allVertices;
+  PWLMap vmap;
+  int dims = mapD.ndim();
+  BOOST_FOREACH (SetVertexDesc vdi, vertices(g)) {
+    SetVertex vi = g[vdi];
+    allVertices.addAtomSets(vi.range_ref().asets());
+
+    LMap lm;
+    for (int i = 0; i < dims; i++) lm.addGO(0, vi.id());
+    vmap.addSetLM(vi.range(), lm);
+  }
+  V = allVertices;
+  Vmap = vmap;
+
+  int eCount = 1;
+  PWLMap emap;
+  BOOST_FOREACH (SetEdgeDesc edi, edges(g)) {
+    DSetEdge ei = g[edi];
+
+    BOOST_FOREACH (Set sd, ei.map_d_ref().dom()) {
+      BOOST_FOREACH (Set sb, ei.map_b_ref().dom()) {
+        Set ud = sd.cap(sb);
+
+        if (!ud.empty()) {
+          LMap lm;
+          for (int i = 0; i < dims; i++) lm.addGO(0, eCount);
+          emap.addSetLM(ud, lm);
+
+          ++eCount;
+        }
+      }
+    }
+  }
+  E = mapD.wholeDom();
+  Emap = emap;
+
+  PWLMap emptyMap;
+  smap = emptyMap;
+  semap = emptyMap;
+
+  PWLMap idV(allVertices);
+  rmap = idV;
+}
+
+PWLMap SCCStruct::SBGSCC()
+{
+  Interval i(0, 1, 0);
+  MultiInterval mi;
+  for (int j = 0; j < mapD.ndim(); j++) mi.addInter(i);
+  Set zero = createSet(mi);
+
+  PWLMap idV(V);
+
+  do {
+    auto aux = minReachable(0, V, E, Vmap, Emap, mapD, mapB, idV);
+    rmap = get<2>(aux);
+    PWLMap rdiff = rmap.compPW(mapD).diffMap(rmap.compPW(mapB));
+    Ediff = rdiff.preImage(zero);
+    E = E.diff(Ediff);
+    
+    PWLMap auxD = mapD;
+    mapD = mapB;
+    mapB = auxD;
+  }
+  while (Ediff != Set());
+ 
+  return rmap; 
+}

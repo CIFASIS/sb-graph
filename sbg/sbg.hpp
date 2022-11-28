@@ -88,6 +88,36 @@ printable_temp(SET_EDGE_TEMPLATE, SETE_TEMP_TYPE);
 
 typedef SetEdgeImp<SEDesc> SetEdge;
 
+// Directed Set-edge -------------------------------------------------------------------------------
+
+#define DSET_EDGE_TEMPLATE template <typename DESC>
+
+#define DSETE_TEMP_TYPE DSetEdgeImp<DESC>
+
+DSET_EDGE_TEMPLATE
+struct DSetEdgeImp {
+  member_class(std::string, name);  // For pretty-printing
+  member_class(int, id);            // Unique identifier
+  member_class(PWLMap, map_d);      // Forward map
+  member_class(PWLMap, map_b);      // Backward map
+  member_class(int, index);         // For debugging
+  member_class(DESC, desc);         // Description
+
+  DSetEdgeImp();
+  DSetEdgeImp(std::string name, PWLMap map_d, PWLMap map_b);
+  DSetEdgeImp(std::string name, PWLMap map_d, PWLMap map_b, DESC desc);
+  DSetEdgeImp(std::string name, int id, PWLMap map_d, PWLMap map_b, int index);
+  DSetEdgeImp(std::string name, int id, PWLMap map_d, PWLMap map_b, int index, DESC desc);
+
+  DSetEdgeImp restrictEdge(Set dom);
+
+  eq_class(DSetEdgeImp);
+};
+
+printable_temp(DSET_EDGE_TEMPLATE, DSETE_TEMP_TYPE);
+
+typedef DSetEdgeImp<SEDesc> DSetEdge;
+
 // Set graph ---------------------------------------------------------------------------------------
 
 typedef boost::adjacency_list<boost::listS, boost::listS, boost::undirectedS, SetVertex, SetEdge> SBGraph;
@@ -96,5 +126,13 @@ typedef boost::graph_traits<SBGraph>::vertex_iterator VertexIt;
 typedef SBGraph::edge_descriptor SetEdgeDesc;
 typedef boost::graph_traits<SBGraph>::edge_iterator EdgeIt;
 typedef boost::graph_traits<SBGraph>::out_edge_iterator OutEdgeIt;
+
+// Directed Set graph ------------------------------------------------------------------------------
+
+typedef boost::adjacency_list<boost::listS, boost::listS, boost::undirectedS, SetVertex, DSetEdge> DSBGraph;
+typedef DSBGraph::vertex_descriptor DSetVertexDesc;
+typedef boost::graph_traits<DSBGraph>::vertex_iterator DVertexIt;
+typedef DSBGraph::edge_descriptor DSetEdgeDesc;
+typedef boost::graph_traits<DSBGraph>::edge_iterator DEdgeIt;
 
 }  // namespace SBG

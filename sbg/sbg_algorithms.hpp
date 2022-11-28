@@ -93,3 +93,30 @@ struct MatchingStruct {
   void debugInit();
   void debugStep();
 };
+
+// SCC of directed SBGraphs ----------------------------------------------------------------------
+
+struct SCCStruct {
+  SCCStruct(DSBGraph g);
+
+  PWLMap SBGSCC();
+
+  private:
+  DSBGraph g;
+  Set V;
+  PWLMap Vmap;  // Map from vertices to set-vertices
+  Set E;
+  PWLMap Emap;  // Map from edges to set-edges
+
+  Set Ediff;  // Edges between different SCC 
+
+  PWLMap mapD;  // Forward direction
+  PWLMap mapB;  // Backward direction
+
+  PWLMap smap;   // Successors map
+  PWLMap semap;  // Edge's successors map
+  PWLMap rmap;   // Representatives map
+
+  void debugInit();
+  void debugStep();
+};

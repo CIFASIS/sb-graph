@@ -1,0 +1,15 @@
+class := 'undirected' | 'directed'
+
+edge := '-' | '->'
+
+interval := '['integer':'integer':'integer']'
+
+multi_interval := interval | interval 'x' multi_interval
+
+set := '{'multi_interval*'}'
+
+graph := class identifier '{'
+  (identifier set';\n')*
+
+  (identifier': 'multi_interval edge identifier': 'multi_interval';\n')*
+'}'

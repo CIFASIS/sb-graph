@@ -1,0 +1,26 @@
+# The Directories, Source, Includes, Objects, Binary 
+SBG_DIR     := sbg
+PARSER_DIR  := parser
+PAR_TEST    := $(PARSER_DIR)/sbg-parser
+PARSER_TEST := test-parser
+
+all: $(PAR_TEST) 
+
+PARSER_TEST_SRC := \
+	  $(PARSER_DIR)/draft.cpp \
+  	$(SBG_DIR)/interval.cpp #\
+	  $(SBG_DIR)/sbg_printer.cpp \
+  	$(SBG_DIR)/multi_interval.cpp \
+  	$(SBG_DIR)/set.cpp \
+  	$(SBG_DIR)/lmap.cpp \
+  	$(SBG_DIR)/atom_pw_map.cpp \
+  	$(SBG_DIRR)/pw_map.cpp
+
+# Objects
+PARSER_TEST_OBJ=$(addprefix $(BUILD_DIR)/, $(PARSER_TEST_SRC:.cpp=.o))
+
+create-folders::
+	@mkdir -p $(BUILD_DIR)/$(PARSER_DIR)
+
+$(PAR_TEST): $(PARSER_TEST_OBJ)
+	$(CXX) $(INCLUDES) $(CXXFLAGS) -o $(PAR_TEST) $(PARSER_TEST_OBJ) $(LIBS)

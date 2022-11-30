@@ -27,6 +27,7 @@ LIB_SBGRAPH = lib/libsbgraph.a
 all: $(LIB_SBGRAPH)
 
 include sbg/Makefile.include
+include parser/Makefile.include
 
 $(BUILD_DIR)/%.o : %.cpp
 	$(CC) $(INCLUDES) $(CXXFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<

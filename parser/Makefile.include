@@ -8,9 +8,9 @@ all: $(PAR_TEST)
 
 PARSER_TEST_SRC := \
 	  $(PARSER_DIR)/draft.cpp \
-  	$(SBG_DIR)/interval.cpp #\
+  	$(SBG_DIR)/interval.cpp \
+  	$(SBG_DIR)/multi_interval.cpp #\
 	  $(SBG_DIR)/sbg_printer.cpp \
-  	$(SBG_DIR)/multi_interval.cpp \
   	$(SBG_DIR)/set.cpp \
   	$(SBG_DIR)/lmap.cpp \
   	$(SBG_DIR)/atom_pw_map.cpp \

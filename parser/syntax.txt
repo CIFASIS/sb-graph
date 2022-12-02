@@ -4,7 +4,7 @@ edge := '-' | '->'
 
 interval := '['integer':'integer':'integer']'
 
-multi_interval := interval | interval 'x' multi_interval
+multi_interval := interval *('x' interval)
 
 set := '{'multi_interval*'}'
 

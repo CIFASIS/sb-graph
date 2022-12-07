@@ -32,38 +32,27 @@ INTER_TEMPLATE
 INTER_TEMP_TYPE::IntervalImp1(bool empty) : lo_(-1), step_(-1), hi_(-1), empty_(empty){};
 
 INTER_TEMPLATE
-INTER_TEMP_TYPE::IntervalImp1(INT lo, INT step, INT hi)
+INTER_TEMP_TYPE::IntervalImp1(INT lo, INT step, INT hi) : lo_(-1), step_(-1), hi_(-1), empty_(true)
 {
-  if (lo >= 0 && step > 0 && hi >= 0) {
-    empty_ = false;
-    lo_ = lo;
-    step_ = step;
+  if (lo >= 0 && step > 0 && hi >= lo) {
+    set_empty(false);
+    set_lo(lo);
+    set_step(step);
 
-    if (lo <= hi && hi < Inf) {
+    if (hi < Inf) {
       int rem = std::fmod(hi - lo, step);
-      hi_ = hi - rem;
+      set_hi(hi - rem);
     }
 
-    else if (lo <= hi && hi == Inf)
-      hi_ = Inf;
-
     else
-      empty_ = true;
+      set_hi(Inf);
   }
 
   else if (lo >= 0 && step == 0 && hi == lo) {
-    empty_ = false;
-    lo_ = lo;
-    hi_ = hi;
-    step_ = 1;
-  }
-
-  else {
-    // WARNING("Subscripts should be positive");
-    lo_ = -1;
-    step_ = -1;
-    hi_ = -1;
-    empty_ = true;
+    set_empty(false);
+    set_lo(lo);
+    set_hi(hi);
+    set_step(1);
   }
 };
 

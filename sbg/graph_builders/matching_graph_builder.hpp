@@ -32,6 +32,19 @@ class MatchingGraphBuilder {
 
   virtual SBG::SBGraph build();
 
+  /**
+   * @brief Computes the matching information given a set of matched edges.
+   *
+   * Once the SBG matching is computed, it returns a set of matched edges that corresponds to the
+   * SBGraph used to compute the matching. This function computes a vector of @c MatchingInfo structures
+   * that maps the obtained matched edges with the @c Equations and @c Variables input vectors of this class.
+   *
+   * @param matched_edges The set of matched edges obtained by applying the SBGMatching algorithm,
+   * from @c MatchingStruct.
+   *
+   * @return IO::Matching A vector of @c MatchinInfo structures that relates the input @c Equations and @c Variables
+   * vectors to the matched set edges.
+   */
   virtual IO::Matching computeMatchingInfo(SBG::Set matched_edges);
 
   protected:

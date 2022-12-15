@@ -30,7 +30,9 @@ SETV_TEMP_TYPE::SetVertexImp() : name_(""), id_(-1), index_(0), desc_()
 }
 
 SET_VERTEX_TEMPLATE
-SETV_TEMP_TYPE::SetVertexImp(std::string name, Set range) : name_(name), id_(-1), range_(range), index_(0), desc_() {}
+SETV_TEMP_TYPE::SetVertexImp(std::string name, Set range) : name_(name), id_(-1), range_(range), index_(0), desc_() 
+{
+}
 
 SET_VERTEX_TEMPLATE
 SETV_TEMP_TYPE::SetVertexImp(std::string name, int id, Set range, int index) : name_(name), id_(id), range_(range), index_(index), desc_()

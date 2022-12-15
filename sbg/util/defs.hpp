@@ -19,6 +19,7 @@
 #pragma once
 
 #include <boost/config.hpp>
+#include <boost/range/combine.hpp>
 #include <boost/unordered_set.hpp>
 
 namespace SBG {
@@ -42,6 +43,20 @@ std::ostream &operator<<(std::ostream &out, const ORD_REALS &nums);
 
 // Helpful macros ---------------------------------------------------------------------------------
 
+/**
+ * @brief Define a variable member of a class and the getters and setters.
+ *
+ * The macro takes two parameters:
+ *  + The variable type @c X.
+ *  + The name of the variable @c Y.
+ *
+ * It will define the folowwing:
+ *  + A member variable called: @c Y_
+ *  + An constant getter method: @c Y()
+ *  + A setter method: @c set_Y()
+ *  + A getter ref method @c Y_ref()
+ *
+ */
 #define member_class(X, Y) \
   X Y##_;                  \
   X Y() const;             \
@@ -64,5 +79,11 @@ std::ostream &operator<<(std::ostream &out, const ORD_REALS &nums);
 #define gt_class(X) bool operator>(const X &other) const;
 
 #define printable_temp(T, X) T std::ostream &operator<<(std::ostream &out, const X &);
+
+// Helpful functions ------------------------------------------------------------------------------
+
+#define parallel_foreach2(X, Y) for (auto&& items : boost::combine(X, Y))
+#define parallel_foreach3(X, Y, Z) for (auto&& items : boost::combine(X, Y, Z))
+#define parallel_foreach4(W, X, Y, Z) for (auto&& items : boost::combine(W, X, Y, Z))
 
 }  // namespace SBG

@@ -16,18 +16,19 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
-#include <sbg/descs.hpp>
+#include <parser/parser.hpp>
+#include <sbg/sbg.hpp>
+#include <sbg/util/defs.hpp>
 
-namespace SBG {
+struct Converter{
+  member_class(SBG::OrdCT<SBG::INT>, offset);
+  member_class(Parser::SetGraph, sg);
 
-// Set-vertex --------------------------------------------------------------------------------------
+  Converter();
+  Converter(Parser::SetGraph sg);
 
-SVDesc::SVDesc() : text_("") {}
-
-SVDesc::SVDesc(std::string str) : text_(str) {}
-
-// Set-edge ----------------------------------------------------------------------------------------
-
-SEDesc::SEDesc() : text_("") {}
-
-}  // namespace SBG
+  SBG::MultiInterval makeDom(SBG::MultiInterval mi1, SBG::MultiInterval mi2);
+  SBG::LMap makeExp(SBG::MultiInterval dom, SBG::MultiInterval mi);
+  SBG::SetEdge convertEdge(Parser::SetEdge se);
+  SBG::SBGraph convertGraph();
+};

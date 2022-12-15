@@ -28,6 +28,21 @@ namespace SBG {
 
 namespace IO {
 
+/**
+ * @brief Linear map that represents the use of an array expression.
+ *
+ * Each Linear map is used to represent a variable use, for instance,
+ * the expression @f$ x[i+1] @f$ should generate a linear map
+ * LinearMap(1, 1, i), where:
+ *  + The first parameter is the @c constant: 1
+ *  + The second parameter is the @c slope: 1
+ *  + The third paramter is the @c iterator variable used in the expression: i
+ *
+ * The members of the structure are defined using the @c member_class macro that
+ * defines the getters and setters for the method. The macros are defined in
+ * @c defs.hpp
+ */
+
 struct LinearMap {
   LinearMap();
   LinearMap(int constant, int slope, std::string iterator);
@@ -45,6 +60,26 @@ typedef std::vector<LinearMap> LinearMaps;
 
 std::ostream &operator<<(std::ostream &out, LinearMaps &lms);
 
+/**
+ * @brief Represents the usage of a variable in an equation,
+ * for instance from the following @c Modelica equation:
+ *
+ * **der(u[i+1])=(-a[i+1]+1)*N-mu*u[i]*(a[i]-alpha)*(u[i]-1)**
+ *
+ * has 2 different variable usages:
+ *  + **u[i+1]** Corresponding to the state variable @c u
+ *  + **a[i+1]** and **a[i]** Corresponding to the algebraic variable @c a
+ *
+ * In this case, two different variable usages should be generated conataining  the correponding
+ * linear maps and the name of the variable.
+ *
+ * The members of the structure are defined using the @c member_class macro that
+ * defines the getters and setters for the method. The macros are defined in
+ * @c defs.hpp
+ *
+ * @sa LinearMap LinearMaps
+ */
+
 struct VariableUsage {
   VariableUsage();
   VariableUsage(std::string name, LinearMaps usage);
@@ -55,7 +90,27 @@ struct VariableUsage {
   bool operator<(const VariableUsage &other) const;
 };
 
+typedef std::set<VariableUsage> VariableUsages;
+
 std::ostream &operator<<(std::ostream &out, VariableUsage &var_usage);
+
+/**
+ * @brief Defines the range in which an eqaution/variable is defined.
+ *
+ * The range is represented with three integer numbers and the variable iterator name:
+ *  + **begin** Interval start.
+ *  + **step** Interval start.
+ *  + **end** Interval start.
+ *  + **iterator** Name of the iterator variable used in the expression.
+ *
+ * For example, the following Modelica for loop:
+ *
+ * **for i in [1:2:10] loop**
+ *
+ * could be represented with: **RangeDef(i, 1, 2, 10)**.
+ *
+ * For members definitions, see @c defs.hpp
+ */
 
 struct RangeDef {
   RangeDef();
@@ -67,39 +122,72 @@ struct RangeDef {
   member_class(int, end);
 };
 
+typedef std::vector<RangeDef> Ranges;
+
 std::ostream &operator<<(std::ostream &out, RangeDef &range);
-std::ostream &operator<<(std::ostream &out, std::vector<RangeDef> &ranges);
+std::ostream &operator<<(std::ostream &out, Ranges &ranges);
+
+/**
+ * @brief Store information about equation definition and variable usages.
+ *
+ * It is composed of a vector of @c Ranges representing the definition of
+ * the range in each dimension (it could be empty for scalar values) and
+ * a set of @c VariableUsages that contain all variable appearences in the expression
+ * @sa VariableUsage
+ *
+ */
 
 struct EquationInfo {
   EquationInfo();
-  EquationInfo(std::vector<RangeDef> size, std::set<VariableUsage> var_usage);
+  EquationInfo(Ranges size, VariableUsages var_usage);
 
-  member_class(std::vector<RangeDef>, size);
-  member_class(std::set<VariableUsage>, var_usage);
+  member_class(Ranges, size);
+  member_class(VariableUsages, var_usage);
 };
+
+typedef std::vector<int> Dims;
+
+/**
+ * @brief Variable definition, basic symbols information.
+ *
+ */
 
 struct VariableInfo {
   VariableInfo();
-  VariableInfo(std::string name, std::vector<int> size, bool is_state);
+  VariableInfo(std::string name, Dims size, bool is_state);
 
   member_class(std::string, name);
-  member_class(std::vector<int>, size);
+  member_class(Dims, size);
   member_class(bool, is_state);
 };
 
+typedef std::vector<EquationInfo> Equations;
+
+typedef std::vector<VariableInfo> Variables;
+
+/**
+ * @brief Store matching information.
+ *
+ * Matching info composed of:
+ *  + Equation Id: given a @c Equations  vector, the id represents the index in the vector.
+ *  + Equation Range: The set of equations matched.
+ *  + Variable Id: The index entry of a given @c Variables vector.
+ *  + Variable Range: The set of variables matched.
+ *
+ */
+
 struct MatchingInfo {
   MatchingInfo();
-  MatchingInfo(int eq_id, std::vector<RangeDef> eq_range, int var_id, std::vector<RangeDef> var_range);
+  MatchingInfo(int eq_id, Ranges eq_range, int var_id, Ranges var_range);
 
   member_class(int, eq_id);
-  member_class(std::vector<RangeDef>, eq_range);
+  member_class(Ranges, eq_range);
   member_class(int, var_id);
-  member_class(std::vector<RangeDef>, var_range);
+  member_class(Ranges, var_range);
 };
 
-typedef std::vector<EquationInfo> Equations;
-typedef std::vector<VariableInfo> Variables;
 typedef std::vector<MatchingInfo> Matching;
+
 typedef std::map<int, int> NodeMap;
 
 std::ostream &operator<<(std::ostream &out, MatchingInfo &matching_info);

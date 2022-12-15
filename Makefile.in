@@ -11,6 +11,10 @@ BUILD_DIR    	:= $(OBJ_DIR)/release
 ifeq ($(MODE),Debug)
 BUILD_DIR    	:= $(OBJ_DIR)/debug
 endif
+prefix 			?= /usr/local
+exec_prefix     ?= $(prefix)
+includedir      ?= $(prefix)/include
+libdir          ?= $(exec_prefix)/lib
 
 # Flags, Libraries and Includes
 INCLUDES := -I.
@@ -23,6 +27,7 @@ LIB_SBGRAPH = lib/libsbgraph.a
 all: $(LIB_SBGRAPH)
 
 include sbg/Makefile.include
+include parser/Makefile.include
 
 $(BUILD_DIR)/%.o : %.cpp
 	$(CC) $(INCLUDES) $(CXXFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<
@@ -41,21 +46,34 @@ ifeq ("$(wildcard $(3RD_PARTY_DIR)/gtest/usr/lib)","")
 	rm -rf $(3RD_PARTY_DIR)/gtest/build
 endif
 
-install: | create-folders
+install: | install-folders
 	@echo "Installing SBG library headers."
-	@install $(ROOT)/sbg/*.hpp $(ROOT)/include/sbg
-	@install $(ROOT)/sbg/util/*.hpp $(ROOT)/include/sbg/util
-	@install $(ROOT)/sbg/graph_builders/*.hpp $(ROOT)/include/sbg/graph_builders
+	@echo ${prefix}
+	@install $(ROOT)/sbg/*.hpp $(includedir)/sbg
+	@install $(ROOT)/sbg/util/*.hpp $(includedir)/sbg/util
+	@install $(ROOT)/sbg/graph_builders/*.hpp $(includedir)/sbg/graph_builders
+	@install $(ROOT)/lib/libsbgraph.a $(libdir)/
 	@echo "Done."
+
+install-folders:
+	@mkdir -p $(libdir)
+	@mkdir -p $(includedir)
+	@mkdir -p $(includedir)/sbg
+	@mkdir -p $(includedir)/sbg/util
+	@mkdir -p $(includedir)/sbg/graph_builders	
 
 create-folders::
 	@mkdir -p $(ROOT)/lib
-	@mkdir -p $(ROOT)/include
-	@mkdir -p $(ROOT)/include/sbg
-	@mkdir -p $(ROOT)/include/sbg/util
-	@mkdir -p $(ROOT)/include/sbg/graph_builders	
 	@mkdir -p $(OBJ_DIR)
 	@mkdir -p $(BUILD_DIR)
+
+.PHONY: doc
+
+doc:
+	@mkdir -p $(ROOT)/doc
+	@mkdir -p $(ROOT)/doc/html
+	@mkdir -p $(ROOT)/doc/latex
+	doxygen sbg/SBG.doxyfile
 
 test: lib-gtest $(SBG_GRAPH_TEST)
 
@@ -63,7 +81,11 @@ clean:
 	$(RM) -rf $(OBJ_DIR) $(LIB_SBGRAPH) $(ROOT)/lib $(ROOT)/include $(3RD_PARTY_DIR)/gtest/usr
 
 help:
-	@echo "make MODE=<Debug|Release> "
+	@echo "make MODE=<Debug|Release> prefix=<PATH> exec_prefix=<PATH> includedir=<PATH> libdir=<PATH>"
 	@echo "Default values:"
 	@echo ""
 	@echo "MODE=Debug"
+	@echo "prefix=/usr/local"
+	@echo "exec_prefix=/usr/local"
+	@echo "includedir=/usr/local/include"
+	@echo "libdir=/usr/local/lib"

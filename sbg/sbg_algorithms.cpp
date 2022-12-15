@@ -591,7 +591,7 @@ void MatchingStruct::SBGMatchingMinStep(Set E)
   directedMinReach(mapF);
 
   // Leave edges in paths that reach unmatched left and right vertices
-  Set rightU = rmap.preImage(unmatchedV); // Vertices that reach unmatched right vertices
+  Set rightU = rmap.preImage(unmatchedV);  // Vertices that reach unmatched right vertices
   rmap = rmap.restrictMap(rightU);
   smap = smap.restrictMap(rightU);
 

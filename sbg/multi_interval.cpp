@@ -329,6 +329,27 @@ MI_TEMP_TYPE MI_TEMP_TYPE::replace(INTER_IMP i, int dim)
 }
 
 MI_TEMPLATE
+MI_TEMP_TYPE MI_TEMP_TYPE::offset(ORD_CT<INT_IMP> off)
+{
+  Intervals res;
+  IntervalsIt itres = res.begin();
+
+  if (ndim() == (int) off.size()) {
+    parallel_foreach2 (inters_ref(), off) {
+      INTER_IMP i = boost::get<0>(items);
+      INT_IMP o = boost::get<1>(items);
+
+      INT_IMP newLo = i.lo() + o, newHi = i.hi() + o;
+
+      itres = res.insert(itres, INTER_IMP(newLo, i.step(), newHi));
+      ++itres;
+    }
+  }
+
+  return MultiInterImp1(res);
+}
+
+MI_TEMPLATE
 bool MI_TEMP_TYPE::operator==(const MI_TEMP_TYPE &other) const { return inters() == other.inters(); }
 
 MI_TEMPLATE

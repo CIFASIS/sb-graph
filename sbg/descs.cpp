@@ -24,6 +24,8 @@ namespace SBG {
 
 SVDesc::SVDesc() : text_("") {}
 
+SVDesc::SVDesc(std::string str) : text_(str) {}
+
 // Set-edge ----------------------------------------------------------------------------------------
 
 SEDesc::SEDesc() : text_("") {}

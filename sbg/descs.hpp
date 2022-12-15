@@ -28,6 +28,7 @@ struct SVDesc {
   member_class(std::string, text);
 
   SVDesc();
+  SVDesc(std::string str);
 };
 
 // Set-edge ----------------------------------------------------------------------------------------

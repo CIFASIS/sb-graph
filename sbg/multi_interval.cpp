@@ -16,8 +16,6 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
-#include <iostream>
-
 #include <boost/foreach.hpp>
 
 #include <sbg/multi_interval.hpp>
@@ -325,6 +323,27 @@ MI_TEMP_TYPE MI_TEMP_TYPE::replace(INTER_IMP i, int dim)
 
     ++itres;
     ++count;
+  }
+
+  return MultiInterImp1(res);
+}
+
+MI_TEMPLATE
+MI_TEMP_TYPE MI_TEMP_TYPE::offset(ORD_CT<INT_IMP> off)
+{
+  Intervals res;
+  IntervalsIt itres = res.begin();
+
+  if (ndim() == (int) off.size()) {
+    parallel_foreach2 (inters_ref(), off) {
+      INTER_IMP i = boost::get<0>(items);
+      INT_IMP o = boost::get<1>(items);
+
+      INT_IMP newLo = i.lo() + o, newHi = i.hi() + o;
+
+      itres = res.insert(itres, INTER_IMP(newLo, i.step(), newHi));
+      ++itres;
+    }
   }
 
   return MultiInterImp1(res);

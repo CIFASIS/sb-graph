@@ -7,13 +7,16 @@ PARSER_TEST := test-parser
 all: $(PAR_TEST) 
 
 PARSER_TEST_SRC := \
-	  $(PARSER_DIR)/draft.cpp \
+	  $(PARSER_DIR)/main.cpp \
+	  $(PARSER_DIR)/parser.cpp \
+	  $(PARSER_DIR)/converter.cpp \
   	$(SBG_DIR)/descs.cpp \
   	$(SBG_DIR)/interval.cpp \
   	$(SBG_DIR)/multi_interval.cpp \
   	$(SBG_DIR)/set.cpp \
   	$(SBG_DIR)/sbg.cpp \
   	$(SBG_DIR)/lmap.cpp \
+  	$(SBG_DIR)/atom_pw_map.cpp \
   	$(SBG_DIR)/atom_pw_map.cpp \
   	$(SBG_DIR)/pw_map.cpp #\
 	  $(SBG_DIR)/sbg_printer.cpp \

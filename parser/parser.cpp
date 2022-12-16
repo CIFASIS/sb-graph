@@ -100,34 +100,32 @@ std::ostream &operator<<(std::ostream &out, const Parser::SetGraph &sg)
 
 sbg_parser::sbg_parser() : sbg_parser::base_type(sbg) 
 { 
-    inter %= qi::int_
-      >> ':' >> qi::int_ 
-      >> ':' >> qi::int_ 
-      >> qi::attr(false);
 
-    multi_inter = '['
-      >> inter [phx::bind(&SBG::MultiInterval::addInter, qi::_val, qi::_1)] 
-      >> *(',' >> inter [phx::bind(&SBG::MultiInterval::addInter, qi::_val, qi::_1)])
-      >> ']';
+  inter %= qi::int_
+    >> ':' >> qi::int_ 
+    >> ':' >> qi::int_ 
+    >> qi::attr(false);
 
-    set = '{'
-      >> ((multi_inter               [phx::bind(&SBG::Set::addAtomSet, qi::_val, qi::_1)] 
-             >> *(',' >> multi_inter [phx::bind(&SBG::Set::addAtomSet, qi::_val, qi::_1)]))
-          | qi::eps)
-      >> '}';
+  multi_inter = '['
+    >> inter [phx::bind(&SBG::MultiInterval::addInter, qi::_val, qi::_1)] 
+    >> *(',' >> inter [phx::bind(&SBG::MultiInterval::addInter, qi::_val, qi::_1)])
+    >> ']';
 
-    ident = qi::lexeme[qi::alpha >> *qi::alnum];
+  set = '{'
+    >> ((multi_inter               [phx::bind(&SBG::Set::addAtomSet, qi::_val, qi::_1)] 
+           >> *(',' >> multi_inter [phx::bind(&SBG::Set::addAtomSet, qi::_val, qi::_1)]))
+        | qi::eps)
+    >> '}';
 
-    svdesc = qi::lexeme['"' >> *(qi::char_ - '"') >> '"'];
+  ident = qi::lexeme[qi::alpha >> *qi::alnum];
 
-    vertex %= ident 
-      >> qi::attr(vertex_counter) [phx::ref(vertex_counter) += 1]
-      >> set >> qi::attr(0) >> svdesc >> ';';
+  svdesc = qi::lexeme['"' >> *(qi::char_ - '"') >> '"'];
 
-    edge %= qi::attr(edge_counter) [phx::ref(edge_counter) += 1] 
-      >> ident >> multi_inter >> '-' >> ident >> multi_inter >> ';';  
+  vertex %= ident >> qi::int_ >> set >> qi::attr(0) >> svdesc >> ';';
 
-    sbg %= ident >> ';' >> *vertex >> *edge;
+  edge %= qi::int_ >> ident >> multi_inter >> '-' >> ident >> multi_inter >> ';';  
+
+  sbg %= ident >> ';' >> *vertex >> *edge;
 };
 
 } // namespace Parser

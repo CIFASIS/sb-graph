@@ -99,6 +99,7 @@ struct MatchingStruct {
 struct SCCStruct {
   SCCStruct(DSBGraph g);
 
+  void SCCStep();
   PWLMap SBGSCC();
 
   private:
@@ -113,8 +114,6 @@ struct SCCStruct {
   PWLMap mapD;  // Forward direction
   PWLMap mapB;  // Backward direction
 
-  PWLMap smap;   // Successors map
-  PWLMap semap;  // Edge's successors map
   PWLMap rmap;   // Representatives map
 
   void debugInit();

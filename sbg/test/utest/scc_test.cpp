@@ -60,7 +60,6 @@ int main(int argc, char** argv) {
         std::cout << "Parsing succeeded\n";
         std::cout << "SCC result = \n\n" << rmap << "\n";
         std::cout << "-------------------------\n";
-
       }
 
       else {

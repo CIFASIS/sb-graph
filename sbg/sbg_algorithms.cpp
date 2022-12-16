@@ -774,35 +774,72 @@ SCCStruct::SCCStruct(DSBGraph garg)
   E = mapD.wholeDom();
   Emap = emap;
 
-  PWLMap emptyMap;
-  smap = emptyMap;
-  semap = emptyMap;
-
   PWLMap idV(allVertices);
   rmap = idV;
 }
 
-PWLMap SCCStruct::SBGSCC()
+void SCCStruct::SCCStep() 
 {
+  PWLMap idV(V);
+
   Interval i(0, 1, 0);
   MultiInterval mi;
   for (int j = 0; j < mapD.ndim(); j++) mi.addInter(i);
   Set zero = createSet(mi);
 
+  auto aux = minReachable(0, V, E, Vmap, Emap, mapD, mapB, idV);
+  rmap = get<2>(aux);
+  PWLMap rdiff = rmap.compPW(mapD).diffMap(rmap.compPW(mapB));
+  Set Esame = rdiff.preImage(zero);
+  Ediff = E.diff(Esame); 
+  E = Esame;
+    
+  PWLMap auxD = mapD;
+  mapD = mapB;
+  mapB = auxD;
+  
+  debugStep();
+}
+
+PWLMap SCCStruct::SBGSCC()
+{
+  debugInit();
+
   PWLMap idV(V);
 
   do {
-    auto aux = minReachable(0, V, E, Vmap, Emap, mapD, mapB, idV);
-    rmap = get<2>(aux);
-    PWLMap rdiff = rmap.compPW(mapD).diffMap(rmap.compPW(mapB));
-    Ediff = rdiff.preImage(zero);
-    E = E.diff(Ediff);
-    
-    PWLMap auxD = mapD;
-    mapD = mapB;
-    mapB = auxD;
+    SCCStep();
+    SCCStep();
   }
   while (Ediff != Set());
+  auto aux = minReachable(0, V, E, Vmap, Emap, mapD, mapB, idV);
+  rmap = get<2>(aux);
  
   return rmap; 
+}
+
+void SCCStruct::debugInit()
+{
+  LOG << "\n\n";
+  BOOST_FOREACH (DSetVertexDesc vi, vertices(g)) {
+    SetVertex v = g[vi];
+
+    LOG << "-------\n";
+    LOG << v << "\n";
+  }
+  LOG << "-------\n\n";
+
+  LOG << "mapB: " << mapB << "\n\n";
+  LOG << "mapD: " << mapD << "\n\n";
+
+  LOG << "Vmap: " << Vmap << "\n\n";
+  LOG << "Emap: " << Emap << "\n\n";
+
+  LOG << "*******************************\n\n";
+}
+
+void SCCStruct::debugStep()
+{
+  LOG << "rmap: " << rmap << "\n"; 
+  LOG << "Ediff: " << Ediff << "\n\n"; 
 }

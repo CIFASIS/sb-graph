@@ -88,11 +88,9 @@ struct sbg_parser : qi::grammar<str_it, SetGraph(), asc::space_type> {
 
   qi::rule<str_it, std::string(), asc::space_type> ident;
 
-  int vertex_counter = 1;
   qi::rule<str_it, SBG::SVDesc(), asc::space_type> svdesc;
   qi::rule<str_it, SBG::SetVertex(), asc::space_type> vertex;
 
-  int edge_counter = 1;
   qi::rule<str_it, SetEdge(), asc::space_type> edge;
 
   qi::rule<str_it, SetGraph(), asc::space_type> sbg;

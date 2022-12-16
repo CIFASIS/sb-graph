@@ -33,6 +33,8 @@
 
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix.hpp>
+#include <boost/spirit/repository/include/qi_kwd.hpp>
+
 
 // Adapt structures -------------------------------------------------------------------------------
 
@@ -50,7 +52,7 @@ BOOST_FUSION_ADAPT_STRUCT(SBG::SEDesc, (std::string, text_))
 
 BOOST_FUSION_ADAPT_STRUCT(Parser::SetEdge, (int, id_)(std::string, vb_)(SBG::MultiInterval, mb_)(std::string, vf_)(SBG::MultiInterval, mf_))
 
-BOOST_FUSION_ADAPT_STRUCT(Parser::SetGraph, (std::vector<SBG::SetVertex>, svertices_)(std::vector<Parser::SetEdge>, sedges_))
+BOOST_FUSION_ADAPT_STRUCT(Parser::SetGraph, (std::string, modifier_)(std::vector<SBG::SetVertex>, svertices_)(std::vector<Parser::SetEdge>, sedges_))
 
 namespace Parser {
 
@@ -77,6 +79,7 @@ std::ostream &operator<<(std::ostream &out, const SetEdge &se)
 
 SetGraph::SetGraph() {}
 
+member_imp(Parser::SetGraph, std::string, modifier);
 member_imp(Parser::SetGraph, vrtcs, svertices);
 member_imp(Parser::SetGraph, edges, sedges);
 
@@ -94,9 +97,6 @@ std::ostream &operator<<(std::ostream &out, const Parser::SetGraph &sg)
 }
 
 // Grammar ----------------------------------------------------------------------------------------
-
-//namespace qi = boost::spirit::qi;
-//namespace phx = boost::phoenix;
 
 sbg_parser::sbg_parser() : sbg_parser::base_type(sbg) 
 { 
@@ -127,7 +127,7 @@ sbg_parser::sbg_parser() : sbg_parser::base_type(sbg)
     edge %= qi::attr(edge_counter) [phx::ref(edge_counter) += 1] 
       >> ident >> multi_inter >> '-' >> ident >> multi_inter >> ';';  
 
-    sbg %= *vertex >> *edge;
+    sbg %= ident >> ';' >> *vertex >> *edge;
 };
 
 } // namespace Parser

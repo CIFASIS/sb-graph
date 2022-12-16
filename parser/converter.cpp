@@ -109,7 +109,24 @@ SBG::SetEdge Converter::convertEdge(Parser::SetEdge se) {
   return SBG::SetEdge("", 1, mapb, mapf, 0);
 }
 
-SBG::SBGraph Converter::convertGraph()
+SBG::DSetEdge Converter::convertDirectedEdge(Parser::SetEdge se) {
+  SBG::MultiInterval dom = makeDom(se.mb(), se.mf()); 
+
+  SBG::LMap lmb = makeExp(dom, se.mb());
+  SBG::LMap lmf = makeExp(dom, se.mf());
+
+  SBG::Set sdom;
+  sdom.addAtomSet(dom);
+
+  SBG::PWLMap mapb; 
+  mapb.addSetLM(dom, lmb);
+  SBG::PWLMap mapf; 
+  mapf.addSetLM(dom, lmf);
+
+  return SBG::DSetEdge("", 1, mapb, mapf, 0);
+}
+
+SBG::SBGraph Converter::convertUndirectedGraph() 
 {
   SBG::SBGraph result;
 
@@ -141,6 +158,58 @@ SBG::SBGraph Converter::convertGraph()
       boost::tie(ed, b) = boost::add_edge(db, df, result);        
       result[ed] = convertEdge(offseted_se);
     }
+  }
+
+  return result;
+}
+
+SBG::DSBGraph Converter::convertDirectedGraph() 
+{
+  SBG::DSBGraph result;
+
+  if (!sg_ref().svertices_ref().empty()) {
+    BOOST_FOREACH (SBG::SetVertex sv, sg().svertices()) {
+      SBG::DSetVertexDesc vd = boost::add_vertex(result);
+      result[vd] = sv;
+    }
+
+    SBG::DSetVertexDesc db = boost::vertex(0, result), df = db;
+    BOOST_FOREACH (Parser::SetEdge se, sg().sedges()) {
+      SBG::OrdCT<SBG::INT> off1, off2;
+      BOOST_FOREACH (SBG::DSetVertexDesc vd, boost::vertices(result)) {
+        if (result[vd].name() == se.vb()) { 
+          db = vd;
+          off1 = result[db].range().minElem();
+        }
+
+        if (result[vd].name() == se.vf()) {
+          df = vd;
+          off2 = result[df].range().minElem();
+        }
+      }
+
+      Parser::SetEdge offseted_se(se.id(), se.vb(), se.mb().offset(off1), se.vf(), se.mf().offset(off2));
+
+      SBG::DSetEdgeDesc ed;
+      bool b;
+      boost::tie(ed, b) = boost::add_edge(db, df, result);        
+      result[ed] = convertDirectedEdge(offseted_se);
+    }
+  }
+
+  return result;
+}
+
+Grph Converter::convertGraph()
+{
+  Grph result;
+
+  if (sg().modifier() == "undirected") {
+    result = convertUndirectedGraph();
+  }
+
+  else if (sg().modifier() == "directed"){
+    result = convertDirectedGraph();
   }
 
   return result;

@@ -16,9 +16,12 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
+#include "boost/variant.hpp"
+
 #include <parser/parser.hpp>
 #include <sbg/sbg.hpp>
-#include <sbg/util/defs.hpp>
+
+typedef boost::variant<SBG::SBGraph, SBG::DSBGraph> Grph;
 
 struct Converter{
   member_class(SBG::OrdCT<SBG::INT>, offset);
@@ -30,5 +33,9 @@ struct Converter{
   SBG::MultiInterval makeDom(SBG::MultiInterval mi1, SBG::MultiInterval mi2);
   SBG::LMap makeExp(SBG::MultiInterval dom, SBG::MultiInterval mi);
   SBG::SetEdge convertEdge(Parser::SetEdge se);
-  SBG::SBGraph convertGraph();
+  SBG::DSetEdge convertDirectedEdge(Parser::SetEdge se);
+
+  SBG::SBGraph convertUndirectedGraph();
+  SBG::DSBGraph convertDirectedGraph();
+  Grph convertGraph();
 };

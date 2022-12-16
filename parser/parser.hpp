@@ -68,6 +68,7 @@ typedef std::vector<SBG::SetVertex> vrtcs;
 typedef std::vector<SetEdge> edges;
 
 struct SetGraph {
+  member_class(std::string, modifier);
   member_class(vrtcs, svertices);
   member_class(edges, sedges);
 
@@ -77,8 +78,6 @@ struct SetGraph {
 std::ostream &operator<<(std::ostream &out, const SetGraph &sg);  
 
 // Grammar ----------------------------------------------------------------------------------------
-
-SBG::PWLMap refToMap(SBG::MultiInterval mi);
 
 typedef typename std::string::const_iterator str_it;
 

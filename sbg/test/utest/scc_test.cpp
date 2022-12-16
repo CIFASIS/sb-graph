@@ -20,7 +20,9 @@
 #include <iostream>
 #include <string>
 
-#include <parser/parser.hpp>
+#include <parser/converter.hpp>
+#include <sbg/pw_map.hpp>
+#include <sbg/sbg_algorithms.hpp>
 
 int main(int argc, char** argv) {
   std::cout << "\n/////////////////////////////////////////////////////////\n\n";
@@ -47,11 +49,18 @@ int main(int argc, char** argv) {
 
       Parser::SetGraph result;
       bool r = boost::spirit::qi::phrase_parse(iter, end, g, boost::spirit::ascii::space, result);
+
+      Converter c(result);
+      Grph g = c.convertGraph();
+
+      SCCStruct s(boost::get<DSBGraph>(g));
+      PWLMap rmap = s.SBGSCC();
       if (r && iter == end) {
         std::cout << "-------------------------\n";
         std::cout << "Parsing succeeded\n";
-        std::cout << "result = \n\n" << result;
+        std::cout << "SCC result = \n\n" << rmap << "\n";
         std::cout << "-------------------------\n";
+
       }
 
       else {

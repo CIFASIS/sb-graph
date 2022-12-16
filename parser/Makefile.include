@@ -18,8 +18,9 @@ PARSER_TEST_SRC := \
   	$(SBG_DIR)/lmap.cpp \
   	$(SBG_DIR)/atom_pw_map.cpp \
   	$(SBG_DIR)/atom_pw_map.cpp \
-  	$(SBG_DIR)/pw_map.cpp #\
-	  $(SBG_DIR)/sbg_printer.cpp \
+  	$(SBG_DIR)/pw_map.cpp \
+	  $(SBG_DIR)/sbg_algorithms.cpp \
+	  $(SBG_DIR)/util/logger.cpp #\
   	$(SBG_DIR)/lmap.cpp \
   	$(SBG_DIRR)/pw_map.cpp
 

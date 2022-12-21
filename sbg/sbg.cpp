@@ -59,7 +59,7 @@ template struct SetVertexImp<SVDesc>;
 SET_VERTEX_TEMPLATE
 std::ostream &operator<<(std::ostream &out, const SETV_TEMP_TYPE &v)
 {
-  out << v.name() << ": " << v.range() << "\n";
+  out << v.name() << ": " << v.range();
 
   return out;
 }
@@ -152,46 +152,46 @@ template std::ostream &operator<<(std::ostream &out, const SetEdge &e);
 // Directed Set-edge -------------------------------------------------------------------------------
 
 DSET_EDGE_TEMPLATE
-DSETE_TEMP_TYPE::DSetEdgeImp() : name_(""), id_(-1), map_d_(), map_b_(), index_(0), desc_() {}
+DSETE_TEMP_TYPE::DSetEdgeImp() : name_(""), id_(-1), map_b_(), map_d_(), index_(0), desc_() {}
 
 DSET_EDGE_TEMPLATE
-DSETE_TEMP_TYPE::DSetEdgeImp(std::string name, PWLMap map_d, PWLMap map_b)
+DSETE_TEMP_TYPE::DSetEdgeImp(std::string name, PWLMap map_b, PWLMap map_d)
     : name_(name), id_(-1), map_d_(map_d), map_b_(map_b), index_(0), desc_()
 {
 }
 
 DSET_EDGE_TEMPLATE
-DSETE_TEMP_TYPE::DSetEdgeImp(std::string name, PWLMap map_d, PWLMap map_b, DESC desc)
+DSETE_TEMP_TYPE::DSetEdgeImp(std::string name, PWLMap map_b, PWLMap map_d, DESC desc)
     : name_(name), id_(-1), map_d_(map_d), map_b_(map_b), index_(0), desc_(desc)
 {
 }
 
 DSET_EDGE_TEMPLATE
-DSETE_TEMP_TYPE::DSetEdgeImp(std::string name, int id, PWLMap map_d, PWLMap map_b, int index)
+DSETE_TEMP_TYPE::DSetEdgeImp(std::string name, int id, PWLMap map_b, PWLMap map_d, int index)
     : name_(name), id_(id), map_d_(map_d), map_b_(map_b), index_(index), desc_()
 {
 }
 
 DSET_EDGE_TEMPLATE
-DSETE_TEMP_TYPE::DSetEdgeImp(std::string name, int id, PWLMap map_d, PWLMap map_b, int index, DESC desc)
+DSETE_TEMP_TYPE::DSetEdgeImp(std::string name, int id, PWLMap map_b, PWLMap map_d, int index, DESC desc)
     : name_(name), id_(id), map_d_(map_d), map_b_(map_b), index_(index), desc_(desc)
 {
 }
 
 member_imp_temp(DSET_EDGE_TEMPLATE, DSETE_TEMP_TYPE, std::string, name);
 member_imp_temp(DSET_EDGE_TEMPLATE, DSETE_TEMP_TYPE, int, id);
-member_imp_temp(DSET_EDGE_TEMPLATE, DSETE_TEMP_TYPE, PWLMap, map_d);
 member_imp_temp(DSET_EDGE_TEMPLATE, DSETE_TEMP_TYPE, PWLMap, map_b);
+member_imp_temp(DSET_EDGE_TEMPLATE, DSETE_TEMP_TYPE, PWLMap, map_d);
 member_imp_temp(DSET_EDGE_TEMPLATE, DSETE_TEMP_TYPE, int, index);
 member_imp_temp(DSET_EDGE_TEMPLATE, DSETE_TEMP_TYPE, DESC, desc);
 
 DSET_EDGE_TEMPLATE
 DSETE_TEMP_TYPE DSETE_TEMP_TYPE::restrictEdge(Set dom)
 {
-  PWLMap resd = map_d_ref().restrictMap(dom);
   PWLMap resb = map_b_ref().restrictMap(dom);
+  PWLMap resd = map_d_ref().restrictMap(dom);
 
-  return DSetEdgeImp(name(), id(), resd, resb, index(), desc());
+  return DSetEdgeImp(name(), id(), resb, resd, index(), desc());
 }
 
 DSET_EDGE_TEMPLATE
@@ -213,18 +213,18 @@ std::ostream &operator<<(std::ostream &out, const DSETE_TEMP_TYPE &E)
   for (; next(itdom, 1) != dom.end(); ++itdom) out << *itdom << ", ";
   out << *itdom << "]\n";
 
-  OrdCT<LMap> lmd = auxE.map_d_ref().lmap();
-  OrdCT<LMap>::iterator itd = lmd.begin();
   OrdCT<LMap> lmb = auxE.map_b_ref().lmap();
   OrdCT<LMap>::iterator itb = lmb.begin();
+  OrdCT<LMap> lmd = auxE.map_d_ref().lmap();
+  OrdCT<LMap>::iterator itd = lmd.begin();
 
   out << Enm << " left | right: ";
   out << "[";
-  for (; next(itd, 1) != lmd.end(); ++itd) out << *itd << ", ";
+  for (; next(itb, 1) != lmd.end(); ++itb) out << *itb << ", ";
   out << *itd << "] | ";
 
   out << "[";
-  for (; next(itb, 1) != lmb.end(); ++itb) out << *itb << ", ";
+  for (; next(itd, 1) != lmb.end(); ++itd) out << *itd << ", ";
   out << *itb << "]\n";
 
   return out;

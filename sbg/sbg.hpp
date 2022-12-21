@@ -98,16 +98,16 @@ DSET_EDGE_TEMPLATE
 struct DSetEdgeImp {
   member_class(std::string, name);  // For pretty-printing
   member_class(int, id);            // Unique identifier
-  member_class(PWLMap, map_d);      // Forward map
-  member_class(PWLMap, map_b);      // Backward map
+  member_class(PWLMap, map_b);      // Forward map
+  member_class(PWLMap, map_d);      // Backward map
   member_class(int, index);         // For debugging
   member_class(DESC, desc);         // Description
 
   DSetEdgeImp();
-  DSetEdgeImp(std::string name, PWLMap map_d, PWLMap map_b);
-  DSetEdgeImp(std::string name, PWLMap map_d, PWLMap map_b, DESC desc);
-  DSetEdgeImp(std::string name, int id, PWLMap map_d, PWLMap map_b, int index);
-  DSetEdgeImp(std::string name, int id, PWLMap map_d, PWLMap map_b, int index, DESC desc);
+  DSetEdgeImp(std::string name, PWLMap map_b, PWLMap map_d);
+  DSetEdgeImp(std::string name, PWLMap map_b, PWLMap map_d, DESC desc);
+  DSetEdgeImp(std::string name, int id, PWLMap map_b, PWLMap map_d, int index);
+  DSetEdgeImp(std::string name, int id, PWLMap map_b, PWLMap map_d, int index, DESC desc);
 
   DSetEdgeImp restrictEdge(Set dom);
 

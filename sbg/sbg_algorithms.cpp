@@ -306,6 +306,7 @@ MatchingStruct::MatchingStruct(SBGraph garg)
   g = garg;
 
   BOOST_FOREACH (SetEdgeDesc ei, edges(g)) {
+    std::cout << g[ei].name() << "\n";
     PWLMap fmap = (g[ei]).map_f();
     PWLMap umap = (g[ei]).map_u();
 

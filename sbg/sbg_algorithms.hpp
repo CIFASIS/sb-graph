@@ -43,6 +43,41 @@ std::tuple<PWLMap, PWLMap, PWLMap> minReachable(int nmax, Set V, Set E, PWLMap V
 struct MatchingStruct {
   MatchingStruct(SBGraph g);
 
+  member_class(SBGraph, g);
+  member_class(Set, F);
+  member_class(Set, U);
+  member_class(Set, initU);
+  member_class(PWLMap, Vmap);  // Map from vertices to set-vertices
+  member_class(PWLMap, Emap);  // Map from edges to set-edges
+
+  member_class(Set, allEdges);
+  member_class(Set, Ed);  // Allowed edges in each step
+  member_class(Set, allVertices);
+  member_class(int, nmax);         // Number of set-vertices of the SBG
+  member_class(OrdCT<INT>, maxV);  // Value of maximum vertex of the SBG
+
+  member_class(PWLMap, mapF);  // "Left" maps
+  member_class(PWLMap, mapU);  // "Right" maps
+  member_class(PWLMap, mapD);  // Forward direction
+  member_class(PWLMap, mapB);  // Backward direction
+
+  member_class(Set, matchedV);
+  member_class(Set, unmatchedV);
+  member_class(Set, matchedE);
+
+  member_class(PWLMap, smap);   // Successors map
+  member_class(PWLMap, semap);  // Edge's successors map
+  member_class(PWLMap, rmap);   // Representatives map
+  member_class(PWLMap, mmap);   // Offset map
+
+  // Auxiliary maps and sets, that are used to offset vertices for the search
+  member_class(Set, VSide);
+  member_class(PWLMap, mmapSide);
+  member_class(PWLMap, mmapSideInv);
+  member_class(PWLMap, VmapSide);
+  member_class(PWLMap, mapDSide);
+  member_class(PWLMap, mapBSide);
+
   Set getManyToOne();
   void offsetMaps(PWLMap sideMap);
   void shortPathsLeft(Set D, Set E);
@@ -55,41 +90,6 @@ struct MatchingStruct {
   std::pair<Set, bool> SBGMatching();
 
   private:
-  SBGraph g;
-  Set F;
-  Set U;
-  Set initU;
-  PWLMap Vmap;  // Map from vertices to set-vertices
-  PWLMap Emap;  // Map from edges to set-edges
-
-  Set allEdges;
-  Set Ed;  // Allowed edges in each step
-  Set allVertices;
-  int nmax;         // Number of set-vertices of the SBG
-  OrdCT<INT> maxV;  // Value of maximum vertex of the SBG
-
-  PWLMap mapF;  // "Left" maps
-  PWLMap mapU;  // "Right" maps
-  PWLMap mapD;  // Forward direction
-  PWLMap mapB;  // Backward direction
-
-  Set matchedV;
-  Set unmatchedV;
-  Set matchedE;
-
-  PWLMap smap;   // Successors map
-  PWLMap semap;  // Edge's successors map
-  PWLMap rmap;   // Representatives map
-  PWLMap mmap;   // Offset map
-
-  // Auxiliary maps and sets, that are used to offset vertices for the search
-  Set VSide;
-  PWLMap mmapSide;
-  PWLMap mmapSideInv;
-  PWLMap VmapSide;
-  PWLMap mapDSide;
-  PWLMap mapBSide;
-
   void debugInit();
   void debugStep();
 };

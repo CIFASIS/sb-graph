@@ -23,10 +23,11 @@
 #include <parser/converter.hpp>
 #include <sbg/pw_map.hpp>
 #include <sbg/sbg_algorithms.hpp>
+#include <sbg/graph_builders/scc_graph_builder.hpp>
 
 int main(int argc, char** argv) {
   std::cout << "\n/////////////////////////////////////////////////////////\n\n";
-  std::cout << "SCC test. Please type name of example to apply algorithm\n\n";
+  std::cout << "Converter of Matching output to SCC input\n\n";
   std::cout << "/////////////////////////////////////////////////////////\n\n";
 
   Parser::sbg_parser g; // Our grammar
@@ -53,12 +54,14 @@ int main(int argc, char** argv) {
       Converter c(result);
       Grph g = c.convertGraph();
 
-      SCCStruct s(boost::get<DSBGraph>(g));
-      PWLMap rmap = s.SBGSCC();
+      MatchingStruct m(boost::get<SBGraph>(g));
+      m.SBGMatching();
+      SCCGraphBuilder graph_builder(m);
+      DSBGraph dg = graph_builder.build();
       if (r && iter == end) {
         std::cout << "-------------------------\n";
         std::cout << "Parsing succeeded\n";
-        std::cout << "SCC result = \n\n" << rmap << "\n";
+        std::cout << "SCC result = \n\n"<< " " << "\n";
         std::cout << "-------------------------\n";
       }
 

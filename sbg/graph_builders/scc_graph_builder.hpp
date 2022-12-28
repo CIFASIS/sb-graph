@@ -36,8 +36,10 @@ struct SCCGraphBuilder {
   DSBGraph build();
 
   private:
-  SetVertexDesc findEquation(SetEdgeDesc e);
-  SetVertexDesc findUnknown(SetEdgeDesc e);
+  void partitionEdges();
+  SetVertexDesc findEquation(SetEdgeDesc de);
+  SetVertexDesc findUnknown(SetEdgeDesc de);
+  bool fullyMatched(Set vertices);
 };
 
 

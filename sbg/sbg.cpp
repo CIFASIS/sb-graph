@@ -112,6 +112,9 @@ SETE_TEMP_TYPE SETE_TEMP_TYPE::restrictEdge(Set dom)
 }
 
 SET_EDGE_TEMPLATE
+Set SETE_TEMP_TYPE::dom() { return map_f_ref().wholeDom(); }
+
+SET_EDGE_TEMPLATE
 bool SETE_TEMP_TYPE::operator==(const SETE_TEMP_TYPE &other) const { return id() == other.id(); }
 
 template struct SetEdgeImp<SEDesc>;
@@ -193,6 +196,9 @@ DSETE_TEMP_TYPE DSETE_TEMP_TYPE::restrictEdge(Set dom)
 
   return DSetEdgeImp(name(), id(), resb, resd, index(), desc());
 }
+
+DSET_EDGE_TEMPLATE
+Set DSETE_TEMP_TYPE::dom() { return map_b_ref().wholeDom(); }
 
 DSET_EDGE_TEMPLATE
 bool DSETE_TEMP_TYPE::operator==(const DSETE_TEMP_TYPE &other) const { return id() == other.id(); }

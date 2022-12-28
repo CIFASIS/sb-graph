@@ -24,6 +24,7 @@
 #include <sbg/sbg.hpp>
 #include <sbg/sbg_algorithms.hpp>
 #include <sbg/sbg_printer.hpp>
+#include <sbg/graph_builders/scc_graph_builder.hpp>
 #include <sbg/util/logger.hpp>
 
 using namespace boost::unit_test;

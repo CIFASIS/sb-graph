@@ -8,9 +8,10 @@ GRP_TEST        := $(UTEST_DIR)/GraphTest
 GRP_PRINT_TEST  := $(UTEST_DIR)/PrintGraphs
 GRP_PRINT_TEST  := $(UTEST_DIR)/PrintGraphs
 SCC_TEST        := $(UTEST_DIR)/scc-test
+SCC_BUILD_TEST  := $(UTEST_DIR)/scc-build-test
 SBG_GRAPH_TEST  := test-sbg-graph
 
-all: $(GRP_TEST) $(GRP_PRINT_TEST) $(SCC_TEST) 
+all: $(GRP_TEST) $(GRP_PRINT_TEST) $(SCC_TEST) $(SCC_BUILD_TEST) 
 
 GRP_TEST_SRC := \
     $(UTEST_DIR)/GraphTest.cpp \
@@ -25,6 +26,7 @@ GRP_TEST_SRC := \
     $(SBG_DIR)/descs.cpp \
     $(SBG_DIR)/sbg.cpp \
     $(SBG_DIR)/sbg_algorithms.cpp \
+    $(SBG_DIR)/graph_builders/scc_graph_builder.cpp \
     $(SBG_DIR)/sbg_printer.cpp 
 
 GRP_PRINT_TEST_SRC := \
@@ -57,12 +59,32 @@ SCC_TEST_SRC := \
     $(SBG_DIR)/sbg_printer.cpp \
     $(SBG_DIR)/sbg_algorithms.cpp
 
+SCC_BUILD_TEST_SRC := \
+    $(UTEST_DIR)/scc_build_test.cpp \
+    $(PARSER_DIR)/converter.cpp \
+    $(PARSER_DIR)/parser.cpp \
+    $(SBG_DIR)/util/defs.cpp \
+    $(SBG_DIR)/util/logger.cpp \
+    $(SBG_DIR)/interval.cpp \
+    $(SBG_DIR)/multi_interval.cpp \
+    $(SBG_DIR)/set.cpp \
+    $(SBG_DIR)/lmap.cpp \
+    $(SBG_DIR)/atom_pw_map.cpp \
+    $(SBG_DIR)/pw_map.cpp \
+    $(SBG_DIR)/descs.cpp \
+    $(SBG_DIR)/sbg.cpp \
+    $(SBG_DIR)/sbg_printer.cpp \
+    $(SBG_DIR)/sbg_algorithms.cpp \
+    $(SBG_DIR)/graph_builders/scc_graph_builder.cpp
+
 # Objects
 GRP_TEST_OBJ=$(addprefix $(BUILD_DIR)/, $(GRP_TEST_SRC:.cpp=.o))
 
 GRP_PRINT_TEST_OBJ=$(addprefix $(BUILD_DIR)/, $(GRP_PRINT_TEST_SRC:.cpp=.o))
 
 SCC_TEST_OBJ=$(addprefix $(BUILD_DIR)/, $(SCC_TEST_SRC:.cpp=.o))
+
+SCC_BUILD_TEST_OBJ=$(addprefix $(BUILD_DIR)/, $(SCC_BUILD_TEST_SRC:.cpp=.o))
 
 create-folders::
 	@mkdir -p $(BUILD_DIR)/sbg/test
@@ -77,6 +99,9 @@ $(GRP_PRINT_TEST): $(GRP_PRINT_TEST_OBJ)
 
 $(SCC_TEST): $(SCC_TEST_OBJ)
 	$(CXX) $(INCLUDES) $(CXXFLAGS) -o $(SCC_TEST) $(SCC_TEST_OBJ) $(LIBS)
+
+$(SCC_BUILD_TEST): $(SCC_BUILD_TEST_OBJ)
+	$(CXX) $(INCLUDES) $(CXXFLAGS) -o $(SCC_BUILD_TEST) $(SCC_BUILD_TEST_OBJ) $(LIBS)
 
 $(SBG_GRAPH_TEST):
 	@echo RUNNING SBG GRAPHS UNIT TESTS

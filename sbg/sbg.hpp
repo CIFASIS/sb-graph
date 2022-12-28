@@ -80,6 +80,7 @@ struct SetEdgeImp {
   SetEdgeImp(std::string name, int id, PWLMap map_f, PWLMap map_u, int index, DESC desc);
 
   SetEdgeImp restrictEdge(Set dom);
+  Set dom();
 
   eq_class(SetEdgeImp);
 };
@@ -110,6 +111,7 @@ struct DSetEdgeImp {
   DSetEdgeImp(std::string name, int id, PWLMap map_b, PWLMap map_d, int index, DESC desc);
 
   DSetEdgeImp restrictEdge(Set dom);
+  Set dom();
 
   eq_class(DSetEdgeImp);
 };

@@ -205,6 +205,16 @@ SET_TEMP_TYPE SET_TEMP_TYPE::cup(SET_TEMP_TYPE set2)
 }
 
 SET_TEMPLATE
+SET_TEMP_TYPE SET_TEMP_TYPE::concat(SET_TEMP_TYPE set2)
+{
+  SetImp1 res = *this;
+
+  res.addAtomSets(set2.asets());
+
+  return res;
+}
+
+SET_TEMPLATE
 ORD_CT<INT_IMP> SET_TEMP_TYPE::minElem()
 {
   ORD_CT<INT_IMP> res;

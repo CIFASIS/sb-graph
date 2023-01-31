@@ -729,6 +729,12 @@ void MatchingStruct::debugInit()
   }
   LOG << "-------\n\n";
 
+  LOG << ">>>>>>>>>>>>>>><<<<<<<<<<<<<<<<\n\n";
+
+  BOOST_FOREACH (SetEdgeDesc de, edges(g_ref())) {
+    LOG << g()[de] << "\n";
+  }
+
   LOG << "Vmap: " << Vmap() << "\n\n";
   LOG << "Emap: " << Emap() << "\n\n";
 

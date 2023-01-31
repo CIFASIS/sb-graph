@@ -226,12 +226,12 @@ std::ostream &operator<<(std::ostream &out, const DSETE_TEMP_TYPE &E)
 
   out << Enm << " left | right: ";
   out << "[";
-  for (; next(itb, 1) != lmd.end(); ++itb) out << *itb << ", ";
-  out << *itd << "] | ";
+  for (; next(itb, 1) != lmb.end(); ++itb) out << *itb << ", ";
+  out << *itb << "] | ";
 
   out << "[";
-  for (; next(itd, 1) != lmb.end(); ++itd) out << *itd << ", ";
-  out << *itb << "]\n";
+  for (; next(itd, 1) != lmd.end(); ++itd) out << *itd << ", ";
+  out << *itd << "]\n";
 
   return out;
 }

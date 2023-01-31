@@ -61,7 +61,12 @@ int main(int argc, char** argv) {
       if (r && iter == end) {
         std::cout << "-------------------------\n";
         std::cout << "Parsing succeeded\n";
-        std::cout << "SCC result = \n\n"<< " " << "\n";
+        std::cout << "SCC Builder result = \n\n" << "\n";
+        BOOST_FOREACH (SetVertexDesc dv, vertices(dg))
+          std::cout << dg[dv] << "\n";
+        std::cout << "\n";
+        BOOST_FOREACH (DSetEdgeDesc de, edges(dg))
+          std::cout << dg[de] << "\n";
         std::cout << "-------------------------\n";
       }
 

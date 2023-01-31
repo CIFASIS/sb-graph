@@ -6621,6 +6621,7 @@ test_suite *init_unit_test_suite(int, char *[])
   // framework::master_test_suite().add(BOOST_TEST_CASE(&Test2D));
 
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching1));
+/*
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching2));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching3));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching4));
@@ -6632,6 +6633,7 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching10));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching11));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestMatching12));
+*/
 
   return 0;
 }

@@ -58,6 +58,7 @@ struct SetImp1 {
   SetImp1 cap(SetImp1 set2);
   SetImp1 diff(SetImp1 set2);
   SetImp1 cup(SetImp1 set2);
+  SetImp1 concat(SetImp1 set2);
 
   ORD_CT<INT_IMP> minElem();
   ORD_CT<INT_IMP> nextElem(ORD_CT<INT_IMP> cur);

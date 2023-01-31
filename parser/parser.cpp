@@ -50,7 +50,7 @@ BOOST_FUSION_ADAPT_STRUCT(SBG::SetVertex, (std::string, name_)(int, id_)(SBG::Se
 
 BOOST_FUSION_ADAPT_STRUCT(SBG::SEDesc, (std::string, text_))
 
-BOOST_FUSION_ADAPT_STRUCT(Parser::SetEdge, (int, id_)(std::string, vb_)(SBG::MultiInterval, mb_)(std::string, vf_)(SBG::MultiInterval, mf_))
+BOOST_FUSION_ADAPT_STRUCT(Parser::SetEdge, (std::string, vb_)(int, id_)(SBG::MultiInterval, mb_)(std::string, vf_)(SBG::MultiInterval, mf_))
 
 BOOST_FUSION_ADAPT_STRUCT(Parser::SetGraph, (std::string, modifier_)(std::vector<SBG::SetVertex>, svertices_)(std::vector<Parser::SetEdge>, sedges_))
 
@@ -121,9 +121,9 @@ sbg_parser::sbg_parser() : sbg_parser::base_type(sbg)
 
   svdesc = qi::lexeme['"' >> *(qi::char_ - '"') >> '"'];
 
-  vertex %= ident >> qi::int_ >> set >> qi::attr(0) >> svdesc >> ';';
+  vertex %= ident >> qi::attr(1) >> set >> qi::attr(0) >> svdesc >> ';';
 
-  edge %= qi::int_ >> ident >> multi_inter >> '-' >> ident >> multi_inter >> ';';  
+  edge %= ident >> qi::attr(1) >> multi_inter >> '-' >> ident >> multi_inter >> ';';  
 
   sbg %= ident >> ';' >> *vertex >> *edge;
 };

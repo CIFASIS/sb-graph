@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
         std::string rest(iter, end);
         std::cout << "-------------------------\n";
         std::cout << "Parsing failed\n";
-        std::cout << "stopped at: \": " << rest << "\"\n";
+        std::cout << "stopped at: " << rest << "\"\n";
         std::cout << "-------------------------\n";
       }
     } 

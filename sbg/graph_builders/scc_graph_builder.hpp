@@ -23,13 +23,12 @@
 
 namespace SBG {
 
-typedef std::map<SetVertexDesc, DSetVertexDesc> VertexMap;
-typedef std::map<SetEdgeDesc, DSetEdgeDesc> EdgeMap;
+typedef std::map<SetEdgeDesc, DSetVertexDesc> VertexMap;
 
 struct SCCGraphBuilder { 
   member_class(MatchingStruct, mtchng);
-  member_class(VertexMap, vertex_map); // A mapping from matching vertices to SCC vertices
-  member_class(EdgeMap, edge_map); // A mapping from matching edges to SCC edges
+  member_class(DSBGraph, result);
+  member_class(VertexMap, vertex_map); // A mapping from matched edges to their respective vertex in the directed graph
 
   SCCGraphBuilder(MatchingStruct m);
 
@@ -37,6 +36,11 @@ struct SCCGraphBuilder {
 
   private:
   bool fullyMatched(Set vertices);
+  void partitionEdges(SBGraph &grph);
+  void createVertices(SBGraph &grph);
+  SetEdgeDesc findEdge(SBGraph &grph, Set dom);
+  void createEdges(SBGraph &grph);
+  DSBGraph combineEdges();
 };
 
 

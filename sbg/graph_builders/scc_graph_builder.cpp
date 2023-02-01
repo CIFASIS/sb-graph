@@ -21,41 +21,21 @@
 
 namespace SBG {
 
-SCCGraphBuilder::SCCGraphBuilder(MatchingStruct m) : mtchng_(m)
+SCCGraphBuilder::SCCGraphBuilder(MatchingStruct m) : mtchng_(m), result_()
 {
   set_vertex_map(VertexMap());
-  set_edge_map(EdgeMap());
 }; 
 
 member_imp(SCCGraphBuilder, MatchingStruct, mtchng);
+member_imp(SCCGraphBuilder, DSBGraph, result);
 member_imp(SCCGraphBuilder, VertexMap, vertex_map);
-member_imp(SCCGraphBuilder, EdgeMap, edge_map);
 
 bool SCCGraphBuilder::fullyMatched(Set vertices) { return vertices.subseteq(mtchng_ref().matchedV()); }
 
-DSBGraph SCCGraphBuilder::build() 
+void SCCGraphBuilder::partitionEdges(SBGraph &grph)
 {
-  DSBGraph result;
-
-  SBGraph grph = mtchng_ref().g();
   Set matched = mtchng_ref().matchedE(), unmatched = mtchng_ref().allEdges_ref().diff(matched);
   Set matchedV = mtchng_ref().matchedV(), unmatchedV = mtchng_ref().unmatchedV();
-
-  BOOST_FOREACH (SetEdgeDesc de, edges(grph)) {
-    Set e_dom = grph[de].dom().cap(matched);
-
-    if (!e_dom.empty()) {
-      SetVertex source_v = grph[source(de, grph)];
-      SetVertex target_v = grph[target(de, grph)];
-      SetVertex v(source_v.name() + target_v.name(), grph[de].id(), e_dom, 0);
-  
-      DSetVertexDesc dv = boost::add_vertex(result);
-      result[dv] = v; 
-  
-      vertex_map_ref()[source(de, grph)] = dv; 
-      vertex_map_ref()[target(de, grph)] = dv; 
-    }
-  }
 
   // Partition edges
   BOOST_FOREACH (SetEdgeDesc de, edges(grph)) {
@@ -101,35 +81,63 @@ DSBGraph SCCGraphBuilder::build()
       grph[de] = new_e;
     }
   }
+}
 
-  PWLMap mapF = mtchng().mapF(), mapU = mtchng().mapU();
+// ! grph sould have at least one edge
+SetEdgeDesc SCCGraphBuilder::findEdge(SBGraph &grph, Set dom)
+{
+  EdgeIt e_start, e_end;
+  boost::tie(e_start, e_end) = edges(grph);
+  SetEdgeDesc e = *e_start;
+
+  BOOST_FOREACH(SetEdgeDesc de, edges(grph)) {
+    Set inter = grph[de].dom().cap(dom);
+    if (!inter.empty())
+      e = de;
+  }
+
+  return e;
+}
+
+// Traverse all edges to find the matched ones, which
+// will result in a vertex the directed graph
+void SCCGraphBuilder::createVertices(SBGraph &grph)
+{
+  Set matched = mtchng_ref().matchedE();
+
+  BOOST_FOREACH (SetEdgeDesc de, edges(grph)) {
+    Set e_dom = grph[de].dom().cap(matched);
+
+    if (!e_dom.empty()) {
+      SetVertexDesc s = source(de, grph), t = target(de, grph);
+      SetVertex source_v = grph[s], target_v = grph[t];
+      SetVertex v(source_v.name() + target_v.name(), grph[de].id(), e_dom, 0);
+  
+      DSetVertexDesc dv = boost::add_vertex(result_ref());
+      result_ref()[dv] = v; 
+  
+      vertex_map_ref()[de] = dv; 
+    }
+  }
+}
+
+// Traverse all edges {u, v} to find the unmatched ones.
+// If both u and v are matched, there exists matched edges 
+// e_u = {u, ???} and e_v = {v, ???}, such that and edge should
+// be created in the directed graph. 
+void SCCGraphBuilder::createEdges(SBGraph &grph)
+{
+  Set matched = mtchng_ref().matchedE(), unmatched = mtchng_ref().allEdges_ref().diff(matched);
+  PWLMap mapF = mtchng_ref().mapF(), mapU = mtchng_ref().mapU();
 
   BOOST_FOREACH (SetEdgeDesc de, edges(grph)) {
     SetEdge e = grph[de];
     Set e_dom = e.dom().cap(unmatched); // Unmatched edges of a set-edge
 
-    SetVertexDesc vf = vertex(1, grph), vu = vertex(1, grph);
-  
-    // Find equation
-    BOOST_FOREACH(SetVertexDesc dv, vertices(grph)) {
-      Set v_range = (grph[dv]).range(), f_image = (grph[de]).map_f_ref().image();
-      if (!v_range.cap(f_image).empty())
-        vf = dv;
-    }
-
-    // Find unknown
-    BOOST_FOREACH(SetVertexDesc dv, vertices(grph)) {
-      Set v_range = (grph[dv]).range(), f_image = (grph[de]).map_u_ref().image();
-      if (!v_range.cap(f_image).empty())
-        vu = dv;
-    }
-
-    DSetVertexDesc dvf = vertex_map_ref()[vf], dvu = vertex_map_ref()[vu];
-
     if (!e_dom.empty()) {
-      bool first_time = true;
-      PWLMap map_b, map_d;
       BOOST_FOREACH (MultiInterval mi_dom, e_dom.asets()) {
+        PWLMap map_b, map_d;
+
         PWLMap map_f = mapF.restrictMap(Set(mi_dom)); 
         PWLMap map_u = mapU.restrictMap(Set(mi_dom)); 
 
@@ -143,22 +151,67 @@ DSBGraph SCCGraphBuilder::build()
 
           map_b.addSetLM(Set(new_f.dom()), new_f.lmap());
           map_d.addSetLM(Set(new_u.dom()), new_u.lmap());
-          
-          first_time = false;
-        }
-      }
 
-      if (!first_time) {
-        DSetEdge directed_e(result[dvf].name() + result[dvu].name(), e.id(), map_b, map_d, 0);
-        DSetEdgeDesc dde;
-        bool b;
-        boost::tie(dde, b) = boost::add_edge(vertex_map()[vf], vertex_map()[vu], result);
-        result[dde] = directed_e;
+          if (!map_b.empty() && !map_d.empty()) {
+            SetEdgeDesc ef = findEdge(grph, adj_f), eu = findEdge(grph, adj_u);
+            DSetVertexDesc dvf = vertex_map_ref()[ef], dvu = vertex_map_ref()[eu];
+
+            DSetEdge directed_e(result_ref()[dvf].name() + result_ref()[dvu].name(), e.id(), map_b, map_d, 0);
+            DSetEdgeDesc dde;
+            bool b;
+            boost::tie(dde, b) = boost::add_edge(dvf, dvu, result_ref());
+            result_ref()[dde] = directed_e;
+          }
+        }
       }
     }
   }
+}
 
-  return result;
+// After adding edges, there could be several set-edges
+// between the same set-vertices, so we combine them.
+DSBGraph SCCGraphBuilder::combineEdges()
+{
+  DSBGraph res = result(), combined_result;
+
+  BOOST_FOREACH (DSetVertexDesc dv, vertices(res)) {
+    DSetVertexDesc dv_res = boost::add_vertex(combined_result);
+    combined_result[dv_res] = res[dv]; 
+  }
+
+  BOOST_FOREACH (DSetEdgeDesc dei, edges(res)) {
+    DSetEdge ei = res[dei];
+    PWLMap mapb = ei.map_b(), mapd = ei.map_d();
+
+    BOOST_FOREACH (DSetEdgeDesc dej, edges(res)) {
+      DSetEdge ej = res[dej];
+
+      if (ei.name() == ej.name() && ei.dom() != ej.dom()) {
+        mapb = mapb.concat(ej.map_b());
+        mapd = mapd.concat(ej.map_d());
+      }
+    }
+
+    DSetEdge directed_e(ei.name(), ei.id(), mapb, mapd, 0);
+    DSetEdgeDesc dde;
+    bool b;
+    boost::tie(dde, b) = boost::add_edge(source(dei, res), target(dei, res), combined_result);
+    combined_result[dde] = directed_e;
+  }
+
+  return combined_result;
+}
+
+DSBGraph SCCGraphBuilder::build() 
+{
+  SBGraph grph = mtchng_ref().g();
+
+  partitionEdges(grph);
+  createVertices(grph);
+  createEdges(grph);
+  DSBGraph combined_result = combineEdges();
+  
+  return combined_result;
 }
 
 } // namespace SBG

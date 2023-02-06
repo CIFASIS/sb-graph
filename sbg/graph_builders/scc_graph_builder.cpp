@@ -210,7 +210,7 @@ DSBGraph SCCGraphBuilder::build()
   createVertices(grph);
   createEdges(grph);
   DSBGraph combined_result = combineEdges();
-  
+
   return combined_result;
 }
 

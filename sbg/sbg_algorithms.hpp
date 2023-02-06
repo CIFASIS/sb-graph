@@ -102,20 +102,20 @@ struct SCCStruct {
   void SCCStep();
   PWLMap SBGSCC();
 
+  member_class(DSBGraph, g);
+  member_class(Set, V);
+  member_class(PWLMap, Vmap);  // Map from vertices to set-vertices
+  member_class(Set, E);
+  member_class(PWLMap, Emap);  // Map from edges to set-edges
+
+  member_class(Set, Ediff);  // Edges between different SCC 
+
+  member_class(PWLMap, mapD);  // Forward direction
+  member_class(PWLMap, mapB);  // Backward direction
+
+  member_class(PWLMap, rmap);   // Representatives map
+
   private:
-  DSBGraph g;
-  Set V;
-  PWLMap Vmap;  // Map from vertices to set-vertices
-  Set E;
-  PWLMap Emap;  // Map from edges to set-edges
-
-  Set Ediff;  // Edges between different SCC 
-
-  PWLMap mapD;  // Forward direction
-  PWLMap mapB;  // Backward direction
-
-  PWLMap rmap;   // Representatives map
-
   void debugInit();
   void debugStep();
 };

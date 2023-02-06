@@ -767,37 +767,39 @@ void MatchingStruct::debugStep()
 // Initialization
 SCCStruct::SCCStruct(DSBGraph garg)
 {
-  g = garg;
+  std::cout << "Entro\n";
+  set_g(garg);
 
-  BOOST_FOREACH (SetEdgeDesc ei, edges(g)) {
-    PWLMap dmap = (g[ei]).map_d();
-    PWLMap bmap = (g[ei]).map_b();
+  std::cout << "Entro1\n";
+  BOOST_FOREACH (SetEdgeDesc ei, edges(g())) {
+    PWLMap dmap = (g_ref()[ei]).map_d();
+    PWLMap bmap = (g_ref()[ei]).map_b();
 
-    mapD = mapD.concat(dmap);
-    mapB = mapB.concat(bmap);
+    set_mapD(mapD().concat(dmap));
+    set_mapD(mapB().concat(bmap));
   }
 
-  Set emptySet;
-  Ediff = emptySet;
+  set_Ediff(Set());
 
   Set allVertices;
   PWLMap vmap;
-  int dims = mapD.ndim();
-  BOOST_FOREACH (SetVertexDesc vdi, vertices(g)) {
-    SetVertex vi = g[vdi];
+  int dims = mapD_ref().ndim();
+  BOOST_FOREACH (SetVertexDesc vdi, vertices(g())) {
+    SetVertex vi = g()[vdi];
     allVertices.addAtomSets(vi.range_ref().asets());
 
     LMap lm;
     for (int i = 0; i < dims; i++) lm.addGO(0, vi.id());
     vmap.addSetLM(vi.range(), lm);
   }
-  V = allVertices;
-  Vmap = vmap;
+  set_V(allVertices);
+  set_Vmap(vmap);
+  std::cout << "Entro2\n";
 
   int eCount = 1;
   PWLMap emap;
-  BOOST_FOREACH (SetEdgeDesc edi, edges(g)) {
-    DSetEdge ei = g[edi];
+  BOOST_FOREACH (SetEdgeDesc edi, edges(g())) {
+    DSetEdge ei = g_ref()[edi];
 
     BOOST_FOREACH (Set sd, ei.map_d_ref().dom()) {
       BOOST_FOREACH (Set sb, ei.map_b_ref().dom()) {
@@ -813,32 +815,44 @@ SCCStruct::SCCStruct(DSBGraph garg)
       }
     }
   }
-  E = mapD.wholeDom();
-  Emap = emap;
+  std::cout << "Entro3\n";
+  set_E(mapD_ref().wholeDom());
+  set_Emap(emap);
+  std::cout << "Entro4\n";
 
   PWLMap idV(allVertices);
-  rmap = idV;
+  set_rmap(idV);
 }
+
+member_imp(SCCStruct, DSBGraph, g);
+member_imp(SCCStruct, Set, V);
+member_imp(SCCStruct, PWLMap, Vmap);
+member_imp(SCCStruct, Set, E);
+member_imp(SCCStruct, PWLMap, Emap);
+member_imp(SCCStruct, Set, Ediff);
+member_imp(SCCStruct, PWLMap, mapD);
+member_imp(SCCStruct, PWLMap, mapB);
+member_imp(SCCStruct, PWLMap, rmap);
 
 void SCCStruct::SCCStep() 
 {
-  PWLMap idV(V);
+  PWLMap idV(V());
 
   Interval i(0, 1, 0);
   MultiInterval mi;
-  for (int j = 0; j < mapD.ndim(); j++) mi.addInter(i);
+  for (int j = 0; j < mapD_ref().ndim(); j++) mi.addInter(i);
   Set zero = createSet(mi);
 
-  auto aux = minReachable(0, V, E, Vmap, Emap, mapD, mapB, idV);
-  rmap = get<2>(aux);
-  PWLMap rdiff = rmap.compPW(mapD).diffMap(rmap.compPW(mapB));
+  auto aux = minReachable(0, V(), E(), Vmap(), Emap(), mapD(), mapB(), idV);
+  set_rmap(get<2>(aux));
+  PWLMap rdiff = rmap_ref().compPW(mapD()).diffMap(rmap_ref().compPW(mapB()));
   Set Esame = rdiff.preImage(zero);
-  Ediff = E.diff(Esame); 
-  E = Esame;
+  set_Ediff(E_ref().diff(Esame)); 
+  set_E(Esame);
     
-  PWLMap auxD = mapD;
-  mapD = mapB;
-  mapB = auxD;
+  PWLMap auxD = mapD();
+  set_mapD(mapB());
+  set_mapB(auxD);
   
   debugStep();
 }
@@ -847,41 +861,41 @@ PWLMap SCCStruct::SBGSCC()
 {
   debugInit();
 
-  PWLMap idV(V);
+  PWLMap idV(V());
 
   do {
     SCCStep();
     SCCStep();
   }
-  while (Ediff != Set());
-  auto aux = minReachable(0, V, E, Vmap, Emap, mapD, mapB, idV);
-  rmap = get<2>(aux);
+  while (Ediff() != Set());
+  auto aux = minReachable(0, V(), E(), Vmap(), Emap(), mapD(), mapB(), idV);
+  set_rmap(get<2>(aux));
  
-  return rmap; 
+  return rmap(); 
 }
 
 void SCCStruct::debugInit()
 {
   LOG << "\n\n";
-  BOOST_FOREACH (DSetVertexDesc vi, vertices(g)) {
-    SetVertex v = g[vi];
+  BOOST_FOREACH (DSetVertexDesc vi, vertices(g())) {
+    SetVertex v = g_ref()[vi];
 
     LOG << "-------\n";
     LOG << v << "\n";
   }
   LOG << "-------\n\n";
 
-  LOG << "mapB: " << mapB << "\n\n";
-  LOG << "mapD: " << mapD << "\n\n";
+  LOG << "mapB: " << mapB() << "\n\n";
+  LOG << "mapD: " << mapD() << "\n\n";
 
-  LOG << "Vmap: " << Vmap << "\n\n";
-  LOG << "Emap: " << Emap << "\n\n";
+  LOG << "Vmap: " << Vmap() << "\n\n";
+  LOG << "Emap: " << Emap() << "\n\n";
 
   LOG << "*******************************\n\n";
 }
 
 void SCCStruct::debugStep()
 {
-  LOG << "rmap: " << rmap << "\n"; 
-  LOG << "Ediff: " << Ediff << "\n\n"; 
+  LOG << "rmap: " << rmap() << "\n"; 
+  LOG << "Ediff: " << Ediff() << "\n\n"; 
 }

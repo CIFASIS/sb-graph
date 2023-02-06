@@ -172,6 +172,7 @@ void SCCGraphBuilder::createEdges(SBGraph &grph)
 // between the same set-vertices, so we combine them.
 DSBGraph SCCGraphBuilder::combineEdges()
 {
+  DSBGraph aux;
   DSBGraph res = result(), combined_result;
 
   BOOST_FOREACH (DSetVertexDesc dv, vertices(res)) {
@@ -193,10 +194,11 @@ DSBGraph SCCGraphBuilder::combineEdges()
     }
 
     DSetEdge directed_e(ei.name(), ei.id(), mapb, mapd, 0);
-    DSetEdgeDesc dde;
+    DSetEdgeDesc de_res;
     bool b;
-    boost::tie(dde, b) = boost::add_edge(source(dei, res), target(dei, res), combined_result);
-    combined_result[dde] = directed_e;
+    DSetVertexDesc sdei = source(dei, res), tdei = target(dei, res);
+    boost::tie(de_res, b) = boost::add_edge(sdei, tdei, combined_result);
+    combined_result[de_res] = directed_e;
   }
 
   return combined_result;

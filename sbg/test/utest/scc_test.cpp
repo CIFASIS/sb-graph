@@ -173,14 +173,12 @@ void parse_build_scc()
     SCCGraphBuilder graph_builder(m);
     DSBGraph dg = graph_builder.build();
 
-/*
     std::cout << "SCC Builder result = \n\n" << "\n";
     BOOST_FOREACH (SetVertexDesc dv, vertices(dg))
       std::cout << dg[dv] << "\n";
     std::cout << "\n";
     BOOST_FOREACH (DSetEdgeDesc de, edges(dg))
       std::cout << dg[de] << "\n";
-*/
   
     SCCStruct scc(dg);
     PWLMap rmap = scc.SBGSCC();

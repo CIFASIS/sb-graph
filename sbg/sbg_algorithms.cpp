@@ -767,16 +767,14 @@ void MatchingStruct::debugStep()
 // Initialization
 SCCStruct::SCCStruct(DSBGraph garg)
 {
-  std::cout << "Entro\n";
   set_g(garg);
-
-  std::cout << "Entro1\n";
-  BOOST_FOREACH (SetEdgeDesc ei, edges(g())) {
-    PWLMap dmap = (g_ref()[ei]).map_d();
+ 
+  BOOST_FOREACH (DSetEdgeDesc ei, edges(g_ref())) {
     PWLMap bmap = (g_ref()[ei]).map_b();
+    PWLMap dmap = (g_ref()[ei]).map_d();
 
+    set_mapB(mapB().concat(bmap));
     set_mapD(mapD().concat(dmap));
-    set_mapD(mapB().concat(bmap));
   }
 
   set_Ediff(Set());
@@ -784,7 +782,7 @@ SCCStruct::SCCStruct(DSBGraph garg)
   Set allVertices;
   PWLMap vmap;
   int dims = mapD_ref().ndim();
-  BOOST_FOREACH (SetVertexDesc vdi, vertices(g())) {
+  BOOST_FOREACH (DSetVertexDesc vdi, vertices(g_ref())) {
     SetVertex vi = g()[vdi];
     allVertices.addAtomSets(vi.range_ref().asets());
 
@@ -794,11 +792,10 @@ SCCStruct::SCCStruct(DSBGraph garg)
   }
   set_V(allVertices);
   set_Vmap(vmap);
-  std::cout << "Entro2\n";
 
   int eCount = 1;
   PWLMap emap;
-  BOOST_FOREACH (SetEdgeDesc edi, edges(g())) {
+  BOOST_FOREACH (DSetEdgeDesc edi, edges(g_ref())) {
     DSetEdge ei = g_ref()[edi];
 
     BOOST_FOREACH (Set sd, ei.map_d_ref().dom()) {
@@ -815,10 +812,8 @@ SCCStruct::SCCStruct(DSBGraph garg)
       }
     }
   }
-  std::cout << "Entro3\n";
   set_E(mapD_ref().wholeDom());
   set_Emap(emap);
-  std::cout << "Entro4\n";
 
   PWLMap idV(allVertices);
   set_rmap(idV);
@@ -844,6 +839,7 @@ void SCCStruct::SCCStep()
   Set zero = createSet(mi);
 
   auto aux = minReachable(0, V(), E(), Vmap(), Emap(), mapD(), mapB(), idV);
+  std::cout << "\n";
   set_rmap(get<2>(aux));
   PWLMap rdiff = rmap_ref().compPW(mapD()).diffMap(rmap_ref().compPW(mapB()));
   Set Esame = rdiff.preImage(zero);
@@ -877,7 +873,7 @@ PWLMap SCCStruct::SBGSCC()
 void SCCStruct::debugInit()
 {
   LOG << "\n\n";
-  BOOST_FOREACH (DSetVertexDesc vi, vertices(g())) {
+  BOOST_FOREACH (DSetVertexDesc vi, vertices(g_ref())) {
     SetVertex v = g_ref()[vi];
 
     LOG << "-------\n";

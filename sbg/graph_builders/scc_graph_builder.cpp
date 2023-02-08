@@ -175,9 +175,12 @@ DSBGraph SCCGraphBuilder::combineEdges()
   DSBGraph aux;
   DSBGraph res = result(), combined_result;
 
+  std::map<DSetVertexDesc, DSetVertexDesc> vmap;
   BOOST_FOREACH (DSetVertexDesc dv, vertices(res)) {
     DSetVertexDesc dv_res = boost::add_vertex(combined_result);
     combined_result[dv_res] = res[dv]; 
+
+    vmap[dv] = dv_res;
   }
 
   BOOST_FOREACH (DSetEdgeDesc dei, edges(res)) {
@@ -197,7 +200,7 @@ DSBGraph SCCGraphBuilder::combineEdges()
     DSetEdgeDesc de_res;
     bool b;
     DSetVertexDesc sdei = source(dei, res), tdei = target(dei, res);
-    boost::tie(de_res, b) = boost::add_edge(sdei, tdei, combined_result);
+    boost::tie(de_res, b) = boost::add_edge(vmap[sdei], vmap[tdei], combined_result);
     combined_result[de_res] = directed_e;
   }
 

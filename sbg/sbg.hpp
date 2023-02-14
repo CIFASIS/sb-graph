@@ -18,8 +18,10 @@
  ******************************************************************************/
 #pragma once
 
+#include <boost/foreach.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/subgraph.hpp>
+#include <string>
 
 #include <sbg/descs.hpp>
 #include <sbg/util/defs.hpp>
@@ -131,10 +133,12 @@ typedef boost::graph_traits<SBGraph>::out_edge_iterator OutEdgeIt;
 
 // Directed Set graph ------------------------------------------------------------------------------
 
-typedef boost::adjacency_list<boost::listS, boost::listS, boost::undirectedS, SetVertex, DSetEdge> DSBGraph;
+typedef boost::adjacency_list<boost::listS, boost::listS, boost::directedS, SetVertex, DSetEdge> DSBGraph;
 typedef DSBGraph::vertex_descriptor DSetVertexDesc;
 typedef boost::graph_traits<DSBGraph>::vertex_iterator DVertexIt;
 typedef DSBGraph::edge_descriptor DSetEdgeDesc;
 typedef boost::graph_traits<DSBGraph>::edge_iterator DEdgeIt;
+
+DSBGraph atomize(DSBGraph dg);
 
 }  // namespace SBG

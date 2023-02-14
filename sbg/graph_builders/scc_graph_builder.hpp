@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <sbg/graph_builders/scc_io.hpp>
 #include <sbg/sbg_algorithms.hpp>
 
 namespace SBG {
@@ -32,7 +33,8 @@ struct SCCGraphBuilder {
 
   SCCGraphBuilder(MatchingStruct m);
 
-  DSBGraph build();
+  void build();
+  void pretty_print();
 
   private:
   bool fullyMatched(Set vertices);
@@ -41,6 +43,9 @@ struct SCCGraphBuilder {
   SetEdgeDesc findEdge(SBGraph &grph, Set dom);
   void createEdges(SBGraph &grph);
   DSBGraph combineEdges();
+
+  void pretty_print_vertex(DSBGraph grph, DSetVertexDesc vd);
+  void pretty_print_edge(DSBGraph grph, DSetEdgeDesc ed);
 };
 
 

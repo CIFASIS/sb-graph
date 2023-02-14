@@ -183,40 +183,55 @@ DSBGraph SCCGraphBuilder::combineEdges()
     vmap[dv] = dv_res;
   }
 
+  std::set<std::string> visited_nodes;
   BOOST_FOREACH (DSetEdgeDesc dei, edges(res)) {
     DSetEdge ei = res[dei];
     PWLMap mapb = ei.map_b(), mapd = ei.map_d();
 
-    BOOST_FOREACH (DSetEdgeDesc dej, edges(res)) {
-      DSetEdge ej = res[dej];
+    if (visited_nodes.find(ei.name()) == visited_nodes.end()) {
+      BOOST_FOREACH (DSetEdgeDesc dej, edges(res)) {
+        DSetEdge ej = res[dej];
 
-      if (ei.name() == ej.name() && ei.dom() != ej.dom()) {
-        mapb = mapb.concat(ej.map_b());
-        mapd = mapd.concat(ej.map_d());
+        if (ei.name() == ej.name() && ei.dom() != ej.dom()) {
+          visited_nodes.insert(ei.name());
+
+          mapb = mapb.concat(ej.map_b());
+          mapd = mapd.concat(ej.map_d());
+        }
       }
+
+      DSetEdge directed_e(ei.name(), ei.id(), mapb, mapd, 0);
+      DSetEdgeDesc de_res;
+      bool b;
+      DSetVertexDesc sdei = source(dei, res), tdei = target(dei, res);
+      boost::tie(de_res, b) = boost::add_edge(vmap[sdei], vmap[tdei], combined_result);
+      combined_result[de_res] = directed_e;
     }
 
-    DSetEdge directed_e(ei.name(), ei.id(), mapb, mapd, 0);
-    DSetEdgeDesc de_res;
-    bool b;
-    DSetVertexDesc sdei = source(dei, res), tdei = target(dei, res);
-    boost::tie(de_res, b) = boost::add_edge(vmap[sdei], vmap[tdei], combined_result);
-    combined_result[de_res] = directed_e;
+    visited_nodes.insert(ei.name());
   }
 
   return combined_result;
 }
 
-DSBGraph SCCGraphBuilder::build() 
+void SCCGraphBuilder::build() 
 {
   SBGraph grph = mtchng_ref().g();
 
   partitionEdges(grph);
   createVertices(grph);
   createEdges(grph);
-  DSBGraph combined_result = combineEdges();
+  set_result(combineEdges());
+}
 
-  return combined_result;
+void SCCGraphBuilder::pretty_print() 
+{
+  DSBGraph grph = result_ref();
+  SBG::IO::SCCConverter c(grph);
+  SBG::IO::SCCGraphIO grph_io = c.convert();
+  std::cout << grph_io << "\n";
+
+  return;
 }
 
 } // namespace SBG

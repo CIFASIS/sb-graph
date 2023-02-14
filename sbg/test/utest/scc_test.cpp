@@ -104,7 +104,8 @@ void parse_build()
     MatchingStruct m(boost::get<SBGraph>(g));
     m.SBGMatching();
     SCCGraphBuilder graph_builder(m);
-    DSBGraph dg = graph_builder.build();
+    graph_builder.build();
+    DSBGraph dg = graph_builder.result();
     if (r && iter == end) {
       std::cout << "-------------------------\n";
       std::cout << "Parsing succeeded\n";
@@ -171,14 +172,11 @@ void parse_build_scc()
     MatchingStruct m(boost::get<SBGraph>(g));
     m.SBGMatching();
     SCCGraphBuilder graph_builder(m);
-    DSBGraph dg = graph_builder.build();
+    graph_builder.build();
+    DSBGraph dg = graph_builder.result();
 
     std::cout << "SCC Builder result = \n\n" << "\n";
-    BOOST_FOREACH (SetVertexDesc dv, vertices(dg))
-      std::cout << dg[dv] << "\n";
-    std::cout << "\n";
-    BOOST_FOREACH (DSetEdgeDesc de, edges(dg))
-      std::cout << dg[de] << "\n";
+    graph_builder.pretty_print();
   
     SCCStruct scc(dg);
     PWLMap rmap = scc.SBGSCC();

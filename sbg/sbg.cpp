@@ -112,7 +112,7 @@ SETE_TEMP_TYPE SETE_TEMP_TYPE::restrictEdge(Set dom)
 }
 
 SET_EDGE_TEMPLATE
-Set SETE_TEMP_TYPE::dom() { return map_f_ref().wholeDom(); }
+Set SETE_TEMP_TYPE::dom() { return map_f_ref().wholeDom().cap(map_u_ref().wholeDom()); }
 
 SET_EDGE_TEMPLATE
 bool SETE_TEMP_TYPE::operator==(const SETE_TEMP_TYPE &other) const { return id() == other.id(); }
@@ -198,7 +198,7 @@ DSETE_TEMP_TYPE DSETE_TEMP_TYPE::restrictEdge(Set dom)
 }
 
 DSET_EDGE_TEMPLATE
-Set DSETE_TEMP_TYPE::dom() { return map_b_ref().wholeDom(); }
+Set DSETE_TEMP_TYPE::dom() { return map_b_ref().wholeDom().cap(map_d_ref().wholeDom()); }
 
 DSET_EDGE_TEMPLATE
 bool DSETE_TEMP_TYPE::operator==(const DSETE_TEMP_TYPE &other) const { return id() == other.id(); }
@@ -237,5 +237,97 @@ std::ostream &operator<<(std::ostream &out, const DSETE_TEMP_TYPE &E)
 }
 
 template std::ostream &operator<<(std::ostream &out, const DSetEdge &e);
+
+DSBGraph atomize(DSBGraph dg)
+{
+  DSBGraph dg_res;
+
+  // Create vertices
+  BOOST_FOREACH (DSetVertexDesc vd, vertices(dg)) {
+    SetVertex v = dg[vd];
+
+    int j = 1;
+    BOOST_FOREACH (MultiInterval mi, v.range_ref().asets()) {
+      std::string nm = v.name();
+      int sz = v.range_ref().asets_ref().size();
+      if (sz > 1)
+        nm = nm + "_" + std::to_string(j); 
+
+      SetVertex v_res(nm, Set(mi)); 
+
+      DSetVertexDesc vd_res = boost::add_vertex(dg_res);
+      dg_res[vd_res] = v_res;
+
+      j++;
+    } 
+  }
+
+  PWLMap mapB, mapD;
+  BOOST_FOREACH (DSetEdgeDesc ed, edges(dg)) {
+    PWLMap bmap = dg[ed].map_b(), dmap = dg[ed].map_d();
+
+    mapB = mapB.concat(bmap);
+    mapD = mapD.concat(dmap);
+  }
+  Set all_edges = mapB.wholeDom();
+
+  // Create edges
+  BOOST_FOREACH (DSetVertexDesc vd, vertices(dg_res)) {
+    SetVertex v = dg_res[vd];
+    Set v_range = v.range();
+
+    Set v_b = mapB.preImage(v.range()), v_d = mapD.preImage(v.range());
+    BOOST_FOREACH (DSetEdgeDesc ed, edges(dg)) {
+      Set e_dom = dg[ed].dom();
+
+      Set b_dom = v_b.cap(e_dom), d_dom = v_d.cap(e_dom);
+      if (!b_dom.empty()) {
+        Set adj_b = mapD.image(b_dom);
+        
+        BOOST_FOREACH (DSetVertexDesc vd_adj, vertices(dg_res)) {
+          SetVertex adj_v = dg_res[vd_adj];
+          Set adj_v_dom = adj_v.range();
+
+          if (!adj_v_dom.cap(adj_b).empty()) {
+            // Add edge
+            DSetEdgeDesc ed_adj;
+            bool b;
+            boost::tie(ed_adj, b) = boost::add_edge(vd, vd_adj, dg_res);
+            dg_res[ed_adj] = DSetEdge(v.name() + adj_v.name(), mapB.restrictMap(b_dom), mapD.restrictMap(b_dom));
+
+            // Take out traversed edges
+            Set remaining = all_edges.diff(b_dom);
+            mapB = mapB.restrictMap(remaining);
+            mapD = mapD.restrictMap(remaining);
+          }
+        }
+      }
+
+      if (!d_dom.empty()) {
+        Set adj_d = mapB.image(d_dom);
+        
+        BOOST_FOREACH (DSetVertexDesc vd_adj, vertices(dg_res)) {
+          SetVertex adj_v = dg_res[vd_adj];
+          Set adj_v_dom = adj_v.range();
+
+          if (!adj_v_dom.cap(adj_d).empty()) {
+            // Add edge
+            DSetEdgeDesc ed_adj;
+            bool b;
+            boost::tie(ed_adj, b) = boost::add_edge(vd_adj, vd, dg_res);
+            dg_res[ed_adj] = DSetEdge(adj_v.name() + v.name(), mapB.restrictMap(d_dom), mapD.restrictMap(d_dom));
+
+            // Take out traversed edges
+            Set remaining = all_edges.diff(d_dom);
+            mapB = mapB.restrictMap(remaining);
+            mapD = mapD.restrictMap(remaining);
+          }
+        }
+      }
+    }
+  }
+
+  return dg_res;
+}
 
 }  // namespace SBG

@@ -25,56 +25,6 @@
 #include <sbg/sbg_algorithms.hpp>
 #include <sbg/graph_builders/scc_graph_builder.hpp>
 
-void parse_scc() 
-{
-  Parser::sbg_parser g; // Our grammar
-
-  std::cout << "Type filename: ";
-  std::string fname;
-  std::cin >> fname;
-
-  if (fname != "") {
-    std::ifstream in(fname.c_str());
-    if (in.fail()) {
-      std::cerr << "Unable to open file " << fname << std::endl;
-      exit(-1);
-    }
-    in.unsetf(std::ios::skipws);
-
-    std::string str((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-    std::string::const_iterator iter = str.begin();
-    std::string::const_iterator end = str.end();
-
-    Parser::SetGraph result;
-    bool r = boost::spirit::qi::phrase_parse(iter, end, g, boost::spirit::ascii::space, result);
-
-    Converter c(result);
-    Grph g = c.convertGraph();
-
-    SCCStruct s(boost::get<DSBGraph>(g));
-    PWLMap rmap = s.SBGSCC();
-    if (r && iter == end) {
-      std::cout << "-------------------------\n";
-      std::cout << "Parsing succeeded\n";
-      std::cout << "SCC result = \n\n" << rmap << "\n";
-      std::cout << "-------------------------\n";
-    }
-
-    else {
-      std::string rest(iter, end);
-      std::cout << "-------------------------\n";
-      std::cout << "Parsing failed\n";
-      std::cout << "stopped at: \": " << rest << "\"\n";
-      std::cout << "-------------------------\n";
-    }
-  } 
-
-  else 
-    std::cout << "A filename should be provided\n";
-
-  std::cout << "Bye... :-) \n\n";
-}
-
 void parse_build() 
 {
   Parser::sbg_parser g; // Our grammar
@@ -98,8 +48,8 @@ void parse_build()
     Parser::SetGraph result;
     bool r = boost::spirit::qi::phrase_parse(iter, end, g, boost::spirit::ascii::space, result);
 
-    Converter c(result);
-    Grph g = c.convertGraph();
+    Parser::Converter c(result);
+    Parser::Grph g = c.convertGraph();
 
     MatchingStruct m(boost::get<SBGraph>(g));
     m.SBGMatching();
@@ -115,6 +65,56 @@ void parse_build()
       std::cout << "\n";
       BOOST_FOREACH (DSetEdgeDesc de, edges(dg))
         std::cout << dg[de] << "\n";
+      std::cout << "-------------------------\n";
+    }
+
+    else {
+      std::string rest(iter, end);
+      std::cout << "-------------------------\n";
+      std::cout << "Parsing failed\n";
+      std::cout << "stopped at: \": " << rest << "\"\n";
+      std::cout << "-------------------------\n";
+    }
+  } 
+
+  else 
+    std::cout << "A filename should be provided\n";
+
+  std::cout << "Bye... :-) \n\n";
+}
+
+void parse_scc() 
+{
+  Parser::sbg_parser g; // Our grammar
+
+  std::cout << "Type filename: ";
+  std::string fname;
+  std::cin >> fname;
+
+  if (fname != "") {
+    std::ifstream in(fname.c_str());
+    if (in.fail()) {
+      std::cerr << "Unable to open file " << fname << std::endl;
+      exit(-1);
+    }
+    in.unsetf(std::ios::skipws);
+
+    std::string str((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    std::string::const_iterator iter = str.begin();
+    std::string::const_iterator end = str.end();
+
+    Parser::SetGraph result;
+    bool r = boost::spirit::qi::phrase_parse(iter, end, g, boost::spirit::ascii::space, result);
+
+    Parser::Converter c(result);
+    Parser::Grph g = c.convertGraph();
+
+    SCCStruct s(boost::get<DSBGraph>(g));
+    PWLMap rmap = s.SBGSCC();
+    if (r && iter == end) {
+      std::cout << "-------------------------\n";
+      std::cout << "Parsing succeeded\n";
+      std::cout << "SCC result = \n\n" << rmap << "\n";
       std::cout << "-------------------------\n";
     }
 
@@ -166,8 +166,8 @@ void parse_build_scc()
       std::cout << "stopped at: \": " << rest << "\"\n";
     }
 
-    Converter c(result);
-    Grph g = c.convertGraph();
+    Parser::Converter c(result);
+    Parser::Grph g = c.convertGraph();
 
     MatchingStruct m(boost::get<SBGraph>(g));
     m.SBGMatching();

@@ -51,28 +51,111 @@ namespace Parser {
 // These structures weren't needed, but I didn't know how to make spirit work with the SBG
 // declarations. They're intermmediate representations, that should be converted to SBG structs
 
+struct ConstantDef {
+  member_class(std::string, identifier);
+  member_class(SBG::INT, value);
+
+  ConstantDef();
+  ConstantDef(std::string identifier, SBG::INT value);
+};
+std::ostream &operator<<(std::ostream &out, const ConstantDef &cd);  
+
+typedef std::vector<ConstantDef> ConstantDefs;
+std::ostream &operator<<(std::ostream &out, const ConstantDefs &cds);  
+
+struct LinearExp {
+  member_class(SBG::INT, m);
+  member_class(std::string, x);
+  member_class(SBG::INT, h);
+
+  LinearExp();
+  LinearExp(SBG::INT h);
+  LinearExp(std::string x);
+  LinearExp(std::string x, SBG::INT h);
+  LinearExp(SBG::INT m, SBG::INT h);
+  LinearExp(SBG::INT m, std::string x, SBG::INT h);
+};
+
+std::ostream &operator<<(std::ostream &out, const LinearExp &le);
+
+typedef boost::variant<SBG::INT, LinearExp> InterField;
+
+struct Interval {
+  member_class(LinearExp, lo);
+  member_class(LinearExp, step);
+  member_class(LinearExp, hi);
+
+  Interval();
+  Interval(LinearExp lo, LinearExp step, LinearExp hi);
+};
+
+std::ostream &operator<<(std::ostream &out, const Interval &i);  
+
+typedef std::vector<Interval> Intervals;
+
+typedef std::vector<SBG::INT> Ints; 
+
+struct MultiInterval {
+  member_class(Intervals, inters);
+
+  MultiInterval();
+  MultiInterval(Intervals inters);
+
+  void addInter(Interval i);
+};
+
+std::ostream &operator<<(std::ostream &out, const MultiInterval &mi);  
+
+typedef std::vector<MultiInterval> MultiInters;
+
+struct Set {
+  member_class(MultiInters, asets);
+
+  Set();
+  Set(MultiInters asets);
+
+  void addAtomSet(MultiInterval mi);
+};
+
+std::ostream &operator<<(std::ostream &out, const Set &s);  
+
+struct SetVertex {
+  member_class(std::string, name);
+  member_class(Set, range);
+
+  SetVertex();
+  SetVertex(std::string name, Set range);
+};
+
+std::ostream &operator<<(std::ostream &out, const SetVertex &sv);  
+
 struct SetEdge {
-  member_class(int, id);
   member_class(std::string, vb);
-  member_class(SBG::MultiInterval, mb);
+  member_class(MultiInterval, mb);
   member_class(std::string, vf);
-  member_class(SBG::MultiInterval, mf);
+  member_class(MultiInterval, mf);
 
   SetEdge();
-  SetEdge(int id, std::string vb, SBG::MultiInterval mb, std::string vf, SBG::MultiInterval mf);
+  SetEdge(std::string vb, MultiInterval mb, std::string vf, MultiInterval mf);
 };
 
 std::ostream &operator<<(std::ostream &out, const SetEdge &se);  
 
-typedef std::vector<SBG::SetVertex> vrtcs;
+typedef std::map<std::string, SBG::INT> ConstantsEnv; 
+typedef std::vector<SetVertex> vrtcs;
 typedef std::vector<SetEdge> edges;
 
 struct SetGraph {
   member_class(std::string, modifier);
+  member_class(ConstantDefs, constants);
   member_class(vrtcs, svertices);
   member_class(edges, sedges);
 
+  member_class(ConstantsEnv, cenv);
+
   SetGraph();
+
+  void createConstantsEnv();
 };
 
 std::ostream &operator<<(std::ostream &out, const SetGraph &sg);  
@@ -82,17 +165,17 @@ std::ostream &operator<<(std::ostream &out, const SetGraph &sg);
 typedef typename std::string::const_iterator str_it;
 
 struct sbg_parser : qi::grammar<str_it, SetGraph(), asc::space_type> {
-  qi::rule<str_it, SBG::Interval(), asc::space_type> inter;
-  qi::rule<str_it, SBG::MultiInterval(), asc::space_type> multi_inter;
-  qi::rule<str_it, SBG::Set(), asc::space_type> set;
-
   qi::rule<str_it, std::string(), asc::space_type> ident;
 
-  qi::rule<str_it, SBG::SVDesc(), asc::space_type> svdesc;
-  qi::rule<str_it, SBG::SetVertex(), asc::space_type> vertex;
+  qi::rule<str_it, LinearExp(), asc::space_type> linear_exp;
+  qi::rule<str_it, Interval(), asc::space_type> inter;
+  qi::rule<str_it, MultiInterval(), asc::space_type> multi_inter;
+  qi::rule<str_it, Set(), asc::space_type> set;
 
+  qi::rule<str_it, SetVertex(), asc::space_type> vertex;
   qi::rule<str_it, SetEdge(), asc::space_type> edge;
 
+  qi::rule<str_it, ConstantDef(), asc::space_type> constant_def;
   qi::rule<str_it, SetGraph(), asc::space_type> sbg;
 
   sbg_parser();

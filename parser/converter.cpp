@@ -18,29 +18,74 @@
  ******************************************************************************/
 #include <parser/converter.hpp>
 
-/*! This module is in charge of converting the parsing structs into an SBG
-*   where the novel algorithms can be used.
-*/
+namespace Parser {
 
-Converter::Converter() {
-  set_offset(SBG::OrdCT<SBG::INT>());
-  set_sg(Parser::SetGraph());
-}
+// Structures -------------------------------------------------------------------------------------
 
-Converter::Converter(Parser::SetGraph sg) {
-  set_offset(SBG::OrdCT<SBG::INT>());
+FieldVisitor::FieldVisitor(ConstantsEnv cenv) : cenv_(cenv) {}
+
+member_imp(FieldVisitor, ConstantsEnv, cenv);
+
+Converter::Converter() : offset_() { set_sg(Parser::SetGraph()); }
+
+Converter::Converter(Parser::SetGraph sg) : offset_() {
   set_sg(sg);
+  sg.createConstantsEnv();
 
   if (!sg.svertices().empty()) {
-    SBG::SetVertex v1 = *(sg.svertices().begin());
+    Parser::SetVertex v1 = *(sg.svertices_ref().begin());
+    Parser::MultiInterval mi1 = *(v1.range_ref().asets_ref().begin());
     
-    for (int i = 0; i < v1.range().ndim(); i++)
+    for (unsigned int i = 0; i < mi1.inters_ref().size(); i++)
       offset_ref().insert(offset_ref().end(), 1);
   }
 }
 
 member_imp(Converter, SBG::OrdCT<SBG::INT>, offset);
 member_imp(Converter, Parser::SetGraph, sg);
+
+SBG::INT Converter::convertLE(Parser::LinearExp le)
+{
+  return le.m() * sg().cenv()[le.x()] + le.h();
+}
+
+SBG::Interval Converter::convertInterval(Parser::Interval i) 
+{ 
+  /*
+  SBG::INT res_lo = boost::apply_visitor(FieldVisitor(sg().cenv()), i.lo()); 
+  SBG::INT res_step = boost::apply_visitor(FieldVisitor(sg().cenv()), i.step()); 
+  SBG::INT res_hi = boost::apply_visitor(FieldVisitor(sg().cenv()), i.hi()); 
+  */
+  SBG::INT res_lo = convertLE(i.lo()), res_step = convertLE(i.step()), res_hi = convertLE(i.hi());
+
+  return SBG::Interval(res_lo, res_step, res_hi); 
+}
+
+SBG::MultiInterval Converter::convertMI(Parser::MultiInterval mi)
+{
+  SBG::MultiInterval mi_res;
+
+  BOOST_FOREACH (Parser::Interval i, mi.inters())
+    mi_res.addInter(convertInterval(i));
+
+  return mi_res;
+}
+
+SBG::Set Converter::convertSet(Parser::Set s)
+{
+  SBG::Set s_res;
+
+  BOOST_FOREACH (Parser::MultiInterval mi, s.asets())
+    s_res.addAtomSet(convertMI(mi));
+
+  return s_res;
+}
+
+// Vertices ---------------------------------------------------------------------------------------
+
+SBG::SetVertex Converter::convertVertex(Parser::SetVertex sv) { return SBG::SetVertex(sv.name(), convertSet(sv.range())); }
+
+// Edges ------------------------------------------------------------------------------------------
 
 SBG::MultiInterval Converter::makeDom(SBG::MultiInterval mi1, SBG::MultiInterval mi2) {
   SBG::MultiInterval result;
@@ -92,12 +137,34 @@ SBG::LMap Converter::makeExp(SBG::MultiInterval dom, SBG::MultiInterval mi) {
   return result;
 }
 
-SBG::SetEdge Converter::convertEdge(Parser::SetEdge se) {
-  SBG::MultiInterval dom = makeDom(se.mb(), se.mf()); 
+void Converter::addEdge(SBG::SBGraph g, Parser::SetEdge se) {
+  SBG::MultiInterval mi_b = convertMI(se.mb()), mi_f = convertMI(se.mf());
 
-  SBG::LMap lmb = makeExp(dom, se.mb());
-  SBG::LMap lmf = makeExp(dom, se.mf());
+  // Offset edge
+  SBG::SetVertexDesc db = boost::vertex(0, g), df = db;
+  SBG::OrdCT<SBG::INT> off1, off2;
+  BOOST_FOREACH (SBG::SetVertexDesc vd, boost::vertices(g)) {
+    if (g[vd].name() == se.vb()) { 
+      db = vd;
+      off1 = g[db].range().minElem();
+    }
 
+    if (g[vd].name() == se.vf()) {
+      df = vd;
+      off2 = g[df].range().minElem();
+    }
+  }
+
+  SBG::MultiInterval off_mi_b = mi_b.offset(off1), off_mi_f = mi_f.offset(off2);
+
+  // Create dom
+  SBG::MultiInterval dom = makeDom(off_mi_b, off_mi_f); 
+
+  // Create expressions
+  SBG::LMap lmb = makeExp(dom, off_mi_b);
+  SBG::LMap lmf = makeExp(dom, off_mi_f);
+
+  // Create maps
   SBG::Set sdom;
   sdom.addAtomSet(dom);
 
@@ -106,15 +173,42 @@ SBG::SetEdge Converter::convertEdge(Parser::SetEdge se) {
   SBG::PWLMap mapf; 
   mapf.addSetLM(dom, lmf);
 
-  return SBG::SetEdge("", 1, mapb, mapf, 0);
+  SBG::SetEdgeDesc ed;
+  bool b;
+  boost::tie(ed, b) = boost::add_edge(db, df, g);        
+  g[ed] = SBG::SetEdge("", mapb, mapf);
+
+  return;
 }
 
-SBG::DSetEdge Converter::convertDirectedEdge(Parser::SetEdge se) {
-  SBG::MultiInterval dom = makeDom(se.mb(), se.mf()); 
+void Converter::addDirectedEdge(SBG::DSBGraph dg, Parser::SetEdge se) {
+  SBG::MultiInterval mi_b = convertMI(se.mb()), mi_f = convertMI(se.mf());
 
-  SBG::LMap lmb = makeExp(dom, se.mb());
-  SBG::LMap lmf = makeExp(dom, se.mf());
+  // Offset edge
+  SBG::SetVertexDesc db = boost::vertex(0, dg), df = db;
+  SBG::OrdCT<SBG::INT> off1, off2;
+  BOOST_FOREACH (SBG::SetVertexDesc vd, boost::vertices(dg)) {
+    if (dg[vd].name() == se.vb()) { 
+      db = vd;
+      off1 = dg[db].range().minElem();
+    }
 
+    if (dg[vd].name() == se.vf()) {
+      df = vd;
+      off2 = dg[df].range().minElem();
+    }
+  }
+
+  SBG::MultiInterval off_mi_b = mi_b.offset(off1), off_mi_f = mi_f.offset(off2);
+
+  // Create dom
+  SBG::MultiInterval dom = makeDom(off_mi_b, off_mi_f); 
+
+  // Create expressions
+  SBG::LMap lmb = makeExp(dom, off_mi_b);
+  SBG::LMap lmf = makeExp(dom, off_mi_f);
+
+  // Create maps
   SBG::Set sdom;
   sdom.addAtomSet(dom);
 
@@ -123,41 +217,30 @@ SBG::DSetEdge Converter::convertDirectedEdge(Parser::SetEdge se) {
   SBG::PWLMap mapf; 
   mapf.addSetLM(dom, lmf);
 
-  return SBG::DSetEdge("", 1, mapb, mapf, 0);
+  SBG::DSetEdgeDesc ed;
+  bool b;
+  boost::tie(ed, b) = boost::add_edge(db, df, dg);        
+  dg[ed] = SBG::DSetEdge("", mapb, mapf);
+
+  return;
 }
+
+// Graphs -----------------------------------------------------------------------------------------
 
 SBG::SBGraph Converter::convertUndirectedGraph() 
 {
   SBG::SBGraph result;
 
   if (!sg_ref().svertices_ref().empty()) {
-    BOOST_FOREACH (SBG::SetVertex sv, sg().svertices()) {
+    // Create vertices
+    BOOST_FOREACH (Parser::SetVertex sv, sg().svertices()) {
       SBG::SetVertexDesc vd = boost::add_vertex(result);
-      result[vd] = sv;
+      result[vd] = convertVertex(sv);
     }
 
-    SBG::SetVertexDesc db = boost::vertex(0, result), df = db;
-    BOOST_FOREACH (Parser::SetEdge se, sg().sedges()) {
-      SBG::OrdCT<SBG::INT> off1, off2;
-      BOOST_FOREACH (SBG::SetVertexDesc vd, boost::vertices(result)) {
-        if (result[vd].name() == se.vb()) { 
-          db = vd;
-          off1 = result[db].range().minElem();
-        }
-
-        if (result[vd].name() == se.vf()) {
-          df = vd;
-          off2 = result[df].range().minElem();
-        }
-      }
-
-      Parser::SetEdge offseted_se(se.id(), se.vb(), se.mb().offset(off1), se.vf(), se.mf().offset(off2));
-
-      SBG::SetEdgeDesc ed;
-      bool b;
-      boost::tie(ed, b) = boost::add_edge(db, df, result);        
-      result[ed] = convertEdge(offseted_se);
-    }
+    // Create edges
+    BOOST_FOREACH (Parser::SetEdge se, sg().sedges()) 
+      addEdge(result, se);
   }
 
   return result;
@@ -168,33 +251,15 @@ SBG::DSBGraph Converter::convertDirectedGraph()
   SBG::DSBGraph result;
 
   if (!sg_ref().svertices_ref().empty()) {
-    BOOST_FOREACH (SBG::SetVertex sv, sg().svertices()) {
+    // Create vertices
+    BOOST_FOREACH (Parser::SetVertex sv, sg().svertices()) {
       SBG::DSetVertexDesc vd = boost::add_vertex(result);
-      result[vd] = sv;
+      result[vd] = convertVertex(sv);
     }
 
-    SBG::DSetVertexDesc db = boost::vertex(0, result), df = db;
-    BOOST_FOREACH (Parser::SetEdge se, sg().sedges()) {
-      SBG::OrdCT<SBG::INT> off1, off2;
-      BOOST_FOREACH (SBG::DSetVertexDesc vd, boost::vertices(result)) {
-        if (result[vd].name() == se.vb()) { 
-          db = vd;
-          off1 = result[db].range().minElem();
-        }
-
-        if (result[vd].name() == se.vf()) {
-          df = vd;
-          off2 = result[df].range().minElem();
-        }
-      }
-
-      Parser::SetEdge offseted_se(se.id(), se.vb(), se.mb().offset(off1), se.vf(), se.mf().offset(off2));
-
-      SBG::DSetEdgeDesc ed;
-      bool b;
-      boost::tie(ed, b) = boost::add_edge(db, df, result);        
-      result[ed] = convertDirectedEdge(offseted_se);
-    }
+    // Create edges
+    BOOST_FOREACH (Parser::SetEdge se, sg().sedges()) 
+      addDirectedEdge(result, se);
   }
 
   return result;
@@ -203,6 +268,7 @@ SBG::DSBGraph Converter::convertDirectedGraph()
 Grph Converter::convertGraph()
 {
   Grph result;
+  std::cout << sg() << "\n";
 
   if (sg().modifier() == "undirected") {
     result = convertUndirectedGraph();
@@ -214,3 +280,5 @@ Grph Converter::convertGraph()
 
   return result;
 }
+
+} // namespace Parser

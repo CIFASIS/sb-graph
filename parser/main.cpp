@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
       if (r && iter == end) {
         std::cout << "-------------------------\n";
         std::cout << "Parsing succeeded\n";
-        std::cout << "result = \n\n" << result;
+        std::cout << "result = \n\n" << result << "\n";
         std::cout << "-------------------------\n";
       }
 

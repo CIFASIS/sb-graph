@@ -4,16 +4,14 @@ PARSER_DIR      := parser
 TEST_DIR        := sbg/test
 UTEST_DIR       := $(TEST_DIR)/utest
 STEST_DIR       := $(TEST_DIR)/stest
-GRP_TEST        := $(UTEST_DIR)/GraphTest
-GRP_PRINT_TEST  := $(UTEST_DIR)/PrintGraphs
-GRP_PRINT_TEST  := $(UTEST_DIR)/PrintGraphs
+GRP_TEST        := $(UTEST_DIR)/graph-test
 SCC_TEST        := $(UTEST_DIR)/scc-test
 SBG_GRAPH_TEST  := test-sbg-graph
 
 all: $(GRP_TEST) $(GRP_PRINT_TEST) $(SCC_TEST) 
 
 GRP_TEST_SRC := \
-    $(UTEST_DIR)/GraphTest.cpp \
+    $(UTEST_DIR)/graph_test.cpp \
     $(SBG_DIR)/util/defs.cpp \
     $(SBG_DIR)/util/logger.cpp \
     $(SBG_DIR)/interval.cpp \
@@ -28,19 +26,6 @@ GRP_TEST_SRC := \
     $(SBG_DIR)/graph_builders/scc_io.cpp \
     $(SBG_DIR)/graph_builders/scc_graph_builder.cpp \
     $(SBG_DIR)/sbg_printer.cpp 
-
-GRP_PRINT_TEST_SRC := \
-    $(UTEST_DIR)/PrintGraphs.cpp \
-    $(SBG_DIR)/util/defs.cpp \
-    $(SBG_DIR)/interval.cpp \
-    $(SBG_DIR)/multi_interval.cpp \
-    $(SBG_DIR)/set.cpp \
-    $(SBG_DIR)/lmap.cpp \
-    $(SBG_DIR)/atom_pw_map.cpp \
-    $(SBG_DIR)/pw_map.cpp \
-    $(SBG_DIR)/descs.cpp \
-    $(SBG_DIR)/sbg.cpp \
-    $(SBG_DIR)/sbg_printer.cpp	
 
 SCC_TEST_SRC := \
     $(UTEST_DIR)/scc_test.cpp \
@@ -64,8 +49,6 @@ SCC_TEST_SRC := \
 # Objects
 GRP_TEST_OBJ=$(addprefix $(BUILD_DIR)/, $(GRP_TEST_SRC:.cpp=.o))
 
-GRP_PRINT_TEST_OBJ=$(addprefix $(BUILD_DIR)/, $(GRP_PRINT_TEST_SRC:.cpp=.o))
-
 SCC_TEST_OBJ=$(addprefix $(BUILD_DIR)/, $(SCC_TEST_SRC:.cpp=.o))
 
 create-folders::
@@ -76,16 +59,12 @@ create-folders::
 $(GRP_TEST): $(GRP_TEST_OBJ)
 	$(CXX) $(INCLUDES) $(CXXFLAGS) -o $(GRP_TEST) $(GRP_TEST_OBJ) $(LIBS)
 
-$(GRP_PRINT_TEST): $(GRP_PRINT_TEST_OBJ)
-	$(CXX) $(INCLUDES) $(CXXFLAGS) -o $(GRP_PRINT_TEST) $(GRP_PRINT_TEST_OBJ) $(LIBS)
-
 $(SCC_TEST): $(SCC_TEST_OBJ)
 	$(CXX) $(INCLUDES) $(CXXFLAGS) -o $(SCC_TEST) $(SCC_TEST_OBJ) $(LIBS)
 
 $(SBG_GRAPH_TEST):
 	@echo RUNNING SBG GRAPHS UNIT TESTS
-	@cd $(UTEST_DIR) && ./GraphTest
-	@cd $(UTEST_DIR) && ./PrintGraphs 
+	@cd $(UTEST_DIR) && ./graph-test
 	@echo Done
 	@echo BUILDING SBG GRAPHS SYSTEM TESTS
 	@cd $(STEST_DIR) && $(MAKE) bin/test-sbg 

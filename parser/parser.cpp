@@ -38,60 +38,198 @@
 
 // Adapt structures -------------------------------------------------------------------------------
 
-BOOST_FUSION_ADAPT_STRUCT(SBG::Interval, (SBG::INT, lo_)(SBG::INT, step_)(SBG::INT, hi_)(bool, empty_))
+BOOST_FUSION_ADAPT_STRUCT(Parser::ConstantDef, (std::string, identifier_)(SBG::INT, value_))
 
-BOOST_FUSION_ADAPT_STRUCT(SBG::MultiInterval, (SBG::MultiInterval::Intervals, inters_)(int, ndim_))
+BOOST_FUSION_ADAPT_STRUCT(Parser::LinearExp, (SBG::INT, m_)(std::string, x_)(SBG::INT, h_))
 
-BOOST_FUSION_ADAPT_STRUCT(SBG::Set, (SBG::Set::AtomSets, asets_)(int, ndim_))
+BOOST_FUSION_ADAPT_STRUCT(Parser::Interval, (Parser::LinearExp, lo_)(Parser::LinearExp, step_)(Parser::LinearExp, hi_))
 
-BOOST_FUSION_ADAPT_STRUCT(SBG::SVDesc, (std::string, text_))
+BOOST_FUSION_ADAPT_STRUCT(Parser::MultiInterval, (Parser::Intervals, inters_))
 
-BOOST_FUSION_ADAPT_STRUCT(SBG::SetVertex, (std::string, name_)(int, id_)(SBG::Set, range_)(int, index_)(SBG::SVDesc, desc_))
+BOOST_FUSION_ADAPT_STRUCT(Parser::Set, (Parser::MultiInters, asets_))
 
-BOOST_FUSION_ADAPT_STRUCT(SBG::SEDesc, (std::string, text_))
+BOOST_FUSION_ADAPT_STRUCT(Parser::SetVertex, (std::string, name_)(Parser::Set, range_))
 
-BOOST_FUSION_ADAPT_STRUCT(Parser::SetEdge, (std::string, vb_)(int, id_)(SBG::MultiInterval, mb_)(std::string, vf_)(SBG::MultiInterval, mf_))
+BOOST_FUSION_ADAPT_STRUCT(Parser::SetEdge, (std::string, vb_)(Parser::MultiInterval, mb_)(std::string, vf_)(Parser::MultiInterval, mf_))
 
-BOOST_FUSION_ADAPT_STRUCT(Parser::SetGraph, (std::string, modifier_)(std::vector<SBG::SetVertex>, svertices_)(std::vector<Parser::SetEdge>, sedges_))
+BOOST_FUSION_ADAPT_STRUCT(Parser::SetGraph, (std::string, modifier_)(Parser::ConstantDefs, constants_)(std::vector<Parser::SetVertex>, svertices_)(std::vector<Parser::SetEdge>, sedges_))
 
-namespace Parser {
 
 // Self-defined structures ------------------------------------------------------------------------
 
-SetEdge::SetEdge() {}
+namespace Parser {
 
-SetEdge::SetEdge(int id, std::string vb, SBG::MultiInterval mb, std::string vf, SBG::MultiInterval mf) : id_(id), vb_(vb), mb_(mb), vf_(vf), mf_(mf)  {}
+ConstantDef::ConstantDef() : identifier_(), value_(0) {}
+ConstantDef::ConstantDef(std::string identifier, SBG::INT value) : identifier_(identifier), value_(value) {}
 
-member_imp(Parser::SetEdge, int, id);
-member_imp(Parser::SetEdge, std::string, vb);
-member_imp(Parser::SetEdge, SBG::MultiInterval, mb);
-member_imp(Parser::SetEdge, std::string, vf);
-member_imp(Parser::SetEdge, SBG::MultiInterval, mf);
+member_imp(Parser::ConstantDef, std::string, identifier);
+member_imp(Parser::ConstantDef, SBG::INT, value);
 
-std::ostream &operator<<(std::ostream &out, const SetEdge &se) 
+std::ostream &operator<<(std::ostream &out, const ConstantDef &cd) 
 {
-  SetEdge auxse = se;
-
-  out << se.vb() << se.mb() << " - " << se.vf() << se.mf() << "\n";
+  out << "INT " << cd.identifier() << " = " << cd.value();
 
   return out;
 }
 
-SetGraph::SetGraph() {}
+std::ostream &operator<<(std::ostream &out, const ConstantDefs &cds)
+{
+  BOOST_FOREACH (ConstantDef cd, cds)
+    std::cout << cd << ";\n";
+
+  return out;
+}
+
+LinearExp::LinearExp() : m_(), x_(), h_() {}
+LinearExp::LinearExp(std::string x) : m_(), x_(x), h_() {}
+LinearExp::LinearExp(SBG::INT h) : m_(), x_(), h_(h) {}
+LinearExp::LinearExp(std::string x, SBG::INT h) : m_(), x_(x), h_(h) {}
+LinearExp::LinearExp(SBG::INT m, SBG::INT h) : m_(m), x_(), h_(h) {}
+LinearExp::LinearExp(SBG::INT m, std::string x, SBG::INT h) : m_(m), x_(x), h_(h) {}
+
+member_imp(Parser::LinearExp, SBG::INT, m);
+member_imp(Parser::LinearExp, std::string, x);
+member_imp(Parser::LinearExp, SBG::INT, h);
+
+std::ostream &operator<<(std::ostream &out, const LinearExp &le)
+{
+  if (le.m() != 0 && le.m() != 1)
+    out << le.m();
+
+  out << le.x();
+
+  if (le.h() != 0) {
+    if (le.h() > 0 && le.m() != 0)
+      out << "+";
+    
+    else if (le.h() < 0 && le.m() != 0)
+      out << "-";
+
+    out << std::abs(le.h());
+  }
+
+  else if (le.h() == 0 && le.m() == 0)
+    out << "0";
+
+  return out;
+}
+
+Interval::Interval() : lo_(), step_(), hi_() {}
+Interval::Interval(LinearExp lo, LinearExp step, LinearExp hi) : lo_(lo), step_(step), hi_(hi) {}
+
+member_imp(Parser::Interval, LinearExp, lo);
+member_imp(Parser::Interval, LinearExp, step);
+member_imp(Parser::Interval, LinearExp, hi);
+
+std::ostream &operator<<(std::ostream &out, const Parser::Interval &i)
+{
+  out << i.lo() << ":" << i.step() << ":" << i.hi();
+
+  return out;
+}
+
+MultiInterval::MultiInterval() : inters_() {}
+MultiInterval::MultiInterval(Intervals inters) : inters_(inters) {}
+
+member_imp(Parser::MultiInterval, Intervals, inters);
+
+void MultiInterval::addInter(Interval i) { inters_ref().insert(inters_ref().end(), i); }
+
+std::ostream &operator<<(std::ostream &out, const Parser::MultiInterval &mi)
+{
+  MultiInterval aux = mi;  
+
+  out << "[";
+  int sz = aux.inters_ref().size(), i = 0;
+  if (sz > 0) {
+    for (; i < sz - 1; i++) {
+      out << aux.inters_ref()[i] << ", ";
+    }
+    out << aux.inters_ref()[i];
+  }
+  out << "]";
+
+ return out; 
+}
+
+Set::Set() : asets_() {}
+Set::Set(MultiInters asets) : asets_(asets) {}
+
+member_imp(Parser::Set, MultiInters, asets);
+
+void Set::addAtomSet(MultiInterval mi) { asets_ref().insert(asets_ref().end(), mi); }
+
+std::ostream &operator<<(std::ostream &out, const Parser::Set &s)
+{
+  Set aux = s;
+
+  out << "{";
+  int sz = aux.asets_ref().size(), i = 0;
+  if (sz > 0) {
+    for (; i < sz - 1; i++) {
+      out << aux.asets_ref()[i] << ", ";
+    }
+    out << aux.asets_ref()[i];
+  }
+  out << "}";
+
+ return out; 
+}
+
+SetVertex::SetVertex() : name_(), range_() {}
+SetVertex::SetVertex(std::string name, Set range) : name_(name), range_(range) {}
+
+member_imp(Parser::SetVertex, std::string, name);
+member_imp(Parser::SetVertex, Set, range);
+
+std::ostream &operator<<(std::ostream &out, const Parser::SetVertex &sv)
+{
+  std::cout << sv.name() << " " << sv.range() << ";\n";
+
+  return out;
+}
+
+SetEdge::SetEdge() : vb_(), mb_(), vf_(), mf_() {}
+SetEdge::SetEdge(std::string vb, MultiInterval mb, std::string vf, MultiInterval mf) : vb_(vb), mb_(mb), vf_(vf), mf_(mf)  {}
+
+member_imp(Parser::SetEdge, std::string, vb);
+member_imp(Parser::SetEdge, MultiInterval, mb);
+member_imp(Parser::SetEdge, std::string, vf);
+member_imp(Parser::SetEdge, MultiInterval, mf);
+
+std::ostream &operator<<(std::ostream &out, const SetEdge &se) 
+{
+  out << se.vb() << se.mb() << " - " << se.vf() << se.mf() << ";\n";
+
+  return out;
+}
+
+SetGraph::SetGraph() : modifier_(), constants_(), svertices_(), sedges_(), cenv_() {}
 
 member_imp(Parser::SetGraph, std::string, modifier);
+member_imp(Parser::SetGraph, ConstantDefs, constants)
 member_imp(Parser::SetGraph, vrtcs, svertices);
 member_imp(Parser::SetGraph, edges, sedges);
 
+member_imp(Parser::SetGraph, ConstantsEnv, cenv);
+
+void SetGraph::createConstantsEnv()
+{
+  BOOST_FOREACH (ConstantDef cd, constants())
+    cenv_ref()[cd.identifier()] = cd.value();
+}
+
 std::ostream &operator<<(std::ostream &out, const Parser::SetGraph &sg) 
 {
-  Parser::SetGraph auxsg = sg;
+  out << sg.modifier() << ";\n\n" << sg.constants() << "\n";
 
-  BOOST_FOREACH (SBG::SetVertex v, sg.svertices())
-    out << v << "\n";
+  BOOST_FOREACH (Parser::SetVertex sv, sg.svertices())
+    out << sv;
+  std::cout << "\n";
 
-  BOOST_FOREACH (Parser::SetEdge e, sg.sedges())
-    out << e << "\n";
+  BOOST_FOREACH (Parser::SetEdge se, sg.sedges())
+    out << se;
+  std::cout << "\n";
 
   return out;
 }
@@ -100,32 +238,36 @@ std::ostream &operator<<(std::ostream &out, const Parser::SetGraph &sg)
 
 sbg_parser::sbg_parser() : sbg_parser::base_type(sbg) 
 { 
+  ident = qi::lexeme[qi::alpha >> *qi::alnum];
 
-  inter %= qi::int_
-    >> ':' >> qi::int_ 
-    >> ':' >> qi::int_ 
-    >> qi::attr(false);
+  constant_def %= ident >> '=' >> qi::int_ >> ';';
+
+  linear_exp %= (qi::int_ >> '*' 
+    >> ident >> '+' >> qi::int_)
+    | (qi::int_ >> '*' >> ident >> qi::attr(0))
+    | (qi::attr(1) >> ident >> ('+'>> qi::int_ | qi::attr(0)))
+    | (qi::attr(0) >> qi::attr("") >> qi::int_);
+
+  inter %= linear_exp
+    >> ':' >> linear_exp 
+    >> ':' >> linear_exp;
 
   multi_inter = '['
-    >> inter [phx::bind(&SBG::MultiInterval::addInter, qi::_val, qi::_1)] 
-    >> *(',' >> inter [phx::bind(&SBG::MultiInterval::addInter, qi::_val, qi::_1)])
+    >> inter [phx::bind(&MultiInterval::addInter, qi::_val, qi::_1)] 
+    >> *(',' >> inter [phx::bind(&MultiInterval::addInter, qi::_val, qi::_1)])
     >> ']';
 
   set = '{'
-    >> ((multi_inter               [phx::bind(&SBG::Set::addAtomSet, qi::_val, qi::_1)] 
-           >> *(',' >> multi_inter [phx::bind(&SBG::Set::addAtomSet, qi::_val, qi::_1)]))
+    >> ((multi_inter               [phx::bind(&Set::addAtomSet, qi::_val, qi::_1)] 
+           >> *(',' >> multi_inter [phx::bind(&Set::addAtomSet, qi::_val, qi::_1)]))
         | qi::eps)
     >> '}';
 
-  ident = qi::lexeme[qi::alpha >> *qi::alnum];
+  vertex %= ident >> set >> ';';
 
-  svdesc = qi::lexeme['"' >> *(qi::char_ - '"') >> '"'];
+  edge %= ident >> multi_inter >> '-' >> ident >> multi_inter >> ';';  
 
-  vertex %= ident >> qi::attr(1) >> set >> qi::attr(0) >> svdesc >> ';';
-
-  edge %= ident >> qi::attr(1) >> multi_inter >> '-' >> ident >> multi_inter >> ';';  
-
-  sbg %= ident >> ';' >> *vertex >> *edge;
+  sbg %= ident >> ';' >> *constant_def >> *vertex >> *edge;
 };
 
 } // namespace Parser

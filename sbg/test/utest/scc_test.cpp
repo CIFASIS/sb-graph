@@ -158,7 +158,7 @@ void parse_build_scc()
 
     std::cout << "-------------------------\n";
     if (r && iter == end)
-      std::cout << "Parsing succeeded\n";
+      std::cout << "Parsing succeeded\n\n";
 
     else {
       std::string rest(iter, end);
@@ -175,7 +175,7 @@ void parse_build_scc()
     graph_builder.build();
     DSBGraph dg = graph_builder.result();
 
-    std::cout << "SCC Builder result = \n\n" << "\n";
+    std::cout << "SCC Builder result = \n\n";
     graph_builder.pretty_print();
   
     SCCStruct scc(dg);

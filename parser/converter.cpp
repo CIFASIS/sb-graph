@@ -46,16 +46,15 @@ member_imp(Converter, Parser::SetGraph, sg);
 
 SBG::INT Converter::convertLE(Parser::LinearExp le)
 {
-  return le.m() * sg().cenv()[le.x()] + le.h();
+  SBG::INT res = le.m() * sg().cenv()[le.x()] + le.h();
+  std::cout << le.x() << " | " << sg_ref().cenv_ref()[le.x_ref()] << "\n";
+  //std::cout << le << " | " << " | " << sg_ref().cenv_ref()[le.x()] << res << "\n";
+
+  return res;
 }
 
 SBG::Interval Converter::convertInterval(Parser::Interval i) 
 { 
-  /*
-  SBG::INT res_lo = boost::apply_visitor(FieldVisitor(sg().cenv()), i.lo()); 
-  SBG::INT res_step = boost::apply_visitor(FieldVisitor(sg().cenv()), i.step()); 
-  SBG::INT res_hi = boost::apply_visitor(FieldVisitor(sg().cenv()), i.hi()); 
-  */
   SBG::INT res_lo = convertLE(i.lo()), res_step = convertLE(i.step()), res_hi = convertLE(i.hi());
 
   return SBG::Interval(res_lo, res_step, res_hi); 
@@ -137,7 +136,7 @@ SBG::LMap Converter::makeExp(SBG::MultiInterval dom, SBG::MultiInterval mi) {
   return result;
 }
 
-void Converter::addEdge(SBG::SBGraph g, Parser::SetEdge se) {
+void Converter::addEdge(SBG::SBGraph &g, Parser::SetEdge se) {
   SBG::MultiInterval mi_b = convertMI(se.mb()), mi_f = convertMI(se.mf());
 
   // Offset edge
@@ -181,7 +180,7 @@ void Converter::addEdge(SBG::SBGraph g, Parser::SetEdge se) {
   return;
 }
 
-void Converter::addDirectedEdge(SBG::DSBGraph dg, Parser::SetEdge se) {
+void Converter::addDirectedEdge(SBG::DSBGraph &dg, Parser::SetEdge se) {
   SBG::MultiInterval mi_b = convertMI(se.mb()), mi_f = convertMI(se.mf());
 
   // Offset edge
@@ -268,7 +267,6 @@ SBG::DSBGraph Converter::convertDirectedGraph()
 Grph Converter::convertGraph()
 {
   Grph result;
-  std::cout << sg() << "\n";
 
   if (sg().modifier() == "undirected") {
     result = convertUndirectedGraph();

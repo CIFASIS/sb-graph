@@ -93,23 +93,22 @@ member_imp(Parser::LinearExp, SBG::INT, h);
 
 std::ostream &operator<<(std::ostream &out, const LinearExp &le)
 {
-  if (le.m() != 0 && le.m() != 1)
-    out << le.m();
+  LinearExp aux_le = le;
 
-  out << le.x();
+  if (aux_le.x() == "")
+    aux_le.set_m(0);
 
-  if (le.h() != 0) {
-    if (le.h() > 0 && le.m() != 0)
-      out << "+";
-    
-    else if (le.h() < 0 && le.m() != 0)
-      out << "-";
+  if (aux_le.m() == 1)
+    out << aux_le.x();
 
-    out << std::abs(le.h());
-  }
+  else if (aux_le.m() != 0)
+    out << aux_le.m() << aux_le.x();
 
-  else if (le.h() == 0 && le.m() == 0)
-    out << "0";
+  if (aux_le.h() > 0 && aux_le.m() != 0)
+    out << "+";
+
+  if (aux_le.h() != 0)
+    out << aux_le.h();
 
   return out;
 }
@@ -216,7 +215,7 @@ member_imp(Parser::SetGraph, ConstantsEnv, cenv);
 void SetGraph::createConstantsEnv()
 {
   BOOST_FOREACH (ConstantDef cd, constants())
-    cenv_ref()[cd.identifier()] = cd.value();
+    cenv_ref()[cd.identifier()] = cd.value();  
 }
 
 std::ostream &operator<<(std::ostream &out, const Parser::SetGraph &sg) 
@@ -242,11 +241,9 @@ sbg_parser::sbg_parser() : sbg_parser::base_type(sbg)
 
   constant_def %= ident >> '=' >> qi::int_ >> ';';
 
-  linear_exp %= (qi::int_ >> '*' 
-    >> ident >> '+' >> qi::int_)
-    | (qi::int_ >> '*' >> ident >> qi::attr(0))
-    | (qi::attr(1) >> ident >> ('+'>> qi::int_ | qi::attr(0)))
-    | (qi::attr(0) >> qi::attr("") >> qi::int_);
+  linear_exp %= (qi::int_ >> '*' | qi::attr(1))
+    >> (ident | qi::attr(""))
+    >> ('+' >> qi::int_ | qi::int_ | qi::attr(0));
 
   inter %= linear_exp
     >> ':' >> linear_exp 

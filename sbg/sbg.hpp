@@ -131,6 +131,8 @@ typedef SBGraph::edge_descriptor SetEdgeDesc;
 typedef boost::graph_traits<SBGraph>::edge_iterator EdgeIt;
 typedef boost::graph_traits<SBGraph>::out_edge_iterator OutEdgeIt;
 
+std::ostream &operator<<(std::ostream &out, SBGraph &g);
+
 // Directed Set graph ------------------------------------------------------------------------------
 
 typedef boost::adjacency_list<boost::listS, boost::listS, boost::directedS, SetVertex, DSetEdge> DSBGraph;
@@ -139,6 +141,7 @@ typedef boost::graph_traits<DSBGraph>::vertex_iterator DVertexIt;
 typedef DSBGraph::edge_descriptor DSetEdgeDesc;
 typedef boost::graph_traits<DSBGraph>::edge_iterator DEdgeIt;
 
+std::ostream &operator<<(std::ostream &out, DSBGraph &dg);
 DSBGraph atomize(DSBGraph dg);
 
 }  // namespace SBG

@@ -238,6 +238,30 @@ std::ostream &operator<<(std::ostream &out, const DSETE_TEMP_TYPE &E)
 
 template std::ostream &operator<<(std::ostream &out, const DSetEdge &e);
 
+// Graphs ------------------------------------------------------------------------------------------
+
+std::ostream &operator<<(std::ostream &out, SBGraph &g)
+{
+  BOOST_FOREACH (SetVertexDesc vd, vertices(g))
+    out << g[vd] << "\n";
+
+  BOOST_FOREACH (SetEdgeDesc ed, edges(g))
+    out << g[ed] << "\n";
+
+  return out;
+}
+
+std::ostream &operator<<(std::ostream &out, DSBGraph &g)
+{
+  BOOST_FOREACH (DSetVertexDesc vd, vertices(g))
+    out << g[vd] << "\n";
+
+  BOOST_FOREACH (DSetEdgeDesc ed, edges(g))
+    out << g[ed] << "\n";
+
+  return out;
+}
+
 DSBGraph atomize(DSBGraph dg)
 {
   DSBGraph dg_res;

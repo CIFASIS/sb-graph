@@ -53,8 +53,8 @@ struct Converter {
 
   SBG::MultiInterval makeDom(SBG::MultiInterval mi1, SBG::MultiInterval mi2);
   SBG::LMap makeExp(SBG::MultiInterval dom, SBG::MultiInterval mi);
-  void addEdge(SBG::SBGraph g, Parser::SetEdge se);
-  void addDirectedEdge(SBG::DSBGraph dg, Parser::SetEdge se);
+  void addEdge(SBG::SBGraph &g, Parser::SetEdge se);
+  void addDirectedEdge(SBG::DSBGraph &dg, Parser::SetEdge se);
 
   SBG::SBGraph convertUndirectedGraph();
   SBG::DSBGraph convertDirectedGraph();

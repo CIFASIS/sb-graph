@@ -23,27 +23,17 @@ namespace SBG {
 // Set-vertex --------------------------------------------------------------------------------------
 
 SET_VERTEX_TEMPLATE
-SETV_TEMP_TYPE::SetVertexImp() : name_(""), id_(-1), index_(0), desc_()
-{
-  Set emptySet;
-  range_ = emptySet;
-}
+SETV_TEMP_TYPE::SetVertexImp() : name_(""), id_(-1), index_(0), range_(), desc_() {}
 
 SET_VERTEX_TEMPLATE
-SETV_TEMP_TYPE::SetVertexImp(std::string name, Set range) : name_(name), id_(-1), range_(range), index_(0), desc_() 
-{
-}
+SETV_TEMP_TYPE::SetVertexImp(std::string name, Set range) : name_(name), id_(-1), range_(range), index_(0), desc_() {}
 
 SET_VERTEX_TEMPLATE
-SETV_TEMP_TYPE::SetVertexImp(std::string name, int id, Set range, int index) : name_(name), id_(id), range_(range), index_(index), desc_()
-{
-}
+SETV_TEMP_TYPE::SetVertexImp(std::string name, int id, Set range, int index) : name_(name), id_(id), range_(range), index_(index), desc_() {}
 
 SET_VERTEX_TEMPLATE
 SETV_TEMP_TYPE::SetVertexImp(std::string name, int id, Set range, int index, DESC desc)
-    : name_(name), id_(id), range_(range), index_(index), desc_(desc)
-{
-}
+    : name_(name), id_(id), range_(range), index_(index), desc_(desc) {}
 
 member_imp_temp(SET_VERTEX_TEMPLATE, SETV_TEMP_TYPE, std::string, name);
 member_imp_temp(SET_VERTEX_TEMPLATE, SETV_TEMP_TYPE, int, id);
@@ -73,27 +63,19 @@ SETE_TEMP_TYPE::SetEdgeImp() : name_(""), id_(-1), map_f_(), map_u_(), index_(0)
 
 SET_EDGE_TEMPLATE
 SETE_TEMP_TYPE::SetEdgeImp(std::string name, PWLMap map_f, PWLMap map_u)
-    : name_(name), id_(-1), map_f_(map_f), map_u_(map_u), index_(0), desc_()
-{
-}
+    : name_(name), id_(-1), map_f_(map_f), map_u_(map_u), index_(0), desc_() {}
 
 SET_EDGE_TEMPLATE
 SETE_TEMP_TYPE::SetEdgeImp(std::string name, PWLMap map_f, PWLMap map_u, DESC desc)
-    : name_(name), id_(-1), map_f_(map_f), map_u_(map_u), index_(0), desc_(desc)
-{
-}
+    : name_(name), id_(-1), map_f_(map_f), map_u_(map_u), index_(0), desc_(desc) {}
 
 SET_EDGE_TEMPLATE
 SETE_TEMP_TYPE::SetEdgeImp(std::string name, int id, PWLMap map_f, PWLMap map_u, int index)
-    : name_(name), id_(id), map_f_(map_f), map_u_(map_u), index_(index), desc_()
-{
-}
+    : name_(name), id_(id), map_f_(map_f), map_u_(map_u), index_(index), desc_() {}
 
 SET_EDGE_TEMPLATE
 SETE_TEMP_TYPE::SetEdgeImp(std::string name, int id, PWLMap map_f, PWLMap map_u, int index, DESC desc)
-    : name_(name), id_(id), map_f_(map_f), map_u_(map_u), index_(index), desc_(desc)
-{
-}
+    : name_(name), id_(id), map_f_(map_f), map_u_(map_u), index_(index), desc_(desc) {}
 
 member_imp_temp(SET_EDGE_TEMPLATE, SETE_TEMP_TYPE, std::string, name);
 member_imp_temp(SET_EDGE_TEMPLATE, SETE_TEMP_TYPE, int, id);
@@ -159,27 +141,19 @@ DSETE_TEMP_TYPE::DSetEdgeImp() : name_(""), id_(-1), map_b_(), map_d_(), index_(
 
 DSET_EDGE_TEMPLATE
 DSETE_TEMP_TYPE::DSetEdgeImp(std::string name, PWLMap map_b, PWLMap map_d)
-    : name_(name), id_(-1), map_d_(map_d), map_b_(map_b), index_(0), desc_()
-{
-}
+    : name_(name), id_(-1), map_d_(map_d), map_b_(map_b), index_(0), desc_() {}
 
 DSET_EDGE_TEMPLATE
 DSETE_TEMP_TYPE::DSetEdgeImp(std::string name, PWLMap map_b, PWLMap map_d, DESC desc)
-    : name_(name), id_(-1), map_d_(map_d), map_b_(map_b), index_(0), desc_(desc)
-{
-}
+    : name_(name), id_(-1), map_d_(map_d), map_b_(map_b), index_(0), desc_(desc) {}
 
 DSET_EDGE_TEMPLATE
 DSETE_TEMP_TYPE::DSetEdgeImp(std::string name, int id, PWLMap map_b, PWLMap map_d, int index)
-    : name_(name), id_(id), map_d_(map_d), map_b_(map_b), index_(index), desc_()
-{
-}
+    : name_(name), id_(id), map_d_(map_d), map_b_(map_b), index_(index), desc_() {}
 
 DSET_EDGE_TEMPLATE
 DSETE_TEMP_TYPE::DSetEdgeImp(std::string name, int id, PWLMap map_b, PWLMap map_d, int index, DESC desc)
-    : name_(name), id_(id), map_d_(map_d), map_b_(map_b), index_(index), desc_(desc)
-{
-}
+    : name_(name), id_(id), map_d_(map_d), map_b_(map_b), index_(index), desc_(desc) {}
 
 member_imp_temp(DSET_EDGE_TEMPLATE, DSETE_TEMP_TYPE, std::string, name);
 member_imp_temp(DSET_EDGE_TEMPLATE, DSETE_TEMP_TYPE, int, id);
@@ -260,98 +234,6 @@ std::ostream &operator<<(std::ostream &out, DSBGraph &g)
     out << g[ed] << "\n";
 
   return out;
-}
-
-DSBGraph atomize(DSBGraph dg)
-{
-  DSBGraph dg_res;
-
-  // Create vertices
-  BOOST_FOREACH (DSetVertexDesc vd, vertices(dg)) {
-    SetVertex v = dg[vd];
-
-    int j = 1;
-    BOOST_FOREACH (MultiInterval mi, v.range_ref().asets()) {
-      std::string nm = v.name();
-      int sz = v.range_ref().asets_ref().size();
-      if (sz > 1)
-        nm = nm + "_" + std::to_string(j); 
-
-      SetVertex v_res(nm, Set(mi)); 
-
-      DSetVertexDesc vd_res = boost::add_vertex(dg_res);
-      dg_res[vd_res] = v_res;
-
-      j++;
-    } 
-  }
-
-  PWLMap mapB, mapD;
-  BOOST_FOREACH (DSetEdgeDesc ed, edges(dg)) {
-    PWLMap bmap = dg[ed].map_b(), dmap = dg[ed].map_d();
-
-    mapB = mapB.concat(bmap);
-    mapD = mapD.concat(dmap);
-  }
-  Set all_edges = mapB.wholeDom();
-
-  // Create edges
-  BOOST_FOREACH (DSetVertexDesc vd, vertices(dg_res)) {
-    SetVertex v = dg_res[vd];
-    Set v_range = v.range();
-
-    Set v_b = mapB.preImage(v.range()), v_d = mapD.preImage(v.range());
-    BOOST_FOREACH (DSetEdgeDesc ed, edges(dg)) {
-      Set e_dom = dg[ed].dom();
-
-      Set b_dom = v_b.cap(e_dom), d_dom = v_d.cap(e_dom);
-      if (!b_dom.empty()) {
-        Set adj_b = mapD.image(b_dom);
-        
-        BOOST_FOREACH (DSetVertexDesc vd_adj, vertices(dg_res)) {
-          SetVertex adj_v = dg_res[vd_adj];
-          Set adj_v_dom = adj_v.range();
-
-          if (!adj_v_dom.cap(adj_b).empty()) {
-            // Add edge
-            DSetEdgeDesc ed_adj;
-            bool b;
-            boost::tie(ed_adj, b) = boost::add_edge(vd, vd_adj, dg_res);
-            dg_res[ed_adj] = DSetEdge(v.name() + adj_v.name(), mapB.restrictMap(b_dom), mapD.restrictMap(b_dom));
-
-            // Take out traversed edges
-            Set remaining = all_edges.diff(b_dom);
-            mapB = mapB.restrictMap(remaining);
-            mapD = mapD.restrictMap(remaining);
-          }
-        }
-      }
-
-      if (!d_dom.empty()) {
-        Set adj_d = mapB.image(d_dom);
-        
-        BOOST_FOREACH (DSetVertexDesc vd_adj, vertices(dg_res)) {
-          SetVertex adj_v = dg_res[vd_adj];
-          Set adj_v_dom = adj_v.range();
-
-          if (!adj_v_dom.cap(adj_d).empty()) {
-            // Add edge
-            DSetEdgeDesc ed_adj;
-            bool b;
-            boost::tie(ed_adj, b) = boost::add_edge(vd_adj, vd, dg_res);
-            dg_res[ed_adj] = DSetEdge(adj_v.name() + v.name(), mapB.restrictMap(d_dom), mapD.restrictMap(d_dom));
-
-            // Take out traversed edges
-            Set remaining = all_edges.diff(d_dom);
-            mapB = mapB.restrictMap(remaining);
-            mapD = mapD.restrictMap(remaining);
-          }
-        }
-      }
-    }
-  }
-
-  return dg_res;
 }
 
 }  // namespace SBG

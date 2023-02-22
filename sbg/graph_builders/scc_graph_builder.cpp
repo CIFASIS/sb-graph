@@ -228,7 +228,7 @@ void SCCGraphBuilder::pretty_print()
 {
   DSBGraph grph = result_ref();
   SBG::IO::SCCConverter c(grph);
-  SBG::IO::SCCGraphIO grph_io = c.convert();
+  SBG::IO::GraphIO grph_io = c.convert();
   std::cout << grph_io << "\n";
 
   return;

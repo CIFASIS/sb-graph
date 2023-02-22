@@ -142,6 +142,5 @@ typedef DSBGraph::edge_descriptor DSetEdgeDesc;
 typedef boost::graph_traits<DSBGraph>::edge_iterator DEdgeIt;
 
 std::ostream &operator<<(std::ostream &out, DSBGraph &dg);
-DSBGraph atomize(DSBGraph dg);
 
 }  // namespace SBG

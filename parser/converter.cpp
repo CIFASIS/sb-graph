@@ -30,7 +30,7 @@ Converter::Converter() : offset_() { set_sg(Parser::SetGraph()); }
 
 Converter::Converter(Parser::SetGraph sg) : offset_() {
   set_sg(sg);
-  sg.createConstantsEnv();
+  sg_ref().createConstantsEnv();
 
   if (!sg.svertices().empty()) {
     Parser::SetVertex v1 = *(sg.svertices_ref().begin());
@@ -46,11 +46,7 @@ member_imp(Converter, Parser::SetGraph, sg);
 
 SBG::INT Converter::convertLE(Parser::LinearExp le)
 {
-  SBG::INT res = le.m() * sg().cenv()[le.x()] + le.h();
-  std::cout << le.x() << " | " << sg_ref().cenv_ref()[le.x_ref()] << "\n";
-  //std::cout << le << " | " << " | " << sg_ref().cenv_ref()[le.x()] << res << "\n";
-
-  return res;
+  return le.m() * sg().cenv()[le.x()] + le.h();
 }
 
 SBG::Interval Converter::convertInterval(Parser::Interval i) 

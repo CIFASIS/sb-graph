@@ -22,6 +22,8 @@ GRP_TEST_SRC := \
     $(SBG_DIR)/pw_map.cpp \
     $(SBG_DIR)/descs.cpp \
     $(SBG_DIR)/sbg.cpp \
+    $(SBG_DIR)/atom_sbg.cpp \
+    $(SBG_DIR)/sbg_io.cpp \
     $(SBG_DIR)/sbg_algorithms.cpp \
     $(SBG_DIR)/graph_builders/scc_io.cpp \
     $(SBG_DIR)/graph_builders/scc_graph_builder.cpp \
@@ -41,6 +43,8 @@ SCC_TEST_SRC := \
     $(SBG_DIR)/pw_map.cpp \
     $(SBG_DIR)/descs.cpp \
     $(SBG_DIR)/sbg.cpp \
+    $(SBG_DIR)/atom_sbg.cpp \
+    $(SBG_DIR)/sbg_io.cpp \
     $(SBG_DIR)/sbg_printer.cpp \
     $(SBG_DIR)/sbg_algorithms.cpp \
     $(SBG_DIR)/graph_builders/scc_io.cpp \

@@ -5,6 +5,8 @@ SBG_ROOT := sbg
 	SBG_SRC := \
 	$(SBG_ROOT)/descs.cpp \
 	$(SBG_ROOT)/sbg.cpp \
+	$(SBG_ROOT)/atom_sbg.cpp \
+	$(SBG_ROOT)/sbg_io.cpp \
 	$(SBG_ROOT)/sbg_algorithms.cpp \
 	$(SBG_ROOT)/sbg_printer.cpp \
   	$(SBG_ROOT)/interval.cpp \

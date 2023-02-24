@@ -23,16 +23,29 @@
 
 namespace Parser {
 
-typedef boost::variant<SBG::SBGraph, SBG::DSBGraph> Grph;
+// Visitors ---------------------------------------------------------------------------------------
 
-struct FieldVisitor : public boost::static_visitor<SBG::INT> {
+struct LitVisitor : public boost::static_visitor<SBG::INT> {
   member_class(ConstantsEnv, cenv);
 
-  FieldVisitor(ConstantsEnv cenv);
+  LitVisitor(ConstantsEnv cenv);
 
-  SBG::INT operator()(SBG::INT i) const { return i; }
-  SBG::INT operator()(std::string identifier) const { return cenv()[identifier]; }
+  SBG::INT operator()(SBG::INT i) const;
+  SBG::INT operator()(std::string identifier) const;
 };
+
+struct ExprVisitor : public boost::static_visitor<SBG::INT> {
+  member_class(ConstantsEnv, cenv);
+
+  ExprVisitor(ConstantsEnv cenv);
+
+  SBG::INT operator()(Parser::Literal l) const;
+  SBG::INT operator()(Parser::BinOp bop) const;
+};
+
+// Converter --------------------------------------------------------------------------------------
+
+typedef boost::variant<SBG::SBGraph, SBG::DSBGraph> Grph;
 
 struct Converter {
   member_class(SBG::OrdCT<SBG::INT>, offset);
@@ -44,7 +57,7 @@ struct Converter {
   Grph convertGraph();
 
   private:
-  SBG::INT convertLE(Parser::LinearExp le);
+  SBG::INT convertExpr(Parser::Expr e);
   SBG::Interval convertInterval(Parser::Interval i);
   SBG::MultiInterval convertMI(Parser::MultiInterval mi);
   SBG::Set convertSet(Parser::Set s);

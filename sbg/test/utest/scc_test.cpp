@@ -59,12 +59,8 @@ void parse_build()
     if (r && iter == end) {
       std::cout << "-------------------------\n";
       std::cout << "Parsing succeeded\n";
-      std::cout << "SCC Builder result = \n\n" << "\n";
-      BOOST_FOREACH (SetVertexDesc dv, vertices(dg))
-        std::cout << dg[dv] << "\n";
-      std::cout << "\n";
-      BOOST_FOREACH (DSetEdgeDesc de, edges(dg))
-        std::cout << dg[de] << "\n";
+      std::cout << "SCC Builder result = \n\n";
+      std::cout << dg << "\n";
       std::cout << "-------------------------\n";
     }
 

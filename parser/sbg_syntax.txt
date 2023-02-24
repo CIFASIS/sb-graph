@@ -1,0 +1,32 @@
+class := 'undirected' | 'directed'
+
+identifier := alpha *alphanum
+
+slope := int '*' | '1'
+
+var := '' | identifier
+
+offset := '+' int | '-' int | int | '0' 
+
+linear_exp := slope var offset | linear_exp
+
+constant_def := identifier '=' linear_exp 
+
+interval := linear_exp':'linear_exp':'linear_exp
+
+multi_interval := '[' interval *(',' interval) ']'
+
+set := '{''}' | '{'multi_interval *(',' multi_interval)'}'
+
+vertex := identifier set desc ';\n'
+
+edge := identifier': 'multi_interval '-' identifier': 'multi_interval';\n'
+
+graph := class ';'
+  *constant_def
+  +vertex
+  *edge
+
+Intervals are composed of linear_exp to allow references to defined constants
+(in contrast to the interval.hpp were its components are numbers). The remaining
+structures strongly resemble those defined in the sbg library.

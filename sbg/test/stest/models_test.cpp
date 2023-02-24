@@ -27,10 +27,33 @@
 /// @addtogroup SBGraphSTests
 /// @{
 
-class ITests : public testing::TestWithParam<const char*> {
+class ITestsGraph : public testing::TestWithParam<const char*> {
 };
 
-TEST_P(ITests, GenerateCode)
+TEST_P(ITestsGraph, Graph)
+{
+  const std::string NAME = GetParam();
+  std::cout << "Testing model: " << NAME << std::endl;
+  //const std::string MATCHING_CMD = "./compile_and_run.sh " + NAME;
+  //const std::string RESULT_FILE = "./test_data/" + NAME + "/" + NAME + ".passed";
+  //const std::string TEST_CMD = "./test_results.sh " + NAME;
+
+  //std::system(MATCHING_CMD.c_str());
+  //std::system(TEST_CMD.c_str());
+
+  //std::ifstream result(RESULT_FILE.c_str());
+  //EXPECT_TRUE(result.good());
+  EXPECT_TRUE(true);
+}
+
+const char* models_graph[] = {"atom"};
+
+INSTANTIATE_TEST_SUITE_P(ModelsGraph, ITestsGraph, testing::ValuesIn(models_graph));
+
+class ITestsMatching : public testing::TestWithParam<const char*> {
+};
+
+TEST_P(ITestsMatching, GenerateCode)
 {
   const std::string NAME = GetParam();
   std::cout << "Testing model: " << NAME << std::endl;
@@ -45,8 +68,8 @@ TEST_P(ITests, GenerateCode)
   EXPECT_TRUE(result.good());
 }
 
-const char* models[] = {"advection", "bball_downstairs", "buck"};
+const char* models_matching[] = {"advection", "bball_downstairs", "buck"};
 
-INSTANTIATE_TEST_SUITE_P(Models, ITests, testing::ValuesIn(models));
+INSTANTIATE_TEST_SUITE_P(ModelsMatching, ITestsMatching, testing::ValuesIn(models_matching));
 
 /// @}

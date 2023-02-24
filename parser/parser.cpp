@@ -16,33 +16,15 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
-
-/*!
-* This is a really tiny parser for SBGs. It was developed as a test tool.
-* Currently, only a filename can be provided, input can't be provided
-* from the command line.
-*
-* The parser doesn't check for the following conditions that must be satisfied:
-*   a. Set-vertices should be declared with disjunct ranges
-*   b. Set-edges are declared in array subscript fashion. For example, if we
-*      declare a set-vertex v0 {[100:5:200]} and an edge v0[1:1:10], then the
-*      referrenced interval is [100:5:150].
-*/
-
 #include <parser/parser.hpp>
-
-#include <boost/spirit/include/qi.hpp>
-#include <boost/spirit/include/phoenix.hpp>
-#include <boost/spirit/repository/include/qi_kwd.hpp>
-
 
 // Adapt structures -------------------------------------------------------------------------------
 
 BOOST_FUSION_ADAPT_STRUCT(Parser::ConstantDef, (std::string, identifier_)(SBG::INT, value_))
 
-BOOST_FUSION_ADAPT_STRUCT(Parser::LinearExp, (SBG::INT, m_)(std::string, x_)(SBG::INT, h_))
+BOOST_FUSION_ADAPT_STRUCT(Parser::BinOp, (Parser::Expr, left_)(Parser::Op, op_)(Parser::Expr, right_))
 
-BOOST_FUSION_ADAPT_STRUCT(Parser::Interval, (Parser::LinearExp, lo_)(Parser::LinearExp, step_)(Parser::LinearExp, hi_))
+BOOST_FUSION_ADAPT_STRUCT(Parser::Interval, (Parser::Expr, lo_)(Parser::Expr, step_)(Parser::Expr, hi_))
 
 BOOST_FUSION_ADAPT_STRUCT(Parser::MultiInterval, (Parser::Intervals, inters_))
 
@@ -80,45 +62,35 @@ std::ostream &operator<<(std::ostream &out, const ConstantDefs &cds)
   return out;
 }
 
-LinearExp::LinearExp() : m_(), x_(), h_() {}
-LinearExp::LinearExp(std::string x) : m_(), x_(x), h_() {}
-LinearExp::LinearExp(SBG::INT h) : m_(), x_(), h_(h) {}
-LinearExp::LinearExp(std::string x, SBG::INT h) : m_(), x_(x), h_(h) {}
-LinearExp::LinearExp(SBG::INT m, SBG::INT h) : m_(m), x_(), h_(h) {}
-LinearExp::LinearExp(SBG::INT m, std::string x, SBG::INT h) : m_(m), x_(x), h_(h) {}
+const char *OpNames[] = {"+", "*", "-"};
 
-member_imp(Parser::LinearExp, SBG::INT, m);
-member_imp(Parser::LinearExp, std::string, x);
-member_imp(Parser::LinearExp, SBG::INT, h);
-
-std::ostream &operator<<(std::ostream &out, const LinearExp &le)
+std::ostream &operator<<(std::ostream &out, const Op &op)
 {
-  LinearExp aux_le = le;
+  out << OpNames[static_cast<int>(op)];
 
-  if (aux_le.x() == "")
-    aux_le.set_m(0);
+  return out;
+}
 
-  if (aux_le.m() == 1)
-    out << aux_le.x();
+BinOp::BinOp() : left_(), op_(), right_() {}
+BinOp::BinOp(Expr left, Op op, Expr right) : left_(left), op_(op), right_(right) {}
 
-  else if (aux_le.m() != 0)
-    out << aux_le.m() << aux_le.x();
+member_imp(Parser::BinOp, Parser::Expr, left);
+member_imp(Parser::BinOp, Parser::Op, op);
+member_imp(Parser::BinOp, Parser::Expr, right);
 
-  if (aux_le.h() > 0 && aux_le.m() != 0)
-    out << "+";
-
-  if (aux_le.h() != 0)
-    out << aux_le.h();
+std::ostream &operator<<(std::ostream &out, const BinOp &le)
+{
+  out << le.left() << le.op() << le.right();
 
   return out;
 }
 
 Interval::Interval() : lo_(), step_(), hi_() {}
-Interval::Interval(LinearExp lo, LinearExp step, LinearExp hi) : lo_(lo), step_(step), hi_(hi) {}
+Interval::Interval(Expr lo, Expr step, Expr hi) : lo_(lo), step_(step), hi_(hi) {}
 
-member_imp(Parser::Interval, LinearExp, lo);
-member_imp(Parser::Interval, LinearExp, step);
-member_imp(Parser::Interval, LinearExp, hi);
+member_imp(Parser::Interval, Expr, lo);
+member_imp(Parser::Interval, Expr, step);
+member_imp(Parser::Interval, Expr, hi);
 
 std::ostream &operator<<(std::ostream &out, const Parser::Interval &i)
 {
@@ -241,13 +213,15 @@ sbg_parser::sbg_parser() : sbg_parser::base_type(sbg)
 
   constant_def %= ident >> '=' >> qi::int_ >> ';';
 
-  linear_exp %= (qi::int_ >> '*' | qi::attr(1))
-    >> (ident | qi::attr(""))
-    >> ('+' >> qi::int_ | qi::int_ | qi::attr(0));
+  literal %= qi::int_ | ident; 
 
-  inter %= linear_exp
-    >> ':' >> linear_exp 
-    >> ':' >> linear_exp;
+  binop %= literal >> op_symbols >> expr; 
+
+  expr %= binop | literal;
+
+  inter %= expr
+    >> ':' >> expr 
+    >> ':' >> expr;
 
   multi_inter = '['
     >> inter [phx::bind(&MultiInterval::addInter, qi::_val, qi::_1)] 
@@ -264,7 +238,7 @@ sbg_parser::sbg_parser() : sbg_parser::base_type(sbg)
 
   edge %= ident >> multi_inter >> '-' >> ident >> multi_inter >> ';';  
 
-  sbg %= ident >> ';' >> *constant_def >> *vertex >> *edge;
+  sbg %= keywords >> ';' >> *constant_def >> *vertex >> *edge;
 };
 
 } // namespace Parser

@@ -17,21 +17,26 @@
 
  ******************************************************************************/
 
-/*!
+/**
 * This is a really tiny parser for SBGs. It was developed as a test tool.
 * Currently, only a filename can be provided, input can't be received
 * from the command line.
 *
 * The parser doesn't check for the following conditions that must be satisfied:
-*   a. Set-vertices should be declared with disjunct ranges
+*   a. Set-vertices should be declared with disjoint ranges.
 *   b. Set-edges are declared in array subscript fashion. For example, if we
 *      declare a set-vertex v0 {[100:5:200]} and an edge v0[1:1:10], then the
 *      referrenced interval is [100:5:150].
+*
+* Refer to parser/sbg_syntax.txt if clarification of the SBG syntax is needed. 
 */
 
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix.hpp>
+#include <boost/spirit/repository/include/qi_kwd.hpp>
+#include <boost/variant/variant.hpp>
+#include <boost/variant/recursive_wrapper.hpp>
 
 #include <sbg/descs.hpp>
 #include <sbg/interval.hpp>
@@ -63,30 +68,38 @@ std::ostream &operator<<(std::ostream &out, const ConstantDef &cd);
 typedef std::vector<ConstantDef> ConstantDefs;
 std::ostream &operator<<(std::ostream &out, const ConstantDefs &cds);  
 
-struct LinearExp {
-  member_class(SBG::INT, m);
-  member_class(std::string, x);
-  member_class(SBG::INT, h);
+using Literal = boost::variant<std::string, SBG::INT>;
 
-  LinearExp();
-  LinearExp(SBG::INT h);
-  LinearExp(std::string x);
-  LinearExp(std::string x, SBG::INT h);
-  LinearExp(SBG::INT m, SBG::INT h);
-  LinearExp(SBG::INT m, std::string x, SBG::INT h);
+enum class Op {
+  add, mult, sub
 };
 
-std::ostream &operator<<(std::ostream &out, const LinearExp &le);
+extern const char* OpNames[];
 
-typedef boost::variant<SBG::INT, LinearExp> InterField;
+std::ostream &operator<<(std::ostream &out, const Op &op);
+
+struct BinOp;
+
+typedef boost::variant<Literal, boost::recursive_wrapper<BinOp>> Expr;
+
+struct BinOp {
+  member_class(Expr, left);
+  member_class(Op, op);
+  member_class(Expr, right);
+
+  BinOp();
+  BinOp(Expr left, Op op, Expr right);
+};
+
+std::ostream &operator<<(std::ostream &out, const BinOp &le);
 
 struct Interval {
-  member_class(LinearExp, lo);
-  member_class(LinearExp, step);
-  member_class(LinearExp, hi);
+  member_class(Expr, lo);
+  member_class(Expr, step);
+  member_class(Expr, hi);
 
   Interval();
-  Interval(LinearExp lo, LinearExp step, LinearExp hi);
+  Interval(Expr lo, Expr step, Expr hi);
 };
 
 std::ostream &operator<<(std::ostream &out, const Interval &i);  
@@ -166,8 +179,12 @@ typedef typename std::string::const_iterator str_it;
 
 struct sbg_parser : qi::grammar<str_it, SetGraph(), asc::space_type> {
   qi::rule<str_it, std::string(), asc::space_type> ident;
+  qi::rule<str_it, ConstantDef(), asc::space_type> constant_def;
 
-  qi::rule<str_it, LinearExp(), asc::space_type> linear_exp;
+  qi::rule<str_it, Literal(), asc::space_type> literal;
+  qi::rule<str_it, BinOp(), asc::space_type> binop;
+  qi::rule<str_it, Expr(), asc::space_type> expr;
+
   qi::rule<str_it, Interval(), asc::space_type> inter;
   qi::rule<str_it, MultiInterval(), asc::space_type> multi_inter;
   qi::rule<str_it, Set(), asc::space_type> set;
@@ -175,10 +192,21 @@ struct sbg_parser : qi::grammar<str_it, SetGraph(), asc::space_type> {
   qi::rule<str_it, SetVertex(), asc::space_type> vertex;
   qi::rule<str_it, SetEdge(), asc::space_type> edge;
 
-  qi::rule<str_it, ConstantDef(), asc::space_type> constant_def;
   qi::rule<str_it, SetGraph(), asc::space_type> sbg;
 
   sbg_parser();
+
+  struct op_symbols_struct : qi::symbols<char, Parser::Op> {
+    op_symbols_struct(){
+      this->add("+", Parser::Op::add)("*", Parser::Op::mult)("-", Parser::Op::sub);
+    }
+  } op_symbols;
+
+  struct keywords_struct : qi::symbols<char, std::string> {
+    keywords_struct(){
+      this->add("directed", "directed")("undirected", "undirected");
+    }
+  } keywords;
 };
 
 } // namespace Parser

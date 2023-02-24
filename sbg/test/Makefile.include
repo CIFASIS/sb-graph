@@ -8,7 +8,7 @@ GRP_TEST        := $(UTEST_DIR)/graph-test
 SCC_TEST        := $(UTEST_DIR)/scc-test
 SBG_GRAPH_TEST  := test-sbg-graph
 
-all: $(GRP_TEST) $(GRP_PRINT_TEST) $(SCC_TEST) 
+all: $(GRP_TEST) $(SCC_TEST) 
 
 GRP_TEST_SRC := \
     $(UTEST_DIR)/graph_test.cpp \

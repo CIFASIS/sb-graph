@@ -20,11 +20,58 @@
 
 namespace Parser {
 
+// Visitors ---------------------------------------------------------------------------------------
+
+LitVisitor::LitVisitor(ConstantsEnv cenv) : cenv_(cenv) {}
+
+member_imp(LitVisitor, ConstantsEnv, cenv);
+
+SBG::INT LitVisitor::operator()(SBG::INT i) const
+{
+  return i;
+}
+
+SBG::INT LitVisitor::operator()(std::string identifier) const
+{
+  return cenv()[identifier];
+}
+
+ExprVisitor::ExprVisitor(ConstantsEnv cenv) : cenv_(cenv) {}
+
+member_imp(ExprVisitor, ConstantsEnv, cenv);
+
+SBG::INT ExprVisitor::operator()(Parser::Literal l) const
+{
+  LitVisitor lv(cenv()); 
+
+  return boost::apply_visitor(lv, l);
+}
+
+SBG::INT ExprVisitor::operator()(Parser::BinOp bop) const
+{
+  SBG::INT res = 0;
+
+  SBG::INT l = boost::apply_visitor(*this, bop.left());
+  SBG::INT r = boost::apply_visitor(*this, bop.right());
+
+  switch (bop.op()) {
+    case Parser::Op::add:
+      res =  l + r;
+      break;
+
+    case Parser::Op::mult:
+      res =  l * r;
+      break;
+
+    case Parser::Op::sub:
+      res = l - r;
+      break;
+  }
+
+  return res;
+}
+
 // Structures -------------------------------------------------------------------------------------
-
-FieldVisitor::FieldVisitor(ConstantsEnv cenv) : cenv_(cenv) {}
-
-member_imp(FieldVisitor, ConstantsEnv, cenv);
 
 Converter::Converter() : offset_() { set_sg(Parser::SetGraph()); }
 
@@ -44,14 +91,16 @@ Converter::Converter(Parser::SetGraph sg) : offset_() {
 member_imp(Converter, SBG::OrdCT<SBG::INT>, offset);
 member_imp(Converter, Parser::SetGraph, sg);
 
-SBG::INT Converter::convertLE(Parser::LinearExp le)
+SBG::INT Converter::convertExpr(Parser::Expr e)
 {
-  return le.m() * sg().cenv()[le.x()] + le.h();
+  ExprVisitor ev(sg_ref().cenv_ref());
+
+  return boost::apply_visitor(ev, e);
 }
 
 SBG::Interval Converter::convertInterval(Parser::Interval i) 
 { 
-  SBG::INT res_lo = convertLE(i.lo()), res_step = convertLE(i.step()), res_hi = convertLE(i.hi());
+  SBG::INT res_lo = convertExpr(i.lo()), res_step = convertExpr(i.step()), res_hi = convertExpr(i.hi());
 
   return SBG::Interval(res_lo, res_step, res_hi); 
 }

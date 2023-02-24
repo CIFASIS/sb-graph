@@ -48,7 +48,7 @@ struct ExprVisitor : public boost::static_visitor<SBG::INT> {
 typedef boost::variant<SBG::SBGraph, SBG::DSBGraph> Grph;
 
 struct Converter {
-  member_class(SBG::OrdCT<SBG::INT>, offset);
+  member_class(SBG::OrdCT<SBG::INT>, dom_offset);
   member_class(Parser::SetGraph, sg);
 
   Converter();

@@ -73,9 +73,9 @@ SBG::INT ExprVisitor::operator()(Parser::BinOp bop) const
 
 // Structures -------------------------------------------------------------------------------------
 
-Converter::Converter() : offset_() { set_sg(Parser::SetGraph()); }
+Converter::Converter() : dom_offset_() { set_sg(Parser::SetGraph()); }
 
-Converter::Converter(Parser::SetGraph sg) : offset_() {
+Converter::Converter(Parser::SetGraph sg) : dom_offset_() {
   set_sg(sg);
   sg_ref().createConstantsEnv();
 
@@ -84,11 +84,11 @@ Converter::Converter(Parser::SetGraph sg) : offset_() {
     Parser::MultiInterval mi1 = *(v1.range_ref().asets_ref().begin());
     
     for (unsigned int i = 0; i < mi1.inters_ref().size(); i++)
-      offset_ref().insert(offset_ref().end(), 1);
+      dom_offset_ref().insert(dom_offset_ref().end(), 1);
   }
 }
 
-member_imp(Converter, SBG::OrdCT<SBG::INT>, offset);
+member_imp(Converter, SBG::OrdCT<SBG::INT>, dom_offset);
 member_imp(Converter, Parser::SetGraph, sg);
 
 SBG::INT Converter::convertExpr(Parser::Expr e)
@@ -135,35 +135,34 @@ SBG::MultiInterval Converter::makeDom(SBG::MultiInterval mi1, SBG::MultiInterval
   SBG::MultiInterval result;
 
   SBG::OrdCT<SBG::INT> max_card;
-  SBG::OrdCT<SBG::INT>::iterator it_max = max_card.begin();
 
   // Get number of elements in each dimension
   parallel_foreach2 (mi1.inters_ref(), mi2.inters_ref()) {
     SBG::INT n1 = boost::get<0>(items).card(), n2 = boost::get<1>(items).card();
 
     if ((n1 > n2 && n2 == 1) || n1 == n2) {
-      it_max = max_card.insert(it_max, n1);
-      ++it_max;
+      max_card.insert(max_card.end(), n1);
     }
 
     else if (n2 > n1 && n1 == 1) {
-      it_max = max_card.insert(it_max, n2);
-      ++it_max;
+      max_card.insert(max_card.end(), n2);
     }
 
-    else
+    else {
+      std::cerr << "ERROR [converter.cpp]: Check cardinality of edges\n";
       return SBG::MultiInterval();
+    }
   }
 
   // Apply offset
   SBG::OrdCT<SBG::INT> new_off;
-  parallel_foreach2 (offset_ref(), max_card) {
+  parallel_foreach2 (dom_offset_ref(), max_card) {
     SBG::INT off = boost::get<0>(items), elems = boost::get<1>(items);
     result.addInter(SBG::Interval(off, 1, off + elems - 1));
 
     new_off.insert(new_off.end(), off + elems);
   }
-  set_offset(new_off);
+  set_dom_offset(new_off);
 
   return result;
 }
@@ -202,7 +201,7 @@ void Converter::addEdge(SBG::SBGraph &g, Parser::SetEdge se) {
   SBG::MultiInterval off_mi_b = mi_b.offset(off1), off_mi_f = mi_f.offset(off2);
 
   // Create dom
-  SBG::MultiInterval dom = makeDom(off_mi_b, off_mi_f); 
+  SBG::MultiInterval dom = makeDom(mi_b, mi_f); 
 
   // Create expressions
   SBG::LMap lmb = makeExp(dom, off_mi_b);
@@ -247,6 +246,9 @@ void Converter::addDirectedEdge(SBG::DSBGraph &dg, Parser::SetEdge se) {
 
   // Create dom
   SBG::MultiInterval dom = makeDom(off_mi_b, off_mi_f); 
+  std::cout << mi_b << " | " << mi_f << "\n";
+  std::cout << off_mi_b << " ~ " << off_mi_f << "\n";
+  std::cout << dom << "\n\n";
 
   // Create expressions
   SBG::LMap lmb = makeExp(dom, off_mi_b);

@@ -20,7 +20,7 @@
 #include <iostream>
 #include <string>
 
-#include <parser/parser.hpp>
+#include <parser/converter.hpp>
 
 int main(int argc, char** argv) {
   std::cout << "\n/////////////////////////////////////////////////////////\n\n";
@@ -48,9 +48,9 @@ int main(int argc, char** argv) {
       Parser::SetGraph result;
       bool r = boost::spirit::qi::phrase_parse(iter, end, g, boost::spirit::ascii::space, result);
       if (r && iter == end) {
-        std::cout << "-------------------------\n";
+        std::cout << "-------------------------\n\n";
         std::cout << "Parsing succeeded\n";
-        std::cout << "result = \n\n" << result << "\n";
+        std::cout << "result = \n\n" << result;
         std::cout << "-------------------------\n";
       }
 

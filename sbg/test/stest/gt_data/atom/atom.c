@@ -19,8 +19,11 @@
 
 // Simple test of atomize function for SBG
 
+#include <fstream>
+
 #include <parser/converter.hpp>
 #include <sbg/atom_sbg.hpp>
+#include <sbg/util/logger.hpp>
 
 int main()
 {
@@ -48,10 +51,11 @@ int main()
 
     SBG::AtomDSBGraph res = SBG::atomize(boost::get<SBG::DSBGraph>(g));
     if (r && iter == end) {
-      std::cout << "-------------------------\n";
+      std::cout << "\n-------------------------\n";
       std::cout << "Parsing succeeded\n";
-      std::cout << "SBG atomizer result = \n\n" << "\n";
-      std::cout << res << "\n";
+      std::cout << "SBG atomizer result = \n\n";
+      std::cout << res;
+      SBG::LOG << res;
       std::cout << "-------------------------\n";
     }
 

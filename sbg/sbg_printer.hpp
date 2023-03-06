@@ -18,6 +18,14 @@
  ******************************************************************************/
 #pragma once
 
+#include <list>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/lexical_cast.hpp>
+
 #include <sbg/sbg.hpp>
 
 using namespace std;

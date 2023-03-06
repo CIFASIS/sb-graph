@@ -16,11 +16,6 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
-#include <utility>
-#include <omp.h>
-
-#include <boost/foreach.hpp>
-
 #include <sbg/pw_map.hpp>
 
 namespace SBG {

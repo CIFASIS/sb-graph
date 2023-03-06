@@ -16,14 +16,6 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
-#include <list>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/lexical_cast.hpp>
-
 #include <sbg/sbg_printer.hpp>
 
 using namespace std;

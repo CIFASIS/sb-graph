@@ -20,6 +20,8 @@
 
 #include <iostream>
 
+#include <boost/foreach.hpp>
+
 #include <sbg/util/defs.hpp>
 #include <sbg/interval.hpp>
 #include <sbg/multi_interval.hpp>

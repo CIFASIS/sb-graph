@@ -16,12 +16,7 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
-#include <boost/graph/subgraph.hpp>
 #include <sbg/sbg_algorithms.hpp>
-#include <sbg/util/logger.hpp>
-
-#include <chrono>
-#include <time.h>
 
 /*-----------------------------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------------------------*/

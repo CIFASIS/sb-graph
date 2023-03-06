@@ -20,6 +20,8 @@
 
 #include <iostream>
 
+#include <boost/foreach.hpp>
+
 #include <sbg/util/defs.hpp>
 
 namespace SBG {

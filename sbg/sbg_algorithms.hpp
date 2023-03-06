@@ -22,6 +22,10 @@
 
 #include <boost/foreach.hpp>
 #include <boost/unordered_set.hpp>
+#include <boost/graph/subgraph.hpp>
+
+#include <sbg/sbg_algorithms.hpp>
+#include <sbg/util/logger.hpp>
 
 #include <sbg/sbg.hpp>
 

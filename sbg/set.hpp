@@ -18,6 +18,10 @@
  ******************************************************************************/
 #pragma once
 
+#include <iostream>
+
+#include <boost/foreach.hpp>
+
 #include <sbg/util/defs.hpp>
 #include <sbg/multi_interval.hpp>
 

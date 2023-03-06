@@ -16,9 +16,6 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
-#include <boost/foreach.hpp>
-
-#include <sbg/util/defs.hpp>
 #include <sbg/lmap.hpp>
 
 namespace SBG {

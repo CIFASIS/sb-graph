@@ -41,4 +41,5 @@ class Logger {
   private:
   Logger();
 };
+
 }  // namespace SBG

@@ -21,6 +21,7 @@
 
 #include <parser/converter.hpp>
 #include <sbg/atom_sbg.hpp>
+#include <sbg/util/logger.hpp>
 
 int main()
 {
@@ -47,27 +48,26 @@ int main()
     Parser::Grph g = c.convertGraph();
 
     SBG::AtomDSBGraph res = SBG::atomize(boost::get<SBG::DSBGraph>(g));
+
+    SBG::LOG << "-------------------------\n";
+
     if (r && iter == end) {
-      std::cout << "-------------------------\n";
-      std::cout << "Parsing succeeded\n";
-      std::cout << "SBG atomizer result = \n\n" << "\n";
-      std::cout << res;
-      std::cout << "-------------------------\n";
+     SBG::LOG << "Parsing succeeded\n";
+     SBG::LOG << "SBG atomizer result = \n\n" << "\n";
+     SBG::LOG << res;
     }
 
     else {
       std::string rest(iter, end);
-      std::cout << "-------------------------\n";
-      std::cout << "Parsing failed\n";
-      std::cout << "stopped at: \": " << rest << "\"\n";
-      std::cout << "-------------------------\n";
+      SBG::LOG << "Parsing failed\n";
+      SBG::LOG << "stopped at: \": " << rest << "\"\n";
     }
+
+    SBG::LOG << "-------------------------\n";
   } 
 
   else 
-    std::cout << "A filename should be provided\n";
-
-  std::cout << "Bye... :-) \n\n";
+    SBG::LOG << "A filename should be provided\n";
 
   return 0;
 }

@@ -64,7 +64,7 @@ std::ostream &operator<<(std::ostream &out, AtomSBGraph &g)
 
   out << "\n";
   BOOST_FOREACH (AtomSEDesc ed, edges(g))
-    out << g[ed] << "\n";
+    out << g[ed] << "\n\n";
 
   return out;
 }
@@ -76,7 +76,7 @@ std::ostream &operator<<(std::ostream &out, AtomDSBGraph &g)
 
   out << "\n";
   BOOST_FOREACH (AtomDSEDesc ed, edges(g))
-    out << g[ed] << "\n";
+    out << g[ed] << "\n\n";
 
   return out;
 }

@@ -313,9 +313,9 @@ SBG::LMap convertPWLExp(PWLExp pwl, ConstantsEnv cenv)
 
 // Converter --------------------------------------------------------------------------------------
 
-Converter::Converter() : offset_(), sg_() {}
+Converter::Converter() : dom_offset_(), sg_() {}
 
-Converter::Converter(Parser::SetGraph sg) : offset_() {
+Converter::Converter(Parser::SetGraph sg) : dom_offset_() {
   set_sg(sg);
   sg_ref().createConstantsEnv();
 
@@ -324,11 +324,11 @@ Converter::Converter(Parser::SetGraph sg) : offset_() {
     Parser::MultiInterval mi1 = *(v1.range_ref().asets_ref().begin());
     
     for (unsigned int i = 0; i < mi1.inters_ref().size(); i++)
-      offset_ref().insert(offset_ref().end(), 1);
+      dom_offset_ref().insert(dom_offset_ref().end(), 1);
   }
 }
 
-member_imp(Converter, SBG::OrdCT<SBG::INT>, offset);
+member_imp(Converter, SBG::OrdCT<SBG::INT>, dom_offset);
 member_imp(Converter, Parser::SetGraph, sg);
 
 // Vertices ---------------------------------------------------------------------------------------

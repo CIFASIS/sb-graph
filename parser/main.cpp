@@ -54,10 +54,10 @@ void sbg()
       std::cout << "result = \n\n" << result << "\n\n";
 
       if (result.modifier() == "undirected")
-        std::cout << "converted result = \n\n" << boost::get<SBG::SBGraph>(converted_result) << "\n";
+        std::cout << "converted result = \n\n" << boost::get<SBG::SBGraph>(converted_result);
 
       if (result.modifier() == "directed")
-        std::cout << "converted result = \n\n" << boost::get<SBG::DSBGraph>(converted_result) << "\n";
+        std::cout << "converted result = \n\n" << boost::get<SBG::DSBGraph>(converted_result);
     }
 
     else {

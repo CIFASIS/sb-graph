@@ -127,7 +127,7 @@ std::ostream &operator<<(std::ostream &out, const SETE_TEMP_TYPE &E)
 
   out << "[";
   for (; next(itright, 1) != lmright.end(); ++itright) out << *itright << ", ";
-  out << *itright << "]\n";
+  out << *itright << "]";
 
   return out;
 }
@@ -205,7 +205,7 @@ std::ostream &operator<<(std::ostream &out, const DSETE_TEMP_TYPE &E)
 
   out << "[";
   for (; next(itd, 1) != lmd.end(); ++itd) out << *itd << ", ";
-  out << *itd << "]\n";
+  out << *itd << "]";
 
   return out;
 }

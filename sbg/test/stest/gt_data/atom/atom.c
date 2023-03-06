@@ -19,6 +19,8 @@
 
 // Simple test of atomize function for SBG
 
+#include <fstream>
+
 #include <parser/converter.hpp>
 #include <sbg/atom_sbg.hpp>
 #include <sbg/util/logger.hpp>

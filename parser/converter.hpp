@@ -104,7 +104,7 @@ typedef std::map<std::string, SBG::SetVertexDesc> VertexMap;
 typedef std::map<std::string, SBG::DSetVertexDesc> DVertexMap;
 
 struct Converter {
-  member_class(SBG::OrdCT<SBG::INT>, offset);
+  member_class(SBG::OrdCT<SBG::INT>, dom_offset);
   member_class(Parser::SetGraph, sg);
 
   Converter();

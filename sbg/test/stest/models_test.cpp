@@ -34,16 +34,15 @@ TEST_P(ITestsGraph, Graph)
 {
   const std::string NAME = GetParam();
   std::cout << "Testing model: " << NAME << std::endl;
-  //const std::string MATCHING_CMD = "./compile_and_run.sh " + NAME;
-  //const std::string RESULT_FILE = "./test_data/" + NAME + "/" + NAME + ".passed";
-  //const std::string TEST_CMD = "./test_results.sh " + NAME;
+  const std::string GRAPH_CMD = "./compile_and_run.sh " + NAME;
+  const std::string RESULT_FILE = "./test_data/" + NAME + "/" + NAME + ".passed";
+  const std::string TEST_CMD = "./graph_test_results.sh " + NAME;
 
-  //std::system(MATCHING_CMD.c_str());
-  //std::system(TEST_CMD.c_str());
+  std::system(GRAPH_CMD.c_str());
+  std::system(TEST_CMD.c_str());
 
-  //std::ifstream result(RESULT_FILE.c_str());
-  //EXPECT_TRUE(result.good());
-  EXPECT_TRUE(true);
+  std::ifstream result(RESULT_FILE.c_str());
+  EXPECT_TRUE(result.good());
 }
 
 const char* models_graph[] = {"atom"};

@@ -71,9 +71,249 @@ SBG::INT ExprVisitor::operator()(Parser::BinOp bop) const
   return res;
 }
 
-// Structures -------------------------------------------------------------------------------------
+ConstVisitor::ConstVisitor() {}
 
-Converter::Converter() : offset_() { set_sg(Parser::SetGraph()); }
+bool ConstVisitor::operator()(std::string var) const { return false; }
+
+bool ConstVisitor::operator()(SBG::INT i) const { return true; }
+
+bool ConstVisitor::operator()(Parser::Literal l) const 
+{
+  return boost::apply_visitor(*this, l);
+}
+
+bool ConstVisitor::operator()(Parser::BinOp bop) const { return false; }
+
+VarVisitor::VarVisitor() {}
+
+bool VarVisitor::operator()(std::string var) const { return true; }
+
+bool VarVisitor::operator()(SBG::INT i) const { return false; }
+
+bool VarVisitor::operator()(Parser::Literal l) const
+{
+  return boost::apply_visitor(*this, l);
+}
+
+bool VarVisitor::operator()(Parser::BinOp bop) const { return false; }
+
+MultVisitor::MultVisitor() {}
+
+bool MultVisitor::operator()(Parser::Literal l) const { return true; }
+
+bool MultVisitor::operator()(Parser::BinOp bop) const 
+{
+  bool res = false;
+
+  switch (bop.op()) {
+    case Parser::Op::mult:
+    {
+      Expr l = bop.left(), r = bop.right();
+      bool lcond = boost::apply_visitor(ConstVisitor(), bop.left());
+      bool rcond = boost::apply_visitor(VarVisitor(), bop.right());
+      res = lcond && rcond; 
+      break;
+    }
+
+    default:
+      res = false;
+  }
+
+  return res;
+}
+
+LExprVisitor::LExprVisitor() {}
+
+bool LExprVisitor::operator()(Parser::Literal l) const { return true; }
+
+bool LExprVisitor::operator()(Parser::BinOp bop) const
+{
+  bool res = false;
+
+  switch (bop.op()) {
+    case Parser::Op::add:
+    {
+      bool lcond = boost::apply_visitor(MultVisitor(), bop.left());
+      bool rcond = boost::apply_visitor(ConstVisitor(), bop.right());
+      res = lcond && rcond;
+      break;
+    }
+
+    case Parser::Op::mult:
+    {
+      bool lcond = boost::apply_visitor(ConstVisitor(), bop.left());
+      bool rcond = boost::apply_visitor(VarVisitor(), bop.right());
+      res = lcond && rcond;
+      break;
+    }
+
+    case Parser::Op::sub:
+    {
+      bool lcond = boost::apply_visitor(MultVisitor(), bop.left());
+      bool rcond = boost::apply_visitor(ConstVisitor(), bop.right());
+      res = lcond && rcond;
+      break;
+    }
+
+    default:
+      res = false;
+  }
+
+  return res;
+}
+
+SlopeVisitor::SlopeVisitor() {}
+
+SBG::INT SlopeVisitor::operator()(Parser::Literal l) const
+{
+  SBG::INT result = 1;
+
+  if (l.which() == 1)
+    result = boost::get<SBG::INT>(l);
+
+  return result;
+}
+
+SBG::INT SlopeVisitor::operator()(Parser::BinOp bop) const
+{
+  SBG::INT result;
+  
+  switch (bop.op()) {
+    case Parser::Op::add: 
+    {
+      if (bop.left_ref().which() == 0)
+        result = boost::apply_visitor(*this, boost::get<Parser::Literal>(bop.left()));
+      else {
+        BinOp lbop = boost::get<Parser::BinOp>(bop.left());
+        result = boost::apply_visitor(*this, lbop.left());
+      }
+      break;
+    }
+
+    case Parser::Op::mult: 
+    {
+      result = boost::apply_visitor(*this, bop.left());
+      break;
+    }
+
+    case Parser::Op::sub:
+    {
+      BinOp lbop = boost::get<BinOp>(bop.left());
+      if (lbop.left_ref().which() == 0)
+        result = boost::apply_visitor(*this, bop.left());
+      else 
+        result = boost::apply_visitor(*this, lbop.left());
+      break;
+    }
+
+    default:
+      result = 1;
+  }
+
+  return result;
+}
+
+OffsetVisitor::OffsetVisitor() {}
+
+SBG::INT OffsetVisitor::operator()(Parser::Literal l) const
+{
+  SBG::INT result = 0;
+
+  if (l.which() == 1)
+    result = boost::get<SBG::INT>(l);
+
+  return result;
+}
+
+SBG::INT OffsetVisitor::operator()(Parser::BinOp bop) const
+{
+  SBG::INT result;
+  
+  switch (bop.op()) {
+    case Parser::Op::add:
+      result = boost::apply_visitor(*this, bop.right());
+      break;
+
+    case Parser::Op::mult:
+      result = 0;
+      break;
+
+    case Parser::Op::sub:
+      result = boost::apply_visitor(*this, bop.right());
+      break;
+
+    default:
+      result = 0;
+  }
+
+  return result;
+}
+
+// Operations -------------------------------------------------------------------------------------
+
+SBG::INT convertExpr(Parser::Expr e, ConstantsEnv cenv)
+{
+  ExprVisitor ev(cenv);
+
+  return boost::apply_visitor(ev, e);
+}
+
+SBG::Interval convertInterval(Parser::Interval i, ConstantsEnv cenv) 
+{ 
+  SBG::INT res_lo = convertExpr(i.lo(), cenv);
+  SBG::INT res_step = convertExpr(i.step(), cenv);
+  SBG::INT res_hi = convertExpr(i.hi(), cenv);
+
+  return SBG::Interval(res_lo, res_step, res_hi); 
+}
+
+SBG::MultiInterval convertMI(Parser::MultiInterval mi, ConstantsEnv cenv)
+{
+  SBG::MultiInterval mi_res;
+
+  BOOST_FOREACH (Parser::Interval i, mi.inters())
+    mi_res.addInter(convertInterval(i, cenv));
+
+  return mi_res;
+}
+
+SBG::Set convertSet(Parser::Set s, ConstantsEnv cenv)
+{
+  SBG::Set s_res;
+
+  BOOST_FOREACH (Parser::MultiInterval mi, s.asets())
+    s_res.addAtomSet(convertMI(mi, cenv));
+
+  return s_res;
+}
+
+SBG::LMap convertPWLExp(PWLExp pwl, ConstantsEnv cenv)
+{
+  SBG::LMap lm_res;
+  ExprVisitor ev(cenv);
+
+  BOOST_FOREACH (Parser::Expr e, pwl) {
+    // Check that it's a linear expression
+    LExprVisitor lv;
+    if (boost::apply_visitor(lv, e)) {
+      SBG::INT m = boost::apply_visitor(SlopeVisitor(), e);
+      SBG::INT h = boost::apply_visitor(OffsetVisitor(), e);
+
+      lm_res.addGO(m, h); 
+    }
+
+    else{
+      std::cerr << "ERROR [converter.cpp]: only linear expressions allowed\n";
+      return SBG::LMap();
+    }
+  }
+
+  return lm_res;
+}
+
+// Converter --------------------------------------------------------------------------------------
+
+Converter::Converter() : offset_(), sg_() {}
 
 Converter::Converter(Parser::SetGraph sg) : offset_() {
   set_sg(sg);
@@ -91,182 +331,33 @@ Converter::Converter(Parser::SetGraph sg) : offset_() {
 member_imp(Converter, SBG::OrdCT<SBG::INT>, offset);
 member_imp(Converter, Parser::SetGraph, sg);
 
-SBG::INT Converter::convertExpr(Parser::Expr e)
-{
-  ExprVisitor ev(sg_ref().cenv_ref());
-
-  return boost::apply_visitor(ev, e);
-}
-
-SBG::Interval Converter::convertInterval(Parser::Interval i) 
-{ 
-  SBG::INT res_lo = convertExpr(i.lo()), res_step = convertExpr(i.step()), res_hi = convertExpr(i.hi());
-
-  return SBG::Interval(res_lo, res_step, res_hi); 
-}
-
-SBG::MultiInterval Converter::convertMI(Parser::MultiInterval mi)
-{
-  SBG::MultiInterval mi_res;
-
-  BOOST_FOREACH (Parser::Interval i, mi.inters())
-    mi_res.addInter(convertInterval(i));
-
-  return mi_res;
-}
-
-SBG::Set Converter::convertSet(Parser::Set s)
-{
-  SBG::Set s_res;
-
-  BOOST_FOREACH (Parser::MultiInterval mi, s.asets())
-    s_res.addAtomSet(convertMI(mi));
-
-  return s_res;
-}
-
 // Vertices ---------------------------------------------------------------------------------------
 
-SBG::SetVertex Converter::convertVertex(Parser::SetVertex sv) { return SBG::SetVertex(sv.name(), convertSet(sv.range())); }
+SBG::SetVertex Converter::convertVertex(Parser::SetVertex sv) { return SBG::SetVertex(sv.name(), convertSet(sv.range(), sg_ref().cenv())); }
 
 // Edges ------------------------------------------------------------------------------------------
 
-SBG::MultiInterval Converter::makeDom(SBG::MultiInterval mi1, SBG::MultiInterval mi2) {
-  SBG::MultiInterval result;
+VariantEdge Converter::convertEdge(Parser::SetEdge se)
+{
+  VariantEdge res;
+  ConstantsEnv c = sg_ref().cenv();
 
-  SBG::OrdCT<SBG::INT> max_card;
-  SBG::OrdCT<SBG::INT>::iterator it_max = max_card.begin();
+  std::string nm = se.lname() + se.rname();
+  SBG::Set dom = convertSet(se.dom(), c);
+  SBG::LMap l = convertPWLExp(se.left(), c), r = convertPWLExp(se.right(), c);
+  SBG::PWLMap lmap, rmap;
+  lmap.addSetLM(dom, l);
+  rmap.addSetLM(dom, r);
 
-  // Get number of elements in each dimension
-  parallel_foreach2 (mi1.inters_ref(), mi2.inters_ref()) {
-    SBG::INT n1 = boost::get<0>(items).card(), n2 = boost::get<1>(items).card();
-
-    if ((n1 > n2 && n2 == 1) || n1 == n2) {
-      it_max = max_card.insert(it_max, n1);
-      ++it_max;
-    }
-
-    else if (n2 > n1 && n1 == 1) {
-      it_max = max_card.insert(it_max, n2);
-      ++it_max;
-    }
-
-    else
-      return SBG::MultiInterval();
+  if (sg_ref().modifier() == "undirected") {
+    res = SBG::SetEdge(nm, lmap, rmap);
   }
 
-  // Apply offset
-  SBG::OrdCT<SBG::INT> new_off;
-  parallel_foreach2 (offset_ref(), max_card) {
-    SBG::INT off = boost::get<0>(items), elems = boost::get<1>(items);
-    result.addInter(SBG::Interval(off, 1, off + elems - 1));
-
-    new_off.insert(new_off.end(), off + elems);
-  }
-  set_offset(new_off);
-
-  return result;
-}
-
-SBG::LMap Converter::makeExp(SBG::MultiInterval dom, SBG::MultiInterval mi) {
-  SBG::LMap result;
-
-  parallel_foreach2 (dom.inters_ref(), mi.inters_ref()) {
-    SBG::Interval id = boost::get<0>(items), i = boost::get<1>(items);
-    SBG::INT m = i.step(), h = i.lo() - m * id.lo();
-
-    result.addGO(m, h - 1);
-  } 
-
-  return result;
-}
-
-void Converter::addEdge(SBG::SBGraph &g, Parser::SetEdge se) {
-  SBG::MultiInterval mi_b = convertMI(se.mb()), mi_f = convertMI(se.mf());
-
-  // Offset edge
-  SBG::SetVertexDesc db = boost::vertex(0, g), df = db;
-  SBG::OrdCT<SBG::INT> off1, off2;
-  BOOST_FOREACH (SBG::SetVertexDesc vd, boost::vertices(g)) {
-    if (g[vd].name() == se.vb()) { 
-      db = vd;
-      off1 = g[db].range().minElem();
-    }
-
-    if (g[vd].name() == se.vf()) {
-      df = vd;
-      off2 = g[df].range().minElem();
-    }
+  else if (sg_ref().modifier() == "directed") {
+    res = SBG::DSetEdge(nm, lmap, rmap);
   }
 
-  SBG::MultiInterval off_mi_b = mi_b.offset(off1), off_mi_f = mi_f.offset(off2);
-
-  // Create dom
-  SBG::MultiInterval dom = makeDom(off_mi_b, off_mi_f); 
-
-  // Create expressions
-  SBG::LMap lmb = makeExp(dom, off_mi_b);
-  SBG::LMap lmf = makeExp(dom, off_mi_f);
-
-  // Create maps
-  SBG::Set sdom;
-  sdom.addAtomSet(dom);
-
-  SBG::PWLMap mapb; 
-  mapb.addSetLM(dom, lmb);
-  SBG::PWLMap mapf; 
-  mapf.addSetLM(dom, lmf);
-
-  SBG::SetEdgeDesc ed;
-  bool b;
-  boost::tie(ed, b) = boost::add_edge(db, df, g);        
-  g[ed] = SBG::SetEdge("", mapb, mapf);
-
-  return;
-}
-
-void Converter::addDirectedEdge(SBG::DSBGraph &dg, Parser::SetEdge se) {
-  SBG::MultiInterval mi_b = convertMI(se.mb()), mi_f = convertMI(se.mf());
-
-  // Offset edge
-  SBG::SetVertexDesc db = boost::vertex(0, dg), df = db;
-  SBG::OrdCT<SBG::INT> off1, off2;
-  BOOST_FOREACH (SBG::SetVertexDesc vd, boost::vertices(dg)) {
-    if (dg[vd].name() == se.vb()) { 
-      db = vd;
-      off1 = dg[db].range().minElem();
-    }
-
-    if (dg[vd].name() == se.vf()) {
-      df = vd;
-      off2 = dg[df].range().minElem();
-    }
-  }
-
-  SBG::MultiInterval off_mi_b = mi_b.offset(off1), off_mi_f = mi_f.offset(off2);
-
-  // Create dom
-  SBG::MultiInterval dom = makeDom(off_mi_b, off_mi_f); 
-
-  // Create expressions
-  SBG::LMap lmb = makeExp(dom, off_mi_b);
-  SBG::LMap lmf = makeExp(dom, off_mi_f);
-
-  // Create maps
-  SBG::Set sdom;
-  sdom.addAtomSet(dom);
-
-  SBG::PWLMap mapb; 
-  mapb.addSetLM(dom, lmb);
-  SBG::PWLMap mapf; 
-  mapf.addSetLM(dom, lmf);
-
-  SBG::DSetEdgeDesc ed;
-  bool b;
-  boost::tie(ed, b) = boost::add_edge(db, df, dg);        
-  dg[ed] = SBG::DSetEdge("", mapb, mapf);
-
-  return;
+  return res;
 }
 
 // Graphs -----------------------------------------------------------------------------------------
@@ -274,17 +365,52 @@ void Converter::addDirectedEdge(SBG::DSBGraph &dg, Parser::SetEdge se) {
 SBG::SBGraph Converter::convertUndirectedGraph() 
 {
   SBG::SBGraph result;
+  VertexMap vm;
 
   if (!sg_ref().svertices_ref().empty()) {
     // Create vertices
     BOOST_FOREACH (Parser::SetVertex sv, sg().svertices()) {
       SBG::SetVertexDesc vd = boost::add_vertex(result);
       result[vd] = convertVertex(sv);
+      vm[sv.name()] = vd;
     }
 
     // Create edges
-    BOOST_FOREACH (Parser::SetEdge se, sg().sedges()) 
-      addEdge(result, se);
+    std::vector<std::string> visited;
+    BOOST_FOREACH (Parser::SetEdge se, sg().sedges()) { 
+      std::string lvertex = se.lname(), rvertex = se.rname();
+      auto itl = find(visited.begin(), visited.end(), lvertex);
+      auto itr = find(visited.begin(), visited.end(), rvertex);
+
+      if (itl == visited.end() || itr == visited.end()) {
+        SBG::SetEdge res_se = boost::get<SBG::SetEdge>(convertEdge(se));
+        SBG::PWLMap lmap = res_se.map_f(), rmap = res_se.map_u();
+
+        // Lookup edges from the same set-edge
+        BOOST_FOREACH (Parser::SetEdge se2, sg().sedges()) {
+          std::string lvertex2 = se2.lname(), rvertex2 = se2.rname();
+          SBG::SetEdge res_se2 = boost::get<SBG::SetEdge>(convertEdge(se2));
+          SBG::PWLMap lmap2 = res_se2.map_f(), rmap2 = res_se2.map_u();
+
+          bool same_vertices1 = lvertex == lvertex2 && rvertex == rvertex2;
+          bool same_vertices2 = lvertex == rvertex2 && rvertex == lvertex2;
+          bool same_maps = se.dom() == se2.dom(); 
+
+          if ((same_vertices1 || same_vertices2) && !same_maps) {
+            lmap = lmap.concat(lmap2);
+            rmap = rmap.concat(rmap2);
+          }
+        }
+
+        SBG::SetEdgeDesc ed;
+        bool b;
+        boost::tie(ed, b) = boost::add_edge(vm[lvertex], vm[rvertex], result); 
+        result[ed] = SBG::SetEdge(lvertex + rvertex, lmap, rmap);
+      }
+ 
+      visited.insert(visited.end(), lvertex);
+      visited.insert(visited.end(), rvertex);
+    }
   }
 
   return result;
@@ -293,17 +419,50 @@ SBG::SBGraph Converter::convertUndirectedGraph()
 SBG::DSBGraph Converter::convertDirectedGraph() 
 {
   SBG::DSBGraph result;
+  DVertexMap dvm;
 
   if (!sg_ref().svertices_ref().empty()) {
     // Create vertices
     BOOST_FOREACH (Parser::SetVertex sv, sg().svertices()) {
       SBG::DSetVertexDesc vd = boost::add_vertex(result);
       result[vd] = convertVertex(sv);
+      dvm[sv.name()] = vd;
     }
 
     // Create edges
-    BOOST_FOREACH (Parser::SetEdge se, sg().sedges()) 
-      addDirectedEdge(result, se);
+    std::vector<std::string> visited;
+    BOOST_FOREACH (Parser::SetEdge se, sg().sedges()) { 
+      std::string lvertex = se.lname(), rvertex = se.rname();
+      auto itl = find(visited.begin(), visited.end(), lvertex);
+      auto itr = find(visited.begin(), visited.end(), rvertex);
+
+      if (itl == visited.end() || itr == visited.end()) {
+        SBG::DSetEdge res_se = boost::get<SBG::DSetEdge>(convertEdge(se));
+        SBG::PWLMap lmap = res_se.map_b(), rmap = res_se.map_d();
+
+        // Lookup edges from the same set-edge
+        BOOST_FOREACH (Parser::SetEdge se2, sg().sedges()) {
+          std::string lvertex2 = se2.lname(), rvertex2 = se2.rname();
+          SBG::DSetEdge res_se2 = boost::get<SBG::DSetEdge>(convertEdge(se2));
+          SBG::PWLMap lmap2 = res_se2.map_b(), rmap2 = res_se2.map_d();
+
+          bool same_vertices = lvertex == lvertex2 && rvertex == rvertex2;
+          bool same_maps = se.dom() == se2.dom(); 
+          if (same_vertices && !same_maps) {
+            lmap = lmap.concat(lmap2);
+            rmap = rmap.concat(rmap2);
+          }
+        }
+
+        SBG::DSetEdgeDesc ed;
+        bool b;
+        boost::tie(ed, b) = boost::add_edge(dvm[lvertex], dvm[rvertex], result); 
+        result[ed] = SBG::DSetEdge(lvertex + rvertex, lmap, rmap);
+      }
+ 
+      visited.insert(visited.end(), lvertex);
+      visited.insert(visited.end(), rvertex);
+    }
   }
 
   return result;
@@ -313,14 +472,14 @@ Grph Converter::convertGraph()
 {
   Grph result;
 
-  if (sg().modifier() == "undirected") {
+  if (sg_ref().modifier() == "undirected") {
     result = convertUndirectedGraph();
   }
 
-  else if (sg().modifier() == "directed"){
+  else if (sg_ref().modifier() == "directed") {
     result = convertDirectedGraph();
   }
-
+ 
   return result;
 }
 

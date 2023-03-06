@@ -14,13 +14,11 @@ interval := linear_exp':'linear_exp':'linear_exp
 
 multi_interval := '[' interval *(',' interval) ']'
 
-set := '{''}' | '{'multi_interval *(',' multi_interval)'}'
+vertex := identifier '[' linear_exp *(',' linear_exp)']'';\n'
 
-vertex := identifier set';\n'
+var_usage := identifier multi_interval
 
-pw_exp := '[' linear_exp *(',' linear_exp)']'
-
-edge := identifier pw_exp set identifier pw_exp';\n'
+edge := var_usage '-' var_usage';\n'
 
 graph := class ';'
   *constant_def

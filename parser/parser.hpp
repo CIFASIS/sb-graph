@@ -31,7 +31,6 @@
 * Refer to parser/sbg_syntax.txt if clarification of the SBG syntax is needed. 
 */
 
-#include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix.hpp>
 #include <boost/spirit/repository/include/qi_kwd.hpp>
@@ -89,9 +88,14 @@ struct BinOp {
 
   BinOp();
   BinOp(Expr left, Op op, Expr right);
+
+  eq_class(BinOp);
+  lt_class(BinOp);
 };
 
-std::ostream &operator<<(std::ostream &out, const BinOp &le);
+std::ostream &operator<<(std::ostream &out, const BinOp &bop);
+
+// ------------------------------------------------------------------------------------------------
 
 struct Interval {
   member_class(Expr, lo);
@@ -100,6 +104,9 @@ struct Interval {
 
   Interval();
   Interval(Expr lo, Expr step, Expr hi);
+
+  eq_class(Interval);
+  lt_class(Interval);
 };
 
 std::ostream &operator<<(std::ostream &out, const Interval &i);  
@@ -115,6 +122,9 @@ struct MultiInterval {
   MultiInterval(Intervals inters);
 
   void addInter(Interval i);
+
+  eq_class(MultiInterval);
+  lt_class(MultiInterval);
 };
 
 std::ostream &operator<<(std::ostream &out, const MultiInterval &mi);  
@@ -128,6 +138,8 @@ struct Set {
   Set(MultiInters asets);
 
   void addAtomSet(MultiInterval mi);
+
+  eq_class(Set);
 };
 
 std::ostream &operator<<(std::ostream &out, const Set &s);  
@@ -142,27 +154,31 @@ struct SetVertex {
 
 std::ostream &operator<<(std::ostream &out, const SetVertex &sv);  
 
+typedef std::vector<Expr> PWLExp;
+std::ostream &operator<<(std::ostream &out, const PWLExp &pwl);
+
 struct SetEdge {
-  member_class(std::string, vb);
-  member_class(MultiInterval, mb);
-  member_class(std::string, vf);
-  member_class(MultiInterval, mf);
+  member_class(std::string, lname);
+  member_class(PWLExp, left);
+  member_class(Set, dom);
+  member_class(std::string, rname);
+  member_class(PWLExp, right);
 
   SetEdge();
-  SetEdge(std::string vb, MultiInterval mb, std::string vf, MultiInterval mf);
+  SetEdge(std::string lname, PWLExp left, Set dom, std::string rname, PWLExp right);
 };
 
 std::ostream &operator<<(std::ostream &out, const SetEdge &se);  
 
 typedef std::map<std::string, SBG::INT> ConstantsEnv; 
-typedef std::vector<SetVertex> vrtcs;
-typedef std::vector<SetEdge> edges;
+typedef std::vector<SetVertex> Vrtcs;
+typedef std::vector<SetEdge> Edges;
 
 struct SetGraph {
   member_class(std::string, modifier);
   member_class(ConstantDefs, constants);
-  member_class(vrtcs, svertices);
-  member_class(edges, sedges);
+  member_class(Vrtcs, svertices);
+  member_class(Edges, sedges);
 
   member_class(ConstantsEnv, cenv);
 
@@ -182,7 +198,8 @@ struct sbg_parser : qi::grammar<str_it, SetGraph(), asc::space_type> {
   qi::rule<str_it, ConstantDef(), asc::space_type> constant_def;
 
   qi::rule<str_it, Literal(), asc::space_type> literal;
-  qi::rule<str_it, BinOp(), asc::space_type> binop;
+  qi::rule<str_it, BinOp(), asc::space_type> mult;
+  qi::rule<str_it, BinOp(), asc::space_type> lexpr;
   qi::rule<str_it, Expr(), asc::space_type> expr;
 
   qi::rule<str_it, Interval(), asc::space_type> inter;
@@ -190,17 +207,24 @@ struct sbg_parser : qi::grammar<str_it, SetGraph(), asc::space_type> {
   qi::rule<str_it, Set(), asc::space_type> set;
 
   qi::rule<str_it, SetVertex(), asc::space_type> vertex;
+  qi::rule<str_it, PWLExp(), asc::space_type> pw_lexp;
   qi::rule<str_it, SetEdge(), asc::space_type> edge;
 
   qi::rule<str_it, SetGraph(), asc::space_type> sbg;
 
   sbg_parser();
 
-  struct op_symbols_struct : qi::symbols<char, Parser::Op> {
-    op_symbols_struct(){
-      this->add("+", Parser::Op::add)("*", Parser::Op::mult)("-", Parser::Op::sub);
+  struct mult_symbol_struct : qi::symbols<char, Parser::Op> {
+    mult_symbol_struct(){
+      this->add("*", Parser::Op::mult);
     }
-  } op_symbols;
+  } mult_symbol;
+
+  struct add_symbols_struct : qi::symbols<char, Parser::Op> {
+    add_symbols_struct(){
+      this->add("+", Parser::Op::add)("-", Parser::Op::sub);
+    }
+  } add_symbols;
 
   struct keywords_struct : qi::symbols<char, std::string> {
     keywords_struct(){

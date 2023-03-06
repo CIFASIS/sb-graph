@@ -51,7 +51,7 @@ int main()
       std::cout << "-------------------------\n";
       std::cout << "Parsing succeeded\n";
       std::cout << "SBG atomizer result = \n\n" << "\n";
-      std::cout << res << "\n";
+      std::cout << res;
       std::cout << "-------------------------\n";
     }
 

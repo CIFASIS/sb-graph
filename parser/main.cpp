@@ -20,53 +20,138 @@
 #include <iostream>
 #include <string>
 
-#include <parser/parser.hpp>
+#include <parser/comp_converter.hpp>
 
-int main(int argc, char** argv) {
-  std::cout << "\n/////////////////////////////////////////////////////////\n\n";
-  std::cout << "A simple SBG parser\n\n";
-  std::cout << "/////////////////////////////////////////////////////////\n\n";
-
+void sbg()
+{
   Parser::sbg_parser g; // Our grammar
 
-  if (argv[optind] != NULL) {
-    std::string str;
+  std::cout << "Type filename: ";
+  std::string fname;
+  std::cin >> fname;
 
-    std::string fname = argv[optind];
-    if (fname != "") {
-      std::ifstream in(fname.c_str());
-      if (in.fail()) {
-        std::cerr << "Unable to open file " << fname << std::endl;
-        exit(-1);
-      }
-      in.unsetf(std::ios::skipws);
+  if (fname != "") {
+    std::ifstream in(fname.c_str());
+    if (in.fail()) {
+      std::cerr << "Unable to open file " << fname << std::endl;
+      exit(-1);
+    }
+    in.unsetf(std::ios::skipws);
 
-      std::string str((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-      std::string::const_iterator iter = str.begin();
-      std::string::const_iterator end = str.end();
+    std::string str((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    std::string::const_iterator iter = str.begin();
+    std::string::const_iterator end = str.end();
 
-      Parser::SetGraph result;
-      bool r = boost::spirit::qi::phrase_parse(iter, end, g, boost::spirit::ascii::space, result);
-      if (r && iter == end) {
-        std::cout << "-------------------------\n";
-        std::cout << "Parsing succeeded\n";
-        std::cout << "result = \n\n" << result << "\n";
-        std::cout << "-------------------------\n";
-      }
+    Parser::SetGraph result;
+    bool r = boost::spirit::qi::phrase_parse(iter, end, g, boost::spirit::ascii::space, result);
+    Parser::Converter c(result);
+    Parser::Grph converted_result = c.convertGraph();
 
-      else {
-        std::string rest(iter, end);
-        std::cout << "-------------------------\n";
-        std::cout << "Parsing failed\n";
-        std::cout << "stopped at: " << rest << "\"\n";
-        std::cout << "-------------------------\n";
-      }
-    } 
-  }
+    std::cout << "-------------------------\n";
+
+    if (r && iter == end) {
+      std::cout << "Parsing succeeded\n";
+      std::cout << "result = \n\n" << result << "\n\n";
+
+      if (result.modifier() == "undirected")
+        std::cout << "converted result = \n\n" << boost::get<SBG::SBGraph>(converted_result) << "\n";
+
+      if (result.modifier() == "directed")
+        std::cout << "converted result = \n\n" << boost::get<SBG::DSBGraph>(converted_result) << "\n";
+    }
+
+    else {
+      std::string rest(iter, end);
+      std::cout << "Parsing failed\n";
+      std::cout << "stopped at: " << rest << "\"\n";
+    }
+
+    std::cout << "-------------------------\n";
+  } 
 
   else 
     std::cout << "A filename should be provided\n";
 
   std::cout << "Bye... :-) \n\n";
+  return;
+}
+
+void compact_sbg() 
+{
+  Parser::comp_sbg_parser g; // Our grammar
+
+  std::cout << "Type filename: ";
+  std::string fname;
+  std::cin >> fname;
+
+  if (fname != "") {
+    std::ifstream in(fname.c_str());
+    if (in.fail()) {
+      std::cerr << "Unable to open file " << fname << std::endl;
+      exit(-1);
+    }
+    in.unsetf(std::ios::skipws);
+
+    std::string str((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    std::string::const_iterator iter = str.begin();
+    std::string::const_iterator end = str.end();
+
+    Parser::CompSetGraph result;
+    bool r = boost::spirit::qi::phrase_parse(iter, end, g, boost::spirit::ascii::space, result);
+    Parser::CompConverter c(result);
+    Parser::Grph converted_result = c.convertGraph();
+
+    std::cout << "-------------------------\n";
+
+    if (r && iter == end) {
+      std::cout << "Parsing succeeded\n";
+      std::cout << "result = \n\n" << result << "\n\n";
+
+      if (result.modifier() == "undirected")
+        std::cout << "converted result = \n\n" << boost::get<SBG::SBGraph>(converted_result) << "\n";
+
+      if (result.modifier() == "directed")
+        std::cout << "converted result = \n\n" << boost::get<SBG::DSBGraph>(converted_result) << "\n";
+    }
+
+    else {
+      std::string rest(iter, end);
+      std::cout << "Parsing failed\n";
+      std::cout << "stopped at: " << rest << "\"\n";
+    }
+
+    std::cout << "-------------------------\n";
+  } 
+
+  else 
+    std::cout << "A filename should be provided\n";
+
+  std::cout << "Bye... :-) \n\n";
+  return;
+}
+
+int main(int argc, char** argv) 
+{
+  std::cout << "\n/////////////////////////////////////////////////////////\n\n";
+  std::cout << "SBG parser\n\n";
+  std::cout << "/////////////////////////////////////////////////////////\n\n";
+
+  std::cout << "[1] Parse SBG\n";
+  std::cout << "[2] Parse compact SBG\n";
+
+  int opt;
+  std::cout << "Select one option:\n";
+  std::cin >> opt;
+
+  switch (opt) {
+    case 1:
+      sbg();
+      break;
+
+    case 2:
+      compact_sbg();
+      break;
+  }
+
   return 0;
 }

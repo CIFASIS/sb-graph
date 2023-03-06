@@ -10,6 +10,8 @@ PARSER_TEST_SRC := \
 	  $(PARSER_DIR)/main.cpp \
 	  $(PARSER_DIR)/parser.cpp \
 	  $(PARSER_DIR)/converter.cpp \
+	  $(PARSER_DIR)/compact_parser.cpp \
+	  $(PARSER_DIR)/comp_converter.cpp \
   	$(SBG_DIR)/descs.cpp \
   	$(SBG_DIR)/interval.cpp \
   	$(SBG_DIR)/multi_interval.cpp \

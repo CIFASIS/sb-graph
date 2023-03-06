@@ -63,6 +63,7 @@ std::ostream &operator<<(std::ostream &out, AtomSBGraph &g)
   BOOST_FOREACH (AtomSVDesc vd, vertices(g))
     out << g[vd] << "\n";
 
+  out << "\n";
   BOOST_FOREACH (AtomSEDesc ed, edges(g))
     out << g[ed] << "\n";
 
@@ -74,6 +75,7 @@ std::ostream &operator<<(std::ostream &out, AtomDSBGraph &g)
   BOOST_FOREACH (AtomDSVDesc vd, vertices(g))
     out << g[vd] << "\n";
 
+  out << "\n";
   BOOST_FOREACH (AtomDSEDesc ed, edges(g))
     out << g[ed] << "\n";
 

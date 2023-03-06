@@ -33,6 +33,8 @@ SCC_TEST_SRC := \
     $(UTEST_DIR)/scc_test.cpp \
     $(PARSER_DIR)/converter.cpp \
     $(PARSER_DIR)/parser.cpp \
+    $(PARSER_DIR)/compact_parser.cpp \
+    $(PARSER_DIR)/comp_converter.cpp \
     $(SBG_DIR)/util/defs.cpp \
     $(SBG_DIR)/util/logger.cpp \
     $(SBG_DIR)/interval.cpp \

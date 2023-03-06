@@ -20,14 +20,14 @@
 #include <iostream>
 #include <string>
 
-#include <parser/converter.hpp>
+#include <parser/comp_converter.hpp>
 #include <sbg/pw_map.hpp>
 #include <sbg/sbg_algorithms.hpp>
 #include <sbg/graph_builders/scc_graph_builder.hpp>
 
 void parse_build() 
 {
-  Parser::sbg_parser g; // Our grammar
+  Parser::comp_sbg_parser g; // Our grammar
 
   std::cout << "Type filename: ";
   std::string fname;
@@ -45,10 +45,10 @@ void parse_build()
     std::string::const_iterator iter = str.begin();
     std::string::const_iterator end = str.end();
 
-    Parser::SetGraph result;
+    Parser::CompSetGraph result;
     bool r = boost::spirit::qi::phrase_parse(iter, end, g, boost::spirit::ascii::space, result);
 
-    Parser::Converter c(result);
+    Parser::CompConverter c(result);
     Parser::Grph g = c.convertGraph();
 
     MatchingStruct m(boost::get<SBGraph>(g));
@@ -56,21 +56,22 @@ void parse_build()
     SCCGraphBuilder graph_builder(m);
     graph_builder.build();
     DSBGraph dg = graph_builder.result();
+
+    std::cout << "-------------------------\n";
+
     if (r && iter == end) {
-      std::cout << "-------------------------\n";
       std::cout << "Parsing succeeded\n";
       std::cout << "SCC Builder result = \n\n";
       std::cout << dg << "\n";
-      std::cout << "-------------------------\n";
     }
 
     else {
       std::string rest(iter, end);
-      std::cout << "-------------------------\n";
       std::cout << "Parsing failed\n";
       std::cout << "stopped at: \": " << rest << "\"\n";
-      std::cout << "-------------------------\n";
     }
+
+    std::cout << "-------------------------\n";
   } 
 
   else 
@@ -81,7 +82,7 @@ void parse_build()
 
 void parse_scc() 
 {
-  Parser::sbg_parser g; // Our grammar
+  Parser::comp_sbg_parser g; // Our grammar
 
   std::cout << "Type filename: ";
   std::string fname;
@@ -99,28 +100,29 @@ void parse_scc()
     std::string::const_iterator iter = str.begin();
     std::string::const_iterator end = str.end();
 
-    Parser::SetGraph result;
+    Parser::CompSetGraph result;
     bool r = boost::spirit::qi::phrase_parse(iter, end, g, boost::spirit::ascii::space, result);
 
-    Parser::Converter c(result);
+    Parser::CompConverter c(result);
     Parser::Grph g = c.convertGraph();
 
     SCCStruct s(boost::get<DSBGraph>(g));
     PWLMap rmap = s.SBGSCC();
+
+    std::cout << "-------------------------\n";
+
     if (r && iter == end) {
-      std::cout << "-------------------------\n";
       std::cout << "Parsing succeeded\n";
       std::cout << "SCC result = \n\n" << rmap << "\n";
-      std::cout << "-------------------------\n";
     }
 
     else {
       std::string rest(iter, end);
-      std::cout << "-------------------------\n";
       std::cout << "Parsing failed\n";
       std::cout << "stopped at: \": " << rest << "\"\n";
-      std::cout << "-------------------------\n";
     }
+
+    std::cout << "-------------------------\n";
   } 
 
   else 
@@ -131,7 +133,7 @@ void parse_scc()
 
 void parse_build_scc()
 {
-  Parser::sbg_parser g; // Our grammar
+  Parser::comp_sbg_parser g; // Our grammar
 
   std::cout << "Type filename: ";
   std::string fname;
@@ -149,7 +151,7 @@ void parse_build_scc()
     std::string::const_iterator iter = str.begin();
     std::string::const_iterator end = str.end();
 
-    Parser::SetGraph result;
+    Parser::CompSetGraph result;
     bool r = boost::spirit::qi::phrase_parse(iter, end, g, boost::spirit::ascii::space, result);
 
     std::cout << "-------------------------\n";
@@ -162,7 +164,7 @@ void parse_build_scc()
       std::cout << "stopped at: \": " << rest << "\"\n";
     }
 
-    Parser::Converter c(result);
+    Parser::CompConverter c(result);
     Parser::Grph g = c.convertGraph();
 
     MatchingStruct m(boost::get<SBGraph>(g));
@@ -188,9 +190,10 @@ void parse_build_scc()
   std::cout << "Bye... :-) \n\n";
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv) 
+{
   std::cout << "\n/////////////////////////////////////////////////////////\n\n";
-  std::cout << "SCC test. Please type name of example to apply algorithm\n\n";
+  std::cout << "SCC test\n\n";
   std::cout << "/////////////////////////////////////////////////////////\n\n";
 
   std::cout << "[1] Parse bipartite graph + Build directed graph\n";

@@ -219,6 +219,7 @@ std::ostream &operator<<(std::ostream &out, SBGraph &g)
   BOOST_FOREACH (SetVertexDesc vd, vertices(g))
     out << g[vd] << "\n";
 
+  out << "\n";
   BOOST_FOREACH (SetEdgeDesc ed, edges(g))
     out << g[ed] << "\n";
 
@@ -230,6 +231,7 @@ std::ostream &operator<<(std::ostream &out, DSBGraph &g)
   BOOST_FOREACH (DSetVertexDesc vd, vertices(g))
     out << g[vd] << "\n";
 
+  out << "\n";
   BOOST_FOREACH (DSetEdgeDesc ed, edges(g))
     out << g[ed] << "\n";
 

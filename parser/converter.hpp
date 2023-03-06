@@ -43,9 +43,65 @@ struct ExprVisitor : public boost::static_visitor<SBG::INT> {
   SBG::INT operator()(Parser::BinOp bop) const;
 };
 
+struct ConstVisitor : public boost::static_visitor<bool> {
+  ConstVisitor();
+
+  bool operator()(std::string var) const;
+  bool operator()(SBG::INT i) const;
+  bool operator()(Parser::Literal l) const;
+  bool operator()(Parser::BinOp bop) const;
+};
+
+struct VarVisitor : public boost::static_visitor<bool> {
+  VarVisitor();
+
+  bool operator()(std::string var) const;
+  bool operator()(SBG::INT i) const;
+  bool operator()(Parser::Literal l) const;
+  bool operator()(Parser::BinOp bop) const;
+};
+
+struct MultVisitor : public boost::static_visitor<bool> {
+  MultVisitor();
+
+  bool operator()(Parser::Literal l) const;
+  bool operator()(Parser::BinOp bop) const;
+};
+
+struct LExprVisitor : public boost::static_visitor<bool> {
+  LExprVisitor();
+
+  bool operator()(Parser::Literal l) const;
+  bool operator()(Parser::BinOp bop) const;
+};
+
+struct SlopeVisitor : public boost::static_visitor<SBG::INT> {
+  SlopeVisitor();
+
+  SBG::INT operator()(Parser::Literal l) const;
+  SBG::INT operator()(Parser::BinOp bop) const;
+};
+
+struct OffsetVisitor : public boost::static_visitor<SBG::INT> {
+  OffsetVisitor();
+
+  SBG::INT operator()(Parser::Literal l) const;
+  SBG::INT operator()(Parser::BinOp bop) const;
+};
+
+SBG::INT convertExpr(Parser::Expr e, ConstantsEnv cenv);
+SBG::Interval convertInterval(Parser::Interval i, ConstantsEnv cenv);
+SBG::MultiInterval convertMI(Parser::MultiInterval mi, ConstantsEnv cenv);
+SBG::Set convertSet(Parser::Set s, ConstantsEnv cenv);
+SBG::LMap convertPWLExp(Parser::PWLExp pwl, ConstantsEnv cenv);
+
 // Converter --------------------------------------------------------------------------------------
 
 typedef boost::variant<SBG::SBGraph, SBG::DSBGraph> Grph;
+typedef boost::variant<SBG::SetEdge, SBG::DSetEdge> VariantEdge;
+
+typedef std::map<std::string, SBG::SetVertexDesc> VertexMap;
+typedef std::map<std::string, SBG::DSetVertexDesc> DVertexMap;
 
 struct Converter {
   member_class(SBG::OrdCT<SBG::INT>, offset);
@@ -57,17 +113,8 @@ struct Converter {
   Grph convertGraph();
 
   private:
-  SBG::INT convertExpr(Parser::Expr e);
-  SBG::Interval convertInterval(Parser::Interval i);
-  SBG::MultiInterval convertMI(Parser::MultiInterval mi);
-  SBG::Set convertSet(Parser::Set s);
-
   SBG::SetVertex convertVertex(Parser::SetVertex sv);
-
-  SBG::MultiInterval makeDom(SBG::MultiInterval mi1, SBG::MultiInterval mi2);
-  SBG::LMap makeExp(SBG::MultiInterval dom, SBG::MultiInterval mi);
-  void addEdge(SBG::SBGraph &g, Parser::SetEdge se);
-  void addDirectedEdge(SBG::DSBGraph &dg, Parser::SetEdge se);
+  VariantEdge convertEdge(Parser::SetEdge se);
 
   SBG::SBGraph convertUndirectedGraph();
   SBG::DSBGraph convertDirectedGraph();

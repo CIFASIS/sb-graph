@@ -17,10 +17,36 @@
 
  ******************************************************************************/
 #include <sbg/sbg_io.hpp>
+#include <sbg/util/defs.hpp>
 
 namespace SBG {
 
 namespace IO {
+
+struct Annotation {
+  Annotation();
+  Annotation(SetVertex og_lvertex, SetVertex og_rvertex, SetVertex lvertex, SetVertex rvertex);
+
+  member_class(SetVertex, og_lvertex);
+  member_class(SetVertex, og_rvertex);
+  member_class(SetVertex, lvertex);
+  member_class(SetVertex, rvertex);
+};
+
+std::ostream &operator<<(std::ostream &out, Annotation &a);
+
+typedef std::list<Annotation> Annotations;
+std::ostream &operator<<(std::ostream &out, Annotations &as);
+
+struct AnnotatedGraphIO {
+  AnnotatedGraphIO();
+  AnnotatedGraphIO(Annotations ans, GraphIO g);
+
+  member_class(Annotations, ans);
+  member_class(GraphIO, g);
+};
+
+std::ostream &operator<<(std::ostream &out, AnnotatedGraphIO &g);
 
 // Converter --------------------------------------------------------------------------------------
 
@@ -30,7 +56,9 @@ struct SCCConverter {
 
   member_class(AtomDSBGraph, dg);
 
-  GraphIO convert();
+  GraphIO convert_graph();
+  AnnotatedGraphIO convert_with_annotations(Annotations ans);
+  RMapIO convert_map(PWLMap rmap);
 
   private:
   Range convert_interval(Interval i);
@@ -41,6 +69,8 @@ struct SCCConverter {
   Ranges create_ranges(MultiInterval mi);
   LinearExps create_exp(MultiInterval mi);
   EdgeDefs convert_edge(AtomDSEDesc ed);
+ 
+  std::string get_vertex(MultiInterval mi);
 };
 
 } // namespace IO

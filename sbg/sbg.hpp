@@ -53,6 +53,8 @@ struct SetVertexImp {
   SetVertexImp(std::string name, int id, Set range, int index);
   SetVertexImp(std::string name, int id, Set range, int index, DESC desc);
 
+  SetVertexImp restrictVertex(Set dom);
+
   eq_class(SetVertexImp);
 };
 

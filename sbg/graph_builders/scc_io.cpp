@@ -24,6 +24,43 @@ namespace IO {
 
 // Converter --------------------------------------------------------------------------------------
 
+Annotation::Annotation() {}
+Annotation::Annotation(SetVertex og_lvertex, SetVertex og_rvertex, SetVertex lvertex, SetVertex rvertex) : og_lvertex_(og_lvertex), og_rvertex_(og_rvertex), lvertex_(lvertex), rvertex_(rvertex) {}
+
+member_imp(Annotation, SetVertex, og_lvertex);
+member_imp(Annotation, SetVertex, og_rvertex);
+member_imp(Annotation, SetVertex, lvertex);
+member_imp(Annotation, SetVertex, rvertex);
+
+std::ostream &operator<<(std::ostream &out, Annotation &a)
+{
+  out << a.og_lvertex() << " | " << a.og_rvertex() << "\n";
+  out << a.lvertex() << " | " << a.rvertex();
+
+  return out;
+}
+
+std::ostream &operator<<(std::ostream &out, Annotations &as)
+{
+  BOOST_FOREACH (Annotation a, as)
+    out << a << "\n\n";
+
+  return out;
+}
+
+AnnotatedGraphIO::AnnotatedGraphIO() : ans_(), g_() {}
+AnnotatedGraphIO::AnnotatedGraphIO(Annotations ans, GraphIO g) : ans_(ans), g_(g) {}
+
+member_imp(AnnotatedGraphIO, Annotations, ans);
+member_imp(AnnotatedGraphIO, GraphIO, g);
+
+std::ostream &operator<<(std::ostream &out, AnnotatedGraphIO &g)
+{
+  out << "Converted edges:\n" << g.ans_ref() << "\n" << g.g_ref();
+
+  return out;
+}
+
 SCCConverter::SCCConverter() : dg_() {}
 SCCConverter::SCCConverter(DSBGraph dg) : dg_(atomize(dg)) {}
 
@@ -32,11 +69,11 @@ member_imp(SCCConverter, AtomDSBGraph, dg);
 VertexDef SCCConverter::convert_vertex(AtomDSVDesc vd)
 {
   AtomSetVertex v = dg_ref()[vd];
-  Ints subs_res(v.range_ref().ndim(), 0);
+  CompactIntervals subs_res(v.range_ref().ndim(), CompactInterval());
 
   int j = 0;
   BOOST_FOREACH (Interval i, v.range_ref().inters()) {
-    subs_res[j] = subs_res[j] + i.card();
+    subs_res[j] = CompactInterval(i.card(), i.card());
 
     j++;
   }
@@ -130,7 +167,7 @@ EdgeDefs SCCConverter::convert_edge(AtomDSEDesc ed)
   return eds_res;
 }
 
-GraphIO SCCConverter::convert() 
+GraphIO SCCConverter::convert_graph() 
 {
   VertexDefs vds_res;
   BOOST_FOREACH (AtomDSVDesc vd, vertices(dg_ref())) { 
@@ -146,6 +183,68 @@ GraphIO SCCConverter::convert()
   }
 
   return GraphIO(vds_res, eds_res);
+}
+
+
+AnnotatedGraphIO SCCConverter::convert_with_annotations(Annotations ans)
+{
+  GraphIO converted = convert_graph();
+
+  return AnnotatedGraphIO(ans, converted);
+}
+
+std::string SCCConverter::get_vertex(MultiInterval mi)
+{
+  std::string result;
+
+  BOOST_FOREACH (AtomDSVDesc vd, vertices(dg_ref())) {
+    AtomSetVertex v = dg_ref()[vd];
+    MultiInterval v_dom = v.range();
+
+    if (!v_dom.cap(mi).empty())
+      result = v.name();
+  }
+
+  return result;
+}
+
+RMapIO SCCConverter::convert_map(PWLMap rmap)
+{
+  RMapIO result;
+
+  Set whole_dom;
+  BOOST_FOREACH (AtomDSVDesc vd, vertices(dg_ref())) {
+    whole_dom.addAtomSet(dg_ref()[vd].range());
+  }
+  rmap = rmap.restrictMap(whole_dom);
+
+  parallel_foreach2 (rmap.dom_ref(), rmap.lmap_ref()) {
+    Set d = boost::get<0>(items);
+    LMap l = boost::get<1>(items);
+
+    BOOST_FOREACH (MultiInterval mi, d.asets()) {
+      AtomPWLMap apw(mi, l);
+
+      if (apw.isId()) {
+        Set same_component = rmap.preImage(Set(mi));
+
+        Iterators is = create_iterators(mi);
+        Ranges rs = create_ranges(mi);
+
+        VertexUsages vrtcs;
+        BOOST_FOREACH (MultiInterval represented, same_component.asets()) {
+          LinearExps lexps = create_exp(represented);
+          std::string nm = get_vertex(represented);
+          vrtcs.push_back(VertexUsage(nm, lexps));
+        }
+
+        if (!vrtcs.empty())
+          result.push_back(ComponentIO(is, rs, vrtcs));
+      }
+    }
+  }
+
+  return result;
 }
 
 }  // namespace IO

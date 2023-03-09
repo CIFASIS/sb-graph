@@ -24,20 +24,40 @@ namespace IO {
 
 // Pretty-printer ---------------------------------------------------------------------------------
 
-std::ostream &operator<<(std::ostream &out, Ints &is)
+CompactInterval::CompactInterval() : lo_(), hi_() {}
+CompactInterval::CompactInterval(int lo, int hi) : lo_(lo), hi_(hi) {}
+
+member_imp(CompactInterval, int, lo);
+member_imp(CompactInterval, int, hi);
+
+std::ostream &operator<<(std::ostream &out, CompactInterval &ci)
+{
+   out << "[" << ci.lo();
+
+  if (ci.lo() != ci.hi())
+    out << ":" << ci.hi();
+
+  out << "]";
+
+  return out;
+}
+
+std::ostream &operator<<(std::ostream &out, CompactIntervals &cis)
 {
   out << "[";
+  int sz = cis.size(), i = 0;
+  for (; i < sz - 1; i++) {
+    out << cis[i].lo();
 
-  if (is.size() > 0) {
-    auto it = is.begin();
-    for (; std::next(it) != is.end(); it++){
-      int i = *it;
-      out << i << ", ";
-    }
- 
-    int i = *it;
-    out << i;
+    if (cis[i].lo() != cis[i].hi())
+      out << ":" << cis[i].hi(); 
+
+    out << ", ";
   }
+  out << cis[i].lo();
+
+  if (cis[i].lo() != cis[i].hi())
+    out << ":" << cis[i].hi(); 
 
   out << "]";
 
@@ -45,10 +65,10 @@ std::ostream &operator<<(std::ostream &out, Ints &is)
 }
 
 VertexDef::VertexDef() : name_(), subs_dims_() {}
-VertexDef::VertexDef(std::string name, Ints subs_dims) : name_(name), subs_dims_(subs_dims) {};
+VertexDef::VertexDef(std::string name, CompactIntervals subs_dims) : name_(name), subs_dims_(subs_dims) {};
 
 member_imp(VertexDef, std::string, name);
-member_imp(VertexDef, Ints, subs_dims);
+member_imp(VertexDef, CompactIntervals, subs_dims);
 
 std::ostream &operator<<(std::ostream &out, VertexDef &vd)
 {
@@ -207,6 +227,53 @@ member_imp(GraphIO, EdgeDefs, eds);
 std::ostream &operator<<(std::ostream &out, GraphIO &s)
 {
   out << s.vds_ref() << "\n" << s.eds_ref();
+
+  return out;
+}
+
+std::ostream &operator<<(std::ostream &out, VertexUsages &vrtcs)
+{
+  out << "{";
+  int sz = vrtcs.size(), i = 0;
+  for (; i < sz - 1; i++) 
+    out << vrtcs[i] << ", ";
+  out << vrtcs[i];
+  out << "}";
+
+  return out;
+}
+
+ComponentIO::ComponentIO() : is_(), rs_(), vrtcs_() {}
+ComponentIO::ComponentIO(Iterators is, Ranges rs, VertexUsages vrtcs) : is_(is), rs_(rs), vrtcs_(vrtcs) {}
+
+member_imp(ComponentIO, Iterators, is);
+member_imp(ComponentIO, Ranges, rs); 
+member_imp(ComponentIO, VertexUsages, vrtcs);
+
+std::ostream &operator<<(std::ostream &out, ComponentIO &c)
+{
+  VertexUsages aux = c.vrtcs();
+
+  int sz = c.is_ref().size(), i = 0;
+  out << "for ";
+  parallel_foreach2 (c.is_ref(), c.rs_ref()) {
+    if (i < sz - 1)
+      out << boost::get<0>(items) << " in " << boost::get<1>(items) << ", ";
+
+    else
+      out << boost::get<0>(items) << " in " << boost::get<1>(items);
+
+    i++;
+  }
+  out << "\n  " << aux << "\nendfor";
+
+  return out;
+}
+
+std::ostream &operator<<(std::ostream &out, RMapIO &rmap)
+{
+  BOOST_FOREACH (ComponentIO c, rmap)
+    out << c << "\n";
 
   return out;
 }

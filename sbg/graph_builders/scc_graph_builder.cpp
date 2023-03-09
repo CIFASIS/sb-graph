@@ -16,22 +16,21 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
-
 #include <sbg/graph_builders/scc_graph_builder.hpp>
 
 namespace SBG {
 
-SCCGraphBuilder::SCCGraphBuilder(MatchingStruct m) : mtchng_(m), result_()
-{
-  set_vertex_map(VertexMap());
-}; 
+SCCGraphBuilder::SCCGraphBuilder(MatchingStruct m) : mtchng_(m), result_(), vertex_map_(), merged_vertices_() {} 
 
 member_imp(SCCGraphBuilder, MatchingStruct, mtchng);
 member_imp(SCCGraphBuilder, DSBGraph, result);
 member_imp(SCCGraphBuilder, VertexMap, vertex_map);
+member_imp(SCCGraphBuilder, SBG::IO::Annotations, merged_vertices);
 
 bool SCCGraphBuilder::fullyMatched(Set vertices) { return vertices.subseteq(mtchng_ref().matchedV()); }
 
+// Partition edges according to atomic sets
+// of matched/not matched edges.
 void SCCGraphBuilder::partitionEdges(SBGraph &grph)
 {
   Set matched = mtchng_ref().matchedE(), unmatched = mtchng_ref().allEdges_ref().diff(matched);
@@ -117,6 +116,10 @@ void SCCGraphBuilder::createVertices(SBGraph &grph)
       result_ref()[dv] = v; 
   
       vertex_map_ref()[de] = dv; 
+
+      SetVertex l = source_v.restrictVertex(mtchng_ref().mapF().image(e_dom));
+      SetVertex r = target_v.restrictVertex(mtchng_ref().mapU().image(e_dom));
+      merged_vertices_ref().push_back(SBG::IO::Annotation(source_v, target_v, l, r));
     }
   }
 }
@@ -228,7 +231,7 @@ void SCCGraphBuilder::pretty_print()
 {
   DSBGraph grph = result_ref();
   SBG::IO::SCCConverter c(grph);
-  SBG::IO::GraphIO grph_io = c.convert();
+  SBG::IO::AnnotatedGraphIO grph_io = c.convert_with_annotations(merged_vertices());
   std::cout << grph_io << "\n";
 
   return;

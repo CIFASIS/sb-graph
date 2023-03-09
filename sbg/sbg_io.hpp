@@ -62,15 +62,25 @@ namespace IO {
 
 // Pretty-printer ---------------------------------------------------------------------------------
 
-typedef std::vector<int> Ints;
-std::ostream &operator<<(std::ostream &out, Ints &is);
+struct CompactInterval {
+  CompactInterval();
+  CompactInterval(int lo, int hi);
+
+  member_class(int, lo);
+  member_class(int, hi);
+};
+
+std::ostream &operator<<(std::ostream &out, CompactInterval &ci);
+
+typedef std::vector<CompactInterval> CompactIntervals;
+std::ostream &operator<<(std::ostream &out, CompactIntervals &ci);
 
 struct VertexDef {
   VertexDef();
-  VertexDef(std::string name, Ints subs_dims);
+  VertexDef(std::string name, CompactIntervals subs_dims);
 
   member_class(std::string, name);
-  member_class(Ints, subs_dims);
+  member_class(CompactIntervals, subs_dims);
 };
 
 std::ostream &operator<<(std::ostream &out, VertexDef &vd);
@@ -152,6 +162,25 @@ struct GraphIO {
 };
 
 std::ostream &operator<<(std::ostream &out, GraphIO &grph);
+
+typedef std::vector<VertexUsage> VertexUsages;
+std::ostream &operator<<(std::ostream &out, VertexUsages &vrtcs);
+
+// To pretty a representant and its represented vertices
+// of a given map
+struct ComponentIO {
+  ComponentIO();
+  ComponentIO(Iterators is, Ranges rs, VertexUsages vrtcs);
+
+  member_class(Iterators, is);
+  member_class(Ranges, rs);
+  member_class(VertexUsages, vrtcs);
+};
+
+std::ostream &operator<<(std::ostream &out, ComponentIO &c);
+
+typedef std::vector<ComponentIO> RMapIO;
+std::ostream &operator<<(std::ostream &out, RMapIO &rmap);
 
 } // namespace IO
 

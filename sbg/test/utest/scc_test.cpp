@@ -106,14 +106,18 @@ void parse_scc()
     Parser::CompConverter c(result);
     Parser::Grph g = c.convertGraph();
 
-    SCCStruct s(boost::get<DSBGraph>(g));
+    DSBGraph aux_g = boost::get<DSBGraph>(g);
+    SCCStruct s(aux_g);
     PWLMap rmap = s.SBGSCC();
+
+    SBG::IO::SCCConverter sccc(aux_g);
+    SBG::IO::RMapIO result_io = sccc.convert_map(rmap);
 
     std::cout << "-------------------------\n";
 
     if (r && iter == end) {
       std::cout << "Parsing succeeded\n";
-      std::cout << "SCC result = \n\n" << rmap << "\n";
+      std::cout << "SCC result = \n\n" << result_io << "\n";
     }
 
     else {
@@ -179,7 +183,10 @@ void parse_build_scc()
     SCCStruct scc(dg);
     PWLMap rmap = scc.SBGSCC();
 
-    std::cout << "SCC result = \n\n" << rmap << "\n";
+    SBG::IO::SCCConverter sccc(dg);
+    SBG::IO::RMapIO result_io = sccc.convert_map(rmap);
+
+    std::cout << "SCC result = \n\n" << result_io << "\n";
 
     std::cout << "-------------------------\n";
   } 

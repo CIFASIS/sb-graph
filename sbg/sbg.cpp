@@ -42,6 +42,12 @@ member_imp_temp(SET_VERTEX_TEMPLATE, SETV_TEMP_TYPE, int, index);
 member_imp_temp(SET_VERTEX_TEMPLATE, SETV_TEMP_TYPE, DESC, desc);
 
 SET_VERTEX_TEMPLATE
+SETV_TEMP_TYPE SETV_TEMP_TYPE::restrictVertex(Set dom)
+{
+  return SetVertexImp(name(), id(), range().cap(dom), index(), desc());
+}
+
+SET_VERTEX_TEMPLATE
 bool SETV_TEMP_TYPE::operator==(const SETV_TEMP_TYPE &other) const { return id() == other.id(); }
 
 template struct SetVertexImp<SVDesc>;

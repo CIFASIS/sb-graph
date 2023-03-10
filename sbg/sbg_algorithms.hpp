@@ -110,10 +110,10 @@ struct SCCStruct {
   member_class(DSBGraph, g);
   member_class(Set, V);
   member_class(PWLMap, Vmap);  // Map from vertices to set-vertices
-  member_class(Set, E);
+  member_class(Set, E); // Available edges in each step. In the end has all the edges between same SCC
   member_class(PWLMap, Emap);  // Map from edges to set-edges
 
-  member_class(Set, Ediff);  // Edges between different SCC 
+  member_class(Set, Ediff);  // Edges between different SCC in each step
 
   member_class(PWLMap, mapD);  // Forward direction
   member_class(PWLMap, mapB);  // Backward direction
@@ -127,10 +127,24 @@ struct SCCStruct {
 
 // Ordering of directed SBGraphs -----------------------------------------------------------------
 
+typedef std::vector<Set> VertexOrder;
+
 struct OrderStruct {
   OrderStruct();
-  OrderStruct(SCCStruct scc);
+  OrderStruct(DSBGraph dg);
 
-  member_class(SCCStruct, scc);
   member_class(DSBGraph, dg);
+
+  member_class(PWLMap, mapB);
+  member_class(PWLMap, mapb);
+  member_class(PWLMap, mapD);
+  member_class(PWLMap, mapd);
+
+  member_class(Set, all_vertices);
+
+  VertexOrder order();
+
+  private:
+  void order_step();
+  Set empty_outgoing(); // Gets all vertices that don't have outgoing edges
 }; 

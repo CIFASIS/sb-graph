@@ -893,8 +893,44 @@ void SCCStruct::debugStep()
 
 // Ordering ---------------------------------------------------------------------------------------
 
-OrderStruct::OrderStruct() : scc_(), dg_() {}
-OrderStruct::OrderStruct(SCCStruct scc) : scc_(scc), dg_(scc.g_ref()) {}
+OrderStruct::OrderStruct() : dg_() {}
+OrderStruct::OrderStruct(DSBGraph dg) : dg_(dg) 
+{
+  BOOST_FOREACH (DSetEdgeDesc ei, edges(dg_ref())) {
+    PWLMap bmap = (dg_ref()[ei]).map_b();
+    PWLMap dmap = (dg_ref()[ei]).map_d();
 
-member_imp(OrderStruct, SCCStruct, scc);
+    set_mapB(mapB().concat(bmap));
+    set_mapD(mapD().concat(dmap));
+  }
+  set_mapb(mapB());
+  set_mapd(mapd());
+
+  Set aux_vertices;
+  BOOST_FOREACH (SetVertexDesc vi, vertices(dg_ref())) 
+    aux_vertices.concat(dg_ref()[vi].range());
+}
+
 member_imp(OrderStruct, DSBGraph, dg);
+member_imp(OrderStruct, PWLMap, mapB);
+member_imp(OrderStruct, PWLMap, mapb);
+member_imp(OrderStruct, PWLMap, mapD);
+member_imp(OrderStruct, PWLMap, mapd);
+member_imp(OrderStruct, Set, all_vertices);
+
+Set OrderStruct::empty_outgoing()
+{
+  return all_vertices().diff(mapb().image());
+}
+
+void OrderStruct::order_step()
+{
+  return;
+}
+
+VertexOrder OrderStruct::order()
+{
+  VertexOrder result;
+
+  return result;
+}

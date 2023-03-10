@@ -101,6 +101,7 @@ struct MatchingStruct {
 // SCC of directed SBGraphs ----------------------------------------------------------------------
 
 struct SCCStruct {
+  SCCStruct();
   SCCStruct(DSBGraph g);
 
   void SCCStep();
@@ -123,3 +124,13 @@ struct SCCStruct {
   void debugInit();
   void debugStep();
 };
+
+// Ordering of directed SBGraphs -----------------------------------------------------------------
+
+struct OrderStruct {
+  OrderStruct();
+  OrderStruct(SCCStruct scc);
+
+  member_class(SCCStruct, scc);
+  member_class(DSBGraph, dg);
+}; 

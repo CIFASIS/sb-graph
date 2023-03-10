@@ -92,6 +92,11 @@ member_imp(LinearExp, REAL, slope);
 member_imp(LinearExp, REAL, constant);
 member_imp(LinearExp, std::string, var);
 
+bool LinearExp::operator==(const LinearExp &other) const
+{
+  return slope() == other.slope() && constant() == other.constant() && var() == other.var();
+}
+
 std::ostream &operator<<(std::ostream &out, LinearExp &le)
 {
   if (le.slope() == 1) {
@@ -130,9 +135,42 @@ VertexUsage::VertexUsage(std::string name, LinearExps subs) : name_(name), subs_
 member_imp(VertexUsage, std::string, name);
 member_imp(VertexUsage, LinearExps, subs);
 
+bool VertexUsage::operator==(const VertexUsage &other) const
+{
+  return name() == other.name() && subs() == other.subs();
+}
+
 std::ostream &operator<<(std::ostream &out, VertexUsage &vu)
 {
   out << vu.name() << vu.subs_ref();
+
+  return out;
+}
+
+EdgeUsage::EdgeUsage() : left_(), right_() {}
+EdgeUsage::EdgeUsage(VertexUsage left, VertexUsage right) : left_(left), right_(right) {}
+
+member_imp(EdgeUsage, VertexUsage, left);
+member_imp(EdgeUsage, VertexUsage, right);
+
+bool EdgeUsage::operator==(const EdgeUsage &other) const
+{
+  return left() == other.left() && right() == other.right();
+}
+
+std::ostream &operator<<(std::ostream &out, EdgeUsage &eu)
+{
+  out << eu.left_ref() << " - " << eu.right_ref();
+
+  return out; 
+}
+
+std::ostream &operator<<(std::ostream &out, EdgeUsages &eus)
+{
+  int sz = eus.size(), i = 0;
+  for (; i < sz - 1; i++) 
+    out << "  " << eus[i] << ";\n";
+  out << "  " << eus[i] << ";";
 
   return out;
 }
@@ -143,6 +181,11 @@ Range::Range(INT begin, INT step, INT end) : begin_(begin), step_(step), end_(en
 member_imp(Range, INT, begin);
 member_imp(Range, INT, step);
 member_imp(Range, INT, end);
+
+bool Range::operator==(const Range &other) const
+{
+  return begin() == other.begin() && step() == other.step() && end() == other.end(); 
+}
 
 bool Range::operator<(const Range &other) const
 {
@@ -183,17 +226,20 @@ std::ostream &operator<<(std::ostream &out, Ranges &ranges)
   return out;
 }
 
-EdgeDef::EdgeDef() : vb_(), vf_() {}
-EdgeDef::EdgeDef(Iterators is, Ranges rs, VertexUsage vb, VertexUsage vf) : is_(is), rs_(rs), vb_(vb), vf_(vf) {}
+EdgeDef::EdgeDef() : is_(), rs_(), edges_() {}
+EdgeDef::EdgeDef(Iterators is, Ranges rs, EdgeUsages edges) : is_(is), rs_(rs), edges_(edges) {}
 
 member_imp(EdgeDef, Iterators, is);
 member_imp(EdgeDef, Ranges, rs);
-member_imp(EdgeDef, VertexUsage, vb);
-member_imp(EdgeDef, VertexUsage, vf);
+member_imp(EdgeDef, EdgeUsages, edges);
+
+bool EdgeDef::operator==(const EdgeDef &other) const
+{
+  return is() == other.is() && rs() == other.rs() && edges() == other.edges();
+}
 
 std::ostream &operator<<(std::ostream &out, EdgeDef &ed)
 {
-  VertexUsage vub = ed.vb_ref(), vuf = ed.vf_ref();
   int sz = ed.is_ref().size(), i = 0;
   out << "for ";
   parallel_foreach2 (ed.is_ref(), ed.rs_ref()) {
@@ -205,7 +251,7 @@ std::ostream &operator<<(std::ostream &out, EdgeDef &ed)
 
     i++;
   }
-  out << "\n  " << vub << " -> " << vuf << "\nendfor";
+  out << "\n" << ed.edges_ref() << "\nendfor";
 
   return out;
 }
@@ -223,6 +269,35 @@ GraphIO::GraphIO(VertexDefs vds, EdgeDefs eds) : vds_(vds), eds_(eds) {}
 
 member_imp(GraphIO, VertexDefs, vds);
 member_imp(GraphIO, EdgeDefs, eds);
+
+void GraphIO::merge_edges()
+{
+  EdgeDefs result;
+
+  std::vector<EdgeDef> visited; 
+  BOOST_FOREACH(EdgeDef e, eds()) {
+    EdgeUsages aux_res;
+
+    if (std::find(visited.begin(), visited.end(), e) == visited.end()) {
+      aux_res.insert(aux_res.begin(), e.edges_ref().begin(), e.edges_ref().end());
+
+      BOOST_FOREACH (EdgeDef e_other, eds()) {
+        if (std::find(visited.begin(), visited.end(), e_other) == visited.end()) { 
+          if (e.is() == e_other.is() && e.rs() == e_other.rs() && !(e == e_other)) {
+            aux_res.insert(aux_res.begin(), e_other.edges_ref().begin(), e_other.edges_ref().end());
+            visited.insert(visited.begin(), e_other);
+          }
+        }
+      } 
+
+      result.insert(result.begin(), EdgeDef(e.is(), e.rs(), aux_res));
+      visited.insert(visited.begin(), e);
+    }
+  }
+
+  set_eds(result);
+  return;
+}
 
 std::ostream &operator<<(std::ostream &out, GraphIO &s)
 {

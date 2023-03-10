@@ -231,7 +231,7 @@ void SCCGraphBuilder::pretty_print()
 {
   DSBGraph grph = result_ref();
   SBG::IO::SCCConverter c(grph);
-  SBG::IO::AnnotatedGraphIO grph_io = c.convert_with_annotations(merged_vertices());
+  SBG::IO::AnnotatedGraphIO grph_io = c.convert_with_annotations(merged_vertices_ref());
   std::cout << grph_io << "\n";
 
   return;

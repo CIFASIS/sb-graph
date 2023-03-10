@@ -36,7 +36,7 @@
 *
 * ranges := '['']' | '['(range ', ')* range']'
 *
-* edge_def := 'for ' vertex_usage ' -> ' vertex_usage ';'
+* edge_def := 'for ' vertex_usage ' -> ' vertex_usage 'endfor;'
 *
 * graph := vertex_def+ '\n' edge_def*
 *
@@ -95,6 +95,8 @@ struct LinearExp {
   member_class(REAL, slope);
   member_class(REAL, constant);
   member_class(std::string, var);
+
+  eq_class(LinearExp);
 };
 
 std::ostream &operator<<(std::ostream &out, LinearExp &lm);
@@ -108,9 +110,26 @@ struct VertexUsage {
 
   member_class(std::string, name);
   member_class(LinearExps, subs);
+
+  eq_class(VertexUsage);
 };
 
 std::ostream &operator<<(std::ostream &out, VertexUsage &vu);
+
+struct EdgeUsage {
+  EdgeUsage();
+  EdgeUsage(VertexUsage left, VertexUsage right);
+
+  member_class(VertexUsage, left);
+  member_class(VertexUsage, right);
+
+  eq_class(EdgeUsage);
+};
+
+std::ostream &operator<<(std::ostream &out, EdgeUsage &eu);
+
+typedef std::vector<EdgeUsage> EdgeUsages;
+std::ostream &operator<<(std::ostream &out, EdgeUsages &eus);
 
 typedef std::vector<std::string> Iterators;
 
@@ -122,8 +141,9 @@ struct Range {
   member_class(INT, begin);
   member_class(INT, step);
   member_class(INT, end);
- 
-  bool operator<(const Range &other) const;
+
+  eq_class(Range);
+  lt_class(Range); 
 };
 
 std::ostream &operator<<(std::ostream &out, Range &r);
@@ -139,12 +159,13 @@ std::ostream &operator<<(std::ostream &out, Ranges &rs);
 // ! Both is and rs should have the same size
 struct EdgeDef {
   EdgeDef();
-  EdgeDef(Iterators is, Ranges rs, VertexUsage vb, VertexUsage vf);
+  EdgeDef(Iterators is, Ranges rs, EdgeUsages edges);
 
   member_class(Iterators, is);
   member_class(Ranges, rs);
-  member_class(VertexUsage, vb);
-  member_class(VertexUsage, vf);
+  member_class(EdgeUsages, edges);
+
+  eq_class(EdgeDef);
 };
 
 std::ostream &operator<<(std::ostream &out, EdgeDef &ed);
@@ -159,6 +180,8 @@ struct GraphIO {
 
   member_class(VertexDefs, vds);
   member_class(EdgeDefs, eds);
+
+  void merge_edges();
 };
 
 std::ostream &operator<<(std::ostream &out, GraphIO &grph);

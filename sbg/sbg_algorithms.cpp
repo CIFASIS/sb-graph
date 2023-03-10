@@ -759,7 +759,8 @@ void MatchingStruct::debugStep()
 
 // SCC --------------------------------------------------------------------------------------------
 
-// Initialization
+SCCStruct::SCCStruct() : g_() {}
+
 SCCStruct::SCCStruct(DSBGraph garg)
 {
   set_g(garg);
@@ -834,7 +835,6 @@ void SCCStruct::SCCStep()
   Set zero = createSet(mi);
 
   auto aux = minReachable(0, V(), E(), Vmap(), Emap(), mapD(), mapB(), idV);
-  std::cout << "\n";
   set_rmap(get<2>(aux));
   PWLMap rdiff = rmap_ref().compPW(mapD()).diffMap(rmap_ref().compPW(mapB()));
   Set Esame = rdiff.preImage(zero);
@@ -890,3 +890,11 @@ void SCCStruct::debugStep()
   LOG << "rmap: " << rmap() << "\n"; 
   LOG << "Ediff: " << Ediff() << "\n\n"; 
 }
+
+// Ordering ---------------------------------------------------------------------------------------
+
+OrderStruct::OrderStruct() : scc_(), dg_() {}
+OrderStruct::OrderStruct(SCCStruct scc) : scc_(scc), dg_(scc.g_ref()) {}
+
+member_imp(OrderStruct, SCCStruct, scc);
+member_imp(OrderStruct, DSBGraph, dg);

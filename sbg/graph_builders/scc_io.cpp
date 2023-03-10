@@ -56,7 +56,7 @@ member_imp(AnnotatedGraphIO, GraphIO, g);
 
 std::ostream &operator<<(std::ostream &out, AnnotatedGraphIO &g)
 {
-  out << "Converted edges:\n" << g.ans_ref() << "\n" << g.g_ref();
+  out << "Converted edges:\n\n" << g.ans_ref() << "\nResulting graph:\n\n" << g.g_ref();
 
   return out;
 }
@@ -161,7 +161,7 @@ EdgeDefs SCCConverter::convert_edge(AtomDSEDesc ed)
     LinearExps le_b = create_exp(mi_b), le_d = create_exp(mi_d);
     VertexUsage vb(dg_ref()[es].name(), le_b), vd(dg_ref()[et].name(), le_d);
 
-    eds_res.insert(eds_res.end(), EdgeDef(is, rs, vb, vd));
+    eds_res.insert(eds_res.end(), EdgeDef(is, rs, EdgeUsages(1, EdgeUsage(vb, vd))));
   }
 
   return eds_res;
@@ -182,7 +182,9 @@ GraphIO SCCConverter::convert_graph()
       eds_res.insert(eds_res.end(), e_def);
   }
 
-  return GraphIO(vds_res, eds_res);
+  GraphIO g(vds_res, eds_res);
+  g.merge_edges();
+  return g;
 }
 
 

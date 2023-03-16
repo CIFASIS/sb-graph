@@ -142,11 +142,20 @@ struct OrderStruct {
   member_class(PWLMap, mapd); // Restricted map in each step
 
   member_class(Set, all_vertices); // Original set
-  member_class(Set, disordered); 
+  member_class(Set, disordered); // Vertices not visited/ordered
+
+  member_class(PWLMap, Emap);
 
   VertexOrder order();
 
   private:
-  Set order_step();
   Set empty_outgoing(); // Gets all vertices that don't have outgoing edges
+  Set visited_set_vertex(Set vrtcs);
+
+  Set recursion_step(Set visited_ranges);
+  void recursion(Set visited_ranges);
+
+  Set order_step();
+
+  void debug_init();
 }; 

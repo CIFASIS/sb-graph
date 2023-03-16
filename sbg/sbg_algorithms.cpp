@@ -917,10 +917,31 @@ OrderStruct::OrderStruct(DSBGraph dg) : dg_(dg)
   set_mapd(mapD());
 
   Set aux_vertices;
-  BOOST_FOREACH (SetVertexDesc vi, vertices(dg_ref())) 
+  BOOST_FOREACH (DSetVertexDesc vi, vertices(dg_ref())) 
     aux_vertices = aux_vertices.concat(dg_ref()[vi].range());
   set_all_vertices(aux_vertices);
   set_disordered(aux_vertices);
+
+  int eCount = 1;
+  PWLMap emap;
+  BOOST_FOREACH (DSetEdgeDesc edi, edges(dg_ref())) {
+    DSetEdge ei = dg_ref()[edi];
+
+    BOOST_FOREACH (Set sd, ei.map_d_ref().dom()) {
+      BOOST_FOREACH (Set sb, ei.map_b_ref().dom()) {
+        Set ud = sd.cap(sb);
+
+        if (!ud.empty()) {
+          LMap lm;
+          for (int i = 0; i < aux_vertices.ndim(); i++) lm.addGO(0, eCount);
+          emap.addSetLM(ud, lm);
+
+          ++eCount;
+        }
+      }
+    }
+  }
+  set_Emap(emap);
 }
 
 member_imp(OrderStruct, DSBGraph, dg);
@@ -930,15 +951,62 @@ member_imp(OrderStruct, PWLMap, mapD);
 member_imp(OrderStruct, PWLMap, mapd);
 member_imp(OrderStruct, Set, all_vertices);
 member_imp(OrderStruct, Set, disordered);
+member_imp(OrderStruct, PWLMap, Emap);
 
 Set OrderStruct::empty_outgoing()
 {
   return disordered().diff(mapb().image());
 }
 
+Set OrderStruct::visited_set_vertex(Set vrtcs)
+{
+  Set result;
+
+  Set visited = all_vertices().diff(disordered());
+  BOOST_FOREACH (DSetVertexDesc vd, vertices(dg_ref())) {
+    Set v_range = dg_ref()[vd].range();
+
+    Set v_vrtcs = vrtcs.cap(v_range), v_visited = visited.cap(v_range); 
+    if (!v_vrtcs.empty() && !v_visited.empty())
+      result = result.concat(v_range);
+  }
+
+  return result;
+}
+
+Set OrderStruct::recursion_step(Set visited_ranges)
+{
+  Set nth = empty_outgoing().cap(visited_ranges);
+  Set nth_subset_edges = Emap().image(mapd().preImage(nth));
+
+  Set ingoing = mapd().preImage(Emap().preImage(nth_subset_edges));
+  Set mapb_dom = mapb().wholeDom(), mapd_dom = mapd().wholeDom();
+  set_mapb(mapb().restrictMap(mapb_dom.diff(ingoing)));  
+  set_mapd(mapd().restrictMap(mapd_dom.diff(ingoing)));  
+
+  return nth;
+}
+
+void OrderStruct::recursion(Set visited_ranges)
+{
+  for (unsigned int i = 0; i < num_vertices(dg()); i++) {
+    Set nth = recursion_step(visited_ranges);
+
+    if (false) { // Detect recursion
+      set_disordered(disordered().diff(nth));
+    }
+  }
+
+  return;
+}
+
 Set OrderStruct::order_step()
 {
   Set nth = empty_outgoing();
+
+  Set visited_ranges = visited_set_vertex(nth);
+  if (!visited_ranges.empty())
+    recursion(visited_ranges);
 
   Set ingoing = mapd().preImage(nth);
   Set mapb_dom = mapb().wholeDom(), mapd_dom = mapd().wholeDom();
@@ -963,4 +1031,23 @@ VertexOrder OrderStruct::order()
   } while (old_result != result);
 
   return result;
+}
+
+void OrderStruct::debug_init()
+{
+  LOG << "\n\n";
+  BOOST_FOREACH (DSetVertexDesc vi, vertices(dg_ref())) {
+    SetVertex v = dg_ref()[vi];
+
+    LOG << "-------\n";
+    LOG << v << "\n";
+  }
+  LOG << "-------\n\n";
+
+  LOG << "mapB: " << mapB() << "\n\n";
+  LOG << "mapD: " << mapD() << "\n\n";
+
+  LOG << "Emap: " << Emap() << "\n\n";
+
+  LOG << "*******************************\n\n";
 }

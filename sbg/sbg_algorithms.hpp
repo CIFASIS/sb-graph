@@ -128,6 +128,7 @@ struct SCCStruct {
 // Ordering of directed SBGraphs -----------------------------------------------------------------
 
 typedef std::vector<Set> VertexOrder;
+std::ostream &operator<<(std::ostream &out, VertexOrder &vo);
 
 struct OrderStruct {
   OrderStruct();
@@ -135,16 +136,17 @@ struct OrderStruct {
 
   member_class(DSBGraph, dg);
 
-  member_class(PWLMap, mapB);
-  member_class(PWLMap, mapb);
-  member_class(PWLMap, mapD);
-  member_class(PWLMap, mapd);
+  member_class(PWLMap, mapB); // Original map
+  member_class(PWLMap, mapb); // Restricted map in each step
+  member_class(PWLMap, mapD); // Original map
+  member_class(PWLMap, mapd); // Restricted map in each step
 
-  member_class(Set, all_vertices);
+  member_class(Set, all_vertices); // Original set
+  member_class(Set, disordered); 
 
   VertexOrder order();
 
   private:
-  void order_step();
+  Set order_step();
   Set empty_outgoing(); // Gets all vertices that don't have outgoing edges
 }; 

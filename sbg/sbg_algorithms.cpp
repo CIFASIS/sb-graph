@@ -893,6 +893,16 @@ void SCCStruct::debugStep()
 
 // Ordering ---------------------------------------------------------------------------------------
 
+std::ostream &operator<<(std::ostream &out, VertexOrder &vo)
+{
+  int sz = vo.size(), i = 0;
+  for (; i < sz - 1; i++)
+    out << vo[i] << " - ";
+  out << vo[i];
+
+  return out;
+}
+
 OrderStruct::OrderStruct() : dg_() {}
 OrderStruct::OrderStruct(DSBGraph dg) : dg_(dg) 
 {
@@ -904,11 +914,13 @@ OrderStruct::OrderStruct(DSBGraph dg) : dg_(dg)
     set_mapD(mapD().concat(dmap));
   }
   set_mapb(mapB());
-  set_mapd(mapd());
+  set_mapd(mapD());
 
   Set aux_vertices;
   BOOST_FOREACH (SetVertexDesc vi, vertices(dg_ref())) 
-    aux_vertices.concat(dg_ref()[vi].range());
+    aux_vertices = aux_vertices.concat(dg_ref()[vi].range());
+  set_all_vertices(aux_vertices);
+  set_disordered(aux_vertices);
 }
 
 member_imp(OrderStruct, DSBGraph, dg);
@@ -917,20 +929,38 @@ member_imp(OrderStruct, PWLMap, mapb);
 member_imp(OrderStruct, PWLMap, mapD);
 member_imp(OrderStruct, PWLMap, mapd);
 member_imp(OrderStruct, Set, all_vertices);
+member_imp(OrderStruct, Set, disordered);
 
 Set OrderStruct::empty_outgoing()
 {
-  return all_vertices().diff(mapb().image());
+  return disordered().diff(mapb().image());
 }
 
-void OrderStruct::order_step()
+Set OrderStruct::order_step()
 {
-  return;
+  Set nth = empty_outgoing();
+
+  Set ingoing = mapd().preImage(nth);
+  Set mapb_dom = mapb().wholeDom(), mapd_dom = mapd().wholeDom();
+  set_mapb(mapb().restrictMap(mapb_dom.diff(ingoing)));  
+  set_mapd(mapd().restrictMap(mapd_dom.diff(ingoing)));  
+
+  set_disordered(disordered().diff(nth));
+
+  return nth;
 }
 
 VertexOrder OrderStruct::order()
 {
-  VertexOrder result;
+  VertexOrder result, old_result;
+
+  do {
+    old_result = result;
+
+    Set nth = order_step();
+    if (!nth.empty())
+      result.push_back(nth);
+  } while (old_result != result);
 
   return result;
 }

@@ -154,6 +154,6 @@ struct OrderStruct {
   Set order_step();
   Set empty_outgoing(); // Gets all vertices that don't have outgoing edges
 
-  void debugInit();
-  void debugStep();
+  void debug_init();
+  void debug_step();
 }; 

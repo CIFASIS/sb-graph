@@ -919,7 +919,7 @@ OrderStruct::OrderStruct(DSBGraph dg) : dg_(dg)
   set_mapd(mapD());
 
   Set aux_vertices;
-  BOOST_FOREACH (SetVertexDesc vi, vertices(dg_ref())) 
+  BOOST_FOREACH (DSetVertexDesc vi, vertices(dg_ref())) 
     aux_vertices = aux_vertices.concat(dg_ref()[vi].range());
   set_all_vertices(aux_vertices);
   set_disordered(aux_vertices);
@@ -987,7 +987,7 @@ Set OrderStruct::order_step()
 
 VertexOrder OrderStruct::order()
 {
-  debugInit();
+  debug_init();
 
   VertexOrder result, old_result;
 
@@ -1006,7 +1006,7 @@ VertexOrder OrderStruct::order()
   return result;
 }
 
-void OrderStruct::debugInit()
+void OrderStruct::debug_init()
 {
   LOG << "\n\n";
   BOOST_FOREACH (DSetVertexDesc vi, vertices(dg_ref())) {
@@ -1027,7 +1027,7 @@ void OrderStruct::debugInit()
   return;
 }
 
-void OrderStruct::debugStep()
+void OrderStruct::debug_step()
 {
   return;
 }

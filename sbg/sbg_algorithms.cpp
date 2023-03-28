@@ -906,7 +906,7 @@ std::ostream &operator<<(std::ostream &out, VertexOrder &vo)
 }
 
 OrderStruct::OrderStruct() : dg_() {}
-OrderStruct::OrderStruct(DSBGraph dg) : dg_(dg) 
+OrderStruct::OrderStruct(DSBGraph dg) : dg_(dg), mapB_(), mapD_()
 {
   BOOST_FOREACH (DSetEdgeDesc ei, edges(dg_ref())) {
     PWLMap bmap = (dg_ref()[ei]).map_b();
@@ -976,6 +976,9 @@ Set OrderStruct::order_step()
   Set nth = empty_outgoing();
 
   Set ingoing = mapd().preImage(nth);
+  Set subset_edges = Emap().image(ingoing);
+  ingoing = Emap().preImage(subset_edges);
+
   Set mapb_dom = mapb().wholeDom(), mapd_dom = mapd().wholeDom();
   set_mapb(mapb().restrictMap(mapb_dom.diff(ingoing)));  
   set_mapd(mapd().restrictMap(mapd_dom.diff(ingoing)));  
@@ -987,13 +990,10 @@ Set OrderStruct::order_step()
 
 VertexOrder OrderStruct::order()
 {
-  debug_init();
-
   VertexOrder result, old_result;
 
-  partition_edges();
+  debug_init();
 
-/*
   do {
     old_result = result;
 
@@ -1001,7 +1001,6 @@ VertexOrder OrderStruct::order()
     if (!nth.empty())
       result.push_back(nth);
   } while (old_result != result);
-*/
 
   return result;
 }

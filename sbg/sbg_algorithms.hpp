@@ -142,11 +142,18 @@ struct OrderStruct {
   member_class(PWLMap, mapd); // Restricted map in each step
 
   member_class(Set, all_vertices); // Original set
+  member_class(Set, partitioned_vertices); // Original set
   member_class(Set, disordered); 
+
+  member_class(PWLMap, Emap);
 
   VertexOrder order();
 
   private:
+  PWLMap partition_edges();
   Set order_step();
   Set empty_outgoing(); // Gets all vertices that don't have outgoing edges
+
+  void debugInit();
+  void debugStep();
 }; 

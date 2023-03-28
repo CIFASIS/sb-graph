@@ -896,9 +896,11 @@ void SCCStruct::debugStep()
 std::ostream &operator<<(std::ostream &out, VertexOrder &vo)
 {
   int sz = vo.size(), i = 0;
-  for (; i < sz - 1; i++)
-    out << vo[i] << " - ";
-  out << vo[i];
+  if (sz > 0) {
+    for (; i < sz - 1; i++)
+      out << vo[i] << " - ";
+    out << vo[i];
+  }
 
   return out;
 }
@@ -921,6 +923,14 @@ OrderStruct::OrderStruct(DSBGraph dg) : dg_(dg)
     aux_vertices = aux_vertices.concat(dg_ref()[vi].range());
   set_all_vertices(aux_vertices);
   set_disordered(aux_vertices);
+
+  Set out = mapB().image().cap(aux_vertices), in = mapD().image().cap(aux_vertices);
+  Set aux_out = out.diff(in), aux_in = in.diff(out), out_in = out.cap(in); 
+  Set aux_not_out_in = aux_vertices.diff(out.cup(in));
+  Set partitioned = aux_out.concat(aux_in).concat(out_in).concat(aux_not_out_in);
+  set_partitioned_vertices(partitioned);
+
+  set_Emap(partition_edges());
 }
 
 member_imp(OrderStruct, DSBGraph, dg);
@@ -929,7 +939,32 @@ member_imp(OrderStruct, PWLMap, mapb);
 member_imp(OrderStruct, PWLMap, mapD);
 member_imp(OrderStruct, PWLMap, mapd);
 member_imp(OrderStruct, Set, all_vertices);
+member_imp(OrderStruct, Set, partitioned_vertices);
 member_imp(OrderStruct, Set, disordered);
+member_imp(OrderStruct, PWLMap, Emap);
+
+PWLMap OrderStruct::partition_edges()
+{
+  PWLMap result;
+  int i = 1;
+
+  DSBGraph grph = dg_ref();
+  Set b_part = mapB().preImage(partitioned_vertices()), d_part = mapD().preImage(partitioned_vertices());
+
+  BOOST_FOREACH (DSetEdgeDesc ed, edges(dg_ref())) {
+    Set e_dom = grph[ed].dom(), partitioned_edge = b_part.cap(e_dom).cap(d_part); 
+
+    BOOST_FOREACH (MultiInterval mi, partitioned_edge.asets()) { 
+      LMap lm;
+      lm.addGO(0, i);
+      result.addSetLM(Set(mi), lm);
+
+      i++;
+    }
+  }
+
+  return result;
+}
 
 Set OrderStruct::empty_outgoing()
 {
@@ -952,8 +987,13 @@ Set OrderStruct::order_step()
 
 VertexOrder OrderStruct::order()
 {
+  debugInit();
+
   VertexOrder result, old_result;
 
+  partition_edges();
+
+/*
   do {
     old_result = result;
 
@@ -961,6 +1001,33 @@ VertexOrder OrderStruct::order()
     if (!nth.empty())
       result.push_back(nth);
   } while (old_result != result);
+*/
 
   return result;
+}
+
+void OrderStruct::debugInit()
+{
+  LOG << "\n\n";
+  BOOST_FOREACH (DSetVertexDesc vi, vertices(dg_ref())) {
+    SetVertex v = dg_ref()[vi];
+
+    LOG << "-------\n";
+    LOG << v << "\n";
+  }
+  LOG << "-------\n\n";
+
+  LOG << "mapB: " << mapB() << "\n\n";
+  LOG << "mapD: " << mapD() << "\n\n";
+
+  LOG << "Emap: " << Emap() << "\n\n";
+
+  LOG << "*******************************\n\n";
+
+  return;
+}
+
+void OrderStruct::debugStep()
+{
+  return;
 }

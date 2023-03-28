@@ -46,18 +46,20 @@ std::ostream &operator<<(std::ostream &out, CompactIntervals &cis)
 {
   out << "[";
   int sz = cis.size(), i = 0;
-  for (; i < sz - 1; i++) {
+  if (sz > 0) {
+    for (; i < sz - 1; i++) {
+      out << cis[i].lo();
+
+      if (cis[i].lo() != cis[i].hi())
+        out << ":" << cis[i].hi(); 
+
+      out << ", ";
+    }
     out << cis[i].lo();
 
     if (cis[i].lo() != cis[i].hi())
       out << ":" << cis[i].hi(); 
-
-    out << ", ";
   }
-  out << cis[i].lo();
-
-  if (cis[i].lo() != cis[i].hi())
-    out << ":" << cis[i].hi(); 
 
   out << "]";
 
@@ -168,9 +170,11 @@ std::ostream &operator<<(std::ostream &out, EdgeUsage &eu)
 std::ostream &operator<<(std::ostream &out, EdgeUsages &eus)
 {
   int sz = eus.size(), i = 0;
-  for (; i < sz - 1; i++) 
-    out << "  " << eus[i] << ";\n";
-  out << "  " << eus[i] << ";";
+  if (sz > 0) {
+    for (; i < sz - 1; i++) 
+      out << "  " << eus[i] << ";\n";
+    out << "  " << eus[i] << ";";
+  }
 
   return out;
 }
@@ -310,9 +314,11 @@ std::ostream &operator<<(std::ostream &out, VertexUsages &vrtcs)
 {
   out << "{";
   int sz = vrtcs.size(), i = 0;
-  for (; i < sz - 1; i++) 
-    out << vrtcs[i] << ", ";
-  out << vrtcs[i];
+  if (sz > 0) {
+    for (; i < sz - 1; i++) 
+      out << vrtcs[i] << ", ";
+    out << vrtcs[i];
+  }
   out << "}";
 
   return out;

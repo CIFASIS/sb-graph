@@ -244,4 +244,17 @@ std::ostream &operator<<(std::ostream &out, DSBGraph &g)
   return out;
 }
 
+std::string get_name(Set s, DSBGraph dg)
+{
+  std::string result;
+
+  BOOST_FOREACH (DSetVertexDesc vd, vertices(dg)) {
+    Set v_range = dg[vd].range();
+    if (!v_range.cap(s).empty())
+      result = dg[vd].name();
+  }
+
+  return result;
+}
+
 }  // namespace SBG

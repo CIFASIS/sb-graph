@@ -25,9 +25,11 @@ struct OrderGraphBuilder {
   OrderGraphBuilder(SCCStruct scc);
 
   member_class(SCCStruct, scc);
+  member_class(DSBGraph, result);
 
   private:
   Set get_representants();
+  void create_vertices();
 };
 
 } // namespace SBG

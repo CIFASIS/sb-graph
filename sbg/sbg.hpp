@@ -145,4 +145,6 @@ typedef boost::graph_traits<DSBGraph>::edge_iterator DEdgeIt;
 
 std::ostream &operator<<(std::ostream &out, DSBGraph &dg);
 
+std::string get_name(Set s, DSBGraph dg); // Given a set of vertices, get the name of their corresponding set-vertex
+
 }  // namespace SBG

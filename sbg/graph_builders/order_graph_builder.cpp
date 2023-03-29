@@ -19,10 +19,11 @@
 
 namespace SBG {
 
-OrderGraphBuilder::OrderGraphBuilder() : scc_() {}
-OrderGraphBuilder::OrderGraphBuilder(scc) : scc_(scc) {}
+OrderGraphBuilder::OrderGraphBuilder() : scc_(), result_() {}
+OrderGraphBuilder::OrderGraphBuilder(scc) : scc_(scc), result_() {}
 
 member_imp(OrderGraphBuilder, SCCStruct, scc);
+member_imp(OrderGraphBuilder, DSBGraph, result);
 
 Set OrderGraphBuilder::get_representants()
 {
@@ -41,6 +42,21 @@ Set OrderGraphBuilder::get_representants()
   }
 
   return result;
+}
+
+void OrderGraphBuilder::create_vertices()
+{
+  BOOST_FOREACH (MultiInterval mi, get_representants().asets()) {
+    DSetVertexDesc vd = boost::add_vertex(result_ref());
+    result_ref()[vd] = SetVertex(get_name(Set(mi)), Set(mi));
+  }
+
+  return;
+}
+
+void OrderGraphBuilder::create_edges()
+{
+  return;
 }
 
 } // namespace SBG

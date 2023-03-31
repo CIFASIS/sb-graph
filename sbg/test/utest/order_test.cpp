@@ -23,7 +23,7 @@
 #include <parser/comp_converter.hpp>
 #include <sbg/pw_map.hpp>
 #include <sbg/sbg_algorithms.hpp>
-#include <sbg/graph_builders/scc_graph_builder.hpp>
+#include <sbg/graph_builders/order_graph_builder.hpp>
 
 void parse_order() 
 {
@@ -78,6 +78,65 @@ void parse_order()
   std::cout << "Bye... :-) \n\n";
 }
 
+void parse_build() 
+{
+  Parser::comp_sbg_parser g; // Our grammar
+
+  std::cout << "Type filename: ";
+  std::string fname;
+  std::cin >> fname;
+
+  if (fname != "") {
+    std::ifstream in(fname.c_str());
+    if (in.fail()) {
+      std::cerr << "Unable to open file " << fname << std::endl;
+      exit(-1);
+    }
+    in.unsetf(std::ios::skipws);
+
+    std::string str((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    std::string::const_iterator iter = str.begin();
+    std::string::const_iterator end = str.end();
+
+    Parser::CompSetGraph result;
+    bool r = boost::spirit::qi::phrase_parse(iter, end, g, boost::spirit::ascii::space, result);
+
+    std::cout << "-------------------------\n";
+
+    Parser::CompConverter c(result);
+    Parser::Grph g = c.convertGraph();
+
+    DSBGraph aux_g = boost::get<DSBGraph>(g);
+
+    if (r && iter == end) {
+      std::cout << "Parsing succeeded\n";
+      std::cout << "Resulting graph:\n\n" << aux_g << "\n";
+    }
+
+    else {
+      std::string rest(iter, end);
+      std::cout << "Parsing failed\n";
+      std::cout << "stopped at: \": " << rest << "\"\n";
+    }
+
+    SCCStruct scc(aux_g);
+    PWLMap rmap = scc.SBGSCC();
+
+    std::cout << rmap << "\n";
+
+    OrderGraphBuilder o(scc);
+    o.sort();
+
+    std::cout << "-------------------------\n";
+  } 
+
+  else 
+    std::cout << "A filename should be provided\n";
+
+  std::cout << "Bye... :-) \n\n";
+}
+
+
 int main(int argc, char** argv) 
 {
   std::cout << "\n/////////////////////////////////////////////////////////\n\n";
@@ -85,6 +144,7 @@ int main(int argc, char** argv)
   std::cout << "/////////////////////////////////////////////////////////\n\n";
 
   std::cout << "[1] Parse directed graph + Order algorithm\n";
+  std::cout << "[2] Parse directed graph + SCC algorithm + Build graph between representants\n";
 
   int opt;
   std::cout << "Select one option:\n";
@@ -93,6 +153,10 @@ int main(int argc, char** argv)
   switch (opt) {
     case 1:
       parse_order();
+      break;
+
+    case 2:
+      parse_build();
       break;
   }
 

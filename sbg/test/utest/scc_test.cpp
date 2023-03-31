@@ -203,7 +203,7 @@ int main(int argc, char** argv)
   std::cout << "SCC test\n\n";
   std::cout << "/////////////////////////////////////////////////////////\n\n";
 
-  std::cout << "[1] Parse bipartite graph + Build directed graph\n";
+  std::cout << "[1] Parse bipartite graph + Matching algorithm + Build directed graph\n";
   std::cout << "[2] Parse directed graph + SCC algorithm\n";
   std::cout << "[3] Parse bipartite graph + Build directed graph + SCC algorithm\n";
 

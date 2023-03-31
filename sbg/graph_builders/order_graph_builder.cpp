@@ -16,11 +16,12 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
+#include <sbg/graph_builders/order_graph_builder.hpp>
 
 namespace SBG {
 
 OrderGraphBuilder::OrderGraphBuilder() : scc_(), result_() {}
-OrderGraphBuilder::OrderGraphBuilder(scc) : scc_(scc), result_() {}
+OrderGraphBuilder::OrderGraphBuilder(SCCStruct scc) : scc_(scc), result_() {}
 
 member_imp(OrderGraphBuilder, SCCStruct, scc);
 member_imp(OrderGraphBuilder, DSBGraph, result);
@@ -48,28 +49,25 @@ void OrderGraphBuilder::create_vertices()
 {
   BOOST_FOREACH (MultiInterval mi, get_representants().asets()) {
     DSetVertexDesc vd = boost::add_vertex(result_ref());
-    result_ref()[vd] = SetVertex(get_name(Set(mi)), Set(mi));
-
-    vertex_map[] = ;
+    result_ref()[vd] = SetVertex(get_name(Set(mi), scc().g()), Set(mi));
   }
 
   return;
 }
 
-void OrderGraphBuilder::get_diff_edges()
+void OrderGraphBuilder::sort()
 {
-  DSBGraph grph = scc().g();
+  create_vertices(); 
 
-  Set all_edges = scc().Emap().wholeDom(), Ediff = all_edges.diff(scc().E());
+  Set all_edges = scc().Emap().wholeDom();
+  PWLMap rmapB = scc().rmap().compPW(scc().mapB()), rmapD = scc().rmap().compPW(scc().mapD());
+  Set all_reps = scc().rmap().image();
 
-  BOOST_FOREACH (DSetEdgeDesc ed, edges(grph)) {
-    Set e_range = grph[ed];
+  Set part_edgesB = rmapB.preImage(all_reps), part_edgesD = rmapD.preImage(all_reps);
+  Set part_edges = all_edges.cap(part_edgesB).cap(part_edgesD);
 
-    // Set-edge between different SCC
-    if (!e_range().cap(Ediff).empty()) {
-    }
-  }
+
+  return;
 }
-
 
 } // namespace SBG

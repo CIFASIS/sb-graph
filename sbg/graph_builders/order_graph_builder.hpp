@@ -20,21 +20,18 @@
 
 namespace SBG {
 
-typedef std::map<DSetVertexDesc, DSetVertexDesc> OrderVertexMap;
-
 struct OrderGraphBuilder {
   OrderGraphBuilder();
   OrderGraphBuilder(SCCStruct scc);
 
   member_class(SCCStruct, scc);
   member_class(DSBGraph, result);
-  member_class(OrderVertexMap, vertex_map);
+
+  void sort();
 
   private:
   Set get_representants();
   void create_vertices();
-
-  void get_diff_edges();
 };
 
 } // namespace SBG

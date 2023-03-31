@@ -49,14 +49,27 @@ void OrderGraphBuilder::create_vertices()
   BOOST_FOREACH (MultiInterval mi, get_representants().asets()) {
     DSetVertexDesc vd = boost::add_vertex(result_ref());
     result_ref()[vd] = SetVertex(get_name(Set(mi)), Set(mi));
+
+    vertex_map[] = ;
   }
 
   return;
 }
 
-void OrderGraphBuilder::create_edges()
+void OrderGraphBuilder::get_diff_edges()
 {
-  return;
+  DSBGraph grph = scc().g();
+
+  Set all_edges = scc().Emap().wholeDom(), Ediff = all_edges.diff(scc().E());
+
+  BOOST_FOREACH (DSetEdgeDesc ed, edges(grph)) {
+    Set e_range = grph[ed];
+
+    // Set-edge between different SCC
+    if (!e_range().cap(Ediff).empty()) {
+    }
+  }
 }
+
 
 } // namespace SBG

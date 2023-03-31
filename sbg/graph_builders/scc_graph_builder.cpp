@@ -24,7 +24,7 @@ SCCGraphBuilder::SCCGraphBuilder(MatchingStruct m) : mtchng_(m), result_(), vert
 
 member_imp(SCCGraphBuilder, MatchingStruct, mtchng);
 member_imp(SCCGraphBuilder, DSBGraph, result);
-member_imp(SCCGraphBuilder, VertexMap, vertex_map);
+member_imp(SCCGraphBuilder, SCCVertexMap, vertex_map);
 member_imp(SCCGraphBuilder, SBG::IO::Annotations, merged_vertices);
 
 bool SCCGraphBuilder::fullyMatched(Set vertices) { return vertices.subseteq(mtchng_ref().matchedV()); }

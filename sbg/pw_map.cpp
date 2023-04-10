@@ -123,7 +123,7 @@ SET_IMP PW_TEMP_TYPE::wholeDom()
   SET_IMP res;
 
   BOOST_FOREACH (SET_IMP s, dom())
-    res = res.cup(s);
+    res = res.concat(s);
 
   return res;
 }

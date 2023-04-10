@@ -257,4 +257,19 @@ std::string get_name(Set s, DSBGraph dg)
   return result;
 }
 
+std::optional<DSetVertexDesc> get_vertex(Set s, DSBGraph &dg)
+{
+  std::cout << s << "---\n";
+  BOOST_FOREACH (DSetVertexDesc vd, vertices(dg)) {
+    Set v_range = dg[vd].range();
+    std::cout << vd << " | " << v_range << "\n";
+    if (!v_range.cap(s).empty()) {
+      return vd;
+    }
+  }
+  std::cout << "\n";
+
+  return std::nullopt;
+}
+
 }  // namespace SBG

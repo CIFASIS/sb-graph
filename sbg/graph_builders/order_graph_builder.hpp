@@ -25,13 +25,17 @@ struct OrderGraphBuilder {
   OrderGraphBuilder(SCCStruct scc);
 
   member_class(SCCStruct, scc);
+  member_class(Set, part_edges); // For each atom set left vertices have the same rep (same with right vertices)
+  member_class(PWLMap, rmapB);
+  member_class(PWLMap, rmapD);
   member_class(DSBGraph, result);
 
-  void sort();
+  void build();
 
   private:
   Set get_representants();
   void create_vertices();
+  void create_edges();
 };
 
 } // namespace SBG

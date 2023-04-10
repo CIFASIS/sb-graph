@@ -21,6 +21,7 @@
 #include <boost/foreach.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/subgraph.hpp>
+#include <optional>
 #include <string>
 
 #include <sbg/descs.hpp>
@@ -146,5 +147,6 @@ typedef boost::graph_traits<DSBGraph>::edge_iterator DEdgeIt;
 std::ostream &operator<<(std::ostream &out, DSBGraph &dg);
 
 std::string get_name(Set s, DSBGraph dg); // Given a set of vertices, get the name of their corresponding set-vertex
+std::optional<DSetVertexDesc> get_vertex(Set s, DSBGraph &dg); // Given a set of vertices, get the corresponding set-vertex
 
 }  // namespace SBG

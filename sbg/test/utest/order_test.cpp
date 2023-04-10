@@ -122,10 +122,12 @@ void parse_build()
     SCCStruct scc(aux_g);
     PWLMap rmap = scc.SBGSCC();
 
-    std::cout << rmap << "\n";
+    std::cout << rmap << "\n\n";
 
     OrderGraphBuilder o(scc);
-    o.sort();
+    o.build();
+    DSBGraph dg = o.result();
+    std::cout << dg << "\n";
 
     std::cout << "-------------------------\n";
   } 

@@ -18,7 +18,7 @@ libdir          ?= $(exec_prefix)/lib
 
 # Flags, Libraries and Includes
 INCLUDES := -I.
-CXXFLAGS := -std=c++14 -Wall -Werror -Wno-reorder -O3 
+CXXFLAGS := -std=c++17 -Wall -Werror -Wno-reorder -O3 
 ifeq ($(MODE),Debug)
 CXXFLAGS 	+= -ggdb  
 endif

@@ -21,6 +21,8 @@
 #include <string>
 
 #include <parser/comp_converter.hpp>
+#include <sbg/converter_io.hpp>
+#include <sbg/sbg_io.hpp>
 
 void sbg()
 {
@@ -56,8 +58,11 @@ void sbg()
       if (result.modifier() == "undirected")
         std::cout << "converted result = \n\n" << boost::get<SBG::SBGraph>(converted_result);
 
-      if (result.modifier() == "directed")
-        std::cout << "converted result = \n\n" << boost::get<SBG::DSBGraph>(converted_result);
+      if (result.modifier() == "directed") {
+        SBG::IO::DirectedConverter dc(boost::get<SBG::DSBGraph>(converted_result));
+        SBG::IO::GraphIO g_io = dc.convert_graph();
+        std::cout << "converted result = \n\n" << g_io;
+      }
     }
 
     else {

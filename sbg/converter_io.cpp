@@ -81,7 +81,7 @@ LinearExps DirectedConverter::create_exp(MultiInterval mi)
   int j = 0;
   parallel_foreach3 (mi.inters_ref(), mi_offset.first.inters_ref(), mi_offset.second.inters_ref()) {
     Interval i = boost::get<0>(items), i_off = boost::get<1>(items), i_converted = boost::get<2>(items);
-    REAL m = i.step()/i_off.step(), h = i_converted.lo() + (i.lo() - i_off.lo()) / i_off.lo() - m;
+    REAL m = i.step()/i_off.step(), h = i_converted.lo() + (i.lo() - i_off.lo()) / i_off.step() - m;
     le_res.insert(le_res.end(), LinearExp(m, h, iterators[j]));
  
     j++;

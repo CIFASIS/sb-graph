@@ -22,6 +22,8 @@ PARSER_TEST_SRC := \
   	$(SBG_DIR)/atom_pw_map.cpp \
   	$(SBG_DIR)/pw_map.cpp \
 	  $(SBG_DIR)/sbg_algorithms.cpp \
+    $(SBG_DIR)/sbg_io.cpp \
+    $(SBG_DIR)/converter_io.cpp \
 	  $(SBG_DIR)/util/logger.cpp 
 
 # Objects

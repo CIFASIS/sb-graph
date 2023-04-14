@@ -292,6 +292,17 @@ SET_TEMP_TYPE SET_TEMP_TYPE::normalize()
 }
 
 SET_TEMPLATE
+std::set<MI_IMP> SET_TEMP_TYPE::sort()
+{
+  std::set<MI_IMP> res;
+
+  BOOST_FOREACH (MI_IMP mi, asets())
+    res.insert(mi);
+
+  return res;
+}
+
+SET_TEMPLATE
 SET_TEMP_TYPE SET_TEMP_TYPE::crossProd(SET_TEMP_TYPE set2)
 {
   AtomSets res;

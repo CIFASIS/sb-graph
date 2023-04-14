@@ -175,4 +175,28 @@ AtomDSBGraph atomize(DSBGraph dg)
   return dg_res;
 }
 
+std::string get_name(Set s, AtomDSBGraph dg)
+{
+  std::string result;
+
+  BOOST_FOREACH (AtomDSVDesc vd, vertices(dg)) {
+    Set v_range = dg[vd].range();
+    if (!v_range.cap(s).empty())
+      result = dg[vd].name();
+  }
+
+  return result;
+}
+
+std::optional<AtomDSVDesc> get_vertex(Set s, AtomDSBGraph &dg)
+{
+  BOOST_FOREACH (AtomDSVDesc vd, vertices(dg)) {
+    Set v_range = dg[vd].range();
+    if (!v_range.cap(s).empty()) 
+      return vd;
+  }
+
+  return std::nullopt;
+}
+
 } // namespace SBG

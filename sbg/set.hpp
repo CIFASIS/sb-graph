@@ -70,6 +70,7 @@ struct SetImp1 {
   ORD_CT<INT_IMP> maxElem();
 
   SetImp1 normalize();
+  std::set<MI_IMP> sort(); // Used in converter_io
 
   SetImp1 crossProd(SetImp1 set2);
 

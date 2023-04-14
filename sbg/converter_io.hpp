@@ -23,54 +23,31 @@ namespace SBG {
 
 namespace IO {
 
-struct Annotation {
-  Annotation();
-  Annotation(SetVertex og_lvertex, SetVertex og_rvertex, SetVertex lvertex, SetVertex rvertex);
+// Directed graph converter -----------------------------------------------------------------------
 
-  member_class(SetVertex, og_lvertex);
-  member_class(SetVertex, og_rvertex);
-  member_class(SetVertex, lvertex);
-  member_class(SetVertex, rvertex);
-};
+typedef std::map<MultiInterval, MultiInterval> ConverterVertexMap;
 
-std::ostream &operator<<(std::ostream &out, Annotation &a);
+struct DirectedConverter {
+  DirectedConverter();
+  DirectedConverter(DSBGraph dg);
 
-typedef std::list<Annotation> Annotations;
-std::ostream &operator<<(std::ostream &out, Annotations &as);
-
-struct AnnotatedGraphIO {
-  AnnotatedGraphIO();
-  AnnotatedGraphIO(Annotations ans, GraphIO g);
-
-  member_class(Annotations, ans);
-  member_class(GraphIO, g);
-};
-
-std::ostream &operator<<(std::ostream &out, AnnotatedGraphIO &g);
-
-// Converter --------------------------------------------------------------------------------------
-
-struct SCCConverter {
-  SCCConverter();
-  SCCConverter(DSBGraph dg);
-
-  member_class(AtomDSBGraph, dg);
+  member_class(DSBGraph, dg);
+  member_class(ConverterVertexMap, converted_vertices);
 
   GraphIO convert_graph();
-  AnnotatedGraphIO convert_with_annotations(Annotations ans);
+  //AnnotatedGraphIO convert_with_annotations(Annotations ans);
   RMapIO convert_map(PWLMap rmap);
 
   private:
   Range convert_interval(Interval i);
   Ranges convert_multi_interval(MultiInterval mi);
-  VertexDef convert_vertex(AtomDSVDesc vd);
-
+  
   Iterators create_iterators(MultiInterval mi);
   Ranges create_ranges(MultiInterval mi);
   LinearExps create_exp(MultiInterval mi);
-  EdgeDefs convert_edge(AtomDSEDesc ed);
- 
-  std::string get_vertex(MultiInterval mi);
+
+  VertexDef convert_vertex(DSetVertexDesc vd);
+  EdgeDefs convert_edge(DSetEdgeDesc ed);
 };
 
 } // namespace IO

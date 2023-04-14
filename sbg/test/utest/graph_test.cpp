@@ -24,7 +24,6 @@
 #include <sbg/sbg.hpp>
 #include <sbg/sbg_algorithms.hpp>
 #include <sbg/sbg_printer.hpp>
-#include <sbg/graph_builders/scc_graph_builder.hpp>
 #include <sbg/util/logger.hpp>
 
 using namespace boost::unit_test;
@@ -3756,13 +3755,6 @@ void TestPrint2()
   BOOST_CHECK(true);
 }
 
-// -- SBG atomize ------------------------------------------------------------//
-
-void TestAtomize1()
-{
-  BOOST_CHECK(true);
-}
-
 // -- Connected component ----------------------------------------------------//
 
 void TestRC1()
@@ -6946,8 +6938,6 @@ test_suite *init_unit_test_suite(int, char *[])
 
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestPrint1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestPrint2));
-
-  framework::master_test_suite().add(BOOST_TEST_CASE(&TestAtomize1));
 
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestRC1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestGraph3c));

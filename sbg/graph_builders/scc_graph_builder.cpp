@@ -20,12 +20,12 @@
 
 namespace SBG {
 
-SCCGraphBuilder::SCCGraphBuilder(MatchingStruct m) : mtchng_(m), result_(), vertex_map_(), merged_vertices_() {} 
+SCCGraphBuilder::SCCGraphBuilder(MatchingStruct m) : mtchng_(m), result_(), vertex_map_() {} 
 
 member_imp(SCCGraphBuilder, MatchingStruct, mtchng);
 member_imp(SCCGraphBuilder, DSBGraph, result);
 member_imp(SCCGraphBuilder, SCCVertexMap, vertex_map);
-member_imp(SCCGraphBuilder, SBG::IO::Annotations, merged_vertices);
+//member_imp(SCCGraphBuilder, SBG::IO::Annotations, merged_vertices);
 
 bool SCCGraphBuilder::fullyMatched(Set vertices) { return vertices.subseteq(mtchng_ref().matchedV()); }
 
@@ -119,7 +119,7 @@ void SCCGraphBuilder::createVertices(SBGraph &grph)
 
       SetVertex l = source_v.restrictVertex(mtchng_ref().mapF().image(e_dom));
       SetVertex r = target_v.restrictVertex(mtchng_ref().mapU().image(e_dom));
-      merged_vertices_ref().push_back(SBG::IO::Annotation(source_v, target_v, l, r));
+      //merged_vertices_ref().push_back(SBG::IO::Annotation(source_v, target_v, l, r));
     }
   }
 }
@@ -230,8 +230,9 @@ void SCCGraphBuilder::build()
 void SCCGraphBuilder::pretty_print() 
 {
   DSBGraph grph = result_ref();
-  SBG::IO::SCCConverter c(grph);
-  SBG::IO::AnnotatedGraphIO grph_io = c.convert_with_annotations(merged_vertices_ref());
+  SBG::IO::DirectedConverter c(grph);
+  //SBG::IO::AnnotatedGraphIO grph_io = c.convert_with_annotations(merged_vertices_ref());
+  SBG::IO::GraphIO grph_io = c.convert_graph();
   std::cout << grph_io << "\n";
 
   return;

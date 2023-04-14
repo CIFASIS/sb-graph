@@ -6,7 +6,6 @@ BUILDERS_DIR    := $(SBG_DIR)/graph_builders
 	BUILDERS_SRC := \
 	$(BUILDERS_DIR)/matching_graph_builder.cpp \
 	$(BUILDERS_DIR)/matching_io.cpp \
-	$(BUILDERS_DIR)/scc_io.cpp \
 	$(BUILDERS_DIR)/scc_graph_builder.cpp \
 	$(BUILDERS_DIR)/ordinary_graph_builder.cpp
 

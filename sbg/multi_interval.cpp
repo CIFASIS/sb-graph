@@ -356,13 +356,12 @@ bool MI_TEMP_TYPE::operator!=(const MI_TEMP_TYPE &other) const { return inters()
 MI_TEMPLATE
 bool MI_TEMP_TYPE::operator<(const MI_TEMP_TYPE &other) const
 {
-  typename Intervals::const_iterator iti2 = other.inters().begin();
+  Intervals ints = inters(), other_inters = other.inters();
 
-  BOOST_FOREACH (INTER_IMP i1, inters()) {
-    INTER_IMP aux = *iti2;
-    if (i1.minElem() < aux.minElem()) return true;
-
-    ++iti2;
+  parallel_foreach2 (ints, other_inters) {
+    INTER_IMP i = boost::get<0>(items), i_other = boost::get<1>(items);
+    if (i.minElem() < i_other.minElem()) 
+      return true;
   }
 
   return false;

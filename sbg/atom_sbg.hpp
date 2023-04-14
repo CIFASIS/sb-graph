@@ -61,6 +61,9 @@ typedef AtomDSBGraph::vertex_descriptor AtomDSVDesc;
 typedef AtomDSBGraph::edge_descriptor AtomDSEDesc;
 
 std::ostream &operator<<(std::ostream &out, AtomDSBGraph &g);
-AtomDSBGraph atomize(DSBGraph);
+AtomDSBGraph atomize(DSBGraph dg);
+
+std::string get_name(Set s, AtomDSBGraph dg); // Given a set of vertices, get the name of their corresponding set-vertex
+std::optional<AtomDSVDesc> get_vertex(Set s, AtomDSBGraph &dg); // Given a set of vertices, get the corresponding set-vertex
 
 } // namespace SBG

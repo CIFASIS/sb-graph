@@ -56,13 +56,13 @@ void parse_build()
     SCCGraphBuilder graph_builder(m);
     graph_builder.build();
     DSBGraph dg = graph_builder.result();
-
+ 
     std::cout << "-------------------------\n";
 
     if (r && iter == end) {
       std::cout << "Parsing succeeded\n";
       std::cout << "SCC Builder result = \n\n";
-      std::cout << dg << "\n";
+      graph_builder.pretty_print();
     }
 
     else {
@@ -110,8 +110,8 @@ void parse_scc()
     SCCStruct s(aux_g);
     PWLMap rmap = s.SBGSCC();
 
-    SBG::IO::SCCConverter sccc(aux_g);
-    SBG::IO::RMapIO result_io = sccc.convert_map(rmap);
+    SBG::IO::DirectedConverter dc(aux_g);
+    SBG::IO::RMapIO result_io = dc.convert_map(rmap);
 
     std::cout << "-------------------------\n";
 
@@ -183,8 +183,8 @@ void parse_build_scc()
     SCCStruct scc(dg);
     PWLMap rmap = scc.SBGSCC();
 
-    SBG::IO::SCCConverter sccc(dg);
-    SBG::IO::RMapIO result_io = sccc.convert_map(rmap);
+    SBG::IO::DirectedConverter dc(dg);
+    SBG::IO::RMapIO result_io = dc.convert_map(rmap);
 
     std::cout << "SCC result = \n\n" << result_io << "\n";
 
@@ -205,7 +205,7 @@ int main(int argc, char** argv)
 
   std::cout << "[1] Parse bipartite graph + Matching algorithm + Build directed graph\n";
   std::cout << "[2] Parse directed graph + SCC algorithm\n";
-  std::cout << "[3] Parse bipartite graph + Build directed graph + SCC algorithm\n";
+  std::cout << "[3] Parse bipartite graph + Matching algorithm + Build directed graph + SCC algorithm\n";
 
   int opt;
   std::cout << "Select one option:\n";

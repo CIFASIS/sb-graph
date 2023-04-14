@@ -16,10 +16,7 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
-
-#pragma once
-
-#include <sbg/graph_builders/scc_io.hpp>
+#include <sbg/converter_io.hpp>
 #include <sbg/sbg_algorithms.hpp>
 
 namespace SBG {
@@ -30,7 +27,7 @@ struct SCCGraphBuilder {
   member_class(MatchingStruct, mtchng);
   member_class(DSBGraph, result);
   member_class(SCCVertexMap, vertex_map); // A mapping from matched edges to their respective vertex in the directed graph
-  member_class(SBG::IO::Annotations, merged_vertices);
+  //member_class(SBG::IO::Annotations, merged_vertices);
 
   SCCGraphBuilder(MatchingStruct m);
 

@@ -7,6 +7,7 @@ SBG_ROOT := sbg
 	$(SBG_ROOT)/sbg.cpp \
 	$(SBG_ROOT)/atom_sbg.cpp \
 	$(SBG_ROOT)/sbg_io.cpp \
+	$(SBG_ROOT)/converter_io.cpp \
 	$(SBG_ROOT)/sbg_algorithms.cpp \
 	$(SBG_ROOT)/sbg_printer.cpp \
   	$(SBG_ROOT)/interval.cpp \

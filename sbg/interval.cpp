@@ -207,6 +207,9 @@ INTER_TEMP_TYPE INTER_TEMP_TYPE::normalize(INTER_TEMP_TYPE i2)
 }
 
 INTER_TEMPLATE
+bool INTER_TEMP_TYPE::subseteq(INTER_TEMP_TYPE i2) { return cap(i2) == *this; }
+
+INTER_TEMPLATE
 bool INTER_TEMP_TYPE::operator==(const INTER_TEMP_TYPE &other) const
 {
   INT l = lo(), ol = other.lo();

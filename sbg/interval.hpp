@@ -61,6 +61,8 @@ struct IntervalImp1 {
 
   IntervalImp1 normalize(IntervalImp1 i2);
 
+  bool subseteq(IntervalImp i2);  
+
   eq_class(IntervalImp1);
   neq_class(IntervalImp1);
 };

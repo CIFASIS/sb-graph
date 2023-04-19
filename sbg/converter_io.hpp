@@ -19,20 +19,31 @@
 #include <sbg/sbg_io.hpp>
 #include <sbg/util/defs.hpp>
 
+#include <boost/bimap.hpp>
+
 namespace SBG {
 
 namespace IO {
 
 // Directed graph converter -----------------------------------------------------------------------
 
-typedef std::map<MultiInterval, MultiInterval> ConverterVertexMap;
+typedef std::map<MultiInterval, LMap> CompactVertexMap;
+typedef std::pair<MultiInterval, LMap> CompPair;
+
+typedef boost::bimap<DSetVertexDesc, VertexDef> ConverterVertexMap;
+typedef ConverterVertexMap::value_type VConv;
+typedef boost::bimap<DSetEdgeDesc, EdgeDefs> ConverterEdgeMap;
+typedef ConverterEdgeMap::value_type EConv;
 
 struct DirectedConverter {
   DirectedConverter();
   DirectedConverter(DSBGraph dg);
 
   member_class(DSBGraph, dg);
+  member_class(CompactVertexMap, compacted_vertices);
   member_class(ConverterVertexMap, converted_vertices);
+  member_class(ConverterEdgeMap, converted_edges);
+  member_class(GraphIO, converted_dg);
 
   GraphIO convert_graph();
   //AnnotatedGraphIO convert_with_annotations(Annotations ans);
@@ -48,6 +59,9 @@ struct DirectedConverter {
 
   VertexDef convert_vertex(DSetVertexDesc vd);
   EdgeDefs convert_edge(DSetEdgeDesc ed);
+
+  CompPair get_vertex(MultiInterval mi);
+  VertexDefs get_vertex(SetVertex v);
 };
 
 } // namespace IO

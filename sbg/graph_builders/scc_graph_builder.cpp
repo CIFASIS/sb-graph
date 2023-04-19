@@ -25,7 +25,6 @@ SCCGraphBuilder::SCCGraphBuilder(MatchingStruct m) : mtchng_(m), result_(), vert
 member_imp(SCCGraphBuilder, MatchingStruct, mtchng);
 member_imp(SCCGraphBuilder, DSBGraph, result);
 member_imp(SCCGraphBuilder, SCCVertexMap, vertex_map);
-//member_imp(SCCGraphBuilder, SBG::IO::Annotations, merged_vertices);
 
 bool SCCGraphBuilder::fullyMatched(Set vertices) { return vertices.subseteq(mtchng_ref().matchedV()); }
 
@@ -115,11 +114,7 @@ void SCCGraphBuilder::createVertices(SBGraph &grph)
       DSetVertexDesc dv = boost::add_vertex(result_ref());
       result_ref()[dv] = v; 
   
-      vertex_map_ref()[de] = dv; 
-
-      SetVertex l = source_v.restrictVertex(mtchng_ref().mapF().image(e_dom));
-      SetVertex r = target_v.restrictVertex(mtchng_ref().mapU().image(e_dom));
-      //merged_vertices_ref().push_back(SBG::IO::Annotation(source_v, target_v, l, r));
+      vertex_map_ref()[de] = dv;      
     }
   }
 }

@@ -65,6 +65,8 @@ struct MultiInterImp1 {
 
   MultiInterImp1 offset(ORD_CT<INT_IMP> off);
 
+  bool subseteq(MultiInterImp1 mi2);
+
   eq_class(MultiInterImp1);
   neq_class(MultiInterImp1);
   lt_class(MultiInterImp1);

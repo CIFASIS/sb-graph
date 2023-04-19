@@ -46,5 +46,4 @@ struct SCCGraphBuilder {
   void pretty_print_edge(DSBGraph grph, DSetEdgeDesc ed);
 };
 
-
 } // namespace SBG

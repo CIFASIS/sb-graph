@@ -72,6 +72,11 @@ VertexDef::VertexDef(std::string name, CompactIntervals subs_dims) : name_(name)
 member_imp(VertexDef, std::string, name);
 member_imp(VertexDef, CompactIntervals, subs_dims);
 
+bool VertexDef::operator<(const VertexDef &other) const
+{
+  return name() < other.name();
+}
+
 std::ostream &operator<<(std::ostream &out, VertexDef &vd)
 {
   out << vd.name() << " " << vd.subs_dims_ref();
@@ -242,6 +247,11 @@ bool EdgeDef::operator==(const EdgeDef &other) const
   return is() == other.is() && rs() == other.rs() && edges() == other.edges();
 }
 
+bool EdgeDef::operator<(const EdgeDef &other) const
+{
+  return true;
+}
+
 std::ostream &operator<<(std::ostream &out, EdgeDef &ed)
 {
   int sz = ed.is_ref().size(), i = 0;
@@ -301,6 +311,28 @@ void GraphIO::merge_edges()
 
   set_eds(result);
   return;
+}
+
+VertexDef &GraphIO::operator[](VertexDef vd)
+{
+  static VertexDef res;
+
+  BOOST_FOREACH (VertexDef vd2, vds())
+    if (vd2.name() == vd.name())
+      res = vd2;
+
+  return res;
+}
+
+EdgeDef &GraphIO::operator[](EdgeDef ed)
+{
+  static EdgeDef res;
+
+  BOOST_FOREACH (EdgeDef ed2, eds())
+    if (ed2.rs() == ed.rs() && ed2.edges() == ed.edges())
+      res = ed2;
+
+  return res;
 }
 
 std::ostream &operator<<(std::ostream &out, GraphIO &s)

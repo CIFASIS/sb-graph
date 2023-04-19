@@ -24,11 +24,14 @@ namespace IO {
 
 // Directed graph converter -----------------------------------------------------------------------
 
-DirectedConverter::DirectedConverter() : dg_(), converted_vertices_() {}
-DirectedConverter::DirectedConverter(DSBGraph dg) : dg_(dg), converted_vertices_() {}
+DirectedConverter::DirectedConverter() : dg_(), compacted_vertices_(), converted_vertices_(), converted_edges_(), converted_dg_() {}
+DirectedConverter::DirectedConverter(DSBGraph dg) : dg_(dg), compacted_vertices_(), converted_vertices_(), converted_edges_(), converted_dg_() {}
 
 member_imp(DirectedConverter, DSBGraph, dg);
+member_imp(DirectedConverter, CompactVertexMap, compacted_vertices);
 member_imp(DirectedConverter, ConverterVertexMap, converted_vertices);
+member_imp(DirectedConverter, ConverterEdgeMap, converted_edges);
+member_imp(DirectedConverter, GraphIO, converted_dg);
 
 Range DirectedConverter::convert_interval(Interval i)
 {
@@ -72,11 +75,7 @@ LinearExps DirectedConverter::create_exp(MultiInterval mi)
 {
   LinearExps le_res;
 
-  std::pair<MultiInterval, MultiInterval> mi_offset;
-  BOOST_FOREACH (ConverterVertexMap::value_type &cv, converted_vertices_ref()) { 
-    if (!mi.cap(cv.first).empty()) 
-      mi_offset = cv;
-  }
+  CompPair mi_offset = get_vertex(mi);
 
   int j = 0;
   parallel_foreach3 (mi.inters_ref(), mi_offset.first.inters_ref(), mi_offset.second.inters_ref()) {
@@ -101,19 +100,23 @@ VertexDef DirectedConverter::convert_vertex(DSetVertexDesc vd)
     MultiInterval converted_mi;
 
     int j = 0;
+    LMap mi_lm;
     BOOST_FOREACH (Interval i, mi.inters()) {
       int card_lo = subs_res[j].lo(), card_hi = subs_res[j].hi();
       subs_res[j] = CompactInterval(i.card() + card_lo, i.card() + card_hi);
 
       converted_mi.addInter(Interval(card_lo + 1, 1, card_lo + i.card()));
+      mi_lm.addGO();
 
       j++;
     }
 
-    converted_vertices_ref()[mi] = converted_mi;
+    compacted_vertices_ref()[mi] = mi_lm;
   }
 
-  return VertexDef(v.name(), subs_res);
+  VertexDef res(v.name(), subs_res);
+  converted_vertices_ref().insert(VConv(vd, res));
+  return res;
 }
 
 EdgeDefs DirectedConverter::convert_edge(DSetEdgeDesc ed)
@@ -123,19 +126,20 @@ EdgeDefs DirectedConverter::convert_edge(DSetEdgeDesc ed)
   DSetEdge e = dg_ref()[ed];
   DSetVertexDesc es = source(ed, dg_ref()), et = target(ed, dg_ref());
 
-  PWLMap mapb = e.map_b(), mapd = e.map_d();
   BOOST_FOREACH (MultiInterval mi_dom, e.dom().asets()) {
+    AtomPWLMap mapb(mi_dom, e.map_b().getLM(mi_dom)), mapd(mi_dom, e.map_d().getLM(mi_dom));
+
     Iterators is = create_iterators(mi_dom);
     Ranges rs = create_ranges(mi_dom);
 
-    Set image_b = mapb.image(Set(mi_dom)), image_d = mapd.image(Set(mi_dom));
-    MultiInterval mi_b = *(image_b.asets_ref().begin()), mi_d = *(image_d.asets_ref().begin());
+    MultiInterval mi_b = mapb.image(mi_dom), mi_d = mapd.image(mi_dom);
     LinearExps le_b = create_exp(mi_b), le_d = create_exp(mi_d);
     VertexUsage vb(dg_ref()[es].name(), le_b), vd(dg_ref()[et].name(), le_d);
 
     eds_res.insert(eds_res.end(), EdgeDef(is, rs, EdgeUsages(1, EdgeUsage(vb, vd))));
   }
 
+  converted_edges_ref().insert(EConv(ed, eds_res));
   return eds_res;
 }
 
@@ -156,7 +160,7 @@ GraphIO DirectedConverter::convert_graph()
 
   GraphIO g(vds_res, eds_res);
   g.merge_edges();
-  return g;
+  set_converted_dg(g);
 }
 
 
@@ -168,6 +172,37 @@ AnnotatedGraphIO DirectedConverter::convert_with_annotations(Annotations ans)
   return AnnotatedGraphIO(ans, converted);
 }
 */
+
+// Graph getters ----------------------------------------------------------------------------------
+
+CompPair DirectedConverter::get_vertex(MultiInterval mi)
+{
+  CompPair res;
+
+  BOOST_FOREACH (CompactVertexMap::value_type &cv, compacted_vertices_ref()) { 
+    if (!mi.cap(cv.first).empty()) 
+      res = cv;
+  }
+
+  return res;
+}
+
+VertexDefs DirectedConverter::get_vertex(SetVertex v)
+{
+  VertexDef res;
+
+  VertexDef v_io;
+  BOOST_FOREACH (VertexDef vd, converted_dg_ref().vds())
+    if (vd.name() == v.name()) 
+      v_io = vd;
+
+  Set v_range = v.range(); 
+  BOOST_FOREACH (MultiInterval mi, v_range.asets()) {
+    CompPair compacted = get_vertex(mi); 
+  }
+
+  return res;
+}
 
 // Structure converters ---------------------------------------------------------------------------
 

@@ -348,6 +348,9 @@ MI_TEMP_TYPE MI_TEMP_TYPE::offset(ORD_CT<INT_IMP> off)
 }
 
 MI_TEMPLATE
+bool MI_TEMP_TYPE::offset(MI_TEMP_TYPE off) { return cap(mi2) == *this; }
+
+MI_TEMPLATE
 bool MI_TEMP_TYPE::operator==(const MI_TEMP_TYPE &other) const { return inters() == other.inters(); }
 
 MI_TEMPLATE

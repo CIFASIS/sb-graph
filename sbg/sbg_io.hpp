@@ -81,6 +81,8 @@ struct VertexDef {
 
   member_class(std::string, name);
   member_class(CompactIntervals, subs_dims);
+
+  lt_class(VertexDef);
 };
 
 std::ostream &operator<<(std::ostream &out, VertexDef &vd);
@@ -166,6 +168,7 @@ struct EdgeDef {
   member_class(EdgeUsages, edges);
 
   eq_class(EdgeDef);
+  lt_class(EdgeDef);
 };
 
 std::ostream &operator<<(std::ostream &out, EdgeDef &ed);
@@ -182,6 +185,9 @@ struct GraphIO {
   member_class(EdgeDefs, eds);
 
   void merge_edges();
+
+  VertexDef &operator[](VertexDef vd);
+  EdgeDef &operator[](EdgeDef ed);
 };
 
 std::ostream &operator<<(std::ostream &out, GraphIO &grph);

@@ -105,6 +105,8 @@ struct PWLMapImp1 {
   PWLMapImp1 reduceMapN(int dim);
   PWLMapImp1 mapInf(int n);
 
+  LM_IMP getLM(MI_IMP mi);
+
   eq_class(PWLMapImp1);
 };
 

@@ -1535,6 +1535,24 @@ PW_TEMP_TYPE PW_TEMP_TYPE::mapInf(int n)
   return res;
 }
 
+// ! The argument should be a multi-interval
+// ! of the map dom.
+PW_TEMPLATE
+LM_IMP PW_TEMP_TYPE::getLM(MI_IMP mi)
+{
+  LM_IMP res;
+
+  parallel_foreach2 (dom(), lmap()) {
+    SET_IMP d = boost::get<0>(items); 
+
+    BOOST_FOREACH (MI_IMP dmi, d.asets())
+      if (dmi == mi)
+        res = boost::get<1>(items);
+  }
+
+  return res;
+}
+
 PW_TEMPLATE
 bool PW_TEMP_TYPE::operator==(const PW_TEMP_TYPE &other) const { return dom() == other.dom() && lmap() == other.lmap(); }
 

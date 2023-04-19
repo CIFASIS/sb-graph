@@ -32,8 +32,6 @@ typedef std::pair<MultiInterval, LMap> CompPair;
 
 typedef boost::bimap<DSetVertexDesc, VertexDef> ConverterVertexMap;
 typedef ConverterVertexMap::value_type VConv;
-typedef boost::bimap<DSetEdgeDesc, EdgeDefs> ConverterEdgeMap;
-typedef ConverterEdgeMap::value_type EConv;
 
 struct DirectedConverter {
   DirectedConverter();
@@ -42,12 +40,15 @@ struct DirectedConverter {
   member_class(DSBGraph, dg);
   member_class(CompactVertexMap, compacted_vertices);
   member_class(ConverterVertexMap, converted_vertices);
-  member_class(ConverterEdgeMap, converted_edges);
   member_class(GraphIO, converted_dg);
 
   GraphIO convert_graph();
   //AnnotatedGraphIO convert_with_annotations(Annotations ans);
   RMapIO convert_map(PWLMap rmap);
+
+  VertexDefs get_vertex(SetVertex v);
+
+  EdgeDefs get_edge(DSetEdge e, std::string s_name, std::string t_name);
 
   private:
   Range convert_interval(Interval i);
@@ -58,10 +59,10 @@ struct DirectedConverter {
   LinearExps create_exp(MultiInterval mi);
 
   VertexDef convert_vertex(DSetVertexDesc vd);
+  EdgeDef convert_subsetedge(DSetEdge e, MultiInterval mi_dom, std::string s_name, std::string t_name);
   EdgeDefs convert_edge(DSetEdgeDesc ed);
 
   CompPair get_vertex(MultiInterval mi);
-  VertexDefs get_vertex(SetVertex v);
 };
 
 } // namespace IO

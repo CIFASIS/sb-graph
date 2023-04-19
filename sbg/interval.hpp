@@ -49,6 +49,7 @@ struct IntervalImp1 {
   INT lcm(INT a, INT b);
 
   bool isIn(INT x);
+  bool compatible(IntervalImp1 i2);
   int card();
   IntervalImp1 cap(IntervalImp1 i2);
   UNORD_CT<IntervalImp1> diff(IntervalImp1 i2);
@@ -61,7 +62,7 @@ struct IntervalImp1 {
 
   IntervalImp1 normalize(IntervalImp1 i2);
 
-  bool subseteq(IntervalImp i2);  
+  bool subseteq(IntervalImp1 i2);  
 
   eq_class(IntervalImp1);
   neq_class(IntervalImp1);

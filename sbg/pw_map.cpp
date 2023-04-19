@@ -1592,4 +1592,32 @@ std::ostream &operator<<(std::ostream &out, const PW_TEMP_TYPE &pw)
 
 template std::ostream &operator<<(std::ostream &out, const PWLMap &pw);
 
+// ! image and dom should be compatible
+LMap mapFromInters(Interval dom, Interval image)
+{
+  LMap res;
+
+  SBG::REAL m = image.step() / dom.step();
+  SBG::REAL h = image.lo() - m * dom.lo();
+  res.addGO(m, h);
+
+  return res;  
+}
+
+// ! image and dom should be compatible
+LMap mapFromMI(MultiInterval dom, MultiInterval image)
+{
+  LMap res;
+
+  parallel_foreach2 (dom.inters_ref(), image.inters_ref()) {
+    Interval i_dom = boost::get<0>(items), i_im = boost::get<1>(items);
+
+    LMap ith = mapFromInters(i_dom, i_im); 
+    res.addGO(*(ith.gain().begin()), *(ith.offset().begin()));
+  }
+
+  return res;
+}
+
+
 }  // namespace SBG

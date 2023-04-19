@@ -20,11 +20,12 @@
 
 namespace SBG {
 
-SCCGraphBuilder::SCCGraphBuilder(MatchingStruct m) : mtchng_(m), result_(), vertex_map_() {} 
+SCCGraphBuilder::SCCGraphBuilder(MatchingStruct m) : mtchng_(m), result_(), vertex_map_(), dir_conv_(m.g()) {} 
 
 member_imp(SCCGraphBuilder, MatchingStruct, mtchng);
 member_imp(SCCGraphBuilder, DSBGraph, result);
 member_imp(SCCGraphBuilder, SCCVertexMap, vertex_map);
+member_imp(SCCGraphBuilder, SBG::IO::DirectedConverter, dir_conv)
 
 bool SCCGraphBuilder::fullyMatched(Set vertices) { return vertices.subseteq(mtchng_ref().matchedV()); }
 
@@ -104,19 +105,38 @@ void SCCGraphBuilder::createVertices(SBGraph &grph)
   Set matched = mtchng_ref().matchedE();
 
   BOOST_FOREACH (SetEdgeDesc de, edges(grph)) {
-    Set e_dom = grph[de].dom().cap(matched);
+    SetEdge e = grph[de];
+    Set e_dom = e.dom().cap(matched);
 
     if (!e_dom.empty()) {
       SetVertexDesc s = source(de, grph), t = target(de, grph);
       SetVertex source_v = grph[s], target_v = grph[t];
-      SetVertex v(source_v.name() + target_v.name(), grph[de].id(), e_dom, 0);
+      SetVertex v(source_v.name() + target_v.name(), e.id(), e_dom, 0);
   
       DSetVertexDesc dv = boost::add_vertex(result_ref());
       result_ref()[dv] = v; 
   
-      vertex_map_ref()[de] = dv;      
+      vertex_map_ref()[de] = dv;       
+
+      // Pretty-print of conversion
+      BOOST_FOREACH (MultiInterval mi_e_dom, e_dom.asets()) {
+        Set aux(mi_e_dom);
+ 
+        SetVertex restricted_v(v.name(), v.id(), v.range().cap(aux), 0);
+        SetEdge restricted_e = e.restrictEdge(aux);
+
+        pretty_print_vertex(restricted_e, source_v.name(), target_v.name(), restricted_v);
+      }
     }
   }
+}
+
+void SCCGraphBuilder::pretty_print_vertex(DSetEdge edge, std::string s_name, std::string t_name, SetVertex merged)
+{
+  SBG::IO::EdgeDefs eds = dir_conv().get_edge(edge, s_name, t_name);
+  SBG::IO::VertexDefs vds = dir_conv().get_vertex(merged);
+
+  return;
 }
 
 // Traverse all edges {u, v} to find the unmatched ones.

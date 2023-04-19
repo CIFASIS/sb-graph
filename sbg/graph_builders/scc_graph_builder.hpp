@@ -27,6 +27,7 @@ struct SCCGraphBuilder {
   member_class(MatchingStruct, mtchng);
   member_class(DSBGraph, result);
   member_class(SCCVertexMap, vertex_map); // A mapping from matched edges to their respective vertex in the directed graph
+  member_class(SBG::IO::DirectedConverter, dir_conv);
   //member_class(SBG::IO::Annotations, merged_vertices);
 
   SCCGraphBuilder(MatchingStruct m);
@@ -42,8 +43,7 @@ struct SCCGraphBuilder {
   void createEdges(SBGraph &grph);
   DSBGraph combineEdges();
 
-  void pretty_print_vertex(DSBGraph grph, DSetVertexDesc vd);
-  void pretty_print_edge(DSBGraph grph, DSetEdgeDesc ed);
+  void pretty_print_vertex(DSetEdge edge, std::string s_name, std::string t_name, SetVertex merged);
 };
 
 } // namespace SBG

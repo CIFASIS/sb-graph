@@ -93,6 +93,12 @@ bool INTER_TEMP_TYPE::isIn(INT x)
   return false;
 }
 
+// [10:2:20] 3/2*x - 5
+// [10:3:25] 
+
+INTER_TEMPLATE
+bool INTER_TEMP_TYPE::compatible(INTER_TEMP_TYPE i2) { return card() == i2.card(); }
+
 INTER_TEMPLATE
 int INTER_TEMP_TYPE::card()
 {

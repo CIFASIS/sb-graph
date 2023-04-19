@@ -67,7 +67,4 @@ std::string mapOper(REAL_IMP &cte);
 
 printable_temp(LM_TEMPLATE, LM_TEMP_TYPE);
 
-LMap mapFromInters(Interval dom, Interval image);
-LMap mapFromMI(MultiInterval dom, MultiInterval image);
-
 }  // namespace SBG

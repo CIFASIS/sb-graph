@@ -114,4 +114,7 @@ typedef PWLMapImp1<OrdCT, UnordCT, AtomPWLMap, LMap, Set, MultiInterval, Interva
 
 printable_temp(PW_TEMPLATE, PW_TEMP_TYPE);
 
+LMap mapFromInters(Interval dom, Interval image);
+LMap mapFromMI(MultiInterval dom, MultiInterval image);
+
 }  // namespace SBG

@@ -1542,7 +1542,7 @@ LM_IMP PW_TEMP_TYPE::getLM(MI_IMP mi)
 {
   LM_IMP res;
 
-  parallel_foreach2 (dom(), lmap()) {
+  parallel_foreach2 (dom_ref(), lmap_ref()) {
     SET_IMP d = boost::get<0>(items); 
 
     BOOST_FOREACH (MI_IMP dmi, d.asets())

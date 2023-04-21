@@ -244,6 +244,30 @@ std::ostream &operator<<(std::ostream &out, DSBGraph &g)
   return out;
 }
 
+std::string get_name(Set s, SBGraph g)
+{
+  std::string result;
+
+  BOOST_FOREACH (SetVertexDesc vd, vertices(g)) {
+    Set v_range = g[vd].range();
+    if (!v_range.cap(s).empty())
+      result = g[vd].name();
+  }
+
+  return result;
+}
+
+std::optional<SetVertexDesc> get_vertex(Set s, SBGraph &g)
+{
+  BOOST_FOREACH (DSetVertexDesc vd, vertices(g)) {
+    Set v_range = g[vd].range();
+    if (!v_range.cap(s).empty()) 
+      return vd;
+  }
+
+  return std::nullopt;
+}
+
 std::string get_name(Set s, DSBGraph dg)
 {
   std::string result;

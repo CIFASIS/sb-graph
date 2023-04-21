@@ -25,13 +25,48 @@ namespace SBG {
 
 namespace IO {
 
-// Directed graph converter -----------------------------------------------------------------------
-
 typedef std::map<MultiInterval, LMap> CompactVertexMap;
 typedef std::pair<MultiInterval, LMap> CompPair;
 
-typedef boost::bimap<DSetVertexDesc, VertexDef> ConverterVertexMap;
-typedef ConverterVertexMap::value_type VConv;
+// Undirected graph converter -----------------------------------------------------------------------
+
+typedef boost::bimap<DSetVertexDesc, VertexDef> UConverterVertexMap;
+typedef UConverterVertexMap::value_type VConv;
+
+struct UndirectedConverter {
+  UndirectedConverter();
+  UndirectedConverter(SBGraph g);
+
+  member_class(SBGraph, g);
+  member_class(CompactVertexMap, compacted_vertices);
+  member_class(UConverterVertexMap, converted_vertices);
+  member_class(GraphIO, converted_g);
+
+  GraphIO convert_graph();
+  RMapIO convert_map(PWLMap rmap);
+
+  VertexDef get_vertex_def(std::string vertex_name);
+  EdgeDefs get_edge(SetEdge e, std::string s_name, std::string t_name);
+
+  private:
+  Range convert_interval(Interval i);
+  Ranges convert_multi_interval(MultiInterval mi);
+  
+  Iterators create_iterators(MultiInterval mi);
+  Ranges create_ranges(MultiInterval mi);
+  LinearExps create_exp(MultiInterval mi);
+
+  VertexDef convert_vertex(SetVertexDesc vd);
+  EdgeDef convert_subsetedge(SetEdge e, MultiInterval mi_dom, std::string s_name, std::string t_name);
+  EdgeDefs convert_edge(SetEdgeDesc ed);
+
+  CompPair get_vertex(MultiInterval mi);
+};
+
+// Directed graph converter -----------------------------------------------------------------------
+
+typedef boost::bimap<DSetVertexDesc, VertexDef> DConverterVertexMap;
+typedef DConverterVertexMap::value_type DVConv;
 
 struct DirectedConverter {
   DirectedConverter();
@@ -39,15 +74,13 @@ struct DirectedConverter {
 
   member_class(DSBGraph, dg);
   member_class(CompactVertexMap, compacted_vertices);
-  member_class(ConverterVertexMap, converted_vertices);
+  member_class(DConverterVertexMap, converted_vertices);
   member_class(GraphIO, converted_dg);
 
   GraphIO convert_graph();
-  //AnnotatedGraphIO convert_with_annotations(Annotations ans);
   RMapIO convert_map(PWLMap rmap);
 
-  VertexDefs get_vertex(SetVertex v);
-
+  VertexDef get_vertex_def(std::string vertex_name);
   EdgeDefs get_edge(DSetEdge e, std::string s_name, std::string t_name);
 
   private:

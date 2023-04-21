@@ -51,7 +51,7 @@ void parse_build()
     Parser::CompConverter c(result);
     Parser::Grph g = c.convertGraph();
 
-    MatchingStruct m(boost::get<SBGraph>(g));
+    MatchingStruct m(boost::get<SBG::SBGraph>(g));
     m.SBGMatching();
     SCCGraphBuilder graph_builder(m);
     graph_builder.build();

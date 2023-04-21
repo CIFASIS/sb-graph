@@ -20,12 +20,25 @@
 
 namespace SBG {
 
-SCCGraphBuilder::SCCGraphBuilder(MatchingStruct m) : mtchng_(m), result_(), vertex_map_(), dir_conv_(m.g()) {} 
+// Auxiliary structures -----------------------------------------------------------------------------
+
+SCCVertex::SCCVertex() : mtchng_edge_(), scc_vertex_() {}
+SCCVertex::SCCVertex(SBG::IO::EdgeDefs mtchng_edge, std::string scc_vertex) : mtchng_edge_(mtchng_edge), scc_vertex_(scc_vertex) {}
+
+member_imp(SCCVertex, SBG::IO::EdgeDefs, mtchng_edge);
+member_imp(SCCVertex, std::string, scc_vertex);
+
+// Builder ------------------------------------------------------------------------------------------
+
+SCCGraphBuilder::SCCGraphBuilder(MatchingStruct m) : mtchng_(m), result_(), vertex_map_(), undir_conv_(m.g()) {
+  undir_conv_ref().convert_graph();
+} 
 
 member_imp(SCCGraphBuilder, MatchingStruct, mtchng);
 member_imp(SCCGraphBuilder, DSBGraph, result);
 member_imp(SCCGraphBuilder, SCCVertexMap, vertex_map);
-member_imp(SCCGraphBuilder, SBG::IO::DirectedConverter, dir_conv)
+member_imp(SCCGraphBuilder, SBG::IO::UndirectedConverter, undir_conv)
+member_imp(SCCGraphBuilder, SCCVertices, conv_vertices);
 
 bool SCCGraphBuilder::fullyMatched(Set vertices) { return vertices.subseteq(mtchng_ref().matchedV()); }
 
@@ -122,19 +135,20 @@ void SCCGraphBuilder::createVertices(SBGraph &grph)
       BOOST_FOREACH (MultiInterval mi_e_dom, e_dom.asets()) {
         Set aux(mi_e_dom);
  
-        SetVertex restricted_v(v.name(), v.id(), v.range().cap(aux), 0);
         SetEdge restricted_e = e.restrictEdge(aux);
 
-        pretty_print_vertex(restricted_e, source_v.name(), target_v.name(), restricted_v);
+        save_vertex(restricted_e, source_v.name(), target_v.name());
       }
     }
   }
 }
 
-void SCCGraphBuilder::pretty_print_vertex(DSetEdge edge, std::string s_name, std::string t_name, SetVertex merged)
+void SCCGraphBuilder::save_vertex(SetEdge edge, std::string s_name, std::string t_name)
 {
-  SBG::IO::EdgeDefs eds = dir_conv().get_edge(edge, s_name, t_name);
-  SBG::IO::VertexDefs vds = dir_conv().get_vertex(merged);
+  SBG::IO::EdgeDefs eds = undir_conv().get_edge(edge, s_name, t_name);
+
+  SCCVertex v(eds, s_name + t_name);
+  conv_vertices_ref().push_back(v);
 
   return;
 }
@@ -246,8 +260,15 @@ void SCCGraphBuilder::pretty_print()
 {
   DSBGraph grph = result_ref();
   SBG::IO::DirectedConverter c(grph);
-  //SBG::IO::AnnotatedGraphIO grph_io = c.convert_with_annotations(merged_vertices_ref());
   SBG::IO::GraphIO grph_io = c.convert_graph();
+ 
+  BOOST_FOREACH (SCCVertex v, conv_vertices()) {
+    SBG::IO::EdgeDefs e = v.mtchng_edge();
+    std::cout << e;
+    SBG::IO::VertexDef vd = c.get_vertex_def(v.scc_vertex());
+    std::cout << vd << "\n\n";
+  } 
+
   std::cout << grph_io << "\n";
 
   return;

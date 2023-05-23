@@ -217,9 +217,8 @@ RMapIO UndirectedConverter::convert_map(PWLMap rmap)
   RMapIO result;
 
   Set whole_dom;
-  BOOST_FOREACH (SetVertexDesc vd, vertices(g_ref())) {
-    whole_dom.concat(g_ref()[vd].range());
-  }
+  BOOST_FOREACH (SetVertexDesc vd, vertices(g_ref())) 
+    whole_dom = whole_dom.concat(g_ref()[vd].range());
   rmap = rmap.restrictMap(whole_dom);
 
   parallel_foreach2 (rmap.dom_ref(), rmap.lmap_ref()) {
@@ -406,7 +405,7 @@ CompPair DirectedConverter::get_vertex(MultiInterval mi)
 
   BOOST_FOREACH (CompactVertexMap::value_type &cv, compacted_vertices_ref()) { 
     MultiInterval aux = cv.first;
-    if (aux.subseteq(mi)) 
+    if (mi.subseteq(aux)) 
       res = cv;
   }
 
@@ -443,9 +442,8 @@ RMapIO DirectedConverter::convert_map(PWLMap rmap)
   RMapIO result;
 
   Set whole_dom;
-  BOOST_FOREACH (DSetVertexDesc vd, vertices(dg_ref())) {
-    whole_dom.concat(dg_ref()[vd].range());
-  }
+  BOOST_FOREACH (DSetVertexDesc vd, vertices(dg_ref())) 
+    whole_dom = whole_dom.concat(dg_ref()[vd].range_ref());
   rmap = rmap.restrictMap(whole_dom);
 
   parallel_foreach2 (rmap.dom_ref(), rmap.lmap_ref()) {

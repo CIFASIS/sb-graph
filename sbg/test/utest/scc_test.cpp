@@ -111,6 +111,7 @@ void parse_scc()
     PWLMap rmap = s.SBGSCC();
 
     SBG::IO::DirectedConverter dc(aux_g);
+    dc.convert_graph();
     SBG::IO::RMapIO result_io = dc.convert_map(rmap);
 
     std::cout << "-------------------------\n";
@@ -184,6 +185,7 @@ void parse_build_scc()
     PWLMap rmap = scc.SBGSCC();
 
     SBG::IO::DirectedConverter dc(dg);
+    dc.convert_graph();
     SBG::IO::RMapIO result_io = dc.convert_map(rmap);
 
     std::cout << "SCC result = \n\n" << result_io << "\n";

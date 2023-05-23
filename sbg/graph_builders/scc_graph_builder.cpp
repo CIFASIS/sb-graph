@@ -262,6 +262,7 @@ void SCCGraphBuilder::pretty_print()
   SBG::IO::DirectedConverter c(grph);
   SBG::IO::GraphIO grph_io = c.convert_graph();
  
+  std::cout << "*** Vertex mapping ***\n"; 
   BOOST_FOREACH (SCCVertex v, conv_vertices()) {
     SBG::IO::EdgeDefs e = v.mtchng_edge();
     std::cout << e;
@@ -269,6 +270,7 @@ void SCCGraphBuilder::pretty_print()
     std::cout << vd << "\n\n";
   } 
 
+  std::cout << "*** Resulting graph ***\n"; 
   std::cout << grph_io << "\n";
 
   return;

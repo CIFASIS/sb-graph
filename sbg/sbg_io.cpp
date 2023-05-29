@@ -22,7 +22,7 @@ namespace SBG {
 
 namespace IO {
 
-// Pretty-printer ---------------------------------------------------------------------------------
+// Graphs pretty-printer --------------------------------------------------------------------------
 
 CompactInterval::CompactInterval() : lo_(), hi_() {}
 CompactInterval::CompactInterval(int lo, int hi) : lo_(lo), hi_(hi) {}
@@ -338,6 +338,20 @@ EdgeDef &GraphIO::operator[](EdgeDef ed)
 std::ostream &operator<<(std::ostream &out, GraphIO &s)
 {
   out << s.vds_ref() << "\n" << s.eds_ref();
+
+  return out;
+}
+
+// Other structures -------------------------------------------------------------------------------
+
+MatchingIO::MatchingIO() : eds_() {}
+MatchingIO::MatchingIO(Edges eds) : eds_(eds) {}
+
+member_imp(MatchingIO, Edges, eds);
+
+std::ostream &operator<<(std::ostream &out, MatchingIO &m)
+{
+  out << m.eds_ref();
 
   return out;
 }

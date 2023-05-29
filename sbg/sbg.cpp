@@ -259,10 +259,21 @@ std::string get_name(Set s, SBGraph g)
 
 std::optional<SetVertexDesc> get_vertex(Set s, SBGraph &g)
 {
-  BOOST_FOREACH (DSetVertexDesc vd, vertices(g)) {
+  BOOST_FOREACH (SetVertexDesc vd, vertices(g)) {
     Set v_range = g[vd].range();
     if (!v_range.cap(s).empty()) 
       return vd;
+  }
+
+  return std::nullopt;
+}
+
+std::optional<SetEdgeDesc> get_edge(MultiInterval e, SBGraph &g)
+{
+  BOOST_FOREACH (SetEdgeDesc ed, edges(g)) {
+    Set e_range = g[ed].dom();
+    if (!e_range.cap(Set(e)).empty()) 
+      return ed;
   }
 
   return std::nullopt;

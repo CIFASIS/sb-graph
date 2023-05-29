@@ -43,6 +43,7 @@ struct UndirectedConverter {
   member_class(GraphIO, converted_g);
 
   GraphIO convert_graph();
+  MatchingIO convert_matching(Set edges);
   RMapIO convert_map(PWLMap rmap);
 
   VertexDef get_vertex_def(std::string vertex_name);

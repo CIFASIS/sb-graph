@@ -212,6 +212,21 @@ EdgeDefs UndirectedConverter::get_edge(SetEdge e, std::string s_name, std::strin
 
 // Structure converters ---------------------------------------------------------------------------
 
+MatchingIO UndirectedConverter::convert_matching(Set edges)
+{
+  EdgeDefs eds;
+
+  BOOST_FOREACH (MultiInterval mi, edges.asets()) {
+    auto ed = SBG::get_edge(mi, g_ref());
+    SetVertexDesc vs = source(*ed, g_ref()), vt = target(*ed, g_ref());
+    EdgeDef e = convert_subsetedge(g_ref()[*ed], mi, g_ref()[vs].name(), g_ref()[vt].name());
+
+    eds.push_back(e);
+  }
+
+  return MatchingIO(eds);
+}
+
 RMapIO UndirectedConverter::convert_map(PWLMap rmap)
 {
   RMapIO result;

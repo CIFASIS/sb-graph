@@ -18,8 +18,7 @@
  ******************************************************************************/
 
 /*
-* Pretty-prints a DSBGraph returned by SCCGraphBuilder::build(), according to
-* the following syntax:
+* Graphs meant to be printed, with a syntax close to Modelica fashion:
 *
 * vertex_def := '['(int ',')* int']'
 *
@@ -42,9 +41,7 @@
 *
 * A graph is a collection of vertices and edges between them. vertex_def and
 * edge_def represent these collections. To define an edge vertices are used,
-* that's where vertex_usage comes into use.
-*
-* At the end a converter for SBG is provided, in order to pretty-print them.
+* that's where vertex_usage comes into the scene.
 */
 
 #pragma once
@@ -174,7 +171,6 @@ struct EdgeDef {
 std::ostream &operator<<(std::ostream &out, EdgeDef &ed);
 
 typedef std::vector<EdgeDef> EdgeDefs;
-
 std::ostream &operator<<(std::ostream &out, EdgeDefs &eds);
 
 struct GraphIO {
@@ -194,6 +190,18 @@ std::ostream &operator<<(std::ostream &out, GraphIO &grph);
 
 typedef std::vector<VertexUsage> VertexUsages;
 std::ostream &operator<<(std::ostream &out, VertexUsages &vrtcs);
+
+// To pretty print a matching of a SBG
+typedef EdgeDefs Edges;
+
+struct MatchingIO {
+  MatchingIO();
+  MatchingIO(Edges eds);
+
+  member_class(Edges, eds);
+};
+
+std::ostream &operator<<(std::ostream &out, MatchingIO &m);
 
 // To pretty a representant and its represented vertices
 // of a given map

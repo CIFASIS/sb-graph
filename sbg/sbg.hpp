@@ -136,8 +136,9 @@ typedef boost::graph_traits<SBGraph>::out_edge_iterator OutEdgeIt;
 
 std::ostream &operator<<(std::ostream &out, SBGraph &g);
 
-std::string get_name(Set s, SBGraph dg); // Given a set of vertices, get the name of their corresponding set-vertex
-std::optional<SetVertexDesc> get_vertex(Set s, SBGraph &dg); // Given a set of vertices, get the corresponding set-vertex
+std::string get_name(Set s, SBGraph g); // Given a set of vertices, get the name of their corresponding set-vertex
+std::optional<SetVertexDesc> get_vertex(Set s, SBGraph &g); // Given a set of vertices, get the corresponding set-vertex
+std::optional<SetEdgeDesc> get_edge(MultiInterval e, SBGraph &g); // Given a set of edges, get the corresponding set-vertex
 
 // Directed Set graph ------------------------------------------------------------------------------
 

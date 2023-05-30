@@ -23,6 +23,7 @@
 #include <parser/comp_converter.hpp>
 #include <sbg/pw_map.hpp>
 #include <sbg/sbg_algorithms.hpp>
+#include <sbg/converter_io.hpp>
 
 void parse_build() 
 {
@@ -50,15 +51,20 @@ void parse_build()
     Parser::CompConverter c(result);
     Parser::Grph g = c.convertGraph();
 
-    MatchingStruct m(boost::get<SBG::SBGraph>(g));
+    SBGraph sbg = boost::get<SBG::SBGraph>(g);
+    MatchingStruct m(sbg);
     std::pair<SBG::Set, bool> res = m.SBGMatching();
+
+    SBG::IO::UndirectedConverter uc(sbg);
+    uc.convert_graph();
+    SBG::IO::MatchingIO m_io = uc.convert_matching(res.first);
  
     std::cout << "-------------------------\n";
 
     if (r && iter == end) {
       std::cout << "Parsing succeeded\n";
       std::cout << "Matching result = \n\n";
-      std::cout << res.first << "\n";
+      std::cout << m_io << "\n";
     }
 
     else {

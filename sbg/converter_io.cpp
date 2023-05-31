@@ -72,10 +72,12 @@ Ranges UndirectedConverter::create_ranges(MultiInterval mi)
 // ! of the graph
 LinearExps UndirectedConverter::create_exp(MultiInterval mi)
 {
+  //std::cout << mi << "\n";
   LinearExps le_res;
 
   CompPair off = get_vertex(mi);
   AtomPWLMap map_offset(mi, off.second);
+  //std::cout << map_offset << "\n";
   MultiInterval mi_converted = map_offset.image();
 
   MultiInterval ranges_mi;

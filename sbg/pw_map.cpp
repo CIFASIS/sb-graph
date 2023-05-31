@@ -1535,7 +1535,7 @@ PW_TEMP_TYPE PW_TEMP_TYPE::mapInf(int n)
   return res;
 }
 
-// ! The argument should be a multi-interval
+// ! The argument should contained in only one multi-interval
 // ! of the map dom.
 PW_TEMPLATE
 LM_IMP PW_TEMP_TYPE::getLM(MI_IMP mi)
@@ -1546,7 +1546,7 @@ LM_IMP PW_TEMP_TYPE::getLM(MI_IMP mi)
     SET_IMP d = boost::get<0>(items); 
 
     BOOST_FOREACH (MI_IMP dmi, d.asets())
-      if (dmi == mi)
+      if (mi.subseteq(dmi))
         res = boost::get<1>(items);
   }
 

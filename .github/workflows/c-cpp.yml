@@ -16,7 +16,7 @@ jobs:
       run: | 
         sudo apt-get update
         sudo apt-get install autoconf
-        sudo apt-get install boost1.71
+        sudo apt-get install boost1.74
         sudo apt-get install cmake 
         sudo apt-get install g++
 

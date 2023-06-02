@@ -8,7 +8,7 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v2
@@ -16,7 +16,7 @@ jobs:
       run: | 
         sudo apt-get update
         sudo apt-get install autoconf
-        sudo apt-get install libboost1.74-all-dev
+        sudo apt-get install boost1.71
         sudo apt-get install cmake 
         sudo apt-get install g++
 

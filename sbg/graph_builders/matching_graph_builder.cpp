@@ -191,7 +191,7 @@ MatchingGraphBuilder::MatchingMaps MatchingGraphBuilder::generatePWLMaps(Variabl
     int range_init_value = usage[map.iterator()];
     int set_vertex_offset = map.slope() * offset;
     int map_first_value = map.constant() + map.slope() * range_init_value + set_vertex_init;
-    LOG << set_vertex_init << " " << range_init_value << " " << map_first_value << " " << set_vertex_offset << std::endl;
+    SBG_LOG << set_vertex_init << " " << range_init_value << " " << map_first_value << " " << set_vertex_offset << std::endl;
     constant_pwl_map_u_it = constant_pwl_map_u.insert(constant_pwl_map_u_it, map_first_value - set_vertex_offset);
     slope_pwl_map_u_it = slope_pwl_map_u.insert(slope_pwl_map_u_it, map.slope());
     min_elem++;
@@ -257,13 +257,13 @@ SBGraph MatchingGraphBuilder::build()
     for (VariableUsage var_usage : eq_info.var_usage()) {
       SetVertexDesc unknown_vertex_desc = _U[var_usage.name()];
       SBG::Set unk_dom = _graph[unknown_vertex_desc].range();
-      LOG << "Expression: " << var_usage << std::endl;
-      LOG << "Equation dom: " << dom << std::endl;
+      SBG_LOG << "Expression: " << var_usage << std::endl;
+      SBG_LOG << "Equation dom: " << dom << std::endl;
       MatchingMaps maps = generatePWLMaps(var_usage, dom, unk_dom, set_edge_offset, eq_vertex.name(), max_dim);
       set_edge_offset += dom.card();
       std::string edge_name = "E_" + std::to_string(edge_id++);
-      LOG << "MapF: " << maps.first << std::endl;
-      LOG << "MapU: " << maps.second << std::endl;
+      SBG_LOG << "MapF: " << maps.first << std::endl;
+      SBG_LOG << "MapU: " << maps.second << std::endl;
       SetEdge edge(edge_name, num_edges(_graph) + 1, maps.first, maps.second, 0);
       SetEdgeDesc e;
       bool b;

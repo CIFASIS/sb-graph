@@ -51,25 +51,25 @@ int main()
 
     SBG::AtomDSBGraph res = SBG::atomize(boost::get<SBG::DSBGraph>(g));
 
-    SBG::LOG << "-------------------------\n";
+    SBG::SBG_LOG << "-------------------------\n";
 
     if (r && iter == end) {
-     SBG::LOG << "Parsing succeeded\n";
-     SBG::LOG << "SBG atomizer result = \n\n" << "\n";
-     SBG::LOG << res;
+     SBG::SBG_LOG << "Parsing succeeded\n";
+     SBG::SBG_LOG << "SBG atomizer result = \n\n" << "\n";
+     SBG::SBG_LOG << res;
     }
 
     else {
       std::string rest(iter, end);
-      SBG::LOG << "Parsing failed\n";
-      SBG::LOG << "stopped at: \": " << rest << "\"\n";
+      SBG::SBG_LOG << "Parsing failed\n";
+      SBG::SBG_LOG << "stopped at: \": " << rest << "\"\n";
     }
 
-    SBG::LOG << "-------------------------\n";
+    SBG::SBG_LOG << "-------------------------\n";
   } 
 
   else 
-    SBG::LOG << "A filename should be provided\n";
+    SBG::SBG_LOG << "A filename should be provided\n";
 
   return 0;
 }

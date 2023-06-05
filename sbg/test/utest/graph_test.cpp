@@ -6584,9 +6584,9 @@ void TestMatching11()
   mapE3u.addSetLM(s11, lm10);
   SetEdge E3("E3", 3, mapE3f, mapE3u, 0);
 
-  LOG << E1 << "\n\n";
-  LOG << E2 << "\n\n";
-  LOG << E3 << "\n\n";
+  SBG_LOG << E1 << "\n\n";
+  SBG_LOG << E2 << "\n\n";
+  SBG_LOG << E3 << "\n\n";
 
   g[e1] = E1;
   g[e2] = E2;
@@ -6813,11 +6813,11 @@ void TestMatching12()
   mapE5u.addSetLM(s13, lm14);
   SetEdge E5("E5", 5, mapE5f, mapE5u, 0);
 
-  LOG << E1 << "\n\n";
-  LOG << E2 << "\n\n";
-  LOG << E3 << "\n\n";
-  LOG << E4 << "\n\n";
-  LOG << E5 << "\n\n";
+  SBG_LOG << E1 << "\n\n";
+  SBG_LOG << E2 << "\n\n";
+  SBG_LOG << E3 << "\n\n";
+  SBG_LOG << E4 << "\n\n";
+  SBG_LOG << E5 << "\n\n";
 
   g[e1] = E1;
   g[e2] = E2;
@@ -6827,7 +6827,7 @@ void TestMatching12()
 
   MatchingStruct match(g);
   std::pair<Set, bool> res = match.SBGMatching();
-  LOG << std::get<0>(res) << "\n\n";
+  SBG_LOG << std::get<0>(res) << "\n\n";
 
   BOOST_CHECK(std::get<1>(res));
 }

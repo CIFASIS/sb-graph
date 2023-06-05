@@ -23,8 +23,8 @@ using namespace std;
 
 namespace SBG {
 
-Logger::Logger() { log.open("SBG.log", std::ofstream::out); }
+SBGLogger::SBGLogger() { log.open("SBG.log", std::ofstream::out); }
 
-Logger::~Logger() { log.close(); }
+SBGLogger::~SBGLogger() { log.close(); }
 
 }  // namespace SBG

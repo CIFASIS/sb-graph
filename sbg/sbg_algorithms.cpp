@@ -138,7 +138,7 @@ std::pair<PWLMap, PWLMap> recursion(int n, Set ER, Set V, Set E, PWLMap Emap, PW
                                     PWLMap currentSEmap, PWLMap currentRmap, PWLMap m_map)
 {
   // *** Initialization
-  LOG << "ER: " << ER << "\n\n";
+  SBG_LOG << "ER: " << ER << "\n\n";
 
   PWLMap Vid(V);
 
@@ -539,8 +539,8 @@ void MatchingStruct::directedMinReach(PWLMap sideMap)
   PWLMap directedRmap = std::get<2>(t);
   set_rmap(mmapSideInv().compPW(directedRmap.compPW(mmapSide())));
 
-  LOG << "smapmin: " << smap() << "\n\n";
-  LOG << "rmapmin: " << rmap() << "\n\n";
+  SBG_LOG << "smapmin: " << smap() << "\n\n";
+  SBG_LOG << "rmapmin: " << rmap() << "\n\n";
 }
 
 void MatchingStruct::SBGMatchingShortStep(Set E)
@@ -667,7 +667,7 @@ void MatchingStruct::SBGMatchingShort()
     diffMatched = U().diff(matchedV());
   } while (!diffMatched.empty() && !Ed().empty());
 
-  LOG << "matchedshort: " << matchedE() << "\n\n";
+  SBG_LOG << "matchedshort: " << matchedE() << "\n\n";
 
   if (diffMatched.empty()) return;
 
@@ -694,7 +694,7 @@ void MatchingStruct::SBGMatchingMin()
     diffMatched = U().diff(matchedV());
   } while (!diffMatched.empty() && !Ed().empty());
 
-  LOG << "matchedmin: " << matchedE() << "\n\n";
+  SBG_LOG << "matchedmin: " << matchedE() << "\n\n";
 
   return;
 }
@@ -711,7 +711,7 @@ std::pair<Set, bool> MatchingStruct::SBGMatching()
 
 void MatchingStruct::debugInit()
 {
-  LOG << "\n\n";
+  SBG_LOG << "\n\n";
   BOOST_FOREACH (SetVertexDesc vi, vertices(g_ref())) {
     SetVertex v = g()[vi];
     Set vs = v.range();
@@ -719,28 +719,28 @@ void MatchingStruct::debugInit()
     Set e1 = mapF().preImage(vs);
     Set e2 = mapU().preImage(vs);
 
-    LOG << "-------\n";
-    LOG << v << " | " << e1 << " | " << e2 << "\n";
+    SBG_LOG << "-------\n";
+    SBG_LOG << v << " | " << e1 << " | " << e2 << "\n";
   }
-  LOG << "-------\n\n";
+  SBG_LOG << "-------\n\n";
 
-  LOG << ">>>>>>>>>>>>>>><<<<<<<<<<<<<<<<\n\n";
+  SBG_LOG << ">>>>>>>>>>>>>>><<<<<<<<<<<<<<<<\n\n";
 
   BOOST_FOREACH (SetEdgeDesc de, edges(g_ref())) {
-    LOG << g()[de] << "\n\n";
+    SBG_LOG << g()[de] << "\n\n";
   }
 
-  LOG << "Vmap: " << Vmap() << "\n\n";
-  LOG << "Emap: " << Emap() << "\n\n";
+  SBG_LOG << "Vmap: " << Vmap() << "\n\n";
+  SBG_LOG << "Emap: " << Emap() << "\n\n";
 
-  LOG << "*******************************\n\n";
+  SBG_LOG << "*******************************\n\n";
 }
 
 void MatchingStruct::debugStep()
 {
   bool diffMatched = U().diff(matchedV()).empty();
-  LOG << "matchedE: " << matchedE() << "\n";
-  LOG << "matched all unknowns: " << diffMatched << "\n\n";
+  SBG_LOG << "matchedE: " << matchedE() << "\n";
+  SBG_LOG << "matched all unknowns: " << diffMatched << "\n\n";
 
   BOOST_FOREACH (MultiInterval as1, matchedE_ref().asets()) {
     BOOST_FOREACH (MultiInterval as2, matchedE_ref().asets()) {
@@ -751,7 +751,7 @@ void MatchingStruct::debugStep()
         Set inter1 = mapF().image(s1).cap(mapF().image(s2));
         Set inter2 = mapU().image(s1).cap(mapU().image(s2));
 
-        if (!inter1.empty() || !inter2.empty()) LOG << "adj: " << as1 << " | " << as2 << "\n\n";
+        if (!inter1.empty() || !inter2.empty()) SBG_LOG << "adj: " << as1 << " | " << as2 << "\n\n";
       }
     }
   }
@@ -867,28 +867,28 @@ PWLMap SCCStruct::SBGSCC()
 
 void SCCStruct::debugInit()
 {
-  LOG << "\n\n";
+  SBG_LOG << "\n\n";
   BOOST_FOREACH (DSetVertexDesc vi, vertices(g_ref())) {
     SetVertex v = g_ref()[vi];
 
-    LOG << "-------\n";
-    LOG << v << "\n";
+    SBG_LOG << "-------\n";
+    SBG_LOG << v << "\n";
   }
-  LOG << "-------\n\n";
+  SBG_LOG << "-------\n\n";
 
-  LOG << "mapB: " << mapB() << "\n\n";
-  LOG << "mapD: " << mapD() << "\n\n";
+  SBG_LOG << "mapB: " << mapB() << "\n\n";
+  SBG_LOG << "mapD: " << mapD() << "\n\n";
 
-  LOG << "Vmap: " << Vmap() << "\n\n";
-  LOG << "Emap: " << Emap() << "\n\n";
+  SBG_LOG << "Vmap: " << Vmap() << "\n\n";
+  SBG_LOG << "Emap: " << Emap() << "\n\n";
 
-  LOG << "*******************************\n\n";
+  SBG_LOG << "*******************************\n\n";
 }
 
 void SCCStruct::debugStep()
 {
-  LOG << "rmap: " << rmap() << "\n"; 
-  LOG << "Ediff: " << Ediff() << "\n\n"; 
+  SBG_LOG << "rmap: " << rmap() << "\n"; 
+  SBG_LOG << "Ediff: " << Ediff() << "\n\n"; 
 }
 
 // Ordering ---------------------------------------------------------------------------------------
@@ -1007,21 +1007,21 @@ VertexOrder OrderStruct::order()
 
 void OrderStruct::debug_init()
 {
-  LOG << "\n\n";
+  SBG_LOG << "\n\n";
   BOOST_FOREACH (DSetVertexDesc vi, vertices(dg_ref())) {
     SetVertex v = dg_ref()[vi];
 
-    LOG << "-------\n";
-    LOG << v << "\n";
+    SBG_LOG << "-------\n";
+    SBG_LOG << v << "\n";
   }
-  LOG << "-------\n\n";
+  SBG_LOG << "-------\n\n";
 
-  LOG << "mapB: " << mapB() << "\n\n";
-  LOG << "mapD: " << mapD() << "\n\n";
+  SBG_LOG << "mapB: " << mapB() << "\n\n";
+  SBG_LOG << "mapD: " << mapD() << "\n\n";
 
-  LOG << "Emap: " << Emap() << "\n\n";
+  SBG_LOG << "Emap: " << Emap() << "\n\n";
 
-  LOG << "*******************************\n\n";
+  SBG_LOG << "*******************************\n\n";
 
   return;
 }

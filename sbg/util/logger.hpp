@@ -24,22 +24,22 @@
 
 namespace SBG {
 
-#define LOG Logger::instance().log
+#define SBG_LOG SBGLogger::instance().log
 
-class Logger {
+class SBGLogger {
   public:
-  static Logger& instance()
+  static SBGLogger& instance()
   {
-    static Logger _instance;
+    static SBGLogger _instance;
     return _instance;
   }
 
-  ~Logger();
+  ~SBGLogger();
 
   std::ofstream log;
 
   private:
-  Logger();
+  SBGLogger();
 };
 
 }  // namespace SBG

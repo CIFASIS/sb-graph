@@ -153,4 +153,9 @@ std::ostream &operator<<(std::ostream &out, DSBGraph &dg);
 std::string get_name(Set s, DSBGraph dg); // Given a set of vertices, get the name of their corresponding set-vertex
 std::optional<DSetVertexDesc> get_vertex(Set s, DSBGraph &dg); // Given a set of vertices, get the corresponding set-vertex
 
+// Additional structures ---------------------------------------------------------------------------
+
+typedef std::vector<Set> VertexOrder;
+std::ostream &operator<<(std::ostream &out, VertexOrder &vo);
+
 }  // namespace SBG

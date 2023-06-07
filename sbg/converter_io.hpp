@@ -44,7 +44,7 @@ struct UndirectedConverter {
 
   GraphIO convert_graph();
   MatchingIO convert_matching(Set edges);
-  RMapIO convert_map(PWLMap rmap);
+  SCCIO convert_map(PWLMap rmap);
 
   VertexDef get_vertex_def(std::string vertex_name);
   EdgeDefs get_edge(SetEdge e, std::string s_name, std::string t_name);
@@ -79,7 +79,8 @@ struct DirectedConverter {
   member_class(GraphIO, converted_dg);
 
   GraphIO convert_graph();
-  RMapIO convert_map(PWLMap rmap);
+  SCCIO convert_map(PWLMap rmap);
+  VertexOrderIO convert_vertex_order(VertexOrder vo);
 
   VertexDef get_vertex_def(std::string vertex_name);
   EdgeDefs get_edge(DSetEdge e, std::string s_name, std::string t_name);

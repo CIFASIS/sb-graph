@@ -303,4 +303,18 @@ std::optional<DSetVertexDesc> get_vertex(Set s, DSBGraph &dg)
   return std::nullopt;
 }
 
+// Additionals structures --------------------------------------------------------------------------
+
+std::ostream &operator<<(std::ostream &out, VertexOrder &vo)
+{
+  int sz = vo.size(), i = 0;
+  if (sz > 0) {
+    for (; i < sz - 1; i++)
+      out << vo[i] << " - ";
+    out << vo[i];
+  }
+
+  return out;
+}
+
 }  // namespace SBG

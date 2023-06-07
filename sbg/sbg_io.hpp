@@ -204,7 +204,7 @@ struct MatchingIO {
 std::ostream &operator<<(std::ostream &out, MatchingIO &m);
 
 // To pretty a representant and its represented vertices
-// of a given map
+// of a given map of vertices.
 struct ComponentIO {
   ComponentIO();
   ComponentIO(Iterators is, Ranges rs, VertexUsages vrtcs);
@@ -214,10 +214,26 @@ struct ComponentIO {
   member_class(VertexUsages, vrtcs);
 };
 
+typedef std::vector<ComponentIO> ComponentsIO;
 std::ostream &operator<<(std::ostream &out, ComponentIO &c);
 
-typedef std::vector<ComponentIO> RMapIO;
-std::ostream &operator<<(std::ostream &out, RMapIO &rmap);
+struct SCCIO {
+  SCCIO();
+  SCCIO(ComponentsIO scc);
+
+  member_class(ComponentsIO, scc);
+};
+
+std::ostream &operator<<(std::ostream &out, SCCIO &s);
+
+struct VertexOrderIO {
+  VertexOrderIO();
+  VertexOrderIO(ComponentsIO vo);
+
+  member_class(ComponentsIO, vo);
+};
+
+std::ostream &operator<<(std::ostream &out, VertexOrderIO &vo);
 
 } // namespace IO
 

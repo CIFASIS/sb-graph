@@ -21,6 +21,7 @@
 #include <string>
 
 #include <parser/comp_converter.hpp>
+#include <sbg/converter_io.hpp>
 #include <sbg/pw_map.hpp>
 #include <sbg/sbg_algorithms.hpp>
 #include <sbg/graph_builders/order_graph_builder.hpp>
@@ -55,12 +56,16 @@ void parse_order()
     OrderStruct o(aux_g);
     VertexOrder vo = o.order();
 
+    SBG::IO::DirectedConverter dc(aux_g);
+    dc.convert_graph();
+    SBG::IO::VertexOrderIO result_io = dc.convert_vertex_order(vo);
+
     std::cout << "-------------------------\n";
 
     if (r && iter == end) {
       std::cout << "Parsing succeeded\n";
       std::cout << "Resulting graph:\n\n" << aux_g << "\n";
-      std::cout << "Order result = \n\n" << vo << "\n";
+      std::cout << "Order result = \n\n" << result_io << "\n";
     }
 
     else {

@@ -72,12 +72,10 @@ Ranges UndirectedConverter::create_ranges(MultiInterval mi)
 // ! of the graph
 LinearExps UndirectedConverter::create_exp(MultiInterval mi)
 {
-  //std::cout << mi << "\n";
   LinearExps le_res;
 
   CompPair off = get_vertex(mi);
   AtomPWLMap map_offset(mi, off.second);
-  //std::cout << map_offset << "\n";
   MultiInterval mi_converted = map_offset.image();
 
   MultiInterval ranges_mi;
@@ -229,9 +227,9 @@ MatchingIO UndirectedConverter::convert_matching(Set edges)
   return MatchingIO(eds);
 }
 
-RMapIO UndirectedConverter::convert_map(PWLMap rmap)
+SCCIO UndirectedConverter::convert_map(PWLMap rmap)
 {
-  RMapIO result;
+  ComponentsIO cc_io;
 
   Set whole_dom;
   BOOST_FOREACH (SetVertexDesc vd, vertices(g_ref())) 
@@ -259,12 +257,12 @@ RMapIO UndirectedConverter::convert_map(PWLMap rmap)
         }
 
         if (!vrtcs.empty())
-          result.push_back(ComponentIO(is, rs, vrtcs));
+          cc_io.push_back(ComponentIO(is, rs, vrtcs));
       }
     }
   }
 
-  return result;
+  return SCCIO(cc_io);
 }
 
 // Directed graph converter -----------------------------------------------------------------------
@@ -454,9 +452,9 @@ EdgeDefs DirectedConverter::get_edge(DSetEdge e, std::string s_name, std::string
 
 // Structure converters ---------------------------------------------------------------------------
 
-RMapIO DirectedConverter::convert_map(PWLMap rmap)
+SCCIO DirectedConverter::convert_map(PWLMap rmap)
 {
-  RMapIO result;
+  ComponentsIO cc_io;
 
   Set whole_dom;
   BOOST_FOREACH (DSetVertexDesc vd, vertices(dg_ref())) 
@@ -484,12 +482,37 @@ RMapIO DirectedConverter::convert_map(PWLMap rmap)
         }
 
         if (!vrtcs.empty())
-          result.push_back(ComponentIO(is, rs, vrtcs));
+          cc_io.push_back(ComponentIO(is, rs, vrtcs));
       }
     }
   }
 
-  return result;
+  return SCCIO(cc_io);
+}
+
+VertexOrderIO DirectedConverter::convert_vertex_order(VertexOrder vo)
+{
+  ComponentsIO cc_io;
+
+  BOOST_FOREACH (Set v, vo) {
+    if (!v.empty()) {
+      BOOST_FOREACH (MultiInterval mi, v.asets()) {
+        Iterators is = create_iterators(mi);
+        Ranges rs = create_ranges(mi);
+
+        VertexUsages vrtcs;
+
+        LinearExps lexps = create_exp(mi);
+        std::string nm = get_name(Set(mi), dg_ref());
+        vrtcs.push_back(VertexUsage(nm, lexps));
+
+        if (!vrtcs.empty())
+          cc_io.push_back(ComponentIO(is, rs, vrtcs));
+      }
+    }
+  }
+
+  return VertexOrderIO(cc_io);
 }
 
 }  // namespace IO

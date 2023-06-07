@@ -127,9 +127,6 @@ struct SCCStruct {
 
 // Ordering of directed SBGraphs -----------------------------------------------------------------
 
-typedef std::vector<Set> VertexOrder;
-std::ostream &operator<<(std::ostream &out, VertexOrder &vo);
-
 struct OrderStruct {
   OrderStruct();
   OrderStruct(DSBGraph dg);

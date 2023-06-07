@@ -893,18 +893,6 @@ void SCCStruct::debugStep()
 
 // Ordering ---------------------------------------------------------------------------------------
 
-std::ostream &operator<<(std::ostream &out, VertexOrder &vo)
-{
-  int sz = vo.size(), i = 0;
-  if (sz > 0) {
-    for (; i < sz - 1; i++)
-      out << vo[i] << " - ";
-    out << vo[i];
-  }
-
-  return out;
-}
-
 OrderStruct::OrderStruct() : dg_() {}
 OrderStruct::OrderStruct(DSBGraph dg) : dg_(dg), mapB_(), mapD_()
 {

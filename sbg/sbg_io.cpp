@@ -397,9 +397,27 @@ std::ostream &operator<<(std::ostream &out, ComponentIO &c)
   return out;
 }
 
-std::ostream &operator<<(std::ostream &out, RMapIO &rmap)
+SCCIO::SCCIO() : scc_() {}
+SCCIO::SCCIO(ComponentsIO scc) : scc_(scc) {}
+
+member_imp(SCCIO, ComponentsIO, scc);
+
+std::ostream &operator<<(std::ostream &out, SCCIO &s)
 {
-  BOOST_FOREACH (ComponentIO c, rmap)
+  BOOST_FOREACH (ComponentIO c, s.scc())
+    out << c << "\n";
+
+  return out;
+}
+
+VertexOrderIO::VertexOrderIO() : vo_() {}
+VertexOrderIO::VertexOrderIO(ComponentsIO cc) : vo_(cc) {}
+
+member_imp(VertexOrderIO, ComponentsIO, vo);
+
+std::ostream &operator<<(std::ostream &out, VertexOrderIO &v)
+{
+  BOOST_FOREACH (ComponentIO c, v.vo())
     out << c << "\n";
 
   return out;

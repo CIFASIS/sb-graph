@@ -97,6 +97,7 @@ ORDER_TEST_SRC := \
     $(SBG_DIR)/sbg_algorithms.cpp \
     $(SBG_DIR)/sbg_io.cpp \
     $(SBG_DIR)/converter_io.cpp \
+    $(SBG_DIR)/graph_builders/scc_graph_builder.cpp \
     $(SBG_DIR)/graph_builders/order_graph_builder.cpp
 
 # Objects

@@ -325,13 +325,16 @@ MatchingStruct::MatchingStruct(SBGraph garg)
   int dims = F().ndim();
 
   PWLMap vmap;
+  int v_count = 0;
   BOOST_FOREACH (SetVertexDesc vdi, vertices(g_ref())) {
     SetVertex vi = g_ref()[vdi];
     allVertices_ref().addAtomSets(vi.range_ref().asets());
 
     LMap lm;
-    for (int i = 0; i < dims; i++) lm.addGO(0, vi.id());
+    for (int i = 0; i < dims; i++) lm.addGO(0, v_count);
     vmap.addSetLM(vi.range(), lm);
+    
+    v_count++;
   }
   set_Vmap(vmap);
   set_maxV(allVertices().maxElem());
@@ -778,13 +781,16 @@ SCCStruct::SCCStruct(DSBGraph garg)
   Set allVertices;
   PWLMap vmap;
   int dims = mapD_ref().ndim();
+  int v_count = 0;
   BOOST_FOREACH (DSetVertexDesc vdi, vertices(g_ref())) {
     SetVertex vi = g()[vdi];
     allVertices.addAtomSets(vi.range_ref().asets());
 
     LMap lm;
-    for (int i = 0; i < dims; i++) lm.addGO(0, vi.id());
+    for (int i = 0; i < dims; i++) lm.addGO(0, v_count);
     vmap.addSetLM(vi.range(), lm);
+
+    v_count++;
   }
   set_V(allVertices);
   set_Vmap(vmap);

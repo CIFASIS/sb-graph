@@ -23,20 +23,16 @@ namespace SBG {
 // Set-vertex --------------------------------------------------------------------------------------
 
 ATOM_SET_VERTEX_TEMPLATE
-ATOM_SETV_TEMP_TYPE::AtomSetVertexImp() : name_(""), id_(-1), range_(), desc_() {}
+ATOM_SETV_TEMP_TYPE::AtomSetVertexImp() : id_(), range_(), desc_() {}
 
 ATOM_SET_VERTEX_TEMPLATE
-ATOM_SETV_TEMP_TYPE::AtomSetVertexImp(std::string name, MultiInterval range) : name_(name), id_(-1), range_(range), desc_() {}
+ATOM_SETV_TEMP_TYPE::AtomSetVertexImp(std::string id, MultiInterval range) : id_(id), range_(range), desc_() {}
 
 ATOM_SET_VERTEX_TEMPLATE
-ATOM_SETV_TEMP_TYPE::AtomSetVertexImp(std::string name, int id, MultiInterval range) : name_(name), id_(id), range_(range), desc_() {}
+ATOM_SETV_TEMP_TYPE::AtomSetVertexImp(std::string id, MultiInterval range, DESC desc)
+    : id_(id), range_(range), desc_(desc) {}
 
-ATOM_SET_VERTEX_TEMPLATE
-ATOM_SETV_TEMP_TYPE::AtomSetVertexImp(std::string name, int id, MultiInterval range, DESC desc)
-    : name_(name), id_(id), range_(range), desc_(desc) {}
-
-member_imp_temp(ATOM_SET_VERTEX_TEMPLATE, ATOM_SETV_TEMP_TYPE, std::string, name);
-member_imp_temp(ATOM_SET_VERTEX_TEMPLATE, ATOM_SETV_TEMP_TYPE, int, id);
+member_imp_temp(ATOM_SET_VERTEX_TEMPLATE, ATOM_SETV_TEMP_TYPE, std::string, id);
 member_imp_temp(ATOM_SET_VERTEX_TEMPLATE, ATOM_SETV_TEMP_TYPE, MultiInterval, range);
 member_imp_temp(ATOM_SET_VERTEX_TEMPLATE, ATOM_SETV_TEMP_TYPE, DESC, desc);
 
@@ -48,7 +44,7 @@ template struct AtomSetVertexImp<SVDesc>;
 ATOM_SET_VERTEX_TEMPLATE
 std::ostream &operator<<(std::ostream &out, const ATOM_SETV_TEMP_TYPE &v)
 {
-  out << v.name() << ": " << v.range();
+  out << v.id() << ": " << v.range();
 
   return out;
 }
@@ -93,7 +89,7 @@ AtomDSBGraph atomize(DSBGraph dg)
 
     int j = 1;
     BOOST_FOREACH (MultiInterval mi, v.range_ref().asets()) {
-      std::string nm = v.name();
+      std::string nm = v.id();
       int sz = v.range_ref().asets_ref().size();
       if (sz > 1)
         nm = nm + "_" + std::to_string(j); 
@@ -138,7 +134,7 @@ AtomDSBGraph atomize(DSBGraph dg)
             AtomDSEDesc ed_adj;
             bool b;
             boost::tie(ed_adj, b) = boost::add_edge(vd, vd_adj, dg_res);
-            dg_res[ed_adj] = DSetEdge(v.name() + adj_v.name(), mapB.restrictMap(b_dom), mapD.restrictMap(b_dom));
+            dg_res[ed_adj] = DSetEdge(v.id() + adj_v.id(), mapB.restrictMap(b_dom), mapD.restrictMap(b_dom));
 
             // Take out traversed edges
             Set remaining = all_edges.diff(b_dom);
@@ -160,7 +156,7 @@ AtomDSBGraph atomize(DSBGraph dg)
             AtomDSEDesc ed_adj;
             bool b;
             boost::tie(ed_adj, b) = boost::add_edge(vd_adj, vd, dg_res);
-            dg_res[ed_adj] = DSetEdge(adj_v.name() + v.name(), mapB.restrictMap(d_dom), mapD.restrictMap(d_dom));
+            dg_res[ed_adj] = DSetEdge(adj_v.id() + v.id(), mapB.restrictMap(d_dom), mapD.restrictMap(d_dom));
 
             // Take out traversed edges
             Set remaining = all_edges.diff(d_dom);
@@ -182,7 +178,7 @@ std::string get_name(Set s, AtomDSBGraph dg)
   BOOST_FOREACH (AtomDSVDesc vd, vertices(dg)) {
     Set v_range = dg[vd].range();
     if (!v_range.cap(s).empty())
-      result = dg[vd].name();
+      result = dg[vd].id();
   }
 
   return result;

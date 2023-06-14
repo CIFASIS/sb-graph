@@ -28,10 +28,10 @@ SET_TEMPLATE
 SET_TEMP_TYPE::SetImp1() : ndim_(0), asets_() {}
 
 SET_TEMPLATE
-SET_TEMP_TYPE::SetImp1(MI_IMP as) : ndim_(as.ndim()) { asets_ref().insert(as); }
+SET_TEMP_TYPE::SetImp1(MI_IMP as) : ndim_(as.ndim()), asets_() { asets_ref().insert(as); }
 
 SET_TEMPLATE
-SET_TEMP_TYPE::SetImp1(AtomSets asets)
+SET_TEMP_TYPE::SetImp1(AtomSets asets) : ndim_(), asets_()
 {
   if (!asets.empty()) {
     int dim1 = (*(asets.begin())).ndim();
@@ -65,11 +65,11 @@ SET_TEMPLATE
 void SET_TEMP_TYPE::addAtomSet(MI_IMP aset2)
 {
   if (!aset2.empty() && aset2.ndim() == ndim() && !empty())
-    asets_.insert(aset2);
+    asets_ref().insert(aset2);
 
   else if (!aset2.empty() && empty()) {
-    asets_.insert(aset2);
-    ndim_ = aset2.ndim();
+    asets_ref().insert(aset2);
+    set_ndim(aset2.ndim());
   }
 }
 
@@ -383,6 +383,10 @@ std::ostream &operator<<(std::ostream &out, const SET_TEMP_TYPE &set)
 {
   UNORD_CT<MI_IMP> asets = set.asets();
   typename UNORD_CT<MI_IMP>::iterator it = asets.begin();
+/*
+  UNORD_CT<MI_IMP> asets;
+  typename UNORD_CT<MI_IMP>::iterator it = asets.begin();
+*/
   MI_IMP aux;
 
   if (asets.size() == 0) {

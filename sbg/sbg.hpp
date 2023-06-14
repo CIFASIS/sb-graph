@@ -43,16 +43,13 @@ namespace SBG {
 
 SET_VERTEX_TEMPLATE
 struct SetVertexImp {
-  member_class(std::string, name);  // For pretty-printing
-  member_class(int, id);            // Unique identifier
+  member_class(std::string, id);    // Unique identifier
   member_class(Set, range);         // Vertices of the set-vertex
-  member_class(int, index);         // For debugging
   member_class(DESC, desc);         // Description
 
   SetVertexImp();
-  SetVertexImp(std::string name, Set range);
-  SetVertexImp(std::string name, int id, Set range, int index);
-  SetVertexImp(std::string name, int id, Set range, int index, DESC desc);
+  SetVertexImp(std::string id, Set range);
+  SetVertexImp(std::string name, Set range, DESC desc);
 
   SetVertexImp restrictVertex(Set dom);
 
@@ -71,18 +68,14 @@ typedef SetVertexImp<SVDesc> SetVertex;
 
 SET_EDGE_TEMPLATE
 struct SetEdgeImp {
-  member_class(std::string, name);  // For pretty-printing
-  member_class(int, id);            // Unique identifier
+  member_class(std::string, id);    // Unique identifier
   member_class(PWLMap, map_f);      // Map from edges to "left" vertices
   member_class(PWLMap, map_u);      // Map from edges to "right" vertices
-  member_class(int, index);         // For debugging
   member_class(DESC, desc);         // Description
 
   SetEdgeImp();
-  SetEdgeImp(std::string name, PWLMap map_f, PWLMap map_u);
-  SetEdgeImp(std::string name, PWLMap map_f, PWLMap map_u, DESC desc);
-  SetEdgeImp(std::string name, int id, PWLMap map_f, PWLMap map_u, int index);
-  SetEdgeImp(std::string name, int id, PWLMap map_f, PWLMap map_u, int index, DESC desc);
+  SetEdgeImp(std::string id, PWLMap map_f, PWLMap map_u);
+  SetEdgeImp(std::string id, PWLMap map_f, PWLMap map_u, DESC desc);
 
   SetEdgeImp restrictEdge(Set dom);
   Set dom();
@@ -102,18 +95,14 @@ typedef SetEdgeImp<SEDesc> SetEdge;
 
 DSET_EDGE_TEMPLATE
 struct DSetEdgeImp {
-  member_class(std::string, name);  // For pretty-printing
-  member_class(int, id);            // Unique identifier
+  member_class(std::string, id);  // For pretty-printing
   member_class(PWLMap, map_b);      // Forward map
   member_class(PWLMap, map_d);      // Backward map
-  member_class(int, index);         // For debugging
   member_class(DESC, desc);         // Description
 
   DSetEdgeImp();
-  DSetEdgeImp(std::string name, PWLMap map_b, PWLMap map_d);
-  DSetEdgeImp(std::string name, PWLMap map_b, PWLMap map_d, DESC desc);
-  DSetEdgeImp(std::string name, int id, PWLMap map_b, PWLMap map_d, int index);
-  DSetEdgeImp(std::string name, int id, PWLMap map_b, PWLMap map_d, int index, DESC desc);
+  DSetEdgeImp(std::string id, PWLMap map_b, PWLMap map_d);
+  DSetEdgeImp(std::string id, PWLMap map_b, PWLMap map_d, DESC desc);
 
   DSetEdgeImp restrictEdge(Set dom);
   Set dom();

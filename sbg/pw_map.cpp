@@ -27,7 +27,7 @@ namespace SBG {
 #define LMAPS_TYPE typename PW_TEMP_TYPE::LMaps
 
 PW_TEMPLATE
-PW_TEMP_TYPE::PWLMapImp1() : ndim_(0) {}
+PW_TEMP_TYPE::PWLMapImp1() : ndim_(0), dom_(), lmap_() {}
 
 PW_TEMPLATE
 PW_TEMP_TYPE::PWLMapImp1(SETS_TYPE dom, LMAPS_TYPE lmap) : ndim_(0)

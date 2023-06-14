@@ -114,19 +114,19 @@ void GraphPrinter::printEdges(stringstream &stri)
   }
 }
 
-std::string GraphPrinter::vPrinter(SetVertex v) { return v.name(); }
+std::string GraphPrinter::vPrinter(SetVertex v) { return v.id(); }
 
 std::string GraphPrinter::vLabelPrinter(SetVertex v)
 {
   std::stringstream label;
-  label << "{ " << v.name() << " Dom: " << v.range() << " }";
+  label << "{ " << v.id() << " Dom: " << v.range() << " }";
   return label.str();
 }
 
 std::string GraphPrinter::ePrinter(SetEdge e)
 {
   std::stringstream label;
-  label << "{ " << e.name() << " mapF: " << e.map_f() << " mapU: " << e.map_u() << " }";
+  label << "{ " << e.id() << " mapF: " << e.map_f() << " mapU: " << e.map_u() << " }";
   return label.str();
 }
 

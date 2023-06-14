@@ -113,15 +113,15 @@ member_imp(VariableInfo, std::string, name);
 member_imp(VariableInfo, std::vector<int>, size);
 member_imp(VariableInfo, bool, is_state);
 
-MatchingInfo::MatchingInfo() : eq_id_(0), eq_range_(), var_id_(0), var_range_() {}
-MatchingInfo::MatchingInfo(int eq_id, Ranges eq_range, int var_id, Ranges var_range)
+MatchingInfo::MatchingInfo() : eq_id_(), eq_range_(), var_id_(), var_range_() {}
+MatchingInfo::MatchingInfo(std::string eq_id, Ranges eq_range, std::string var_id, Ranges var_range)
     : eq_id_(eq_id), eq_range_(eq_range), var_id_(var_id), var_range_(var_range)
 {
 }
 
-member_imp(MatchingInfo, int, eq_id);
+member_imp(MatchingInfo, std::string, eq_id);
 member_imp(MatchingInfo, Ranges, eq_range);
-member_imp(MatchingInfo, int, var_id);
+member_imp(MatchingInfo, std::string, var_id);
 member_imp(MatchingInfo, Ranges, var_range);
 
 std::ostream &operator<<(std::ostream &out, MatchingInfo &matching_info)

@@ -38,7 +38,7 @@ OG::Graph OrdinaryGraphBuilder::build()
     SBG::ORD_INTS iter = range.minElem();
     SBG::ORD_INTS end_iter = range.maxElem();
     while (iter <= end_iter) {
-      std::string v_name = getNodeName(vertex_info.name(), iter);
+      std::string v_name = getNodeName(vertex_info.id(), iter);
       addVertex(v_name, graph);
       iter = range.nextElem(iter);
     }
@@ -57,8 +57,8 @@ OG::Graph OrdinaryGraphBuilder::build()
     SBG::ORD_INTS img_elem = image.minElem();
     SBG::ORD_INTS img_end = image.maxElem();
     while (dom_elem <= dom_end) {
-      std::string f_name = getNodeName(f_vertex.name(), dom_elem);
-      std::string u_name = getNodeName(u_vertex.name(), img_elem);
+      std::string f_name = getNodeName(f_vertex.id(), dom_elem);
+      std::string u_name = getNodeName(u_vertex.id(), img_elem);
       dom_elem = dom.nextElem(dom_elem);
       img_elem = image.nextElem(img_elem);
       int edge_id = num_edges(graph) + 1;

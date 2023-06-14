@@ -118,7 +118,7 @@ VertexDef UndirectedConverter::convert_vertex(SetVertexDesc vd)
     compacted_vertices_ref()[mi] = mapFromMI(mi, converted_mi);
   }
 
-  VertexDef res(v.name(), subs_res);
+  VertexDef res(v.id(), subs_res);
   converted_vertices_ref().insert(VConv(vd, res));
   return res;
 }
@@ -144,7 +144,7 @@ EdgeDefs UndirectedConverter::convert_edge(SetEdgeDesc ed)
   SetVertexDesc es = source(ed, g_ref()), et = target(ed, g_ref());
 
   BOOST_FOREACH (MultiInterval mi_dom, e.dom().asets())
-    eds_res.insert(eds_res.end(), convert_subsetedge(e, mi_dom, g_ref()[es].name(), g_ref()[et].name()));
+    eds_res.insert(eds_res.end(), convert_subsetedge(e, mi_dom, g_ref()[es].id(), g_ref()[et].id()));
 
   return eds_res;
 }
@@ -219,7 +219,7 @@ MatchingIO UndirectedConverter::convert_matching(Set edges)
   BOOST_FOREACH (MultiInterval mi, edges.asets()) {
     auto ed = SBG::get_edge(mi, g_ref());
     SetVertexDesc vs = source(*ed, g_ref()), vt = target(*ed, g_ref());
-    EdgeDef e = convert_subsetedge(g_ref()[*ed], mi, g_ref()[vs].name(), g_ref()[vt].name());
+    EdgeDef e = convert_subsetedge(g_ref()[*ed], mi, g_ref()[vs].id(), g_ref()[vt].id());
 
     eds.push_back(e);
   }
@@ -359,7 +359,7 @@ VertexDef DirectedConverter::convert_vertex(DSetVertexDesc vd)
     compacted_vertices_ref()[mi] = mapFromMI(mi, converted_mi);
   }
 
-  VertexDef res(v.name(), subs_res);
+  VertexDef res(v.id(), subs_res);
   converted_vertices_ref().insert(DVConv(vd, res));
   return res;
 }
@@ -385,7 +385,7 @@ EdgeDefs DirectedConverter::convert_edge(DSetEdgeDesc ed)
   DSetVertexDesc es = source(ed, dg_ref()), et = target(ed, dg_ref());
 
   BOOST_FOREACH (MultiInterval mi_dom, e.dom().asets())
-    eds_res.insert(eds_res.end(), convert_subsetedge(e, mi_dom, dg_ref()[es].name(), dg_ref()[et].name()));
+    eds_res.insert(eds_res.end(), convert_subsetedge(e, mi_dom, dg_ref()[es].id(), dg_ref()[et].id()));
 
   return eds_res;
 }

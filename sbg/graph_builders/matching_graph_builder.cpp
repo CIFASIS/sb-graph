@@ -141,10 +141,10 @@ SBG::Set MatchingGraphBuilder::generateMapDom(SBG::Set dom, SBG::Set unk_dom, in
 
 SetVertexDesc MatchingGraphBuilder::addVertex(std::string vertex_name, SBG::Set set, int vec_id)
 {
-  int node_id = num_vertices(_graph) + 1;
-  SetVertex V(vertex_name, node_id, set, 0);
+  //int node_id = num_vertices(_graph) + 1;
+  SetVertex V(vertex_name, set);
   SetVertexDesc v = boost::add_vertex(_graph);
-  _node_map[node_id] = vec_id;
+  _node_map[vertex_name] = vec_id;
   _graph[v] = V;
   return v;
 }
@@ -229,7 +229,7 @@ SBGraph MatchingGraphBuilder::build()
   // Build unknown nodes.
   for (VariableInfo var_info : _variables) {
     SBG::Set vertex_dom = buildSet(var_info, set_vertex_offset, max_dim);
-    _var_offset_map[vec_id] = set_vertex_offset;
+    _var_offset_map[var_info.name()] = set_vertex_offset;
     _U[var_info.name()] = addVertex(var_info.name(), vertex_dom, vec_id++);
     set_vertex_offset += vertex_dom.card();
   }
@@ -240,7 +240,7 @@ SBGraph MatchingGraphBuilder::build()
   for (EquationInfo eq_info : _equations) {
     SBG::Set vertex_dom;
     std::string eq_name = "eq_" + std::to_string(id++);
-    _eq_offset_map[vec_id] = set_vertex_offset;
+    _eq_offset_map[eq_name] = set_vertex_offset;
     vertex_dom = buildSet(eq_info, eq_name, set_vertex_offset, max_dim);
     set_vertex_offset += vertex_dom.card();
     addEquation(eq_info, eq_name, vertex_dom, vec_id++);
@@ -259,12 +259,12 @@ SBGraph MatchingGraphBuilder::build()
       SBG::Set unk_dom = _graph[unknown_vertex_desc].range();
       SBG_LOG << "Expression: " << var_usage << std::endl;
       SBG_LOG << "Equation dom: " << dom << std::endl;
-      MatchingMaps maps = generatePWLMaps(var_usage, dom, unk_dom, set_edge_offset, eq_vertex.name(), max_dim);
+      MatchingMaps maps = generatePWLMaps(var_usage, dom, unk_dom, set_edge_offset, eq_vertex.id(), max_dim);
       set_edge_offset += dom.card();
       std::string edge_name = "E_" + std::to_string(edge_id++);
       SBG_LOG << "MapF: " << maps.first << std::endl;
       SBG_LOG << "MapU: " << maps.second << std::endl;
-      SetEdge edge(edge_name, num_edges(_graph) + 1, maps.first, maps.second, 0);
+      SetEdge edge(edge_name, maps.first, maps.second);
       SetEdgeDesc e;
       bool b;
       boost::tie(e, b) = boost::add_edge(eq_vertex_desc, unknown_vertex_desc, _graph);
@@ -307,9 +307,11 @@ Matching MatchingGraphBuilder::computeMatchingInfo(SBG::Set matched_edges)
     SBG::Set u_range = edge.map_u().image(aset);
     SBG::SetVertex U = wholeVertex(_graph, u_range);
     MatchingInfo matched_set;
-    matched_set.set_eq_id(_node_map[F.id()]);
+    //matched_set.set_eq_id(_node_map[F.id()]);
+    matched_set.set_eq_id(F.id());
     matched_set.set_eq_range(generateRange(f_range, _eq_offset_map[matched_set.eq_id()]));
-    matched_set.set_var_id(_node_map[U.id()]);
+    //matched_set.set_var_id(_node_map[U.id()]);
+    matched_set.set_var_id(U.id());
     matched_set.set_var_range(generateRange(u_range, _var_offset_map[matched_set.var_id()]));
     matching_info.push_back(matched_set);
   }

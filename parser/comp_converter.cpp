@@ -61,7 +61,8 @@ SBG::SetVertex CompConverter::convertVertex(Parser::CompSetVertex sv)
  
   vmap_ref()[sv.name()] = mi_res; 
   set_vertex_offset(new_off);
-  return SBG::SetVertex(sv.name(), SBG::Set(mi_res));
+  SBG::SetVertex aux_v = SBG::SetVertex(sv.name(), SBG::Set(mi_res));
+  return aux_v;
 }
 
 
@@ -120,11 +121,13 @@ VariantEdge CompConverter::convertEdge(Parser::CompSetEdge se)
 
   std::string nm = l.name() + r.name();
   if (sg_ref().modifier() == "undirected") {
-    result = SBG::SetEdge(nm, lmap, rmap);
+    SBG::SetEdge aux_e(nm, lmap, rmap);
+    result = aux_e;
   }
 
   else if (sg_ref().modifier() == "directed") {
-    result = SBG::DSetEdge(nm, lmap, rmap);
+    SBG::DSetEdge aux_e(nm, lmap, rmap);
+    result = aux_e;
   }
 
   return result;

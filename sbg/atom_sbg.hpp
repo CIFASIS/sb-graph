@@ -29,15 +29,13 @@ namespace SBG {
 
 ATOM_SET_VERTEX_TEMPLATE
 struct AtomSetVertexImp {
-  member_class(std::string, name);    // For pretty-printing
-  member_class(int, id);              // Unique identifier
+  member_class(std::string, id);    // For pretty-printing
   member_class(MultiInterval, range); // Vertices of the set-vertex
   member_class(DESC, desc);           // Description
 
   AtomSetVertexImp();
-  AtomSetVertexImp(std::string name, MultiInterval range);
-  AtomSetVertexImp(std::string name, int id, MultiInterval range);
-  AtomSetVertexImp(std::string name, int id, MultiInterval range, DESC desc);
+  AtomSetVertexImp(std::string id, MultiInterval range);
+  AtomSetVertexImp(std::string id, MultiInterval range, DESC desc);
 
   eq_class(AtomSetVertexImp);
 };

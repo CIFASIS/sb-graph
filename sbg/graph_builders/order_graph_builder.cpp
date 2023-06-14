@@ -85,7 +85,7 @@ void OrderGraphBuilder::create_edges()
       if (b) {
         DSetEdge e = dg[ed];
         PWLMap new_left = e.map_b_ref().concat(left), new_right = e.map_d_ref().concat(right);
-        dg[ed] = DSetEdge(e.name(), new_left, new_right);
+        dg[ed] = DSetEdge(e.id(), new_left, new_right);
       }
    
       else {

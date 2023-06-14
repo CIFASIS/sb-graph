@@ -178,17 +178,17 @@ typedef std::vector<VariableInfo> Variables;
 
 struct MatchingInfo {
   MatchingInfo();
-  MatchingInfo(int eq_id, Ranges eq_range, int var_id, Ranges var_range);
+  MatchingInfo(std::string eq_id, Ranges eq_range, std::string var_id, Ranges var_range);
 
-  member_class(int, eq_id);
+  member_class(std::string, eq_id);
   member_class(Ranges, eq_range);
-  member_class(int, var_id);
+  member_class(std::string, var_id);
   member_class(Ranges, var_range);
 };
 
 typedef std::vector<MatchingInfo> Matching;
 
-typedef std::map<int, int> NodeMap;
+typedef std::map<std::string, int> NodeMap;
 
 std::ostream &operator<<(std::ostream &out, MatchingInfo &matching_info);
 std::ostream &operator<<(std::ostream &out, Matching &matching);

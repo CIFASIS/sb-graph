@@ -1334,6 +1334,13 @@ void TestSetNormalize1()
   BOOST_CHECK(res1 == res2);
 }
 
+void TestSetPrint1()
+{
+  Set s;
+
+  std::cout << s << "\n";
+}
+
 // -- LinearMaps -------------------------------------------------------------------//
 
 void TestLMCreation1()
@@ -3454,25 +3461,25 @@ void TestPrint1(){
   Interval i7(1 + offCn, 1, offRp + offCn);
 
   Set sp = createSet(i1);
-  SetVertex V1("V1", 1, sp, 0);
+  SetVertex V1("V1", sp);
 
   Set sn = createSet(i2);
-  SetVertex V2("V2", 2, sn, 0);
+  SetVertex V2("V2", sn);
 
   Set gp = createSet(i3);
-  SetVertex V3("V3", 3, gp, 0);
+  SetVertex V3("V3", gp);
 
   Set rp = createSet(i4);
-  SetVertex V4("V4", 4, rp, 0);
+  SetVertex V4("V4", rp);
 
   Set rn = createSet(i5);
-  SetVertex V5("V5", 5, rn, 0);
+  SetVertex V5("V5", rn);
 
   Set cp = createSet(i6);
-  SetVertex V6("V6", 6, cp, 0);
+  SetVertex V6("V6", cp);
 
   Set cn = createSet(i7);
-  SetVertex V7("V7", 7, cn, 0);
+  SetVertex V7("V7", cn);
 
   float offE1 = 0;
   float offE2 = 1;
@@ -3490,7 +3497,7 @@ void TestPrint1(){
   mapE1sp.addSetLM(domE1, lm1);
   PWLMap mapE1rp;
   mapE1rp.addSetLM(domE1, lm2);
-  SetEdge E1("E1", 1, mapE1sp, mapE1rp, 0);
+  SetEdge E1("E1", mapE1sp, mapE1rp);
 
   Interval i9(1 + offE2, 1, offE3);
   Set domE2 = createSet(i9);
@@ -3502,7 +3509,7 @@ void TestPrint1(){
   mapE2sn.addSetLM(domE2, lm3);
   PWLMap mapE2gp;
   mapE2gp.addSetLM(domE2, lm4);
-  SetEdge E2("E2", 2, mapE2sn, mapE2gp, 0);
+  SetEdge E2("E2", mapE2sn, mapE2gp);
 
   Interval i10(1 + offE3, 1, offE4);
   Set domE3 = createSet(i10);
@@ -3514,7 +3521,7 @@ void TestPrint1(){
   mapE3rn.addSetLM(domE3, lm5);
   PWLMap mapE3cp;
   mapE3cp.addSetLM(domE3, lm6);
-  SetEdge E3("E3", 3, mapE3rn, mapE3cp, 0);
+  SetEdge E3("E3", mapE3rn, mapE3cp);
 
   Interval i11(1 + offE4, 1, offE5);
   Set domE4 = createSet(i11);
@@ -3526,7 +3533,7 @@ void TestPrint1(){
   mapE4rn.addSetLM(domE4, lm7);
   PWLMap mapE4rp;
   mapE4rp.addSetLM(domE4, lm8);
-  SetEdge E4("E4", 4, mapE4rn, mapE4rp, 0);
+  SetEdge E4("E4", mapE4rn, mapE4rp);
 
   Interval i12(1 + offE5, 1, 1 + offE5 + offRp - 1);
   Set domE5 = createSet(i12);
@@ -3538,7 +3545,7 @@ void TestPrint1(){
   mapE5cn.addSetLM(domE5, lm9);
   PWLMap mapE5gp;
   mapE5gp.addSetLM(domE5, lm10);
-  SetEdge E5("E5", 5, mapE5cn, mapE5gp, 0);
+  SetEdge E5("E5", mapE5cn, mapE5gp);
 
   SBGraph g1;
 
@@ -3583,7 +3590,7 @@ void TestPrint1(){
   GraphPrinter gp1(g1, -1);
   std::string fn1("graph1.dot");
   gp1.printGraph(fn1);
-
+  
   BOOST_CHECK(true);
 }
 
@@ -3599,31 +3606,31 @@ void TestPrint2()
 
   Interval ii1(1 + offsp, 1, 1 + offsp);
   Set ssp = createSet(ii1);
-  SetVertex VV1("V1", 1, ssp, 0);
+  SetVertex VV1("V1", ssp);
 
   Interval ii2(1 + offsn, 1, 1 + offsn);
   Set ssn = createSet(ii2);
-  SetVertex VV2("V2", 2, ssn, 0);
+  SetVertex VV2("V2", ssn);
 
   Interval ii3(1 + offgp, 1, 1 + offgp);
   Set ggp = createSet(ii3);
-  SetVertex VV3("V3", 3, ggp, 0);
+  SetVertex VV3("V3", ggp);
 
   Interval ii4(1 + offrp, 1, offrp + offrp);
   Set rrp = createSet(ii4);
-  SetVertex VV4("V4", 4, rrp, 0);
+  SetVertex VV4("V4", rrp);
 
   Interval ii5(1 + offrn, 1, offrp + offrn);
   Set rrn = createSet(ii5);
-  SetVertex VV5("V5", 5, rrn, 0);
+  SetVertex VV5("V5", rrn);
 
   Interval ii6(1 + offcp, 1, offrp + offcp);
   Set ccp = createSet(ii6);
-  SetVertex VV6("V6", 6, ccp, 0);
+  SetVertex VV6("V6", ccp);
 
   Interval ii7(1 + offcn, 1, offrp + offcn);
   Set ccn = createSet(ii7);
-  SetVertex VV7("V7", 7, ccn, 0);
+  SetVertex VV7("V7", ccn);
 
   float offEE1 = 0;
   float offEE2 = 1;
@@ -3642,7 +3649,7 @@ void TestPrint2()
   mmapE1sp.addSetLM(domEE1, llm1);
   PWLMap mmapE1rp;
   mmapE1rp.addSetLM(domEE1, llm2);
-  SetEdge EE1("E1", 1, mmapE1sp, mmapE1rp, 0);
+  SetEdge EE1("E1", mmapE1sp, mmapE1rp);
 
   Interval ii9(1 + offEE2, 1, offEE3);
   Set domEE2 = createSet(ii9);
@@ -3654,7 +3661,7 @@ void TestPrint2()
   mmapE2sn.addSetLM(domEE2, llm3);
   PWLMap mmapE2gp;
   mmapE2gp.addSetLM(domEE2, llm4);
-  SetEdge EE2("E2", 2, mmapE2sn, mmapE2gp, 0);
+  SetEdge EE2("E2", mmapE2sn, mmapE2gp);
 
   Interval ii10(1 + offEE3, 1, offEE4);
   Set domEE3 = createSet(ii10);
@@ -3666,7 +3673,7 @@ void TestPrint2()
   mmapE3rn.addSetLM(domEE3, llm5);
   PWLMap mmapE3cp;
   mmapE3cp.addSetLM(domEE3, llm6);
-  SetEdge EE3("E3", 3, mmapE3rn, mmapE3cp, 0);
+  SetEdge EE3("E3", mmapE3rn, mmapE3cp);
 
   Interval ii11(1 + offEE4, 1, offEE5);
   Set domEE4 = createSet(ii11);
@@ -3678,7 +3685,7 @@ void TestPrint2()
   mmapE4rn.addSetLM(domEE4, llm7);
   PWLMap mmapE4rp;
   mmapE4rp.addSetLM(domEE4, llm8);
-  SetEdge EE4("E4", 4, mmapE4rn, mmapE4rp, 0);
+  SetEdge EE4("E4", mmapE4rn, mmapE4rp);
 
   Interval ii12(1 + offEE5, 1, offEE6);
   Set domEE5 = createSet(ii12);
@@ -3690,7 +3697,7 @@ void TestPrint2()
   mmapE5cn.addSetLM(domEE5, llm9);
   PWLMap mmapE5gp;
   mmapE5gp.addSetLM(domEE5, llm10);
-  SetEdge EE5("E5", 1, mmapE5cn, mmapE5gp, 0);
+  SetEdge EE5("E5", mmapE5cn, mmapE5gp);
 
   Interval ii13(1 + offEE6, 1, 1 + offEE6 + offrp - 2);
   Set domEE6 = createSet(ii13);
@@ -3702,7 +3709,7 @@ void TestPrint2()
   mmapE6cn.addSetLM(domEE6, llm11);
   PWLMap mmapE6cn2;
   mmapE6cn2.addSetLM(domEE6, llm12);
-  SetEdge EE6("E6", 1, mmapE6cn, mmapE6cn2, 0);
+  SetEdge EE6("E6", mmapE6cn, mmapE6cn2);
 
   SBGraph g2;
 
@@ -3776,25 +3783,25 @@ void TestRC1()
   Interval i7(1 + offCn, 1, offRp + offCn);
 
   Set sp = createSet(i1);
-  SetVertex V1("V1", 1, sp, 0);
+  SetVertex V1("V1", sp);
 
   Set sn = createSet(i2);
-  SetVertex V2("V2", 2, sn, 0);
+  SetVertex V2("V2", sn);
 
   Set gp = createSet(i3);
-  SetVertex V3("V3", 3, gp, 0);
+  SetVertex V3("V3", gp);
 
   Set rp = createSet(i4);
-  SetVertex V4("V4", 4, rp, 0);
+  SetVertex V4("V4", rp);
 
   Set rn = createSet(i5);
-  SetVertex V5("V5", 5, rn, 0);
+  SetVertex V5("V5", rn);
 
   Set cp = createSet(i6);
-  SetVertex V6("V6", 6, cp, 0);
+  SetVertex V6("V6", cp);
 
   Set cn = createSet(i7);
-  SetVertex V7("V7", 7, cn, 0);
+  SetVertex V7("V7", cn);
 
   float offE1 = 0;
   float offE2 = 1;
@@ -3812,7 +3819,7 @@ void TestRC1()
   mapE1sp.addSetLM(domE1, lm1);
   PWLMap mapE1rp;
   mapE1rp.addSetLM(domE1, lm2);
-  SetEdge E1("E1", 1, mapE1sp, mapE1rp, 0);
+  SetEdge E1("E1", mapE1sp, mapE1rp);
 
   Interval i9(1 + offE2, 1, offE3);
   Set domE2 = createSet(i9);
@@ -3824,7 +3831,7 @@ void TestRC1()
   mapE2sn.addSetLM(domE2, lm3);
   PWLMap mapE2gp;
   mapE2gp.addSetLM(domE2, lm4);
-  SetEdge E2("E2", 2, mapE2sn, mapE2gp, 0);
+  SetEdge E2("E2", mapE2sn, mapE2gp);
 
   Interval i10(1 + offE3, 1, offE4);
   Set domE3 = createSet(i10);
@@ -3836,7 +3843,7 @@ void TestRC1()
   mapE3rn.addSetLM(domE3, lm5);
   PWLMap mapE3cp;
   mapE3cp.addSetLM(domE3, lm6);
-  SetEdge E3("E3", 3, mapE3rn, mapE3cp, 0);
+  SetEdge E3("E3", mapE3rn, mapE3cp);
 
   Interval i11(1 + offE4, 1, offE5);
   Set domE4 = createSet(i11);
@@ -3848,7 +3855,7 @@ void TestRC1()
   mapE4rn.addSetLM(domE4, lm7);
   PWLMap mapE4rp;
   mapE4rp.addSetLM(domE4, lm8);
-  SetEdge E4("E4", 4, mapE4rn, mapE4rp, 0);
+  SetEdge E4("E4", mapE4rn, mapE4rp);
 
   Interval i12(1 + offE5, 1, 1 + offE5 + offRp - 1);
   Set domE5 = createSet(i12);
@@ -3860,7 +3867,7 @@ void TestRC1()
   mapE5cn.addSetLM(domE5, lm9);
   PWLMap mapE5gp;
   mapE5gp.addSetLM(domE5, lm10);
-  SetEdge E5("E5", 5, mapE5cn, mapE5gp, 0);
+  SetEdge E5("E5", mapE5cn, mapE5gp);
 
   SBGraph g;
 
@@ -3991,31 +3998,31 @@ void TestGraph3c()
 
   Interval i1(1 + offsp, 1, 1 + offsp);
   Set sp = createSet(i1);
-  SetVertex V1("V1", 1, sp, 0);
+  SetVertex V1("V1", sp);
 
   Interval i2(1 + offsn, 1, 1 + offsn);
   Set sn = createSet(i2);
-  SetVertex V2("V2", 2, sn, 0);
+  SetVertex V2("V2", sn);
 
   Interval i3(1 + offgp, 1, 1 + offgp);
   Set gp = createSet(i3);
-  SetVertex V3("V3", 3, gp, 0);
+  SetVertex V3("V3", gp);
 
   Interval i4(1 + offrp, 1, offrp + offrp);
   Set rp = createSet(i4);
-  SetVertex V4("V4", 4, rp, 0);
+  SetVertex V4("V4", rp);
 
   Interval i5(1 + offrn, 1, offrp + offrn);
   Set rn = createSet(i5);
-  SetVertex V5("V5", 5, rn, 0);
+  SetVertex V5("V5", rn);
 
   Interval i6(1 + offcp, 1, offrp + offcp);
   Set cp = createSet(i6);
-  SetVertex V6("V6", 6, cp, 0);
+  SetVertex V6("V6", cp);
 
   Interval i7(1 + offcn, 1, offrp + offcn);
   Set cn = createSet(i7);
-  SetVertex V7("V7", 7, cn, 0);
+  SetVertex V7("V7", cn);
 
   float offE1 = 0;
   float offE2 = 1;
@@ -4034,7 +4041,7 @@ void TestGraph3c()
   mapE1sp.addSetLM(domE1, lm1);
   PWLMap mapE1rp;
   mapE1rp.addSetLM(domE1, lm2);
-  SetEdge E1("E1", 1, mapE1sp, mapE1rp, 0);
+  SetEdge E1("E1", mapE1sp, mapE1rp);
 
   Interval i9(1 + offE2, 1, offE3);
   Set domE2 = createSet(i9);
@@ -4046,7 +4053,7 @@ void TestGraph3c()
   mapE2sn.addSetLM(domE2, lm3);
   PWLMap mapE2gp;
   mapE2gp.addSetLM(domE2, lm4);
-  SetEdge E2("E2", 2, mapE2sn, mapE2gp, 0);
+  SetEdge E2("E2", mapE2sn, mapE2gp);
 
   Interval i10(1 + offE3, 1, offE4);
   Set domE3 = createSet(i10);
@@ -4058,7 +4065,7 @@ void TestGraph3c()
   mapE3rn.addSetLM(domE3, lm5);
   PWLMap mapE3cp;
   mapE3cp.addSetLM(domE3, lm6);
-  SetEdge E3("E3", 3, mapE3rn, mapE3cp, 0);
+  SetEdge E3("E3", mapE3rn, mapE3cp);
 
   Interval i11(1 + offE4, 1, offE5);
   Set domE4 = createSet(i11);
@@ -4070,7 +4077,7 @@ void TestGraph3c()
   mapE4rn.addSetLM(domE4, lm7);
   PWLMap mapE4rp;
   mapE4rp.addSetLM(domE4, lm8);
-  SetEdge E4("E4", 4, mapE4rn, mapE4rp, 0);
+  SetEdge E4("E4", mapE4rn, mapE4rp);
 
   Interval i12(1 + offE5, 1, offE6);
   Set domE5 = createSet(i12);
@@ -4082,7 +4089,7 @@ void TestGraph3c()
   mapE5cn.addSetLM(domE5, lm9);
   PWLMap mapE5gp;
   mapE5gp.addSetLM(domE5, lm10);
-  SetEdge E5("E5", 1, mapE5cn, mapE5gp, 0);
+  SetEdge E5("E5", mapE5cn, mapE5gp);
 
   Interval i13(1 + offE6, 1, 1 + offE6 + offrp - 2);
   Set domE6 = createSet(i13);
@@ -4094,7 +4101,7 @@ void TestGraph3c()
   mapE6cn.addSetLM(domE6, lm11);
   PWLMap mapE6cn2;
   mapE6cn2.addSetLM(domE6, lm12);
-  SetEdge E6("E6", 1, mapE6cn, mapE6cn2, 0);
+  SetEdge E6("E6", mapE6cn, mapE6cn2);
 
   SBGraph g;
 
@@ -4257,7 +4264,7 @@ void Test2D()
   MultiInterval as1(mi1);
   Set sp;
   sp.addAtomSet(as1);
-  SetVertex V1("V1", 1, sp, 0);
+  SetVertex V1("V1", sp);
 
   Interval i3(1 + offsn1, 1, 1 + offsn1);
   Interval i4(1 + offsn2, 1, 1 + offsn2);
@@ -4267,7 +4274,7 @@ void Test2D()
   MultiInterval as2(mi2);
   Set sn;
   sn.addAtomSet(as2);
-  SetVertex V2("V2", 2, sn, 0);
+  SetVertex V2("V2", sn);
 
   Interval i5(1 + offgp1, 1, 1 + offgp1);
   Interval i6(1 + offgp2, 1, 1 + offgp2);
@@ -4277,7 +4284,7 @@ void Test2D()
   MultiInterval as3(mi3);
   Set gp;
   gp.addAtomSet(as3);
-  SetVertex V3("V3", 3, gp, 0);
+  SetVertex V3("V3", gp);
 
   Interval i7(1 + offcl1, 1, offcr1);
   Interval i8(1 + offcl2, 1, offcr2);
@@ -4287,7 +4294,7 @@ void Test2D()
   MultiInterval as4(mi4);
   Set cl;
   cl.addAtomSet(as4);
-  SetVertex V4("V4", 4, cl, 0);
+  SetVertex V4("V4", cl);
 
   Interval i9(1 + offcr1, 1, offcu1);
   Interval i10(1 + offcr2, 1, offcu2);
@@ -4297,7 +4304,7 @@ void Test2D()
   MultiInterval as5(mi5);
   Set cr;
   cr.addAtomSet(as5);
-  SetVertex V5("V5", 5, cr, 0);
+  SetVertex V5("V5", cr);
 
   Interval i11(1 + offcu1, 1, offcd1);
   Interval i12(1 + offcu2, 1, offcd2);
@@ -4307,7 +4314,7 @@ void Test2D()
   MultiInterval as6(mi6);
   Set cu;
   cu.addAtomSet(as6);
-  SetVertex V6("V6", 6, cu, 0);
+  SetVertex V6("V6", cu);
 
   Interval i13(1 + offcd1, 1, offcl1 + offcd1);
   Interval i14(1 + offcd2, 1, offcl2 + offcd2);
@@ -4317,7 +4324,7 @@ void Test2D()
   MultiInterval as7(mi7);
   Set cd;
   cd.addAtomSet(as7);
-  SetVertex V7("V7", 7, cd, 0);
+  SetVertex V7("V7", cd);
 
   float offE11 = 0;
   float offE12 = 0;
@@ -4352,7 +4359,7 @@ void Test2D()
   mapE1cl.addSetLM(domE1, lm1);
   PWLMap mapE1cr;
   mapE1cr.addSetLM(domE1, lm2);
-  SetEdge E1("E1", 1, mapE1cl, mapE1cr, 0);
+  SetEdge E1("E1", mapE1cl, mapE1cr);
 
   Interval i17(1 + offE21, 1, offE31);
   Interval i18(1 + offE22, 1, offE32);
@@ -4372,7 +4379,7 @@ void Test2D()
   mapE2cu.addSetLM(domE2, lm3);
   PWLMap mapE2cd;
   mapE2cd.addSetLM(domE2, lm4);
-  SetEdge E2("E2", 2, mapE2cu, mapE2cd, 0);
+  SetEdge E2("E2", mapE2cu, mapE2cd);
 
   Interval i19(1 + offE31, 1, offE41);
   Interval i20(1 + offE32, 1, offE42);
@@ -4392,7 +4399,7 @@ void Test2D()
   mapE3cl.addSetLM(domE3, lm5);
   PWLMap mapE3cr;
   mapE3cr.addSetLM(domE3, lm6);
-  SetEdge E3("E3", 3, mapE3cl, mapE3cr, 0);
+  SetEdge E3("E3", mapE3cl, mapE3cr);
 
   Interval i21(1 + offE41, 1, offE51);
   Interval i22(1 + offE42, 1, offE52);
@@ -4412,7 +4419,7 @@ void Test2D()
   mapE4cu.addSetLM(domE4, lm7);
   PWLMap mapE4sp;
   mapE4sp.addSetLM(domE4, lm8);
-  SetEdge E4("E4", 4, mapE4cu, mapE4sp, 0);
+  SetEdge E4("E4", mapE4cu, mapE4sp);
 
   Interval i23(1 + offE51, 1, offE61);
   Interval i24(1 + offE52, 1, offE62);
@@ -4432,7 +4439,7 @@ void Test2D()
   mapE5cd.addSetLM(domE5, lm9);
   PWLMap mapE5gp;
   mapE5gp.addSetLM(domE5, lm10);
-  SetEdge E5("E5", 5, mapE5cd, mapE5gp, 0);
+  SetEdge E5("E5", mapE5cd, mapE5gp);
 
   Interval i25(1 + offE61, 1, offE71);
   Interval i26(1 + offE62, 1, offE72);
@@ -4452,7 +4459,7 @@ void Test2D()
   mapE6sn.addSetLM(domE6, lm11);
   PWLMap mapE6gp;
   mapE6gp.addSetLM(domE6, lm12);
-  SetEdge E6("E6", 6, mapE6sn, mapE6gp, 0);
+  SetEdge E6("E6", mapE6sn, mapE6gp);
 
   SBGraph g;
 
@@ -4653,27 +4660,27 @@ void TestMatching1()
 
   Interval i1(offF1, 1, offF1);
   Set f1 = createSet(i1);
-  SetVertex F1("F1", 1, f1, 0);
+  SetVertex F1("F1", f1);
 
   Interval i2(1 + offF1, 1, offF2);
   Set f2 = createSet(i2);
-  SetVertex F2("F2", 2, f2, 0);
+  SetVertex F2("F2", f2);
 
   Interval i3(1 + offF2, 1, offF3);
   Set f3 = createSet(i3);
-  SetVertex F3("F3", 3, f3, 0);
+  SetVertex F3("F3", f3);
 
   Interval i4(1 + offF3, 1, offF4);
   Set f4 = createSet(i4);
-  SetVertex F4("F4", 4, f4, 0);
+  SetVertex F4("F4", f4);
 
   Interval i5(1 + offF4, 1, offF5);
   Set f5 = createSet(i5);
-  SetVertex F5("F5", 1, f5, 0);
+  SetVertex F5("F5", f5);
 
   Interval i6(1 + offF5, 1, offF6);
   Set f6 = createSet(i6);
-  SetVertex F6("F6", 6, f6, 0);
+  SetVertex F6("F6", f6);
 
   // Unknowns
 
@@ -4684,19 +4691,19 @@ void TestMatching1()
 
   Interval i7(1 + offF6, 1, offU1);
   Set u1 = createSet(i7);
-  SetVertex U1("U1", 7, u1, 0);
+  SetVertex U1("U1", u1);
 
   Interval i8(1 + offU1, 1, offU2);
   Set u2 = createSet(i8);
-  SetVertex U2("U2", 8, u2, 0);
+  SetVertex U2("U2", u2);
 
   Interval i9(1 + offU2, 1, offU3);
   Set u3 = createSet(i9);
-  SetVertex U3("U3", 9, u3, 0);
+  SetVertex U3("U3", u3);
 
   Interval i10(1 + offU3, 1, offU4);
   Set u4 = createSet(i10);
-  SetVertex U4("U4", 10, u4, 0);
+  SetVertex U4("U4", u4);
 
   // Edges
 
@@ -4723,7 +4730,7 @@ void TestMatching1()
   mapE1l.addSetLM(domE1, lm1);
   PWLMap mapE1r;
   mapE1r.addSetLM(domE1, lm2);
-  SetEdge E1("E1", 1, mapE1l, mapE1r, 0);
+  SetEdge E1("E1", mapE1l, mapE1r);
 
   Interval i12(1 + offE1, 1, offE2);
   Set domE2 = createSet(i12);
@@ -4735,7 +4742,7 @@ void TestMatching1()
   mapE2l.addSetLM(domE2, lm3);
   PWLMap mapE2r;
   mapE2r.addSetLM(domE2, lm4);
-  SetEdge E2("E2", 2, mapE2l, mapE2r, 0);
+  SetEdge E2("E2", mapE2l, mapE2r);
 
   Interval i13(1 + offE2, 1, offE3);
   Set domE3 = createSet(i13);
@@ -4747,7 +4754,7 @@ void TestMatching1()
   mapE3l.addSetLM(domE3, lm5);
   PWLMap mapE3r;
   mapE3r.addSetLM(domE3, lm6);
-  SetEdge E3("E3", 3, mapE3l, mapE3r, 0);
+  SetEdge E3("E3", mapE3l, mapE3r);
 
   Interval i14(1 + offE3, 1, offE4);
   Set domE4 = createSet(i14);
@@ -4759,7 +4766,7 @@ void TestMatching1()
   mapE4l.addSetLM(domE4, lm7);
   PWLMap mapE4r;
   mapE4r.addSetLM(domE4, lm8);
-  SetEdge E4("E4", 4, mapE4l, mapE4r, 0);
+  SetEdge E4("E4", mapE4l, mapE4r);
 
   Interval i15(1 + offE4, 1, offE5);
   Set domE5 = createSet(i15);
@@ -4771,7 +4778,7 @@ void TestMatching1()
   mapE5l.addSetLM(domE5, lm9);
   PWLMap mapE5r;
   mapE5r.addSetLM(domE5, lm10);
-  SetEdge E5("E5", 5, mapE5l, mapE5r, 0);
+  SetEdge E5("E5", mapE5l, mapE5r);
 
   Interval i16(1 + offE5, 1, offE6);
   Set domE6 = createSet(i16);
@@ -4783,7 +4790,7 @@ void TestMatching1()
   mapE6l.addSetLM(domE6, lm11);
   PWLMap mapE6r;
   mapE6r.addSetLM(domE6, lm12);
-  SetEdge E6("E6", 6, mapE6l, mapE6r, 0);
+  SetEdge E6("E6", mapE6l, mapE6r);
 
   Interval i17(1 + offE6, 1, offE7);
   Set domE7 = createSet(i17);
@@ -4795,7 +4802,7 @@ void TestMatching1()
   mapE7l.addSetLM(domE7, lm13);
   PWLMap mapE7r;
   mapE7r.addSetLM(domE7, lm14);
-  SetEdge E7("E7", 7, mapE7l, mapE7r, 0);
+  SetEdge E7("E7", mapE7l, mapE7r);
 
   Interval i18a(1 + offE7, 1, offE8a);
   Set domE8a = createSet(i18a);
@@ -4815,7 +4822,7 @@ void TestMatching1()
   PWLMap mapE8r;
   mapE8r.addSetLM(domE8a, lm16a);
   mapE8r.addSetLM(domE8b, lm16b);
-  SetEdge E8("E8", 8, mapE8l, mapE8r, 0);
+  SetEdge E8("E8", mapE8l, mapE8r);
 
   Interval i19(1 + offE8b, 1, offE9);
   Set domE9 = createSet(i19);
@@ -4827,7 +4834,7 @@ void TestMatching1()
   mapE9l.addSetLM(domE9, lm17);
   PWLMap mapE9r;
   mapE9r.addSetLM(domE9, lm18);
-  SetEdge E9("E9", 9, mapE9l, mapE9r, 0);
+  SetEdge E9("E9", mapE9l, mapE9r);
 
   Interval i20(1 + offE9, 1, offE10);
   Set domE10 = createSet(i20);
@@ -4839,7 +4846,7 @@ void TestMatching1()
   mapE10l.addSetLM(domE10, lm19);
   PWLMap mapE10r;
   mapE10r.addSetLM(domE10, lm20);
-  SetEdge E10("E10", 10, mapE10l, mapE10r, 0);
+  SetEdge E10("E10", mapE10l, mapE10r);
 
   Interval i21(1 + offE10, 1, offE11);
   Set domE11 = createSet(i21);
@@ -4851,7 +4858,7 @@ void TestMatching1()
   mapE11l.addSetLM(domE11, lm21);
   PWLMap mapE11r;
   mapE11r.addSetLM(domE11, lm22);
-  SetEdge E11("E11", 11, mapE11l, mapE11r, 0);
+  SetEdge E11("E11", mapE11l, mapE11r);
 
   SBGraph g;
 
@@ -4941,7 +4948,7 @@ void TestMatching2()
   MultiInterval as1(mi1);
   Set s1;
   s1.addAtomSet(as1);
-  SetVertex F1("eq1", 1, s1, 0);
+  SetVertex F1("eq1", s1);
 
   Interval i2(2, 1, N);
   MultiInterval mi2;
@@ -4949,7 +4956,7 @@ void TestMatching2()
   MultiInterval as2(mi2);
   Set s2;
   s2.addAtomSet(as2);
-  SetVertex F2("eqloop", 2, s2, 0);
+  SetVertex F2("eqloop", s2);
 
   Interval i3(N + 1, 1, 2 * N);
   MultiInterval mi3;
@@ -4957,7 +4964,7 @@ void TestMatching2()
   MultiInterval as3(mi3);
   Set s3;
   s3.addAtomSet(as3);
-  SetVertex U("u", 3, s3, 0);
+  SetVertex U("u", s3);
 
   // Edges
   Interval i4(1, 1, 1);
@@ -4974,7 +4981,7 @@ void TestMatching2()
   mapE1f.addSetLM(domE1, lm1);
   PWLMap mapE1u;
   mapE1u.addSetLM(domE1, lm2);
-  SetEdge E1("E1", 1, mapE1f, mapE1u, 0);
+  SetEdge E1("E1", mapE1f, mapE1u);
 
   Interval i5(2, 1, N);
   MultiInterval mi5;
@@ -5006,7 +5013,7 @@ void TestMatching2()
   PWLMap mapE2u;
   mapE2u.addSetLM(domE2a, lm4);
   mapE2u.addSetLM(domE2b, lm6);
-  SetEdge E2("E2", 2, mapE2f, mapE2u, 0);
+  SetEdge E2("E2", mapE2f, mapE2u);
 
   SBGraph g;
 
@@ -5083,35 +5090,35 @@ void TestMatching3()
 
   Interval i1(2, 1, 2);
   Set s1 = createSet(i1);
-  SetVertex V1("v1", 1, s1, 0);
+  SetVertex V1("v1", s1);
 
   Interval i2(3, 1, 3);
   Set s2 = createSet(i2);
-  SetVertex V2("v2", 2, s2, 0);
+  SetVertex V2("v2", s2);
 
   Interval i3(4, 1, 4);
   Set s3 = createSet(i3);
-  SetVertex V3("v3", 3, s3, 0);
+  SetVertex V3("v3", s3);
 
   Interval i4(5, 1, 5);
   Set s4 = createSet(i4);
-  SetVertex V4("v4", 4, s4, 0);
+  SetVertex V4("v4", s4);
 
   Interval i5(9, 1, 9);
   Set s5 = createSet(i5);
-  SetVertex V5("v5", 5, s5, 0);
+  SetVertex V5("v5", s5);
 
   Interval i6(10, 1, 10);
   Set s6 = createSet(i6);
-  SetVertex V6("v6", 6, s6, 0);
+  SetVertex V6("v6", s6);
 
   Interval i7(11, 1, 11);
   Set s7 = createSet(i7);
-  SetVertex V7("v7", 7, s7, 0);
+  SetVertex V7("v7", s7);
 
   Interval i8(12, 1, 12);
   Set s8 = createSet(i8);
-  SetVertex V8("v8", 8, s8, 0);
+  SetVertex V8("v8", s8);
 
   g[v1] = V1;
   g[v2] = V2;
@@ -5132,7 +5139,7 @@ void TestMatching3()
   mapE1f.addSetLM(s9, lm1);
   PWLMap mapE1u;
   mapE1u.addSetLM(s9, lm2);
-  SetEdge E1("E1", 1, mapE1f, mapE1u, 0);
+  SetEdge E1("E1", mapE1f, mapE1u);
 
   Interval i10(2, 1, 2);
   Set s10 = createSet(i10);
@@ -5144,7 +5151,7 @@ void TestMatching3()
   mapE2f.addSetLM(s10, lm3);
   PWLMap mapE2u;
   mapE2u.addSetLM(s10, lm4);
-  SetEdge E2("E2", 2, mapE2f, mapE2u, 0);
+  SetEdge E2("E2", mapE2f, mapE2u);
 
   Interval i11(3, 1, 3);
   Set s11 = createSet(i11);
@@ -5156,7 +5163,7 @@ void TestMatching3()
   mapE3f.addSetLM(s11, lm5);
   PWLMap mapE3u;
   mapE3u.addSetLM(s11, lm6);
-  SetEdge E3("E3", 3, mapE3f, mapE3u, 0);
+  SetEdge E3("E3", mapE3f, mapE3u);
 
   Interval i12(4, 1, 4);
   Set s12 = createSet(i12);
@@ -5168,7 +5175,7 @@ void TestMatching3()
   mapE4f.addSetLM(s12, lm7);
   PWLMap mapE4u;
   mapE4u.addSetLM(s12, lm8);
-  SetEdge E4("E4", 4, mapE4f, mapE4u, 0);
+  SetEdge E4("E4", mapE4f, mapE4u);
 
   Interval i13(5, 1, 5);
   Set s13 = createSet(i13);
@@ -5180,7 +5187,7 @@ void TestMatching3()
   mapE5f.addSetLM(s13, lm9);
   PWLMap mapE5u;
   mapE5u.addSetLM(s13, lm10);
-  SetEdge E5("E5", 5, mapE5f, mapE5u, 0);
+  SetEdge E5("E5", mapE5f, mapE5u);
 
   Interval i14(6, 1, 6);
   Set s14 = createSet(i14);
@@ -5192,7 +5199,7 @@ void TestMatching3()
   mapE6f.addSetLM(s14, lm11);
   PWLMap mapE6u;
   mapE6u.addSetLM(s14, lm12);
-  SetEdge E6("E6", 6, mapE6f, mapE6u, 0);
+  SetEdge E6("E6", mapE6f, mapE6u);
 
   Interval i15(7, 1, 7);
   Set s15 = createSet(i15);
@@ -5204,7 +5211,7 @@ void TestMatching3()
   mapE7f.addSetLM(s15, lm13);
   PWLMap mapE7u;
   mapE7u.addSetLM(s15, lm14);
-  SetEdge E7("E7", 7, mapE7f, mapE7u, 0);
+  SetEdge E7("E7", mapE7f, mapE7u);
 
   Interval i16(8, 1, 8);
   Set s16 = createSet(i16);
@@ -5216,7 +5223,7 @@ void TestMatching3()
   mapE8f.addSetLM(s16, lm15);
   PWLMap mapE8u;
   mapE8u.addSetLM(s16, lm16);
-  SetEdge E8("E8", 8, mapE8f, mapE8u, 0);
+  SetEdge E8("E8", mapE8f, mapE8u);
 
   Interval i17(9, 1, 9);
   Set s17 = createSet(i17);
@@ -5228,7 +5235,7 @@ void TestMatching3()
   mapE9f.addSetLM(s17, lm17);
   PWLMap mapE9u;
   mapE9u.addSetLM(s17, lm18);
-  SetEdge E9("E9", 9, mapE9f, mapE9u, 0);
+  SetEdge E9("E9", mapE9f, mapE9u);
 
   Interval i18(10, 1, 10);
   Set s18 = createSet(i18);
@@ -5240,7 +5247,7 @@ void TestMatching3()
   mapE10f.addSetLM(s18, lm19);
   PWLMap mapE10u;
   mapE10u.addSetLM(s18, lm20);
-  SetEdge E10("E10", 10, mapE10f, mapE10u, 0);
+  SetEdge E10("E10", mapE10f, mapE10u);
 
   g[e1] = E1;
   g[e2] = E2;
@@ -5311,7 +5318,7 @@ void TestMatching4()
   mi1.addInter(i1);
   mi1.addInter(i1);
   Set s1 = createSet(mi1);
-  SetVertex V1("u", 1, s1, 0);
+  SetVertex V1("u", s1);
 
   // eq1[1, 1]
   Interval i2(offEq1, 1, offEq1 + szEq1);
@@ -5319,7 +5326,7 @@ void TestMatching4()
   mi2.addInter(i2);
   mi2.addInter(i2);
   Set s2 = createSet(mi2);
-  SetVertex V2("eq1", 2, s2, 0);
+  SetVertex V2("eq1", s2);
 
   // eq2[i, 1]
   Interval i3(offEq2i, 1, offEq2i + szEq2i);
@@ -5328,7 +5335,7 @@ void TestMatching4()
   mi3.addInter(i3);
   mi3.addInter(i4);
   Set s3 = createSet(mi3);
-  SetVertex V3("eq2", 3, s3, 0);
+  SetVertex V3("eq2", s3);
 
   // eq3[1, j]
   Interval i5(offEq3i, 1, offEq3i + szEq3i);
@@ -5337,7 +5344,7 @@ void TestMatching4()
   mi4.addInter(i5);
   mi4.addInter(i6);
   Set s4 = createSet(mi4);
-  SetVertex V4("eq3", 4, s4, 0);
+  SetVertex V4("eq3", s4);
 
   // eq4[i, j]
   Interval i7(offEq4, 1, offEq4 + szEq4);
@@ -5345,7 +5352,7 @@ void TestMatching4()
   mi5.addInter(i7);
   mi5.addInter(i7);
   Set s5 = createSet(mi5);
-  SetVertex V5("eq4", 5, s5, 0);
+  SetVertex V5("eq4", s5);
 
   g[v1] = V1;
   g[v2] = V2;
@@ -5407,7 +5414,7 @@ void TestMatching4()
   mapE1f.addSetLM(s6, lm1);
   PWLMap mapE1u;
   mapE1u.addSetLM(s6, lm2);
-  SetEdge E1("E1", 1, mapE1f, mapE1u, 0);
+  SetEdge E1("E1", mapE1f, mapE1u);
 
   // u[i, 1] <-> eq2[i, 1]
   Interval i9(offE2i_1, 1, offE2i_1 + szE2i_1);
@@ -5443,7 +5450,7 @@ void TestMatching4()
   PWLMap mapE2u;
   mapE2u.addSetLM(s7, lm4);
   mapE2u.addSetLM(s8, lm6);
-  SetEdge E2("E2", 2, mapE2f, mapE2u, 0);
+  SetEdge E2("E2", mapE2f, mapE2u);
 
   // u[1, j] <-> eq3[1, j]
   Interval i13(offE3i_1, 1, offE3i_1 + szE3i_1);
@@ -5479,7 +5486,7 @@ void TestMatching4()
   PWLMap mapE3u;
   mapE3u.addSetLM(s9, lm8);
   mapE3u.addSetLM(s10, lm10);
-  SetEdge E3("E3", 3, mapE3f, mapE3u, 0);
+  SetEdge E3("E3", mapE3f, mapE3u);
 
   // u[i, j] <-> eq4[i, j]
   Interval i17(offE4i_1, 1, offE4i_1 + szE4i_1);
@@ -5531,7 +5538,7 @@ void TestMatching4()
   mapE4u.addSetLM(s11, lm12);
   mapE4u.addSetLM(s12, lm14);
   mapE4u.addSetLM(s13, lm16);
-  SetEdge E4("E4", 4, mapE4f, mapE4u, 0);
+  SetEdge E4("E4", mapE4f, mapE4u);
 
   g[e1] = E1;
   g[e2] = E2;
@@ -5585,28 +5592,28 @@ void TestMatching5()
   MultiInterval mi1;
   mi1.addInter(i1);
   Set s1 = createSet(mi1);
-  SetVertex V1("u", 1, s1, 0);
+  SetVertex V1("u", s1);
 
   // Minimum vertex on the left side
   Interval i2(offV2, 1, offV2 + szV2);
   MultiInterval mi2;
   mi2.addInter(i2);
   Set s2 = createSet(mi2);
-  SetVertex V2("min", 2, s2, 0);
+  SetVertex V2("min", s2);
 
   // Vertices on the left side in the recursion
   Interval i3(offV3, 1, offV3 + szV3);
   MultiInterval mi3;
   mi3.addInter(i3);
   Set s3 = createSet(mi3);
-  SetVertex V3("rec", 3, s3, 0);
+  SetVertex V3("rec", s3);
 
   // "Start" of recursion
   Interval i4(offV4, 1, offV4 + szV4);
   MultiInterval mi4;
   mi4.addInter(i4);
   Set s4 = createSet(mi4);
-  SetVertex V4("start", 4, s4, 0);
+  SetVertex V4("start", s4);
 
   g[v1] = V1;
   g[v2] = V2;
@@ -5638,7 +5645,7 @@ void TestMatching5()
   mapE1f.addSetLM(s5, lm1);
   PWLMap mapE1u;
   mapE1u.addSetLM(s5, lm2);
-  SetEdge E1("E1", 1, mapE1f, mapE1u, 0);
+  SetEdge E1("E1", mapE1f, mapE1u);
 
   // Edges in recursion
   Interval i6(offE2_1, 1, offE2_1 + szE2_1);
@@ -5665,7 +5672,7 @@ void TestMatching5()
   PWLMap mapE2u;
   mapE2u.addSetLM(s6, lm4);
   mapE2u.addSetLM(s7, lm6);
-  SetEdge E2("E2", 2, mapE2f, mapE2u, 0);
+  SetEdge E2("E2", mapE2f, mapE2u);
 
   // "Start" of recursion
   Interval i8(offE3, 1, offE3 + szE3);
@@ -5680,7 +5687,7 @@ void TestMatching5()
   mapE3f.addSetLM(s8, lm7);
   PWLMap mapE3u;
   mapE3u.addSetLM(s8, lm8);
-  SetEdge E3("E3", 3, mapE3f, mapE3u, 0);
+  SetEdge E3("E3", mapE3f, mapE3u);
 
   g[e1] = E1;
   g[e2] = E2;
@@ -5741,35 +5748,35 @@ void TestMatching6()
   MultiInterval mi1;
   mi1.addInter(i1);
   Set s1 = createSet(mi1);
-  SetVertex V1("minr", 1, s1, 0);
+  SetVertex V1("minr", s1);
 
   // All the other vertices on the right side
   Interval i2(offV2, 1, offV2 + szV2);
   MultiInterval mi2;
   mi2.addInter(i2);
   Set s2 = createSet(mi2);
-  SetVertex V2("u", 2, s2, 0);
+  SetVertex V2("u", s2);
 
   // Minimum vertex on the left side
   Interval i3(offV3, 1, offV3 + szV3);
   MultiInterval mi3;
   mi3.addInter(i3);
   Set s3 = createSet(mi3);
-  SetVertex V3("minl", 3, s3, 0);
+  SetVertex V3("minl", s3);
 
   // Other vertices on the left side
   Interval i4(offV4, 1, offV4 + szV4);
   MultiInterval mi4;
   mi4.addInter(i4);
   Set s4 = createSet(mi4);
-  SetVertex V4("eq", 4, s4, 0);
+  SetVertex V4("eq", s4);
 
   // "Start" of recursion
   Interval i5(offV5, 1, offV5 + szV5);
   MultiInterval mi5;
   mi5.addInter(i5);
   Set s5 = createSet(mi5);
-  SetVertex V5("start", 5, s5, 0);
+  SetVertex V5("start", s5);
 
   g[v1] = V1;
   g[v2] = V2;
@@ -5805,7 +5812,7 @@ void TestMatching6()
   mapE1f.addSetLM(s6, lm1);
   PWLMap mapE1u;
   mapE1u.addSetLM(s6, lm2);
-  SetEdge E1("E1", 1, mapE1f, mapE1u, 0);
+  SetEdge E1("E1", mapE1f, mapE1u);
 
   // Edges in recursion
   Interval i7(offE2_1, 1, offE2_1 + szE2_1);
@@ -5832,7 +5839,7 @@ void TestMatching6()
   PWLMap mapE2u;
   mapE2u.addSetLM(s7, lm4);
   mapE2u.addSetLM(s8, lm6);
-  SetEdge E2("E2", 2, mapE2f, mapE2u, 0);
+  SetEdge E2("E2", mapE2f, mapE2u);
 
   // "Start" of recursion
   Interval i9(offE3, 1, offE3 + szE3);
@@ -5847,7 +5854,7 @@ void TestMatching6()
   mapE3f.addSetLM(s9, lm7);
   PWLMap mapE3u;
   mapE3u.addSetLM(s9, lm8);
-  SetEdge E3("E3", 3, mapE3f, mapE3u, 0);
+  SetEdge E3("E3", mapE3f, mapE3u);
 
   // 1:N map from minimum right to vertices on the right side
   Interval i10(offE4, 1, offE4 + szE4);
@@ -5862,7 +5869,7 @@ void TestMatching6()
   mapE4f.addSetLM(s10, lm9);
   PWLMap mapE4u;
   mapE4u.addSetLM(s10, lm10);
-  SetEdge E4("E4", 1, mapE4f, mapE4u, 0);
+  SetEdge E4("E4", mapE4f, mapE4u);
 
   g[e1] = E1;
   g[e2] = E2;
@@ -5900,14 +5907,14 @@ void TestMatching7()
   MultiInterval mi1;
   mi1.addInter(i1);
   Set s1 = createSet(mi1);
-  SetVertex V1("one", 1, s1, 0);
+  SetVertex V1("one", s1);
 
   // N vertices on the right side
   Interval i2(offV2, 1, offV2 + szV2);
   MultiInterval mi2;
   mi2.addInter(i2);
   Set s2 = createSet(mi2);
-  SetVertex V2("N", 2, s2, 0);
+  SetVertex V2("N", s2);
 
   g[v1] = V1;
   g[v2] = V2;
@@ -5928,7 +5935,7 @@ void TestMatching7()
   mapE1f.addSetLM(s3, lm1);
   PWLMap mapE1u;
   mapE1u.addSetLM(s3, lm2);
-  SetEdge E1("E1", 1, mapE1f, mapE1u, 0);
+  SetEdge E1("E1", mapE1f, mapE1u);
 
   g[e1] = E1;
 
@@ -5972,7 +5979,7 @@ void TestMatching8()
   mi1.addInter(i1);
   mi1.addInter(i2);
   Set s1 = createSet(mi1);
-  SetVertex V1("one", 1, s1, 0);
+  SetVertex V1("one", s1);
 
   // N vertices on the right side
   Interval i3(offV2i, 1, offV2i + szV2i);
@@ -5981,7 +5988,7 @@ void TestMatching8()
   mi2.addInter(i3);
   mi2.addInter(i4);
   Set s2 = createSet(mi2);
-  SetVertex V2("N", 2, s2, 0);
+  SetVertex V2("N", s2);
 
   g[v1] = V1;
   g[v2] = V2;
@@ -6010,7 +6017,7 @@ void TestMatching8()
   mapE1u.addSetLM(s5, lm1);
   PWLMap mapE1f;
   mapE1f.addSetLM(s5, lm2);
-  SetEdge E1("E1", 1, mapE1f, mapE1u, 0);
+  SetEdge E1("E1", mapE1f, mapE1u);
 
   g[e1] = E1;
 
@@ -6075,42 +6082,42 @@ void TestMatching9()
   MultiInterval mi1;
   mi1.addInter(i1);
   Set s1 = createSet(mi1);
-  SetVertex V1("startrec", 1, s1, 0);
+  SetVertex V1("startrec", s1);
 
   // Left side of recursion
   Interval i2(offV2, 1, offV2 + szV2);
   MultiInterval mi2;
   mi2.addInter(i2);
   Set s2 = createSet(mi2);
-  SetVertex V2("recl", 2, s2, 0);
+  SetVertex V2("recl", s2);
 
   // Left side of 1:N connection
   Interval i3(offV3, 1, offV3 + szV3);
   MultiInterval mi3;
   mi3.addInter(i3);
   Set s3 = createSet(mi3);
-  SetVertex V3("N", 3, s3, 0);
+  SetVertex V3("N", s3);
 
   // Precedents of V6
   Interval i4(offV4, 1, offV4 + szV4);
   MultiInterval mi4;
   mi4.addInter(i4);
   Set s4 = createSet(mi4);
-  SetVertex V4("prec", 4, s4, 0);
+  SetVertex V4("prec", s4);
 
   // Right side of recursion
   Interval i5(offV5, 1, offV5 + szV5);
   MultiInterval mi5;
   mi5.addInter(i5);
   Set s5 = createSet(mi5);
-  SetVertex V5("recr", 5, s5, 0);
+  SetVertex V5("recr", s5);
 
   // Vertices that reach the same minimum
   Interval i6(offV6, 1, offV6 + szV6);
   MultiInterval mi6;
   mi6.addInter(i6);
   Set s6 = createSet(mi6);
-  SetVertex V6("same", 6, s6, 0);
+  SetVertex V6("same", s6);
 
   g[v1] = V1;
   g[v2] = V2;
@@ -6149,7 +6156,7 @@ void TestMatching9()
   mapE1f.addSetLM(s7, lm1);
   PWLMap mapE1u;
   mapE1u.addSetLM(s7, lm2);
-  SetEdge E1("E1", 1, mapE1f, mapE1u, 0);
+  SetEdge E1("E1", mapE1f, mapE1u);
 
   // Edges in recursion
   Interval i8(offE2_1, 1, offE2_1 + szE2_1);
@@ -6176,7 +6183,7 @@ void TestMatching9()
   PWLMap mapE2u;
   mapE2u.addSetLM(s8, lm4);
   mapE2u.addSetLM(s9, lm6);
-  SetEdge E2("E2", 2, mapE2f, mapE2u, 0);
+  SetEdge E2("E2", mapE2f, mapE2u);
 
   // "Start" of recursion
   Interval i10(offE3, 1, offE3 + szE3);
@@ -6191,7 +6198,7 @@ void TestMatching9()
   mapE3f.addSetLM(s10, lm7);
   PWLMap mapE3u;
   mapE3u.addSetLM(s10, lm8);
-  SetEdge E3("E3", 3, mapE3f, mapE3u, 0);
+  SetEdge E3("E3", mapE3f, mapE3u);
 
   Interval i11(offE4, 1, offE4 + szE4);
   MultiInterval mi11;
@@ -6205,7 +6212,7 @@ void TestMatching9()
   mapE4f.addSetLM(s11, lm9);
   PWLMap mapE4u;
   mapE4u.addSetLM(s11, lm10);
-  SetEdge E4("E4", 4, mapE4f, mapE4u, 0);
+  SetEdge E4("E4", mapE4f, mapE4u);
 
   Interval i12(offE5, 1, offE5 + szE5);
   MultiInterval mi12;
@@ -6219,7 +6226,7 @@ void TestMatching9()
   mapE5f.addSetLM(s12, lm11);
   PWLMap mapE5u;
   mapE5u.addSetLM(s12, lm12);
-  SetEdge E5("E5", 5, mapE5f, mapE5u, 0);
+  SetEdge E5("E5", mapE5f, mapE5u);
 
   g[e1] = E1;
   g[e2] = E2;
@@ -6282,35 +6289,35 @@ void TestMatching10()
   MultiInterval mi1;
   mi1.addInter(i1);
   Set s1 = createSet(mi1);
-  SetVertex V1("a", 1, s1, 0);
+  SetVertex V1("a", s1);
 
   // Unknown "der(x)"
   Interval i2(offV2, 1, offV2 + szV2);
   MultiInterval mi2;
   mi2.addInter(i2);
   Set s2 = createSet(mi2);
-  SetVertex V2("der(x)", 2, s2, 0);
+  SetVertex V2("der(x)", s2);
 
   // Eq1
   Interval i3(offV3, 1, offV3 + szV3);
   MultiInterval mi3;
   mi3.addInter(i3);
   Set s3 = createSet(mi3);
-  SetVertex V3("Eq1", 3, s3, 0);
+  SetVertex V3("Eq1", s3);
 
   // Eq2
   Interval i4(offV4, 1, offV4 + szV4);
   MultiInterval mi4;
   mi4.addInter(i4);
   Set s4 = createSet(mi4);
-  SetVertex V4("Eq2", 4, s4, 0);
+  SetVertex V4("Eq2", s4);
 
   // Eq3
   Interval i5(offV5, 1, offV5 + szV5);
   MultiInterval mi5;
   mi5.addInter(i5);
   Set s5 = createSet(mi5);
-  SetVertex V5("Eq3", 5, s5, 0);
+  SetVertex V5("Eq3", s5);
 
   g[v1] = V1;
   g[v2] = V2;
@@ -6349,7 +6356,7 @@ void TestMatching10()
   mapE1f.addSetLM(s7, lm1);
   PWLMap mapE1u;
   mapE1u.addSetLM(s7, lm2);
-  SetEdge E1("E1", 1, mapE1f, mapE1u, 0);
+  SetEdge E1("E1", mapE1f, mapE1u);
 
   // a <-> Eq1
   Interval i8(offE2_1, 1, offE2_1 + szE2_1);
@@ -6376,7 +6383,7 @@ void TestMatching10()
   PWLMap mapE2u;
   mapE2u.addSetLM(s8, lm4);
   mapE2u.addSetLM(s9, lm6);
-  SetEdge E2("E2", 2, mapE2f, mapE2u, 0);
+  SetEdge E2("E2", mapE2f, mapE2u);
 
   // a <-> Eq2
   Interval i10(offE3, 1, offE3 + szE3);
@@ -6391,7 +6398,7 @@ void TestMatching10()
   mapE3f.addSetLM(s10, lm7);
   PWLMap mapE3u;
   mapE3u.addSetLM(s10, lm8);
-  SetEdge E3("E3", 3, mapE3f, mapE3u, 0);
+  SetEdge E3("E3", mapE3f, mapE3u);
 
   // a <-> Eq3
   Interval i11(offE4, 1, offE4 + szE4);
@@ -6406,7 +6413,7 @@ void TestMatching10()
   mapE4f.addSetLM(s11, lm9);
   PWLMap mapE4u;
   mapE4u.addSetLM(s11, lm10);
-  SetEdge E4("E4", 4, mapE4f, mapE4u, 0);
+  SetEdge E4("E4", mapE4f, mapE4u);
 
   // x <-> Eq3
   Interval i12(offE5, 1, offE5 + szE5);
@@ -6421,7 +6428,7 @@ void TestMatching10()
   mapE5f.addSetLM(s12, lm11);
   PWLMap mapE5u;
   mapE5u.addSetLM(s12, lm12);
-  SetEdge E5("E5", 5, mapE5f, mapE5u, 0);
+  SetEdge E5("E5", mapE5f, mapE5u);
 
   g[e1] = E1;
   g[e2] = E2;
@@ -6473,28 +6480,28 @@ void TestMatching11()
   MultiInterval mi1;
   mi1.addInter(i1);
   Set s1 = createSet(mi1);
-  SetVertex V1("rrec", 1, s1, 0);
+  SetVertex V1("rrec", s1);
 
   // Left recursion
   Interval i2(offV2, 1, offV2 + szV2);
   MultiInterval mi2;
   mi2.addInter(i2);
   Set s2 = createSet(mi2);
-  SetVertex V2("lrec", 2, s2, 0);
+  SetVertex V2("lrec", s2);
 
   // Left start
   Interval i3(offV3, 1, offV3 + szV3);
   MultiInterval mi3;
   mi3.addInter(i3);
   Set s3 = createSet(mi3);
-  SetVertex V3("lstart", 3, s3, 0);
+  SetVertex V3("lstart", s3);
 
   // Right start
   Interval i4(offV4, 1, offV4 + szV4);
   MultiInterval mi4;
   mi4.addInter(i4);
   Set s4 = createSet(mi4);
-  SetVertex V4("rstart", 4, s4, 0);
+  SetVertex V4("rstart", s4);
 
   g[v1] = V1;
   g[v2] = V2;
@@ -6529,7 +6536,7 @@ void TestMatching11()
   mapE1f.addSetLM(s7, lm1);
   PWLMap mapE1u;
   mapE1u.addSetLM(s7, lm2);
-  SetEdge E1("E1", 1, mapE1f, mapE1u, 0);
+  SetEdge E1("E1", mapE1f, mapE1u);
 
   // Recursion
   Interval i8(offE2_1, 1, offE2_1 + szE2_1);
@@ -6567,7 +6574,7 @@ void TestMatching11()
   mapE2u.addSetLM(s8, lm4);
   mapE2u.addSetLM(s9, lm6);
   mapE2u.addSetLM(s10, lm8);
-  SetEdge E2("E2", 2, mapE2f, mapE2u, 0);
+  SetEdge E2("E2", mapE2f, mapE2u);
 
   // Right start <-> Left recursion
   Interval i11(offE3, 1, offE3 + szE3);
@@ -6582,7 +6589,7 @@ void TestMatching11()
   mapE3f.addSetLM(s11, lm9);
   PWLMap mapE3u;
   mapE3u.addSetLM(s11, lm10);
-  SetEdge E3("E3", 3, mapE3f, mapE3u, 0);
+  SetEdge E3("E3", mapE3f, mapE3u);
 
   SBG_LOG << E1 << "\n\n";
   SBG_LOG << E2 << "\n\n";
@@ -6650,42 +6657,42 @@ void TestMatching12()
   MultiInterval mi1;
   mi1.addInter(i1);
   Set s1 = createSet(mi1);
-  SetVertex V1("rrec", 1, s1, 0);
+  SetVertex V1("rrec", s1);
 
   // Left recursion
   Interval i2(offV2, 1, offV2 + szV2);
   MultiInterval mi2;
   mi2.addInter(i2);
   Set s2 = createSet(mi2);
-  SetVertex V2("lrec", 2, s2, 0);
+  SetVertex V2("lrec", s2);
 
   // Left start
   Interval i3(offV3, 1, offV3 + szV3);
   MultiInterval mi3;
   mi3.addInter(i3);
   Set s3 = createSet(mi3);
-  SetVertex V3("lstart", 3, s3, 0);
+  SetVertex V3("lstart", s3);
 
   // Right start
   Interval i4(offV4, 1, offV4 + szV4);
   MultiInterval mi4;
   mi4.addInter(i4);
   Set s4 = createSet(mi4);
-  SetVertex V4("rstart", 4, s4, 0);
+  SetVertex V4("rstart", s4);
 
   // Left pred
   Interval i5(offV5, 1, offV5 + szV5);
   MultiInterval mi5;
   mi5.addInter(i5);
   Set s5 = createSet(mi5);
-  SetVertex V5("lpred", 5, s5, 0);
+  SetVertex V5("lpred", s5);
 
   // Right pred
   Interval i6(offV6, 1, offV6 + szV6);
   MultiInterval mi6;
   mi6.addInter(i6);
   Set s6 = createSet(mi6);
-  SetVertex V6("rpred", 6, s6, 0);
+  SetVertex V6("rpred", s6);
 
   g[v1] = V1;
   g[v2] = V2;
@@ -6728,7 +6735,7 @@ void TestMatching12()
   mapE1f.addSetLM(s7, lm1);
   PWLMap mapE1u;
   mapE1u.addSetLM(s7, lm2);
-  SetEdge E1("E1", 1, mapE1f, mapE1u, 0);
+  SetEdge E1("E1", mapE1f, mapE1u);
 
   // Recursion
   Interval i8(offE2_1, 1, offE2_1 + szE2_1);
@@ -6766,7 +6773,7 @@ void TestMatching12()
   mapE2u.addSetLM(s8, lm4);
   mapE2u.addSetLM(s9, lm6);
   mapE2u.addSetLM(s10, lm8);
-  SetEdge E2("E2", 2, mapE2f, mapE2u, 0);
+  SetEdge E2("E2", mapE2f, mapE2u);
 
   // Left start <-> Recursion
   Interval i11(offE3, 1, offE3 + szE3);
@@ -6781,7 +6788,7 @@ void TestMatching12()
   mapE3f.addSetLM(s11, lm9);
   PWLMap mapE3u;
   mapE3u.addSetLM(s11, lm10);
-  SetEdge E3("E3", 3, mapE3f, mapE3u, 0);
+  SetEdge E3("E3", mapE3f, mapE3u);
 
   // Left start <-> Right pred
   Interval i12(offE4, 1, offE4 + szE4);
@@ -6796,7 +6803,7 @@ void TestMatching12()
   mapE4f.addSetLM(s12, lm11);
   PWLMap mapE4u;
   mapE4u.addSetLM(s12, lm12);
-  SetEdge E4("E4", 4, mapE4f, mapE4u, 0);
+  SetEdge E4("E4", mapE4f, mapE4u);
 
   // Right start <-> Left pred
   Interval i13(offE5, 1, offE5 + szE5);
@@ -6811,7 +6818,7 @@ void TestMatching12()
   mapE5f.addSetLM(s13, lm13);
   PWLMap mapE5u;
   mapE5u.addSetLM(s13, lm14);
-  SetEdge E5("E5", 5, mapE5f, mapE5u, 0);
+  SetEdge E5("E5", mapE5f, mapE5u);
 
   SBG_LOG << E1 << "\n\n";
   SBG_LOG << E2 << "\n\n";
@@ -6895,6 +6902,7 @@ test_suite *init_unit_test_suite(int, char *[])
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetMin1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetMin2));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetNormalize1));
+  framework::master_test_suite().add(BOOST_TEST_CASE(&TestSetPrint1));
 
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestLMCreation1));
   framework::master_test_suite().add(BOOST_TEST_CASE(&TestLMCompose1));

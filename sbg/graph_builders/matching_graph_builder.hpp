@@ -76,8 +76,8 @@ class MatchingGraphBuilder {
   std::string _model_name;
   SBG::SBGraph _graph;
   IO::NodeMap _node_map;
-  std::map<int, int> _eq_offset_map;
-  std::map<int, int> _var_offset_map;
+  std::map<std::string, int> _eq_offset_map;
+  std::map<std::string, int> _var_offset_map;
 };
 
 }  // namespace SBG

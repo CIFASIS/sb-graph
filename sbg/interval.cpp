@@ -23,10 +23,10 @@ namespace SBG {
 // Intervals --------------------------------------------------------------------------------------
 
 INTER_TEMPLATE
-INTER_TEMP_TYPE::IntervalImp1(){};
+INTER_TEMP_TYPE::IntervalImp1() : lo_(-1), step_(-1), hi_(-1), empty_(true) {};
 
 INTER_TEMPLATE
-INTER_TEMP_TYPE::IntervalImp1(bool empty) : lo_(-1), step_(-1), hi_(-1), empty_(empty){};
+INTER_TEMP_TYPE::IntervalImp1(bool empty) : lo_(-1), step_(-1), hi_(-1), empty_(empty) {};
 
 INTER_TEMPLATE
 INTER_TEMP_TYPE::IntervalImp1(INT lo, INT step, INT hi) : lo_(-1), step_(-1), hi_(-1), empty_(true)

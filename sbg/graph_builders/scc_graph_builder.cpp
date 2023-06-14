@@ -89,7 +89,7 @@ void SCCGraphBuilder::partitionEdges(SBGraph &grph)
       }
 
       SetEdge e = grph[de];
-      SetEdge new_e(e.name(), e.id(), new_f, new_u, e.index(), e.desc());
+      SetEdge new_e(e.id(), new_f, new_u, e.desc());
       grph[de] = new_e;
     }
   }
@@ -124,20 +124,18 @@ void SCCGraphBuilder::createVertices(SBGraph &grph)
     if (!e_dom.empty()) {
       SetVertexDesc s = source(de, grph), t = target(de, grph);
       SetVertex source_v = grph[s], target_v = grph[t];
-      SetVertex v(source_v.name() + target_v.name(), e.id(), e_dom, 0);
+      SetVertex v(source_v.id() + target_v.id(), e_dom);
   
       DSetVertexDesc dv = boost::add_vertex(result_ref());
       result_ref()[dv] = v; 
   
       vertex_map_ref()[de] = dv;       
 
-      // Pretty-print of conversion
       BOOST_FOREACH (MultiInterval mi_e_dom, e_dom.asets()) {
+        // Pretty-print of conversion
         Set aux(mi_e_dom);
- 
         SetEdge restricted_e = e.restrictEdge(aux);
-
-        save_vertex(restricted_e, source_v.name(), target_v.name());
+        save_vertex(restricted_e, source_v.id(), target_v.id());
       }
     }
   }
@@ -188,7 +186,7 @@ void SCCGraphBuilder::createEdges(SBGraph &grph)
             SetEdgeDesc ef = findEdge(grph, adj_f), eu = findEdge(grph, adj_u);
             DSetVertexDesc dvf = vertex_map_ref()[ef], dvu = vertex_map_ref()[eu];
 
-            DSetEdge directed_e(result_ref()[dvf].name() + result_ref()[dvu].name(), e.id(), map_b, map_d, 0);
+            DSetEdge directed_e(result_ref()[dvf].id() + result_ref()[dvu].id(), map_b, map_d);
             DSetEdgeDesc dde;
             bool b;
             boost::tie(dde, b) = boost::add_edge(dvf, dvu, result_ref());
@@ -220,19 +218,19 @@ DSBGraph SCCGraphBuilder::combineEdges()
     DSetEdge ei = res[dei];
     PWLMap mapb = ei.map_b(), mapd = ei.map_d();
 
-    if (visited_nodes.find(ei.name()) == visited_nodes.end()) {
+    if (visited_nodes.find(ei.id()) == visited_nodes.end()) {
       BOOST_FOREACH (DSetEdgeDesc dej, edges(res)) {
         DSetEdge ej = res[dej];
 
-        if (ei.name() == ej.name() && ei.dom() != ej.dom()) {
-          visited_nodes.insert(ei.name());
+        if (ei.id() == ej.id() && ei.dom() != ej.dom()) {
+          visited_nodes.insert(ei.id());
 
           mapb = mapb.concat(ej.map_b());
           mapd = mapd.concat(ej.map_d());
         }
       }
 
-      DSetEdge directed_e(ei.name(), ei.id(), mapb, mapd, 0);
+      DSetEdge directed_e(ei.id(), mapb, mapd);
       DSetEdgeDesc de_res;
       bool b;
       DSetVertexDesc sdei = source(dei, res), tdei = target(dei, res);
@@ -240,7 +238,7 @@ DSBGraph SCCGraphBuilder::combineEdges()
       combined_result[de_res] = directed_e;
     }
 
-    visited_nodes.insert(ei.name());
+    visited_nodes.insert(ei.id());
   }
 
   return combined_result;

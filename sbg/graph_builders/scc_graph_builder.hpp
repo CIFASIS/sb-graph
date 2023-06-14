@@ -38,7 +38,6 @@ struct SCCGraphBuilder {
   member_class(DSBGraph, result);
   member_class(SCCVertexMap, vertex_map); // A mapping from matched edges to their respective vertex in the directed graph
   member_class(SBG::IO::UndirectedConverter, undir_conv);
-
   member_class(SCCVertices, conv_vertices);
 
   SCCGraphBuilder(MatchingStruct m);

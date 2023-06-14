@@ -26,8 +26,12 @@ SVDesc::SVDesc() : text_("") {}
 
 SVDesc::SVDesc(std::string str) : text_(str) {}
 
+member_imp(SVDesc, std::string, text);
+
 // Set-edge ----------------------------------------------------------------------------------------
 
 SEDesc::SEDesc() : text_("") {}
+
+member_imp(SEDesc, std::string, text);
 
 }  // namespace SBG

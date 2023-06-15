@@ -218,7 +218,7 @@ std::tuple<PWLMap, PWLMap, PWLMap> minReachable(int nmax, Set V, Set E, PWLMap V
   Interval i(0, 1, 0);
   MultiInterval mi;
   for (int j = 0; j < map_D.ndim(); j++) mi.addInter(i);
-  Set zero = createSet(mi);
+  Set zero(mi);
 
   map_D = map_D.restrictMap(E);
   map_B = map_B.restrictMap(E);
@@ -250,44 +250,47 @@ std::tuple<PWLMap, PWLMap, PWLMap> minReachable(int nmax, Set V, Set E, PWLMap V
     if (!Vc.empty()) {
       oldSEmap = newSEmap;
       Set Esucc = newSmap.compPW(map_B).diffMap(map_D).preImage(zero);  // Edges that connect vertices with successors
-      newSEmap = (map_B.restrictMap(Esucc).minInv(newSmap.image())).compPW(map_D.restrictMap(Esucc));
-      newSEmap = newSEmap.combine(oldSEmap);
+      if (!Esucc.empty()) {
+        newSEmap = (map_B.restrictMap(Esucc).minInv(newSmap.image())).compPW(map_D.restrictMap(Esucc));
+        newSEmap = newSEmap.combine(oldSEmap);
 
-      PWLMap deltaSEmap = newSEmap.diffMap(oldSEmap);
-      Ec = E.diff(deltaSEmap.preImage(zero));
+        PWLMap deltaSEmap = newSEmap.diffMap(oldSEmap);
+        Ec = E.diff(deltaSEmap.preImage(zero));
 
-      int n = 1;
-      Set ER;  // Recursive edges that changed its successor
-      PWLMap se2map = newSEmap.compPW(newSEmap);
-      PWLMap semapNth = se2map;
+        int n = 1;
+        Set ER;  // Recursive edges that changed its successor
+        PWLMap se2map = newSEmap.compPW(newSEmap);
+        PWLMap semapNth = se2map;
 
-      Set visitedEdges = newSEmap.wholeDom().cup(newSEmap.image());
-      Set oldSubsetEdges, visitedSubsetEdges = Emap.image(visitedEdges);
-      do {
-        PWLMap deltaEmap = Emap.compPW(semapNth.filterMap(notEqId)).diffMap(Emap);
-        ER = deltaEmap.preImage(zero);
-        semapNth = semapNth.compPW(newSEmap);
+        Set visitedEdges = newSEmap.wholeDom().cup(newSEmap.image());
+        Set oldSubsetEdges, visitedSubsetEdges = Emap.image(visitedEdges);
+        do {
+          PWLMap deltaEmap = Emap.compPW(semapNth.filterMap(notEqId)).diffMap(Emap);
+          ER = deltaEmap.preImage(zero);
+          semapNth = semapNth.compPW(newSEmap);
 
-        visitedEdges = newSEmap.image(visitedEdges);
-        oldSubsetEdges = visitedSubsetEdges;
-        visitedSubsetEdges = Emap.image(visitedEdges);
-        n++;
-      } while (ER.empty() && oldSubsetEdges.cap(visitedSubsetEdges).empty());
+          visitedEdges = newSEmap.image(visitedEdges);
+          oldSubsetEdges = visitedSubsetEdges;
+          visitedSubsetEdges = Emap.image(visitedEdges);
+          n++;
+        } while (ER.empty() && oldSubsetEdges.cap(visitedSubsetEdges).empty());
 
-      // *** Handle recursion
-      ER = ER.cap(Ec);
-      if (!ER.empty()) {
-        ER = createSet(*(ER.asets().begin()));
+        // *** Handle recursion
+        ER = ER.cap(Ec);
+        if (!ER.empty()) {
+          ER = createSet(*(ER.asets().begin()));
 
-        Set oldSubsetEdge = Emap.image(ER);
-        Set succSubsetEdge = Emap.image(newSEmap.image(ER));
+          Set oldSubsetEdge = Emap.image(ER);
+          Set succSubsetEdge = Emap.image(newSEmap.image(ER));
 
-        if (oldSubsetEdge.cap(succSubsetEdge).empty()) {
-          std::pair<PWLMap, PWLMap> p = recursion(n, ER, V, E, Emap, map_D, map_B, newSmap, newSEmap, newRmap, m_map);
-          newRmap = std::get<1>(p);
+          if (oldSubsetEdge.cap(succSubsetEdge).empty()) {
+            std::pair<PWLMap, PWLMap> p = recursion(n, ER, V, E, Emap, map_D, map_B, newSmap, newSEmap, newRmap, m_map);
+            newRmap = std::get<1>(p);
+          }
         }
       }
     }
+  //std::cout << "\n";
   } while (!Vc.empty());
 
   return std::tuple<PWLMap, PWLMap, PWLMap>(newSmap, newSEmap, newRmap);
@@ -298,9 +301,16 @@ std::tuple<PWLMap, PWLMap, PWLMap> minReachable(int nmax, Set V, Set E, PWLMap V
 // Initialization
 MatchingStruct::MatchingStruct(SBGraph garg)
 {
+  int dim = 0;
+
+  if (num_vertices(garg) > 0)
+    dim = garg[vertex(0, garg)].range().ndim();
+
   set_g(garg);
   set_mapF(PWLMap());
+  mapF_ref().set_ndim(dim);
   set_mapU(PWLMap());
+  mapU_ref().set_ndim(dim);
 
   BOOST_FOREACH (SetEdgeDesc ei, edges(g_ref())) {
     PWLMap fmap = (g_ref()[ei]).map_f();
@@ -766,7 +776,16 @@ SCCStruct::SCCStruct() : g_() {}
 
 SCCStruct::SCCStruct(DSBGraph garg)
 {
+  int dim = 0;
+
+  if (num_vertices(garg) > 0)
+    dim = garg[vertex(0, garg)].range().ndim();
+
   set_g(garg);
+  set_mapB(PWLMap());
+  mapB_ref().set_ndim(dim);
+  set_mapD(PWLMap());
+  mapD_ref().set_ndim(dim);
  
   BOOST_FOREACH (DSetEdgeDesc ei, edges(g_ref())) {
     PWLMap bmap = (g_ref()[ei]).map_b();
@@ -902,6 +921,17 @@ void SCCStruct::debugStep()
 OrderStruct::OrderStruct() : dg_() {}
 OrderStruct::OrderStruct(DSBGraph dg) : dg_(dg), mapB_(), mapD_()
 {
+  int dim = 0;
+
+  if (num_vertices(dg) > 0)
+    dim = dg[vertex(0, dg)].range().ndim();
+
+  set_dg(dg);
+  set_mapB(PWLMap());
+  mapB_ref().set_ndim(dim);
+  set_mapD(PWLMap());
+  mapD_ref().set_ndim(dim);
+
   BOOST_FOREACH (DSetEdgeDesc ei, edges(dg_ref())) {
     PWLMap bmap = (dg_ref()[ei]).map_b();
     PWLMap dmap = (dg_ref()[ei]).map_d();

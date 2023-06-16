@@ -34,3 +34,6 @@ create-folders::
 
 $(PAR_TEST): $(PARSER_TEST_OBJ)
 	$(CXX) $(INCLUDES) $(CXXFLAGS) -o $(PAR_TEST) $(PARSER_TEST_OBJ) $(LIBS)
+
+reset:
+	$(RM) -rf sbg-parser

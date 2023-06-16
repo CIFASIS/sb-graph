@@ -79,8 +79,13 @@ doc:
 
 test: lib-gtest $(SBG_GRAPH_TEST)
 
+SUBDIRS         := $(ROOT)/parser $(ROOT)/sbg/test
+
 clean:
 	$(RM) -rf $(OBJ_DIR) $(LIB_SBGRAPH) $(ROOT)/lib $(ROOT)/include $(3RD_PARTY_DIR)/gtest/usr
+	for dir in $(SUBDIRS); do \
+    $(MAKE) -C $$dir -f Makefile.include reset; \
+  done
 
 help:
 	@echo "make MODE=<Debug|Release> prefix=<PATH> exec_prefix=<PATH> includedir=<PATH> libdir=<PATH>"

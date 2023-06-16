@@ -136,3 +136,7 @@ $(SBG_GRAPH_TEST):
 	@echo RUNNING SBG GRAPHS SYSTEM TESTS
 	@cd $(STEST_DIR) && $(MAKE) test-sbg 
 	@echo Done
+
+reset:
+	rm -rf stest/bin stest/obj stest/test_data 
+	rm -rf utest/graph-test utest/matching-test utest/scc-test utest/order-test *.dot 

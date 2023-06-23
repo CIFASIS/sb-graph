@@ -3,23 +3,9 @@ SBG_ROOT := sbg
 
 # Sources
 	SBG_SRC := \
-	$(SBG_ROOT)/descs.cpp \
-	$(SBG_ROOT)/sbg.cpp \
-	$(SBG_ROOT)/atom_sbg.cpp \
-	$(SBG_ROOT)/sbg_io.cpp \
-	$(SBG_ROOT)/converter_io.cpp \
-	$(SBG_ROOT)/sbg_algorithms.cpp \
-	$(SBG_ROOT)/sbg_printer.cpp \
-  	$(SBG_ROOT)/interval.cpp \
-  	$(SBG_ROOT)/multi_interval.cpp \
-  	$(SBG_ROOT)/set.cpp \
-  	$(SBG_ROOT)/lmap.cpp \
-  	$(SBG_ROOT)/atom_pw_map.cpp \
-  	$(SBG_ROOT)/pw_map.cpp
+  	$(SBG_ROOT)/interval.cpp
 
-include sbg/graph_builders/Makefile.include
 include sbg/util/Makefile.include
-include sbg/test/Makefile.include
 
 # Objects
 SBG_OBJ=$(addprefix $(BUILD_DIR)/, $(SBG_SRC:.cpp=.o))

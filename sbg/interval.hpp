@@ -1,4 +1,15 @@
-/*****************************************************************************
+/** @file interval.hpp
+
+ @brief <b>Interval implementation</b>
+
+ An interval [lo:st:hi] is the set of natural numbers 
+ {x : lo ≤ x ≤ hi ∧ x = lo + st * k, k ∈ ℕ}. Notice that an interval
+ represents an unique set, but a set can have multiple representants.
+ As such, in the implementation we will use the interval with the minimum
+ hi existing. To ensure this, operations will be defined to create a new
+ interval, and not to modify the existing ones.
+
+ <hr>
 
  This file is part of Set--Based Graph Library.
 
@@ -16,73 +27,37 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
-#pragma once
 
-#include <iostream>
-#include <boost/foreach.hpp>
+#ifndef SBG_INTERVAL_HPP
+#define SBG_INTERVAL_HPP
+
+#include <cmath>
+#include <numeric>
 
 #include <sbg/util/defs.hpp>
 
 namespace SBG {
 
-// Intervals --------------------------------------------------------------------------------------
-
-#define INTER_TEMPLATE                                                                                          \
-  template <template <typename Value, typename Hash = boost::hash<Value>, typename Pred = std::equal_to<Value>, \
-                      typename Alloc = std::allocator<Value>>                                                   \
-            class UNORD_CT>
-
-#define INTER_TEMP_TYPE IntervalImp1<UNORD_CT>
-
-INTER_TEMPLATE
-struct IntervalImp1 {
-  member_class(INT, lo);
+struct Interval {
+  member_class(INT, begin);
   member_class(INT, step);
-  member_class(INT, hi);
-  member_class(bool, empty);
+  member_class(INT, end);
 
-  IntervalImp1();
-  IntervalImp1(bool isEmpty);
-  IntervalImp1(INT vlo, INT vstep, INT vhi);
+  Interval();
+  Interval(INT begin, INT step, INT end);
 
-  INT gcd(INT a, INT b);
-  INT lcm(INT a, INT b);
-
-  bool isIn(INT x);
-  bool compatible(IntervalImp1 i2);
-  int card();
-  IntervalImp1 cap(IntervalImp1 i2);
-  UNORD_CT<IntervalImp1> diff(IntervalImp1 i2);
-
-  IntervalImp1 offset(int off);
-
-  INT minElem();
-  INT nextElem(INT cur);
-  INT maxElem();
-
-  IntervalImp1 normalize(IntervalImp1 i2);
-
-  bool subseteq(IntervalImp1 i2);  
-
-  eq_class(IntervalImp1);
-  neq_class(IntervalImp1);
 };
 
-// >>>>> To add new implementation, add:
-// struct IntervalImp2 { ... }
-//
-typedef IntervalImp1<UnordCT> Interval;
-size_t hash_value(const Interval &inter);
+/**
+ * @brief Traditional set operations.
+ */
 
-// >>>>> To change implementation of Interval:
-// typedef IntervalImp2 Interval;
-
-printable_temp(INTER_TEMPLATE, INTER_TEMP_TYPE);
-
-typedef OrdCT<Interval> ORD_INTERS;
-typedef UnordCT<Interval> UNORD_INTERS;
-
-std::ostream &operator<<(std::ostream &out, const ORD_INTERS &inters);
-std::ostream &operator<<(std::ostream &out, const UNORD_INTERS &inters);
+unsigned int cardinality(Interval i);
+bool isEmpty(Interval i);
+bool isMember(INT x, Interval i);
+Interval intersection(Interval i1, Interval i2);
+Interval difference(Interval i1, Interval i2);
 
 }  // namespace SBG
+
+#endif

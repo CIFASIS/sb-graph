@@ -1,0 +1,11 @@
+// First try, wi?
+//[N*2+5:3:18]
+
+// Second try, let's go
+//[1:1:1] /\ [2:2:2]
+
+// Is this possible?
+cardinal([1:1:1])
+
+// Is this rational? Uh oh
+r(1, 2)

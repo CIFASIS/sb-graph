@@ -36,15 +36,15 @@ $(BUILD_DIR)/%.o : %.cpp
 $(LIB_SBGRAPH): | create-folders $(SBG_OBJ) $(BUILDERS_OBJ) $(UTIL_OBJ) $(PARSER_TEST_OBJ)  
 	$(AR) rcs $(LIB_SBGRAPH) $(SBG_OBJ) $(BUILDERS_OBJ) $(UTIL_OBJ) $(PARSER_TEST_OBJ)
 
-lib-gtest: | create-folders 
-ifeq ("$(wildcard $(3RD_PARTY_DIR)/gtest/usr/lib)","")
-	cd $(3RD_PARTY_DIR)/gtest; tar xvzf $(GTEST_CODE)
-	mkdir -p $(3RD_PARTY_DIR)/gtest/build
-	cd $(3RD_PARTY_DIR)/gtest/build; cmake ../$(GTEST_DIR) -DCMAKE_INSTALL_PREFIX=../usr  
-	cd $(3RD_PARTY_DIR)/gtest/build; sudo make install 
-	rm -rf $(3RD_PARTY_DIR)/gtest/$(GTEST_DIR)
-	rm -rf $(3RD_PARTY_DIR)/gtest/build
-endif
+#lib-gtest: | create-folders 
+#ifeq ("$(wildcard $(3RD_PARTY_DIR)/gtest/usr/lib)","")
+#	cd $(3RD_PARTY_DIR)/gtest; tar xvzf $(GTEST_CODE)
+#	mkdir -p $(3RD_PARTY_DIR)/gtest/build
+#	cd $(3RD_PARTY_DIR)/gtest/build; cmake ../$(GTEST_DIR) -DCMAKE_INSTALL_PREFIX=../usr  
+#	cd $(3RD_PARTY_DIR)/gtest/build; sudo make install 
+#	rm -rf $(3RD_PARTY_DIR)/gtest/$(GTEST_DIR)
+#	rm -rf $(3RD_PARTY_DIR)/gtest/build
+#endif
 
 install: | install-folders
 	@echo "Installing SBG library headers."
@@ -52,7 +52,7 @@ install: | install-folders
 	@install $(ROOT)/parser/*.hpp $(includedir)/parser
 	@install $(ROOT)/sbg/*.hpp $(includedir)/sbg
 	@install $(ROOT)/sbg/util/*.hpp $(includedir)/sbg/util
-	@install $(ROOT)/sbg/graph_builders/*.hpp $(includedir)/sbg/graph_builders
+	#@install $(ROOT)/sbg/graph_builders/*.hpp $(includedir)/sbg/graph_builders
 	@install $(ROOT)/lib/libsbgraph.a $(libdir)/
 	@echo "Done."
 
@@ -62,7 +62,7 @@ install-folders:
 	@mkdir -p $(includedir)/parser
 	@mkdir -p $(includedir)/sbg
 	@mkdir -p $(includedir)/sbg/util
-	@mkdir -p $(includedir)/sbg/graph_builders	
+	#@mkdir -p $(includedir)/sbg/graph_builders	
 
 create-folders::
 	@mkdir -p $(ROOT)/lib
@@ -76,11 +76,12 @@ doc:
 	@mkdir -p $(ROOT)/doc/html
 	@mkdir -p $(ROOT)/doc/latex
 	doxygen sbg/SBG.doxyfile
+	doxygen sbg/util/UTIL.doxyfile
 
-test: lib-gtest $(SBG_GRAPH_TEST)
+#test: lib-gtest $(SBG_GRAPH_TEST)
 
-SUBDIRS         := $(ROOT)/parser $(ROOT)/sbg/test
-
+SUBDIRS         := $(ROOT)/parser
+ 
 clean:
 	$(RM) -rf $(OBJ_DIR) $(LIB_SBGRAPH) $(ROOT)/lib $(ROOT)/include $(3RD_PARTY_DIR)/gtest/usr
 	for dir in $(SUBDIRS); do \

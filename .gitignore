@@ -18,6 +18,8 @@
 
 # Doc files.
 /doc/*
+/sbg/doc/*
+/sbg/util/doc/*
 
 # Examples
 /examples/*

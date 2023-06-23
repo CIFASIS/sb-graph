@@ -1,39 +1,26 @@
 # The Directories, Source, Includes, Objects, Binary 
-SBG_DIR     := sbg
 PARSER_DIR  := parser
-PAR_TEST    := $(PARSER_DIR)/sbg-parser
-PARSER_TEST := test-parser
+PARSER      := $(PARSER_DIR)/sbg-parser
 
-all: $(PAR_TEST) 
+all: $(PARSER)
 
-PARSER_TEST_SRC := \
+PARSER_SRC := \
 	  $(PARSER_DIR)/main.cpp \
-	  $(PARSER_DIR)/parser.cpp \
-	  $(PARSER_DIR)/converter.cpp \
-	  $(PARSER_DIR)/compact_parser.cpp \
-	  $(PARSER_DIR)/comp_converter.cpp \
-  	$(SBG_DIR)/descs.cpp \
-  	$(SBG_DIR)/interval.cpp \
-  	$(SBG_DIR)/multi_interval.cpp \
-  	$(SBG_DIR)/set.cpp \
-  	$(SBG_DIR)/sbg.cpp \
-  	$(SBG_DIR)/lmap.cpp \
-  	$(SBG_DIR)/atom_pw_map.cpp \
-  	$(SBG_DIR)/atom_pw_map.cpp \
-  	$(SBG_DIR)/pw_map.cpp \
-	  $(SBG_DIR)/sbg_algorithms.cpp \
-    $(SBG_DIR)/sbg_io.cpp \
-    $(SBG_DIR)/converter_io.cpp \
-	  $(SBG_DIR)/util/logger.cpp 
+    $(PARSER_DIR)/expr.cpp \
+    sbg/util/defs.cpp
+
+PARSER_AST_SRC := \
+    $(PARSER_DIR)/ast/expr.cpp 
 
 # Objects
-PARSER_TEST_OBJ=$(addprefix $(BUILD_DIR)/, $(PARSER_TEST_SRC:.cpp=.o))
+PARSER_OBJ=$(addprefix $(BUILD_DIR)/, $(PARSER_SRC:.cpp=.o)) $(addprefix $(BUILD_DIR)/, $(PARSER_AST_SRC:.cpp=.o))
 
 create-folders::
 	@mkdir -p $(BUILD_DIR)/$(PARSER_DIR)
+	@mkdir -p $(BUILD_DIR)/$(PARSER_DIR)/ast
 
-$(PAR_TEST): $(PARSER_TEST_OBJ)
-	$(CXX) $(INCLUDES) $(CXXFLAGS) -o $(PAR_TEST) $(PARSER_TEST_OBJ) $(LIBS)
+$(PARSER): $(PARSER_OBJ)
+	$(CXX) $(INCLUDES) $(CXXFLAGS) -o $(PARSER) $(PARSER_OBJ) $(LIBS)
 
 reset:
 	$(RM) -rf sbg-parser

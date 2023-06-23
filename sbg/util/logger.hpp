@@ -17,7 +17,8 @@
 
  ******************************************************************************/
 
-#pragma once
+#ifndef SBG_LOGGER_HPP
+#define SBG_LOGGER_HPP
 
 #include <fstream>
 #include <string>
@@ -43,3 +44,5 @@ class SBGLogger {
 };
 
 }  // namespace SBG
+
+#endif

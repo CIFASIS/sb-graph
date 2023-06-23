@@ -1,4 +1,10 @@
-/*******************************************************************************
+/** @file defs.hpp
+
+ @brief <b>Parser shared definitions</b>
+
+ Definitions, macros, etc. used by all parser modules.
+
+ <hr>
 
  This file is part of Set--Based Graph Library.
 
@@ -17,14 +23,13 @@
 
  ******************************************************************************/
 
-#include "logger.hpp"
+#ifndef PARSER_DEFS_HPP
+#define PARSER_DEFS_HPP
 
-using namespace std;
+namespace Parser {
 
-namespace SBG {
+typedef std::string::const_iterator str_it;
 
-SBGLogger::SBGLogger() { log.open("SBG.log", std::ofstream::out); }
+} // namespace Parser
 
-SBGLogger::~SBGLogger() { log.close(); }
-
-}  // namespace SBG
+#endif

@@ -1,0 +1,14 @@
+# The Directories, Source, Includes, Objects, Binary 
+UTIL_DIR    := util
+
+# Sources
+	UTIL_SRC := \
+    $(UTIL_DIR)/defs.cpp \
+    $(UTIL_DIR)/logger.cpp \
+    $(UTIL_DIR)/debug.cpp
+
+# Objects
+UTIL_OBJ=$(addprefix $(BUILD_DIR)/, $(UTIL_SRC:.cpp=.o))
+
+create-folders::
+	@mkdir -p $(BUILD_DIR)/$(UTIL_DIR)

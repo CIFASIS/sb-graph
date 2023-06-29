@@ -1,11 +1,15 @@
+N = r(2,1) + r(3,1)
+
+N 
+
 // First try, wi?
-//[N*2+5:3:18]
+[N*2+5:3:21]
 
 // Second try, let's go
-//[1:1:1] /\ [2:2:2]
+[20:4:42] /\ [21:3:42]
 
 // Is this possible?
-cardinal([1:1:1])
+cardinal([1:2:10])
 
 // Is this rational? Uh oh
 r(1, 2)

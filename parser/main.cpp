@@ -1,4 +1,3 @@
-
 /*****************************************************************************
 
  This file is part of Set--Based Graph Library.
@@ -20,16 +19,70 @@
 
 #include <fstream>
 
-#include <parser/expr.hpp> 
+#include <parser/sbg_program.hpp> 
 
 void parseExprsFromFile(std::string str)
 {
-  std::string::const_iterator iter = str.begin();
-  std::string::const_iterator end = str.end();
+  SBG::Parser::StrIt iter = str.begin();
+  SBG::Parser::StrIt end = str.end();
 
-  Parser::ExprRule g(iter); // Grammar
-  Parser::ExprList result;
-  bool r = boost::spirit::qi::phrase_parse(iter, end, g, boost::spirit::ascii::space, result);
+  SBG::Parser::ExprRule g(iter); // Grammar
+  SBG::AST::ExprList result;
+  bool r = boost::spirit::qi::phrase_parse(iter, end, g, SBG::Parser::Skipper<SBG::Parser::StrIt>(), result);
+
+  std::cout << "-------------------------\n";
+
+  if (r && iter == end) {
+    std::cout << "Parsing succeeded\n";
+    std::cout << "result = \n\n" << result << "\n\n";
+  }
+
+  else {
+    std::string rest(iter, end);
+    std::cout << "Parsing failed\n";
+    std::cout << "stopped at: " << rest << "\"\n";
+  }
+
+  std::cout << "-------------------------\n";
+
+  return;
+}
+
+void parseStmsFromFile(std::string str)
+{
+  SBG::Parser::StrIt iter = str.begin();
+  SBG::Parser::StrIt end = str.end();
+
+  SBG::Parser::StmRule g(iter); // Grammar
+  SBG::AST::StatementList result;
+  bool r = boost::spirit::qi::phrase_parse(iter, end, g, SBG::Parser::Skipper<SBG::Parser::StrIt>(), result);
+
+  std::cout << "-------------------------\n";
+
+  if (r && iter == end) {
+    std::cout << "Parsing succeeded\n";
+    std::cout << "result = \n\n" << result << "\n\n";
+  }
+
+  else {
+    std::string rest(iter, end);
+    std::cout << "Parsing failed\n";
+    std::cout << "stopped at: " << rest << "\"\n";
+  }
+
+  std::cout << "-------------------------\n";
+
+  return;
+}
+
+void parseProgramFromFile(std::string str)
+{
+  SBG::Parser::StrIt iter = str.begin();
+  SBG::Parser::StrIt end = str.end();
+
+  SBG::Parser::SBGProgramRule g(iter); // Grammar
+  SBG::AST::SBGProgram result;
+  bool r = boost::spirit::qi::phrase_parse(iter, end, g, SBG::Parser::Skipper<SBG::Parser::StrIt>(), result);
 
   std::cout << "-------------------------\n";
 
@@ -56,6 +109,8 @@ int main(int argc, char** argv)
   std::cout << "/////////////////////////////////////////////////////////\n\n";
 
   std::cout << "[1] Parse expressions\n";
+  std::cout << "[2] Parse statements\n";
+  std::cout << "[3] Parse SBG program\n";
 
   int opt;
   std::cout << "Select one option:\n";
@@ -77,6 +132,18 @@ int main(int argc, char** argv)
     switch (opt) {
       case 1:
         parseExprsFromFile(str);
+        break;
+
+      case 2:
+        parseStmsFromFile(str);
+        break;
+
+      case 3:
+        parseProgramFromFile(str);
+        break;
+
+      default:
+        parseProgramFromFile(str);
         break;
     }
   } 

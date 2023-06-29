@@ -2,19 +2,21 @@
 MODE ?= Debug
 
 # The Directories, Source, Includes, Objects, Binary 
-ROOT   	        := .
-3RD_PARTY_DIR   := $(ROOT)/sbg/3rd-party
-GTEST_DIR       := googletest-release-1.12.1
-GTEST_CODE      := $(GTEST_DIR).tar.gz
-OBJ_DIR         := $(ROOT)/obj
+ROOT   	      := .
+3RD_PARTY_DIR := $(ROOT)/sbg/3rd-party
+GTEST_DIR     := googletest-release-1.12.1
+GTEST_CODE    := $(GTEST_DIR).tar.gz
+OBJ_DIR       := $(ROOT)/obj
 BUILD_DIR    	:= $(OBJ_DIR)/release
+AST_DIR    	  := $(ROOT)/ast
+BIN_DIR    	  := $(ROOT)/bin
 ifeq ($(MODE),Debug)
 BUILD_DIR    	:= $(OBJ_DIR)/debug
 endif
-prefix 			?= /usr/local
-exec_prefix     ?= $(prefix)
-includedir      ?= $(prefix)/include
-libdir          ?= $(exec_prefix)/lib
+prefix 			  ?= /usr/local
+exec_prefix   ?= $(prefix)
+includedir    ?= $(prefix)/include
+libdir        ?= $(exec_prefix)/lib
 
 # Flags, Libraries and Includes
 INCLUDES := -I.
@@ -26,8 +28,10 @@ LIB_SBGRAPH = lib/libsbgraph.a
 
 all: $(LIB_SBGRAPH)
 
-include sbg/Makefile.include
+include eval/Makefile.include
 include parser/Makefile.include
+include sbg/Makefile.include
+include util/Makefile.include
 
 $(BUILD_DIR)/%.o : %.cpp
 	$(CC) $(INCLUDES) $(CXXFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<
@@ -68,6 +72,8 @@ create-folders::
 	@mkdir -p $(ROOT)/lib
 	@mkdir -p $(OBJ_DIR)
 	@mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)/$(AST_DIR)
+	@mkdir -p $(BIN_DIR)
 
 .PHONY: doc
 

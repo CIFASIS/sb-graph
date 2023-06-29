@@ -1,26 +1,30 @@
 # The Directories, Source, Includes, Objects, Binary 
+AST_DIR     := ast
 PARSER_DIR  := parser
-PARSER      := $(PARSER_DIR)/sbg-parser
+UTIL_DIR    := util
+PARSER      := bin/sbg-parser
 
 all: $(PARSER)
 
 PARSER_SRC := \
 	  $(PARSER_DIR)/main.cpp \
+    $(AST_DIR)/expr.cpp \
     $(PARSER_DIR)/expr.cpp \
-    sbg/util/defs.cpp
-
-PARSER_AST_SRC := \
-    $(PARSER_DIR)/ast/expr.cpp 
+    $(AST_DIR)/statement.cpp \
+    $(PARSER_DIR)/statement.cpp \
+    $(AST_DIR)/sbg_program.cpp \
+    $(PARSER_DIR)/sbg_program.cpp \
+    $(PARSER_DIR)/skipper.cpp \
+    $(UTIL_DIR)/defs.cpp
 
 # Objects
-PARSER_OBJ=$(addprefix $(BUILD_DIR)/, $(PARSER_SRC:.cpp=.o)) $(addprefix $(BUILD_DIR)/, $(PARSER_AST_SRC:.cpp=.o))
+PARSER_OBJ=$(addprefix $(BUILD_DIR)/, $(PARSER_SRC:.cpp=.o))
 
 create-folders::
 	@mkdir -p $(BUILD_DIR)/$(PARSER_DIR)
-	@mkdir -p $(BUILD_DIR)/$(PARSER_DIR)/ast
 
 $(PARSER): $(PARSER_OBJ)
 	$(CXX) $(INCLUDES) $(CXXFLAGS) -o $(PARSER) $(PARSER_OBJ) $(LIBS)
 
 reset:
-	$(RM) -rf sbg-parser
+	$(RM) -rf bin/sbg-parser

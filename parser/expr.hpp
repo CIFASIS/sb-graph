@@ -26,49 +26,45 @@
 #ifndef EXPR_PARSER_HPP
 #define EXPR_PARSER_HPP
 
-#include <boost/spirit/include/qi.hpp>
-#include <boost/spirit/include/phoenix.hpp>
-#include <boost/spirit/repository/include/qi_kwd.hpp>
+#include <ast/expr.hpp>
+#include <parser/skipper.hpp>
 
-#include <parser/ast/expr.hpp>
-#include <parser/defs.hpp>
-
-namespace asc = boost::spirit::ascii;
-namespace phx = boost::phoenix;
-namespace qi = boost::spirit::qi;
+namespace SBG {
 
 namespace Parser {
 
 template <typename Iterator>
-struct ExprRule : qi::grammar<Iterator, asc::space_type, ExprList()> {
+struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   ExprRule(Iterator &it);
 
   // Rules with no skip
   qi::rule<Iterator> comment, TRUE, FALSE;
-  qi::rule<Iterator, Name()> ident;
-  qi::rule<Iterator, Boolean()> boolean;
+  qi::rule<Iterator, AST::Name()> ident;
+  qi::rule<Iterator, AST::Boolean()> boolean;
 
   // Operators tokens
   qi::rule<Iterator> OPAREN, CPAREN, RAT, COMA;
 
   // Other rules
-  qi::rule<Iterator, asc::space_type, SBG::RATIONAL()> rational;
-  qi::rule<Iterator, asc::space_type, Call()> call_exp;
-  qi::rule<Iterator, asc::space_type, ExprList()> function_call_args;
-  qi::rule<Iterator, asc::space_type, Expr()> primary;
-  qi::rule<Iterator, asc::space_type, Expr()> factor;
-  qi::rule<Iterator, asc::space_type, Expr()> term;
-  qi::rule<Iterator, asc::space_type, Expr()> arithmetic_expr;
+  qi::rule<Iterator, Skipper<Iterator>, Util::RATIONAL()> rational;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Call()> call_exp;
+  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> function_call_args;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> primary;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> factor;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> term;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> arithmetic_expr;
 
-  qi::rule<Iterator, asc::space_type, Expr()> interval;
-  qi::rule<Iterator, asc::space_type, Expr()> interval_expr;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> interval;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> interval_expr;
 
-  qi::rule<Iterator, asc::space_type, Expr()> expr;
-  qi::rule<Iterator, asc::space_type, ExprList()> exprs_comments;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> expr;
+  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> exprs_comments;
 
   Iterator &it;
 };
 
 } // namespace Parser
+
+} // namespace SBG
 
 #endif

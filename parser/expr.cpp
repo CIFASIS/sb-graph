@@ -21,37 +21,39 @@
 
 // Adapt structures ------------------------------------------------------------
 
-BOOST_FUSION_ADAPT_STRUCT(Parser::BinOp, (Parser::Expr, left_)(Parser::Op, op_)(Parser::Expr, right_))
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::BinOp, (SBG::AST::Expr, left_)(SBG::AST::Op, op_)(SBG::AST::Expr, right_))
 
-BOOST_FUSION_ADAPT_STRUCT(Parser::Call, (Parser::Name, name_)(Parser::ExprList, args_))
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::Call, (SBG::AST::Name, name_)(SBG::AST::ExprList, args_))
 
-BOOST_FUSION_ADAPT_STRUCT(Parser::Interval, (Parser::Expr, begin_)(Parser::Expr, step_)(Parser::Expr, end_))
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::Interval, (SBG::AST::Expr, begin_)(SBG::AST::Expr, step_)(SBG::AST::Expr, end_))
 
 // Expression parser -----------------------------------------------------------
 
+namespace SBG {
+
 namespace Parser {
 
-struct add_symbols_struct : qi::symbols<char, Parser::Op> {
+struct add_symbols_struct : qi::symbols<char, AST::Op> {
   add_symbols_struct(){
-    add("+", Parser::Op::add)("-", Parser::Op::sub);
+    add("+", AST::Op::add)("-", AST::Op::sub);
   }
 } add_symbols;
 
-struct mult_symbol_struct : qi::symbols<char, Parser::Op> {
+struct mult_symbol_struct : qi::symbols<char, AST::Op> {
   mult_symbol_struct(){
-    add("*", Parser::Op::mult);
+    add("*", AST::Op::mult);
   }
 } mult_symbol;
 
-struct expo_symbol_struct : qi::symbols<char, Parser::Op> {
+struct expo_symbol_struct : qi::symbols<char, AST::Op> {
   expo_symbol_struct() {
-    add("^", Parser::Op::expo);
+    add("^", AST::Op::expo);
   }
 } expo_symbol;
 
-struct cap_symbol_struct : qi::symbols<char, Parser::InterOp> {
+struct cap_symbol_struct : qi::symbols<char, AST::InterOp> {
   cap_symbol_struct(){
-    add("/\\", Parser::InterOp::cap);
+    add("/\\", AST::InterOp::cap);
   }
 } cap_symbol;
 
@@ -71,36 +73,40 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
 
   boolean = TRUE[qi::_val = true] | FALSE[qi::_val = false];
 
-  rational = (RAT >> OPAREN >> qi::lexeme[qi::int_] >> COMA >> qi::char_(' ') >> qi::lexeme[qi::int_] >> CPAREN)[qi::_val = phx::construct<SBG::RATIONAL>(qi::_1, qi::_3)];
+  rational = (RAT >> OPAREN >> qi::lexeme[qi::int_] >> COMA >> qi::lexeme[qi::int_] >> CPAREN)[qi::_val = phx::construct<Util::RATIONAL>(qi::_1, qi::_2)];
 
-  call_exp = (ident >> function_call_args)[qi::_val = phx::construct<Call>(qi::_1, qi::_2)];
+  call_exp = (ident >> function_call_args)[qi::_val = phx::construct<AST::Call>(qi::_1, qi::_2)];
 
   function_call_args = OPAREN 
     >> expr[phx::push_back(qi::_val, qi::_1)] >> *(COMA >> expr)[phx::push_back(qi::_val, qi::_1)] 
     >> CPAREN;
- 
-  primary = qi::lexeme[qi::int_] | rational | boolean | call_exp | ident;
 
-  factor = primary[qi::_val = qi::_1] >> -(expo_symbol > primary)[qi::_val = phx::construct<BinOp>(qi::_val, qi::_1, qi::_2)];
+  primary = rational[qi::_val = phx::construct<Util::RATIONAL>(qi::_1)] 
+    | qi::lexeme[qi::ulong_long][qi::_val = phx::construct<Util::INT>(qi::_1)]
+    | boolean[qi::_val = phx::construct<AST::Boolean>(qi::_1)] 
+    | call_exp[qi::_val = phx::construct<AST::Call>(qi::_1)]
+    | ident[qi::_val = phx::construct<Util::VariableName>(qi::_1)];
 
-  term = factor[qi::_val = qi::_1] >> *(mult_symbol >> factor)[qi::_val = phx::construct<BinOp>(qi::_val, qi::_1, qi::_2)];
+  factor = primary[qi::_val = qi::_1] >> -(expo_symbol > primary)[qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
 
-  arithmetic_expr = term[qi::_val = qi::_1] >> *(add_symbols > term)[qi::_val = phx::construct<BinOp>(qi::_val, qi::_1, qi::_2)];
+  term = factor[qi::_val = qi::_1] >> *(mult_symbol >> factor)[qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
+
+  arithmetic_expr = term[qi::_val = qi::_1] >> *(add_symbols > term)[qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
 
   interval = (qi::char_('[') 
     >> arithmetic_expr >> qi::char_(':') 
     >> arithmetic_expr >> qi::char_(':') 
-    >> arithmetic_expr >> qi::char_(']'))[qi::_val = phx::construct<Interval>(qi::_2, qi::_4, qi::_6)]; 
+    >> arithmetic_expr >> qi::char_(']'))[qi::_val = phx::construct<AST::Interval>(qi::_2, qi::_4, qi::_6)]; 
 
-  interval_expr = interval[qi::_val = qi::_1] >> *(cap_symbol > interval)[qi::_val = phx::construct<InterBinOp>(qi::_val, qi::_1, qi::_2)];
+  interval_expr = interval[qi::_val = qi::_1] >> *(cap_symbol > interval)[qi::_val = phx::construct<AST::InterBinOp>(qi::_val, qi::_1, qi::_2)];
 
   expr = arithmetic_expr | interval_expr;
-
-  comment = qi::char_('/') >> qi::char_('/') >> *(qi::char_ - qi::char_('\n')) >> qi::char_('\n');
 
   exprs_comments = *(comment | expr);
 };
 
-template struct ExprRule<str_it>;
+template struct ExprRule<StrIt>;
 
 } // namespace Parser
+
+} // namespace SBG

@@ -34,9 +34,11 @@
 #include <cmath>
 #include <numeric>
 
-#include <sbg/util/defs.hpp>
+#include <util/defs.hpp>
 
 namespace SBG {
+
+using INT = Util::INT;
 
 struct Interval {
   member_class(INT, begin);
@@ -52,7 +54,7 @@ struct Interval {
  * @brief Traditional set operations.
  */
 
-unsigned int cardinality(Interval i);
+unsigned int cardinal(Interval i);
 bool isEmpty(Interval i);
 bool isMember(INT x, Interval i);
 Interval intersection(Interval i1, Interval i2);

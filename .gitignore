@@ -29,3 +29,6 @@ config.*
 configure
 Makefile
 /autom4te.cache
+
+# Binary files
+/bin

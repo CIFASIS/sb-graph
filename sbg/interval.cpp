@@ -33,7 +33,7 @@ member_imp(Interval, INT, begin);
 member_imp(Interval, INT, step);
 member_imp(Interval, INT, end);
 
-unsigned int cardinality(Interval i) { return (i.end() - i.begin()) / i.step(); }
+unsigned int cardinal(Interval i) { return (i.end() - i.begin()) / i.step() + 1; }
 
 bool isEmpty(Interval i) { return i.end() < i.begin(); }
 

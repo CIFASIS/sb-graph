@@ -32,7 +32,8 @@ ExprBaseType EvalExpression::operator()(AST::Rational v) const { return v; }
 
 ExprBaseType EvalExpression::operator()(AST::Boolean v) const { return v; }
 
-ExprBaseType EvalExpression::operator()(Util::VariableName v) const {
+ExprBaseType EvalExpression::operator()(Util::VariableName v) const 
+{
   Util::Option<ExprBaseType> v_opt = env_[v];
   if (v_opt)
     return *v_opt;
@@ -58,26 +59,34 @@ ExprBaseType EvalExpression::operator()(AST::BinOp v) const
       return l_result * r_result;
 
     default:
-      Util::ERROR("EvalExpression: BinOp %s not supported.", AST::OpNames[static_cast<int>(v.op())]);
+      Util::ERROR("EvalExpression: BinOp %s not supported.", AST::OpNames[v.op()]);
       return 0;
   }
 
-  Util::ERROR("EvalExpression: BinOp %s not supported.", AST::OpNames[static_cast<int>(v.op())]);
+  Util::ERROR("EvalExpression: BinOp %s not supported.", AST::OpNames[v.op()]);
   return 0;
 }
 
 ExprBaseType EvalExpression::operator()(AST::Call v) const
 {
-  std::vector<ExprBaseType> eval_args;
-  BOOST_FOREACH (AST::Expr a, v.args()) 
-    eval_args.push_back(ApplyThis(a));
-
-  std::cout << v.name() << "\n";
   auto venv = FUNC_ENV[v.name()];
   if (venv) { 
+    std::vector<ExprBaseType> eval_args;
+    BOOST_FOREACH (AST::Expr a, v.args()) 
+      eval_args.push_back(ApplyThis(a));
+
     switch (*venv) {
-      case 0: // cardinal
-        return Apply(CardinalVisitor(), eval_args[0]);
+      //case Eval::Func::empty: 
+      //  return Apply(EmptyVisitor(), eval_args[0]);
+
+      case Eval::Func::member: { 
+        ExprBaseType x = eval_args[0], i = eval_args[1];
+        bool result = std::visit(Overload{
+          [](Util::INT a, SBG::Interval b) { return isMember(a, b); },
+          [](auto a, auto b) { return false; }, // << default!
+        }, x, i);
+        return result;
+      }
 
       default:
         Util::ERROR("EvalExpression: function %s not implemented", v.name());
@@ -97,6 +106,23 @@ ExprBaseType EvalExpression::operator()(AST::Interval i) const
   return Interval(toInt(bt), toInt(st), toInt(et));
 }
 
+ExprBaseType EvalExpression::operator()(AST::InterUnaryOp i) const
+{
+  AST::Expr exp = i.e();
+  EvalInterval eval_interval(env_);
+  switch (i.op()){
+    case AST::InterUOp::card:
+      return cardinal(Apply(eval_interval, exp));
+
+    case AST::InterUOp::comp:
+      return complement(Apply(eval_interval, exp));
+
+    default:
+      Util::ERROR("EvalExpression: InterUnaryOp %s not supported.", AST::InterUOpNames[i.op()]);
+      return 0;
+  }
+}
+
 ExprBaseType EvalExpression::operator()(AST::InterBinOp i) const
 {
   AST::Expr l = i.left(), r = i.right();
@@ -106,7 +132,7 @@ ExprBaseType EvalExpression::operator()(AST::InterBinOp i) const
       return intersection(Apply(eval_interval, l), Apply(eval_interval, r));
 
     default:
-      Util::ERROR("EvalExpression: InterBinOp %s not supported.", AST::InterOpNames[static_cast<int>(i.op())]);
+      Util::ERROR("EvalExpression: InterBinOp %s not supported.", AST::InterOpNames[i.op()]);
       return 0;
   }
 }

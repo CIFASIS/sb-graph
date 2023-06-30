@@ -28,46 +28,46 @@ EvalInterval::EvalInterval(VarEnv env) : env_(env) {}
 
 SBG::Interval EvalInterval::operator()(AST::Integer v) const { 
   Util::ERROR("EvalInterval: trying to evaluate an Integer");
-  return SBG::Interval(1, 0, 0); 
+  return SBG::Interval(); 
 }
 
 SBG::Interval EvalInterval::operator()(AST::Rational v) const { 
   Util::ERROR("EvalInterval: trying to evaluate a Rational");
-  return SBG::Interval(1, 0, 0); 
+  return SBG::Interval(); 
 }
 
 SBG::Interval EvalInterval::operator()(AST::Boolean v) const { 
   Util::ERROR("EvalInterval: trying to evaluate a Boolean");
-  return SBG::Interval(1, 0, 0); 
+  return SBG::Interval(); 
 }
 
 SBG::Interval EvalInterval::operator()(Util::VariableName v) const { 
   Util::Option<ExprBaseType> v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (is<SBG::Interval>(value))
-      return boost::get<SBG::Interval>(value);
+    if (std::holds_alternative<SBG::Interval>(value))
+      return std::get<SBG::Interval>(value);
 
     else {
       Util::ERROR("EvalInterval: variable %s is not an interval", v);
-      return SBG::Interval(1, 0, 0); 
+      return SBG::Interval(); 
     } 
   }
 
   Util::ERROR("EvalInterval: variable %s not defined", v);
-  return SBG::Interval(1, 0, 0); 
+  return SBG::Interval(); 
 }
 
 SBG::Interval EvalInterval::operator()(AST::BinOp v) const 
 {
   Util::ERROR("EvalInterval: trying to evaluate an arithmetic BinOp");
-  return SBG::Interval(1, 0, 0); 
+  return SBG::Interval(); 
 }
 
 SBG::Interval EvalInterval::operator()(AST::Call v) const
 {
   Util::ERROR("EvalInterval: trying to evaluate a Call");
-  return SBG::Interval(1, 0, 0); 
+  return SBG::Interval(); 
 }
 
 SBG::Interval EvalInterval::operator()(AST::Interval i) const { 
@@ -76,16 +76,33 @@ SBG::Interval EvalInterval::operator()(AST::Interval i) const {
   return SBG::Interval(Apply(eval_int, i.begin()), Apply(eval_int, i.step()), Apply(eval_int, i.end())); 
 }
 
+SBG::Interval EvalInterval::operator()(AST::InterUnaryOp i) const
+{
+  AST::Expr exp = i.e();
+  switch (i.op()) {
+    case AST::InterUOp::comp:
+      Util::ERROR("EvalInterval: InterUnaryOp %s doesn't return an interval.", AST::InterUOpNames[i.op()]);
+      return SBG::Interval(); 
+
+    default:
+      Util::ERROR("EvalInterval: InterUnaryOp %s not supported.", AST::InterUOpNames[i.op()]);
+      return SBG::Interval(); 
+  }
+}
+
 SBG::Interval EvalInterval::operator()(AST::InterBinOp i) const
 {
   AST::Expr l = i.left(), r = i.right();
-  switch (i.op()){
+  switch (i.op()) {
     case AST::InterOp::cap:
       return intersection(ApplyThis(l), ApplyThis(r));
 
+    case AST::InterOp::diff:
+      return difference(ApplyThis(l), ApplyThis(r));
+
     default:
-      Util::ERROR("EvalInterval: InterBinOp %s not supported.", AST::InterOpNames[static_cast<int>(i.op())]);
-      return SBG::Interval(1, 0, 0); 
+      Util::ERROR("EvalInterval: InterBinOp %s not supported.", AST::InterOpNames[i.op()]);
+      return SBG::Interval(); 
   }
 }
 

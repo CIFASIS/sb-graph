@@ -34,7 +34,7 @@ namespace SBG {
 
 namespace Eval {
 
-class ProgramVisitor : public boost::static_visitor<AST::Program> {
+struct ProgramVisitor : public boost::static_visitor<AST::Program> {
   public:
   ProgramVisitor();
  

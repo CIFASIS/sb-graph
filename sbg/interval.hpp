@@ -31,6 +31,9 @@
 #ifndef SBG_INTERVAL_HPP
 #define SBG_INTERVAL_HPP
 
+//#include <boost/container_hash/hash_fwd.hpp>
+#include <boost/foreach.hpp>
+#include <boost/unordered/unordered_set.hpp>
 #include <cmath>
 #include <numeric>
 
@@ -48,7 +51,17 @@ struct Interval {
   Interval();
   Interval(INT begin, INT step, INT end);
 
+  eq_class(Interval);
 };
+std::ostream &operator<<(std::ostream &out, const Interval &i);
+
+/**
+ * @brief Type definitions for intervals operations.
+ */
+
+std::size_t hash_value(Interval const &i);
+typedef boost::unordered_set<Interval> InterSet;
+std::ostream &operator<<(std::ostream &out, const InterSet &ii);
 
 /**
  * @brief Traditional set operations.
@@ -58,6 +71,7 @@ unsigned int cardinal(Interval i);
 bool isEmpty(Interval i);
 bool isMember(INT x, Interval i);
 Interval intersection(Interval i1, Interval i2);
+InterSet complement(Interval i);
 Interval difference(Interval i1, Interval i2);
 
 }  // namespace SBG

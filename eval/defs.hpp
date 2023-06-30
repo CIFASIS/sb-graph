@@ -26,8 +26,7 @@
 #ifndef EVAL_DEFS_HPP
 #define EVAL_DEFS_HPP
 
-#include <boost/variant/variant.hpp>
-#include <boost/variant/get.hpp>
+#include <variant>
 
 #include <ast/expr.hpp>
 #include <sbg/interval.hpp>
@@ -39,39 +38,50 @@ namespace SBG {
 
 namespace Eval {
 
-typedef boost::variant<Util::INT, Util::RATIONAL, SBG::Interval> ExprBaseType;
+// Type definitions ------------------------------------------------------------
 
-template <typename T>
-inline bool is(ExprBaseType e) { return e.type() == typeid(T); }
+typedef std::variant<Util::INT, Util::RATIONAL, SBG::Interval, SBG::InterSet> ExprBaseType;
 
 /** @function toInt
-*
-* @brief Converts a rational n/1 to an integer n (if needed).
-*/
+ *
+ * @brief Converts a rational n/1 to an integer n (if needed).
+ */
 Util::INT toInt(ExprBaseType t);
 AST::Expr toExpr(ExprBaseType t);
 
+// Environments ----------------------------------------------------------------
+
 /** @struct VarEnv
-*
-* @brief Variable environment (with expressions already evaluated). This env
-* will be populated by StmVisitor, and used by EvalExpression.
-*/
+ *
+ * @brief Variable environment (with expressions already evaluated). This env
+ * will be populated by StmVisitor, and used by EvalExpression.
+ */
 struct VarEnv : public Util::SymbolTable<Util::VariableName, ExprBaseType> {
   VarEnv();
 };
 
 /** @struct FuncEnv
-*
-* @brief Function environment. Statically defined: SBG programs don't allow
-* the definition of new functions. This table should be updated manually each
-* time a new operation for SBG and their structures is defined. Each function
-* is associated with a number that will be used by the EvalExpression. 
-*/
+ *
+ * @brief Function environment. Statically defined: SBG programs don't allow
+ * the definition of new functions. This table should be updated manually each
+ * time a new operation for SBG and their structures is defined. Each function
+ * is associated with a number that will be used by the EvalExpression. The
+ * pairs should be inserted in the same order as the enum class. 
+ */
 struct FuncEnv : public Util::SymbolTable<AST::Name, int> {
   FuncEnv();
 };
 
+typedef enum { empty, member } Func;
 const FuncEnv FUNC_ENV;
+
+/** @struct Overload
+ *
+ * @brief To provide in-place lambdas for visitation.
+ */
+
+template<class... Ts> struct Overload : Ts... { using Ts::operator()...; };
+template<class... Ts> Overload(Ts...) -> Overload<Ts...>;
 
 } // namespace Eval
 

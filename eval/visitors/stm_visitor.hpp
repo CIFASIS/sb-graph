@@ -33,7 +33,7 @@ namespace SBG {
 
 namespace Eval {
 
-class StmVisitor : public boost::static_visitor<void> {
+struct StmVisitor : public boost::static_visitor<void> {
   public:
   StmVisitor();
  

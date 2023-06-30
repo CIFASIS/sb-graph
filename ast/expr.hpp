@@ -37,25 +37,31 @@ namespace AST {
 
 // Arithmetic and call structures ----------------------------------------------
 
-enum class Op { add, sub, mult, expo };
-extern const char* OpNames[];
-std::ostream &operator<<(std::ostream &out, const Op &op);
-
 typedef std::string Name;
 typedef Util::INT Integer;
 typedef Util::RATIONAL Rational;
 typedef bool Boolean;
 struct Interval;
+struct InterUnaryOp;
 struct InterBinOp;
 struct BinOp;
 struct Call;
 
-typedef boost::variant<Integer, Rational, Boolean, Util::VariableName, boost::recursive_wrapper<BinOp>, boost::recursive_wrapper<Call>, boost::recursive_wrapper<Interval>, boost::recursive_wrapper<InterBinOp>> Expr;
+typedef boost::variant<Integer, Rational, Boolean, Util::VariableName, 
+  boost::recursive_wrapper<BinOp>, 
+  boost::recursive_wrapper<Call>, 
+  boost::recursive_wrapper<Interval>, 
+  boost::recursive_wrapper<InterUnaryOp>,
+  boost::recursive_wrapper<InterBinOp>> Expr;
 typedef std::vector<Expr> ExprList;
 std::ostream &operator<<(std::ostream &out, const ExprList &el);
 
 template <typename T>
 inline bool is(Expr e) { return e.type() == typeid(T); }
+
+typedef enum { add, sub, mult, expo } Op;
+extern const char* OpNames[];
+std::ostream &operator<<(std::ostream &out, const Op &op);
 
 struct BinOp {
   member_class(Expr, left);
@@ -83,10 +89,6 @@ std::ostream &operator<<(std::ostream &out, const Call &c);
 
 // SBG structures --------------------------------------------------------------
 
-enum class InterOp { cap };
-extern const char* InterOpNames[];
-std::ostream &operator<<(std::ostream &out, const InterOp &op);
-
 struct Interval {
   member_class(Expr, begin);
   member_class(Expr, step);
@@ -101,6 +103,25 @@ std::ostream &operator<<(std::ostream &out, const Interval &i);
 
 typedef std::vector<Interval> Intervals;
 std::ostream &operator<<(std::ostream &out, const Intervals &ii);
+
+typedef enum { card, comp } InterUOp;
+extern const char* InterUOpNames[];
+std::ostream &operator<<(std::ostream &out, const InterUOp &op);
+
+struct InterUnaryOp {
+  member_class(InterUOp, op);
+  member_class(Expr, e);
+
+  InterUnaryOp();
+  InterUnaryOp(InterUOp op, Expr e);
+
+  eq_class(InterUnaryOp);
+};
+std::ostream &operator<<(std::ostream &out, const InterUnaryOp &i);
+
+typedef enum { cap, diff } InterOp;
+extern const char* InterOpNames[];
+std::ostream &operator<<(std::ostream &out, const InterOp &op);
 
 struct InterBinOp {
   member_class(Expr, left);

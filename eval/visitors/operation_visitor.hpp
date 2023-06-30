@@ -27,21 +27,37 @@
 #ifndef AST_VISITOR_OPERATION
 #define AST_VISITOR_OPERATION 
 
+#include <boost/variant/multivisitors.hpp>
+
 #include <ast/statement.hpp>
-#include <eval/visitors/eval_expr.hpp>
+#include <eval/visitors/eval_int.hpp>
 #include <sbg/interval.hpp>
 
 namespace SBG {
 
 namespace Eval {
 
-class CardinalVisitor : public boost::static_visitor<unsigned int> {
+// isEmpty ---------------------------------------------------------------------
+
+struct EmptyVisitor : public boost::static_visitor<bool> {
   public:
-  CardinalVisitor();
- 
-  unsigned int operator()(Util::INT v) const; 
-  unsigned int operator()(Util::RATIONAL v) const;
-  unsigned int operator()(SBG::Interval i) const;
+  EmptyVisitor();
+
+  bool operator()(Util::INT v) const;
+  bool operator()(Util::RATIONAL v) const;
+  bool operator()(SBG::Interval i) const;
+  bool operator()(SBG::InterSet ii) const;
+};
+
+// Membership ------------------------------------------------------------------
+
+struct MemberVisitor : public boost::static_visitor<bool> {
+  public:
+  MemberVisitor();
+
+  //bool operator()(Util::INT x, SBG::Interval i) const;
+  template <class T1, class T2>
+  bool operator()(T1 x, T2 i) const;
 };
 
 } // namespace Eval

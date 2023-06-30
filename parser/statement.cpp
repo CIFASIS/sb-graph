@@ -21,7 +21,7 @@
 
 // Adapt structures ------------------------------------------------------------
 
-BOOST_FUSION_ADAPT_STRUCT(SBG::AST::Assign, (SBG::AST::Expr, l_)(SBG::AST::Expr, r_))
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::Assign, (SBG::Util::VariableName, l_)(SBG::AST::Expr, r_))
 
 // Statement parser ------------------------------------------------------------
 
@@ -36,6 +36,9 @@ StmRule<Iterator>::StmRule(Iterator &it) :
   expr(it),
   ASSIGN("=") 
 {
+  ident = qi::lexeme[(qi::char_('_') | qi::alpha) >> *(qi::alnum | qi::char_('_'))] 
+    | qi::lexeme[qi::char_('\'') >> *(qi::alnum | qi::char_('_')) > qi::char_('\'')];
+
   assign = (expr.ident >> ASSIGN >> expr.expr)[qi::_val = phx::construct<AST::Assign>(qi::_1, qi::_2)];
 
   stm = assign;

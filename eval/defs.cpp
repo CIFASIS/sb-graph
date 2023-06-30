@@ -23,12 +23,15 @@ namespace SBG {
 
 namespace Eval {
 
-Util::INT toInt(ExprBaseType v) { 
-  if (is<Util::INT>(v))
-    return boost::get<Util::INT>(v);
+// Type definitions ------------------------------------------------------------
 
-  if (is<Util::RATIONAL>(v)) {
-    Util::RATIONAL v_rat = boost::get<Util::RATIONAL>(v);
+Util::INT toInt(ExprBaseType v) 
+{ 
+  if (std::holds_alternative<Util::INT>(v))
+    return std::get<Util::INT>(v);
+
+  if (std::holds_alternative<Util::RATIONAL>(v)) {
+    Util::RATIONAL v_rat = std::get<Util::RATIONAL>(v);
     if (v_rat.denominator() == 1)
       return v_rat.numerator();
   }
@@ -37,15 +40,16 @@ Util::INT toInt(ExprBaseType v) {
   return 0; 
 }
 
-AST::Expr toExpr(ExprBaseType v) {
-  if (is<Util::INT>(v))
-    return boost::get<Util::INT>(v);
+AST::Expr toExpr(ExprBaseType v) 
+{
+  if (std::holds_alternative<Util::INT>(v))
+    return std::get<Util::INT>(v);
 
-  if (is<Util::RATIONAL>(v))
-    return boost::get<Util::RATIONAL>(v);
+  if (std::holds_alternative<Util::RATIONAL>(v))
+    return std::get<Util::RATIONAL>(v);
 
-  if (is<SBG::Interval>(v)) {
-    SBG::Interval i = boost::get<SBG::Interval>(v);
+  if (std::holds_alternative<SBG::Interval>(v)) {
+    SBG::Interval i = std::get<SBG::Interval>(v);
     return AST::Interval(i.begin(), i.step(), i.end());
   }
 
@@ -53,14 +57,13 @@ AST::Expr toExpr(ExprBaseType v) {
   return AST::Expr();
 }
 
+// Environments ----------------------------------------------------------------
+
 VarEnv::VarEnv() {}
 
 FuncEnv::FuncEnv() {
-  insert("cardinal", 0);
-  insert("isEmpty", 1);
-  insert("isMember", 2);
-  insert("intersection", 3);
-  insert("difference", 4);
+  insert("isEmpty", 0);
+  insert("isMember", 1);
 }
 
 } // namespace Eval

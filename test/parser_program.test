@@ -1,0 +1,17 @@
+// In these file some general test cases have been provided to check if the
+// parser can handle them (as it should).
+
+N = r(2,1) + r(3,1)
+
+// First try, wi?
+[N*2+5:3:21]
+
+// Is this possible?
+#[1:2:10]
+
+//isEmpty([50:2:51])
+//isEmpty([50:2:41])
+
+isMember(2, [1:1:15])
+isMember(23, [3:2:21])
+

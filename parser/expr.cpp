@@ -51,11 +51,29 @@ struct expo_symbol_struct : qi::symbols<char, AST::Op> {
   }
 } expo_symbol;
 
+struct complement_symbol_struct : qi::symbols<char, AST::InterUOp> {
+  complement_symbol_struct(){
+    add("-", AST::InterUOp::comp);
+  }
+} complement_symbol;
+
+struct card_symbol_struct : qi::symbols<char, AST::InterUOp> {
+  card_symbol_struct(){
+    add("#", AST::InterUOp::card);
+  }
+} card_symbol;
+
 struct cap_symbol_struct : qi::symbols<char, AST::InterOp> {
   cap_symbol_struct(){
     add("/\\", AST::InterOp::cap);
   }
 } cap_symbol;
+
+struct diff_symbol_struct : qi::symbols<char, AST::InterOp> {
+  diff_symbol_struct(){
+    add("\\", AST::InterOp::diff);
+  }
+} diff_symbol;
 
 template <typename Iterator>
 ExprRule<Iterator>::ExprRule(Iterator &it) : 
@@ -63,6 +81,9 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   it(it), 
   OPAREN("("), 
   CPAREN(")"), 
+  OBRACKET("["), 
+  CBRACKET("]"), 
+  COLON(":"),
   RAT("r"), 
   COMA(","), 
   TRUE("true"), 
@@ -93,12 +114,19 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
 
   arithmetic_expr = term[qi::_val = qi::_1] >> *(add_symbols > term)[qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
 
-  interval = (qi::char_('[') 
-    >> arithmetic_expr >> qi::char_(':') 
-    >> arithmetic_expr >> qi::char_(':') 
-    >> arithmetic_expr >> qi::char_(']'))[qi::_val = phx::construct<AST::Interval>(qi::_2, qi::_4, qi::_6)]; 
+  interval = (OBRACKET 
+    >> arithmetic_expr >> COLON 
+    >> arithmetic_expr >> COLON 
+    >> arithmetic_expr >> CBRACKET)[qi::_val = phx::construct<AST::Interval>(qi::_1, qi::_2, qi::_3)];
 
-  interval_expr = interval[qi::_val = qi::_1] >> *(cap_symbol > interval)[qi::_val = phx::construct<AST::InterBinOp>(qi::_val, qi::_1, qi::_2)];
+  interval_unary = ((complement_symbol | card_symbol) >> interval)[qi::_val = phx::construct<AST::InterUnaryOp>(qi::_1, qi::_2)];
+
+  interval_binary = OPAREN >> interval[qi::_val = qi::_1] 
+    >> +((cap_symbol | diff_symbol) >> interval > CPAREN)[qi::_val = phx::construct<AST::InterBinOp>(qi::_val, qi::_1, qi::_2)];
+
+  interval_expr = interval[qi::_val = qi::_1]
+    | interval_unary[qi::_val = qi::_1]
+    | interval_binary[qi::_val = qi::_1];
 
   expr = arithmetic_expr | interval_expr;
 

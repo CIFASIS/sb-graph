@@ -23,25 +23,60 @@ namespace SBG {
 
 namespace Eval {
 
-// Cardinality -----------------------------------------------------------------
+// isEmpty ---------------------------------------------------------------------
 
-CardinalVisitor::CardinalVisitor() {}
+EmptyVisitor::EmptyVisitor() {}
 
-unsigned int CardinalVisitor::operator()(Util::INT v) const { 
-  Util::ERROR("CardinalityVisitor: trying to calculate card of INT");
-  return 0;
+bool EmptyVisitor::operator()(Util::INT v) const 
+{
+  Util::ERROR("EmptyVisitor: trying to check if INT is empty");
+  return true;
 }
 
-unsigned int CardinalVisitor::operator()(Util::RATIONAL v) const { 
-  Util::ERROR("CardinalityVisitor: trying to calculate card of INT");
-  return 0;
+bool EmptyVisitor::operator()(Util::RATIONAL v) const 
+{
+  Util::ERROR("EmptyVisitor: trying to check if RATIONAL is empty");
+  return true;
 }
 
-unsigned int CardinalVisitor::operator()(SBG::Interval i) const { 
-  return cardinal(i);
+bool EmptyVisitor::operator()(SBG::Interval i) const { return isEmpty(i); }
+
+bool EmptyVisitor::operator()(SBG::InterSet ii) const 
+{ 
+  Util::ERROR("EmptyVisitor: trying to check if InterSet is empty");
+  return true;
 }
 
 // Membership ------------------------------------------------------------------
+
+/*
+bool MemberVisitor::operator()(Util::INT v) const {
+  Util::ERROR("MemberVisitor: trying to check if INT has element");
+  return false;
+}
+
+bool MemberVisitor::operator()(Util::RATIONAL v) const {
+  Util::ERROR("MemberVisitor: trying to check if RATIONAL has element");
+  return false;
+}
+
+bool MemberVisitor::operator()(SBG::Interval i) const { return isMember(x(), i); }
+
+bool MemberVisitor::operator()(SBG::InterSet ii) const {
+  Util::ERROR("MemberVisitor: trying to check if InterSet has element");
+  return false;
+}*/
+
+MemberVisitor::MemberVisitor() {}
+
+//bool MemberVisitor::operator()(Util::INT x, SBG::Interval i) const { return isMember(x, i); }
+
+template <class T1, class T2>
+bool MemberVisitor::operator()(T1 x, T2 i) const 
+{
+  Util::ERROR("MemberVisitor: is not a container");
+  return false;
+} 
 
 } // namespace Eval
 

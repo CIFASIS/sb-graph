@@ -33,7 +33,7 @@ namespace SBG {
 
 namespace Eval {
 
-class EvalRat : public boost::static_visitor<Util::RATIONAL> {
+struct EvalRat : public boost::static_visitor<Util::RATIONAL> {
   public:
   EvalRat();
   EvalRat(VarEnv env);
@@ -45,6 +45,7 @@ class EvalRat : public boost::static_visitor<Util::RATIONAL> {
   Util::RATIONAL operator()(AST::BinOp v) const;
   Util::RATIONAL operator()(AST::Call v) const;
   Util::RATIONAL operator()(AST::Interval i) const;
+  Util::RATIONAL operator()(AST::InterUnaryOp i) const;
   Util::RATIONAL operator()(AST::InterBinOp i) const;
 
   private:

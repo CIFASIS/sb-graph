@@ -43,8 +43,8 @@ Util::RATIONAL EvalRat::operator()(Util::VariableName v) const {
   Util::Option<ExprBaseType> v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (is<Util::RATIONAL>(value))
-      return boost::get<Util::RATIONAL>(value);
+    if (std::holds_alternative<Util::RATIONAL>(value))
+      return std::get<Util::RATIONAL>(value);
 
     else {
       Util::ERROR("EvalRat: variable %s is not rational", v);
@@ -59,7 +59,7 @@ Util::RATIONAL EvalRat::operator()(Util::VariableName v) const {
 Util::RATIONAL EvalRat::operator()(AST::BinOp v) const 
 {
   AST::Expr l = v.left(), r = v.right();
-  switch (v.op()){
+  switch (v.op()) {
     case AST::Op::add:
       return ApplyThis(l) + ApplyThis(r);
 
@@ -70,7 +70,7 @@ Util::RATIONAL EvalRat::operator()(AST::BinOp v) const
       return ApplyThis(l) * ApplyThis(r);
 
     default:
-      Util::ERROR("EvalRat: BinOp %s not supported.", AST::OpNames[static_cast<int>(v.op())]);
+      Util::ERROR("EvalRat: BinOp %s not supported.", AST::OpNames[v.op()]);
       return 0;
   }
 }
@@ -84,6 +84,12 @@ Util::RATIONAL EvalRat::operator()(AST::Call v) const
 Util::RATIONAL EvalRat::operator()(AST::Interval i) const
 {
   Util::ERROR("EvalRat: trying to evaluate an Interval");
+  return 0;
+}
+
+Util::RATIONAL EvalRat::operator()(AST::InterUnaryOp i) const
+{
+  Util::ERROR("EvalRat: trying to evaluate an InterUnaryOp");
   return 0;
 }
 

@@ -37,6 +37,9 @@ template <typename Iterator>
 struct StmRule : qi::grammar<Iterator, Skipper<Iterator>, AST::StatementList()> {
   StmRule(Iterator &it);
 
+  // Rules with no skip
+  qi::rule<Iterator, Util::VariableName()> ident;
+
   // Operators tokens
   qi::rule<Iterator> ASSIGN;
 

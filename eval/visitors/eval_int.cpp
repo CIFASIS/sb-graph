@@ -47,8 +47,8 @@ Util::INT EvalInt::operator()(Util::VariableName v) const {
   Util::Option<ExprBaseType> v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (is<Util::INT>(value))
-      return boost::get<Util::INT>(value); 
+    if (std::holds_alternative<Util::INT>(value))
+      return std::get<Util::INT>(value); 
 
     else {
       Util::ERROR("EvalInt: variable %s is not an integer", v);
@@ -63,7 +63,7 @@ Util::INT EvalInt::operator()(Util::VariableName v) const {
 Util::INT EvalInt::operator()(AST::BinOp v) const 
 {
   AST::Expr l = v.left(), r = v.right();
-  switch (v.op()){
+  switch (v.op()) {
     case AST::Op::add:
       return ApplyThis(l) + ApplyThis(r);
 
@@ -77,7 +77,7 @@ Util::INT EvalInt::operator()(AST::BinOp v) const
       return pow(ApplyThis(l), ApplyThis(r));
 
     default:
-      Util::ERROR("EvalInt: BinOp %s not supported.", AST::OpNames[static_cast<int>(v.op())]);
+      Util::ERROR("EvalInt: BinOp %s not supported.", AST::OpNames[v.op()]);
       return 0;
   }
 }
@@ -91,6 +91,12 @@ Util::INT EvalInt::operator()(AST::Call v) const
 Util::INT EvalInt::operator()(AST::Interval i) const
 {
   Util::ERROR("EvalInt: trying to evaluate an Interval");
+  return 0;
+}
+
+Util::INT EvalInt::operator()(AST::InterUnaryOp i) const
+{
+  Util::ERROR("EvalInt: trying to evaluate an InterUnaryOp");
   return 0;
 }
 

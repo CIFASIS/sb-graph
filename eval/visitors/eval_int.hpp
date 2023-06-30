@@ -33,7 +33,7 @@ namespace SBG {
 
 namespace Eval {
 
-class EvalInt : public boost::static_visitor<Util::INT> {
+struct EvalInt : public boost::static_visitor<Util::INT> {
   public:
   EvalInt();
   EvalInt(VarEnv env);
@@ -45,6 +45,7 @@ class EvalInt : public boost::static_visitor<Util::INT> {
   Util::INT operator()(AST::BinOp v) const;
   Util::INT operator()(AST::Call v) const;
   Util::INT operator()(AST::Interval i) const;
+  Util::INT operator()(AST::InterUnaryOp i) const;
   Util::INT operator()(AST::InterBinOp i) const;
 
   private:

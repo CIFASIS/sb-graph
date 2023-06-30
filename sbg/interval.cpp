@@ -22,7 +22,8 @@
 namespace SBG {
 
 Interval::Interval() : begin_(1), step_(0), end_(0) {}
-Interval::Interval(INT begin, INT step, INT end) : begin_(begin), step_(step), end_(end) {
+Interval::Interval(INT begin, INT step, INT end) : begin_(begin), step_(step), end_(end) 
+{
   if (end >= begin) {
     int rem = fmod(end - begin, step);
     set_end(end - rem);
@@ -32,6 +33,50 @@ Interval::Interval(INT begin, INT step, INT end) : begin_(begin), step_(step), e
 member_imp(Interval, INT, begin);
 member_imp(Interval, INT, step);
 member_imp(Interval, INT, end);
+
+bool Interval::operator==(const Interval &other) const
+{
+  return (begin() == other.begin()) && (step() == other.step()) && (end() == other.end());
+}
+
+std::ostream &operator<<(std::ostream &out, const Interval &i) 
+{
+  out << "[" << i.begin();
+  if (i.step() != 1)
+    out << ":" << i.step();
+  out << ":" << i.end() << "]";
+ 
+  return out;
+}
+
+// Type definitions ------------------------------------------------------------
+
+std::size_t hash_value(Interval const& i) 
+{
+  std::size_t seed = 0;
+
+  boost::hash_combine(seed, i.begin());
+  boost::hash_combine(seed, i.step());
+  boost::hash_combine(seed, i.end());
+
+  return seed;
+}
+
+std::ostream &operator<<(std::ostream &out, const InterSet &ii) 
+{
+  out << "{";
+  if (ii.size() > 0) {
+    InterSet::iterator penult = std::prev(ii.end());
+    BOOST_FOREACH (Interval i, InterSet(ii.begin(), penult))
+      out << i << ", "; 
+    out << *penult;
+  }
+  out << "}";
+
+  return out;
+}
+
+// Functions -------------------------------------------------------------------
 
 unsigned int cardinal(Interval i) { return (i.end() - i.begin()) / i.step() + 1; }
 
@@ -62,6 +107,11 @@ Interval intersection(Interval i1, Interval i2)
       new_begin = x;
 
   return Interval(new_begin, new_step, new_end);
+}
+
+InterSet complement(Interval i)
+{
+  return InterSet(); // TODO
 }
 
 Interval difference(Interval i1, Interval i2)

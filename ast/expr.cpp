@@ -27,20 +27,6 @@ namespace AST {
 
 const char *OpNames[] = {"+", "-", "*", "^"};
 
-std::ostream &operator<<(std::ostream &out, const Op &op)
-{
-  out << OpNames[static_cast<int>(op)];
-
-  return out;
-}
-
-std::ostream &operator<<(std::ostream &out, const InterOp &op)
-{
-  out << InterOpNames[static_cast<int>(op)];
-
-  return out;
-}
-
 std::ostream &operator<<(std::ostream &out, const ExprList &el)
 {
   BOOST_FOREACH (Expr e, el)
@@ -63,7 +49,7 @@ bool BinOp::operator==(const BinOp &other) const
 
 std::ostream &operator<<(std::ostream &out, const BinOp &bop)
 { 
-  out << bop.left() << bop.op() << bop.right();
+  out << bop.left() << OpNames[bop.op()] << bop.right();
 
   return out;
 }
@@ -100,7 +86,7 @@ std::ostream &operator<<(std::ostream &out, const Call &c)
 
 // SBG Structures --------------------------------------------------------------
 
-const char *InterOpNames[] = {"/\\"};
+// Interval --------------------------------------------------------------------
 
 Interval::Interval() : begin_(), step_(), end_() {}
 Interval::Interval(Expr begin, Expr step, Expr end) : begin_(begin), step_(step), end_(end) {}
@@ -129,6 +115,28 @@ std::ostream &operator<<(std::ostream &out, const Intervals &ii)
   return out;
 }
 
+const char *InterUOpNames[] = {"#", "'"};
+
+InterUnaryOp::InterUnaryOp() : op_(), e_() {}
+InterUnaryOp::InterUnaryOp(InterUOp op, Expr e) : op_(op), e_(e) {}
+
+member_imp(InterUnaryOp, InterUOp, op);
+member_imp(InterUnaryOp, Expr, e);
+
+bool InterUnaryOp::operator==(const InterUnaryOp &other) const
+{
+  return e() == other.e() && op() == other.op();
+}
+
+std::ostream &operator<<(std::ostream &out, const InterUnaryOp &i) 
+{
+  out << InterUOpNames[i.op()] << i.e(); 
+
+  return out;
+}
+
+const char *InterOpNames[] = {"/\\", "\\"};
+
 InterBinOp::InterBinOp() : left_(), op_(), right_() {}
 InterBinOp::InterBinOp(Expr left, InterOp op, Expr right) : left_(left), op_(op), right_(right) {}
 
@@ -143,7 +151,7 @@ bool InterBinOp::operator==(const InterBinOp &other) const
 
 std::ostream &operator<<(std::ostream &out, const InterBinOp &i)
 {
-  out << i.left() << i.op() << i.right(); 
+  out << i.left() << InterOpNames[i.op()] << i.right(); 
 
   return out;
 }

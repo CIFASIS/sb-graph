@@ -24,17 +24,15 @@
 #ifndef AST_VISITOR_EVALEXP
 #define AST_VISITOR_EVALEXP
 
-#include <boost/variant/get.hpp>
-
 #include <eval/visitors/eval_rat.hpp>
 #include <eval/visitors/eval_interval.hpp>
-#include <eval/visitors/operation_visitor.hpp>
+//#include <eval/visitors/operation_visitor.hpp>
 
 namespace SBG {
 
 namespace Eval {
 
-class EvalExpression : public boost::static_visitor<ExprBaseType> {
+struct EvalExpression : public boost::static_visitor<ExprBaseType> {
   public:
   EvalExpression();
   EvalExpression(VarEnv env);
@@ -46,6 +44,7 @@ class EvalExpression : public boost::static_visitor<ExprBaseType> {
   ExprBaseType operator()(AST::BinOp v) const;
   ExprBaseType operator()(AST::Call v) const;
   ExprBaseType operator()(AST::Interval i) const;
+  ExprBaseType operator()(AST::InterUnaryOp i) const;
   ExprBaseType operator()(AST::InterBinOp i) const;
 
   private:

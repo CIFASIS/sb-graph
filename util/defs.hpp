@@ -89,6 +89,7 @@ typedef std::string VariableName;
 
 #define ApplyThis(X) boost::apply_visitor(*this, X)
 #define Apply(X, Y) boost::apply_visitor(X, Y)
+#define Apply2(X, Y, Z) boost::apply_visitor(X, Y, Z)
 
 template <typename T>
 struct Option : public boost::optional<T> {

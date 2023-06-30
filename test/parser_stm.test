@@ -1,0 +1,7 @@
+// Test for the parser consisting of only statements
+
+N = 2
+
+M = [1:2:3]
+
+O = r(2,1) + r(3,1)

@@ -36,7 +36,7 @@ SBGProgramRule<Iterator>::SBGProgramRule(Iterator &it) :
   expr(it),
   stm(it)
 {
-  program_comments = (stm.stms_comments >> expr.exprs_comments)[qi::_val = phx::construct<AST::Program>(qi::_1, qi::_2)];
+  program_comments = (stm.stms_comments >> expr.exprs_comments)[qi::_val = phx::construct<AST::Program>(phx::construct<AST::StatementList>(qi::_1), phx::construct<AST::ExprList>(qi::_2))];
 };
 
 template struct SBGProgramRule<StrIt>;

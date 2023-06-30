@@ -24,17 +24,14 @@
 #ifndef AST_VISITOR_EVALINTERVAL
 #define AST_VISITOR_EVALINTERVAL
 
-#include <boost/variant/static_visitor.hpp>
-
 #include <ast/expr.hpp>
-#include <eval/defs.hpp>
 #include <eval/visitors/eval_int.hpp>
 
 namespace SBG {
 
 namespace Eval {
 
-class EvalInterval : public boost::static_visitor<SBG::Interval> {
+struct EvalInterval : public boost::static_visitor<SBG::Interval> {
   public:
   EvalInterval();
   EvalInterval(VarEnv env);
@@ -46,6 +43,7 @@ class EvalInterval : public boost::static_visitor<SBG::Interval> {
   SBG::Interval operator()(AST::BinOp v) const;
   SBG::Interval operator()(AST::Call v) const;
   SBG::Interval operator()(AST::Interval i) const;
+  SBG::Interval operator()(AST::InterUnaryOp i) const;
   SBG::Interval operator()(AST::InterBinOp i) const;
 
   private:

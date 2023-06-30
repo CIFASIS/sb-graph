@@ -97,7 +97,6 @@ int main(int argc, char**argv) {
         parseEvalProgramFromFile(str);
         break;
 
-
       default:
         parseEvalProgramFromFile(str);
         break;

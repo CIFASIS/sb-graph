@@ -52,11 +52,9 @@ void parseEvalProgramFromFile(std::string str)
     std::cout << "-------------------------\n";
 
     SBG::Eval::ProgramVisitor program_visit; 
-    SBG::AST::Program visit_result = Apply(program_visit, parser_result);
+    SBG::Eval::ProgramIO visit_result = Apply(program_visit, parser_result);
 
-    std::cout << "Visit result = \n\n" << visit_result << "\n\n";
-
-    std::cout << "-------------------------\n";
+    std::cout << "Visit result = \n\n" << visit_result;
   }
 
   else {

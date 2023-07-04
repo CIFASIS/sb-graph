@@ -31,10 +31,10 @@
 #ifndef SBG_INTERVAL_HPP
 #define SBG_INTERVAL_HPP
 
-//#include <boost/container_hash/hash_fwd.hpp>
 #include <boost/foreach.hpp>
 #include <boost/unordered/unordered_set.hpp>
 #include <cmath>
+#include <iostream>
 #include <numeric>
 
 #include <util/defs.hpp>
@@ -72,7 +72,7 @@ bool isEmpty(Interval i);
 bool isMember(INT x, Interval i);
 Interval intersection(Interval i1, Interval i2);
 InterSet complement(Interval i);
-Interval difference(Interval i1, Interval i2);
+InterSet difference(Interval i1, Interval i2);
 
 }  // namespace SBG
 

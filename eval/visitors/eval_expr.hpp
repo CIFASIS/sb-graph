@@ -26,7 +26,7 @@
 
 #include <eval/visitors/eval_rat.hpp>
 #include <eval/visitors/eval_interval.hpp>
-//#include <eval/visitors/operation_visitor.hpp>
+#include <eval/visitors/operation_visitor.hpp>
 
 namespace SBG {
 

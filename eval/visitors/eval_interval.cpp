@@ -80,10 +80,6 @@ SBG::Interval EvalInterval::operator()(AST::InterUnaryOp i) const
 {
   AST::Expr exp = i.e();
   switch (i.op()) {
-    case AST::InterUOp::comp:
-      Util::ERROR("EvalInterval: InterUnaryOp %s doesn't return an interval.", AST::InterUOpNames[i.op()]);
-      return SBG::Interval(); 
-
     default:
       Util::ERROR("EvalInterval: InterUnaryOp %s not supported.", AST::InterUOpNames[i.op()]);
       return SBG::Interval(); 
@@ -96,9 +92,6 @@ SBG::Interval EvalInterval::operator()(AST::InterBinOp i) const
   switch (i.op()) {
     case AST::InterOp::cap:
       return intersection(ApplyThis(l), ApplyThis(r));
-
-    case AST::InterOp::diff:
-      return difference(ApplyThis(l), ApplyThis(r));
 
     default:
       Util::ERROR("EvalInterval: InterBinOp %s not supported.", AST::InterOpNames[i.op()]);

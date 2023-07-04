@@ -3,7 +3,9 @@
  @brief <b>SBG operations visitors</b>
 
  For each operation defined in the SBG module we define a visitor to evaluate
- its result in the eval_expr module.
+ its result in the eval_expr module. To do so we make use of the Overload
+ pattern (don't know how to separate declaration/implementation yet, that's
+ why its all included in this file).
 
  <hr>
 
@@ -27,37 +29,20 @@
 #ifndef AST_VISITOR_OPERATION
 #define AST_VISITOR_OPERATION 
 
-#include <boost/variant/multivisitors.hpp>
-
-#include <ast/statement.hpp>
-#include <eval/visitors/eval_int.hpp>
 #include <sbg/interval.hpp>
 
 namespace SBG {
 
 namespace Eval {
 
-// isEmpty ---------------------------------------------------------------------
-
-struct EmptyVisitor : public boost::static_visitor<bool> {
-  public:
-  EmptyVisitor();
-
-  bool operator()(Util::INT v) const;
-  bool operator()(Util::RATIONAL v) const;
-  bool operator()(SBG::Interval i) const;
-  bool operator()(SBG::InterSet ii) const;
+auto empty_visitor_ = Overload{
+  [](SBG::Interval a) { return isEmpty(a); },
+  [](auto a) { return true; } // << default!
 };
 
-// Membership ------------------------------------------------------------------
-
-struct MemberVisitor : public boost::static_visitor<bool> {
-  public:
-  MemberVisitor();
-
-  //bool operator()(Util::INT x, SBG::Interval i) const;
-  template <class T1, class T2>
-  bool operator()(T1 x, T2 i) const;
+auto member_visitor_ = Overload{
+  [](Util::INT a, SBG::Interval b) { return isMember(a, b); },
+  [](auto a, auto b) { return false; } // << default!
 };
 
 } // namespace Eval

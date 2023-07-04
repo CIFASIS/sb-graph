@@ -130,7 +130,22 @@ bool InterUnaryOp::operator==(const InterUnaryOp &other) const
 
 std::ostream &operator<<(std::ostream &out, const InterUnaryOp &i) 
 {
-  out << InterUOpNames[i.op()] << i.e(); 
+  switch (i.op()) {
+    case InterUOp::card: {
+      out << InterUOpNames[i.op()] << i.e(); 
+      break;
+    }
+
+    case InterUOp::comp: {
+      out << i.e() << InterUOpNames[i.op()]; 
+      break;
+    }
+
+    default: {
+      out << InterUOpNames[i.op()] << i.e(); 
+      break;
+    }
+  }
 
   return out;
 }

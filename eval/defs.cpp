@@ -36,25 +36,8 @@ Util::INT toInt(ExprBaseType v)
       return v_rat.numerator();
   }
 
-  Util::ERROR("toInt: intervals are composed by ints");
+  Util::ERROR("toInt: expression is not integer");
   return 0; 
-}
-
-AST::Expr toExpr(ExprBaseType v) 
-{
-  if (std::holds_alternative<Util::INT>(v))
-    return std::get<Util::INT>(v);
-
-  if (std::holds_alternative<Util::RATIONAL>(v))
-    return std::get<Util::RATIONAL>(v);
-
-  if (std::holds_alternative<SBG::Interval>(v)) {
-    SBG::Interval i = std::get<SBG::Interval>(v);
-    return AST::Interval(i.begin(), i.step(), i.end());
-  }
-
-  Util::ERROR("toExpr: compiler error?");
-  return AST::Expr();
 }
 
 // Environments ----------------------------------------------------------------
@@ -64,6 +47,36 @@ VarEnv::VarEnv() {}
 FuncEnv::FuncEnv() {
   insert("isEmpty", 0);
   insert("isMember", 1);
+}
+
+// Classes for pretty printing ------------------------------------------------
+
+std::ostream &operator<<(std::ostream &out, const ExprEval &e)
+{
+  out << std::get<0>(e) << "\n  --> " << streamer{std::get<1>(e)} << "\n";
+
+  return out;
+}
+
+std::ostream &operator<<(std::ostream &out, const ExprEvalList &ee)
+{
+  BOOST_FOREACH (ExprEval e, ee)
+    out << e << "\n";
+
+  return out;
+}
+
+ProgramIO::ProgramIO() : stms_(), exprs_() {}
+ProgramIO::ProgramIO(AST::StatementList stms, ExprEvalList exprs) : stms_(stms), exprs_(exprs) {}
+
+member_imp(ProgramIO, AST::StatementList, stms);
+member_imp(ProgramIO, ExprEvalList, exprs);
+
+std::ostream &operator<<(std::ostream &out, const ProgramIO &p)
+{
+  out << p.stms() << "\n" << p.exprs();
+
+  return out;
 }
 
 } // namespace Eval

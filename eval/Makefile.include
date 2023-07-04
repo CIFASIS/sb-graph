@@ -25,7 +25,6 @@ EVAL_SRC := \
     $(VISIT_DIR)/eval_int.cpp \
     $(VISIT_DIR)/eval_rat.cpp \
     $(VISIT_DIR)/eval_interval.cpp \
-    $(VISIT_DIR)/operation_visitor.cpp \
     $(VISIT_DIR)/eval_expr.cpp \
     $(VISIT_DIR)/stm_visitor.cpp \
     $(VISIT_DIR)/program_visitor.cpp \

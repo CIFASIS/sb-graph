@@ -47,13 +47,7 @@ Util::INT EvalInt::operator()(Util::VariableName v) const {
   Util::Option<ExprBaseType> v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (std::holds_alternative<Util::INT>(value))
-      return std::get<Util::INT>(value); 
-
-    else {
-      Util::ERROR("EvalInt: variable %s is not an integer", v);
-      return 0;
-    }
+    return toInt(value); 
   }
 
   Util::ERROR("EvalInt: variable %s not defined", v);

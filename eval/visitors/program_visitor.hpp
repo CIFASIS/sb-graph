@@ -34,11 +34,11 @@ namespace SBG {
 
 namespace Eval {
 
-struct ProgramVisitor : public boost::static_visitor<AST::Program> {
+struct ProgramVisitor : public boost::static_visitor<ProgramIO> {
   public:
   ProgramVisitor();
  
-  AST::Program operator()(AST::Program p) const; 
+  ProgramIO operator()(AST::Program p) const; 
 
   private:
   mutable VarEnv env_;

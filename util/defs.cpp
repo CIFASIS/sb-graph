@@ -23,6 +23,8 @@ namespace SBG {
 
 namespace Util {
 
+std::string to_str(INT x) { return (x == Inf) ? "Inf" : std::to_string(x); };
+
 std::ostream &operator<<(std::ostream &out, const RATIONAL &r)
 {
   out << r.numerator() << "/" << r.denominator();

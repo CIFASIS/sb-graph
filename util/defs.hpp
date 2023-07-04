@@ -42,6 +42,8 @@ namespace Util {
  * @brief Representation of individual elements. 
  */
 typedef unsigned long long int INT;
+std::string to_str(INT);
+
 /** @typedef RATIONAL 
  *
  * @brief Used for coefficients in linear expressions. 

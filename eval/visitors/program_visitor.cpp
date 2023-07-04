@@ -25,8 +25,8 @@ namespace Eval {
 
 ProgramVisitor::ProgramVisitor() : env_() {}
 
-AST::Program ProgramVisitor::operator()(AST::Program p) const { 
-  AST::Program result;
+ProgramIO ProgramVisitor::operator()(AST::Program p) const { 
+  ProgramIO result;
 
   StmVisitor stm_visit;
   BOOST_FOREACH (AST::Statement s, p.stms()) {
@@ -37,7 +37,7 @@ AST::Program ProgramVisitor::operator()(AST::Program p) const {
   EvalExpression eval_expr(stm_visit.env());
   BOOST_FOREACH (AST::Expr e, p.exprs()) {
     ExprBaseType expr_res = Apply(eval_expr, e);
-    result.exprs_ref().push_back(toExpr(expr_res));
+    result.exprs_ref().push_back(ExprEval(e, expr_res));
   }
 
   return result;

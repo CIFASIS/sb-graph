@@ -41,10 +41,10 @@ bool Interval::operator==(const Interval &other) const
 
 std::ostream &operator<<(std::ostream &out, const Interval &i) 
 {
-  out << "[" << i.begin();
+  out << "[" << Util::to_str(i.begin());
   if (i.step() != 1)
-    out << ":" << i.step();
-  out << ":" << i.end() << "]";
+    out << ":" << Util::to_str(i.step());
+  out << ":" << Util::to_str(i.end()) << "]";
  
   return out;
 }
@@ -66,10 +66,9 @@ std::ostream &operator<<(std::ostream &out, const InterSet &ii)
 {
   out << "{";
   if (ii.size() > 0) {
-    InterSet::iterator penult = std::prev(ii.end());
-    BOOST_FOREACH (Interval i, InterSet(ii.begin(), penult))
+    BOOST_FOREACH (Interval i, ii)
       out << i << ", "; 
-    out << *penult;
+    out << "\b\b";
   }
   out << "}";
 
@@ -111,12 +110,34 @@ Interval intersection(Interval i1, Interval i2)
 
 InterSet complement(Interval i)
 {
-  return InterSet(); // TODO
+  InterSet c;
+
+  // Before interval
+  if (i.begin() != 0)
+    c.insert(Interval(0, 1, i.begin() - 1));  
+
+  // After interval
+  if (i.end() < Util::Inf)
+    c.insert(Interval(i.end() + 1, 1, Util::Inf));
+
+  else 
+    c.insert(Interval(Util::Inf, 1, Util::Inf));
+
+  // "During" interval
+  if (i.begin() < Util::Inf)
+    for (Util::INT j = 1; j < i.step(); j++)
+      c.insert(Interval(i.begin()+j, i.step(), i.end()));
+
+  return c;
 }
 
-Interval difference(Interval i1, Interval i2)
-{
-  return Interval(); // TODO
+InterSet difference(Interval i1, Interval i2) { 
+  InterSet diff;
+
+  BOOST_FOREACH (Interval ci2, complement(i2))
+    diff.insert(intersection(i1, ci2)); 
+
+  return diff;
 }
 
 } // namespace SBG

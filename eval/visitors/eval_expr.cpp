@@ -76,15 +76,15 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
       eval_args.push_back(ApplyThis(a));
 
     switch (*venv) {
-      //case Eval::Func::empty: 
-      //  return Apply(EmptyVisitor(), eval_args[0]);
+      case Eval::Func::empty: {
+        ExprBaseType container = eval_args[0];
+        bool result = std::visit(empty_visitor_, container);
+        return result;
+      }
 
       case Eval::Func::member: { 
-        ExprBaseType x = eval_args[0], i = eval_args[1];
-        bool result = std::visit(Overload{
-          [](Util::INT a, SBG::Interval b) { return isMember(a, b); },
-          [](auto a, auto b) { return false; }, // << default!
-        }, x, i);
+        ExprBaseType x = eval_args[0], container = eval_args[1];
+        bool result = std::visit(member_visitor_, x, container);
         return result;
       }
 
@@ -101,21 +101,22 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
 ExprBaseType EvalExpression::operator()(AST::Interval i) const
 {
   AST::Expr b = i.begin(), s = i.step(), e = i.end();
-  ExprBaseType bt = ApplyThis(b), st = ApplyThis(s), et = ApplyThis(e); 
+  EvalInt int_visit(env_);
 
-  return Interval(toInt(bt), toInt(st), toInt(et));
+  return Interval(Apply(int_visit, b), Apply(int_visit, s), Apply(int_visit, e));
 }
 
 ExprBaseType EvalExpression::operator()(AST::InterUnaryOp i) const
 {
   AST::Expr exp = i.e();
   EvalInterval eval_interval(env_);
-  switch (i.op()){
+  switch (i.op()) {
     case AST::InterUOp::card:
       return cardinal(Apply(eval_interval, exp));
 
-    case AST::InterUOp::comp:
+    case AST::InterUOp::comp: {
       return complement(Apply(eval_interval, exp));
+    }
 
     default:
       Util::ERROR("EvalExpression: InterUnaryOp %s not supported.", AST::InterUOpNames[i.op()]);
@@ -127,9 +128,12 @@ ExprBaseType EvalExpression::operator()(AST::InterBinOp i) const
 {
   AST::Expr l = i.left(), r = i.right();
   EvalInterval eval_interval(env_);
-  switch (i.op()){
+  switch (i.op()) {
     case AST::InterOp::cap:
       return intersection(Apply(eval_interval, l), Apply(eval_interval, r));
+
+    case AST::InterOp::diff:
+      return difference(Apply(eval_interval, l), Apply(eval_interval, r));
 
     default:
       Util::ERROR("EvalExpression: InterBinOp %s not supported.", AST::InterOpNames[i.op()]);

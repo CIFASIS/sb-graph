@@ -95,7 +95,7 @@ struct FuncEnv : public Util::SymbolTable<AST::Name, int> {
   FuncEnv();
 };
 
-typedef enum { empty, member, min, max } Func;
+typedef enum { empty, member, min, max, lt } Func;
 const FuncEnv FUNC_ENV;
 
 /** @struct Overload

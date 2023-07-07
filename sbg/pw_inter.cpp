@@ -48,14 +48,7 @@ member_imp(PWInterval, InterSet, pieces);
 
 bool PWInterval::operator==(const PWInterval &other) const
 {
-  PWInterval pwi1 = canonize(*this), pwi2 = canonize(other);
-  parallel_foreach2 (pwi1.pieces_ref(), pwi2.pieces_ref()) {
-    Interval i1 = boost::get<0>(items), i2 = boost::get<1>(items);
-    if (!(i1 == i2))
-      return false;
-  }
-
-  return true;
+  return isEmpty(difference(*this, other)) && isEmpty(difference(other, *this));
 }
 
 std::ostream &operator<<(std::ostream &out, const PWInterval &pwi) 
@@ -121,10 +114,62 @@ PWInterval intersection(PWInterval pwi1, PWInterval pwi2)
 
   if (maxElem(pwi2) == minElem(pwi1)) return PWInterval(Interval(maxElem(pwi2), 1, maxElem(pwi2)));
 
+  if (pwi1.pieces_ref() == pwi2.pieces_ref()) return pwi1;
+
   // General case
   InterSet cap = linearTraverse(pwi1, pwi2, &intersection);
 
   return PWInterval(cap);
+}
+
+PWInterval cup(PWInterval pwi1, PWInterval pwi2)
+{
+  InterSet un;
+
+  if (isEmpty(pwi1)) return pwi2;
+ 
+  if (isEmpty(pwi2)) return pwi1;
+
+  if (pwi1.pieces_ref() == pwi2.pieces_ref()) return pwi1;
+
+  if (maxElem(pwi1) < minElem(pwi2)) {
+    BOOST_FOREACH (Interval i1, pwi1.pieces_ref())
+      un.emplace_hint(un.cend(), i1);
+
+    BOOST_FOREACH (Interval i2, pwi2.pieces_ref())
+      un.emplace_hint(un.cend(), i2);
+  
+    return PWInterval(un);
+  }
+
+  if (maxElem(pwi2) < minElem(pwi1)) {
+    BOOST_FOREACH (Interval i2, pwi2.pieces_ref())
+      un.emplace_hint(un.cend(), i2);
+
+    BOOST_FOREACH (Interval i1, pwi1.pieces_ref())
+      un.emplace_hint(un.cend(), i1);
+
+    return PWInterval(un);
+  }
+
+  // General case
+
+  // As the complement operation will add intervals to our set, we choose the
+  // one with least quantity of them.  
+  PWInterval lt_pieces, gt_pieces;
+  if (pwi1.pieces().size() > pwi2.pieces().size()) {
+    lt_pieces = pwi2;
+    gt_pieces = pwi1;
+  }
+
+  else {
+    lt_pieces = pwi1;
+    gt_pieces = pwi2;
+  }
+
+  un = linearTraverse(lt_pieces, difference(gt_pieces, lt_pieces), &least);
+
+  return PWInterval(un);
 }
 
 PWInterval complement(PWInterval pwi)
@@ -186,34 +231,6 @@ InterSet linearTraverse(PWInterval pwi1, PWInterval pwi2, Interval (*func)(Inter
   }
 
   return result;
-}
-
-// TODO: {[1:2:99], [2:2:100]} will not be canonized, but in theory
-// this should be possible.
-PWInterval canonize(PWInterval pwi) 
-{
-  if (isEmpty(pwi)) return pwi;
-
-  if (pwi.pieces().size() == 1) return pwi;
-
-  InterSet canon;
-  InterSetIt ith = pwi.pieces_ref().begin();
-  canon.emplace_hint(canon.cbegin(), *ith);
-  ++ith;
-  InterSetIt cit = canon.begin();
-
-  for (; ith != pwi.pieces_ref().end(); ++ith) {
-    MaybeInterval i = canonize(*cit, *ith);
-    if (i) {
-      canon.erase(cit);
-      cit = canon.emplace_hint(canon.cend(), *i);
-    }
-
-    else 
-      cit = canon.emplace_hint(canon.cend(), *ith);
-  }
-
-  return PWInterval(canon);
 }
 
 } // namespace SBG

@@ -66,6 +66,7 @@ bool isMember(INT x, PWInterval i);
 Util::INT minElem(PWInterval pwi);
 Util::INT maxElem(PWInterval pwi);
 PWInterval intersection(PWInterval i1, PWInterval i2);
+PWInterval cup(PWInterval i1, PWInterval i2);
 PWInterval complement(PWInterval i);
 PWInterval difference(PWInterval i1, PWInterval i2);
 
@@ -74,7 +75,6 @@ PWInterval difference(PWInterval i1, PWInterval i2);
  */
 
 InterSet linearTraverse(PWInterval pwi1, PWInterval pwi2, Interval (*func)(Interval, Interval));
-PWInterval canonize(PWInterval i);
 
 typedef PWInterval Set;
 

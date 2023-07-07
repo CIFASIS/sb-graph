@@ -97,9 +97,11 @@ Interval intersection(Interval i1, Interval i2)
 
 // Extra operations ------------------------------------------------------------
 
+Interval least(Interval i1, Interval i2) { return std::min(i1, i2); }
+
 MaybeInterval canonize(Interval i1, Interval i2)
 {
-  if (i1.end() + 1 == i2.begin() && i1.step() == i2.step())
+  if (i1.end() + i1.step() == i2.begin() && i1.step() == i2.step())
     return Interval(i1.begin(), i1.step(), i2.end());
 
   return {};

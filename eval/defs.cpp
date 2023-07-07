@@ -49,6 +49,7 @@ FuncEnv::FuncEnv() {
   insert("isMember", 1);
   insert("min", 2);
   insert("max", 3);
+  insert("lt", 4);
 }
 
 // Classes for pretty printing ------------------------------------------------

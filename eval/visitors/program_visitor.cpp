@@ -25,7 +25,8 @@ namespace Eval {
 
 ProgramVisitor::ProgramVisitor() : env_() {}
 
-ProgramIO ProgramVisitor::operator()(AST::Program p) const { 
+ProgramIO ProgramVisitor::operator()(AST::Program p) const 
+{ 
   ProgramIO result;
 
   StmVisitor stm_visit;

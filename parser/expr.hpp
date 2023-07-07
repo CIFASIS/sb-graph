@@ -26,6 +26,8 @@
 #ifndef EXPR_PARSER_HPP
 #define EXPR_PARSER_HPP
 
+#define BOOST_SPIRIT_DEBUG
+
 #include <ast/expr.hpp>
 #include <parser/skipper.hpp>
 
@@ -43,7 +45,7 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   qi::rule<Iterator, AST::Boolean()> boolean;
 
   // Operators tokens
-  qi::rule<Iterator> OPAREN, CPAREN, OBRACKET, CBRACKET, COLON, RAT, COMA;
+  qi::rule<Iterator> OPAREN, CPAREN, OBRACKET, CBRACKET, OBRACE, CBRACE, COLON, RAT, COMA;
 
   // Other rules
   qi::rule<Iterator, Skipper<Iterator>, Util::RATIONAL()> rational;
@@ -58,8 +60,15 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> interval_unary;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> interval_binary;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> interval_expr;
+  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> inter_list;
+
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> set;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> set_unary;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> set_binary;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> set_expr;
 
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> expr;
+  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> expr_list;
   qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> exprs_comments;
 
   Iterator &it;

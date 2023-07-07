@@ -89,10 +89,7 @@ doc:
 SUBDIRS         := $(ROOT)/parser
  
 clean:
-	$(RM) -rf $(OBJ_DIR) $(LIB_SBGRAPH) $(ROOT)/lib $(ROOT)/include $(3RD_PARTY_DIR)/gtest/usr
-	for dir in $(SUBDIRS); do \
-    $(MAKE) -C $$dir -f Makefile.include reset; \
-  done
+	$(RM) -rf $(BIN_DIR) $(OBJ_DIR) $(LIB_SBGRAPH) $(ROOT)/lib $(ROOT)/include $(3RD_PARTY_DIR)/gtest/usr
 
 help:
 	@echo "make MODE=<Debug|Release> prefix=<PATH> exec_prefix=<PATH> includedir=<PATH> libdir=<PATH>"

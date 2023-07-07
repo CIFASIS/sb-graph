@@ -27,6 +27,16 @@ BOOST_FUSION_ADAPT_STRUCT(SBG::AST::Call, (SBG::AST::Name, name_)(SBG::AST::Expr
 
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::Interval, (SBG::AST::Expr, begin_)(SBG::AST::Expr, step_)(SBG::AST::Expr, end_))
 
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::InterUnaryOp, (SBG::AST::ContainerUOp, op_)(SBG::AST::Expr, e_))
+
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::InterBinOp, (SBG::AST::Expr, left_)(SBG::AST::ContainerOp, op_)(SBG::AST::Expr, right_))
+
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::Set, (SBG::AST::ExprList, pieces_))
+
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::SetUnaryOp, (SBG::AST::ContainerUOp, op_)(SBG::AST::Expr, e_))
+
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::SetBinOp, (SBG::AST::Expr, left_)(SBG::AST::ContainerOp, op_)(SBG::AST::Expr, right_))
+
 // Expression parser -----------------------------------------------------------
 
 namespace SBG {
@@ -51,29 +61,29 @@ struct expo_symbol_struct : qi::symbols<char, AST::Op> {
   }
 } expo_symbol;
 
-struct complement_symbol_struct : qi::symbols<char, AST::InterUOp> {
-  complement_symbol_struct(){
-    add("-", AST::InterUOp::comp);
+struct inter_unary_struct : qi::symbols<char, AST::ContainerUOp> {
+  inter_unary_struct(){
+    add("#", AST::ContainerUOp::card);
   }
-} complement_symbol;
+} inter_un;
 
-struct card_symbol_struct : qi::symbols<char, AST::InterUOp> {
-  card_symbol_struct(){
-    add("#", AST::InterUOp::card);
+struct inter_bin_struct : qi::symbols<char, AST::ContainerOp> {
+  inter_bin_struct(){
+    add("/\\", AST::ContainerOp::cap)("<", AST::ContainerOp::less)("==", AST::ContainerOp::eq);
   }
-} card_symbol;
+} inter_bin;
 
-struct cap_symbol_struct : qi::symbols<char, AST::InterOp> {
-  cap_symbol_struct(){
-    add("/\\", AST::InterOp::cap);
+struct set_unary_struct : qi::symbols<char, AST::ContainerUOp> {
+  set_unary_struct(){
+    add("#", AST::ContainerUOp::card)("-", AST::ContainerUOp::comp);
   }
-} cap_symbol;
+} set_un;
 
-struct diff_symbol_struct : qi::symbols<char, AST::InterOp> {
-  diff_symbol_struct(){
-    add("\\", AST::InterOp::diff);
+struct set_bin_struct : qi::symbols<char, AST::ContainerOp> {
+  set_bin_struct(){
+    add("/\\", AST::ContainerOp::cap)("\\", AST::ContainerOp::diff)("==", AST::ContainerOp::eq);
   }
-} diff_symbol;
+} set_bin;
 
 template <typename Iterator>
 ExprRule<Iterator>::ExprRule(Iterator &it) : 
@@ -83,6 +93,8 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   CPAREN(")"), 
   OBRACKET("["), 
   CBRACKET("]"), 
+  OBRACE("{"),
+  CBRACE("}"),
   COLON(":"),
   RAT("r"), 
   COMA(","), 
@@ -98,9 +110,7 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
 
   call_exp = (ident >> function_call_args)[qi::_val = phx::construct<AST::Call>(qi::_1, qi::_2)];
 
-  function_call_args = OPAREN 
-    >> expr[phx::push_back(qi::_val, qi::_1)] >> *(COMA >> expr)[phx::push_back(qi::_val, qi::_1)] 
-    >> CPAREN;
+  function_call_args = OPAREN >> expr_list >> CPAREN;
 
   primary = rational[qi::_val = phx::construct<Util::RATIONAL>(qi::_1)] 
     | qi::lexeme[qi::ulong_long][qi::_val = phx::construct<Util::INT>(qi::_1)]
@@ -117,18 +127,37 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   interval = (OBRACKET 
     >> arithmetic_expr >> COLON 
     >> arithmetic_expr >> COLON 
-    >> arithmetic_expr >> CBRACKET)[qi::_val = phx::construct<AST::Interval>(qi::_1, qi::_2, qi::_3)];
+    >> arithmetic_expr >> CBRACKET)[qi::_val = phx::construct<AST::Interval>(qi::_1, qi::_2, qi::_3)]
+    | ident[qi::_val = phx::construct<Util::VariableName>(qi::_1)];
 
-  interval_unary = ((complement_symbol | card_symbol) >> interval)[qi::_val = phx::construct<AST::InterUnaryOp>(qi::_1, qi::_2)];
+  interval_unary = (inter_un >> interval_expr)[qi::_val = phx::construct<AST::InterUnaryOp>(qi::_1, qi::_2)];
 
-  interval_binary = OPAREN >> interval[qi::_val = qi::_1] 
-    >> +((cap_symbol | diff_symbol) >> interval > CPAREN)[qi::_val = phx::construct<AST::InterBinOp>(qi::_val, qi::_1, qi::_2)];
+  interval_binary = (OPAREN >> interval_expr 
+    >> inter_bin >> interval_expr
+    > CPAREN)[qi::_val = phx::construct<AST::InterBinOp>(qi::_1, qi::_2, qi::_3)];
 
-  interval_expr = interval[qi::_val = qi::_1]
-    | interval_unary[qi::_val = qi::_1]
-    | interval_binary[qi::_val = qi::_1];
+  interval_expr = interval_unary[qi::_val = qi::_1]
+    | interval_binary[qi::_val = qi::_1]
+    | interval[qi::_val = qi::_1];
 
-  expr = arithmetic_expr | interval_expr;
+  inter_list = interval[phx::push_back(qi::_val, qi::_1)] >> *(COMA >> interval)[phx::push_back(qi::_val, qi::_1)];
+
+  set = (OBRACE >> inter_list >> CBRACE)[qi::_val = phx::construct<AST::Set>(qi::_1)]
+    | ident[qi::_val = phx::construct<Util::VariableName>(qi::_1)];
+
+  set_unary = (set_un >> set_expr)[qi::_val = phx::construct<AST::SetUnaryOp>(qi::_1, qi::_2)]; 
+ 
+  set_binary = (OPAREN >> set
+    >> set_bin >> set_expr 
+    > CPAREN)[qi::_val = phx::construct<AST::SetBinOp>(qi::_1, qi::_2, qi::_3)];
+  
+  set_expr = set_unary[qi::_val = qi::_1]
+    | set_binary[qi::_val = qi::_1]
+    | set[qi::_val = qi::_1];
+
+  expr = arithmetic_expr | interval_expr | set_expr;
+  
+  expr_list = expr[phx::push_back(qi::_val, qi::_1)] >> *(COMA >> expr)[phx::push_back(qi::_val, qi::_1)];
 
   exprs_comments = *(comment | expr);
 };

@@ -36,6 +36,7 @@
 #include <cmath>
 #include <iostream>
 #include <numeric>
+#include <optional>
 
 #include <util/defs.hpp>
 
@@ -52,16 +53,9 @@ struct Interval {
   Interval(INT begin, INT step, INT end);
 
   eq_class(Interval);
+  lt_class(Interval);
 };
 std::ostream &operator<<(std::ostream &out, const Interval &i);
-
-/**
- * @brief Type definitions for intervals operations.
- */
-
-std::size_t hash_value(Interval const &i);
-typedef boost::unordered_set<Interval> InterSet;
-std::ostream &operator<<(std::ostream &out, const InterSet &ii);
 
 /**
  * @brief Traditional set operations.
@@ -70,9 +64,16 @@ std::ostream &operator<<(std::ostream &out, const InterSet &ii);
 unsigned int cardinal(Interval i);
 bool isEmpty(Interval i);
 bool isMember(INT x, Interval i);
+Util::INT minElem(Interval i);
+Util::INT maxElem(Interval i);
 Interval intersection(Interval i1, Interval i2);
-InterSet complement(Interval i);
-InterSet difference(Interval i1, Interval i2);
+
+/**
+ * @brief Extra operations.
+ */
+
+typedef std::optional<Interval> MaybeInterval;
+MaybeInterval canonize(Interval i1, Interval i2);
 
 }  // namespace SBG
 

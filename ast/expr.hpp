@@ -44,6 +44,9 @@ typedef bool Boolean;
 struct Interval;
 struct InterUnaryOp;
 struct InterBinOp;
+struct Set;
+struct SetUnaryOp;
+struct SetBinOp;
 struct BinOp;
 struct Call;
 
@@ -52,7 +55,10 @@ typedef boost::variant<Integer, Rational, Boolean, Util::VariableName,
   boost::recursive_wrapper<Call>, 
   boost::recursive_wrapper<Interval>, 
   boost::recursive_wrapper<InterUnaryOp>,
-  boost::recursive_wrapper<InterBinOp>> Expr;
+  boost::recursive_wrapper<InterBinOp>,
+  boost::recursive_wrapper<Set>,
+  boost::recursive_wrapper<SetUnaryOp>,
+  boost::recursive_wrapper<SetBinOp>> Expr;
 typedef std::vector<Expr> ExprList;
 std::ostream &operator<<(std::ostream &out, const ExprList &el);
 
@@ -89,6 +95,16 @@ std::ostream &operator<<(std::ostream &out, const Call &c);
 
 // SBG structures --------------------------------------------------------------
 
+typedef enum { card, comp } ContainerUOp;
+extern const char* ContUOpNames[];
+std::ostream &operator<<(std::ostream &out, const ContainerUOp &op);
+
+typedef enum { cap, diff, less, eq } ContainerOp;
+extern const char* ContOpNames[];
+std::ostream &operator<<(std::ostream &out, const ContainerOp &op);
+
+// Intervals -------------------------------------------------------------------
+
 struct Interval {
   member_class(Expr, begin);
   member_class(Expr, step);
@@ -101,39 +117,63 @@ struct Interval {
 };
 std::ostream &operator<<(std::ostream &out, const Interval &i);
 
-typedef std::vector<Interval> Intervals;
-std::ostream &operator<<(std::ostream &out, const Intervals &ii);
-
-typedef enum { card, comp } InterUOp;
-extern const char* InterUOpNames[];
-std::ostream &operator<<(std::ostream &out, const InterUOp &op);
-
 struct InterUnaryOp {
-  member_class(InterUOp, op);
+  member_class(ContainerUOp, op);
   member_class(Expr, e);
 
   InterUnaryOp();
-  InterUnaryOp(InterUOp op, Expr e);
+  InterUnaryOp(ContainerUOp op, Expr e);
 
   eq_class(InterUnaryOp);
 };
 std::ostream &operator<<(std::ostream &out, const InterUnaryOp &i);
 
-typedef enum { cap, diff } InterOp;
-extern const char* InterOpNames[];
-std::ostream &operator<<(std::ostream &out, const InterOp &op);
-
 struct InterBinOp {
   member_class(Expr, left);
-  member_class(InterOp, op);
+  member_class(ContainerOp, op);
   member_class(Expr, right);
 
   InterBinOp();
-  InterBinOp(Expr left, InterOp op, Expr right);
+  InterBinOp(Expr left, ContainerOp op, Expr right);
 
   eq_class(InterBinOp);
 };
 std::ostream &operator<<(std::ostream &out, const InterBinOp &i);
+
+// Sets ------------------------------------------------------------------------
+
+struct Set {
+  member_class(ExprList, pieces);
+
+  Set();
+  Set(ExprList pieces);
+
+  eq_class(Set);
+};
+std::ostream &operator<<(std::ostream &out, const Set &s); 
+
+struct SetUnaryOp {
+  member_class(ContainerUOp, op);
+  member_class(Expr, e);
+
+  SetUnaryOp();
+  SetUnaryOp(ContainerUOp op, Expr e);
+
+  eq_class(SetUnaryOp);
+};
+std::ostream &operator<<(std::ostream &out, const SetUnaryOp &s);
+
+struct SetBinOp {
+  member_class(Expr, left);
+  member_class(ContainerOp, op);
+  member_class(Expr, right);
+
+  SetBinOp();
+  SetBinOp(Expr left, ContainerOp op, Expr right);
+
+  eq_class(SetBinOp);
+};
+std::ostream &operator<<(std::ostream &out, const SetBinOp &s);
 
 } // namespace AST
 

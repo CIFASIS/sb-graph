@@ -88,6 +88,18 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
         return result;
       }
 
+      case Eval::Func::min: {
+        ExprBaseType container = eval_args[0];
+        Util::INT result = std::visit(min_visitor_, container);
+        return result;
+      }
+
+      case Eval::Func::max: {
+        ExprBaseType container = eval_args[0];
+        Util::INT result = std::visit(max_visitor_, container);
+        return result;
+      }
+
       default:
         Util::ERROR("EvalExpression: function %s not implemented", v.name());
         return 0;
@@ -100,10 +112,12 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
 
 ExprBaseType EvalExpression::operator()(AST::Interval i) const
 {
-  AST::Expr b = i.begin(), s = i.step(), e = i.end();
   EvalInt int_visit(env_);
+  Util::INT b = Apply(int_visit, i.begin());
+  Util::INT s = Apply(int_visit, i.step());
+  Util::INT e = Apply(int_visit, i.end());
 
-  return Interval(Apply(int_visit, b), Apply(int_visit, s), Apply(int_visit, e));
+  return Interval(b, s, e);
 }
 
 ExprBaseType EvalExpression::operator()(AST::InterUnaryOp i) const
@@ -111,15 +125,11 @@ ExprBaseType EvalExpression::operator()(AST::InterUnaryOp i) const
   AST::Expr exp = i.e();
   EvalInterval eval_interval(env_);
   switch (i.op()) {
-    case AST::InterUOp::card:
+    case AST::ContainerUOp::card:
       return cardinal(Apply(eval_interval, exp));
 
-    case AST::InterUOp::comp: {
-      return complement(Apply(eval_interval, exp));
-    }
-
     default:
-      Util::ERROR("EvalExpression: InterUnaryOp %s not supported.", AST::InterUOpNames[i.op()]);
+      Util::ERROR("EvalExpression: InterUnaryOp %s not supported.", AST::ContUOpNames[i.op()]);
       return 0;
   }
 }
@@ -129,14 +139,65 @@ ExprBaseType EvalExpression::operator()(AST::InterBinOp i) const
   AST::Expr l = i.left(), r = i.right();
   EvalInterval eval_interval(env_);
   switch (i.op()) {
-    case AST::InterOp::cap:
+    case AST::ContainerOp::cap:
       return intersection(Apply(eval_interval, l), Apply(eval_interval, r));
 
-    case AST::InterOp::diff:
-      return difference(Apply(eval_interval, l), Apply(eval_interval, r));
+    case AST::ContainerOp::less:
+      return Apply(eval_interval, l) < Apply(eval_interval, r);
+
+    case AST::ContainerOp::eq:
+      return Apply(eval_interval, l) == Apply(eval_interval, r);
 
     default:
-      Util::ERROR("EvalExpression: InterBinOp %s not supported.", AST::InterOpNames[i.op()]);
+      Util::ERROR("EvalExpression: InterBinOp %s not supported.", AST::ContOpNames[i.op()]);
+      return 0;
+  }
+}
+
+ExprBaseType EvalExpression::operator()(AST::Set s) const
+{
+  SBG::InterSet res;
+  EvalInterval inter_visit(env_);
+
+  BOOST_FOREACH (auto i, s.pieces())
+    res.emplace(Apply(inter_visit, i));
+ 
+  return SBG::Set(res);
+}
+
+ExprBaseType EvalExpression::operator()(AST::SetUnaryOp s) const
+{
+  AST::Expr exp = s.e();
+  EvalSet eval_set(env_);
+  switch (s.op()) {
+    case AST::ContainerUOp::card:
+      return cardinal(Apply(eval_set, exp));
+
+    case AST::ContainerUOp::comp:
+      return complement(Apply(eval_set, exp));
+
+    default:
+      Util::ERROR("EvalExpression: SetUnaryOp %s not supported.", AST::ContUOpNames[s.op()]);
+      return 0;
+  }
+}
+
+ExprBaseType EvalExpression::operator()(AST::SetBinOp s) const
+{
+  AST::Expr l = s.left(), r = s.right();
+  EvalSet eval_set(env_);
+  switch (s.op()) {
+    case AST::ContainerOp::cap:
+      return intersection(Apply(eval_set, l), Apply(eval_set, r));
+
+    case AST::ContainerOp::diff:
+      return difference(Apply(eval_set, l), Apply(eval_set, r));
+
+    case AST::ContainerOp::eq:
+      return Apply(eval_set, l) == Apply(eval_set, r);
+
+    default:
+      Util::ERROR("EvalExpression: SetBinOp %s not supported.", AST::ContOpNames[s.op()]);
       return 0;
   }
 }

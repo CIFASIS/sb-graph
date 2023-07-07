@@ -47,6 +47,8 @@ VarEnv::VarEnv() {}
 FuncEnv::FuncEnv() {
   insert("isEmpty", 0);
   insert("isMember", 1);
+  insert("min", 2);
+  insert("max", 3);
 }
 
 // Classes for pretty printing ------------------------------------------------

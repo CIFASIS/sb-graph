@@ -26,22 +26,26 @@ namespace Eval {
 EvalInterval::EvalInterval() : env_() {}
 EvalInterval::EvalInterval(VarEnv env) : env_(env) {}
 
-SBG::Interval EvalInterval::operator()(AST::Integer v) const { 
+SBG::Interval EvalInterval::operator()(AST::Integer v) const 
+{ 
   Util::ERROR("EvalInterval: trying to evaluate an Integer");
   return SBG::Interval(); 
 }
 
-SBG::Interval EvalInterval::operator()(AST::Rational v) const { 
+SBG::Interval EvalInterval::operator()(AST::Rational v) const 
+{ 
   Util::ERROR("EvalInterval: trying to evaluate a Rational");
   return SBG::Interval(); 
 }
 
-SBG::Interval EvalInterval::operator()(AST::Boolean v) const { 
+SBG::Interval EvalInterval::operator()(AST::Boolean v) const 
+{ 
   Util::ERROR("EvalInterval: trying to evaluate a Boolean");
   return SBG::Interval(); 
 }
 
-SBG::Interval EvalInterval::operator()(Util::VariableName v) const { 
+SBG::Interval EvalInterval::operator()(Util::VariableName v) const 
+{ 
   Util::Option<ExprBaseType> v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
@@ -70,7 +74,8 @@ SBG::Interval EvalInterval::operator()(AST::Call v) const
   return SBG::Interval(); 
 }
 
-SBG::Interval EvalInterval::operator()(AST::Interval i) const { 
+SBG::Interval EvalInterval::operator()(AST::Interval i) const 
+{ 
   EvalInt eval_int(env_);
 
   return SBG::Interval(Apply(eval_int, i.begin()), Apply(eval_int, i.step()), Apply(eval_int, i.end())); 
@@ -81,7 +86,7 @@ SBG::Interval EvalInterval::operator()(AST::InterUnaryOp i) const
   AST::Expr exp = i.e();
   switch (i.op()) {
     default:
-      Util::ERROR("EvalInterval: InterUnaryOp %s not supported.", AST::InterUOpNames[i.op()]);
+      Util::ERROR("EvalInterval: InterUnaryOp %s not supported.", AST::ContUOpNames[i.op()]);
       return SBG::Interval(); 
   }
 }
@@ -90,13 +95,31 @@ SBG::Interval EvalInterval::operator()(AST::InterBinOp i) const
 {
   AST::Expr l = i.left(), r = i.right();
   switch (i.op()) {
-    case AST::InterOp::cap:
+    case AST::ContainerOp::cap:
       return intersection(ApplyThis(l), ApplyThis(r));
 
     default:
-      Util::ERROR("EvalInterval: InterBinOp %s not supported.", AST::InterOpNames[i.op()]);
+      Util::ERROR("EvalInterval: InterBinOp %s not supported.", AST::ContOpNames[i.op()]);
       return SBG::Interval(); 
   }
+}
+
+SBG::Interval EvalInterval::operator()(AST::Set v) const 
+{
+  Util::ERROR("EvalInterval: trying to evaluate a Set");
+  return SBG::Interval(); 
+}
+
+SBG::Interval EvalInterval::operator()(AST::SetUnaryOp v) const 
+{
+  Util::ERROR("EvalInterval: trying to evaluate a SetUnaryOp");
+  return SBG::Interval(); 
+}
+
+SBG::Interval EvalInterval::operator()(AST::SetBinOp v) const 
+{
+  Util::ERROR("EvalInterval: trying to evaluate a SetBinOp");
+  return SBG::Interval(); 
 }
 
 } // namespace Eval

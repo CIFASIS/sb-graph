@@ -26,20 +26,20 @@ namespace Eval {
 EvalRat::EvalRat() : env_() {}
 EvalRat::EvalRat(VarEnv env) : env_(env) {}
 
-Util::RATIONAL EvalRat::operator()(AST::Integer v) const { 
-  return Util::RATIONAL(v, 1); 
-}
+Util::RATIONAL EvalRat::operator()(AST::Integer v) const { return Util::RATIONAL(v, 1); }
 
 Util::RATIONAL EvalRat::operator()(AST::Rational v) const { return v; }
 
-Util::RATIONAL EvalRat::operator()(AST::Boolean v) const { 
+Util::RATIONAL EvalRat::operator()(AST::Boolean v) const 
+{ 
   if (v)
     return 1;
 
   return 0; 
 }
 
-Util::RATIONAL EvalRat::operator()(Util::VariableName v) const {
+Util::RATIONAL EvalRat::operator()(Util::VariableName v) const 
+{
   Util::Option<ExprBaseType> v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
@@ -96,6 +96,24 @@ Util::RATIONAL EvalRat::operator()(AST::InterUnaryOp i) const
 Util::RATIONAL EvalRat::operator()(AST::InterBinOp i) const
 {
   Util::ERROR("EvalRat: trying to evaluate an InterBinOp");
+  return 0;
+}
+
+Util::RATIONAL EvalRat::operator()(AST::Set i) const
+{
+  Util::ERROR("EvalRat: trying to evaluate an Set");
+  return 0;
+}
+
+Util::RATIONAL EvalRat::operator()(AST::SetUnaryOp i) const
+{
+  Util::ERROR("EvalRat: trying to evaluate an SetUnaryOp");
+  return 0;
+}
+
+Util::RATIONAL EvalRat::operator()(AST::SetBinOp i) const
+{
+  Util::ERROR("EvalRat: trying to evaluate an SetBinOp");
   return 0;
 }
 

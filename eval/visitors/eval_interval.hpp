@@ -45,6 +45,9 @@ struct EvalInterval : public boost::static_visitor<SBG::Interval> {
   SBG::Interval operator()(AST::Interval i) const;
   SBG::Interval operator()(AST::InterUnaryOp i) const;
   SBG::Interval operator()(AST::InterBinOp i) const;
+  SBG::Interval operator()(AST::Set i) const;
+  SBG::Interval operator()(AST::SetUnaryOp i) const;
+  SBG::Interval operator()(AST::SetBinOp i) const;
 
   private:
   mutable VarEnv env_;

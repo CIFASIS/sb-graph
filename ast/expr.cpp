@@ -27,6 +27,13 @@ namespace AST {
 
 const char *OpNames[] = {"+", "-", "*", "^"};
 
+std::ostream &operator<<(std::ostream &out, const Op &op)
+{
+  out << OpNames[op];
+
+  return out;
+}
+
 std::ostream &operator<<(std::ostream &out, const ExprList &el)
 {
   BOOST_FOREACH (Expr e, el)
@@ -49,7 +56,7 @@ bool BinOp::operator==(const BinOp &other) const
 
 std::ostream &operator<<(std::ostream &out, const BinOp &bop)
 { 
-  out << bop.left() << OpNames[bop.op()] << bop.right();
+  out << bop.left() << bop.op() << bop.right();
 
   return out;
 }
@@ -86,6 +93,23 @@ std::ostream &operator<<(std::ostream &out, const Call &c)
 
 // SBG Structures --------------------------------------------------------------
 
+const char *ContUOpNames[] = {"#", "\'"};
+const char *ContOpNames[] = {"/\\", "\\", "<", "=="};
+
+std::ostream &operator<<(std::ostream &out, const ContainerUOp &op)
+{
+  out << ContUOpNames[op];
+
+  return out;
+}
+
+std::ostream &operator<<(std::ostream &out, const ContainerOp &op)
+{
+  out << ContOpNames[op];
+
+  return out;
+}
+
 // Interval --------------------------------------------------------------------
 
 Interval::Interval() : begin_(), step_(), end_() {}
@@ -107,20 +131,10 @@ std::ostream &operator<<(std::ostream &out, const Interval &i)
   return out;
 }
 
-std::ostream &operator<<(std::ostream &out, const Intervals &ii)
-{
-  BOOST_FOREACH (Interval i, ii)
-    out << i << "\n";
-
-  return out;
-}
-
-const char *InterUOpNames[] = {"#", "'"};
-
 InterUnaryOp::InterUnaryOp() : op_(), e_() {}
-InterUnaryOp::InterUnaryOp(InterUOp op, Expr e) : op_(op), e_(e) {}
+InterUnaryOp::InterUnaryOp(ContainerUOp op, Expr e) : op_(op), e_(e) {}
 
-member_imp(InterUnaryOp, InterUOp, op);
+member_imp(InterUnaryOp, ContainerUOp, op);
 member_imp(InterUnaryOp, Expr, e);
 
 bool InterUnaryOp::operator==(const InterUnaryOp &other) const
@@ -131,18 +145,8 @@ bool InterUnaryOp::operator==(const InterUnaryOp &other) const
 std::ostream &operator<<(std::ostream &out, const InterUnaryOp &i) 
 {
   switch (i.op()) {
-    case InterUOp::card: {
-      out << InterUOpNames[i.op()] << i.e(); 
-      break;
-    }
-
-    case InterUOp::comp: {
-      out << i.e() << InterUOpNames[i.op()]; 
-      break;
-    }
-
     default: {
-      out << InterUOpNames[i.op()] << i.e(); 
+      out << i.op() << i.e(); 
       break;
     }
   }
@@ -150,13 +154,11 @@ std::ostream &operator<<(std::ostream &out, const InterUnaryOp &i)
   return out;
 }
 
-const char *InterOpNames[] = {"/\\", "\\"};
-
 InterBinOp::InterBinOp() : left_(), op_(), right_() {}
-InterBinOp::InterBinOp(Expr left, InterOp op, Expr right) : left_(left), op_(op), right_(right) {}
+InterBinOp::InterBinOp(Expr left, ContainerOp op, Expr right) : left_(left), op_(op), right_(right) {}
 
 member_imp(InterBinOp, Expr, left);
-member_imp(InterBinOp, InterOp, op);
+member_imp(InterBinOp, ContainerOp, op);
 member_imp(InterBinOp, Expr, right);
 
 bool InterBinOp::operator==(const InterBinOp &other) const
@@ -166,7 +168,79 @@ bool InterBinOp::operator==(const InterBinOp &other) const
 
 std::ostream &operator<<(std::ostream &out, const InterBinOp &i)
 {
-  out << i.left() << InterOpNames[i.op()] << i.right(); 
+  out << i.left() << i.op() << i.right(); 
+
+  return out;
+}
+
+// Set -------------------------------------------------------------------------
+
+Set::Set() : pieces_() {}
+Set::Set(ExprList pieces) : pieces_(pieces) {}
+
+member_imp(Set, ExprList, pieces);
+
+bool Set::operator==(const Set &other) const
+{
+  return pieces() == other.pieces();
+}
+
+std::ostream &operator<<(std::ostream &out, const Set &s)
+{
+  out << "{";
+  if (s.pieces().size() > 0) {
+    BOOST_FOREACH (Expr e, s.pieces())
+      out << e << ", "; 
+    out << "\b\b";
+  }
+  out << "}";
+
+  return out; 
+}
+
+SetUnaryOp::SetUnaryOp() : op_(), e_() {}
+SetUnaryOp::SetUnaryOp(ContainerUOp op, Expr e) : op_(op), e_(e) {}
+
+member_imp(SetUnaryOp, ContainerUOp, op);
+member_imp(SetUnaryOp, Expr, e);
+
+bool SetUnaryOp::operator==(const SetUnaryOp &other) const
+{
+  return e() == other.e() && op() == other.op();
+}
+
+std::ostream &operator<<(std::ostream &out, const SetUnaryOp &s)
+{
+  switch (s.op()) {
+    case ContainerUOp::comp: {
+      out << s.e() << s.op();
+      break;
+    }
+
+    default: {
+      out << s.op() << s.e();
+      break;
+    }
+  }
+
+  return out;
+}
+
+SetBinOp::SetBinOp() : left_(), op_(), right_() {}
+SetBinOp::SetBinOp(Expr left, ContainerOp op, Expr right) : left_(left), op_(op), right_(right) {}
+
+member_imp(SetBinOp, Expr, left);
+member_imp(SetBinOp, ContainerOp, op);
+member_imp(SetBinOp, Expr, right);
+
+bool SetBinOp::operator==(const SetBinOp &other) const
+{
+  return left() == other.left() && op() == other.op() && right() == other.right();
+}
+
+std::ostream &operator<<(std::ostream &out, const SetBinOp &i)
+{
+  out << i.left() << i.op() << i.right(); 
 
   return out;
 }

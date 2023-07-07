@@ -31,7 +31,7 @@
 
 #include <ast/expr.hpp>
 #include <ast/statement.hpp>
-#include <sbg/interval.hpp>
+#include <sbg/pw_inter.hpp>
 #include <util/debug.hpp>
 #include <util/defs.hpp>
 #include <util/env.hpp>
@@ -42,7 +42,7 @@ namespace Eval {
 
 // Type definitions ------------------------------------------------------------
 
-typedef std::variant<Util::INT, Util::RATIONAL, SBG::Interval, SBG::InterSet> ExprBaseType;
+typedef std::variant<Util::INT, Util::RATIONAL, SBG::Interval, SBG::Set> ExprBaseType;
 
 template <class T>
 struct streamer {
@@ -95,7 +95,7 @@ struct FuncEnv : public Util::SymbolTable<AST::Name, int> {
   FuncEnv();
 };
 
-typedef enum { empty, member } Func;
+typedef enum { empty, member, min, max } Func;
 const FuncEnv FUNC_ENV;
 
 /** @struct Overload

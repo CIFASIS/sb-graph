@@ -37,12 +37,26 @@ namespace Eval {
 
 auto empty_visitor_ = Overload{
   [](SBG::Interval a) { return isEmpty(a); },
+  [](SBG::Set a) { return isEmpty(a); },
   [](auto a) { return true; } // << default!
 };
 
 auto member_visitor_ = Overload{
   [](Util::INT a, SBG::Interval b) { return isMember(a, b); },
+  [](Util::INT a, SBG::Set b) { return isMember(a, b); },
   [](auto a, auto b) { return false; } // << default!
+};
+
+auto min_visitor_ = Overload{
+  [](SBG::Interval a) { return minElem(a); },
+  [](SBG::Set a) { return minElem(a); },
+  [](auto a) { return (Util::INT) 0; }
+};
+
+auto max_visitor_ = Overload{
+  [](SBG::Interval a) { return maxElem(a); },
+  [](SBG::Set a) { return maxElem(a); },
+  [](auto a) { return (Util::INT) 0; }
 };
 
 } // namespace Eval

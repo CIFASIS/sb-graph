@@ -25,10 +25,12 @@ EVAL_SRC := \
     $(VISIT_DIR)/eval_int.cpp \
     $(VISIT_DIR)/eval_rat.cpp \
     $(VISIT_DIR)/eval_interval.cpp \
+    $(VISIT_DIR)/eval_set.cpp \
     $(VISIT_DIR)/eval_expr.cpp \
     $(VISIT_DIR)/stm_visitor.cpp \
     $(VISIT_DIR)/program_visitor.cpp \
-    $(SBG_DIR)/interval.cpp
+    $(SBG_DIR)/interval.cpp \
+    $(SBG_DIR)/pw_inter.cpp
 
 # Objects
 EVAL_OBJ=$(addprefix $(BUILD_DIR)/, $(EVAL_SRC:.cpp=.o))
@@ -39,6 +41,3 @@ create-folders::
 
 $(EVAL): $(EVAL_OBJ)
 	$(CXX) $(INCLUDES) $(CXXFLAGS) -o $(EVAL) $(EVAL_OBJ) $(LIBS)
-
-reset:
-	$(RM) -rf bin/sbg-eval

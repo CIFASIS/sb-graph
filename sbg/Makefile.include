@@ -3,7 +3,8 @@ SBG_ROOT := sbg
 
 # Sources
 	SBG_SRC := \
-  	$(SBG_ROOT)/interval.cpp
+  	$(SBG_ROOT)/interval.cpp \
+    $(SBG_ROOT)/pw_inter.cpp
 
 # Objects
 SBG_OBJ=$(addprefix $(BUILD_DIR)/, $(SBG_SRC:.cpp=.o))

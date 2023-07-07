@@ -25,6 +25,3 @@ create-folders::
 
 $(PARSER): $(PARSER_OBJ)
 	$(CXX) $(INCLUDES) $(CXXFLAGS) -o $(PARSER) $(PARSER_OBJ) $(LIBS)
-
-reset:
-	$(RM) -rf bin/sbg-parser

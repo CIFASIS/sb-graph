@@ -1,6 +1,6 @@
-/** @file eval_int.hpp
+/** @file eval_set.hpp
 
- @brief <b>Integer expression evaluator</b>
+ @brief <b>Set expression evaluator</b>
 
  <hr>
 
@@ -21,35 +21,32 @@
 
  ******************************************************************************/
 
-#ifndef AST_VISITOR_EVALINT
-#define AST_VISITOR_EVALINT
+#ifndef AST_VISITOR_EVALSET
+#define AST_VISITOR_EVALSET
 
-#include <boost/variant/static_visitor.hpp>
-
-#include <ast/expr.hpp>
-#include <eval/defs.hpp>
+#include <eval/visitors/eval_interval.hpp>
 
 namespace SBG {
 
 namespace Eval {
 
-struct EvalInt : public boost::static_visitor<Util::INT> {
+struct EvalSet : public boost::static_visitor<SBG::Set> {
   public:
-  EvalInt();
-  EvalInt(VarEnv env);
+  EvalSet();
+  EvalSet(VarEnv env);
 
-  Util::INT operator()(AST::Integer v) const;
-  Util::INT operator()(AST::Rational v) const;
-  Util::INT operator()(AST::Boolean v) const;
-  Util::INT operator()(Util::VariableName v) const;
-  Util::INT operator()(AST::BinOp v) const;
-  Util::INT operator()(AST::Call v) const;
-  Util::INT operator()(AST::Interval i) const;
-  Util::INT operator()(AST::InterUnaryOp i) const;
-  Util::INT operator()(AST::InterBinOp i) const;
-  Util::INT operator()(AST::Set i) const;
-  Util::INT operator()(AST::SetUnaryOp i) const;
-  Util::INT operator()(AST::SetBinOp i) const;
+  SBG::Set operator()(AST::Integer v) const;
+  SBG::Set operator()(AST::Rational v) const;
+  SBG::Set operator()(AST::Boolean v) const;
+  SBG::Set operator()(Util::VariableName v) const;
+  SBG::Set operator()(AST::BinOp v) const;
+  SBG::Set operator()(AST::Call v) const;
+  SBG::Set operator()(AST::Interval i) const;
+  SBG::Set operator()(AST::InterUnaryOp i) const;
+  SBG::Set operator()(AST::InterBinOp i) const;
+  SBG::Set operator()(AST::Set i) const;
+  SBG::Set operator()(AST::SetUnaryOp i) const;
+  SBG::Set operator()(AST::SetBinOp i) const;
 
   private:
   mutable VarEnv env_;

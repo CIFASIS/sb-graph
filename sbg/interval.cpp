@@ -39,6 +39,15 @@ bool Interval::operator==(const Interval &other) const
   return (begin() == other.begin()) && (step() == other.step()) && (end() == other.end());
 }
 
+bool Interval::operator<(const Interval &other) const
+{
+  if (begin() < other.begin()) return true;
+
+  if (end() < other.end()) return true;
+
+  return false;
+}
+
 std::ostream &operator<<(std::ostream &out, const Interval &i) 
 {
   out << "[" << Util::to_str(i.begin());
@@ -49,33 +58,7 @@ std::ostream &operator<<(std::ostream &out, const Interval &i)
   return out;
 }
 
-// Type definitions ------------------------------------------------------------
-
-std::size_t hash_value(Interval const& i) 
-{
-  std::size_t seed = 0;
-
-  boost::hash_combine(seed, i.begin());
-  boost::hash_combine(seed, i.step());
-  boost::hash_combine(seed, i.end());
-
-  return seed;
-}
-
-std::ostream &operator<<(std::ostream &out, const InterSet &ii) 
-{
-  out << "{";
-  if (ii.size() > 0) {
-    BOOST_FOREACH (Interval i, ii)
-      out << i << ", "; 
-    out << "\b\b";
-  }
-  out << "}";
-
-  return out;
-}
-
-// Functions -------------------------------------------------------------------
+// Set functions ---------------------------------------------------------------
 
 unsigned int cardinal(Interval i) { return (i.end() - i.begin()) / i.step() + 1; }
 
@@ -89,6 +72,10 @@ bool isMember(INT x, Interval i)
 
   return rem == 0;
 }
+
+Util::INT minElem(Interval i) { return i.begin(); }
+
+Util::INT maxElem(Interval i) { return i.end(); }
 
 Interval intersection(Interval i1, Interval i2)
 {
@@ -108,36 +95,14 @@ Interval intersection(Interval i1, Interval i2)
   return Interval(new_begin, new_step, new_end);
 }
 
-InterSet complement(Interval i)
+// Extra operations ------------------------------------------------------------
+
+MaybeInterval canonize(Interval i1, Interval i2)
 {
-  InterSet c;
+  if (i1.end() + 1 == i2.begin() && i1.step() == i2.step())
+    return Interval(i1.begin(), i1.step(), i2.end());
 
-  // Before interval
-  if (i.begin() != 0)
-    c.insert(Interval(0, 1, i.begin() - 1));  
-
-  // After interval
-  if (i.end() < Util::Inf)
-    c.insert(Interval(i.end() + 1, 1, Util::Inf));
-
-  else 
-    c.insert(Interval(Util::Inf, 1, Util::Inf));
-
-  // "During" interval
-  if (i.begin() < Util::Inf)
-    for (Util::INT j = 1; j < i.step(); j++)
-      c.insert(Interval(i.begin()+j, i.step(), i.end()));
-
-  return c;
-}
-
-InterSet difference(Interval i1, Interval i2) { 
-  InterSet diff;
-
-  BOOST_FOREACH (Interval ci2, complement(i2))
-    diff.insert(intersection(i1, ci2)); 
-
-  return diff;
+  return {};
 }
 
 } // namespace SBG

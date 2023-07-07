@@ -28,7 +28,8 @@ EvalInt::EvalInt(VarEnv env) : env_(env) {}
 
 Util::INT EvalInt::operator()(AST::Integer v) const { return v; }
 
-Util::INT EvalInt::operator()(AST::Rational v) const { 
+Util::INT EvalInt::operator()(AST::Rational v) const 
+{ 
   if (v.denominator() == 1)
     return v.numerator();
 
@@ -36,14 +37,16 @@ Util::INT EvalInt::operator()(AST::Rational v) const {
   return 0; 
 }
 
-Util::INT EvalInt::operator()(AST::Boolean v) const { 
+Util::INT EvalInt::operator()(AST::Boolean v) const 
+{ 
   if (v)
     return 1;
 
   return 0; 
 }
 
-Util::INT EvalInt::operator()(Util::VariableName v) const { 
+Util::INT EvalInt::operator()(Util::VariableName v) const 
+{ 
   Util::Option<ExprBaseType> v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
@@ -97,6 +100,24 @@ Util::INT EvalInt::operator()(AST::InterUnaryOp i) const
 Util::INT EvalInt::operator()(AST::InterBinOp i) const
 {
   Util::ERROR("EvalInt: trying to evaluate an InterBinOp");
+  return 0;
+}
+
+Util::INT EvalInt::operator()(AST::Set i) const
+{
+  Util::ERROR("EvalInt: trying to evaluate an Set");
+  return 0;
+}
+
+Util::INT EvalInt::operator()(AST::SetUnaryOp i) const
+{
+  Util::ERROR("EvalInt: trying to evaluate an SetUnaryOp");
+  return 0;
+}
+
+Util::INT EvalInt::operator()(AST::SetBinOp i) const
+{
+  Util::ERROR("EvalInt: trying to evaluate an SetBinOp");
   return 0;
 }
 

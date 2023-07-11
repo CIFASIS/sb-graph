@@ -74,6 +74,7 @@ PWInterval difference(PWInterval i1, PWInterval i2);
  * @brief Extra operations.
  */
 
+InterSet boundedLinearTraverse(PWInterval pwi1, PWInterval pwi2, Interval (*func)(Interval, Interval));
 InterSet linearTraverse(PWInterval pwi1, PWInterval pwi2, Interval (*func)(Interval, Interval));
 
 typedef PWInterval Set;

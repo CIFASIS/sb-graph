@@ -81,7 +81,7 @@ struct set_unary_struct : qi::symbols<char, AST::ContainerUOp> {
 
 struct set_bin_struct : qi::symbols<char, AST::ContainerOp> {
   set_bin_struct(){
-    add("/\\", AST::ContainerOp::cap)("\\", AST::ContainerOp::diff)("==", AST::ContainerOp::eq);
+    add("/\\", AST::ContainerOp::cap)("\\", AST::ContainerOp::diff)("==", AST::ContainerOp::eq)("\\/", AST::ContainerOp::cup);
   }
 } set_bin;
 

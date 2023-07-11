@@ -1,0 +1,19 @@
+# The Directories, Source, Includes, Objects, Binary 
+SBG_DIR         := sbg
+PARSER_DIR      := parser
+TEST_DIR        := test
+PARSER_TEST_DIR := $(TEST_DIR)/parser
+SBG_TEST        := sbg-test
+#EVAL_TEST       := $(BIN_DIR)/eval-test
+
+create-folders::
+	@mkdir -p $(BUILD_DIR)/test
+	@mkdir -p $(BUILD_DIR)/parser
+
+$(SBG_TEST):
+	@echo BUILDING ARITHMETIC SYSTEM TESTS
+	@cd $(PARSER_TEST_DIR) && $(MAKE) bin/sbg-test
+	@echo Done
+	@echo RUNNING ARITHMETIC GRAPHS SYSTEM TESTS
+	@cd $(PARSER_TEST_DIR) && $(MAKE) sbg-test
+	@echo Done

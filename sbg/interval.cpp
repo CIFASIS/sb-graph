@@ -88,11 +88,17 @@ Interval intersection(Interval i1, Interval i2)
 
   INT max_begin = std::max(i1.begin(), i2.begin());    
   INT new_step = std::lcm(i1.step(), i2.step()), new_begin = max_begin, new_end = std::min(i1.end(), i2.end());
+  bool found_member = false;
   for (INT x = max_begin; x < max_begin + new_step - 1; x++) 
-    if (isMember(x, i1) && isMember(x, i2)) 
+    if (isMember(x, i1) && isMember(x, i2)) {
       new_begin = x;
+      found_member = true;
+    }
 
-  return Interval(new_begin, new_step, new_end);
+  if (found_member)
+    return Interval(new_begin, new_step, new_end);
+
+  return Interval(1, 1, 0);
 }
 
 // Extra operations ------------------------------------------------------------

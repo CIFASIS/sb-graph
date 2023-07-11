@@ -99,7 +99,7 @@ typedef enum { card, comp } ContainerUOp;
 extern const char* ContUOpNames[];
 std::ostream &operator<<(std::ostream &out, const ContainerUOp &op);
 
-typedef enum { cap, diff, less, eq } ContainerOp;
+typedef enum { cap, diff, less, eq, cup } ContainerOp;
 extern const char* ContOpNames[];
 std::ostream &operator<<(std::ostream &out, const ContainerOp &op);
 

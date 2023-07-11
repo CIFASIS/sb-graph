@@ -23,6 +23,39 @@ namespace SBG {
 
 namespace Eval {
 
+// Function visitors -----------------------------------------------------------
+
+auto empty_visitor_ = Overload{
+  [](SBG::Interval a) { return isEmpty(a); },
+  [](SBG::Set a) { return isEmpty(a); },
+  [](auto a) { return true; } // << default!
+};
+
+auto member_visitor_ = Overload{
+  [](Util::INT a, SBG::Interval b) { return isMember(a, b); },
+  [](Util::INT a, SBG::Set b) { return isMember(a, b); },
+  [](auto a, auto b) { return false; } // << default!
+};
+
+auto min_visitor_ = Overload{
+  [](SBG::Interval a) { return minElem(a); },
+  [](SBG::Set a) { return minElem(a); },
+  [](auto a) { return (Util::INT) 0; }
+};
+
+auto max_visitor_ = Overload{
+  [](SBG::Interval a) { return maxElem(a); },
+  [](SBG::Set a) { return maxElem(a); },
+  [](auto a) { return (Util::INT) 0; }
+};
+
+auto lt_visitor_ = Overload{
+  [](SBG::Interval a, SBG::Interval b) { return least(a, b); },
+  [](auto a, auto b) { return SBG::Interval(1, 0, 0); }
+};
+
+// Expression evaluator --------------------------------------------------------
+
 EvalExpression::EvalExpression() : env_() {}
 EvalExpression::EvalExpression(VarEnv env) : env_(env) {}
 
@@ -78,54 +111,30 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
     switch (*venv) {
       case Eval::Func::empty: {
         ExprBaseType container = eval_args[0];
-        auto empty_visitor_ = Overload{
-          [](SBG::Interval a) { return isEmpty(a); },
-          [](SBG::Set a) { return isEmpty(a); },
-          [](auto a) { return true; } // << default!
-        };
         bool result = std::visit(empty_visitor_, container);
         return result;
       }
 
       case Eval::Func::member: { 
         ExprBaseType x = eval_args[0], container = eval_args[1];
-        auto member_visitor_ = Overload{
-          [](Util::INT a, SBG::Interval b) { return isMember(a, b); },
-          [](Util::INT a, SBG::Set b) { return isMember(a, b); },
-          [](auto a, auto b) { return false; } // << default!
-        };
         bool result = std::visit(member_visitor_, x, container);
         return result;
       }
 
       case Eval::Func::min: {
         ExprBaseType container = eval_args[0];
-        auto min_visitor_ = Overload{
-          [](SBG::Interval a) { return minElem(a); },
-          [](SBG::Set a) { return minElem(a); },
-          [](auto a) { return (Util::INT) 0; }
-        };
         Util::INT result = std::visit(min_visitor_, container);
         return result;
       }
 
       case Eval::Func::max: {
         ExprBaseType container = eval_args[0];
-        auto max_visitor_ = Overload{
-          [](SBG::Interval a) { return maxElem(a); },
-          [](SBG::Set a) { return maxElem(a); },
-          [](auto a) { return (Util::INT) 0; }
-        };
         Util::INT result = std::visit(max_visitor_, container);
         return result;
       }
 
       case Eval::Func::lt: {
         ExprBaseType cont1 = eval_args[0], cont2 = eval_args[1];
-        auto lt_visitor_ = Overload{
-          [](SBG::Interval a, SBG::Interval b) { return least(a, b); },
-          [](auto a, auto b) { return SBG::Interval(1, 0, 0); }
-        };
         SBG::Interval result = std::visit(lt_visitor_, cont1, cont2);
         return result;
       }
@@ -225,6 +234,9 @@ ExprBaseType EvalExpression::operator()(AST::SetBinOp s) const
 
     case AST::ContainerOp::eq:
       return Apply(eval_set, l) == Apply(eval_set, r);
+
+    case AST::ContainerOp::cup:
+      return cup(Apply(eval_set, l), Apply(eval_set, r));
 
     default:
       Util::ERROR("EvalExpression: SetBinOp %s not supported.", AST::ContOpNames[s.op()]);

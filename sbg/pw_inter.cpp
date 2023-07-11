@@ -117,7 +117,7 @@ PWInterval intersection(PWInterval pwi1, PWInterval pwi2)
   if (pwi1.pieces_ref() == pwi2.pieces_ref()) return pwi1;
 
   // General case
-  InterSet cap = linearTraverse(pwi1, pwi2, &intersection);
+  InterSet cap = boundedLinearTraverse(pwi1, pwi2, &intersection);
 
   return PWInterval(cap);
 }
@@ -207,7 +207,7 @@ PWInterval difference(PWInterval pwi1, PWInterval pwi2) { return intersection(pw
 
 // Extra operations ------------------------------------------------------------
 
-InterSet linearTraverse(PWInterval pwi1, PWInterval pwi2, Interval (*func)(Interval, Interval))
+InterSet boundedLinearTraverse(PWInterval pwi1, PWInterval pwi2, Interval (*func)(Interval, Interval))
 {
   InterSet result;
 
@@ -232,5 +232,42 @@ InterSet linearTraverse(PWInterval pwi1, PWInterval pwi2, Interval (*func)(Inter
 
   return result;
 }
+
+InterSet linearTraverse(PWInterval pwi1, PWInterval pwi2, Interval (*func)(Interval, Interval))
+{
+  InterSet result;
+
+  InterSetIt it1 = pwi1.pieces_ref().begin(), it2 = pwi2.pieces_ref().begin();   
+  InterSetIt end1 = pwi1.pieces_ref().end(), end2 = pwi2.pieces_ref().end();   
+
+  Interval i1, i2;
+  for (; it1 != end1 && it2 != end2;) {
+    i1 = *it1;
+    i2 = *it2;
+
+    Interval funci = func(i1, i2);
+    if (!isEmpty(funci))
+      result.emplace_hint(result.cend(), funci);
+
+    if (maxElem(i1) < maxElem(i2))
+      ++it1;
+
+    else
+      ++it2;
+  }
+
+  for (; it1 != end1; ++it1) {
+    i1 = *it1;
+    result.emplace_hint(result.cend(), i1);
+  }
+
+  for (; it2 != end2; ++it2) {
+    i2 = *it2;
+    result.emplace_hint(result.cend(), i2);
+  }
+
+  return result;
+}
+
 
 } // namespace SBG

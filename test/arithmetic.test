@@ -1,0 +1,8 @@
+// Test for the parser consisting of only arithmetic expressions
+
+2
+2+3 
+r(1, 2)
+2*10+3
+5-3
+r(1, 2)+r(1, 2)

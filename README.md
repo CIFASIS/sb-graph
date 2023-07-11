@@ -1,9 +1,10 @@
 # Set-Based Graph Library
 
-Set-based graphs (SB-Graphs) are regular graphs in which the vertices and edges are grouped in sets allowing sometimes a compact representation. When the compact representation is feasible, it is possible to develop new versions of traditional algorithms that take advantage of the structure of SB-Graphs, with a cost that is independent on the size of the sets of vertices and edges. Current algorithms for SB-Graphs:
+Set-based graphs (SB-Graphs) are graphs in which the vertices and edges are grouped in sets allowing sometimes a compact representation. When the compact representation is feasible, it is possible to develop new versions of traditional algorithms that take advantage of the structure of SB-Graphs, with a cost that is independent on the size of the sets of vertices and edges. Current algorithms for SB-Graphs:
 
   * Connected Components
   * Matching
+  * Strongly Connected Components (SCC)
 
 This library defines data structures to represent SB-Graphs, and implements the aforementioned algorithms. The related publications can be used as documentation of the code.
 
@@ -79,26 +80,8 @@ The makefile script accepts the following targets:
   * doc:      Builds the documentation.
 
 ## Examples:			   
-The [examples](https://github.com/CIFASIS/sb-graph/tree/sb-graph-dev/examples) folder contains three simple use cases of the **matching algorithm** defined in the library, including the use of the [IO](https://github.com/CIFASIS/sb-graph/blob/sb-graph-dev/sbg/graph_builders/matching_io.hpp) interface defined for the matching structures.
-All the examples are based on simple Modelica models, for instance [advection.c](https://github.com/CIFASIS/sb-graph/blob/sb-graph-dev/examples/advection/advection.c) shows a simple use case for the following model:   
 
-```
- // Simple use example of Advection model.
- model advection
-   parameter Real alpha=0.5,mu=1000;
-   constant Integer N = 20000;
-   Real u[N];
- initial algorithm
-   for i in 1:N/3 loop
-     u[i]:=1;
-   end for;
- equation
-   der(u[1])=(-u[1]+1)*N-mu*u[1]*(u[1]-alpha)*(u[1]-1);
-   for j in 2:N loop
-     der(u[j])=(-u[j]+u[j-1])*N-mu*u[j]*(u[j]-alpha)*(u[j]-1);
-    end for;
- end advection; 
-```
+The current version of the library counts with a parser for SBG programs. The syntax can be derived from the .cpp files of the /parser directory. In the /test folder several examples are presented, and they can be parsed or evaluated with the corresponding binary from the /bin directory. The `make test` command will evaluate all of the files and compare their results with the desired value stored in the /test/gt_data folder.
 
 ## Licensing
 

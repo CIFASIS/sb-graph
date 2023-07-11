@@ -4,17 +4,16 @@
 # Generated library.
 /lib
 
+# Binary files
+/bin
+
 # 3rd-party libraries.
-/sbg/3rd-party/gtest/usr/
+/3rd-party/gtest/usr/
 
 # Test files. 
-/sbg/test/utest/GraphTest
-/sbg/test/utest/PrintGraphs
-/sbg/test/utest/*.dot
-/sbg/test/utest/*.log
-/sbg/test/stest/test_data/*
-/sbg/test/stest/bin/*
-/sbg/test/stest/obj/*
+/test/parser/test_data/*
+/test/parser/obj/*
+/test/parser/bin/*
 
 # Doc files.
 /doc/*
@@ -30,5 +29,3 @@ configure
 Makefile
 /autom4te.cache
 
-# Binary files
-/bin

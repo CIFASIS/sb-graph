@@ -94,7 +94,7 @@ std::ostream &operator<<(std::ostream &out, const Call &c)
 // SBG Structures --------------------------------------------------------------
 
 const char *ContUOpNames[] = {"#", "\'"};
-const char *ContOpNames[] = {"/\\", "\\", "<", "=="};
+const char *ContOpNames[] = {"/\\", "\\", "<", "==", "\\/"};
 
 std::ostream &operator<<(std::ostream &out, const ContainerUOp &op)
 {

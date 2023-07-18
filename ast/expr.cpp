@@ -187,11 +187,17 @@ bool Set::operator==(const Set &other) const
 
 std::ostream &operator<<(std::ostream &out, const Set &s)
 {
+  Set aux = s;
+  int sz = aux.pieces().size();
+
   out << "{";
-  if (s.pieces().size() > 0) {
-    BOOST_FOREACH (Expr e, s.pieces())
-      out << e << ", "; 
-    out << "\b\b";
+  if (sz > 0) {
+    auto it = aux.pieces_ref().begin();
+    for (int i = 0; i < sz - 1; ++i) {
+      out << *it << ", "; 
+      ++it;
+    }
+    out << *it;
   }
   out << "}";
 

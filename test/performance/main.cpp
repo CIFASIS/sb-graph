@@ -1,11 +1,4 @@
-/** @file logger.hpp
-
- @brief <b>Logging</b>
-
- Creates an SBGLogger that can be used by all modules in the same way of an
- ostream object. It saves the desired contents in an "SBG.log" file.
-
- <hr>
+/*****************************************************************************
 
  This file is part of Set--Based Graph Library.
 
@@ -24,36 +17,13 @@
 
  ******************************************************************************/
 
-#ifndef SBG_LOGGER_HPP
-#define SBG_LOGGER_HPP
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
-#include <fstream>
-#include <string>
+int main(int argc, char **argv)
+{
+  ::testing::InitGoogleTest(&argc, argv);
+  ::testing::InitGoogleMock(&argc, argv);
 
-namespace SBG {
-
-namespace Util {
-
-#define SBG_LOG SBGLogger::instance().log
-
-class SBGLogger {
-  public:
-  static SBGLogger& instance()
-  {
-    static SBGLogger _instance;
-    return _instance;
-  }
-
-  ~SBGLogger();
-
-  std::ofstream log;
-
-  private:
-  SBGLogger();
-};
-
-} // namespace Util
-
-} // namespace SBG
-
-#endif
+  return RUN_ALL_TESTS();
+}

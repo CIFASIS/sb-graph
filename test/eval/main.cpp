@@ -17,36 +17,13 @@
 
 ******************************************************************************/
 
-#include <cstdlib>
 #include <gtest/gtest.h>
-#include <fstream>
+#include <gmock/gmock.h>
 
-/// @file parser_test.cpp
-///
-
-/// @addtogroup SBGraphParserTests
-/// @{
-
-class ParserTests : public testing::TestWithParam<const char*> {
-};
-
-TEST_P(ParserTests, Parser)
+int main(int argc, char **argv)
 {
-  const std::string NAME = GetParam();
-  std::cout << "Testing program: " << NAME << std::endl;
-  const std::string PARSER_CMD = "./compile_and_run.sh " + NAME;
-  const std::string RESULT_FILE = "./test_data/" + NAME + "/" + NAME + ".passed";
-  const std::string TEST_CMD = "./results.sh " + NAME;
+  ::testing::InitGoogleTest(&argc, argv);
+  ::testing::InitGoogleMock(&argc, argv);
 
-  std::system(PARSER_CMD.c_str());
-  std::system(TEST_CMD.c_str());
-
-  std::ifstream result(RESULT_FILE.c_str());
-  EXPECT_TRUE(result.good());
+  return RUN_ALL_TESTS();
 }
-
-const char* parser_program[] = {"arithmetic", "interval", "set"};
-
-INSTANTIATE_TEST_SUITE_P(ParserInst, ParserTests, testing::ValuesIn(parser_program));
-
-/// @}

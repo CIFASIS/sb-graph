@@ -102,7 +102,9 @@ ExprBaseType EvalExpression::operator()(AST::BinOp v) const
 
 ExprBaseType EvalExpression::operator()(AST::Call v) const
 {
-  auto venv = FUNC_ENV[v.name()];
+  std::string vname = v.name();
+
+  auto venv = fenv_[vname];
   if (venv) { 
     std::vector<ExprBaseType> eval_args;
     BOOST_FOREACH (AST::Expr a, v.args()) 
@@ -140,12 +142,12 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
       }
 
       default:
-        Util::ERROR("EvalExpression: function %s not implemented", v.name());
+        Util::ERROR("EvalExpression: function %s not implemented", vname.c_str());
         return 0;
     }
   }
 
-  Util::ERROR("EvalExpression: function %s does not exist", v.name());
+  Util::ERROR("EvalExpression: function %s does not exist", vname.c_str());
   return 0;
 }
 

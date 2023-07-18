@@ -14,7 +14,6 @@ EVAL_SRC := \
     $(EVAL_DIR)/defs.cpp \
     $(UTIL_DIR)/debug.cpp \
     $(UTIL_DIR)/defs.cpp \
-    $(UTIL_DIR)/env.cpp \
     $(AST_DIR)/expr.cpp \
     $(AST_DIR)/statement.cpp \
     $(AST_DIR)/sbg_program.cpp \

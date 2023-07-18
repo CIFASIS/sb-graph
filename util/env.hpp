@@ -26,6 +26,7 @@
 #ifndef ENV_UTIL_HPP
 #define ENV_UTIL_HPP
 
+
 #include <iostream>
 #include <map>
 #include <string>
@@ -36,27 +37,6 @@ namespace SBG {
 
 namespace Util {
 
-template <typename Key, typename Value>
-struct SymbolTable : public std::map<Key, Value> {
-  void insert(Key k, Value v)
-  {
-    std::map<Key, Value>::erase(k);
-    std::map<Key, Value>::insert(std::pair<Key, Value>(k, v));
-  }
-  Option<Value> operator[](Key k) const
-  {
-    if (std::map<Key, Value>::find(k) == std::map<Key, Value>::end()) return Option<Value>();
-    return std::map<Key, Value>::at(k);
-  }
-  void remove(Key k) { std::map<Key, Value>::erase(k); }
-  void dump()
-  {
-    typename std::map<Key, Value>::iterator it;
-    for (it = std::map<Key, Value>::begin(); it != std::map<Key, Value>::end(); it++) {
-      std::cerr << it->first << ":" /*<< it->second */ << "\n";
-    }
-  }
-};
 
 } // namespace Util
 

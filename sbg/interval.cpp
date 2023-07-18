@@ -43,7 +43,7 @@ bool Interval::operator<(const Interval &other) const
 {
   if (begin() < other.begin()) return true;
 
-  if (end() < other.end()) return true;
+  if (begin() == other.begin() && end() < other.end()) return true;
 
   return false;
 }
@@ -89,7 +89,7 @@ Interval intersection(Interval i1, Interval i2)
   INT max_begin = std::max(i1.begin(), i2.begin());    
   INT new_step = std::lcm(i1.step(), i2.step()), new_begin = max_begin, new_end = std::min(i1.end(), i2.end());
   bool found_member = false;
-  for (INT x = max_begin; x < max_begin + new_step - 1; x++) 
+  for (INT x = max_begin; x < max_begin + new_step; x++) 
     if (isMember(x, i1) && isMember(x, i2)) {
       new_begin = x;
       found_member = true;

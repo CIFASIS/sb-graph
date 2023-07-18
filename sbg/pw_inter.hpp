@@ -28,7 +28,7 @@
 #ifndef SBG_PW_INTERVAL_HPP
 #define SBG_PW_INTERVAL_HPP
 
-#include <set>
+#include <boost/container/set.hpp>
 
 #include <sbg/interval.hpp>
 
@@ -38,8 +38,8 @@ namespace SBG {
  * @brief Ordered collection of intervals.
  */
 
-typedef std::set<Interval> InterSet;
-typedef std::set<Interval>::iterator InterSetIt;
+typedef boost::container::set<Interval> InterSet;
+typedef boost::container::set<Interval>::iterator InterSetIt;
 std::ostream &operator<<(std::ostream &out, const InterSet &ii);
 
 struct PWInterval {
@@ -74,8 +74,27 @@ PWInterval difference(PWInterval i1, PWInterval i2);
  * @brief Extra operations.
  */
 
-InterSet boundedLinearTraverse(PWInterval pwi1, PWInterval pwi2, Interval (*func)(Interval, Interval));
-InterSet linearTraverse(PWInterval pwi1, PWInterval pwi2, Interval (*func)(Interval, Interval));
+/** @function isCompact
+ *
+ * @brief This function determines if a pwi is compact (composed only by compact 
+ * intervals).
+ */
+
+bool isCompact(PWInterval pwi);
+
+/** @function boundedTraverse
+ *
+ * @brief Traverse pwis in order until one reaches its end, obtaining an ordered
+ * result.
+ */
+InterSet boundedTraverse(PWInterval pwi1, PWInterval pwi2, Interval (*func)(Interval, Interval));
+
+/** @function traverse
+ *
+ * @brief Traverse pwis in order reaching both ends, obtaining an orderedresult.
+ *   !!! Both pwis should be compact (not checked in this function).
+ */
+InterSet traverse(PWInterval pwi1, PWInterval pwi2, Interval (*func)(Interval, Interval));
 
 typedef PWInterval Set;
 

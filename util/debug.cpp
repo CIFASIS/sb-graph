@@ -17,8 +17,9 @@
 
  ******************************************************************************/
 
-#include <util/defs.hpp>
 #include <cstdarg>
+
+#include <util/defs.hpp>
 
 namespace SBG {
 

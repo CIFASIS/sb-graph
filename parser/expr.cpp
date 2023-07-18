@@ -143,6 +143,7 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   inter_list = interval[phx::push_back(qi::_val, qi::_1)] >> *(COMA >> interval)[phx::push_back(qi::_val, qi::_1)];
 
   set = (OBRACE >> inter_list >> CBRACE)[qi::_val = phx::construct<AST::Set>(qi::_1)]
+    | (OBRACE >> CBRACE)[qi::_val = phx::construct<AST::Set>()]
     | ident[qi::_val = phx::construct<Util::VariableName>(qi::_1)];
 
   set_unary = (set_un >> set_expr)[qi::_val = phx::construct<AST::SetUnaryOp>(qi::_1, qi::_2)]; 

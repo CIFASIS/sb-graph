@@ -14,6 +14,11 @@
 /test/parser/test_data/*
 /test/parser/obj/*
 /test/parser/bin/*
+/test/eval/test_data/*
+/test/eval/obj/*
+/test/eval/bin/*
+/test/performance/obj/*
+/test/performance/bin/*
 
 # Doc files.
 /doc/*

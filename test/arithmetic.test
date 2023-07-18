@@ -1,4 +1,6 @@
-// Test for the parser consisting of only arithmetic expressions
+// Test consisting of only arithmetic expressions
+// !!! If this file is modified the corresponding SBG.log file
+//     in all the gt_data directories should be modified.
 
 2
 2+3 

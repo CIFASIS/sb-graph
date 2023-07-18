@@ -34,7 +34,6 @@
 #include <sbg/pw_inter.hpp>
 #include <util/debug.hpp>
 #include <util/defs.hpp>
-#include <util/env.hpp>
 
 namespace SBG {
 
@@ -79,8 +78,17 @@ Util::INT toInt(ExprBaseType t);
  * @brief Variable environment (with expressions already evaluated). This env
  * will be populated by StmVisitor, and used by EvalExpression.
  */
-struct VarEnv : public Util::SymbolTable<Util::VariableName, ExprBaseType> {
+typedef Util::VariableName VKey;
+typedef ExprBaseType VValue;
+typedef std::map<VKey, VValue> VarEnvType;
+struct VarEnv{
   VarEnv();
+
+  void insert(VKey k, VValue v);
+  Util::Option<VValue> operator[](VKey k) const;
+
+  private:
+  mutable VarEnvType mapping_;
 };
 
 /** @struct FuncEnv
@@ -91,12 +99,19 @@ struct VarEnv : public Util::SymbolTable<Util::VariableName, ExprBaseType> {
  * is associated with a number that will be used by the EvalExpression. The
  * pairs should be inserted in the same order as the enum class. 
  */
-struct FuncEnv : public Util::SymbolTable<AST::Name, int> {
+typedef AST::Name FKey;
+typedef int FValue;
+typedef std::map<FKey, FValue> FuncEnvType;
+struct FuncEnv{
   FuncEnv();
+
+  Util::Option<int> operator[](AST::Name) const;
+
+  private:
+  static FuncEnvType mapping_;
 };
 
 typedef enum { empty, member, min, max, lt } Func;
-const FuncEnv FUNC_ENV;
 
 /** @struct Overload
  *

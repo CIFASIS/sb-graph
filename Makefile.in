@@ -38,7 +38,7 @@ $(BUILD_DIR)/%.o : %.cpp
 	$(CC) $(INCLUDES) $(CXXFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<
 	$(CC) $(INCLUDES) -c $< -o $@ $(CXXFLAGS)
 
-$(LIB_SBGRAPH): | create-folders $(SBG_OBJ) $(UTIL_OBJ) $(PARSER_OBJ) $(EVAL_OBJ)
+$(LIB_SBGRAPH): create-folders $(SBG_OBJ) $(UTIL_OBJ) $(PARSER_OBJ) $(EVAL_OBJ)
 	$(AR) rcs $(LIB_SBGRAPH) $(SBG_OBJ) $(UTIL_OBJ) $(PARSER_OBJ) $(EVAL_OBJ)
 
 lib-gtest: | create-folders 
@@ -89,7 +89,7 @@ doc:
 
 test: lib-gtest $(SBG_TEST)
 
-TEST_DIRS         := test/parser
+TEST_DIRS         := test/parser test/performance test/eval
  
 clean:
 	$(RM) -rf $(BIN_DIR) $(OBJ_DIR) $(LIB_SBGRAPH) $(ROOT)/lib $(ROOT)/include $(3RD_PARTY_DIR)/gtest/usr

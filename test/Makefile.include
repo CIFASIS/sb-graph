@@ -2,18 +2,28 @@
 SBG_DIR         := sbg
 PARSER_DIR      := parser
 TEST_DIR        := test
+PERF_TEST_DIR   := $(TEST_DIR)/performance
 PARSER_TEST_DIR := $(TEST_DIR)/parser
+EVAL_TEST_DIR   := $(TEST_DIR)/eval
 SBG_TEST        := sbg-test
-#EVAL_TEST       := $(BIN_DIR)/eval-test
-
-create-folders::
-	@mkdir -p $(BUILD_DIR)/$(TEST_DIR)
-	@mkdir -p $(BUILD_DIR)/$(PARSER_TEST_DIR)
 
 $(SBG_TEST):
-	@echo BUILDING ARITHMETIC SYSTEM TESTS
+	@echo BUILDING PERFORMANCE SYSTEM TESTS
+	@cd $(PERF_TEST_DIR) && rm -rf bin/ obj/
+	@cd $(PERF_TEST_DIR) && $(MAKE) bin/sbg-performance
+	@echo Done
+	@echo RUNNING PERFORMANCE SYSTEM TESTS
+	@cd $(PERF_TEST_DIR) && $(MAKE) sbg-performance
+	@echo Done
+	@echo BUILDING PARSER SYSTEM TESTS
 	@cd $(PARSER_TEST_DIR) && $(MAKE) bin/sbg-test
 	@echo Done
-	@echo RUNNING ARITHMETIC GRAPHS SYSTEM TESTS
+	@echo RUNNING PARSER SYSTEM TESTS
 	@cd $(PARSER_TEST_DIR) && $(MAKE) sbg-test
+	@echo Done
+	@echo BUILDING EVAL SYSTEM TESTS
+	@cd $(EVAL_TEST_DIR) && $(MAKE) bin/sbg-test
+	@echo Done
+	@echo RUNNING EVAL SYSTEM TESTS
+	@cd $(EVAL_TEST_DIR) && $(MAKE) sbg-test
 	@echo Done

@@ -6,7 +6,7 @@ and compare their results with the desired value stored in the /test/gt_data fol
 
 ## For developers
 
-To add a test unit to an existing test suite, a new directory should be create
+To add a test unit to an existing test suite, a new directory should be created
 in the gt_data folder. There a .cpp file should contain the testing code, and a
 SBG.log archive is needed with the expected result of the test. The
 result of applying the test will be saved in the test_data directory. If it is

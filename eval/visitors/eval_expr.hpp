@@ -51,6 +51,7 @@ struct EvalExpression : public boost::static_visitor<ExprBaseType> {
 
   private:
   mutable VarEnv env_;
+  const FuncEnv fenv_;
 };
 
 } // namespace Eval

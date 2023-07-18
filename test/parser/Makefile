@@ -14,7 +14,7 @@ GOOGLE_TEST_INCLUDE = $(GOOGLE_TEST_INSTALL)/usr/include
 LIB 		+= -lgmp  
 G++ = g++
 G++_FLAGS = -c -Wall -I $(GOOGLE_TEST_INCLUDE) -std=c++17
-LD_FLAGS = -L $(GOOGLE_TEST_INSTALL)/usr/lib -l $(GOOGLE_TEST_LIB) -l $(GOOGLE_MOCK_LIB) -l pthread -std=c++17 
+LD_FLAGS = -L $(GOOGLE_TEST_INSTALL)/usr/lib -l $(GOOGLE_TEST_LIB) -l $(GOOGLE_MOCK_LIB) -l pthread
 RM = rm -rf
 
 # The Target Binary Program

@@ -42,14 +42,27 @@ Util::INT toInt(ExprBaseType v)
 
 // Environments ----------------------------------------------------------------
 
-VarEnv::VarEnv() {}
+VarEnv::VarEnv() : mapping_() {}
 
-FuncEnv::FuncEnv() {
-  insert("isEmpty", 0);
-  insert("isMember", 1);
-  insert("min", 2);
-  insert("max", 3);
-  insert("lt", 4);
+void VarEnv::insert(VKey k, VValue v)
+{
+  mapping_.erase(k);
+  mapping_.insert(std::pair<VKey, VValue>(k, v));
+}
+
+Util::Option<VValue> VarEnv::operator[](VKey k) const
+{
+  if (mapping_.find(k) == mapping_.end()) return Util::Option<VValue>();
+  return mapping_.at(k);
+}
+
+FuncEnv::FuncEnv() {}
+FuncEnvType FuncEnv::mapping_ = {{"isEmpty", 0}, {"isMember", 1}, {"minElem", 2}, {"maxElem", 3}, {"lt", 4}};
+
+Util::Option<FValue> FuncEnv::operator[](FKey k) const
+{
+  if (mapping_.find(k) == mapping_.end()) return Util::Option<FValue>();
+  return mapping_.at(k);
 }
 
 // Classes for pretty printing ------------------------------------------------

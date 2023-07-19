@@ -42,7 +42,7 @@ SBG::Set EvalSet::operator()(AST::Boolean v) const {
 }
 
 SBG::Set EvalSet::operator()(Util::VariableName v) const { 
-  Util::Option<ExprBaseType> v_opt = env_[v];
+  MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
     if (std::holds_alternative<SBG::Set>(value))
@@ -70,49 +70,49 @@ SBG::Set EvalSet::operator()(AST::Call v) const
   return SBG::Set(); 
 }
 
-SBG::Set EvalSet::operator()(AST::Interval i) const
+SBG::Set EvalSet::operator()(AST::Interval v) const
 { 
   Util::ERROR("EvalSet: trying to evaluate an Interval");
   return SBG::Set(); 
 }
 
-SBG::Set EvalSet::operator()(AST::InterUnaryOp i) const
+SBG::Set EvalSet::operator()(AST::InterUnaryOp v) const
 {
   Util::ERROR("EvalSet: trying to evaluate an InterUnaryOp");
   return SBG::Set(); 
 }
 
-SBG::Set EvalSet::operator()(AST::InterBinOp i) const
+SBG::Set EvalSet::operator()(AST::InterBinOp v) const
 {
   Util::ERROR("EvalSet: trying to evaluate an InterBinOp");
   return SBG::Set(); 
 }
 
-SBG::Set EvalSet::operator()(AST::Set s) const 
+SBG::Set EvalSet::operator()(AST::Set v) const 
 {
   SBG::InterSet res;
 
   EvalInterval inter_visit(env_);
-  BOOST_FOREACH (AST::Expr e, s.pieces())
+  BOOST_FOREACH (AST::Expr e, v.pieces())
     res.emplace_hint(res.cend(), Apply(inter_visit, e));     
 
   return SBG::Set(res);
 }
 
-SBG::Set EvalSet::operator()(AST::SetUnaryOp s) const 
+SBG::Set EvalSet::operator()(AST::SetUnaryOp v) const 
 {
-  AST::Expr e = s.e();
-  switch (s.op()) {
+  AST::Expr e = v.e();
+  switch (v.op()) {
     default:
-      Util::ERROR("EvalSet: SetUnaryOp %s not supported.", AST::ContOpNames[s.op()]);
+      Util::ERROR("EvalSet: SetUnaryOp %s not supported.", AST::ContUOpNames[v.op()]);
       return SBG::Set(); 
   }
 }
 
-SBG::Set EvalSet::operator()(AST::SetBinOp s) const 
+SBG::Set EvalSet::operator()(AST::SetBinOp v) const 
 {
-  AST::Expr l = s.left(), r = s.right();
-  switch (s.op()) {
+  AST::Expr l = v.left(), r = v.right();
+  switch (v.op()) {
     case AST::ContainerOp::cap:
       return intersection(ApplyThis(l), ApplyThis(r));
 
@@ -120,9 +120,15 @@ SBG::Set EvalSet::operator()(AST::SetBinOp s) const
       return difference(ApplyThis(l), ApplyThis(r));
 
     default:
-      Util::ERROR("EvalSet: SetBinOp %s not supported.", AST::ContOpNames[s.op()]);
+      Util::ERROR("EvalSet: SetBinOp %s not supported.", AST::ContOpNames[v.op()]);
       return SBG::Set(); 
   }
+}
+
+SBG::Set EvalSet::operator()(AST::LinearExp v) const
+{ 
+  Util::ERROR("EvalSet: trying to evaluate a LinearExp");
+  return SBG::Set(); 
 }
 
 } // namespace Eval

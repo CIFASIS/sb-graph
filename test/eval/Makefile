@@ -24,7 +24,7 @@ RUN_TESTS   := sbg-test
 # Source files.
 MAIN_SRC = $(SRC_DIR)/main.cpp
 
-TEST_SRC = $(TEST_DIR)/parser_test.cpp
+TEST_SRC = $(TEST_DIR)/eval_test.cpp
 
 # Objects
 TEST_OBJ=$(addprefix $(BUILD_DIR)/test_, $(notdir $(TEST_SRC:.cpp=.o)))

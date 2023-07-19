@@ -47,7 +47,7 @@ Util::INT EvalInt::operator()(AST::Boolean v) const
 
 Util::INT EvalInt::operator()(Util::VariableName v) const 
 { 
-  Util::Option<ExprBaseType> v_opt = env_[v];
+  MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
     return toInt(value); 
@@ -85,39 +85,45 @@ Util::INT EvalInt::operator()(AST::Call v) const
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::Interval i) const
+Util::INT EvalInt::operator()(AST::Interval v) const
 {
   Util::ERROR("EvalInt: trying to evaluate an Interval");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::InterUnaryOp i) const
+Util::INT EvalInt::operator()(AST::InterUnaryOp v) const
 {
   Util::ERROR("EvalInt: trying to evaluate an InterUnaryOp");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::InterBinOp i) const
+Util::INT EvalInt::operator()(AST::InterBinOp v) const
 {
   Util::ERROR("EvalInt: trying to evaluate an InterBinOp");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::Set i) const
+Util::INT EvalInt::operator()(AST::Set v) const
 {
   Util::ERROR("EvalInt: trying to evaluate an Set");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::SetUnaryOp i) const
+Util::INT EvalInt::operator()(AST::SetUnaryOp v) const
 {
   Util::ERROR("EvalInt: trying to evaluate an SetUnaryOp");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::SetBinOp i) const
+Util::INT EvalInt::operator()(AST::SetBinOp v) const
 {
   Util::ERROR("EvalInt: trying to evaluate an SetBinOp");
+  return 0;
+}
+
+Util::INT EvalInt::operator()(AST::LinearExp v) const
+{
+  Util::ERROR("EvalInt: trying to evaluate a LinearExp");
   return 0;
 }
 

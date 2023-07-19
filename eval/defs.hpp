@@ -26,12 +26,14 @@
 #ifndef EVAL_DEFS_HPP
 #define EVAL_DEFS_HPP
 
+#include <map>
 #include <tuple>
 #include <variant>
 
 #include <ast/expr.hpp>
 #include <ast/statement.hpp>
 #include <sbg/pw_inter.hpp>
+#include <sbg/lexp.hpp>
 #include <util/debug.hpp>
 #include <util/defs.hpp>
 
@@ -41,7 +43,8 @@ namespace Eval {
 
 // Type definitions ------------------------------------------------------------
 
-typedef std::variant<Util::INT, Util::RATIONAL, SBG::Interval, SBG::Set> ExprBaseType;
+typedef std::variant<Util::INT, Util::RATIONAL, SBG::Interval, SBG::Set, SBG::LExp> ExprBaseType;
+typedef std::optional<ExprBaseType> MaybeEBT;
 
 template <class T>
 struct streamer {
@@ -80,12 +83,13 @@ Util::INT toInt(ExprBaseType t);
  */
 typedef Util::VariableName VKey;
 typedef ExprBaseType VValue;
+typedef std::optional<VValue> MaybeVValue;
 typedef std::map<VKey, VValue> VarEnvType;
 struct VarEnv{
   VarEnv();
 
   void insert(VKey k, VValue v);
-  Util::Option<VValue> operator[](VKey k) const;
+  MaybeVValue operator[](VKey k) const;
 
   private:
   mutable VarEnvType mapping_;
@@ -101,11 +105,12 @@ struct VarEnv{
  */
 typedef AST::Name FKey;
 typedef int FValue;
+typedef std::optional<FValue> MaybeFValue;
 typedef std::map<FKey, FValue> FuncEnvType;
 struct FuncEnv{
   FuncEnv();
 
-  Util::Option<int> operator[](AST::Name) const;
+  MaybeFValue operator[](AST::Name) const;
 
   private:
   static FuncEnvType mapping_;

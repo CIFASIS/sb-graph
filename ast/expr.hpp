@@ -25,7 +25,6 @@
 #define PARSER_EXPR_AST_HPP
 
 #include <boost/foreach.hpp>
-#include <boost/optional.hpp>
 #include <boost/variant/variant.hpp>
 #include <boost/variant/recursive_wrapper.hpp>
 
@@ -48,6 +47,7 @@ struct Set;
 struct SetUnaryOp;
 struct SetBinOp;
 struct BinOp;
+struct LinearExp;
 struct Call;
 
 typedef boost::variant<Integer, Rational, Boolean, Util::VariableName, 
@@ -58,7 +58,8 @@ typedef boost::variant<Integer, Rational, Boolean, Util::VariableName,
   boost::recursive_wrapper<InterBinOp>,
   boost::recursive_wrapper<Set>,
   boost::recursive_wrapper<SetUnaryOp>,
-  boost::recursive_wrapper<SetBinOp>> Expr;
+  boost::recursive_wrapper<SetBinOp>,
+  boost::recursive_wrapper<LinearExp>> Expr;
 typedef std::vector<Expr> ExprList;
 std::ostream &operator<<(std::ostream &out, const ExprList &el);
 
@@ -174,6 +175,19 @@ struct SetBinOp {
   eq_class(SetBinOp);
 };
 std::ostream &operator<<(std::ostream &out, const SetBinOp &s);
+
+// Linear expression -----------------------------------------------------------
+
+struct LinearExp {
+  member_class(Expr, slope);
+  member_class(Expr, offset);
+
+  LinearExp();
+  LinearExp(Expr slope, Expr offset);
+
+  eq_class(LinearExp);
+};
+std::ostream &operator<<(std::ostream &out, const LinearExp &le);
 
 } // namespace AST
 

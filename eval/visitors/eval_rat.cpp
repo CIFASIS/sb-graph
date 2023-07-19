@@ -40,7 +40,7 @@ Util::RATIONAL EvalRat::operator()(AST::Boolean v) const
 
 Util::RATIONAL EvalRat::operator()(Util::VariableName v) const 
 {
-  Util::Option<ExprBaseType> v_opt = env_[v];
+  MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
     if (std::holds_alternative<Util::RATIONAL>(value))
@@ -81,39 +81,45 @@ Util::RATIONAL EvalRat::operator()(AST::Call v) const
   return 0;
 }
 
-Util::RATIONAL EvalRat::operator()(AST::Interval i) const
+Util::RATIONAL EvalRat::operator()(AST::Interval v) const
 {
   Util::ERROR("EvalRat: trying to evaluate an Interval");
   return 0;
 }
 
-Util::RATIONAL EvalRat::operator()(AST::InterUnaryOp i) const
+Util::RATIONAL EvalRat::operator()(AST::InterUnaryOp v) const
 {
   Util::ERROR("EvalRat: trying to evaluate an InterUnaryOp");
   return 0;
 }
 
-Util::RATIONAL EvalRat::operator()(AST::InterBinOp i) const
+Util::RATIONAL EvalRat::operator()(AST::InterBinOp v) const
 {
   Util::ERROR("EvalRat: trying to evaluate an InterBinOp");
   return 0;
 }
 
-Util::RATIONAL EvalRat::operator()(AST::Set i) const
+Util::RATIONAL EvalRat::operator()(AST::Set v) const
 {
   Util::ERROR("EvalRat: trying to evaluate an Set");
   return 0;
 }
 
-Util::RATIONAL EvalRat::operator()(AST::SetUnaryOp i) const
+Util::RATIONAL EvalRat::operator()(AST::SetUnaryOp v) const
 {
   Util::ERROR("EvalRat: trying to evaluate an SetUnaryOp");
   return 0;
 }
 
-Util::RATIONAL EvalRat::operator()(AST::SetBinOp i) const
+Util::RATIONAL EvalRat::operator()(AST::SetBinOp v) const
 {
   Util::ERROR("EvalRat: trying to evaluate an SetBinOp");
+  return 0;
+}
+
+Util::RATIONAL EvalRat::operator()(AST::LinearExp v) const
+{
+  Util::ERROR("EvalRat: trying to evaluate an LinearExp");
   return 0;
 }
 

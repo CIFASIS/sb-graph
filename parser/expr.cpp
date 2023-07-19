@@ -37,6 +37,8 @@ BOOST_FUSION_ADAPT_STRUCT(SBG::AST::SetUnaryOp, (SBG::AST::ContainerUOp, op_)(SB
 
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::SetBinOp, (SBG::AST::Expr, left_)(SBG::AST::ContainerOp, op_)(SBG::AST::Expr, right_))
 
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::LinearExp, (SBG::AST::Expr, slope_)(SBG::AST::Expr, offset_))
+
 // Expression parser -----------------------------------------------------------
 
 namespace SBG {
@@ -156,7 +158,10 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
     | set_binary[qi::_val = qi::_1]
     | set[qi::_val = qi::_1];
 
-  expr = arithmetic_expr | interval_expr | set_expr;
+  lexp = (arithmetic_expr >> qi::char_('x') 
+    >> qi::char_('+') >> arithmetic_expr)[qi::_val = phx::construct<AST::LinearExp>(qi::_1, qi::_4)];
+
+  expr = lexp | arithmetic_expr | interval_expr | set_expr;
   
   expr_list = expr[phx::push_back(qi::_val, qi::_1)] >> *(COMA >> expr)[phx::push_back(qi::_val, qi::_1)];
 

@@ -251,6 +251,26 @@ std::ostream &operator<<(std::ostream &out, const SetBinOp &i)
   return out;
 }
 
+// Linear expression -----------------------------------------------------------
+
+LinearExp::LinearExp() : slope_(), offset_() {}
+LinearExp::LinearExp(Expr slope, Expr offset) : slope_(slope), offset_(offset) {}
+
+member_imp(LinearExp, Expr, slope);
+member_imp(LinearExp, Expr, offset);
+
+bool LinearExp::operator==(const LinearExp &other) const
+{
+  return slope() == other.slope() && offset() == other.offset();
+}
+
+std::ostream &operator<<(std::ostream &out, const LinearExp &le)
+{
+  out << "(" << le.slope() << ")x+" << le.offset();
+
+  return out;
+}
+
 } // namespace AST
 
 } // namespace SBG

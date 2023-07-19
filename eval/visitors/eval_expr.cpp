@@ -67,7 +67,7 @@ ExprBaseType EvalExpression::operator()(AST::Boolean v) const { return v; }
 
 ExprBaseType EvalExpression::operator()(Util::VariableName v) const 
 {
-  Util::Option<ExprBaseType> v_opt = env_[v];
+  MaybeEBT v_opt = env_[v];
   if (v_opt)
     return *v_opt;
 
@@ -151,35 +151,35 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
   return 0;
 }
 
-ExprBaseType EvalExpression::operator()(AST::Interval i) const
+ExprBaseType EvalExpression::operator()(AST::Interval v) const
 {
   EvalInt int_visit(env_);
-  Util::INT b = Apply(int_visit, i.begin());
-  Util::INT s = Apply(int_visit, i.step());
-  Util::INT e = Apply(int_visit, i.end());
+  Util::INT b = Apply(int_visit, v.begin());
+  Util::INT s = Apply(int_visit, v.step());
+  Util::INT e = Apply(int_visit, v.end());
 
   return Interval(b, s, e);
 }
 
-ExprBaseType EvalExpression::operator()(AST::InterUnaryOp i) const
+ExprBaseType EvalExpression::operator()(AST::InterUnaryOp v) const
 {
-  AST::Expr exp = i.e();
+  AST::Expr exp = v.e();
   EvalInterval eval_interval(env_);
-  switch (i.op()) {
+  switch (v.op()) {
     case AST::ContainerUOp::card:
       return cardinal(Apply(eval_interval, exp));
 
     default:
-      Util::ERROR("EvalExpression: InterUnaryOp %s not supported.", AST::ContUOpNames[i.op()]);
+      Util::ERROR("EvalExpression: InterUnaryOp %s not supported.", AST::ContUOpNames[v.op()]);
       return 0;
   }
 }
 
-ExprBaseType EvalExpression::operator()(AST::InterBinOp i) const
+ExprBaseType EvalExpression::operator()(AST::InterBinOp v) const
 {
-  AST::Expr l = i.left(), r = i.right();
+  AST::Expr l = v.left(), r = v.right();
   EvalInterval eval_interval(env_);
-  switch (i.op()) {
+  switch (v.op()) {
     case AST::ContainerOp::cap:
       return intersection(Apply(eval_interval, l), Apply(eval_interval, r));
 
@@ -190,27 +190,27 @@ ExprBaseType EvalExpression::operator()(AST::InterBinOp i) const
       return Apply(eval_interval, l) == Apply(eval_interval, r);
 
     default:
-      Util::ERROR("EvalExpression: InterBinOp %s not supported.", AST::ContOpNames[i.op()]);
+      Util::ERROR("EvalExpression: InterBinOp %s not supported.", AST::ContOpNames[v.op()]);
       return 0;
   }
 }
 
-ExprBaseType EvalExpression::operator()(AST::Set s) const
+ExprBaseType EvalExpression::operator()(AST::Set v) const
 {
   SBG::InterSet res;
   EvalInterval inter_visit(env_);
 
-  BOOST_FOREACH (auto i, s.pieces())
+  BOOST_FOREACH (auto i, v.pieces())
     res.emplace(Apply(inter_visit, i));
  
   return SBG::Set(res);
 }
 
-ExprBaseType EvalExpression::operator()(AST::SetUnaryOp s) const
+ExprBaseType EvalExpression::operator()(AST::SetUnaryOp v) const
 {
-  AST::Expr exp = s.e();
+  AST::Expr exp = v.e();
   EvalSet eval_set(env_);
-  switch (s.op()) {
+  switch (v.op()) {
     case AST::ContainerUOp::card:
       return cardinal(Apply(eval_set, exp));
 
@@ -218,16 +218,16 @@ ExprBaseType EvalExpression::operator()(AST::SetUnaryOp s) const
       return complement(Apply(eval_set, exp));
 
     default:
-      Util::ERROR("EvalExpression: SetUnaryOp %s not supported.", AST::ContUOpNames[s.op()]);
+      Util::ERROR("EvalExpression: SetUnaryOp %s not supported.", AST::ContUOpNames[v.op()]);
       return 0;
   }
 }
 
-ExprBaseType EvalExpression::operator()(AST::SetBinOp s) const
+ExprBaseType EvalExpression::operator()(AST::SetBinOp v) const
 {
-  AST::Expr l = s.left(), r = s.right();
+  AST::Expr l = v.left(), r = v.right();
   EvalSet eval_set(env_);
-  switch (s.op()) {
+  switch (v.op()) {
     case AST::ContainerOp::cap:
       return intersection(Apply(eval_set, l), Apply(eval_set, r));
 
@@ -241,9 +241,16 @@ ExprBaseType EvalExpression::operator()(AST::SetBinOp s) const
       return cup(Apply(eval_set, l), Apply(eval_set, r));
 
     default:
-      Util::ERROR("EvalExpression: SetBinOp %s not supported.", AST::ContOpNames[s.op()]);
+      Util::ERROR("EvalExpression: SetBinOp %s not supported.", AST::ContOpNames[v.op()]);
       return 0;
   }
+}
+
+ExprBaseType EvalExpression::operator()(AST::LinearExp v) const 
+{
+  EvalRat visit_rat(env_); 
+ 
+  return SBG::LExp(Apply(visit_rat, v.slope()), Apply(visit_rat, v.offset())); 
 }
 
 } // namespace Eval

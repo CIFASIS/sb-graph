@@ -1,13 +1,31 @@
-# SBG Library Testing Suite
+# SBG library testing suite
 
-In the /test folder several examples are presented, and they can be parsed or evaluated with the corresponding 
-binary from the /bin directory. The `make test` command in the paren directory will evaluate all of the files 
-and compare their results with the desired value stored in the /test/gt_data folder.
+This folder contains several files with the '.test' extension that can be used
+as input of the ../bin binaries. They are also used as input of the parser and
+eval unit tests. To run all tests use the `make test` command in the parent
+directory.
 
 ## For developers
 
-To add a test unit to an existing test suite, a new directory should be created
-in the gt_data folder. There a .cpp file should contain the testing code, and a
-SBG.log archive is needed with the expected result of the test. The
-result of applying the test will be saved in the test_data directory. If it is
-correct there will be a "test.passed" file present.
+Currently thre submodules are defined:
+
+  * performance 
+
+  * parser
+
+  * eval
+
+The first one only measures and outputs execution time of user defined tests.
+To profile a new struct a `structname_perf.cpp` file should be created where all
+tests could be defined.
+
+The last two check the soundness of the parser and the evaluator with already
+defined tests, specifying the input and the expected result. To test a new
+struct create a `structname.test` file in the current directory, and create
+parser/gt_data/structname and eval/gt_data/structname folders. In each of them
+there should be a structname.cpp file with code that logs its result to the
+SBG::Util::SBG_LOG structure; and a SBG.log archive with the expected result of
+the execution of the .cpp file. Then add structname to 'parser_program' and
+'eval_program' constants in the respective parser/parser_test.cpp and
+eval/eval_test.cpp files. The actual value of the running each test will be
+present in the parser/test_data and eval/test_data folders.

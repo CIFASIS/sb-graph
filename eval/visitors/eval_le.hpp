@@ -1,6 +1,6 @@
-/** @file eval_set.hpp
+/** @file eval_le.hpp
 
- @brief <b>Set expression evaluator</b>
+ @brief <b>Linear expression evaluator</b>
 
  <hr>
 
@@ -21,33 +21,31 @@
 
  ******************************************************************************/
 
-#ifndef AST_VISITOR_EVALSET
-#define AST_VISITOR_EVALSET
-
-#include <eval/visitors/eval_interval.hpp>
+#ifndef AST_VISITOR_EVALLE
+#define AST_VISITOR_EVALLE
 
 namespace SBG {
 
 namespace Eval {
 
-struct EvalSet : public boost::static_visitor<SBG::Set> {
+struct EvalLE : public boost::static_visitor<SBG::LExp> {
   public:
   EvalSet();
   EvalSet(VarEnv env);
 
-  SBG::Set operator()(AST::Integer v) const;
-  SBG::Set operator()(AST::Rational v) const;
-  SBG::Set operator()(AST::Boolean v) const;
-  SBG::Set operator()(Util::VariableName v) const;
-  SBG::Set operator()(AST::BinOp v) const;
-  SBG::Set operator()(AST::Call v) const;
-  SBG::Set operator()(AST::Interval v) const;
-  SBG::Set operator()(AST::InterUnaryOp v) const;
-  SBG::Set operator()(AST::InterBinOp v) const;
-  SBG::Set operator()(AST::Set v) const;
-  SBG::Set operator()(AST::SetUnaryOp v) const;
-  SBG::Set operator()(AST::SetBinOp v) const;
-  SBG::Set operator()(AST::LinearExp v) const;
+  SBG::LExp operator()(AST::Integer v) const;
+  SBG::LExp operator()(AST::Rational v) const;
+  SBG::LExp operator()(AST::Boolean v) const;
+  SBG::LExp operator()(Util::VariableName v) const;
+  SBG::LExp operator()(AST::BinOp v) const;
+  SBG::LExp operator()(AST::Call v) const;
+  SBG::LExp operator()(AST::Interval v) const;
+  SBG::LExp operator()(AST::InterUnaryOp v) const;
+  SBG::LExp operator()(AST::InterBinOp v) const;
+  SBG::LExp operator()(AST::Set v) const;
+  SBG::LExp operator()(AST::SetUnaryOp v) const;
+  SBG::LExp operator()(AST::SetBinOp v) const;
+  SBG::LExp operator()(AST::LinearExp v) const;
 
   private:
   mutable VarEnv env_;

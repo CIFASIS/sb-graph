@@ -44,12 +44,13 @@ struct EvalInt : public boost::static_visitor<Util::INT> {
   Util::INT operator()(Util::VariableName v) const;
   Util::INT operator()(AST::BinOp v) const;
   Util::INT operator()(AST::Call v) const;
-  Util::INT operator()(AST::Interval i) const;
-  Util::INT operator()(AST::InterUnaryOp i) const;
-  Util::INT operator()(AST::InterBinOp i) const;
-  Util::INT operator()(AST::Set i) const;
-  Util::INT operator()(AST::SetUnaryOp i) const;
-  Util::INT operator()(AST::SetBinOp i) const;
+  Util::INT operator()(AST::Interval v) const;
+  Util::INT operator()(AST::InterUnaryOp v) const;
+  Util::INT operator()(AST::InterBinOp v) const;
+  Util::INT operator()(AST::Set v) const;
+  Util::INT operator()(AST::SetUnaryOp v) const;
+  Util::INT operator()(AST::SetBinOp v) const;
+  Util::INT operator()(AST::LinearExp v) const;
 
   private:
   mutable VarEnv env_;

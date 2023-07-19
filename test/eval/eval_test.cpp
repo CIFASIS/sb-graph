@@ -21,32 +21,32 @@
 #include <gtest/gtest.h>
 #include <fstream>
 
-/// @file parser_test.cpp
+/// @file eval_test.cpp
 ///
 
-/// @addtogroup SBGraphParserTests
+/// @addtogroup SBGraphEvalTests
 /// @{
 
-class ParserTests : public testing::TestWithParam<const char*> {
+class EvalTests : public testing::TestWithParam<const char*> {
 };
 
-TEST_P(ParserTests, Parser)
+TEST_P(EvalTests, Eval)
 {
   const std::string NAME = GetParam();
   std::cout << "Testing program: " << NAME << std::endl;
-  const std::string PARSER_CMD = "./compile_and_run.sh " + NAME;
+  const std::string EVAL_CMD = "./compile_and_run.sh " + NAME;
   const std::string RESULT_FILE = "./test_data/" + NAME + "/" + NAME + ".passed";
   const std::string TEST_CMD = "./results.sh " + NAME;
 
-  std::system(PARSER_CMD.c_str());
+  std::system(EVAL_CMD.c_str());
   std::system(TEST_CMD.c_str());
 
   std::ifstream result(RESULT_FILE.c_str());
   EXPECT_TRUE(result.good());
 }
 
-const char* parser_program[] = {"arithmetic", "interval", "set"};
+const char* eval_program[] = {"arithmetic", "interval", "set"};
 
-INSTANTIATE_TEST_SUITE_P(ParserInst, ParserTests, testing::ValuesIn(parser_program));
+INSTANTIATE_TEST_SUITE_P(EvalInst, EvalTests, testing::ValuesIn(eval_program));
 
 /// @}

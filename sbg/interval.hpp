@@ -32,7 +32,6 @@
 #define SBG_INTERVAL_HPP
 
 #include <boost/foreach.hpp>
-#include <boost/unordered/unordered_set.hpp>
 #include <cmath>
 #include <iostream>
 #include <numeric>

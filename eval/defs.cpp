@@ -50,18 +50,18 @@ void VarEnv::insert(VKey k, VValue v)
   mapping_.insert(std::pair<VKey, VValue>(k, v));
 }
 
-Util::Option<VValue> VarEnv::operator[](VKey k) const
+MaybeVValue VarEnv::operator[](VKey k) const
 {
-  if (mapping_.find(k) == mapping_.end()) return Util::Option<VValue>();
+  if (mapping_.find(k) == mapping_.end()) return std::nullopt;
   return mapping_.at(k);
 }
 
 FuncEnv::FuncEnv() {}
 FuncEnvType FuncEnv::mapping_ = {{"isEmpty", 0}, {"isMember", 1}, {"minElem", 2}, {"maxElem", 3}, {"lt", 4}};
 
-Util::Option<FValue> FuncEnv::operator[](FKey k) const
+MaybeFValue FuncEnv::operator[](FKey k) const
 {
-  if (mapping_.find(k) == mapping_.end()) return Util::Option<FValue>();
+  if (mapping_.find(k) == mapping_.end()) return std::nullopt;
   return mapping_.at(k);
 }
 

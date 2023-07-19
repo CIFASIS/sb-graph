@@ -17,22 +17,27 @@
 
  ******************************************************************************/
 
-#include <util/defs.hpp>
+#include <sbg/lexp.hpp>
 
 namespace SBG {
 
-namespace Util {
+LExp::LExp() : slope_(), offset_() {}
+LExp::LExp(RAT slope, RAT offset) : slope_(slope), offset_(offset) {}
 
-std::string to_str(INT x) { return (x == Inf) ? "Inf" : std::to_string(x); };
+member_imp(LExp, RAT, slope);
+member_imp(LExp, RAT, offset);
 
-std::ostream &operator<<(std::ostream &out, const RATIONAL &r)
+std::ostream &operator<<(std::ostream &out, const LExp &le)
 {
-  out << r.numerator();
-  if (r.denominator() != 1) out << "/" << r.denominator();
+  RAT zero, one(1);
+
+  if (le.slope() != zero && le.slope() != one) out << le.slope();
+
+  out << "x";
+
+  if (le.offset() != zero) out << le.offset();
 
   return out;
 }
-
-} // namespace Util
 
 } // namespace SBG

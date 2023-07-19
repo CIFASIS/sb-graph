@@ -26,8 +26,8 @@
 #ifndef SBG_DEFS_HPP
 #define SBG_DEFS_HPP
 
-#include <boost/optional/optional.hpp>
-#include <boost/optional/optional_io.hpp>
+#include <optional>
+
 #include <boost/range/combine.hpp>
 #include <boost/rational.hpp>
 
@@ -97,14 +97,6 @@ typedef std::string VariableName;
 #define ApplyThis(X) boost::apply_visitor(*this, X)
 #define Apply(X, Y) boost::apply_visitor(X, Y)
 #define Apply2(X, Y, Z) boost::apply_visitor(X, Y, Z)
-
-template <typename T>
-struct Option : public boost::optional<T> {
-  public:
-  Option() : boost::optional<T>(){};
-  Option(boost::optional<T> t) : boost::optional<T>(t){};
-  Option(T const &t) : boost::optional<T>(t){};
-};
 
 // Helpful functions -----------------------------------------------------------
 

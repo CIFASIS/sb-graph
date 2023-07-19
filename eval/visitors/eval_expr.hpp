@@ -42,12 +42,13 @@ struct EvalExpression : public boost::static_visitor<ExprBaseType> {
   ExprBaseType operator()(Util::VariableName v) const;
   ExprBaseType operator()(AST::BinOp v) const;
   ExprBaseType operator()(AST::Call v) const;
-  ExprBaseType operator()(AST::Interval i) const;
-  ExprBaseType operator()(AST::InterUnaryOp i) const;
-  ExprBaseType operator()(AST::InterBinOp i) const;
-  ExprBaseType operator()(AST::Set s) const;
-  ExprBaseType operator()(AST::SetUnaryOp s) const;
-  ExprBaseType operator()(AST::SetBinOp s) const;
+  ExprBaseType operator()(AST::Interval v) const;
+  ExprBaseType operator()(AST::InterUnaryOp v) const;
+  ExprBaseType operator()(AST::InterBinOp v) const;
+  ExprBaseType operator()(AST::Set v) const;
+  ExprBaseType operator()(AST::SetUnaryOp v) const;
+  ExprBaseType operator()(AST::SetBinOp v) const;
+  ExprBaseType operator()(AST::LinearExp v) const;
 
   private:
   mutable VarEnv env_;

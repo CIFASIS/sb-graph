@@ -1,4 +1,11 @@
-/*******************************************************************************
+/** @file lexp.hpp
+
+ @brief <b>Linear expressions implementation</b>
+
+ A linear expression m*x+h is determined by its slope and offset. It will be
+ used as the law of maps.
+
+ <hr>
 
  This file is part of Set--Based Graph Library.
 
@@ -17,22 +24,34 @@
 
  ******************************************************************************/
 
+#ifndef SBG_LEXP_HPP
+#define SBG_LEXP_HPP
+
+#include <iostream>
+
 #include <util/defs.hpp>
 
 namespace SBG {
 
-namespace Util {
+using RAT = Util::RATIONAL;
 
-std::string to_str(INT x) { return (x == Inf) ? "Inf" : std::to_string(x); };
+struct LExp {
+  member_class(RAT, slope);
+  member_class(RAT, offset);
 
-std::ostream &operator<<(std::ostream &out, const RATIONAL &r)
-{
-  out << r.numerator();
-  if (r.denominator() != 1) out << "/" << r.denominator();
+  LExp();
+  LExp(RAT slope, RAT offset);
+};
+std::ostream &operator<<(std::ostream &out, const LExp &le);
 
-  return out;
-}
+/**
+ * @brief Traditional expression operations.
+ */
 
-} // namespace Util
+/**
+ * @brief Extra operations.
+ */
 
-} // namespace SBG
+}  // namespace SBG
+
+#endif

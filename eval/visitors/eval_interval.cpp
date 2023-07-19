@@ -46,7 +46,7 @@ SBG::Interval EvalInterval::operator()(AST::Boolean v) const
 
 SBG::Interval EvalInterval::operator()(Util::VariableName v) const 
 { 
-  Util::Option<ExprBaseType> v_opt = env_[v];
+  MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
     if (std::holds_alternative<SBG::Interval>(value))
@@ -74,32 +74,32 @@ SBG::Interval EvalInterval::operator()(AST::Call v) const
   return SBG::Interval(); 
 }
 
-SBG::Interval EvalInterval::operator()(AST::Interval i) const 
+SBG::Interval EvalInterval::operator()(AST::Interval v) const 
 { 
   EvalInt eval_int(env_);
 
-  return SBG::Interval(Apply(eval_int, i.begin()), Apply(eval_int, i.step()), Apply(eval_int, i.end())); 
+  return SBG::Interval(Apply(eval_int, v.begin()), Apply(eval_int, v.step()), Apply(eval_int, v.end())); 
 }
 
-SBG::Interval EvalInterval::operator()(AST::InterUnaryOp i) const
+SBG::Interval EvalInterval::operator()(AST::InterUnaryOp v) const
 {
-  AST::Expr exp = i.e();
-  switch (i.op()) {
+  AST::Expr exp = v.e();
+  switch (v.op()) {
     default:
-      Util::ERROR("EvalInterval: InterUnaryOp %s not supported.", AST::ContUOpNames[i.op()]);
+      Util::ERROR("EvalInterval: InterUnaryOp %s not supported.", AST::ContUOpNames[v.op()]);
       return SBG::Interval(); 
   }
 }
 
-SBG::Interval EvalInterval::operator()(AST::InterBinOp i) const
+SBG::Interval EvalInterval::operator()(AST::InterBinOp v) const
 {
-  AST::Expr l = i.left(), r = i.right();
-  switch (i.op()) {
+  AST::Expr l = v.left(), r = v.right();
+  switch (v.op()) {
     case AST::ContainerOp::cap:
       return intersection(ApplyThis(l), ApplyThis(r));
 
     default:
-      Util::ERROR("EvalInterval: InterBinOp %s not supported.", AST::ContOpNames[i.op()]);
+      Util::ERROR("EvalInterval: InterBinOp %s not supported.", AST::ContOpNames[v.op()]);
       return SBG::Interval(); 
   }
 }
@@ -119,6 +119,12 @@ SBG::Interval EvalInterval::operator()(AST::SetUnaryOp v) const
 SBG::Interval EvalInterval::operator()(AST::SetBinOp v) const 
 {
   Util::ERROR("EvalInterval: trying to evaluate a SetBinOp");
+  return SBG::Interval(); 
+}
+
+SBG::Interval EvalInterval::operator()(AST::LinearExp v) const 
+{
+  Util::ERROR("EvalInterval: trying to evaluate a LinearExp");
   return SBG::Interval(); 
 }
 

@@ -24,7 +24,7 @@ This new approach was used in the flatter and causalization stage of the Modelic
 
 These are generic installation instructions.
 
-## Dependences
+## Dependencies
 
 In order to be able to install and compile SBG Library, 
 the following  dependencies must be installed: 
@@ -79,9 +79,28 @@ The makefile script accepts the following targets:
 
   * doc:      Builds the documentation.
 
+## SBG library
+
+The SBG library is composed by four main modules:
+
+  * ast
+
+  * parser
+
+  * eval
+
+  * sbg
+
+The first three were developed to allow for more user-friendly input. The first
+three were developed to allow for more user-friendly input, and the last one
+contains all the logical implementation of structures and operations.
+
 ## Examples:			   
 
-The current version of the library counts with a parser for SBG programs. The syntax can be derived from the .cpp files of the /parser directory. In the /test folder several examples are presented, and they can be parsed or evaluated with the corresponding binary from the /bin directory. The `make test` command will evaluate all of the files and compare their results with the desired value stored in the /test/gt_data folder.
+Examples of SBG programs are presented in the /test folder with the '.test'
+extension. The bin/sbg-parser and bin/sbg-eval binaries accept these files as
+their input. Also, the `make test` command in the root directory will execute
+all of the existing tests.
 
 ## Licensing
 

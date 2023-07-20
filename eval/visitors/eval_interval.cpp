@@ -53,12 +53,12 @@ SBG::Interval EvalInterval::operator()(Util::VariableName v) const
       return std::get<SBG::Interval>(value);
 
     else {
-      Util::ERROR("EvalInterval: variable %s is not an interval", v);
+      Util::ERROR("EvalInterval: variable %s is not an interval", v.c_str());
       return SBG::Interval(); 
     } 
   }
 
-  Util::ERROR("EvalInterval: variable %s not defined", v);
+  Util::ERROR("EvalInterval: variable %s not defined", v.c_str());
   return SBG::Interval(); 
 }
 

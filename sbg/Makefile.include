@@ -1,8 +1,10 @@
 # The Directories, Source, Includes, Objects, Binary 
+UTIL_ROOT := util
 SBG_ROOT := sbg
 
 # Sources
 	SBG_SRC := \
+    $(UTIL_ROOT)/defs.cpp \
   	$(SBG_ROOT)/interval.cpp \
     $(SBG_ROOT)/pw_inter.cpp \
     $(SBG_ROOT)/lexp.cpp

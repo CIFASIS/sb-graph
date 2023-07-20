@@ -55,9 +55,9 @@ $(TEST_OBJ): | $(BUILD_DIR)
 $(MAIN_OBJ): | $(BUILD_DIR)
 
 $(BUILD_DIR):
+	@mkdir -p $(DATA_DIR)
 	@mkdir -p $(BIN_DIR)
 	@mkdir -p $(BUILD_DIR)
-	@mkdir -p $(DATA_DIR)
 
 clean:
 	$(RM) $(BIN_DIR) $(BUILD_DIR) $(DATA_DIR) 

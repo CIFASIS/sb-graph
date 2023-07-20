@@ -35,28 +35,6 @@ namespace SBG {
 
 namespace Util {
 
-// Intervals definitions -------------------------------------------------------
-
-/** @typedef INT 
- *
- * @brief Representation of individual elements. 
- */
-typedef unsigned long long int INT;
-std::string to_str(INT);
-
-/** @typedef RATIONAL 
- *
- * @brief Used for coefficients in linear expressions. 
- */
-typedef boost::rational<INT> RATIONAL;
-std::ostream &operator<<(std::ostream &out, const RATIONAL &r);
-
-const INT Inf = std::numeric_limits<INT>::max();
-
-// Parser definitions ----------------------------------------------------------
-
-typedef std::string VariableName;
-
 // Helpful macros --------------------------------------------------------------
 
 /**
@@ -107,6 +85,41 @@ typedef std::string VariableName;
 #define parallel_foreach2(X, Y) for (auto&& items : boost::combine(X, Y))
 #define parallel_foreach3(X, Y, Z) for (auto&& items : boost::combine(X, Y, Z))
 #define parallel_foreach4(W, X, Y, Z) for (auto&& items : boost::combine(W, X, Y, Z))
+
+// Intervals definitions -------------------------------------------------------
+
+/** @typedef INT 
+ *
+ * @brief Representation of individual elements. 
+ */
+typedef unsigned long long int INT;
+std::string to_str(INT);
+
+/** @typedef RATIONAL 
+ *
+ * @brief Used for coefficients in linear expressions. 
+ */
+struct RATIONAL{
+  member_class(boost::rational<INT>, value);
+
+  RATIONAL();
+  RATIONAL(boost::rational<INT> value);
+  RATIONAL(INT n, INT d);
+
+  eq_class(RATIONAL);
+  neq_class(RATIONAL);
+
+  RATIONAL operator+(const RATIONAL &r);
+  RATIONAL operator-(const RATIONAL &r);
+  RATIONAL operator*(const RATIONAL &r);
+};
+std::ostream &operator<<(std::ostream &out, const RATIONAL &r);
+
+const INT Inf = std::numeric_limits<INT>::max();
+
+// Parser definitions ----------------------------------------------------------
+
+typedef std::string VariableName;
 
 } // namespace Util
 

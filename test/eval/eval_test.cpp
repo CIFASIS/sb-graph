@@ -45,7 +45,7 @@ TEST_P(EvalTests, Eval)
   EXPECT_TRUE(result.good());
 }
 
-const char* eval_program[] = {"arithmetic", "interval", "set"};
+const char* eval_program[] = {"arithmetic", "interval", "set", "lexp"};
 
 INSTANTIATE_TEST_SUITE_P(EvalInst, EvalTests, testing::ValuesIn(eval_program));
 

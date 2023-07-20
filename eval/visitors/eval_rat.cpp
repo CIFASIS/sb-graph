@@ -33,9 +33,9 @@ Util::RATIONAL EvalRat::operator()(AST::Rational v) const { return v; }
 Util::RATIONAL EvalRat::operator()(AST::Boolean v) const 
 { 
   if (v)
-    return 1;
+    return Util::RATIONAL(1, 1);
 
-  return 0; 
+  return Util::RATIONAL(0, 1); 
 }
 
 Util::RATIONAL EvalRat::operator()(Util::VariableName v) const 
@@ -47,13 +47,13 @@ Util::RATIONAL EvalRat::operator()(Util::VariableName v) const
       return std::get<Util::RATIONAL>(value);
 
     else {
-      Util::ERROR("EvalRat: variable %s is not rational", v);
-      return 0;
+      Util::ERROR("EvalRat: variable %s is not rational", v.c_str());
+      return Util::RATIONAL(0, 1);
     }
   }
 
-  Util::ERROR("EvalRat: variable %s not defined", v);
-  return 0;
+  Util::ERROR("EvalRat: variable %s not defined", v.c_str());
+  return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::BinOp v) const 
@@ -71,56 +71,56 @@ Util::RATIONAL EvalRat::operator()(AST::BinOp v) const
 
     default:
       Util::ERROR("EvalRat: BinOp %s not supported.", AST::OpNames[v.op()]);
-      return 0;
+      return Util::RATIONAL(0, 1);
   }
 }
 
 Util::RATIONAL EvalRat::operator()(AST::Call v) const
 {
   Util::ERROR("EvalRat: trying to evaluate a Call");
-  return 0;
+  return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::Interval v) const
 {
   Util::ERROR("EvalRat: trying to evaluate an Interval");
-  return 0;
+  return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::InterUnaryOp v) const
 {
   Util::ERROR("EvalRat: trying to evaluate an InterUnaryOp");
-  return 0;
+  return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::InterBinOp v) const
 {
   Util::ERROR("EvalRat: trying to evaluate an InterBinOp");
-  return 0;
+  return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::Set v) const
 {
   Util::ERROR("EvalRat: trying to evaluate an Set");
-  return 0;
+  return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::SetUnaryOp v) const
 {
   Util::ERROR("EvalRat: trying to evaluate an SetUnaryOp");
-  return 0;
+  return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::SetBinOp v) const
 {
   Util::ERROR("EvalRat: trying to evaluate an SetBinOp");
-  return 0;
+  return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::LinearExp v) const
 {
   Util::ERROR("EvalRat: trying to evaluate an LinearExp");
-  return 0;
+  return Util::RATIONAL(0, 1);
 }
 
 } // namespace Eval

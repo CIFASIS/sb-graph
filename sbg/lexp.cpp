@@ -29,13 +29,22 @@ member_imp(LExp, RAT, offset);
 
 std::ostream &operator<<(std::ostream &out, const LExp &le)
 {
-  RAT zero, one(1);
+  RAT zero, one(1), slo = le.slope();
 
-  if (le.slope() != zero && le.slope() != one) out << le.slope();
+  if (slo != zero && slo != one) {
+    if (slo.value().numerator() != 1)
+      out << slo.value().numerator();
 
-  out << "x";
+    if (slo.value().denominator() != 1)
+      out << "x/" << slo.value().denominator();
 
-  if (le.offset() != zero) out << le.offset();
+    else
+      out << "x";
+  }
+
+  if (slo == one) out << "x";
+
+  if (le.offset() != zero) out << "+" << le.offset();
 
   return out;
 }

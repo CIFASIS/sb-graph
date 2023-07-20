@@ -30,8 +30,8 @@ Util::INT EvalInt::operator()(AST::Integer v) const { return v; }
 
 Util::INT EvalInt::operator()(AST::Rational v) const 
 { 
-  if (v.denominator() == 1)
-    return v.numerator();
+  if (v.value().denominator() == 1)
+    return v.value().numerator();
 
   Util::ERROR("EvalInt: trying to evaluate a Rational");
   return 0; 
@@ -53,7 +53,7 @@ Util::INT EvalInt::operator()(Util::VariableName v) const
     return toInt(value); 
   }
 
-  Util::ERROR("EvalInt: variable %s not defined", v);
+  Util::ERROR("EvalInt: variable %s not defined", v.c_str());
   return 0;
 }
 

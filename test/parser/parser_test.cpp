@@ -45,7 +45,7 @@ TEST_P(ParserTests, Parser)
   EXPECT_TRUE(result.good());
 }
 
-const char* parser_program[] = {"arithmetic", "interval", "set"};
+const char* parser_program[] = {"arithmetic", "interval", "set", "lexp"};
 
 INSTANTIATE_TEST_SUITE_P(ParserInst, ParserTests, testing::ValuesIn(parser_program));
 

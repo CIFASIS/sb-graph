@@ -71,7 +71,7 @@ ExprBaseType EvalExpression::operator()(Util::VariableName v) const
   if (v_opt)
     return *v_opt;
 
-  Util::ERROR("EvalExpression: variable %s not defined", v);
+  Util::ERROR("EvalExpression: variable %s not defined", v.c_str());
   return 0; 
 }
 

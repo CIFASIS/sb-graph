@@ -32,8 +32,8 @@ Util::INT toInt(ExprBaseType v)
 
   if (std::holds_alternative<Util::RATIONAL>(v)) {
     Util::RATIONAL v_rat = std::get<Util::RATIONAL>(v);
-    if (v_rat.denominator() == 1)
-      return v_rat.numerator();
+    if (v_rat.value().denominator() == 1)
+      return v_rat.value().numerator();
   }
 
   Util::ERROR("toInt: expression is not integer");

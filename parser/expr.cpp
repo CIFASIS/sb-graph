@@ -21,6 +21,8 @@
 
 // Adapt structures ------------------------------------------------------------
 
+BOOST_FUSION_ADAPT_STRUCT(SBG::Util::RATIONAL, (boost::rational<SBG::Util::INT>, value_))
+
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::BinOp, (SBG::AST::Expr, left_)(SBG::AST::Op, op_)(SBG::AST::Expr, right_))
 
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::Call, (SBG::AST::Name, name_)(SBG::AST::ExprList, args_))
@@ -108,17 +110,18 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
 
   boolean = TRUE[qi::_val = true] | FALSE[qi::_val = false];
 
-  rational = (RAT >> OPAREN >> qi::lexeme[qi::int_] >> COMA >> qi::lexeme[qi::int_] >> CPAREN)[qi::_val = phx::construct<Util::RATIONAL>(qi::_1, qi::_2)];
+  rational = (RAT >> OPAREN >> qi::lexeme[qi::int_] 
+    >> COMA >> qi::lexeme[qi::int_] >> CPAREN)[qi::_val = phx::construct<Util::RATIONAL>(qi::_1, qi::_2)];
 
   call_exp = (ident >> function_call_args)[qi::_val = phx::construct<AST::Call>(qi::_1, qi::_2)];
 
   function_call_args = OPAREN >> expr_list >> CPAREN;
 
-  primary = rational[qi::_val = phx::construct<Util::RATIONAL>(qi::_1)] 
+  primary = rational[qi::_val = qi::_1] 
     | qi::lexeme[qi::ulong_long][qi::_val = phx::construct<Util::INT>(qi::_1)]
-    | boolean[qi::_val = phx::construct<AST::Boolean>(qi::_1)] 
-    | call_exp[qi::_val = phx::construct<AST::Call>(qi::_1)]
-    | ident[qi::_val = phx::construct<Util::VariableName>(qi::_1)];
+    | boolean[qi::_val = qi::_1] 
+    | call_exp[qi::_val = qi::_1]
+    | ident[qi::_val = qi::_1];
 
   factor = primary[qi::_val = qi::_1] >> -(expo_symbol > primary)[qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
 
@@ -130,7 +133,7 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
     >> arithmetic_expr >> COLON 
     >> arithmetic_expr >> COLON 
     >> arithmetic_expr >> CBRACKET)[qi::_val = phx::construct<AST::Interval>(qi::_1, qi::_2, qi::_3)]
-    | ident[qi::_val = phx::construct<Util::VariableName>(qi::_1)];
+    | ident[qi::_val = qi::_1];
 
   interval_unary = (inter_un >> interval_expr)[qi::_val = phx::construct<AST::InterUnaryOp>(qi::_1, qi::_2)];
 
@@ -158,8 +161,10 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
     | set_binary[qi::_val = qi::_1]
     | set[qi::_val = qi::_1];
 
-  lexp = (arithmetic_expr >> qi::char_('x') 
-    >> qi::char_('+') >> arithmetic_expr)[qi::_val = phx::construct<AST::LinearExp>(qi::_1, qi::_4)];
+  numeric = rational[qi::_val = qi::_1] | qi::lexeme[qi::ulong_long][qi::_val = phx::construct<Util::INT>(qi::_1)];
+
+  lexp = (numeric >> qi::char_('*') >> qi::char_('x') 
+    >> qi::char_('+') >> arithmetic_expr)[qi::_val = phx::construct<AST::LinearExp>(qi::_1, qi::_5)];
 
   expr = lexp | arithmetic_expr | interval_expr | set_expr;
   

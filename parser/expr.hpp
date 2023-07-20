@@ -28,6 +28,8 @@
 
 #define BOOST_SPIRIT_DEBUG
 
+#include <boost/rational.hpp>
+
 #include <ast/expr.hpp>
 #include <parser/skipper.hpp>
 
@@ -67,6 +69,7 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> set_binary;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> set_expr;
 
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> numeric;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp;
 
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> expr;

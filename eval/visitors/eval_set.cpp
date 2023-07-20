@@ -49,12 +49,12 @@ SBG::Set EvalSet::operator()(Util::VariableName v) const {
       return std::get<SBG::Set>(value);
 
     else {
-      Util::ERROR("EvalSet: variable %s is not a set", v);
+      Util::ERROR("EvalSet: variable %s is not a set", v.c_str());
       return SBG::Set(); 
     } 
   }
 
-  Util::ERROR("EvalSet: variable %s not defined", v);
+  Util::ERROR("EvalSet: variable %s not defined", v.c_str());
   return SBG::Set(); 
 }
 

@@ -49,12 +49,12 @@ LExp EvalLE::operator()(Util::VariableName v) const {
       return std::get<LExp>(value);
 
     else {
-      Util::ERROR("EvalLE: variable %s is not a set", v);
+      Util::ERROR("EvalLE: variable %s is not a linear expression", v.c_str());
       return LExp(); 
     } 
   }
 
-  Util::ERROR("EvalLE: variable %s not defined", v);
+  Util::ERROR("EvalLE: variable %s not defined", v.c_str());
   return LExp(); 
 }
 

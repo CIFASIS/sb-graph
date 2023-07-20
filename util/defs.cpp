@@ -25,10 +25,31 @@ namespace Util {
 
 std::string to_str(INT x) { return (x == Inf) ? "Inf" : std::to_string(x); };
 
+RATIONAL::RATIONAL() : value_() {}
+RATIONAL::RATIONAL(boost::rational<INT> value) : value_(value) {}
+RATIONAL::RATIONAL(INT n, INT d) : value_() {
+  boost::rational<INT> v(n, d);
+  set_value(v);
+}
+
+member_imp(RATIONAL, boost::rational<INT>, value);
+
+RATIONAL RATIONAL::operator+(const RATIONAL &r) { return RATIONAL(value() + r.value()); }
+
+RATIONAL RATIONAL::operator-(const RATIONAL &r) { return RATIONAL(value() - r.value()); }
+
+RATIONAL RATIONAL::operator*(const RATIONAL &r) { return RATIONAL(value() * r.value()); }
+
+bool RATIONAL::operator==(const RATIONAL &r) const { return value() == r.value(); }
+
+bool RATIONAL::operator!=(const RATIONAL &r) const { return value() != r.value(); }
+
 std::ostream &operator<<(std::ostream &out, const RATIONAL &r)
 {
-  out << r.numerator();
-  if (r.denominator() != 1) out << "/" << r.denominator();
+  boost::rational<INT> rv = r.value();
+
+  out << rv.numerator();
+  if (rv.denominator() != 1) out << "/" << rv.denominator();
 
   return out;
 }

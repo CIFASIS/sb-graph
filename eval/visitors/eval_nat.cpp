@@ -133,6 +133,12 @@ Util::NAT EvalNat::operator()(AST::LExpBinOp v) const
   return 0;
 }
 
+Util::NAT EvalNat::operator()(AST::LinearMap v) const
+{
+  Util::ERROR("EvalNat: trying to evaluate a LinearMap");
+  return 0;
+}
+
 } // namespace Eval
 
 } // namespace SBG

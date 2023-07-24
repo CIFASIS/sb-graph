@@ -53,6 +53,7 @@ struct EvalLE : public boost::static_visitor<SBG::LExp> {
   SBG::LExp operator()(AST::SetBinOp v) const;
   SBG::LExp operator()(AST::LinearExp v) const;
   SBG::LExp operator()(AST::LExpBinOp v) const;
+  SBG::LExp operator()(AST::LinearMap v) const;
 
   private:
   mutable VarEnv env_;

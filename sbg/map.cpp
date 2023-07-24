@@ -39,6 +39,13 @@ bool SBGMap::operator==(const SBGMap &other) const
 
 bool SBGMap::operator<(const SBGMap &other) const { return dom() < other.dom(); }
 
+std::ostream &operator<<(std::ostream &out, const SBGMap &sbgmap)
+{
+  out << sbgmap.dom() << " ↦ " << sbgmap.exp();
+
+  return out;
+}
+
 // SBGMap functions ------------------------------------------------------------
 
 SetPiece image(SBGMap sbgmap) { return image(sbgmap.dom(), sbgmap);}

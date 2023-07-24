@@ -137,6 +137,12 @@ SBG::Set EvalSet::operator()(AST::LExpBinOp v) const
   return SBG::Set(); 
 }
 
+SBG::Set EvalSet::operator()(AST::LinearMap v) const
+{ 
+  Util::ERROR("EvalSet: trying to evaluate a LinearMap");
+  return SBG::Set(); 
+}
+
 } // namespace Eval
 
 } // namespace SBG

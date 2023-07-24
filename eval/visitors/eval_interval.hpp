@@ -50,6 +50,7 @@ struct EvalInterval : public boost::static_visitor<SBG::Interval> {
   SBG::Interval operator()(AST::SetBinOp v) const;
   SBG::Interval operator()(AST::LinearExp v) const;
   SBG::Interval operator()(AST::LExpBinOp v) const;
+  SBG::Interval operator()(AST::LinearMap v) const;
 
   private:
   mutable VarEnv env_;

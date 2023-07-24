@@ -40,11 +40,12 @@ struct SBGMap {
   member_class(LExp, exp);
 
   SBGMap();
-  SBGMap(Interval dom, LExp exp);
+  SBGMap(SetPiece dom, LExp exp);
 
   eq_class(SBGMap);
   lt_class(SBGMap);
 };
+std::ostream &operator<<(std::ostream &out, const SBGMap &sbgmap);
 
 /**
  * @brief Traditional map operations.

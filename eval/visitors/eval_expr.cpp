@@ -84,6 +84,38 @@ auto inverse_visitor_ = Overload{
   }
 };
 
+auto image_visitor1_ = Overload{
+  [](SBG::SBGMap a) { return image(a); },
+  [](auto a) { 
+    Util::ERROR("Wrong arguments for image 1"); 
+    return SBG::SetPiece(); 
+  }
+};
+
+auto image_visitor2_ = Overload{
+  [](SetPiece a, SBGMap b) { return image(a, b); },
+  [](auto a, auto b) { 
+    Util::ERROR("Wrong arguments for image 2"); 
+    return SBG::SetPiece(); 
+  }
+};
+
+auto pre_image_visitor1_ = Overload{
+  [](SBG::SBGMap a) { return preImage(a); },
+  [](auto a) { 
+    Util::ERROR("Wrong arguments for pre image 1"); 
+    return SBG::SetPiece(); 
+  }
+};
+
+auto pre_image_visitor2_ = Overload{
+  [](SetPiece a, SBGMap b) { return preImage(a, b); },
+  [](auto a, auto b) { 
+    Util::ERROR("Wrong arguments for pre image 2"); 
+    return SBG::SetPiece(); 
+  }
+};
+
 // Expression evaluator --------------------------------------------------------
 
 EvalExpression::EvalExpression() : env_() {}
@@ -183,6 +215,34 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
         return result;
       }
 
+      case Eval::Func::im: {
+        if (eval_args.size() == 1) {
+          ExprBaseType sbgmap = eval_args[0];
+          SetPiece result = std::visit(image_visitor1_, sbgmap);
+          return result;
+        }
+
+        else if (eval_args.size() == 2) {
+          ExprBaseType subdom = eval_args[0], sbgmap = eval_args[1];
+          SetPiece result = std::visit(image_visitor2_, subdom, sbgmap);
+          return result;
+        }
+      }
+
+      case Eval::Func::preim: {
+        if (eval_args.size() == 1) {
+          ExprBaseType sbgmap = eval_args[0];
+          SetPiece result = std::visit(pre_image_visitor1_, sbgmap);
+          return result;
+        }
+
+        else if (eval_args.size() == 2) {
+          ExprBaseType subdom = eval_args[0], sbgmap = eval_args[1];
+          SetPiece result = std::visit(pre_image_visitor2_, subdom, sbgmap);
+          return result;
+        }
+      }
+
       default:
         Util::ERROR("EvalExpression: function %s not implemented", vname.c_str());
         return 0;
@@ -193,15 +253,7 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
   return 0;
 }
 
-ExprBaseType EvalExpression::operator()(AST::Interval v) const
-{
-  EvalNat nat_visit(env_);
-  Util::NAT b = Apply(nat_visit, v.begin());
-  Util::NAT s = Apply(nat_visit, v.step());
-  Util::NAT e = Apply(nat_visit, v.end());
-
-  return Interval(b, s, e);
-}
+ExprBaseType EvalExpression::operator()(AST::Interval v) const { return Apply(EvalInterval(env_), AST::Expr(v)); }
 
 ExprBaseType EvalExpression::operator()(AST::InterUnaryOp v) const
 {
@@ -237,16 +289,7 @@ ExprBaseType EvalExpression::operator()(AST::InterBinOp v) const
   }
 }
 
-ExprBaseType EvalExpression::operator()(AST::Set v) const
-{
-  SBG::InterSet res;
-  EvalInterval inter_visit(env_);
-
-  BOOST_FOREACH (auto i, v.pieces())
-    res.emplace(Apply(inter_visit, i));
- 
-  return SBG::Set(res);
-}
+ExprBaseType EvalExpression::operator()(AST::Set v) const { return Apply(EvalSet(env_), AST::Expr(v)); }
 
 ExprBaseType EvalExpression::operator()(AST::SetUnaryOp v) const
 {
@@ -288,12 +331,7 @@ ExprBaseType EvalExpression::operator()(AST::SetBinOp v) const
   }
 }
 
-ExprBaseType EvalExpression::operator()(AST::LinearExp v) const 
-{
-  EvalRat visit_rat(env_); 
- 
-  return SBG::LExp(Apply(visit_rat, v.slope()), Apply(visit_rat, v.offset())); 
-}
+ExprBaseType EvalExpression::operator()(AST::LinearExp v) const { return Apply(EvalLE(env_), AST::Expr(v)); }
 
 ExprBaseType EvalExpression::operator()(AST::LExpBinOp v) const
 {
@@ -311,6 +349,8 @@ ExprBaseType EvalExpression::operator()(AST::LExpBinOp v) const
       return 0;
   }
 }
+
+ExprBaseType EvalExpression::operator()(AST::LinearMap v) const { return Apply(EvalMap(env_), AST::Expr(v)); }
 
 } // namespace Eval
 

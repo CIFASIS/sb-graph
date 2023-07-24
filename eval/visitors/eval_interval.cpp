@@ -76,9 +76,12 @@ SBG::Interval EvalInterval::operator()(AST::Call v) const
 
 SBG::Interval EvalInterval::operator()(AST::Interval v) const 
 { 
-  EvalNat eval_nat(env_);
+  EvalNat visit_nat(env_);
+  Util::NAT b = Apply(visit_nat, v.begin());
+  Util::NAT s = Apply(visit_nat, v.step());
+  Util::NAT e = Apply(visit_nat, v.end());
 
-  return SBG::Interval(Apply(eval_nat, v.begin()), Apply(eval_nat, v.step()), Apply(eval_nat, v.end())); 
+  return Interval(b, s, e);
 }
 
 SBG::Interval EvalInterval::operator()(AST::InterUnaryOp v) const
@@ -131,6 +134,12 @@ SBG::Interval EvalInterval::operator()(AST::LinearExp v) const
 SBG::Interval EvalInterval::operator()(AST::LExpBinOp v) const 
 {
   Util::ERROR("EvalInterval: trying to evaluate a LExpBinOp");
+  return SBG::Interval(); 
+}
+
+SBG::Interval EvalInterval::operator()(AST::LinearMap v) const 
+{
+  Util::ERROR("EvalInterval: trying to evaluate a LinearMap");
   return SBG::Interval(); 
 }
 

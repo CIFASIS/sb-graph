@@ -52,6 +52,7 @@ struct EvalNat : public boost::static_visitor<Util::NAT> {
   Util::NAT operator()(AST::SetBinOp v) const;
   Util::NAT operator()(AST::LinearExp v) const;
   Util::NAT operator()(AST::LExpBinOp v) const;
+  Util::NAT operator()(AST::LinearMap v) const;
 
   private:
   mutable VarEnv env_;

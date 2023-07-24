@@ -49,6 +49,7 @@ struct EvalSet : public boost::static_visitor<SBG::Set> {
   SBG::Set operator()(AST::SetBinOp v) const;
   SBG::Set operator()(AST::LinearExp v) const;
   SBG::Set operator()(AST::LExpBinOp v) const;
+  SBG::Set operator()(AST::LinearMap v) const;
 
   private:
   mutable VarEnv env_;

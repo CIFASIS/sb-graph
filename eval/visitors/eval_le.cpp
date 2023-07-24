@@ -109,8 +109,10 @@ LExp EvalLE::operator()(AST::SetBinOp v) const
 LExp EvalLE::operator()(AST::LinearExp le) const
 { 
   EvalRat visit_rat(env_);
+  AST::Expr m = le.slope();
+  AST::Expr h = le.offset();
 
-  return LExp(Apply(visit_rat, le.slope()), Apply(visit_rat, le.offset()));
+  return LExp(Apply(visit_rat, m), Apply(visit_rat, h));
 }
 
 LExp EvalLE::operator()(AST::LExpBinOp v) const 
@@ -127,6 +129,12 @@ LExp EvalLE::operator()(AST::LExpBinOp v) const
       Util::ERROR("EvalLE: LExpBinOp %s not supported.", AST::OpNames[v.op()]);
       return SBG::LExp(); 
   }
+}
+
+LExp EvalLE::operator()(AST::LinearMap v) const 
+{
+  Util::ERROR("EvalLE: trying to evaluate a LinearMap");
+  return SBG::LExp(); 
 }
 
 } // namespace Eval

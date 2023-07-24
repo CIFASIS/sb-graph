@@ -129,6 +129,12 @@ Util::RATIONAL EvalRat::operator()(AST::LExpBinOp v) const
   return Util::RATIONAL(0, 1);
 }
 
+Util::RATIONAL EvalRat::operator()(AST::LinearMap v) const
+{
+  Util::ERROR("EvalRat: trying to evaluate an LinearMap");
+  return Util::RATIONAL(0, 1);
+}
+
 } // namespace Eval
 
 } // namespace SBG

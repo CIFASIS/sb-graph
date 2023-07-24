@@ -49,6 +49,7 @@ struct SetBinOp;
 struct BinOp;
 struct LinearExp;
 struct LExpBinOp;
+struct LinearMap;
 struct Call;
 
 typedef boost::variant<Natural, Rational, Boolean, Util::VariableName, 
@@ -61,7 +62,8 @@ typedef boost::variant<Natural, Rational, Boolean, Util::VariableName,
   boost::recursive_wrapper<SetUnaryOp>,
   boost::recursive_wrapper<SetBinOp>,
   boost::recursive_wrapper<LinearExp>,
-  boost::recursive_wrapper<LExpBinOp>> Expr;
+  boost::recursive_wrapper<LExpBinOp>,
+  boost::recursive_wrapper<LinearMap>> Expr;
 typedef std::vector<Expr> ExprList;
 std::ostream &operator<<(std::ostream &out, const ExprList &el);
 
@@ -202,6 +204,19 @@ struct LExpBinOp {
   eq_class(LExpBinOp);
 };
 std::ostream &operator<<(std::ostream &out, const LExpBinOp &lbop);
+
+// SBG map ---------------------------------------------------------------------
+
+struct LinearMap {
+  member_class(Expr, dom);
+  member_class(Expr, lexp);
+
+  LinearMap();
+  LinearMap(Expr dom, Expr lexp);
+
+  eq_class(LinearMap);
+};
+std::ostream &operator<<(std::ostream &out, const LinearMap &lm);
 
 } // namespace AST
 

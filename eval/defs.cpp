@@ -36,7 +36,7 @@ Util::NAT toNat(ExprBaseType v)
       return v_rat.numerator();
   }
 
-  Util::ERROR("toInt: expression is not integer");
+  Util::ERROR("toNat: expression is not integer");
   return 0; 
 }
 
@@ -58,7 +58,7 @@ MaybeVValue VarEnv::operator[](VKey k) const
 
 FuncEnv::FuncEnv() {}
 FuncEnvType FuncEnv::mapping_ = {{"isEmpty", 0}, {"isMember", 1}, {"minElem", 2}, {"maxElem", 3}, {"lt", 4},
-  {"compose", 5}, {"inv", 6}};
+  {"compose", 5}, {"inv", 6}, {"image", 7}, {"preImage", 8}};
 
 MaybeFValue FuncEnv::operator[](FKey k) const
 {

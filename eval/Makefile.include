@@ -26,12 +26,14 @@ EVAL_SRC := \
     $(VISIT_DIR)/eval_interval.cpp \
     $(VISIT_DIR)/eval_set.cpp \
     $(VISIT_DIR)/eval_le.cpp \
+    $(VISIT_DIR)/eval_map.cpp \
     $(VISIT_DIR)/eval_expr.cpp \
     $(VISIT_DIR)/stm_visitor.cpp \
     $(VISIT_DIR)/program_visitor.cpp \
     $(SBG_DIR)/interval.cpp \
     $(SBG_DIR)/pw_inter.cpp \
-    $(SBG_DIR)/lexp.cpp
+    $(SBG_DIR)/lexp.cpp \
+    $(SBG_DIR)/map.cpp
 
 # Objects
 EVAL_OBJ=$(addprefix $(BUILD_DIR)/, $(EVAL_SRC:.cpp=.o))

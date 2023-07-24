@@ -43,6 +43,8 @@ BOOST_FUSION_ADAPT_STRUCT(SBG::AST::LinearExp, (SBG::AST::Expr, slope_)(SBG::AST
 
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::LExpBinOp, (SBG::AST::Expr, left_)(SBG::AST::Op, op_)(SBG::AST::Expr, right_))
 
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::LinearMap, (SBG::AST::Expr, dom_)(SBG::AST::Expr, lexp_))
+
 // Expression parser -----------------------------------------------------------
 
 namespace SBG {
@@ -111,7 +113,8 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   RAT("r"), 
   COMA(","), 
   TRUE("true"), 
-  FALSE("false") 
+  FALSE("false"), 
+  ARROW("->")
 {
   ident = qi::lexeme[(qi::char_('_') | qi::alpha) >> *(qi::alnum | qi::char_('_'))] 
     | qi::lexeme[qi::char_('\'') >> *(qi::alnum | qi::char_('_')) > qi::char_('\'')];
@@ -180,7 +183,11 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   lexp_expr = lexp[qi::_val = qi::_1]
     | lexp_binary[qi::_val = qi::_1];
 
-  expr = lexp_expr | arithmetic_expr | interval_expr | set_expr;
+  map = (interval >> ARROW >> lexp)[qi::_val = phx::construct<AST::LinearMap>(qi::_1, qi::_2)];
+
+  map_expr = map;
+
+  expr = map_expr | lexp_expr | interval_expr | set_expr | arithmetic_expr;
   
   expr_list = expr[phx::push_back(qi::_val, qi::_1)] >> *(COMA >> expr)[phx::push_back(qi::_val, qi::_1)];
 

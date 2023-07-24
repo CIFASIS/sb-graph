@@ -52,6 +52,7 @@ struct EvalRat : public boost::static_visitor<Util::RATIONAL> {
   Util::RATIONAL operator()(AST::SetBinOp v) const;
   Util::RATIONAL operator()(AST::LinearExp v) const;
   Util::RATIONAL operator()(AST::LExpBinOp v) const;
+  Util::RATIONAL operator()(AST::LinearMap v) const;
 
   private:
   mutable VarEnv env_;

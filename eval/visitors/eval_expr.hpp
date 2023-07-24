@@ -24,8 +24,7 @@
 #ifndef AST_VISITOR_EVALEXP
 #define AST_VISITOR_EVALEXP
 
-#include <eval/visitors/eval_le.hpp>
-#include <eval/visitors/eval_rat.hpp>
+#include <eval/visitors/eval_map.hpp>
 #include <eval/visitors/eval_set.hpp>
 
 namespace SBG {
@@ -51,6 +50,7 @@ struct EvalExpression : public boost::static_visitor<ExprBaseType> {
   ExprBaseType operator()(AST::SetBinOp v) const;
   ExprBaseType operator()(AST::LinearExp v) const;
   ExprBaseType operator()(AST::LExpBinOp v) const;
+  ExprBaseType operator()(AST::LinearMap v) const;
 
   private:
   mutable VarEnv env_;

@@ -290,6 +290,26 @@ std::ostream &operator<<(std::ostream &out, const LExpBinOp &lbop)
   return out;
 }
 
+// SBG map ---------------------------------------------------------------------
+
+LinearMap::LinearMap() : dom_(), lexp_() {}
+LinearMap::LinearMap(Expr dom, Expr lexp) : dom_(dom), lexp_(lexp) {}
+
+member_imp(LinearMap, Expr, dom);
+member_imp(LinearMap, Expr, lexp);
+
+bool LinearMap::operator==(const LinearMap &other) const
+{
+  return dom() == other.dom() && lexp() == other.lexp();
+}
+
+std::ostream &operator<<(std::ostream &out, const LinearMap &lmap)
+{
+  out << lmap.dom() << " ↦ " << lmap.lexp();
+
+  return out;
+}
+
 } // namespace AST
 
 } // namespace SBG

@@ -47,7 +47,7 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   qi::rule<Iterator, AST::Boolean()> boolean;
 
   // Operators tokens
-  qi::rule<Iterator> OPAREN, CPAREN, OBRACKET, CBRACKET, OBRACE, CBRACE, COLON, RAT, COMA;
+  qi::rule<Iterator> OPAREN, CPAREN, OBRACKET, CBRACKET, OBRACE, CBRACE, COLON, RAT, COMA, ARROW;
 
   // Other rules
   qi::rule<Iterator, Skipper<Iterator>, Util::RATIONAL()> rational;
@@ -73,6 +73,9 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp_binary;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp_expr;
+
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> map;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> map_expr;
 
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> expr;
   qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> expr_list;

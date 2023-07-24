@@ -1,6 +1,6 @@
-/** @file eval_int.hpp
+/** @file eval_nat.hpp
 
- @brief <b>Integer expression evaluator</b>
+ @brief <b>Natural expression evaluator</b>
 
  <hr>
 
@@ -21,8 +21,8 @@
 
  ******************************************************************************/
 
-#ifndef AST_VISITOR_EVALINT
-#define AST_VISITOR_EVALINT
+#ifndef AST_VISITOR_EVALNAT
+#define AST_VISITOR_EVALNAT
 
 #include <boost/variant/static_visitor.hpp>
 
@@ -33,24 +33,25 @@ namespace SBG {
 
 namespace Eval {
 
-struct EvalInt : public boost::static_visitor<Util::INT> {
+struct EvalNat : public boost::static_visitor<Util::NAT> {
   public:
-  EvalInt();
-  EvalInt(VarEnv env);
+  EvalNat();
+  EvalNat(VarEnv env);
 
-  Util::INT operator()(AST::Integer v) const;
-  Util::INT operator()(AST::Rational v) const;
-  Util::INT operator()(AST::Boolean v) const;
-  Util::INT operator()(Util::VariableName v) const;
-  Util::INT operator()(AST::BinOp v) const;
-  Util::INT operator()(AST::Call v) const;
-  Util::INT operator()(AST::Interval v) const;
-  Util::INT operator()(AST::InterUnaryOp v) const;
-  Util::INT operator()(AST::InterBinOp v) const;
-  Util::INT operator()(AST::Set v) const;
-  Util::INT operator()(AST::SetUnaryOp v) const;
-  Util::INT operator()(AST::SetBinOp v) const;
-  Util::INT operator()(AST::LinearExp v) const;
+  Util::NAT operator()(AST::Natural v) const;
+  Util::NAT operator()(AST::Rational v) const;
+  Util::NAT operator()(AST::Boolean v) const;
+  Util::NAT operator()(Util::VariableName v) const;
+  Util::NAT operator()(AST::BinOp v) const;
+  Util::NAT operator()(AST::Call v) const;
+  Util::NAT operator()(AST::Interval v) const;
+  Util::NAT operator()(AST::InterUnaryOp v) const;
+  Util::NAT operator()(AST::InterBinOp v) const;
+  Util::NAT operator()(AST::Set v) const;
+  Util::NAT operator()(AST::SetUnaryOp v) const;
+  Util::NAT operator()(AST::SetBinOp v) const;
+  Util::NAT operator()(AST::LinearExp v) const;
+  Util::NAT operator()(AST::LExpBinOp v) const;
 
   private:
   mutable VarEnv env_;

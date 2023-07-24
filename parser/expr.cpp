@@ -41,6 +41,8 @@ BOOST_FUSION_ADAPT_STRUCT(SBG::AST::SetBinOp, (SBG::AST::Expr, left_)(SBG::AST::
 
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::LinearExp, (SBG::AST::Expr, slope_)(SBG::AST::Expr, offset_))
 
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::LExpBinOp, (SBG::AST::Expr, left_)(SBG::AST::Op, op_)(SBG::AST::Expr, right_))
+
 // Expression parser -----------------------------------------------------------
 
 namespace SBG {
@@ -89,6 +91,12 @@ struct set_bin_struct : qi::symbols<char, AST::ContainerOp> {
   }
 } set_bin;
 
+struct lexp_bin_struct : qi::symbols<char, AST::Op> {
+  lexp_bin_struct(){
+    add("+", AST::Op::add)("-", AST::Op::sub);
+  }
+} lexp_bin;
+
 template <typename Iterator>
 ExprRule<Iterator>::ExprRule(Iterator &it) : 
   ExprRule::base_type(exprs_comments), 
@@ -110,15 +118,15 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
 
   boolean = TRUE[qi::_val = true] | FALSE[qi::_val = false];
 
-  rational = (RAT >> OPAREN >> qi::lexeme[qi::int_] 
-    >> COMA >> qi::lexeme[qi::int_] >> CPAREN)[qi::_val = phx::construct<Util::RATIONAL>(qi::_1, qi::_2)];
+  rational = (RAT >> OPAREN >> qi::lexeme[qi::long_long] 
+    >> COMA >> qi::lexeme[qi::long_long] >> CPAREN)[qi::_val = phx::construct<Util::RATIONAL>(qi::_1, qi::_2)];
 
   call_exp = (ident >> function_call_args)[qi::_val = phx::construct<AST::Call>(qi::_1, qi::_2)];
 
   function_call_args = OPAREN >> expr_list >> CPAREN;
 
   primary = rational[qi::_val = qi::_1] 
-    | qi::lexeme[qi::ulong_long][qi::_val = phx::construct<Util::INT>(qi::_1)]
+    | qi::lexeme[qi::ulong_long][qi::_val = phx::construct<Util::NAT>(qi::_1)]
     | boolean[qi::_val = qi::_1] 
     | call_exp[qi::_val = qi::_1]
     | ident[qi::_val = qi::_1];
@@ -161,12 +169,18 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
     | set_binary[qi::_val = qi::_1]
     | set[qi::_val = qi::_1];
 
-  numeric = rational[qi::_val = qi::_1] | qi::lexeme[qi::ulong_long][qi::_val = phx::construct<Util::INT>(qi::_1)];
+  numeric = rational[qi::_val = qi::_1] | qi::lexeme[qi::ulong_long][qi::_val = phx::construct<Util::NAT>(qi::_1)];
 
   lexp = (numeric >> qi::char_('*') >> qi::char_('x') 
     >> qi::char_('+') >> arithmetic_expr)[qi::_val = phx::construct<AST::LinearExp>(qi::_1, qi::_5)];
 
-  expr = lexp | arithmetic_expr | interval_expr | set_expr;
+  lexp_binary = OPAREN >> lexp[qi::_val = qi::_1] >> CPAREN 
+    >> *(lexp_bin > OPAREN >> lexp >> CPAREN)[qi::_val = phx::construct<AST::LExpBinOp>(qi::_val, qi::_1, qi::_2)];
+
+  lexp_expr = lexp[qi::_val = qi::_1]
+    | lexp_binary[qi::_val = qi::_1];
+
+  expr = lexp_expr | arithmetic_expr | interval_expr | set_expr;
   
   expr_list = expr[phx::push_back(qi::_val, qi::_1)] >> *(COMA >> expr)[phx::push_back(qi::_val, qi::_1)];
 

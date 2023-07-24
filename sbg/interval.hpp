@@ -28,8 +28,8 @@
 
  ******************************************************************************/
 
-#ifndef SBG_INTERVAL_HPP
-#define SBG_INTERVAL_HPP
+#ifndef SBG_NATERVAL_HPP
+#define SBG_NATERVAL_HPP
 
 #include <boost/foreach.hpp>
 #include <cmath>
@@ -41,15 +41,15 @@
 
 namespace SBG {
 
-using INT = Util::INT;
+using NAT = Util::NAT;
 
 struct Interval {
-  member_class(INT, begin);
-  member_class(INT, step);
-  member_class(INT, end);
+  member_class(NAT, begin);
+  member_class(NAT, step);
+  member_class(NAT, end);
 
   Interval();
-  Interval(INT begin, INT step, INT end);
+  Interval(NAT begin, NAT step, NAT end);
 
   eq_class(Interval);
   lt_class(Interval);
@@ -62,9 +62,9 @@ std::ostream &operator<<(std::ostream &out, const Interval &i);
 
 unsigned int cardinal(Interval i);
 bool isEmpty(Interval i);
-bool isMember(INT x, Interval i);
-Util::INT minElem(Interval i);
-Util::INT maxElem(Interval i);
+bool isMember(NAT x, Interval i);
+Util::NAT minElem(Interval i);
+Util::NAT maxElem(Interval i);
 Interval intersection(Interval i1, Interval i2);
 
 /**
@@ -74,6 +74,8 @@ Interval intersection(Interval i1, Interval i2);
 Interval least(Interval i1, Interval i2);
 typedef std::optional<Interval> MaybeInterval;
 MaybeInterval canonize(Interval i1, Interval i2);
+
+typedef Interval SetPiece;
 
 }  // namespace SBG
 

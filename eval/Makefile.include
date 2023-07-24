@@ -21,10 +21,11 @@ EVAL_SRC := \
     $(PARSER_DIR)/expr.cpp \
     $(PARSER_DIR)/statement.cpp \
     $(PARSER_DIR)/sbg_program.cpp \
-    $(VISIT_DIR)/eval_int.cpp \
+    $(VISIT_DIR)/eval_nat.cpp \
     $(VISIT_DIR)/eval_rat.cpp \
     $(VISIT_DIR)/eval_interval.cpp \
     $(VISIT_DIR)/eval_set.cpp \
+    $(VISIT_DIR)/eval_le.cpp \
     $(VISIT_DIR)/eval_expr.cpp \
     $(VISIT_DIR)/stm_visitor.cpp \
     $(VISIT_DIR)/program_visitor.cpp \

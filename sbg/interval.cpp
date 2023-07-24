@@ -22,7 +22,7 @@
 namespace SBG {
 
 Interval::Interval() : begin_(1), step_(0), end_(0) {}
-Interval::Interval(INT begin, INT step, INT end) : begin_(begin), step_(step), end_(end) 
+Interval::Interval(NAT begin, NAT step, NAT end) : begin_(begin), step_(step), end_(end) 
 {
   if (end >= begin) {
     int rem = fmod(end - begin, step);
@@ -30,9 +30,9 @@ Interval::Interval(INT begin, INT step, INT end) : begin_(begin), step_(step), e
   }
 }
 
-member_imp(Interval, INT, begin);
-member_imp(Interval, INT, step);
-member_imp(Interval, INT, end);
+member_imp(Interval, NAT, begin);
+member_imp(Interval, NAT, step);
+member_imp(Interval, NAT, end);
 
 bool Interval::operator==(const Interval &other) const
 {
@@ -64,7 +64,7 @@ unsigned int cardinal(Interval i) { return (i.end() - i.begin()) / i.step() + 1;
 
 bool isEmpty(Interval i) { return i.end() < i.begin(); }
 
-bool isMember(INT x, Interval i)
+bool isMember(NAT x, Interval i)
 {
   if (x < i.begin() || x > i.end()) return false;
 
@@ -73,9 +73,9 @@ bool isMember(INT x, Interval i)
   return rem == 0;
 }
 
-Util::INT minElem(Interval i) { return i.begin(); }
+Util::NAT minElem(Interval i) { return i.begin(); }
 
-Util::INT maxElem(Interval i) { return i.end(); }
+Util::NAT maxElem(Interval i) { return i.end(); }
 
 Interval intersection(Interval i1, Interval i2)
 {
@@ -86,10 +86,10 @@ Interval intersection(Interval i1, Interval i2)
   // Two non overlapping intervals with the same step
   if (i1.step() == i2.step() && !isMember(i1.begin(), i2) && !isMember(i2.begin(), i1)) return Interval();
 
-  INT max_begin = std::max(i1.begin(), i2.begin());    
-  INT new_step = std::lcm(i1.step(), i2.step()), new_begin = max_begin, new_end = std::min(i1.end(), i2.end());
+  NAT max_begin = std::max(i1.begin(), i2.begin());    
+  NAT new_step = std::lcm(i1.step(), i2.step()), new_begin = max_begin, new_end = std::min(i1.end(), i2.end());
   bool found_member = false;
-  for (INT x = max_begin; x < max_begin + new_step; x++) 
+  for (NAT x = max_begin; x < max_begin + new_step; x++) 
     if (isMember(x, i1) && isMember(x, i2)) {
       new_begin = x;
       found_member = true;

@@ -71,6 +71,8 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
 
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> numeric;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp_binary;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp_expr;
 
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> expr;
   qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> expr_list;

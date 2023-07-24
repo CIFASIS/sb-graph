@@ -24,16 +24,22 @@
 #ifndef AST_VISITOR_EVALLE
 #define AST_VISITOR_EVALLE
 
+#include <boost/variant/static_visitor.hpp>
+
+#include <eval/defs.hpp>
+#include <eval/visitors/eval_rat.hpp>
+#include <sbg/lexp.hpp>
+
 namespace SBG {
 
 namespace Eval {
 
 struct EvalLE : public boost::static_visitor<SBG::LExp> {
   public:
-  EvalSet();
-  EvalSet(VarEnv env);
+  EvalLE();
+  EvalLE(VarEnv env);
 
-  SBG::LExp operator()(AST::Integer v) const;
+  SBG::LExp operator()(AST::Natural v) const;
   SBG::LExp operator()(AST::Rational v) const;
   SBG::LExp operator()(AST::Boolean v) const;
   SBG::LExp operator()(Util::VariableName v) const;
@@ -46,6 +52,7 @@ struct EvalLE : public boost::static_visitor<SBG::LExp> {
   SBG::LExp operator()(AST::SetUnaryOp v) const;
   SBG::LExp operator()(AST::SetBinOp v) const;
   SBG::LExp operator()(AST::LinearExp v) const;
+  SBG::LExp operator()(AST::LExpBinOp v) const;
 
   private:
   mutable VarEnv env_;

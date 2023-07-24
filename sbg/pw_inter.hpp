@@ -38,8 +38,21 @@ namespace SBG {
  * @brief Ordered collection of intervals.
  */
 
-typedef boost::container::set<Interval> InterSet;
-typedef boost::container::set<Interval>::iterator InterSetIt;
+/* @struct LTInter
+ *
+ * @brief This function is defined to be used by the InterSet definition. The
+ * two inputs are disjoint (that's why the operator<, that compares any sort of
+ * SetPieces, is not used).
+ */
+struct LTInter {
+  bool operator()(const SetPiece &x, const SetPiece &y) const { return x < y; }
+  typedef SetPiece first_argument_type;
+  typedef SetPiece second_argument_type;
+  typedef bool result_type;
+};
+
+typedef boost::container::set<SetPiece, LTInter, boost::container::new_allocator<SetPiece>, void> InterSet;
+typedef boost::container::set<SetPiece>::iterator InterSetIt;
 std::ostream &operator<<(std::ostream &out, const InterSet &ii);
 
 struct PWInterval {
@@ -49,7 +62,7 @@ struct PWInterval {
    * @brief Constructors don't check if intervals are disjoint (performance).
    */
   PWInterval();
-  PWInterval(Interval i);
+  PWInterval(SetPiece i);
   PWInterval(InterSet pieces);
 
   eq_class(PWInterval);
@@ -62,9 +75,9 @@ std::ostream &operator<<(std::ostream &out, const PWInterval &i);
 
 unsigned int cardinal(PWInterval i);
 bool isEmpty(PWInterval i);
-bool isMember(INT x, PWInterval i);
-Util::INT minElem(PWInterval pwi);
-Util::INT maxElem(PWInterval pwi);
+bool isMember(NAT x, PWInterval i);
+Util::NAT minElem(PWInterval pwi);
+Util::NAT maxElem(PWInterval pwi);
 PWInterval intersection(PWInterval i1, PWInterval i2);
 PWInterval cup(PWInterval i1, PWInterval i2);
 PWInterval complement(PWInterval i);
@@ -87,14 +100,14 @@ bool isCompact(PWInterval pwi);
  * @brief Traverse pwis in order until one reaches its end, obtaining an ordered
  * result.
  */
-InterSet boundedTraverse(PWInterval pwi1, PWInterval pwi2, Interval (*func)(Interval, Interval));
+InterSet boundedTraverse(PWInterval pwi1, PWInterval pwi2, SetPiece (*func)(SetPiece, SetPiece));
 
 /** @function traverse
  *
  * @brief Traverse pwis in order reaching both ends, obtaining an orderedresult.
  *   !!! Both pwis should be compact (not checked in this function).
  */
-InterSet traverse(PWInterval pwi1, PWInterval pwi2, Interval (*func)(Interval, Interval));
+InterSet traverse(PWInterval pwi1, PWInterval pwi2, SetPiece (*func)(SetPiece, SetPiece));
 
 typedef PWInterval Set;
 

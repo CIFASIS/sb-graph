@@ -92,30 +92,44 @@ namespace Util {
  *
  * @brief Representation of individual elements. 
  */
-typedef unsigned long long int INT;
-std::string to_str(INT);
+typedef unsigned long long int NAT;
+std::string to_str(NAT);
+
+const NAT Inf = std::numeric_limits<NAT>::max();
+
+typedef long long int INT;
 
 /** @typedef RATIONAL 
  *
  * @brief Used for coefficients in linear expressions. 
  */
 struct RATIONAL{
-  member_class(boost::rational<INT>, value);
+  member_class(boost::rational<long long int>, value);
 
   RATIONAL();
+  RATIONAL(NAT n);
   RATIONAL(boost::rational<INT> value);
   RATIONAL(INT n, INT d);
 
+  INT numerator();
+  INT denominator();
+
+  RATIONAL operator+=(const RATIONAL &r);
+  RATIONAL operator-=(const RATIONAL &r);
+  RATIONAL operator*=(const RATIONAL &r);
+  RATIONAL operator/=(const RATIONAL &r);
+
   eq_class(RATIONAL);
+  lt_class(RATIONAL);
+  gt_class(RATIONAL);
   neq_class(RATIONAL);
-
-  RATIONAL operator+(const RATIONAL &r);
-  RATIONAL operator-(const RATIONAL &r);
-  RATIONAL operator*(const RATIONAL &r);
 };
+RATIONAL operator+(const RATIONAL &r1, const RATIONAL &r2);
+RATIONAL operator-(const RATIONAL &r1, const RATIONAL &r2);
+RATIONAL operator*(const RATIONAL &r1, const RATIONAL &r2);
+RATIONAL operator/(const RATIONAL &r1, const RATIONAL &r2);
+RATIONAL operator-(const RATIONAL &r);
 std::ostream &operator<<(std::ostream &out, const RATIONAL &r);
-
-const INT Inf = std::numeric_limits<INT>::max();
 
 // Parser definitions ----------------------------------------------------------
 

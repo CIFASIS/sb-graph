@@ -43,7 +43,7 @@ namespace Eval {
 
 // Type definitions ------------------------------------------------------------
 
-typedef std::variant<Util::INT, Util::RATIONAL, SBG::Interval, SBG::Set, SBG::LExp> ExprBaseType;
+typedef std::variant<Util::NAT, Util::RATIONAL, SBG::Interval, SBG::Set, SBG::LExp> ExprBaseType;
 typedef std::optional<ExprBaseType> MaybeEBT;
 
 template <class T>
@@ -68,11 +68,11 @@ std::ostream &operator<<(std::ostream &out, streamer<std::variant<Ts...>> sv)
   return out;
 }
 
-/** @function toInt
+/** @function toNat
  *
- * @brief Converts a rational n/1 to an integer n (if needed).
+ * @brief Converts a positive rational n/1 to n (if possible).
  */
-Util::INT toInt(ExprBaseType t);
+Util::NAT toNat(ExprBaseType t);
 
 // Environments ----------------------------------------------------------------
 
@@ -116,7 +116,7 @@ struct FuncEnv{
   static FuncEnvType mapping_;
 };
 
-typedef enum { empty, member, min, max, lt } Func;
+typedef enum { empty, member, min, max, lt, comp, inv } Func;
 
 /** @struct Overload
  *

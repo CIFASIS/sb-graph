@@ -26,9 +26,9 @@ namespace Eval {
 EvalInterval::EvalInterval() : env_() {}
 EvalInterval::EvalInterval(VarEnv env) : env_(env) {}
 
-SBG::Interval EvalInterval::operator()(AST::Integer v) const 
+SBG::Interval EvalInterval::operator()(AST::Natural v) const 
 { 
-  Util::ERROR("EvalInterval: trying to evaluate an Integer");
+  Util::ERROR("EvalInterval: trying to evaluate an Natural");
   return SBG::Interval(); 
 }
 
@@ -76,9 +76,9 @@ SBG::Interval EvalInterval::operator()(AST::Call v) const
 
 SBG::Interval EvalInterval::operator()(AST::Interval v) const 
 { 
-  EvalInt eval_int(env_);
+  EvalNat eval_nat(env_);
 
-  return SBG::Interval(Apply(eval_int, v.begin()), Apply(eval_int, v.step()), Apply(eval_int, v.end())); 
+  return SBG::Interval(Apply(eval_nat, v.begin()), Apply(eval_nat, v.step()), Apply(eval_nat, v.end())); 
 }
 
 SBG::Interval EvalInterval::operator()(AST::InterUnaryOp v) const
@@ -125,6 +125,12 @@ SBG::Interval EvalInterval::operator()(AST::SetBinOp v) const
 SBG::Interval EvalInterval::operator()(AST::LinearExp v) const 
 {
   Util::ERROR("EvalInterval: trying to evaluate a LinearExp");
+  return SBG::Interval(); 
+}
+
+SBG::Interval EvalInterval::operator()(AST::LExpBinOp v) const 
+{
+  Util::ERROR("EvalInterval: trying to evaluate a LExpBinOp");
   return SBG::Interval(); 
 }
 

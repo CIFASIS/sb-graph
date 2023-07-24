@@ -271,6 +271,25 @@ std::ostream &operator<<(std::ostream &out, const LinearExp &le)
   return out;
 }
 
+LExpBinOp::LExpBinOp() : left_(), op_(), right_() {}
+LExpBinOp::LExpBinOp(Expr left, Op op, Expr right) : left_(left), op_(op), right_(right) {}
+
+member_imp(LExpBinOp, Expr, left);
+member_imp(LExpBinOp, Op, op);
+member_imp(LExpBinOp, Expr, right);
+
+bool LExpBinOp::operator==(const LExpBinOp &other) const
+{
+  return left() == other.left() && op() == other.op() && right() == other.right();
+}
+
+std::ostream &operator<<(std::ostream &out, const LExpBinOp &lbop)
+{
+  out << "(" << lbop.left() << ")" << lbop.op() << "(" << lbop.right() << ")";
+
+  return out;
+}
+
 } // namespace AST
 
 } // namespace SBG

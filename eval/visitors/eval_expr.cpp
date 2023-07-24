@@ -28,30 +28,60 @@ namespace Eval {
 auto empty_visitor_ = Overload{
   [](SBG::Interval a) { return isEmpty(a); },
   [](SBG::Set a) { return isEmpty(a); },
-  [](auto a) { return true; } // << default!
+  [](auto a) { 
+    Util::ERROR("Wrong arguments for isEmpty"); 
+    return true; 
+  } 
 };
 
 auto member_visitor_ = Overload{
-  [](Util::INT a, SBG::Interval b) { return isMember(a, b); },
-  [](Util::INT a, SBG::Set b) { return isMember(a, b); },
-  [](auto a, auto b) { return false; } // << default!
+  [](Util::NAT a, SBG::Interval b) { return isMember(a, b); },
+  [](Util::NAT a, SBG::Set b) { return isMember(a, b); },
+  [](auto a, auto b) { 
+    Util::ERROR("Wrong arguments for isMember"); 
+    return false;
+  } 
 };
 
 auto min_visitor_ = Overload{
   [](SBG::Interval a) { return minElem(a); },
   [](SBG::Set a) { return minElem(a); },
-  [](auto a) { return (Util::INT) 0; }
+  [](auto a) { 
+    Util::ERROR("Wrong arguments for minElem"); 
+    return (Util::NAT) 0;
+  }
 };
 
 auto max_visitor_ = Overload{
   [](SBG::Interval a) { return maxElem(a); },
   [](SBG::Set a) { return maxElem(a); },
-  [](auto a) { return (Util::INT) 0; }
+  [](auto a) { 
+    Util::ERROR("Wrong arguments for maxElem"); 
+    return (Util::NAT) 0; 
+  }
 };
 
 auto lt_visitor_ = Overload{
   [](SBG::Interval a, SBG::Interval b) { return least(a, b); },
-  [](auto a, auto b) { return SBG::Interval(1, 0, 0); }
+  [](auto a, auto b) { 
+    Util::ERROR("Wrong arguments for lt"); 
+    return SBG::Interval(); 
+  }
+};
+
+auto compose_visitor_ = Overload{
+  [](SBG::LExp a, SBG::LExp b) { return composition(a, b); },
+  [](auto a, auto b) { 
+    Util::ERROR("Wrong arguments for composition"); 
+    return SBG::LExp(); }
+};
+
+auto inverse_visitor_ = Overload{
+  [](SBG::LExp a) { return inverse(a); },
+  [](auto a) { 
+    Util::ERROR("Wrong arguments for inversion"); 
+    return SBG::LExp(); 
+  }
 };
 
 // Expression evaluator --------------------------------------------------------
@@ -59,7 +89,7 @@ auto lt_visitor_ = Overload{
 EvalExpression::EvalExpression() : env_() {}
 EvalExpression::EvalExpression(VarEnv env) : env_(env) {}
 
-ExprBaseType EvalExpression::operator()(AST::Integer v) const { return v; }
+ExprBaseType EvalExpression::operator()(AST::Natural v) const { return v; }
 
 ExprBaseType EvalExpression::operator()(AST::Rational v) const { return v; }
 
@@ -125,19 +155,31 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
 
       case Eval::Func::min: {
         ExprBaseType container = eval_args[0];
-        Util::INT result = std::visit(min_visitor_, container);
+        Util::NAT result = std::visit(min_visitor_, container);
         return result;
       }
 
       case Eval::Func::max: {
         ExprBaseType container = eval_args[0];
-        Util::INT result = std::visit(max_visitor_, container);
+        Util::NAT result = std::visit(max_visitor_, container);
         return result;
       }
 
       case Eval::Func::lt: {
         ExprBaseType cont1 = eval_args[0], cont2 = eval_args[1];
         SBG::Interval result = std::visit(lt_visitor_, cont1, cont2);
+        return result;
+      }
+
+      case Eval::Func::comp: {
+        ExprBaseType lexp1 = eval_args[0], lexp2 = eval_args[1];
+        SBG::LExp result = std::visit(compose_visitor_, lexp1, lexp2);
+        return result;
+      }
+
+      case Eval::Func::inv: {
+        ExprBaseType lexp = eval_args[0];
+        SBG::LExp result = std::visit(inverse_visitor_, lexp);
         return result;
       }
 
@@ -153,10 +195,10 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
 
 ExprBaseType EvalExpression::operator()(AST::Interval v) const
 {
-  EvalInt int_visit(env_);
-  Util::INT b = Apply(int_visit, v.begin());
-  Util::INT s = Apply(int_visit, v.step());
-  Util::INT e = Apply(int_visit, v.end());
+  EvalNat nat_visit(env_);
+  Util::NAT b = Apply(nat_visit, v.begin());
+  Util::NAT s = Apply(nat_visit, v.step());
+  Util::NAT e = Apply(nat_visit, v.end());
 
   return Interval(b, s, e);
 }
@@ -251,6 +293,23 @@ ExprBaseType EvalExpression::operator()(AST::LinearExp v) const
   EvalRat visit_rat(env_); 
  
   return SBG::LExp(Apply(visit_rat, v.slope()), Apply(visit_rat, v.offset())); 
+}
+
+ExprBaseType EvalExpression::operator()(AST::LExpBinOp v) const
+{
+  AST::Expr l = v.left(), r = v.right();
+  EvalLE visit_le(env_);
+  switch (v.op()) {
+    case AST::Op::add:
+      return Apply(visit_le, l) + Apply(visit_le, r);
+
+    case AST::Op::sub:
+      return Apply(visit_le, l) - Apply(visit_le, r);
+
+    default:
+      Util::ERROR("EvalExpression: LExpBinOp %s not supported.", AST::OpNames[v.op()]);
+      return 0;
+  }
 }
 
 } // namespace Eval

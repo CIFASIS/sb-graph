@@ -26,7 +26,7 @@ namespace Eval {
 EvalRat::EvalRat() : env_() {}
 EvalRat::EvalRat(VarEnv env) : env_(env) {}
 
-Util::RATIONAL EvalRat::operator()(AST::Integer v) const { return Util::RATIONAL(v, 1); }
+Util::RATIONAL EvalRat::operator()(AST::Natural v) const { return Util::RATIONAL(v, 1); }
 
 Util::RATIONAL EvalRat::operator()(AST::Rational v) const { return v; }
 
@@ -120,6 +120,12 @@ Util::RATIONAL EvalRat::operator()(AST::SetBinOp v) const
 Util::RATIONAL EvalRat::operator()(AST::LinearExp v) const
 {
   Util::ERROR("EvalRat: trying to evaluate an LinearExp");
+  return Util::RATIONAL(0, 1);
+}
+
+Util::RATIONAL EvalRat::operator()(AST::LExpBinOp v) const
+{
+  Util::ERROR("EvalRat: trying to evaluate an LExpBinOp");
   return Util::RATIONAL(0, 1);
 }
 

@@ -35,7 +35,7 @@ struct EvalSet : public boost::static_visitor<SBG::Set> {
   EvalSet();
   EvalSet(VarEnv env);
 
-  SBG::Set operator()(AST::Integer v) const;
+  SBG::Set operator()(AST::Natural v) const;
   SBG::Set operator()(AST::Rational v) const;
   SBG::Set operator()(AST::Boolean v) const;
   SBG::Set operator()(Util::VariableName v) const;
@@ -48,6 +48,7 @@ struct EvalSet : public boost::static_visitor<SBG::Set> {
   SBG::Set operator()(AST::SetUnaryOp v) const;
   SBG::Set operator()(AST::SetBinOp v) const;
   SBG::Set operator()(AST::LinearExp v) const;
+  SBG::Set operator()(AST::LExpBinOp v) const;
 
   private:
   mutable VarEnv env_;

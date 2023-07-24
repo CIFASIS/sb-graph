@@ -25,15 +25,15 @@ namespace Eval {
 
 // Type definitions ------------------------------------------------------------
 
-Util::INT toInt(ExprBaseType v) 
+Util::NAT toNat(ExprBaseType v) 
 { 
-  if (std::holds_alternative<Util::INT>(v))
-    return std::get<Util::INT>(v);
+  if (std::holds_alternative<Util::NAT>(v))
+    return std::get<Util::NAT>(v);
 
   if (std::holds_alternative<Util::RATIONAL>(v)) {
     Util::RATIONAL v_rat = std::get<Util::RATIONAL>(v);
-    if (v_rat.value().denominator() == 1)
-      return v_rat.value().numerator();
+    if (v_rat.denominator() == 1 && v_rat.numerator() >= 0)
+      return v_rat.numerator();
   }
 
   Util::ERROR("toInt: expression is not integer");
@@ -57,7 +57,8 @@ MaybeVValue VarEnv::operator[](VKey k) const
 }
 
 FuncEnv::FuncEnv() {}
-FuncEnvType FuncEnv::mapping_ = {{"isEmpty", 0}, {"isMember", 1}, {"minElem", 2}, {"maxElem", 3}, {"lt", 4}};
+FuncEnvType FuncEnv::mapping_ = {{"isEmpty", 0}, {"isMember", 1}, {"minElem", 2}, {"maxElem", 3}, {"lt", 4},
+  {"compose", 5}, {"inv", 6}};
 
 MaybeFValue FuncEnv::operator[](FKey k) const
 {

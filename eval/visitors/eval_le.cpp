@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <eval/visitors/evalle.hpp>
+#include <eval/visitors/eval_le.hpp>
 
 namespace SBG {
 
@@ -26,8 +26,8 @@ namespace Eval {
 EvalLE::EvalLE() : env_() {}
 EvalLE::EvalLE(VarEnv env) : env_(env) {}
 
-LExp EvalLE::operator()(AST::Integer v) const { 
-  Util::ERROR("EvalLE: trying to evaluate an Integer");
+LExp EvalLE::operator()(AST::Natural v) const { 
+  Util::ERROR("EvalLE: trying to evaluate a Natural");
   return LExp(); 
 }
 
@@ -110,7 +110,23 @@ LExp EvalLE::operator()(AST::LinearExp le) const
 { 
   EvalRat visit_rat(env_);
 
-  return LExpr(Apply(visit_rat, le.slope()), Apply(visit_rat, le.offset()));
+  return LExp(Apply(visit_rat, le.slope()), Apply(visit_rat, le.offset()));
+}
+
+LExp EvalLE::operator()(AST::LExpBinOp v) const 
+{
+  AST::Expr l = v.left(), r = v.right();
+  switch (v.op()) {
+    case AST::Op::add:
+      return ApplyThis(l) + ApplyThis(r);
+
+    case AST::Op::sub:
+      return ApplyThis(l) + ApplyThis(r);
+
+    default:
+      Util::ERROR("EvalLE: LExpBinOp %s not supported.", AST::OpNames[v.op()]);
+      return SBG::LExp(); 
+  }
 }
 
 } // namespace Eval

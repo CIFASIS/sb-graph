@@ -1,9 +1,9 @@
-/** @file lexp.hpp
+/** @file map.hpp
 
- @brief <b>Linear expressions implementation</b>
+ @brief <b>SBG map implementation</b>
 
- A linear expression m*x+h is determined by its slope and offset. It will be
- used as the law of maps.
+ An SBG map is a map consisting of an interval (domain) and a linear expression.
+ The codomain should also be an interval (checked in the constructor).
 
  <hr>
 
@@ -24,46 +24,35 @@
 
  ******************************************************************************/
 
-#ifndef SBG_LEXP_HPP
-#define SBG_LEXP_HPP
+#ifndef SBG_MAP_HPP
+#define SBG_MAP_HPP
 
-#include <iostream>
+#include <boost/container/set.hpp>
 
-#include <util/defs.hpp>
+#include <sbg/lexp.hpp>
+#include <sbg/pw_inter.hpp>
+#include <util/debug.hpp>
 
 namespace SBG {
 
-using RAT = Util::RATIONAL;
+struct SBGMap {
+  member_class(SetPiece, dom);
+  member_class(LExp, exp);
 
-struct LExp {
-  member_class(RAT, slope);
-  member_class(RAT, offset);
+  SBGMap();
+  SBGMap(Interval dom, LExp exp);
 
-  LExp();
-  LExp(RAT slope, RAT offset);
-
-  LExp operator+(const LExp &le); 
-  LExp operator-(const LExp &le); 
-
-  eq_class(LExp);
+  eq_class(SBGMap);
+  lt_class(SBGMap);
 };
-std::ostream &operator<<(std::ostream &out, const LExp &le);
 
 /**
- * @brief Traditional expression operations.
+ * @brief Traditional map operations.
  */
-
-/* @function composition
- *
- * @brief Calculate the composition of le1 with le2, i.e. le1(le2)
- */
-
-LExp composition(LExp le1, LExp le2);
-LExp inverse(LExp le);
-
-/**
- * @brief Extra operations.
- */
+SetPiece image(SBGMap sbgmap);
+SetPiece image(SetPiece subdom, SBGMap sbgmap);
+SetPiece preImage(SBGMap sbgmap);
+SetPiece preImage(SetPiece subcodom, SBGMap sbgmap);
 
 }  // namespace SBG
 

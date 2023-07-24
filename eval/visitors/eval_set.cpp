@@ -26,8 +26,8 @@ namespace Eval {
 EvalSet::EvalSet() : env_() {}
 EvalSet::EvalSet(VarEnv env) : env_(env) {}
 
-SBG::Set EvalSet::operator()(AST::Integer v) const { 
-  Util::ERROR("EvalSet: trying to evaluate an Integer");
+SBG::Set EvalSet::operator()(AST::Natural v) const { 
+  Util::ERROR("EvalSet: trying to evaluate a Natural");
   return SBG::Set(); 
 }
 
@@ -128,6 +128,12 @@ SBG::Set EvalSet::operator()(AST::SetBinOp v) const
 SBG::Set EvalSet::operator()(AST::LinearExp v) const
 { 
   Util::ERROR("EvalSet: trying to evaluate a LinearExp");
+  return SBG::Set(); 
+}
+
+SBG::Set EvalSet::operator()(AST::LExpBinOp v) const
+{ 
+  Util::ERROR("EvalSet: trying to evaluate a LExpBinOp");
   return SBG::Set(); 
 }
 

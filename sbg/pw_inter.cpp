@@ -45,7 +45,7 @@ std::ostream &operator<<(std::ostream &out, const InterSet &ii)
 // PWInterval ------------------------------------------------------------------
 
 PWInterval::PWInterval() : pieces_() {}
-PWInterval::PWInterval(Interval i) : pieces_() {
+PWInterval::PWInterval(SetPiece i) : pieces_() {
   pieces_ref().insert(i);
 }
 PWInterval::PWInterval(InterSet ii) : pieces_(ii) {}
@@ -73,7 +73,7 @@ unsigned int cardinal(PWInterval pwi)
 {
   unsigned int result = 0;
 
-  BOOST_FOREACH (Interval i, pwi.pieces())
+  BOOST_FOREACH (SetPiece i, pwi.pieces())
     result += cardinal(i);
 
   return result;
@@ -81,16 +81,16 @@ unsigned int cardinal(PWInterval pwi)
 
 bool isEmpty(PWInterval pwi) { return pwi.pieces().empty(); }
 
-bool isMember(INT x, PWInterval pwi)
+bool isMember(NAT x, PWInterval pwi)
 {
-  BOOST_FOREACH (Interval i, pwi.pieces())
+  BOOST_FOREACH (SetPiece i, pwi.pieces())
     if (isMember(x, i))
       return true;
 
   return false;
 }
 
-Util::INT minElem(PWInterval pwi) 
+Util::NAT minElem(PWInterval pwi) 
 {
   if (isEmpty(pwi))
     return 0;
@@ -98,7 +98,7 @@ Util::INT minElem(PWInterval pwi)
   return minElem(*(pwi.pieces_ref().begin()));
 }
 
-Util::INT maxElem(PWInterval pwi) 
+Util::NAT maxElem(PWInterval pwi) 
 {
   if (isEmpty(pwi))
     return 0;
@@ -119,9 +119,9 @@ PWInterval intersection(PWInterval pwi1, PWInterval pwi2)
 
   if (maxElem(pwi2) < minElem(pwi1)) return PWInterval();
 
-  if (maxElem(pwi1) == minElem(pwi2)) return PWInterval(Interval(maxElem(pwi1), 1, maxElem(pwi1)));
+  if (maxElem(pwi1) == minElem(pwi2)) return PWInterval(SetPiece(maxElem(pwi1), 1, maxElem(pwi1)));
 
-  if (maxElem(pwi2) == minElem(pwi1)) return PWInterval(Interval(maxElem(pwi2), 1, maxElem(pwi2)));
+  if (maxElem(pwi2) == minElem(pwi1)) return PWInterval(SetPiece(maxElem(pwi2), 1, maxElem(pwi2)));
 
   if (pwi1.pieces_ref() == pwi2.pieces_ref()) return pwi1;
 
@@ -131,6 +131,7 @@ PWInterval intersection(PWInterval pwi1, PWInterval pwi2)
   return PWInterval(cap);
 }
 
+// TODO: choose better lt/gt pieces
 PWInterval cup(PWInterval pwi1, PWInterval pwi2)
 {
   InterSet un;
@@ -142,20 +143,20 @@ PWInterval cup(PWInterval pwi1, PWInterval pwi2)
   if (pwi1.pieces_ref() == pwi2.pieces_ref()) return pwi1;
 
   if (maxElem(pwi1) <= minElem(pwi2)) {
-    BOOST_FOREACH (Interval i1, pwi1.pieces_ref())
+    BOOST_FOREACH (SetPiece i1, pwi1.pieces_ref())
       un.emplace_hint(un.cend(), i1);
 
-    BOOST_FOREACH (Interval i2, pwi2.pieces_ref())
+    BOOST_FOREACH (SetPiece i2, pwi2.pieces_ref())
       un.emplace_hint(un.cend(), i2);
   
     return PWInterval(un);
   }
 
   if (maxElem(pwi2) <= minElem(pwi1)) {
-    BOOST_FOREACH (Interval i2, pwi2.pieces_ref())
+    BOOST_FOREACH (SetPiece i2, pwi2.pieces_ref())
       un.emplace_hint(un.cend(), i2);
 
-    BOOST_FOREACH (Interval i1, pwi1.pieces_ref())
+    BOOST_FOREACH (SetPiece i1, pwi1.pieces_ref())
       un.emplace_hint(un.cend(), i1);
 
     return PWInterval(un);
@@ -181,10 +182,10 @@ PWInterval cup(PWInterval pwi1, PWInterval pwi2)
     un = traverse(lt_pieces, diff, &least);
 
   else {
-    BOOST_FOREACH (Interval i, lt_pieces.pieces_ref())
+    BOOST_FOREACH (SetPiece i, lt_pieces.pieces_ref())
       un.emplace(i);
 
-    BOOST_FOREACH (Interval i, gt_pieces.pieces_ref())
+    BOOST_FOREACH (SetPiece i, gt_pieces.pieces_ref())
       un.emplace(i);
   }
 
@@ -195,21 +196,21 @@ PWInterval complement(PWInterval pwi)
 {
   InterSet c;
 
-  if (isEmpty(pwi)) return PWInterval(Interval(0, 1, Util::Inf));
+  if (isEmpty(pwi)) return PWInterval(SetPiece(0, 1, Util::Inf));
 
-  Util::INT last_end = 0;
-  BOOST_FOREACH (Interval i, pwi.pieces()){
+  Util::NAT last_end = 0;
+  BOOST_FOREACH (SetPiece i, pwi.pieces()){
     // Before interval
     if (i.begin() != 0) {
-      Interval i_res(last_end, 1, i.begin() - 1);
+      SetPiece i_res(last_end, 1, i.begin() - 1);
       if (!isEmpty(i_res))
         c.emplace_hint(c.cend(), i_res);  
     }
 
     // "During" interval
     if (i.begin() < Util::Inf)
-      for (Util::INT j = 1; j < i.step(); j++) {
-        Interval i_res(i.begin() + j, i.step(), i.end());
+      for (Util::NAT j = 1; j < i.step(); j++) {
+        SetPiece i_res(i.begin() + j, i.step(), i.end());
         if (!isEmpty(i_res))
           c.emplace_hint(c.cend(), i_res);  
        }
@@ -220,10 +221,10 @@ PWInterval complement(PWInterval pwi)
   // After intervals
   last_end = maxElem(pwi); 
   if (last_end < Util::Inf)
-    c.insert(Interval(last_end + 1, 1, Util::Inf));
+    c.insert(SetPiece(last_end + 1, 1, Util::Inf));
 
   else 
-    c.insert(Interval(Util::Inf, 1, Util::Inf));
+    c.insert(SetPiece(Util::Inf, 1, Util::Inf));
 
   return PWInterval(c);
 }
@@ -234,14 +235,14 @@ PWInterval difference(PWInterval pwi1, PWInterval pwi2) { return intersection(pw
 
 bool isCompact(PWInterval pwi)
 {
-  BOOST_FOREACH (Interval i, pwi.pieces_ref())
+  BOOST_FOREACH (SetPiece i, pwi.pieces_ref())
     if (i.step() != 1)
       return false;
 
   return true;
 }
 
-InterSet boundedTraverse(PWInterval pwi1, PWInterval pwi2, Interval (*func)(Interval, Interval))
+InterSet boundedTraverse(PWInterval pwi1, PWInterval pwi2, SetPiece (*func)(SetPiece, SetPiece))
 {
   InterSet result;
 
@@ -251,12 +252,12 @@ InterSet boundedTraverse(PWInterval pwi1, PWInterval pwi2, Interval (*func)(Inte
     InterSetIt it1 = pwi1.pieces_ref().begin(), it2 = pwi2.pieces_ref().begin();   
     InterSetIt end1 = pwi1.pieces_ref().end(), end2 = pwi2.pieces_ref().end();   
 
-    Interval i1, i2;
+    SetPiece i1, i2;
     for (int j = 0; it1 != end1 && it2 != end2; j++) {
       i1 = *it1;
       i2 = *it2;
 
-      Interval funci = func(i1, i2);
+      SetPiece funci = func(i1, i2);
       if (!isEmpty(funci))
         result.emplace_hint(result.cend(), funci);
 
@@ -267,9 +268,9 @@ InterSet boundedTraverse(PWInterval pwi1, PWInterval pwi2, Interval (*func)(Inte
   }
 
   else {
-    BOOST_FOREACH (Interval i1, pwi1.pieces_ref())
-      BOOST_FOREACH (Interval i2, pwi2.pieces_ref()) {
-        Interval funci = func(i1, i2);
+    BOOST_FOREACH (SetPiece i1, pwi1.pieces_ref())
+      BOOST_FOREACH (SetPiece i2, pwi2.pieces_ref()) {
+        SetPiece funci = func(i1, i2);
         if (!isEmpty(funci))
           result.emplace(funci);
       }
@@ -278,7 +279,7 @@ InterSet boundedTraverse(PWInterval pwi1, PWInterval pwi2, Interval (*func)(Inte
   return result;
 }
 
-InterSet traverse(PWInterval pwi1, PWInterval pwi2, Interval (*func)(Interval, Interval))
+InterSet traverse(PWInterval pwi1, PWInterval pwi2, SetPiece (*func)(SetPiece, SetPiece))
 {
   InterSet result;
 
@@ -287,12 +288,12 @@ InterSet traverse(PWInterval pwi1, PWInterval pwi2, Interval (*func)(Interval, I
   InterSetIt it1 = pwi1.pieces_ref().begin(), it2 = pwi2.pieces_ref().begin();   
   InterSetIt end1 = pwi1.pieces_ref().end(), end2 = pwi2.pieces_ref().end();   
 
-  Interval i1, i2;
+  SetPiece i1, i2;
   for (; it1 != end1 && it2 != end2;) {
     i1 = *it1;
     i2 = *it2;
 
-    Interval funci = func(i1, i2);
+    SetPiece funci = func(i1, i2);
     if (!isEmpty(funci))
       result.emplace_hint(result.cend(), funci);
 

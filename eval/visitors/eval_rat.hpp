@@ -38,7 +38,7 @@ struct EvalRat : public boost::static_visitor<Util::RATIONAL> {
   EvalRat();
   EvalRat(VarEnv env);
 
-  Util::RATIONAL operator()(AST::Integer v) const;
+  Util::RATIONAL operator()(AST::Natural v) const;
   Util::RATIONAL operator()(AST::Rational v) const;
   Util::RATIONAL operator()(AST::Boolean v) const;
   Util::RATIONAL operator()(Util::VariableName v) const;
@@ -51,6 +51,7 @@ struct EvalRat : public boost::static_visitor<Util::RATIONAL> {
   Util::RATIONAL operator()(AST::SetUnaryOp v) const;
   Util::RATIONAL operator()(AST::SetBinOp v) const;
   Util::RATIONAL operator()(AST::LinearExp v) const;
+  Util::RATIONAL operator()(AST::LExpBinOp v) const;
 
   private:
   mutable VarEnv env_;

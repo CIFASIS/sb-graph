@@ -24,6 +24,7 @@
 #ifndef AST_VISITOR_EVALEXP
 #define AST_VISITOR_EVALEXP
 
+#include <eval/visitors/eval_le.hpp>
 #include <eval/visitors/eval_rat.hpp>
 #include <eval/visitors/eval_set.hpp>
 
@@ -36,7 +37,7 @@ struct EvalExpression : public boost::static_visitor<ExprBaseType> {
   EvalExpression();
   EvalExpression(VarEnv env);
 
-  ExprBaseType operator()(AST::Integer v) const;
+  ExprBaseType operator()(AST::Natural v) const;
   ExprBaseType operator()(AST::Rational v) const;
   ExprBaseType operator()(AST::Boolean v) const;
   ExprBaseType operator()(Util::VariableName v) const;
@@ -49,6 +50,7 @@ struct EvalExpression : public boost::static_visitor<ExprBaseType> {
   ExprBaseType operator()(AST::SetUnaryOp v) const;
   ExprBaseType operator()(AST::SetBinOp v) const;
   ExprBaseType operator()(AST::LinearExp v) const;
+  ExprBaseType operator()(AST::LExpBinOp v) const;
 
   private:
   mutable VarEnv env_;

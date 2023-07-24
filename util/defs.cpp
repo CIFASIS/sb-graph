@@ -23,26 +23,87 @@ namespace SBG {
 
 namespace Util {
 
-std::string to_str(INT x) { return (x == Inf) ? "Inf" : std::to_string(x); };
+std::string to_str(NAT x) { return (x == Inf) ? "Inf" : std::to_string(x); };
 
 RATIONAL::RATIONAL() : value_() {}
+RATIONAL::RATIONAL(NAT n) : value_(boost::rational<INT>(n, 1)) {}
 RATIONAL::RATIONAL(boost::rational<INT> value) : value_(value) {}
 RATIONAL::RATIONAL(INT n, INT d) : value_() {
-  boost::rational<INT> v(n, d);
+  boost::rational<long long int> v(n, d);
   set_value(v);
 }
 
 member_imp(RATIONAL, boost::rational<INT>, value);
 
-RATIONAL RATIONAL::operator+(const RATIONAL &r) { return RATIONAL(value() + r.value()); }
+INT RATIONAL::numerator() { return value().numerator(); }
 
-RATIONAL RATIONAL::operator-(const RATIONAL &r) { return RATIONAL(value() - r.value()); }
+INT RATIONAL::denominator() { return value().denominator(); }
 
-RATIONAL RATIONAL::operator*(const RATIONAL &r) { return RATIONAL(value() * r.value()); }
+RATIONAL RATIONAL::operator+=(const RATIONAL &r)
+{
+  value_ref() += r.value();
+  return *this;
+}
+
+RATIONAL RATIONAL::operator-=(const RATIONAL &r) 
+{
+  value_ref() -= r.value();
+  return *this;
+}
+
+RATIONAL RATIONAL::operator*=(const RATIONAL &r) 
+{
+  value_ref() *= r.value();
+  return *this;
+}
+
+RATIONAL RATIONAL::operator/=(const RATIONAL &r)
+{
+  value_ref() /= r.value();
+  return *this;
+}
+
+RATIONAL operator+(const RATIONAL &r1, const RATIONAL &r2)
+{ 
+  RATIONAL res(r1);
+  res += r2;
+  return res;
+}
+
+RATIONAL operator-(const RATIONAL &r1, const RATIONAL &r2)
+{
+  RATIONAL res(r1);
+  res -= r2;
+  return res;
+}
+
+RATIONAL operator*(const RATIONAL &r1, const RATIONAL &r2)
+{
+  RATIONAL res(r1);
+  res *= r2;
+  return res;
+}
+
+RATIONAL operator/(const RATIONAL &r1, const RATIONAL &r2)
+{
+  RATIONAL res(r1);
+  res /= r2;
+  return res;
+}
 
 bool RATIONAL::operator==(const RATIONAL &r) const { return value() == r.value(); }
 
+bool RATIONAL::operator<(const RATIONAL &r) const { return value() < r.value(); }
+
+bool RATIONAL::operator>(const RATIONAL &r) const { return value() > r.value(); }
+
 bool RATIONAL::operator!=(const RATIONAL &r) const { return value() != r.value(); }
+
+RATIONAL operator-(const RATIONAL &r) 
+{
+  auto aux = r; 
+  return RATIONAL(-aux.numerator(), aux.denominator());
+}
 
 std::ostream &operator<<(std::ostream &out, const RATIONAL &r)
 {

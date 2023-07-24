@@ -37,7 +37,7 @@ namespace AST {
 // Arithmetic and call structures ----------------------------------------------
 
 typedef std::string Name;
-typedef Util::INT Integer;
+typedef Util::NAT Natural;
 typedef Util::RATIONAL Rational;
 typedef bool Boolean;
 struct Interval;
@@ -48,9 +48,10 @@ struct SetUnaryOp;
 struct SetBinOp;
 struct BinOp;
 struct LinearExp;
+struct LExpBinOp;
 struct Call;
 
-typedef boost::variant<Integer, Rational, Boolean, Util::VariableName, 
+typedef boost::variant<Natural, Rational, Boolean, Util::VariableName, 
   boost::recursive_wrapper<BinOp>, 
   boost::recursive_wrapper<Call>, 
   boost::recursive_wrapper<Interval>, 
@@ -59,7 +60,8 @@ typedef boost::variant<Integer, Rational, Boolean, Util::VariableName,
   boost::recursive_wrapper<Set>,
   boost::recursive_wrapper<SetUnaryOp>,
   boost::recursive_wrapper<SetBinOp>,
-  boost::recursive_wrapper<LinearExp>> Expr;
+  boost::recursive_wrapper<LinearExp>,
+  boost::recursive_wrapper<LExpBinOp>> Expr;
 typedef std::vector<Expr> ExprList;
 std::ostream &operator<<(std::ostream &out, const ExprList &el);
 
@@ -188,6 +190,18 @@ struct LinearExp {
   eq_class(LinearExp);
 };
 std::ostream &operator<<(std::ostream &out, const LinearExp &le);
+
+struct LExpBinOp {
+  member_class(Expr, left);
+  member_class(Op, op);
+  member_class(Expr, right);
+
+  LExpBinOp();
+  LExpBinOp(Expr left, Op op, Expr right);
+
+  eq_class(LExpBinOp);
+};
+std::ostream &operator<<(std::ostream &out, const LExpBinOp &lbop);
 
 } // namespace AST
 

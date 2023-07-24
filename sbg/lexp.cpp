@@ -27,16 +27,22 @@ LExp::LExp(RAT slope, RAT offset) : slope_(slope), offset_(offset) {}
 member_imp(LExp, RAT, slope);
 member_imp(LExp, RAT, offset);
 
+LExp LExp::operator+(const LExp &r) { return LExp(slope() + r.slope(), offset() + r.offset()); }
+
+LExp LExp::operator-(const LExp &r) { return LExp(slope() - r.slope(), offset() - r.offset()); }
+
+bool LExp::operator==(const LExp &other) const { return slope() == other.slope() && offset() == other.offset(); }
+
 std::ostream &operator<<(std::ostream &out, const LExp &le)
 {
   RAT zero, one(1), slo = le.slope();
 
   if (slo != zero && slo != one) {
-    if (slo.value().numerator() != 1)
-      out << slo.value().numerator();
+    if (slo.numerator() != 1)
+      out << slo.numerator();
 
-    if (slo.value().denominator() != 1)
-      out << "x/" << slo.value().denominator();
+    if (slo.denominator() != 1)
+      out << "x/" << slo.denominator();
 
     else
       out << "x";
@@ -44,9 +50,45 @@ std::ostream &operator<<(std::ostream &out, const LExp &le)
 
   if (slo == one) out << "x";
 
-  if (le.offset() != zero) out << "+" << le.offset();
+  if (le.offset() != zero) {
+    if (le.offset() > 0)
+      out << "+" << le.offset();
+
+    else
+      out << le.offset();
+  }
 
   return out;
+}
+
+// Linear expression functions -------------------------------------------------
+
+LExp composition(LExp le1, LExp le2)
+{
+  RAT new_slope = le2.slope() * le1.slope();
+  RAT new_offset = le1.slope() * le2.offset() + le1.offset();
+
+  return LExp(new_slope, new_offset);
+}
+
+LExp inverse(LExp le)
+{
+  RAT zero, one(1);
+  RAT new_slope(0, 1), new_offset(0, 1);
+
+  // 
+  RAT slo = le.slope();
+  if (slo != zero) {
+    new_slope = RAT(slo.denominator(), slo.numerator());
+    new_offset = (-le.offset())/slo;
+  }
+
+  else {
+    new_slope = RAT(Util::Inf, 1);
+    new_offset = RAT(-Util::Inf, 1);
+  }
+
+  return LExp(new_slope, new_offset);
 }
 
 } // namespace SBG

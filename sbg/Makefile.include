@@ -7,7 +7,8 @@ SBG_ROOT := sbg
     $(UTIL_ROOT)/defs.cpp \
   	$(SBG_ROOT)/interval.cpp \
     $(SBG_ROOT)/pw_inter.cpp \
-    $(SBG_ROOT)/lexp.cpp
+    $(SBG_ROOT)/lexp.cpp \
+    $(SBG_ROOT)/map.cpp
 
 # Objects
 SBG_OBJ=$(addprefix $(BUILD_DIR)/, $(SBG_SRC:.cpp=.o))

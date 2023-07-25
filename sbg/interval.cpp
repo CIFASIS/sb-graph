@@ -30,6 +30,9 @@ Interval::Interval(NAT begin, NAT step, NAT end) : begin_(begin), step_(step), e
     int rem = fmod(end - begin, step);
     set_end(end - rem);
   }
+
+  if (cardinal(*this) == 1) set_step(1);
+    
 }
 
 member_imp(Interval, NAT, begin);

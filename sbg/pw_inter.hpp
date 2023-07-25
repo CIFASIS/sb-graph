@@ -28,7 +28,9 @@
 #ifndef SBG_PW_INTERVAL_HPP
 #define SBG_PW_INTERVAL_HPP
 
-#include <boost/container/set.hpp>
+#include <set>
+
+#include <boost/container/flat_set.hpp>
 
 #include <sbg/interval.hpp>
 
@@ -47,14 +49,14 @@ namespace LIB {
  * SetPieces, is not used).
  */
 struct LTInter {
-  bool operator()(const SetPiece &x, const SetPiece &y) const { return x < y; }
+  bool operator()(const SetPiece &x, const SetPiece &y) const;
   typedef SetPiece first_argument_type;
   typedef SetPiece second_argument_type;
   typedef bool result_type;
 };
 
-typedef boost::container::set<SetPiece, LTInter, boost::container::new_allocator<SetPiece>, void> InterSet;
-typedef boost::container::set<SetPiece>::iterator InterSetIt;
+typedef boost::container::flat_set<SetPiece, LTInter, boost::container::new_allocator<SetPiece>> InterSet;
+typedef InterSet::iterator InterSetIt;
 std::ostream &operator<<(std::ostream &out, const InterSet &ii);
 
 struct PWInterval {

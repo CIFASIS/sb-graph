@@ -25,6 +25,8 @@ namespace LIB {
 
 // Type definitions ------------------------------------------------------------
 
+bool LTInter::operator()(const SetPiece &x, const SetPiece &y) const { return x < y; }
+
 std::ostream &operator<<(std::ostream &out, const InterSet &ii) 
 {
   InterSet aux = ii;
@@ -47,9 +49,7 @@ std::ostream &operator<<(std::ostream &out, const InterSet &ii)
 // PWInterval ------------------------------------------------------------------
 
 PWInterval::PWInterval() : pieces_() {}
-PWInterval::PWInterval(SetPiece i) : pieces_() {
-  pieces_ref().insert(i);
-}
+PWInterval::PWInterval(SetPiece i) : pieces_() { pieces_ref().insert(i); }
 PWInterval::PWInterval(InterSet ii) : pieces_(ii) {}
 
 member_imp(PWInterval, InterSet, pieces);

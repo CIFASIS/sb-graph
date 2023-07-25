@@ -64,7 +64,7 @@ SetPiece image(SetPiece subdom, SBGMap sbgmap)
   return SetPiece(new_begin.numerator(), new_step.numerator(), new_end.numerator());
 }
 
-SetPiece preImage(SBGMap sbgmap) { return preImage(image(sbgmap), sbgmap); }
+SetPiece preImage(SBGMap sbgmap) { return sbgmap.dom(); }
 
 SetPiece preImage(SetPiece subcodom, SBGMap sbgmap)
 {

@@ -74,7 +74,7 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp_binary;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp_expr;
 
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> map;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbgmap;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> map_expr;
 
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> expr;

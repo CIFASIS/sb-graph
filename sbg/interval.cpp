@@ -21,7 +21,7 @@
 
 namespace SBG {
 
-Interval::Interval() : begin_(1), step_(0), end_(0) {}
+Interval::Interval() : begin_(1), step_(1), end_(0) {}
 Interval::Interval(NAT begin, NAT step, NAT end) : begin_(begin), step_(step), end_(end) 
 {
   if (end >= begin) {

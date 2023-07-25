@@ -183,11 +183,11 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   lexp_expr = lexp[qi::_val = qi::_1]
     | lexp_binary[qi::_val = qi::_1];
 
-  map = (interval >> ARROW >> lexp)[qi::_val = phx::construct<AST::LinearMap>(qi::_1, qi::_2)];
+  sbgmap = (interval >> ARROW >> lexp)[qi::_val = phx::construct<AST::LinearMap>(qi::_1, qi::_2)];
 
-  map_expr = map;
+  map_expr = sbgmap;
 
-  expr = map_expr | lexp_expr | interval_expr | set_expr | arithmetic_expr;
+  expr = map_expr | lexp_expr | arithmetic_expr | interval_expr | set_expr;
   
   expr_list = expr[phx::push_back(qi::_val, qi::_1)] >> *(COMA >> expr)[phx::push_back(qi::_val, qi::_1)];
 

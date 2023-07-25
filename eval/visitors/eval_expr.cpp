@@ -26,8 +26,8 @@ namespace Eval {
 // Function visitors -----------------------------------------------------------
 
 auto empty_visitor_ = Overload{
-  [](SBG::Interval a) { return isEmpty(a); },
-  [](SBG::Set a) { return isEmpty(a); },
+  [](LIB::Interval a) { return isEmpty(a); },
+  [](LIB::Set a) { return isEmpty(a); },
   [](auto a) { 
     Util::ERROR("Wrong arguments for isEmpty"); 
     return true; 
@@ -35,8 +35,8 @@ auto empty_visitor_ = Overload{
 };
 
 auto member_visitor_ = Overload{
-  [](Util::NAT a, SBG::Interval b) { return isMember(a, b); },
-  [](Util::NAT a, SBG::Set b) { return isMember(a, b); },
+  [](Util::NAT a, LIB::Interval b) { return isMember(a, b); },
+  [](Util::NAT a, LIB::Set b) { return isMember(a, b); },
   [](auto a, auto b) { 
     Util::ERROR("Wrong arguments for isMember"); 
     return false;
@@ -44,8 +44,8 @@ auto member_visitor_ = Overload{
 };
 
 auto min_visitor_ = Overload{
-  [](SBG::Interval a) { return minElem(a); },
-  [](SBG::Set a) { return minElem(a); },
+  [](LIB::Interval a) { return minElem(a); },
+  [](LIB::Set a) { return minElem(a); },
   [](auto a) { 
     Util::ERROR("Wrong arguments for minElem"); 
     return (Util::NAT) 0;
@@ -53,8 +53,8 @@ auto min_visitor_ = Overload{
 };
 
 auto max_visitor_ = Overload{
-  [](SBG::Interval a) { return maxElem(a); },
-  [](SBG::Set a) { return maxElem(a); },
+  [](LIB::Interval a) { return maxElem(a); },
+  [](LIB::Set a) { return maxElem(a); },
   [](auto a) { 
     Util::ERROR("Wrong arguments for maxElem"); 
     return (Util::NAT) 0; 
@@ -62,57 +62,57 @@ auto max_visitor_ = Overload{
 };
 
 auto lt_visitor_ = Overload{
-  [](SBG::Interval a, SBG::Interval b) { return least(a, b); },
+  [](LIB::Interval a, LIB::Interval b) { return least(a, b); },
   [](auto a, auto b) { 
     Util::ERROR("Wrong arguments for lt"); 
-    return SBG::Interval(); 
+    return LIB::Interval(); 
   }
 };
 
 auto compose_visitor_ = Overload{
-  [](SBG::LExp a, SBG::LExp b) { return composition(a, b); },
+  [](LIB::LExp a, LIB::LExp b) { return composition(a, b); },
   [](auto a, auto b) { 
     Util::ERROR("Wrong arguments for composition"); 
-    return SBG::LExp(); }
+    return LIB::LExp(); }
 };
 
 auto inverse_visitor_ = Overload{
-  [](SBG::LExp a) { return inverse(a); },
+  [](LIB::LExp a) { return inverse(a); },
   [](auto a) { 
     Util::ERROR("Wrong arguments for inversion"); 
-    return SBG::LExp(); 
+    return LIB::LExp(); 
   }
 };
 
 auto image_visitor1_ = Overload{
-  [](SBG::SBGMap a) { return image(a); },
+  [](LIB::SBGMap a) { return image(a); },
   [](auto a) { 
     Util::ERROR("Wrong arguments for image 1"); 
-    return SBG::SetPiece(); 
+    return LIB::SetPiece(); 
   }
 };
 
 auto image_visitor2_ = Overload{
-  [](SetPiece a, SBGMap b) { return image(a, b); },
+  [](LIB::SetPiece a, LIB::SBGMap b) { return image(a, b); },
   [](auto a, auto b) { 
     Util::ERROR("Wrong arguments for image 2"); 
-    return SBG::SetPiece(); 
+    return LIB::SetPiece(); 
   }
 };
 
 auto pre_image_visitor1_ = Overload{
-  [](SBG::SBGMap a) { return preImage(a); },
+  [](LIB::SBGMap a) { return preImage(a); },
   [](auto a) { 
     Util::ERROR("Wrong arguments for pre image 1"); 
-    return SBG::SetPiece(); 
+    return LIB::SetPiece(); 
   }
 };
 
 auto pre_image_visitor2_ = Overload{
-  [](SetPiece a, SBGMap b) { return preImage(a, b); },
+  [](LIB::SetPiece a, LIB::SBGMap b) { return preImage(a, b); },
   [](auto a, auto b) { 
     Util::ERROR("Wrong arguments for pre image 2"); 
-    return SBG::SetPiece(); 
+    return LIB::SetPiece(); 
   }
 };
 
@@ -172,80 +172,124 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
     BOOST_FOREACH (AST::Expr a, v.args()) 
       eval_args.push_back(ApplyThis(a));
 
+    bool arity_ok = false;
     switch (*venv) {
-      case Eval::Func::empty: {
-        ExprBaseType container = eval_args[0];
-        bool result = std::visit(empty_visitor_, container);
-        return result;
-      }
-
-      case Eval::Func::member: { 
-        ExprBaseType x = eval_args[0], container = eval_args[1];
-        bool result = std::visit(member_visitor_, x, container);
-        return result;
-      }
-
-      case Eval::Func::min: {
-        ExprBaseType container = eval_args[0];
-        Util::NAT result = std::visit(min_visitor_, container);
-        return result;
-      }
-
-      case Eval::Func::max: {
-        ExprBaseType container = eval_args[0];
-        Util::NAT result = std::visit(max_visitor_, container);
-        return result;
-      }
-
-      case Eval::Func::lt: {
-        ExprBaseType cont1 = eval_args[0], cont2 = eval_args[1];
-        SBG::Interval result = std::visit(lt_visitor_, cont1, cont2);
-        return result;
-      }
-
-      case Eval::Func::comp: {
-        ExprBaseType lexp1 = eval_args[0], lexp2 = eval_args[1];
-        SBG::LExp result = std::visit(compose_visitor_, lexp1, lexp2);
-        return result;
-      }
-
-      case Eval::Func::inv: {
-        ExprBaseType lexp = eval_args[0];
-        SBG::LExp result = std::visit(inverse_visitor_, lexp);
-        return result;
-      }
-
-      case Eval::Func::im: {
+      case Eval::Func::empty: 
         if (eval_args.size() == 1) {
+          arity_ok = true;
+
+          ExprBaseType container = eval_args[0];
+          bool result = std::visit(empty_visitor_, container);
+          return result;
+        }
+        break;
+
+      case Eval::Func::member:  
+        if (eval_args.size() == 2) {
+          arity_ok = true;
+
+          ExprBaseType x = eval_args[0], container = eval_args[1];
+          bool result = std::visit(member_visitor_, x, container);
+          return result;
+        }
+        break;
+
+      case Eval::Func::min:
+        if (eval_args.size() == 1) {
+          arity_ok = true;
+
+          ExprBaseType container = eval_args[0];
+          Util::NAT result = std::visit(min_visitor_, container);
+          return result;
+        }
+        break;
+
+      case Eval::Func::max:
+        if (eval_args.size() == 1) {
+          arity_ok = true;
+
+          ExprBaseType container = eval_args[0];
+          Util::NAT result = std::visit(max_visitor_, container);
+          return result;
+        }
+        break;
+
+      case Eval::Func::lt:
+        if (eval_args.size() == 2) {
+          arity_ok = true;
+
+          ExprBaseType cont1 = eval_args[0], cont2 = eval_args[1];
+          LIB::Interval result = std::visit(lt_visitor_, cont1, cont2);
+          return result;
+        }
+        break;
+
+      case Eval::Func::comp:
+        if (eval_args.size() == 2) {
+          arity_ok = true;
+
+          ExprBaseType lexp1 = eval_args[0], lexp2 = eval_args[1];
+          LIB::LExp result = std::visit(compose_visitor_, lexp1, lexp2);
+          return result;
+        }
+        break;
+
+      case Eval::Func::inv:
+        if (eval_args.size() == 1) {
+          arity_ok = true;
+
+          ExprBaseType lexp = eval_args[0];
+          LIB::LExp result = std::visit(inverse_visitor_, lexp);
+          return result;
+        }
+        break;
+
+      case Eval::Func::im:
+        if (eval_args.size() == 1) {
+          arity_ok = true;
+
           ExprBaseType sbgmap = eval_args[0];
-          SetPiece result = std::visit(image_visitor1_, sbgmap);
+          LIB::SetPiece result = std::visit(image_visitor1_, sbgmap);
           return result;
         }
 
         else if (eval_args.size() == 2) {
+          arity_ok = true;
+
           ExprBaseType subdom = eval_args[0], sbgmap = eval_args[1];
-          SetPiece result = std::visit(image_visitor2_, subdom, sbgmap);
+          LIB::SetPiece result = std::visit(image_visitor2_, subdom, sbgmap);
           return result;
         }
-      }
 
-      case Eval::Func::preim: {
+        break;
+
+      case Eval::Func::preim:
         if (eval_args.size() == 1) {
+          arity_ok = true;
+
           ExprBaseType sbgmap = eval_args[0];
-          SetPiece result = std::visit(pre_image_visitor1_, sbgmap);
+          LIB::SetPiece result = std::visit(pre_image_visitor1_, sbgmap);
           return result;
         }
 
         else if (eval_args.size() == 2) {
+          arity_ok = true;
+
           ExprBaseType subdom = eval_args[0], sbgmap = eval_args[1];
-          SetPiece result = std::visit(pre_image_visitor2_, subdom, sbgmap);
+          LIB::SetPiece result = std::visit(pre_image_visitor2_, subdom, sbgmap);
           return result;
         }
-      }
+        
+        break;
 
       default:
         Util::ERROR("EvalExpression: function %s not implemented", vname.c_str());
         return 0;
+    }
+
+    if (!arity_ok) {
+      Util::ERROR("EvalExpression: wrong number of arguments for Call");
+      return 0;
     }
   }
 

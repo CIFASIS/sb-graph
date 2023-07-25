@@ -21,6 +21,8 @@
 
 namespace SBG {
 
+namespace LIB {
+
 Interval::Interval() : begin_(1), step_(1), end_(0) {}
 Interval::Interval(NAT begin, NAT step, NAT end) : begin_(begin), step_(step), end_(end) 
 {
@@ -112,5 +114,7 @@ MaybeInterval canonize(Interval i1, Interval i2)
 
   return {};
 }
+
+} // namespace LIB
 
 } // namespace SBG

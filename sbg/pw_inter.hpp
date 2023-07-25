@@ -34,6 +34,8 @@
 
 namespace SBG {
 
+namespace LIB {
+
 /**
  * @brief Ordered collection of intervals.
  */
@@ -110,6 +112,8 @@ InterSet boundedTraverse(PWInterval pwi1, PWInterval pwi2, SetPiece (*func)(SetP
 InterSet traverse(PWInterval pwi1, PWInterval pwi2, SetPiece (*func)(SetPiece, SetPiece));
 
 typedef PWInterval Set;
+
+} // namespace LIB
 
 }  // namespace SBG
 

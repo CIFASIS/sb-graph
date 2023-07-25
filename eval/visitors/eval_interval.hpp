@@ -31,26 +31,26 @@ namespace SBG {
 
 namespace Eval {
 
-struct EvalInterval : public boost::static_visitor<SBG::Interval> {
+struct EvalInterval : public boost::static_visitor<LIB::Interval> {
   public:
   EvalInterval();
   EvalInterval(VarEnv env);
 
-  SBG::Interval operator()(AST::Natural v) const;
-  SBG::Interval operator()(AST::Rational v) const;
-  SBG::Interval operator()(AST::Boolean v) const;
-  SBG::Interval operator()(Util::VariableName v) const;
-  SBG::Interval operator()(AST::BinOp v) const;
-  SBG::Interval operator()(AST::Call v) const;
-  SBG::Interval operator()(AST::Interval v) const;
-  SBG::Interval operator()(AST::InterUnaryOp v) const;
-  SBG::Interval operator()(AST::InterBinOp v) const;
-  SBG::Interval operator()(AST::Set v) const;
-  SBG::Interval operator()(AST::SetUnaryOp v) const;
-  SBG::Interval operator()(AST::SetBinOp v) const;
-  SBG::Interval operator()(AST::LinearExp v) const;
-  SBG::Interval operator()(AST::LExpBinOp v) const;
-  SBG::Interval operator()(AST::LinearMap v) const;
+  LIB::Interval operator()(AST::Natural v) const;
+  LIB::Interval operator()(AST::Rational v) const;
+  LIB::Interval operator()(AST::Boolean v) const;
+  LIB::Interval operator()(Util::VariableName v) const;
+  LIB::Interval operator()(AST::BinOp v) const;
+  LIB::Interval operator()(AST::Call v) const;
+  LIB::Interval operator()(AST::Interval v) const;
+  LIB::Interval operator()(AST::InterUnaryOp v) const;
+  LIB::Interval operator()(AST::InterBinOp v) const;
+  LIB::Interval operator()(AST::Set v) const;
+  LIB::Interval operator()(AST::SetUnaryOp v) const;
+  LIB::Interval operator()(AST::SetBinOp v) const;
+  LIB::Interval operator()(AST::LinearExp v) const;
+  LIB::Interval operator()(AST::LExpBinOp v) const;
+  LIB::Interval operator()(AST::LinearMap v) const;
 
   private:
   mutable VarEnv env_;

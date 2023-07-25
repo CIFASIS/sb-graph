@@ -41,6 +41,8 @@
 
 namespace SBG {
 
+namespace LIB {
+
 using NAT = Util::NAT;
 
 struct Interval {
@@ -76,6 +78,8 @@ typedef std::optional<Interval> MaybeInterval;
 MaybeInterval canonize(Interval i1, Interval i2);
 
 typedef Interval SetPiece;
+
+} // namespace LIB
 
 }  // namespace SBG
 

@@ -26,90 +26,90 @@ namespace Eval {
 EvalSet::EvalSet() : env_() {}
 EvalSet::EvalSet(VarEnv env) : env_(env) {}
 
-SBG::Set EvalSet::operator()(AST::Natural v) const { 
+LIB::Set EvalSet::operator()(AST::Natural v) const { 
   Util::ERROR("EvalSet: trying to evaluate a Natural");
-  return SBG::Set(); 
+  return LIB::Set(); 
 }
 
-SBG::Set EvalSet::operator()(AST::Rational v) const { 
+LIB::Set EvalSet::operator()(AST::Rational v) const { 
   Util::ERROR("EvalSet: trying to evaluate a Rational");
-  return SBG::Set(); 
+  return LIB::Set(); 
 }
 
-SBG::Set EvalSet::operator()(AST::Boolean v) const { 
+LIB::Set EvalSet::operator()(AST::Boolean v) const { 
   Util::ERROR("EvalSet: trying to evaluate a Boolean");
-  return SBG::Set(); 
+  return LIB::Set(); 
 }
 
-SBG::Set EvalSet::operator()(Util::VariableName v) const { 
+LIB::Set EvalSet::operator()(Util::VariableName v) const { 
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (std::holds_alternative<SBG::Set>(value))
-      return std::get<SBG::Set>(value);
+    if (std::holds_alternative<LIB::Set>(value))
+      return std::get<LIB::Set>(value);
 
     else {
       Util::ERROR("EvalSet: variable %s is not a set", v.c_str());
-      return SBG::Set(); 
+      return LIB::Set(); 
     } 
   }
 
   Util::ERROR("EvalSet: variable %s not defined", v.c_str());
-  return SBG::Set(); 
+  return LIB::Set(); 
 }
 
-SBG::Set EvalSet::operator()(AST::BinOp v) const 
+LIB::Set EvalSet::operator()(AST::BinOp v) const 
 {
   Util::ERROR("EvalSet: trying to evaluate an arithmetic BinOp");
-  return SBG::Set(); 
+  return LIB::Set(); 
 }
 
-SBG::Set EvalSet::operator()(AST::Call v) const
+LIB::Set EvalSet::operator()(AST::Call v) const
 {
   Util::ERROR("EvalSet: trying to evaluate a Call");
-  return SBG::Set(); 
+  return LIB::Set(); 
 }
 
-SBG::Set EvalSet::operator()(AST::Interval v) const
+LIB::Set EvalSet::operator()(AST::Interval v) const
 { 
   Util::ERROR("EvalSet: trying to evaluate an Interval");
-  return SBG::Set(); 
+  return LIB::Set(); 
 }
 
-SBG::Set EvalSet::operator()(AST::InterUnaryOp v) const
+LIB::Set EvalSet::operator()(AST::InterUnaryOp v) const
 {
   Util::ERROR("EvalSet: trying to evaluate an InterUnaryOp");
-  return SBG::Set(); 
+  return LIB::Set(); 
 }
 
-SBG::Set EvalSet::operator()(AST::InterBinOp v) const
+LIB::Set EvalSet::operator()(AST::InterBinOp v) const
 {
   Util::ERROR("EvalSet: trying to evaluate an InterBinOp");
-  return SBG::Set(); 
+  return LIB::Set(); 
 }
 
-SBG::Set EvalSet::operator()(AST::Set v) const 
+LIB::Set EvalSet::operator()(AST::Set v) const 
 {
-  SBG::InterSet res;
+  LIB::InterSet res;
 
   EvalInterval inter_visit(env_);
   BOOST_FOREACH (AST::Expr e, v.pieces())
     res.emplace_hint(res.cend(), Apply(inter_visit, e));     
 
-  return SBG::Set(res);
+  return LIB::Set(res);
 }
 
-SBG::Set EvalSet::operator()(AST::SetUnaryOp v) const 
+LIB::Set EvalSet::operator()(AST::SetUnaryOp v) const 
 {
   AST::Expr e = v.e();
   switch (v.op()) {
     default:
       Util::ERROR("EvalSet: SetUnaryOp %s not supported.", AST::ContUOpNames[v.op()]);
-      return SBG::Set(); 
+      return LIB::Set(); 
   }
 }
 
-SBG::Set EvalSet::operator()(AST::SetBinOp v) const 
+LIB::Set EvalSet::operator()(AST::SetBinOp v) const 
 {
   AST::Expr l = v.left(), r = v.right();
   switch (v.op()) {
@@ -121,26 +121,26 @@ SBG::Set EvalSet::operator()(AST::SetBinOp v) const
 
     default:
       Util::ERROR("EvalSet: SetBinOp %s not supported.", AST::ContOpNames[v.op()]);
-      return SBG::Set(); 
+      return LIB::Set(); 
   }
 }
 
-SBG::Set EvalSet::operator()(AST::LinearExp v) const
+LIB::Set EvalSet::operator()(AST::LinearExp v) const
 { 
   Util::ERROR("EvalSet: trying to evaluate a LinearExp");
-  return SBG::Set(); 
+  return LIB::Set(); 
 }
 
-SBG::Set EvalSet::operator()(AST::LExpBinOp v) const
+LIB::Set EvalSet::operator()(AST::LExpBinOp v) const
 { 
   Util::ERROR("EvalSet: trying to evaluate a LExpBinOp");
-  return SBG::Set(); 
+  return LIB::Set(); 
 }
 
-SBG::Set EvalSet::operator()(AST::LinearMap v) const
+LIB::Set EvalSet::operator()(AST::LinearMap v) const
 { 
   Util::ERROR("EvalSet: trying to evaluate a LinearMap");
-  return SBG::Set(); 
+  return LIB::Set(); 
 }
 
 } // namespace Eval

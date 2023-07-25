@@ -42,7 +42,7 @@ namespace Eval {
 
 // Type definitions ------------------------------------------------------------
 
-typedef std::variant<Util::NAT, Util::RATIONAL, SBG::Interval, SBG::Set, SBG::LExp, SBG::SBGMap> ExprBaseType;
+typedef std::variant<Util::NAT, Util::RATIONAL, LIB::Interval, LIB::Set, LIB::LExp, LIB::SBGMap> ExprBaseType;
 typedef std::optional<ExprBaseType> MaybeEBT;
 
 template <class T>

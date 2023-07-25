@@ -21,6 +21,8 @@
 
 namespace SBG {
 
+namespace LIB {
+
 SBGMap::SBGMap() : dom_(), exp_() {}
 SBGMap::SBGMap(SetPiece dom, LExp lexp) : dom_(dom), exp_(lexp) {
   Util::RATIONAL im_step = dom.step() * lexp.slope(), im_begin = minElem(dom) * lexp.slope() + lexp.offset();
@@ -73,5 +75,7 @@ SetPiece preImage(SetPiece subcodom, SBGMap sbgmap)
 
   return intersection(sbgmap.dom(), image(cap_subcodom, inv));
 }
+
+} // namespace LIB
 
 } // namespace SBG

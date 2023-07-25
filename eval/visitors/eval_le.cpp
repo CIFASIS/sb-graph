@@ -26,96 +26,96 @@ namespace Eval {
 EvalLE::EvalLE() : env_() {}
 EvalLE::EvalLE(VarEnv env) : env_(env) {}
 
-LExp EvalLE::operator()(AST::Natural v) const { 
+LIB::LExp EvalLE::operator()(AST::Natural v) const { 
   Util::ERROR("EvalLE: trying to evaluate a Natural");
-  return LExp(); 
+  return LIB::LExp(); 
 }
 
-LExp EvalLE::operator()(AST::Rational v) const { 
+LIB::LExp EvalLE::operator()(AST::Rational v) const { 
   Util::ERROR("EvalLE: trying to evaluate a Rational");
-  return LExp(); 
+  return LIB::LExp(); 
 }
 
-LExp EvalLE::operator()(AST::Boolean v) const { 
+LIB::LExp EvalLE::operator()(AST::Boolean v) const { 
   Util::ERROR("EvalLE: trying to evaluate a Boolean");
-  return LExp(); 
+  return LIB::LExp(); 
 }
 
-LExp EvalLE::operator()(Util::VariableName v) const { 
+LIB::LExp EvalLE::operator()(Util::VariableName v) const { 
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (std::holds_alternative<LExp>(value))
-      return std::get<LExp>(value);
+    if (std::holds_alternative<LIB::LExp>(value))
+      return std::get<LIB::LExp>(value);
 
     else {
       Util::ERROR("EvalLE: variable %s is not a linear expression", v.c_str());
-      return LExp(); 
+      return LIB::LExp(); 
     } 
   }
 
   Util::ERROR("EvalLE: variable %s not defined", v.c_str());
-  return LExp(); 
+  return LIB::LExp(); 
 }
 
-LExp EvalLE::operator()(AST::BinOp v) const 
+LIB::LExp EvalLE::operator()(AST::BinOp v) const 
 {
   Util::ERROR("EvalLE: trying to evaluate an arithmetic BinOp");
-  return LExp(); 
+  return LIB::LExp(); 
 }
 
-LExp EvalLE::operator()(AST::Call v) const
+LIB::LExp EvalLE::operator()(AST::Call v) const
 {
   Util::ERROR("EvalLE: trying to evaluate a Call");
-  return LExp(); 
+  return LIB::LExp(); 
 }
 
-LExp EvalLE::operator()(AST::Interval v) const
+LIB::LExp EvalLE::operator()(AST::Interval v) const
 { 
   Util::ERROR("EvalLE: trying to evaluate an Interval");
-  return LExp(); 
+  return LIB::LExp(); 
 }
 
-LExp EvalLE::operator()(AST::InterUnaryOp v) const
+LIB::LExp EvalLE::operator()(AST::InterUnaryOp v) const
 {
   Util::ERROR("EvalLE: trying to evaluate an InterUnaryOp");
-  return LExp(); 
+  return LIB::LExp(); 
 }
 
-LExp EvalLE::operator()(AST::InterBinOp v) const
+LIB::LExp EvalLE::operator()(AST::InterBinOp v) const
 {
   Util::ERROR("EvalLE: trying to evaluate an InterBinOp");
-  return LExp(); 
+  return LIB::LExp(); 
 }
 
-LExp EvalLE::operator()(AST::Set v) const 
+LIB::LExp EvalLE::operator()(AST::Set v) const 
 {
   Util::ERROR("EvalLE: trying to evaluate a Set");
-  return LExp(); 
+  return LIB::LExp(); 
 }
 
-LExp EvalLE::operator()(AST::SetUnaryOp v) const 
+LIB::LExp EvalLE::operator()(AST::SetUnaryOp v) const 
 {
   Util::ERROR("EvalLE: trying to evaluate a SetUnaryOp");
-  return LExp(); 
+  return LIB::LExp(); 
 }
 
-LExp EvalLE::operator()(AST::SetBinOp v) const 
+LIB::LExp EvalLE::operator()(AST::SetBinOp v) const 
 {
   Util::ERROR("EvalLE: trying to evaluate a SetBinOp");
-  return LExp(); 
+  return LIB::LExp(); 
 }
 
-LExp EvalLE::operator()(AST::LinearExp le) const
+LIB::LExp EvalLE::operator()(AST::LinearExp le) const
 { 
   EvalRat visit_rat(env_);
   AST::Expr m = le.slope();
   AST::Expr h = le.offset();
 
-  return LExp(Apply(visit_rat, m), Apply(visit_rat, h));
+  return LIB::LExp(Apply(visit_rat, m), Apply(visit_rat, h));
 }
 
-LExp EvalLE::operator()(AST::LExpBinOp v) const 
+LIB::LExp EvalLE::operator()(AST::LExpBinOp v) const 
 {
   AST::Expr l = v.left(), r = v.right();
   switch (v.op()) {
@@ -127,14 +127,14 @@ LExp EvalLE::operator()(AST::LExpBinOp v) const
 
     default:
       Util::ERROR("EvalLE: LExpBinOp %s not supported.", AST::OpNames[v.op()]);
-      return SBG::LExp(); 
+      return LIB::LExp(); 
   }
 }
 
-LExp EvalLE::operator()(AST::LinearMap v) const 
+LIB::LExp EvalLE::operator()(AST::LinearMap v) const 
 {
   Util::ERROR("EvalLE: trying to evaluate a LinearMap");
-  return SBG::LExp(); 
+  return LIB::LExp(); 
 }
 
 } // namespace Eval

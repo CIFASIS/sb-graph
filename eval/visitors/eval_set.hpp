@@ -30,26 +30,26 @@ namespace SBG {
 
 namespace Eval {
 
-struct EvalSet : public boost::static_visitor<SBG::Set> {
+struct EvalSet : public boost::static_visitor<LIB::Set> {
   public:
   EvalSet();
   EvalSet(VarEnv env);
 
-  SBG::Set operator()(AST::Natural v) const;
-  SBG::Set operator()(AST::Rational v) const;
-  SBG::Set operator()(AST::Boolean v) const;
-  SBG::Set operator()(Util::VariableName v) const;
-  SBG::Set operator()(AST::BinOp v) const;
-  SBG::Set operator()(AST::Call v) const;
-  SBG::Set operator()(AST::Interval v) const;
-  SBG::Set operator()(AST::InterUnaryOp v) const;
-  SBG::Set operator()(AST::InterBinOp v) const;
-  SBG::Set operator()(AST::Set v) const;
-  SBG::Set operator()(AST::SetUnaryOp v) const;
-  SBG::Set operator()(AST::SetBinOp v) const;
-  SBG::Set operator()(AST::LinearExp v) const;
-  SBG::Set operator()(AST::LExpBinOp v) const;
-  SBG::Set operator()(AST::LinearMap v) const;
+  LIB::Set operator()(AST::Natural v) const;
+  LIB::Set operator()(AST::Rational v) const;
+  LIB::Set operator()(AST::Boolean v) const;
+  LIB::Set operator()(Util::VariableName v) const;
+  LIB::Set operator()(AST::BinOp v) const;
+  LIB::Set operator()(AST::Call v) const;
+  LIB::Set operator()(AST::Interval v) const;
+  LIB::Set operator()(AST::InterUnaryOp v) const;
+  LIB::Set operator()(AST::InterBinOp v) const;
+  LIB::Set operator()(AST::Set v) const;
+  LIB::Set operator()(AST::SetUnaryOp v) const;
+  LIB::Set operator()(AST::SetBinOp v) const;
+  LIB::Set operator()(AST::LinearExp v) const;
+  LIB::Set operator()(AST::LExpBinOp v) const;
+  LIB::Set operator()(AST::LinearMap v) const;
 
   private:
   mutable VarEnv env_;

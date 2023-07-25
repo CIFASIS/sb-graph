@@ -33,6 +33,8 @@
 
 namespace SBG {
 
+namespace LIB {
+
 using RAT = Util::RATIONAL;
 
 struct LExp {
@@ -65,6 +67,8 @@ LExp inverse(LExp le);
  * @brief Extra operations.
  */
 
-}  // namespace SBG
+} // namespace LIB
+
+} // namespace SBG
 
 #endif

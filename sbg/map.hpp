@@ -35,6 +35,8 @@
 
 namespace SBG {
 
+namespace LIB {
+
 struct SBGMap {
   member_class(SetPiece, dom);
   member_class(LExp, exp);
@@ -54,6 +56,8 @@ SetPiece image(SBGMap sbgmap);
 SetPiece image(SetPiece subdom, SBGMap sbgmap);
 SetPiece preImage(SBGMap sbgmap);
 SetPiece preImage(SetPiece subcodom, SBGMap sbgmap);
+
+} // namespace LIB
 
 }  // namespace SBG
 

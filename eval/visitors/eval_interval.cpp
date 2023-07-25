@@ -26,75 +26,75 @@ namespace Eval {
 EvalInterval::EvalInterval() : env_() {}
 EvalInterval::EvalInterval(VarEnv env) : env_(env) {}
 
-SBG::Interval EvalInterval::operator()(AST::Natural v) const 
+LIB::Interval EvalInterval::operator()(AST::Natural v) const 
 { 
   Util::ERROR("EvalInterval: trying to evaluate an Natural");
-  return SBG::Interval(); 
+  return LIB::Interval(); 
 }
 
-SBG::Interval EvalInterval::operator()(AST::Rational v) const 
+LIB::Interval EvalInterval::operator()(AST::Rational v) const 
 { 
   Util::ERROR("EvalInterval: trying to evaluate a Rational");
-  return SBG::Interval(); 
+  return LIB::Interval(); 
 }
 
-SBG::Interval EvalInterval::operator()(AST::Boolean v) const 
+LIB::Interval EvalInterval::operator()(AST::Boolean v) const 
 { 
   Util::ERROR("EvalInterval: trying to evaluate a Boolean");
-  return SBG::Interval(); 
+  return LIB::Interval(); 
 }
 
-SBG::Interval EvalInterval::operator()(Util::VariableName v) const 
+LIB::Interval EvalInterval::operator()(Util::VariableName v) const 
 { 
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (std::holds_alternative<SBG::Interval>(value))
-      return std::get<SBG::Interval>(value);
+    if (std::holds_alternative<LIB::Interval>(value))
+      return std::get<LIB::Interval>(value);
 
     else {
       Util::ERROR("EvalInterval: variable %s is not an interval", v.c_str());
-      return SBG::Interval(); 
+      return LIB::Interval(); 
     } 
   }
 
   Util::ERROR("EvalInterval: variable %s not defined", v.c_str());
-  return SBG::Interval(); 
+  return LIB::Interval(); 
 }
 
-SBG::Interval EvalInterval::operator()(AST::BinOp v) const 
+LIB::Interval EvalInterval::operator()(AST::BinOp v) const 
 {
   Util::ERROR("EvalInterval: trying to evaluate an arithmetic BinOp");
-  return SBG::Interval(); 
+  return LIB::Interval(); 
 }
 
-SBG::Interval EvalInterval::operator()(AST::Call v) const
+LIB::Interval EvalInterval::operator()(AST::Call v) const
 {
   Util::ERROR("EvalInterval: trying to evaluate a Call");
-  return SBG::Interval(); 
+  return LIB::Interval(); 
 }
 
-SBG::Interval EvalInterval::operator()(AST::Interval v) const 
+LIB::Interval EvalInterval::operator()(AST::Interval v) const 
 { 
   EvalNat visit_nat(env_);
   Util::NAT b = Apply(visit_nat, v.begin());
   Util::NAT s = Apply(visit_nat, v.step());
   Util::NAT e = Apply(visit_nat, v.end());
 
-  return Interval(b, s, e);
+  return LIB::Interval(b, s, e);
 }
 
-SBG::Interval EvalInterval::operator()(AST::InterUnaryOp v) const
+LIB::Interval EvalInterval::operator()(AST::InterUnaryOp v) const
 {
   AST::Expr exp = v.e();
   switch (v.op()) {
     default:
       Util::ERROR("EvalInterval: InterUnaryOp %s not supported.", AST::ContUOpNames[v.op()]);
-      return SBG::Interval(); 
+      return LIB::Interval(); 
   }
 }
 
-SBG::Interval EvalInterval::operator()(AST::InterBinOp v) const
+LIB::Interval EvalInterval::operator()(AST::InterBinOp v) const
 {
   AST::Expr l = v.left(), r = v.right();
   switch (v.op()) {
@@ -103,44 +103,44 @@ SBG::Interval EvalInterval::operator()(AST::InterBinOp v) const
 
     default:
       Util::ERROR("EvalInterval: InterBinOp %s not supported.", AST::ContOpNames[v.op()]);
-      return SBG::Interval(); 
+      return LIB::Interval(); 
   }
 }
 
-SBG::Interval EvalInterval::operator()(AST::Set v) const 
+LIB::Interval EvalInterval::operator()(AST::Set v) const 
 {
   Util::ERROR("EvalInterval: trying to evaluate a Set");
-  return SBG::Interval(); 
+  return LIB::Interval(); 
 }
 
-SBG::Interval EvalInterval::operator()(AST::SetUnaryOp v) const 
+LIB::Interval EvalInterval::operator()(AST::SetUnaryOp v) const 
 {
   Util::ERROR("EvalInterval: trying to evaluate a SetUnaryOp");
-  return SBG::Interval(); 
+  return LIB::Interval(); 
 }
 
-SBG::Interval EvalInterval::operator()(AST::SetBinOp v) const 
+LIB::Interval EvalInterval::operator()(AST::SetBinOp v) const 
 {
   Util::ERROR("EvalInterval: trying to evaluate a SetBinOp");
-  return SBG::Interval(); 
+  return LIB::Interval(); 
 }
 
-SBG::Interval EvalInterval::operator()(AST::LinearExp v) const 
+LIB::Interval EvalInterval::operator()(AST::LinearExp v) const 
 {
   Util::ERROR("EvalInterval: trying to evaluate a LinearExp");
-  return SBG::Interval(); 
+  return LIB::Interval(); 
 }
 
-SBG::Interval EvalInterval::operator()(AST::LExpBinOp v) const 
+LIB::Interval EvalInterval::operator()(AST::LExpBinOp v) const 
 {
   Util::ERROR("EvalInterval: trying to evaluate a LExpBinOp");
-  return SBG::Interval(); 
+  return LIB::Interval(); 
 }
 
-SBG::Interval EvalInterval::operator()(AST::LinearMap v) const 
+LIB::Interval EvalInterval::operator()(AST::LinearMap v) const 
 {
   Util::ERROR("EvalInterval: trying to evaluate a LinearMap");
-  return SBG::Interval(); 
+  return LIB::Interval(); 
 }
 
 } // namespace Eval

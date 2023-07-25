@@ -21,6 +21,8 @@
 
 namespace SBG {
 
+namespace LIB {
+
 // Type definitions ------------------------------------------------------------
 
 std::ostream &operator<<(std::ostream &out, const InterSet &ii) 
@@ -317,5 +319,6 @@ InterSet traverse(PWInterval pwi1, PWInterval pwi2, SetPiece (*func)(SetPiece, S
   return result;
 }
 
+} // namespace LIB
 
 } // namespace SBG

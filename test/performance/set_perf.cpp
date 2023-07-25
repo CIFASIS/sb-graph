@@ -26,18 +26,18 @@ TEST(SetPerf, Intersection)
 {
   int N = 10000;
 
-  SBG::InterSet is1, is2;
+  SBG::LIB::InterSet is1, is2;
   for (int j = 0; j < N; j++) {
-    SBG::Interval i(j*100+1, 1, (j+1)*100);
+    SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
     is1.emplace_hint(is1.cend(), i);
   }
-  SBG::Set s1(is1);
+  SBG::LIB::Set s1(is1);
 
   for (int j = 0; j < N; j++) {
-    SBG::Interval i(j*105+1, 1, (j+1)*105);
+    SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
     is2.emplace_hint(is2.cend(), i);
   }
-  SBG::Set s2(is2);
+  SBG::LIB::Set s2(is2);
 
   auto start = std::chrono::high_resolution_clock::now();
   intersection(s1, s2);
@@ -52,18 +52,18 @@ TEST(SetPerf, Difference)
 {
   int N = 10000;
 
-  SBG::InterSet is1, is2;
+  SBG::LIB::InterSet is1, is2;
   for (int j = 0; j < N; j++) {
-    SBG::Interval i(j*100+1, 1, (j+1)*100);
+    SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
     is1.emplace_hint(is1.cend(), i);
   }
-  SBG::Set s1(is1);
+  SBG::LIB::Set s1(is1);
 
   for (int j = 0; j < N; j++) {
-    SBG::Interval i(j*105+1, 1, (j+1)*105);
+    SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
     is2.emplace_hint(is2.cend(), i);
   }
-  SBG::Set s2(is2);
+  SBG::LIB::Set s2(is2);
 
   auto start = std::chrono::high_resolution_clock::now();
   difference(s1, s2);
@@ -78,18 +78,18 @@ TEST(SetPerf, Union)
 {
   int N = 10000;
 
-  SBG::InterSet is1, is2;
+  SBG::LIB::InterSet is1, is2;
   for (int j = 0; j < N; j++) {
-    SBG::Interval i(j*100+1, 1, (j+1)*100);
+    SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
     is1.emplace_hint(is1.cend(), i);
   }
-  SBG::Set s1(is1);
+  SBG::LIB::Set s1(is1);
 
   for (int j = 0; j < N; j++) {
-    SBG::Interval i(j*105+1, 1, (j+1)*105);
+    SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
     is2.emplace_hint(is2.cend(), i);
   }
-  SBG::Set s2(is2);
+  SBG::LIB::Set s2(is2);
 
   auto start = std::chrono::high_resolution_clock::now();
   cup(s1, s2);

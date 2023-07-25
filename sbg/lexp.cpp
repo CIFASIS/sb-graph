@@ -21,6 +21,8 @@
 
 namespace SBG {
 
+namespace LIB {
+
 LExp::LExp() : slope_(), offset_() {}
 LExp::LExp(RAT slope, RAT offset) : slope_(slope), offset_(offset) {}
 
@@ -90,5 +92,7 @@ LExp inverse(LExp le)
 
   return LExp(new_slope, new_offset);
 }
+
+} // namespace LIB
 
 } // namespace SBG

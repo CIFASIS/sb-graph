@@ -26,104 +26,104 @@ namespace Eval {
 EvalMap::EvalMap() : env_() {}
 EvalMap::EvalMap(VarEnv env) : env_(env) {}
 
-SBGMap EvalMap::operator()(AST::Natural v) const { 
+LIB::SBGMap EvalMap::operator()(AST::Natural v) const { 
   Util::ERROR("EvalMap: trying to evaluate a Natural");
-  return SBGMap(); 
+  return LIB::SBGMap(); 
 }
 
-SBGMap EvalMap::operator()(AST::Rational v) const { 
+LIB::SBGMap EvalMap::operator()(AST::Rational v) const { 
   Util::ERROR("EvalMap: trying to evaluate a Rational");
-  return SBGMap(); 
+  return LIB::SBGMap(); 
 }
 
-SBGMap EvalMap::operator()(AST::Boolean v) const { 
+LIB::SBGMap EvalMap::operator()(AST::Boolean v) const { 
   Util::ERROR("EvalMap: trying to evaluate a Boolean");
-  return SBGMap(); 
+  return LIB::SBGMap(); 
 }
 
-SBGMap EvalMap::operator()(Util::VariableName v) const { 
+LIB::SBGMap EvalMap::operator()(Util::VariableName v) const { 
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (std::holds_alternative<SBGMap>(value))
-      return std::get<SBGMap>(value);
+    if (std::holds_alternative<LIB::SBGMap>(value))
+      return std::get<LIB::SBGMap>(value);
 
     else {
       Util::ERROR("EvalMap: variable %s is not a linear expression", v.c_str());
-      return SBGMap(); 
+      return LIB::SBGMap(); 
     } 
   }
 
   Util::ERROR("EvalMap: variable %s not defined", v.c_str());
-  return SBGMap(); 
+  return LIB::SBGMap(); 
 }
 
-SBGMap EvalMap::operator()(AST::BinOp v) const 
+LIB::SBGMap EvalMap::operator()(AST::BinOp v) const 
 {
   Util::ERROR("EvalMap: trying to evaluate an arithmetic BinOp");
-  return SBGMap(); 
+  return LIB::SBGMap(); 
 }
 
-SBGMap EvalMap::operator()(AST::Call v) const
+LIB::SBGMap EvalMap::operator()(AST::Call v) const
 {
   Util::ERROR("EvalMap: trying to evaluate a Call");
-  return SBGMap(); 
+  return LIB::SBGMap(); 
 }
 
-SBGMap EvalMap::operator()(AST::Interval v) const
+LIB::SBGMap EvalMap::operator()(AST::Interval v) const
 { 
   Util::ERROR("EvalMap: trying to evaluate an Interval");
-  return SBGMap(); 
+  return LIB::SBGMap(); 
 }
 
-SBGMap EvalMap::operator()(AST::InterUnaryOp v) const
+LIB::SBGMap EvalMap::operator()(AST::InterUnaryOp v) const
 {
   Util::ERROR("EvalMap: trying to evaluate an InterUnaryOp");
-  return SBGMap(); 
+  return LIB::SBGMap(); 
 }
 
-SBGMap EvalMap::operator()(AST::InterBinOp v) const
+LIB::SBGMap EvalMap::operator()(AST::InterBinOp v) const
 {
   Util::ERROR("EvalMap: trying to evaluate an InterBinOp");
-  return SBGMap(); 
+  return LIB::SBGMap(); 
 }
 
-SBGMap EvalMap::operator()(AST::Set v) const 
+LIB::SBGMap EvalMap::operator()(AST::Set v) const 
 {
   Util::ERROR("EvalMap: trying to evaluate a Set");
-  return SBGMap(); 
+  return LIB::SBGMap(); 
 }
 
-SBGMap EvalMap::operator()(AST::SetUnaryOp v) const 
+LIB::SBGMap EvalMap::operator()(AST::SetUnaryOp v) const 
 {
   Util::ERROR("EvalMap: trying to evaluate a SetUnaryOp");
-  return SBGMap(); 
+  return LIB::SBGMap(); 
 }
 
-SBGMap EvalMap::operator()(AST::SetBinOp v) const 
+LIB::SBGMap EvalMap::operator()(AST::SetBinOp v) const 
 {
   Util::ERROR("EvalMap: trying to evaluate a SetBinOp");
-  return SBGMap(); 
+  return LIB::SBGMap(); 
 }
 
-SBGMap EvalMap::operator()(AST::LinearExp le) const
+LIB::SBGMap EvalMap::operator()(AST::LinearExp le) const
 { 
   Util::ERROR("EvalMap: trying to evaluate a LinearExp");
-  return SBG::SBGMap(); 
+  return LIB::SBGMap(); 
 }
 
-SBGMap EvalMap::operator()(AST::LExpBinOp v) const 
+LIB::SBGMap EvalMap::operator()(AST::LExpBinOp v) const 
 {
   Util::ERROR("EvalMap: trying to evaluate a LExpBinOp");
-  return SBG::SBGMap(); 
+  return LIB::SBGMap(); 
 }
 
-SBGMap EvalMap::operator()(AST::LinearMap v) const 
+LIB::SBGMap EvalMap::operator()(AST::LinearMap v) const 
 {
   EvalInterval visit_inter(env_);
   EvalLE visit_le(env_);
 
-  return SBG::SBGMap(Apply(visit_inter, v.dom()), Apply(visit_le, v.lexp()));
+  return LIB::SBGMap(Apply(visit_inter, v.dom()), Apply(visit_le, v.lexp()));
 }
 
 } // namespace Eval

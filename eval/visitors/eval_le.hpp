@@ -34,26 +34,26 @@ namespace SBG {
 
 namespace Eval {
 
-struct EvalLE : public boost::static_visitor<SBG::LExp> {
+struct EvalLE : public boost::static_visitor<LIB::LExp> {
   public:
   EvalLE();
   EvalLE(VarEnv env);
 
-  SBG::LExp operator()(AST::Natural v) const;
-  SBG::LExp operator()(AST::Rational v) const;
-  SBG::LExp operator()(AST::Boolean v) const;
-  SBG::LExp operator()(Util::VariableName v) const;
-  SBG::LExp operator()(AST::BinOp v) const;
-  SBG::LExp operator()(AST::Call v) const;
-  SBG::LExp operator()(AST::Interval v) const;
-  SBG::LExp operator()(AST::InterUnaryOp v) const;
-  SBG::LExp operator()(AST::InterBinOp v) const;
-  SBG::LExp operator()(AST::Set v) const;
-  SBG::LExp operator()(AST::SetUnaryOp v) const;
-  SBG::LExp operator()(AST::SetBinOp v) const;
-  SBG::LExp operator()(AST::LinearExp v) const;
-  SBG::LExp operator()(AST::LExpBinOp v) const;
-  SBG::LExp operator()(AST::LinearMap v) const;
+  LIB::LExp operator()(AST::Natural v) const;
+  LIB::LExp operator()(AST::Rational v) const;
+  LIB::LExp operator()(AST::Boolean v) const;
+  LIB::LExp operator()(Util::VariableName v) const;
+  LIB::LExp operator()(AST::BinOp v) const;
+  LIB::LExp operator()(AST::Call v) const;
+  LIB::LExp operator()(AST::Interval v) const;
+  LIB::LExp operator()(AST::InterUnaryOp v) const;
+  LIB::LExp operator()(AST::InterBinOp v) const;
+  LIB::LExp operator()(AST::Set v) const;
+  LIB::LExp operator()(AST::SetUnaryOp v) const;
+  LIB::LExp operator()(AST::SetBinOp v) const;
+  LIB::LExp operator()(AST::LinearExp v) const;
+  LIB::LExp operator()(AST::LExpBinOp v) const;
+  LIB::LExp operator()(AST::LinearMap v) const;
 
   private:
   mutable VarEnv env_;

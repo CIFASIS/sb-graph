@@ -35,26 +35,26 @@ namespace SBG {
 
 namespace Eval {
 
-struct EvalMap : public boost::static_visitor<SBG::SBGMap> {
+struct EvalMap : public boost::static_visitor<LIB::SBGMap> {
   public:
   EvalMap();
   EvalMap(VarEnv env);
 
-  SBG::SBGMap operator()(AST::Natural v) const;
-  SBG::SBGMap operator()(AST::Rational v) const;
-  SBG::SBGMap operator()(AST::Boolean v) const;
-  SBG::SBGMap operator()(Util::VariableName v) const;
-  SBG::SBGMap operator()(AST::BinOp v) const;
-  SBG::SBGMap operator()(AST::Call v) const;
-  SBG::SBGMap operator()(AST::Interval v) const;
-  SBG::SBGMap operator()(AST::InterUnaryOp v) const;
-  SBG::SBGMap operator()(AST::InterBinOp v) const;
-  SBG::SBGMap operator()(AST::Set v) const;
-  SBG::SBGMap operator()(AST::SetUnaryOp v) const;
-  SBG::SBGMap operator()(AST::SetBinOp v) const;
-  SBG::SBGMap operator()(AST::LinearExp v) const;
-  SBG::SBGMap operator()(AST::LExpBinOp v) const;
-  SBG::SBGMap operator()(AST::LinearMap v) const;
+  LIB::SBGMap operator()(AST::Natural v) const;
+  LIB::SBGMap operator()(AST::Rational v) const;
+  LIB::SBGMap operator()(AST::Boolean v) const;
+  LIB::SBGMap operator()(Util::VariableName v) const;
+  LIB::SBGMap operator()(AST::BinOp v) const;
+  LIB::SBGMap operator()(AST::Call v) const;
+  LIB::SBGMap operator()(AST::Interval v) const;
+  LIB::SBGMap operator()(AST::InterUnaryOp v) const;
+  LIB::SBGMap operator()(AST::InterBinOp v) const;
+  LIB::SBGMap operator()(AST::Set v) const;
+  LIB::SBGMap operator()(AST::SetUnaryOp v) const;
+  LIB::SBGMap operator()(AST::SetBinOp v) const;
+  LIB::SBGMap operator()(AST::LinearExp v) const;
+  LIB::SBGMap operator()(AST::LExpBinOp v) const;
+  LIB::SBGMap operator()(AST::LinearMap v) const;
 
   private:
   mutable VarEnv env_;

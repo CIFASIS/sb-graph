@@ -169,14 +169,20 @@ PWInterval cup(PWInterval pwi1, PWInterval pwi2)
   // As the complement operation will add intervals to our set, we choose the
   // one with least quantity of them.  
   PWInterval lt_pieces, gt_pieces;
-  if (pwi1.pieces().size() > pwi2.pieces().size()) {
-    lt_pieces = pwi2;
-    gt_pieces = pwi1;
+  int c_size1 = 0, c_size2 = 0;
+  BOOST_FOREACH (Interval i1, pwi1.pieces())
+    c_size1 += i1.step();
+  BOOST_FOREACH (Interval i2, pwi2.pieces())
+    c_size2 += i2.step();
+
+  if (c_size1 < c_size2) {
+    lt_pieces = pwi1;
+    gt_pieces = pwi2;
   }
 
   else {
-    lt_pieces = pwi1;
-    gt_pieces = pwi2;
+    lt_pieces = pwi2;
+    gt_pieces = pwi1;
   }
 
   PWInterval diff = difference(gt_pieces, lt_pieces);
@@ -194,41 +200,55 @@ PWInterval cup(PWInterval pwi1, PWInterval pwi2)
   return PWInterval(un);
 }
 
-PWInterval complement(PWInterval pwi)
+PWInterval complement(Interval i)
 {
   InterSet c;
 
-  if (isEmpty(pwi)) return PWInterval(SetPiece(0, 1, Util::Inf));
-
-  Util::NAT last_end = 0;
-  BOOST_FOREACH (SetPiece i, pwi.pieces()){
-    // Before interval
-    if (i.begin() != 0) {
-      SetPiece i_res(last_end, 1, i.begin() - 1);
-      if (!isEmpty(i_res))
-        c.emplace_hint(c.cend(), i_res);  
-    }
-
-    // "During" interval
-    if (i.begin() < Util::Inf)
-      for (Util::NAT j = 1; j < i.step(); j++) {
-        SetPiece i_res(i.begin() + j, i.step(), i.end());
-        if (!isEmpty(i_res))
-          c.emplace_hint(c.cend(), i_res);  
-       }
-
-    last_end = i.end() + 1;
+  // Before interval
+  if (i.begin() != 0) {
+    SetPiece i_res(0, 1, i.begin() - 1);
+    if (!isEmpty(i_res))
+      c.emplace_hint(c.cend(), i_res);  
   }
 
-  // After intervals
-  last_end = maxElem(pwi); 
-  if (last_end < Util::Inf)
-    c.insert(SetPiece(last_end + 1, 1, Util::Inf));
+  // "During" interval
+  if (i.begin() < Util::Inf) {
+    for (Util::NAT j = 1; j < i.step(); j++) {
+      SetPiece i_res(i.begin() + j, i.step(), i.end());
+      if (!isEmpty(i_res))
+        c.emplace_hint(c.cend(), i_res);  
+     }
+  }
+
+  // After interval
+  if (maxElem(i) < Util::Inf)
+    c.insert(SetPiece(maxElem(i) + 1, 1, Util::Inf));
 
   else 
-    c.insert(SetPiece(Util::Inf, 1, Util::Inf));
+    c.insert(SetPiece(Util::Inf));
 
-  return PWInterval(c);
+
+  return c;
+}
+
+PWInterval complement(PWInterval pwi)
+{
+  PWInterval res;
+
+  if (isEmpty(pwi)) return PWInterval(SetPiece(0, 1, Util::Inf));
+
+  InterSetIt first_it = pwi.pieces_ref().begin();
+  SetPiece first = *first_it;
+  res = complement(first);
+
+  ++first_it;
+  InterSet second(first_it, pwi.pieces_ref().end());
+  BOOST_FOREACH (Interval i, second) {
+    PWInterval c = complement(i);
+    res = intersection(res, c);
+  }
+
+  return res;
 }
 
 PWInterval difference(PWInterval pwi1, PWInterval pwi2) { return intersection(pwi1, complement(pwi2)); }

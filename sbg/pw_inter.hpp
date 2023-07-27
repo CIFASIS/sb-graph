@@ -84,6 +84,7 @@ Util::NAT minElem(PWInterval pwi);
 Util::NAT maxElem(PWInterval pwi);
 PWInterval intersection(PWInterval i1, PWInterval i2);
 PWInterval cup(PWInterval i1, PWInterval i2);
+PWInterval complement(Interval i);
 PWInterval complement(PWInterval i);
 PWInterval difference(PWInterval i1, PWInterval i2);
 

@@ -28,12 +28,11 @@
 
  ******************************************************************************/
 
-#ifndef SBG_NATERVAL_HPP
-#define SBG_NATERVAL_HPP
+#ifndef SBG_INTERVAL_HPP
+#define SBG_INTERVAL_HPP
 
 #include <boost/foreach.hpp>
 #include <cmath>
-#include <iostream>
 #include <numeric>
 #include <optional>
 
@@ -51,6 +50,7 @@ struct Interval {
   member_class(NAT, end);
 
   Interval();
+  Interval(NAT x);
   Interval(NAT begin, NAT step, NAT end);
 
   eq_class(Interval);

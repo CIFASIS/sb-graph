@@ -24,6 +24,7 @@ namespace SBG {
 namespace LIB {
 
 Interval::Interval() : begin_(1), step_(1), end_(0) {}
+Interval::Interval(NAT x) : begin_(x), step_(1), end_(x) {}
 Interval::Interval(NAT begin, NAT step, NAT end) : begin_(begin), step_(step), end_(end) 
 {
   if (end >= begin) {
@@ -65,7 +66,12 @@ std::ostream &operator<<(std::ostream &out, const Interval &i)
 
 // Set functions ---------------------------------------------------------------
 
-unsigned int cardinal(Interval i) { return (i.end() - i.begin()) / i.step() + 1; }
+unsigned int cardinal(Interval i) 
+{
+  if (!isEmpty(i)) return (i.end() - i.begin()) / i.step() + 1;
+
+  return 0;
+}
 
 bool isEmpty(Interval i) { return i.end() < i.begin(); }
 

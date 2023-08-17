@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <eval/visitors/eval_interval.hpp>
+#include "eval/visitors/eval_interval.hpp"
 
 namespace SBG {
 
@@ -62,6 +62,12 @@ LIB::Interval EvalInterval::operator()(Util::VariableName v) const
   return LIB::Interval(); 
 }
 
+LIB::Interval EvalInterval::operator()(AST::UnaryOp v) const 
+{
+  Util::ERROR("EvalInterval: trying to evaluate an arithmetic UnaryOp");
+  return LIB::Interval(); 
+}
+
 LIB::Interval EvalInterval::operator()(AST::BinOp v) const 
 {
   Util::ERROR("EvalInterval: trying to evaluate an arithmetic BinOp");
@@ -89,7 +95,9 @@ LIB::Interval EvalInterval::operator()(AST::InterUnaryOp v) const
   AST::Expr exp = v.e();
   switch (v.op()) {
     default:
-      Util::ERROR("EvalInterval: InterUnaryOp %s not supported.", AST::ContUOpNames[v.op()]);
+      std::stringstream ss;
+      ss << v.op();
+      Util::ERROR("EvalInterval: InterUnaryOp %s not supported.", ss.str().c_str());
       return LIB::Interval(); 
   }
 }
@@ -102,14 +110,18 @@ LIB::Interval EvalInterval::operator()(AST::InterBinOp v) const
       return intersection(ApplyThis(l), ApplyThis(r));
 
     default:
-      Util::ERROR("EvalInterval: InterBinOp %s not supported.", AST::ContOpNames[v.op()]);
+      std::stringstream ss;
+      ss << v.op();
+      Util::ERROR("EvalInterval: InterBinOp %s not supported.", ss.str().c_str());
       return LIB::Interval(); 
   }
 }
 
 LIB::Interval EvalInterval::operator()(AST::Set v) const 
 {
-  Util::ERROR("EvalInterval: trying to evaluate a Set");
+  std::stringstream ss;
+  ss << v;
+  Util::ERROR("EvalInterval: trying to evaluate the Set %s", ss.str().c_str());
   return LIB::Interval(); 
 }
 
@@ -140,6 +152,12 @@ LIB::Interval EvalInterval::operator()(AST::LExpBinOp v) const
 LIB::Interval EvalInterval::operator()(AST::LinearMap v) const 
 {
   Util::ERROR("EvalInterval: trying to evaluate a LinearMap");
+  return LIB::Interval(); 
+}
+
+LIB::Interval EvalInterval::operator()(AST::PWLMap v) const 
+{
+  Util::ERROR("EvalInterval: trying to evaluate a PWLMap");
   return LIB::Interval(); 
 }
 

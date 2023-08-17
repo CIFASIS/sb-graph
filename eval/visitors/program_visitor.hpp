@@ -27,8 +27,8 @@
 #ifndef AST_VISITOR_PROGRAM 
 #define AST_VISITOR_PROGRAM
 
-#include <ast/sbg_program.hpp>
-#include <eval/visitors/stm_visitor.hpp>
+#include "ast/sbg_program.hpp"
+#include "eval/visitors/stm_visitor.hpp"
 
 namespace SBG {
 

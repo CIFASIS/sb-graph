@@ -17,11 +17,13 @@
 
  ******************************************************************************/
 
-#include <parser/expr.hpp>
+#include "parser/expr.hpp"
 
 // Adapt structures ------------------------------------------------------------
 
 BOOST_FUSION_ADAPT_STRUCT(SBG::Util::RATIONAL, (boost::rational<SBG::Util::INT>, value_))
+
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::UnaryOp, (SBG::AST::UnOp, op_)(SBG::AST::Expr, expr_))
 
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::BinOp, (SBG::AST::Expr, left_)(SBG::AST::Op, op_)(SBG::AST::Expr, right_))
 
@@ -41,9 +43,11 @@ BOOST_FUSION_ADAPT_STRUCT(SBG::AST::SetBinOp, (SBG::AST::Expr, left_)(SBG::AST::
 
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::LinearExp, (SBG::AST::Expr, slope_)(SBG::AST::Expr, offset_))
 
-BOOST_FUSION_ADAPT_STRUCT(SBG::AST::LExpBinOp, (SBG::AST::Expr, left_)(SBG::AST::Op, op_)(SBG::AST::Expr, right_))
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::LExpBinOp, (SBG::AST::Expr, left_)(SBG::AST::ExpOp, op_)(SBG::AST::Expr, right_))
 
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::LinearMap, (SBG::AST::Expr, dom_)(SBG::AST::Expr, lexp_))
+
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::PWLMap, (SBG::AST::ExprList, maps_))
 
 // Expression parser -----------------------------------------------------------
 
@@ -69,6 +73,12 @@ struct expo_symbol_struct : qi::symbols<char, AST::Op> {
   }
 } expo_symbol;
 
+struct unary_symbol_struct : qi::symbols<char, AST::UnOp> {
+  unary_symbol_struct() {
+    add("-", AST::UnOp::neg);
+  }
+} unary_symbol;
+
 struct inter_unary_struct : qi::symbols<char, AST::ContainerUOp> {
   inter_unary_struct(){
     add("#", AST::ContainerUOp::card);
@@ -93,9 +103,9 @@ struct set_bin_struct : qi::symbols<char, AST::ContainerOp> {
   }
 } set_bin;
 
-struct lexp_bin_struct : qi::symbols<char, AST::Op> {
+struct lexp_bin_struct : qi::symbols<char, AST::ExpOp> {
   lexp_bin_struct(){
-    add("+", AST::Op::add)("-", AST::Op::sub);
+    add("==", AST::ExpOp::eq)("+", AST::ExpOp::add)("-", AST::ExpOp::sub);
   }
 } lexp_bin;
 
@@ -114,7 +124,9 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   COMA(","), 
   TRUE("true"), 
   FALSE("false"), 
-  ARROW("->")
+  ARROW("->"),
+  OANGLE("<<"),
+  CANGLE(">>")
 {
   ident = qi::lexeme[(qi::char_('_') | qi::alpha) >> *(qi::alnum | qi::char_('_'))] 
     | qi::lexeme[qi::char_('\'') >> *(qi::alnum | qi::char_('_')) > qi::char_('\'')];
@@ -138,7 +150,10 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
 
   term = factor[qi::_val = qi::_1] >> *(mult_symbol >> factor)[qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
 
-  arithmetic_expr = term[qi::_val = qi::_1] >> *(add_symbols > term)[qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
+  arithmetic_expr = (term[qi::_val = qi::_1] >> *(add_symbols > term)[qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)])
+    | (unary_symbol >> term)[qi::_val = phx::construct<AST::UnaryOp>(qi::_1, qi::_2)];
+
+  // ------------ //
 
   interval = (OBRACKET 
     >> arithmetic_expr >> COLON 
@@ -158,9 +173,11 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
 
   inter_list = interval[phx::push_back(qi::_val, qi::_1)] >> *(COMA >> interval)[phx::push_back(qi::_val, qi::_1)];
 
+  // ------------ //
+
   set = (OBRACE >> inter_list >> CBRACE)[qi::_val = phx::construct<AST::Set>(qi::_1)]
     | (OBRACE >> CBRACE)[qi::_val = phx::construct<AST::Set>()]
-    | ident[qi::_val = phx::construct<Util::VariableName>(qi::_1)];
+    | ident[qi::_val = qi::_1];
 
   set_unary = (set_un >> set_expr)[qi::_val = phx::construct<AST::SetUnaryOp>(qi::_1, qi::_2)]; 
  
@@ -172,10 +189,14 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
     | set_binary[qi::_val = qi::_1]
     | set[qi::_val = qi::_1];
 
+  // ------------ //
+
   numeric = rational[qi::_val = qi::_1] | qi::lexeme[qi::ulong_long][qi::_val = phx::construct<Util::NAT>(qi::_1)];
 
   lexp = (numeric >> qi::char_('*') >> qi::char_('x') 
-    >> qi::char_('+') >> arithmetic_expr)[qi::_val = phx::construct<AST::LinearExp>(qi::_1, qi::_5)];
+    >> qi::char_('+') >> arithmetic_expr)[qi::_val = phx::construct<AST::LinearExp>(qi::_1, qi::_5)]
+    | (numeric >> qi::char_('*') >> qi::char_('x') 
+      >> arithmetic_expr)[qi::_val = phx::construct<AST::LinearExp>(qi::_1, qi::_4)];
 
   lexp_binary = OPAREN >> lexp[qi::_val = qi::_1] >> CPAREN 
     >> *(lexp_bin > OPAREN >> lexp >> CPAREN)[qi::_val = phx::construct<AST::LExpBinOp>(qi::_val, qi::_1, qi::_2)];
@@ -183,11 +204,24 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   lexp_expr = lexp[qi::_val = qi::_1]
     | lexp_binary[qi::_val = qi::_1];
 
-  sbgmap = (interval >> ARROW >> lexp)[qi::_val = phx::construct<AST::LinearMap>(qi::_1, qi::_2)];
+  // ------------ //
+
+  sbgmap = (set_expr >> ARROW >> lexp)[qi::_val = phx::construct<AST::LinearMap>(qi::_1, qi::_2)];
 
   map_expr = sbgmap;
 
-  expr = map_expr | lexp_expr | arithmetic_expr | interval_expr | set_expr;
+  map_list = sbgmap[phx::push_back(qi::_val, qi::_1)] >> *(COMA >> sbgmap)[phx::push_back(qi::_val, qi::_1)];
+
+  // ------------ //
+
+  pwl = (OANGLE >> map_list >> CANGLE)[qi::_val = phx::construct<AST::PWLMap>(qi::_1)]
+    | (OANGLE >> CANGLE)[qi::_val = phx::construct<AST::PWLMap>()];
+
+  pwl_expr = pwl;
+
+  // ------------ //
+
+  expr = pwl_expr | map_expr | lexp_expr | arithmetic_expr | interval_expr | set_expr;
   
   expr_list = expr[phx::push_back(qi::_val, qi::_1)] >> *(COMA >> expr)[phx::push_back(qi::_val, qi::_1)];
 

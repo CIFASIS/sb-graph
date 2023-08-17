@@ -26,10 +26,9 @@
 
 #include <boost/variant/static_visitor.hpp>
 
-#include <eval/defs.hpp>
-#include <eval/visitors/eval_le.hpp>
-#include <eval/visitors/eval_interval.hpp>
-#include <sbg/map.hpp>
+#include "eval/visitors/eval_le.hpp"
+#include "eval/visitors/eval_set.hpp"
+#include "sbg/map.hpp"
 
 namespace SBG {
 
@@ -44,6 +43,7 @@ struct EvalMap : public boost::static_visitor<LIB::SBGMap> {
   LIB::SBGMap operator()(AST::Rational v) const;
   LIB::SBGMap operator()(AST::Boolean v) const;
   LIB::SBGMap operator()(Util::VariableName v) const;
+  LIB::SBGMap operator()(AST::UnaryOp v) const;
   LIB::SBGMap operator()(AST::BinOp v) const;
   LIB::SBGMap operator()(AST::Call v) const;
   LIB::SBGMap operator()(AST::Interval v) const;
@@ -55,6 +55,7 @@ struct EvalMap : public boost::static_visitor<LIB::SBGMap> {
   LIB::SBGMap operator()(AST::LinearExp v) const;
   LIB::SBGMap operator()(AST::LExpBinOp v) const;
   LIB::SBGMap operator()(AST::LinearMap v) const;
+  LIB::SBGMap operator()(AST::PWLMap v) const;
 
   private:
   mutable VarEnv env_;

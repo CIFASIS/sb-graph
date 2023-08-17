@@ -24,8 +24,8 @@
 #ifndef AST_VISITOR_EVALEXP
 #define AST_VISITOR_EVALEXP
 
-#include <eval/visitors/eval_map.hpp>
-#include <eval/visitors/eval_set.hpp>
+#include "eval/visitors/eval_set.hpp"
+#include "eval/visitors/eval_pwmap.hpp"
 
 namespace SBG {
 
@@ -40,6 +40,7 @@ struct EvalExpression : public boost::static_visitor<ExprBaseType> {
   ExprBaseType operator()(AST::Rational v) const;
   ExprBaseType operator()(AST::Boolean v) const;
   ExprBaseType operator()(Util::VariableName v) const;
+  ExprBaseType operator()(AST::UnaryOp v) const;
   ExprBaseType operator()(AST::BinOp v) const;
   ExprBaseType operator()(AST::Call v) const;
   ExprBaseType operator()(AST::Interval v) const;
@@ -51,6 +52,7 @@ struct EvalExpression : public boost::static_visitor<ExprBaseType> {
   ExprBaseType operator()(AST::LinearExp v) const;
   ExprBaseType operator()(AST::LExpBinOp v) const;
   ExprBaseType operator()(AST::LinearMap v) const;
+  ExprBaseType operator()(AST::PWLMap v) const;
 
   private:
   mutable VarEnv env_;

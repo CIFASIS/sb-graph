@@ -31,7 +31,7 @@
 #include <map>
 #include <string>
 
-#include <util/defs.hpp>
+#include "util/defs.hpp"
 
 namespace SBG {
 

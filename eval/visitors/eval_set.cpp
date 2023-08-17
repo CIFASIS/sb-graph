@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <eval/visitors/eval_set.hpp>
+#include "eval/visitors/eval_set.hpp"
 
 namespace SBG {
 
@@ -55,6 +55,12 @@ LIB::Set EvalSet::operator()(Util::VariableName v) const {
   }
 
   Util::ERROR("EvalSet: variable %s not defined", v.c_str());
+  return LIB::Set(); 
+}
+
+LIB::Set EvalSet::operator()(AST::UnaryOp v) const 
+{
+  Util::ERROR("EvalSet: trying to evaluate an arithmetic UnaryOp");
   return LIB::Set(); 
 }
 
@@ -104,7 +110,9 @@ LIB::Set EvalSet::operator()(AST::SetUnaryOp v) const
   AST::Expr e = v.e();
   switch (v.op()) {
     default:
-      Util::ERROR("EvalSet: SetUnaryOp %s not supported.", AST::ContUOpNames[v.op()]);
+      std::stringstream ss;
+      ss << v.op();
+      Util::ERROR("EvalSet: SetUnaryOp %s not supported.", ss.str().c_str());
       return LIB::Set(); 
   }
 }
@@ -120,7 +128,9 @@ LIB::Set EvalSet::operator()(AST::SetBinOp v) const
       return difference(ApplyThis(l), ApplyThis(r));
 
     default:
-      Util::ERROR("EvalSet: SetBinOp %s not supported.", AST::ContOpNames[v.op()]);
+      std::stringstream ss;
+      ss << v.op();
+      Util::ERROR("EvalSet: SetBinOp %s not supported.", ss.str().c_str());
       return LIB::Set(); 
   }
 }
@@ -140,6 +150,12 @@ LIB::Set EvalSet::operator()(AST::LExpBinOp v) const
 LIB::Set EvalSet::operator()(AST::LinearMap v) const
 { 
   Util::ERROR("EvalSet: trying to evaluate a LinearMap");
+  return LIB::Set(); 
+}
+
+LIB::Set EvalSet::operator()(AST::PWLMap v) const
+{ 
+  Util::ERROR("EvalSet: trying to evaluate a PWLMap");
   return LIB::Set(); 
 }
 

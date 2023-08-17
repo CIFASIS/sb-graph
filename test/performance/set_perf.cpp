@@ -20,7 +20,7 @@
 #include <chrono>
 #include <gtest/gtest.h>
 
-#include <sbg/pw_inter.hpp>
+#include "sbg/pw_inter.hpp"
 
 TEST(SetPerf, Intersection)
 {

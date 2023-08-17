@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <eval/visitors/eval_map.hpp>
+#include "eval/visitors/eval_map.hpp"
 
 namespace SBG {
 
@@ -55,6 +55,12 @@ LIB::SBGMap EvalMap::operator()(Util::VariableName v) const {
   }
 
   Util::ERROR("EvalMap: variable %s not defined", v.c_str());
+  return LIB::SBGMap(); 
+}
+
+LIB::SBGMap EvalMap::operator()(AST::UnaryOp v) const 
+{
+  Util::ERROR("EvalMap: trying to evaluate an arithmetic UnaryOp");
   return LIB::SBGMap(); 
 }
 
@@ -120,10 +126,16 @@ LIB::SBGMap EvalMap::operator()(AST::LExpBinOp v) const
 
 LIB::SBGMap EvalMap::operator()(AST::LinearMap v) const 
 {
-  EvalInterval visit_inter(env_);
+  EvalSet visit_set(env_);
   EvalLE visit_le(env_);
 
-  return LIB::SBGMap(Apply(visit_inter, v.dom()), Apply(visit_le, v.lexp()));
+  return LIB::SBGMap(Apply(visit_set, v.dom()), Apply(visit_le, v.lexp()));
+}
+
+LIB::SBGMap EvalMap::operator()(AST::PWLMap v) const 
+{
+  Util::ERROR("EvalMap: trying to evaluate a PWLMap");
+  return LIB::SBGMap(); 
 }
 
 } // namespace Eval

@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <sbg/interval.hpp>
+#include "sbg/interval.hpp"
 
 namespace SBG {
 
@@ -122,6 +122,16 @@ MaybeInterval canonize(Interval i1, Interval i2)
     return Interval(i1.begin(), i1.step(), i2.end());
 
   return {};
+}
+
+std::size_t hash_value(const Interval &i)
+{
+  std::size_t seed = 0;
+  boost::hash_combine(seed, i.begin());
+  boost::hash_combine(seed, i.step());
+  boost::hash_combine(seed, i.end());
+
+  return seed;
 }
 
 } // namespace LIB

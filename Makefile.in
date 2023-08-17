@@ -20,7 +20,7 @@ libdir        ?= $(exec_prefix)/lib
 
 # Flags, Libraries and Includes
 INCLUDES := -I.
-CXXFLAGS := -std=c++17 -Wall -Werror -Wno-reorder -O3 
+CXXFLAGS := -std=c++17 -Wall -Werror -Wno-reorder -O3 -D BOOST_PHOENIX_STL_TUPLE_H_
 ifeq ($(MODE),Debug)
 CXXFLAGS 	+= -ggdb  
 endif

@@ -24,32 +24,27 @@
 #ifndef SBG_PWMAP_HPP
 #define SBG_PWMAP_HPP
 
-#include <sbg/map.hpp>
+#include <boost/container/flat_set.hpp>
+
+#include "sbg/map.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 /**
- * @brief Ordered collection of maps.
+ * @brief Unordered collection of maps.
  */
 
-/* @struct LTMap
- *
- * @brief This function is defined to be used by the MapSet definition. The
- * two inputs are disjoint (that's why the operator<, that compares any sort of
- * Maps, is not used).
- */
 struct LTMap {
+  LTMap();
+
   bool operator()(const SBGMap &x, const SBGMap &y) const;
-  typedef SBGMap first_argument_type;
-  typedef SBGMap second_argument_type;
-  typedef bool result_type;
 };
 
-typedef boost::container::set<SBGMap, LTMap, boost::container::new_allocator<SBGMap>, void> MapSet;
-typedef boost::container::set<SBGMap>::iterator MapSetIt;
-std::ostream &operator<<(std::ostream &out, const MapSet &ii);
+typedef boost::container::flat_set<SBGMap, LTMap, boost::container::new_allocator<SBGMap>> MapSet;
+typedef MapSet::iterator MapSetIt;
+std::ostream &operator<<(std::ostream &out, const MapSet &ms);
 
 struct PWMap {
   member_class(MapSet, maps);
@@ -58,13 +53,63 @@ struct PWMap {
   PWMap(SBGMap m);
   PWMap(MapSet maps);
 
+  // Two maps are equal iff they satisfy the extensional principle
   eq_class(PWMap);
+  neq_class(PWMap);
 };
 std::ostream &operator<<(std::ostream &out, const PWMap &pw);
 
 /**
  * @brief Traditional map operations.
  */
+Set dom(PWMap pw);
+PWMap restrict(Set subdom, PWMap pw);
+Set image(PWMap pw);
+Set image(Set subdom, PWMap pw);
+Set preImage(PWMap pw);
+Set preImage(Set subcodom, PWMap pw);
+PWMap mapInf(PWMap pw);
+
+/** @function composition
+ *
+ * @brief Apply first pw2, then pw1 (i.e. pw1(pw2(x)) is calculated).
+ */
+PWMap composition(PWMap pw1, PWMap pw2);
+
+/**
+ * @brief Extra operations.
+ */
+
+bool isCompact(MapSet mm);
+bool optConds(MapSet mm);
+MapSet canonize(MapSet mm);
+
+/** @function concat
+ *
+ * @brief Concatenation of two pwis.
+ * !!! Result is correct iff pw1 and pw2 are domain-disjoint.
+ */
+PWMap concat(PWMap pw1, PWMap pw2);
+
+PWMap minMap(SetPiece dom_piece, Exp e1, Exp e2);
+PWMap minMap(Set dom, Exp e1, Exp e2);
+PWMap minMap(PWMap pw1, PWMap pw2);
+
+/** @function reduce
+ *
+ * @brief The reduce function calculates (if possible) the resulting map of
+ * composing the argument with itself up to convergence.
+ *
+ * Currently, the only expressions that can be efficiently reduced are:
+ *   - x+h
+ *   - x-h
+ *   - h
+ */
+PWMap reduce(SetPiece dom_piece, Exp e);
+PWMap reduce(SBGMap sbgmap);
+PWMap reduce(PWMap pw);
+
+PWMap minAdjMap(PWMap pw1, PWMap pw2);
 
 } // namespace LIB
 

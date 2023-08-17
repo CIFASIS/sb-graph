@@ -1,0 +1,12 @@
+// Test consisting of only piecewise linear maps
+// !!! If this file is modified the corresponding SBG.log file
+//     in all the gt_data directories should be modified.
+
+<<>>
+<<{[1:1:10], [100:10:200]} -> 1*x-3>>
+<<{[1:1:10], [100:10:200]} -> 1*x-3, {[500:1:600]} -> 1*x-3>>
+
+<<{[1:1:10]} -> 1*x+10, {[100:1:200], [250:1:300]} -> 1*x+10>>
+
+//minAdj(<<{[1:1:5]} -> 1*x+0, {[10:1:20]} -> 0*x+7, {[25:1:30]} -> 1*x-20>>, <<{[]} -> >>)
+image(<<{[1:1:5]} -> 1*x+0, {[10:1:20]} -> 0*x+7, {[25:1:27]} -> 1*x-24>>)

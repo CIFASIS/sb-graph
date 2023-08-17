@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <sbg/lexp.hpp>
+#include "sbg/lexp.hpp"
 
 namespace SBG {
 
@@ -34,6 +34,13 @@ LExp LExp::operator+(const LExp &r) { return LExp(slope() + r.slope(), offset() 
 LExp LExp::operator-(const LExp &r) { return LExp(slope() - r.slope(), offset() - r.offset()); }
 
 bool LExp::operator==(const LExp &other) const { return slope() == other.slope() && offset() == other.offset(); }
+
+bool LExp::operator<(const LExp &other) const 
+{
+  if (slope() < other.slope()) return true;
+
+  return offset() < other.offset();
+}
 
 std::ostream &operator<<(std::ostream &out, const LExp &le)
 {
@@ -53,7 +60,7 @@ std::ostream &operator<<(std::ostream &out, const LExp &le)
   if (slo == one) out << "x";
 
   if (le.offset() != zero) {
-    if (le.offset() > 0)
+    if (le.offset() > 0 && le.slope() != 0)
       out << "+" << le.offset();
 
     else
@@ -91,6 +98,21 @@ LExp inverse(LExp le)
   }
 
   return LExp(new_slope, new_offset);
+}
+
+bool isId(LExp le) { return le.slope() == 1 && le.offset() == 0;}
+
+bool isConstant(LExp le) { return le.slope() == 0; }
+
+std::size_t hash_value(const LExp &le)
+{
+  std::size_t seed = 0;
+  boost::hash_combine(seed, le.slope().numerator());
+  boost::hash_combine(seed, le.slope().denominator());
+  boost::hash_combine(seed, le.offset().numerator());
+  boost::hash_combine(seed, le.offset().denominator());
+
+  return seed;
 }
 
 } // namespace LIB

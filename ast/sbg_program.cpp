@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <ast/sbg_program.hpp>
+#include "ast/sbg_program.hpp"
 
 namespace SBG {
 

@@ -30,7 +30,7 @@ In order to be able to install and compile SBG Library,
 the following  dependencies must be installed: 
 
   * autoconf 2.69 (avoid 2.71)
-  * boost1.71
+  * boost1.81 (or later)
   * cmake
   * g++
   * make

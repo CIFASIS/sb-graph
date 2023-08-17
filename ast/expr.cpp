@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <ast/expr.hpp>
+#include "ast/expr.hpp"
 
 namespace SBG {
 
@@ -25,11 +25,42 @@ namespace AST {
 
 // Arithmetic expressions ------------------------------------------------------
 
-const char *OpNames[] = {"+", "-", "*", "^"};
+std::ostream &operator<<(std::ostream &out, const UnOp &op)
+{
+  switch (op) {
+    case UnOp::neg:
+      out << "-";
+      break;
+
+    default:
+      break;
+  }
+
+  return out;
+}
 
 std::ostream &operator<<(std::ostream &out, const Op &op)
 {
-  out << OpNames[op];
+  switch (op) {
+    case Op::add:
+      out << "+";
+      break;
+
+    case Op::sub:
+      out << "-";
+      break;
+
+    case Op::mult:
+      out << "*";
+      break;
+
+    case Op::expo:
+      out << "^";
+      break;
+
+    default:
+      break;
+  }
 
   return out;
 }
@@ -38,6 +69,24 @@ std::ostream &operator<<(std::ostream &out, const ExprList &el)
 {
   BOOST_FOREACH (Expr e, el)
     out << e << "\n";
+
+  return out;
+}
+
+UnaryOp::UnaryOp() : op_(), expr_() {}
+UnaryOp::UnaryOp(UnOp op, Expr expr) : op_(op), expr_(expr) {}
+
+member_imp(UnaryOp, UnOp, op);
+member_imp(UnaryOp, Expr, expr);
+
+bool UnaryOp::operator==(const UnaryOp &other) const
+{
+  return op() == other.op() && expr() == other.expr();
+}
+
+std::ostream &operator<<(std::ostream &out, const UnaryOp &uop)
+{ 
+  out << uop.op() << uop.expr();
 
   return out;
 }
@@ -83,7 +132,7 @@ std::ostream &operator<<(std::ostream &out, const Call &c)
   if (sz > 0) {
     unsigned int i = 0;
     for (; i < sz - 1; i++)
-      out << c.args()[i] << ",";
+      out << c.args()[i] << ", ";
     out << c.args()[i];
   }
   out << ")"; 
@@ -93,19 +142,47 @@ std::ostream &operator<<(std::ostream &out, const Call &c)
 
 // SBG Structures --------------------------------------------------------------
 
-const char *ContUOpNames[] = {"#", "\'"};
-const char *ContOpNames[] = {"/\\", "\\", "<", "==", "\\/"};
-
 std::ostream &operator<<(std::ostream &out, const ContainerUOp &op)
 {
-  out << ContUOpNames[op];
+  switch (op) {
+    case ContainerUOp::card:
+      out << "#";
+      break;
+
+    case ContainerUOp::comp:
+      out << "\'";
+      break;
+  }
 
   return out;
 }
 
 std::ostream &operator<<(std::ostream &out, const ContainerOp &op)
 {
-  out << ContOpNames[op];
+  switch (op) {
+    case ContainerOp::eq:
+      out << "==";
+      break;
+
+    case ContainerOp::less:
+      out << "<";
+      break;
+
+    case ContainerOp::cap:
+      out << "/\\";
+      break;
+
+    case ContainerOp::diff:
+      out << "\\";
+      break;
+
+    case ContainerOp::cup:
+      out << "\\/";
+      break;
+
+    default:
+      break;
+  }
 
   return out;
 }
@@ -271,11 +348,33 @@ std::ostream &operator<<(std::ostream &out, const LinearExp &le)
   return out;
 }
 
+std::ostream &operator<<(std::ostream &out, const ExpOp &op)
+{
+  switch (op) {
+    case ExpOp::eq:
+      out << "==";
+      break;
+
+    case ExpOp::add:
+      out << "+";
+      break;
+
+    case ExpOp::sub:
+      out << "-";
+      break;
+
+    default:
+      break;
+  }
+
+  return out;
+}
+
 LExpBinOp::LExpBinOp() : left_(), op_(), right_() {}
-LExpBinOp::LExpBinOp(Expr left, Op op, Expr right) : left_(left), op_(op), right_(right) {}
+LExpBinOp::LExpBinOp(Expr left, ExpOp op, Expr right) : left_(left), op_(op), right_(right) {}
 
 member_imp(LExpBinOp, Expr, left);
-member_imp(LExpBinOp, Op, op);
+member_imp(LExpBinOp, ExpOp, op);
 member_imp(LExpBinOp, Expr, right);
 
 bool LExpBinOp::operator==(const LExpBinOp &other) const
@@ -306,6 +405,34 @@ bool LinearMap::operator==(const LinearMap &other) const
 std::ostream &operator<<(std::ostream &out, const LinearMap &lmap)
 {
   out << lmap.dom() << " ↦ " << lmap.lexp();
+
+  return out;
+}
+
+// Piecewise linear map --------------------------------------------------------
+
+PWLMap::PWLMap() : maps_() {}
+PWLMap::PWLMap(ExprList maps) : maps_(maps) {}
+
+member_imp(PWLMap, ExprList, maps);
+
+bool PWLMap::operator==(const PWLMap &other) const { return maps() == other.maps(); }
+
+std::ostream &operator<<(std::ostream &out, const PWLMap &pwl)
+{
+  PWLMap aux = pwl;
+  unsigned int sz = aux.maps_ref().size();
+ 
+  out << "<<";
+  if (sz > 0) {
+    auto it = aux.maps_ref().begin();
+    for (unsigned int i = 0; i < sz - 1; ++i) {
+      out << *it << ", ";
+      ++it;
+    }
+    out << *it;
+  }
+  out << ">>";
 
   return out;
 }

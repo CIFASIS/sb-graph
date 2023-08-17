@@ -24,8 +24,8 @@
 #ifndef AST_VISITOR_EVALINTERVAL
 #define AST_VISITOR_EVALINTERVAL
 
-#include <ast/expr.hpp>
-#include <eval/visitors/eval_nat.hpp>
+#include "ast/expr.hpp"
+#include "eval/visitors/eval_nat.hpp"
 
 namespace SBG {
 
@@ -40,6 +40,7 @@ struct EvalInterval : public boost::static_visitor<LIB::Interval> {
   LIB::Interval operator()(AST::Rational v) const;
   LIB::Interval operator()(AST::Boolean v) const;
   LIB::Interval operator()(Util::VariableName v) const;
+  LIB::Interval operator()(AST::UnaryOp v) const;
   LIB::Interval operator()(AST::BinOp v) const;
   LIB::Interval operator()(AST::Call v) const;
   LIB::Interval operator()(AST::Interval v) const;
@@ -51,6 +52,7 @@ struct EvalInterval : public boost::static_visitor<LIB::Interval> {
   LIB::Interval operator()(AST::LinearExp v) const;
   LIB::Interval operator()(AST::LExpBinOp v) const;
   LIB::Interval operator()(AST::LinearMap v) const;
+  LIB::Interval operator()(AST::PWLMap v) const;
 
   private:
   mutable VarEnv env_;

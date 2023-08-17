@@ -26,8 +26,8 @@
 
 #include <boost/variant/static_visitor.hpp>
 
-#include <ast/expr.hpp>
-#include <eval/defs.hpp>
+#include "ast/expr.hpp"
+#include "eval/defs.hpp"
 
 namespace SBG {
 
@@ -42,6 +42,7 @@ struct EvalRat : public boost::static_visitor<Util::RATIONAL> {
   Util::RATIONAL operator()(AST::Rational v) const;
   Util::RATIONAL operator()(AST::Boolean v) const;
   Util::RATIONAL operator()(Util::VariableName v) const;
+  Util::RATIONAL operator()(AST::UnaryOp v) const;
   Util::RATIONAL operator()(AST::BinOp v) const;
   Util::RATIONAL operator()(AST::Call v) const;
   Util::RATIONAL operator()(AST::Interval v) const;
@@ -53,6 +54,7 @@ struct EvalRat : public boost::static_visitor<Util::RATIONAL> {
   Util::RATIONAL operator()(AST::LinearExp v) const;
   Util::RATIONAL operator()(AST::LExpBinOp v) const;
   Util::RATIONAL operator()(AST::LinearMap v) const;
+  Util::RATIONAL operator()(AST::PWLMap v) const;
 
   private:
   mutable VarEnv env_;

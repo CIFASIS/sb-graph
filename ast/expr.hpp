@@ -28,7 +28,7 @@
 #include <boost/variant/variant.hpp>
 #include <boost/variant/recursive_wrapper.hpp>
 
-#include <util/defs.hpp>
+#include "util/defs.hpp"
 
 namespace SBG {
 
@@ -40,19 +40,22 @@ typedef std::string Name;
 typedef Util::NAT Natural;
 typedef Util::RATIONAL Rational;
 typedef bool Boolean;
+struct UnaryOp;
+struct BinOp;
 struct Interval;
 struct InterUnaryOp;
 struct InterBinOp;
 struct Set;
 struct SetUnaryOp;
 struct SetBinOp;
-struct BinOp;
 struct LinearExp;
 struct LExpBinOp;
 struct LinearMap;
+struct PWLMap;
 struct Call;
 
 typedef boost::variant<Natural, Rational, Boolean, Util::VariableName, 
+  boost::recursive_wrapper<UnaryOp>, 
   boost::recursive_wrapper<BinOp>, 
   boost::recursive_wrapper<Call>, 
   boost::recursive_wrapper<Interval>, 
@@ -63,15 +66,29 @@ typedef boost::variant<Natural, Rational, Boolean, Util::VariableName,
   boost::recursive_wrapper<SetBinOp>,
   boost::recursive_wrapper<LinearExp>,
   boost::recursive_wrapper<LExpBinOp>,
-  boost::recursive_wrapper<LinearMap>> Expr;
+  boost::recursive_wrapper<LinearMap>,
+  boost::recursive_wrapper<PWLMap>> Expr;
 typedef std::vector<Expr> ExprList;
 std::ostream &operator<<(std::ostream &out, const ExprList &el);
 
 template <typename T>
 inline bool is(Expr e) { return e.type() == typeid(T); }
 
-typedef enum { add, sub, mult, expo } Op;
-extern const char* OpNames[];
+enum class UnOp { neg };
+std::ostream &operator<<(std::ostream &out, const UnOp &op);
+
+struct UnaryOp {
+  member_class(UnOp, op);
+  member_class(Expr, expr);
+
+  UnaryOp();
+  UnaryOp(UnOp op, Expr expr);
+
+  eq_class(UnaryOp);
+};
+std::ostream &operator<<(std::ostream &out, const UnaryOp &uop);
+
+enum class Op { add, sub, mult, expo };
 std::ostream &operator<<(std::ostream &out, const Op &op);
 
 struct BinOp {
@@ -100,12 +117,10 @@ std::ostream &operator<<(std::ostream &out, const Call &c);
 
 // SBG structures --------------------------------------------------------------
 
-typedef enum { card, comp } ContainerUOp;
-extern const char* ContUOpNames[];
+enum class ContainerUOp { card, comp };
 std::ostream &operator<<(std::ostream &out, const ContainerUOp &op);
 
-typedef enum { cap, diff, less, eq, cup } ContainerOp;
-extern const char* ContOpNames[];
+enum class ContainerOp { eq, less, cap, diff, cup };
 std::ostream &operator<<(std::ostream &out, const ContainerOp &op);
 
 // Intervals -------------------------------------------------------------------
@@ -193,13 +208,16 @@ struct LinearExp {
 };
 std::ostream &operator<<(std::ostream &out, const LinearExp &le);
 
+enum class ExpOp { eq, add, sub };
+std::ostream &operator<<(std::ostream &out, const ExpOp &op);
+
 struct LExpBinOp {
   member_class(Expr, left);
-  member_class(Op, op);
+  member_class(ExpOp, op);
   member_class(Expr, right);
 
   LExpBinOp();
-  LExpBinOp(Expr left, Op op, Expr right);
+  LExpBinOp(Expr left, ExpOp op, Expr right);
 
   eq_class(LExpBinOp);
 };
@@ -217,6 +235,18 @@ struct LinearMap {
   eq_class(LinearMap);
 };
 std::ostream &operator<<(std::ostream &out, const LinearMap &lm);
+
+// Piecewise linear map --------------------------------------------------------
+
+struct PWLMap {
+  member_class(ExprList, maps);
+
+  PWLMap();
+  PWLMap(ExprList maps);
+
+  eq_class(PWLMap);
+};
+std::ostream &operator<<(std::ostream &out, const PWLMap &pwl);
 
 } // namespace AST
 

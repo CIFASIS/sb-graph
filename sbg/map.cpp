@@ -17,29 +17,35 @@
 
  ******************************************************************************/
 
-#include <sbg/map.hpp>
+#include "sbg/map.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 SBGMap::SBGMap() : dom_(), exp_() {}
-SBGMap::SBGMap(SetPiece dom, LExp lexp) : dom_(dom), exp_(lexp) {
-  Util::RATIONAL im_step = dom.step() * lexp.slope(), im_begin = minElem(dom) * lexp.slope() + lexp.offset();
-  if (im_step.denominator() != 1 || im_begin.denominator() != 1) {
-    Util::ERROR("Ill-formed SBGMap");
+SBGMap::SBGMap(Set dom, Exp lexp) : dom_(dom), exp_(lexp) {
+  BOOST_FOREACH (SetPiece atom, dom.pieces()) {
+    Util::RATIONAL im_step = atom.step() * lexp.slope(), im_begin = minElem(atom) * lexp.slope() + lexp.offset();
+    if (im_step.denominator() != 1 || im_begin.denominator() != 1)
+      Util::ERROR("Ill-formed SBGMap");
   }
 }
 
-member_imp(SBGMap, SetPiece, dom);
-member_imp(SBGMap, LExp, exp);
+member_imp(SBGMap, Set, dom);
+member_imp(SBGMap, Exp, exp);
 
 bool SBGMap::operator==(const SBGMap &other) const
 {
-  return dom() == other.dom() && exp() == other.exp();
+  if (!(exp() == other.exp())) return false;
+
+  return dom() == other.dom();
 }
 
-bool SBGMap::operator<(const SBGMap &other) const { return dom() < other.dom(); }
+bool SBGMap::operator!=(const SBGMap &other) const
+{
+  return !(*this == other);
+}
 
 std::ostream &operator<<(std::ostream &out, const SBGMap &sbgmap)
 {
@@ -50,30 +56,104 @@ std::ostream &operator<<(std::ostream &out, const SBGMap &sbgmap)
 
 // SBGMap functions ------------------------------------------------------------
 
-SetPiece image(SBGMap sbgmap) { return image(sbgmap.dom(), sbgmap);}
-
-SetPiece image(SetPiece subdom, SBGMap sbgmap) 
+SBGMap restrict(Set subdom, SBGMap sbgmap)
 {
-  SetPiece capdom = intersection(sbgmap.dom(), subdom);
-  if (isEmpty(capdom)) return SetPiece(); 
-
-  Util::RATIONAL m = sbgmap.exp().slope(), h = sbgmap.exp().offset();
-
-  Util::RATIONAL new_begin = m * minElem(capdom) + h; 
-  Util::RATIONAL new_step = m * capdom.step();
-  Util::RATIONAL new_end = m * maxElem(capdom) + h; 
-
-  return SetPiece(new_begin.numerator(), new_step.numerator(), new_end.numerator());
+  Set restricted_dom = intersection(sbgmap.dom(), subdom);
+  return SBGMap(restricted_dom, sbgmap.exp());
 }
 
-SetPiece preImage(SBGMap sbgmap) { return sbgmap.dom(); }
+Set image(SBGMap sbgmap) { return image(sbgmap.dom(), sbgmap);}
 
-SetPiece preImage(SetPiece subcodom, SBGMap sbgmap)
+Set image(Set subdom, SBGMap sbgmap) 
+{
+  InterSet res;
+
+  Exp le = sbgmap.exp();
+
+  if (isId(le)) return subdom;
+
+  if (isConstant(le)) {
+    Util::NAT off = toNat(le.offset());
+    return Set(SetPiece(off, 1, off));
+  }
+
+  Set capdom = intersection(sbgmap.dom(), subdom);
+  if (isEmpty(capdom)) return Set(); 
+
+  else {
+    Util::RATIONAL m = le.slope(), h = le.offset();
+     
+    if (m == 0) {
+      SetPiece ith(toNat(h), 1, toNat(h));
+      res.emplace_hint(res.cend(), ith);
+    }
+
+    // Non-decreasing expression
+    else if (m > 0) {
+      BOOST_FOREACH (SetPiece atom, capdom.pieces()) {
+        Util::RATIONAL new_begin = m * minElem(atom) + h; 
+        Util::RATIONAL new_step = m * atom.step();
+        Util::RATIONAL new_end = m * maxElem(atom) + h; 
+
+        SetPiece ith(new_begin.numerator(), new_step.numerator(), new_end.numerator());
+        res.emplace_hint(res.cend(), ith);
+      }
+    }
+
+    // Decreasing expression
+    else {
+      BOOST_REVERSE_FOREACH (SetPiece atom, capdom.pieces()) {
+        Util::RATIONAL new_begin = m * minElem(atom) + h; 
+        Util::RATIONAL new_step = m * atom.step();
+        Util::RATIONAL new_end = m * maxElem(atom) + h; 
+
+        SetPiece ith(new_begin.numerator(), new_step.numerator(), new_end.numerator());
+        res.emplace_hint(res.cend(), ith);
+      }
+    }
+  }
+
+  return Set(res);
+}
+
+Set preImage(SBGMap sbgmap) { return sbgmap.dom(); }
+
+Set preImage(Set subcodom, SBGMap sbgmap)
 {
   SBGMap inv(image(sbgmap), inverse(sbgmap.exp()));
-  SetPiece cap_subcodom = intersection(image(sbgmap), subcodom);
+  Set cap_subcodom = intersection(image(sbgmap), subcodom);
 
   return intersection(sbgmap.dom(), image(cap_subcodom, inv));
+}
+
+SBGMap composition(SBGMap sbgmap1, SBGMap sbgmap2)
+{
+  Set res_dom = intersection(image(sbgmap2), sbgmap1.dom());
+  res_dom = preImage(res_dom, sbgmap2);
+  Exp res_exp = composition(sbgmap1.exp(), sbgmap2.exp());
+
+  return SBGMap(Set(res_dom), res_exp);
+}
+
+// Extra functions -------------------------------------------------------------
+
+MaybeMap canonize(SBGMap sbgmap1, SBGMap sbgmap2)
+{
+  if (sbgmap1.exp() == sbgmap2.exp()) {
+    Set new_dom = concatenation(sbgmap1.dom(), sbgmap2.dom());
+    return SBGMap(new_dom, sbgmap1.exp());
+  }
+
+  return {};
+}
+
+std::size_t hash_value(const SBGMap &sbgmap)
+{
+  std::size_t seed = 0;
+  boost::hash_combine(seed, sbgmap.dom());
+  boost::hash_combine(seed, sbgmap.exp());
+
+  return seed;
 }
 
 } // namespace LIB

@@ -30,10 +30,10 @@ Visit result =
 inv((3)x+2)
   --> x/3-2/3
 
-compose((1)x+0,(1)x+0)
+compose((1)x+0, (1)x+0)
   --> x
 
-compose((2)x+3,(1)x+5)
+compose((2)x+3, (1)x+5)
   --> 2x+13
 
 -------------------------

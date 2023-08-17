@@ -30,11 +30,11 @@
 #include <tuple>
 #include <variant>
 
-#include <ast/expr.hpp>
-#include <ast/statement.hpp>
-#include <sbg/map.hpp>
-#include <util/debug.hpp>
-#include <util/defs.hpp>
+#include "ast/expr.hpp"
+#include "ast/statement.hpp"
+#include "sbg/pw_map.hpp"
+#include "util/debug.hpp"
+#include "util/defs.hpp"
 
 namespace SBG {
 
@@ -42,7 +42,7 @@ namespace Eval {
 
 // Type definitions ------------------------------------------------------------
 
-typedef std::variant<Util::NAT, Util::RATIONAL, LIB::Interval, LIB::Set, LIB::LExp, LIB::SBGMap> ExprBaseType;
+typedef std::variant<Util::NAT, Util::RATIONAL, LIB::Interval, LIB::Set, LIB::LExp, LIB::SBGMap, LIB::PWMap> ExprBaseType;
 typedef std::optional<ExprBaseType> MaybeEBT;
 
 template <class T>
@@ -115,7 +115,7 @@ struct FuncEnv{
   static FuncEnvType mapping_;
 };
 
-typedef enum { empty, member, min, max, lt, comp, inv, im, preim } Func;
+typedef enum { empty, member, min, max, lt, comp, inv, im, preim, dom, min_adj } Func;
 
 /** @struct Overload
  *

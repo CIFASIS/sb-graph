@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <util/defs.hpp>
+#include "util/defs.hpp"
 
 namespace SBG {
 
@@ -38,6 +38,22 @@ member_imp(RATIONAL, boost::rational<INT>, value);
 INT RATIONAL::numerator() { return value().numerator(); }
 
 INT RATIONAL::denominator() { return value().denominator(); }
+
+NAT toNat(RATIONAL r)
+{
+  if (r.denominator() == 1 && 0 <= r.value()) return r.numerator();
+
+  ERROR("toNat: RATIONAL is not NAT");
+  return 0;
+}
+
+INT toInt(RATIONAL r)
+{
+  if (r.denominator() == 1) return r.numerator();
+
+  ERROR("toInt: RATIONAL is not INT");
+  return 0;
+}
 
 RATIONAL RATIONAL::operator+=(const RATIONAL &r)
 {
@@ -89,6 +105,12 @@ RATIONAL operator/(const RATIONAL &r1, const RATIONAL &r2)
   RATIONAL res(r1);
   res /= r2;
   return res;
+}
+
+bool RATIONAL::operator==(const INT &r) const
+{
+  RATIONAL aux = *this;
+  return aux.numerator() == r && aux.denominator() == 1;
 }
 
 bool RATIONAL::operator==(const RATIONAL &r) const { return value() == r.value(); }

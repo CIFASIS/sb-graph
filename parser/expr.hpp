@@ -28,14 +28,17 @@
 
 #define BOOST_SPIRIT_DEBUG
 
+#include <boost/phoenix.hpp>
 #include <boost/rational.hpp>
 
-#include <ast/expr.hpp>
-#include <parser/skipper.hpp>
+#include "ast/expr.hpp"
+#include "parser/skipper.hpp"
 
 namespace SBG {
 
 namespace Parser {
+
+namespace phx = boost::phoenix;
 
 template <typename Iterator>
 struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
@@ -47,7 +50,7 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   qi::rule<Iterator, AST::Boolean()> boolean;
 
   // Operators tokens
-  qi::rule<Iterator> OPAREN, CPAREN, OBRACKET, CBRACKET, OBRACE, CBRACE, COLON, RAT, COMA, ARROW;
+  qi::rule<Iterator> OPAREN, CPAREN, OBRACKET, CBRACKET, OBRACE, CBRACE, COLON, RAT, COMA, ARROW, OANGLE, CANGLE;
 
   // Other rules
   qi::rule<Iterator, Skipper<Iterator>, Util::RATIONAL()> rational;
@@ -76,6 +79,10 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
 
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbgmap;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> map_expr;
+  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> map_list;
+
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> pwl;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> pwl_expr;
 
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> expr;
   qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> expr_list;

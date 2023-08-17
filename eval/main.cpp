@@ -27,8 +27,8 @@
 
 #include <fstream>
 
-#include <parser/sbg_program.hpp>
-#include <eval/visitors/program_visitor.hpp>
+#include "parser/sbg_program.hpp"
+#include "eval/visitors/program_visitor.hpp"
 
 void parseEvalProgramFromFile(std::string str)
 {

@@ -19,7 +19,7 @@
 
 #include <cstdarg>
 
-#include <util/defs.hpp>
+#include "util/defs.hpp"
 
 namespace SBG {
 

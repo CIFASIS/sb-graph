@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <eval/visitors/eval_expr.hpp>
+#include "eval/visitors/eval_expr.hpp"
 
 namespace SBG {
 
@@ -70,10 +70,11 @@ auto lt_visitor_ = Overload{
 };
 
 auto compose_visitor_ = Overload{
-  [](LIB::LExp a, LIB::LExp b) { return composition(a, b); },
+  [](LIB::LExp a, LIB::LExp b) { return ExprBaseType(composition(a, b)); },
+  [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(composition(a, b)); },
   [](auto a, auto b) { 
     Util::ERROR("Wrong arguments for composition"); 
-    return LIB::LExp(); }
+    return ExprBaseType(); }
 };
 
 auto inverse_visitor_ = Overload{
@@ -85,36 +86,59 @@ auto inverse_visitor_ = Overload{
 };
 
 auto image_visitor1_ = Overload{
-  [](LIB::SBGMap a) { return image(a); },
+  [](LIB::SBGMap a) { return ExprBaseType(image(a)); },
+  [](LIB::PWMap a) { return ExprBaseType(image(a)); },
   [](auto a) { 
     Util::ERROR("Wrong arguments for image 1"); 
-    return LIB::SetPiece(); 
+    return ExprBaseType(); 
   }
 };
 
 auto image_visitor2_ = Overload{
-  [](LIB::SetPiece a, LIB::SBGMap b) { return image(a, b); },
+  [](LIB::SetPiece a, LIB::SBGMap b) { return ExprBaseType(image(a, b)); },
+  [](LIB::Set a, LIB::PWMap b) { return ExprBaseType(image(a, b)); },
   [](auto a, auto b) { 
     Util::ERROR("Wrong arguments for image 2"); 
-    return LIB::SetPiece(); 
+    return ExprBaseType();
   }
 };
 
 auto pre_image_visitor1_ = Overload{
-  [](LIB::SBGMap a) { return preImage(a); },
+  [](LIB::SBGMap a) { return ExprBaseType(preImage(a)); },
+  [](LIB::PWMap a) { return ExprBaseType(preImage(a)); },
   [](auto a) { 
     Util::ERROR("Wrong arguments for pre image 1"); 
-    return LIB::SetPiece(); 
+    return ExprBaseType(); 
   }
 };
 
 auto pre_image_visitor2_ = Overload{
-  [](LIB::SetPiece a, LIB::SBGMap b) { return preImage(a, b); },
+  [](LIB::SetPiece a, LIB::SBGMap b) { return ExprBaseType(preImage(a, b)); },
+  [](LIB::Set a, LIB::PWMap b) { return ExprBaseType(preImage(a, b)); },
   [](auto a, auto b) { 
     Util::ERROR("Wrong arguments for pre image 2"); 
-    return LIB::SetPiece(); 
+    return ExprBaseType(); 
   }
 };
+
+auto dom_visitor_ = Overload{
+  [](LIB::PWMap a) { return LIB::dom(a); },
+  [](auto a) { 
+    Util::ERROR("Wrong arguments for dom"); 
+    return LIB::Set(); 
+  }
+};
+
+/*
+auto min_adj_visitor_ = Overload{
+  [](LIB::SBGMap a, LIB::SBGMap b) { return ExprBaseType(minAdjMap(a, b)); },
+  [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(minAdjMap(a, b)); },
+  [](auto a, auto b) { 
+    Util::ERROR("Wrong arguments for minAdjMap"); 
+    return ExprBaseType(); 
+  }
+};
+*/
 
 // Expression evaluator --------------------------------------------------------
 
@@ -137,30 +161,9 @@ ExprBaseType EvalExpression::operator()(Util::VariableName v) const
   return 0; 
 }
 
-ExprBaseType EvalExpression::operator()(AST::BinOp v) const 
-{
-  AST::Expr l = v.left(), r = v.right();
+ExprBaseType EvalExpression::operator()(AST::UnaryOp v) const { return Apply(EvalRat(env_), AST::Expr(v)); }
 
-  EvalRat eval_rat(env_);    
-  Util::RATIONAL l_result = Apply(eval_rat, l), r_result = Apply(eval_rat, r);
-  switch (v.op()) {
-    case AST::Op::add:
-      return l_result + r_result;
-
-    case AST::Op::sub:
-      return l_result - r_result;
-
-    case AST::Op::mult:
-      return l_result * r_result;
-
-    default:
-      Util::ERROR("EvalExpression: BinOp %s not supported.", AST::OpNames[v.op()]);
-      return 0;
-  }
-
-  Util::ERROR("EvalExpression: BinOp %s not supported.", AST::OpNames[v.op()]);
-  return 0;
-}
+ExprBaseType EvalExpression::operator()(AST::BinOp v) const { return Apply(EvalRat(env_), AST::Expr(v)); }
 
 ExprBaseType EvalExpression::operator()(AST::Call v) const
 {
@@ -229,7 +232,7 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
           arity_ok = true;
 
           ExprBaseType lexp1 = eval_args[0], lexp2 = eval_args[1];
-          LIB::LExp result = std::visit(compose_visitor_, lexp1, lexp2);
+          ExprBaseType result = std::visit(compose_visitor_, lexp1, lexp2);
           return result;
         }
         break;
@@ -249,7 +252,7 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
           arity_ok = true;
 
           ExprBaseType sbgmap = eval_args[0];
-          LIB::SetPiece result = std::visit(image_visitor1_, sbgmap);
+          ExprBaseType result = std::visit(image_visitor1_, sbgmap);
           return result;
         }
 
@@ -257,7 +260,7 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
           arity_ok = true;
 
           ExprBaseType subdom = eval_args[0], sbgmap = eval_args[1];
-          LIB::SetPiece result = std::visit(image_visitor2_, subdom, sbgmap);
+          ExprBaseType result = std::visit(image_visitor2_, subdom, sbgmap);
           return result;
         }
 
@@ -268,19 +271,42 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
           arity_ok = true;
 
           ExprBaseType sbgmap = eval_args[0];
-          LIB::SetPiece result = std::visit(pre_image_visitor1_, sbgmap);
+          ExprBaseType result = std::visit(pre_image_visitor1_, sbgmap);
           return result;
         }
 
         else if (eval_args.size() == 2) {
           arity_ok = true;
 
-          ExprBaseType subdom = eval_args[0], sbgmap = eval_args[1];
-          LIB::SetPiece result = std::visit(pre_image_visitor2_, subdom, sbgmap);
+          ExprBaseType subdom = eval_args[0], map = eval_args[1];
+          ExprBaseType result = std::visit(pre_image_visitor2_, subdom, map);
           return result;
         }
         
         break;
+
+
+      case Eval::Func::dom:
+        if (eval_args.size() == 1) {
+          arity_ok = true;
+
+          ExprBaseType pw = eval_args[0]; 
+          LIB::Set result = std::visit(dom_visitor_, pw);
+          return result;
+        }
+        break;
+
+      /*
+      case Eval::Func::min_adj:
+        if (eval_args.size() == 2) {
+          arity_ok = true;
+
+          ExprBaseType map1 = eval_args[0], map2 = eval_args[1];
+          ExprBaseType result = std::visit(min_adj_visitor_, map1, map2);
+          return result;
+        }
+        break;
+      */
 
       default:
         Util::ERROR("EvalExpression: function %s not implemented", vname.c_str());
@@ -308,7 +334,9 @@ ExprBaseType EvalExpression::operator()(AST::InterUnaryOp v) const
       return cardinal(Apply(eval_interval, exp));
 
     default:
-      Util::ERROR("EvalExpression: InterUnaryOp %s not supported.", AST::ContUOpNames[v.op()]);
+      std::stringstream ss;
+      ss << v.op();
+      Util::ERROR("EvalExpression: InterUnaryOp %s not supported.", ss.str().c_str());
       return 0;
   }
 }
@@ -328,7 +356,9 @@ ExprBaseType EvalExpression::operator()(AST::InterBinOp v) const
       return Apply(eval_interval, l) == Apply(eval_interval, r);
 
     default:
-      Util::ERROR("EvalExpression: InterBinOp %s not supported.", AST::ContOpNames[v.op()]);
+      std::stringstream ss;
+      ss << v.op();
+      Util::ERROR("EvalExpression: InterBinOp %s not supported.", ss.str().c_str());
       return 0;
   }
 }
@@ -339,15 +369,18 @@ ExprBaseType EvalExpression::operator()(AST::SetUnaryOp v) const
 {
   AST::Expr exp = v.e();
   EvalSet eval_set(env_);
+  LIB::Set eval_exp = Apply(eval_set, exp);
   switch (v.op()) {
     case AST::ContainerUOp::card:
-      return cardinal(Apply(eval_set, exp));
+      return cardinal(eval_exp);
 
     case AST::ContainerUOp::comp:
-      return complement(Apply(eval_set, exp));
+      return complement(eval_exp);
 
     default:
-      Util::ERROR("EvalExpression: SetUnaryOp %s not supported.", AST::ContUOpNames[v.op()]);
+      std::stringstream ss;
+      ss << v.op();
+      Util::ERROR("EvalExpression: SetUnaryOp %s not supported.", ss.str().c_str());
       return 0;
   }
 }
@@ -370,7 +403,9 @@ ExprBaseType EvalExpression::operator()(AST::SetBinOp v) const
       return cup(Apply(eval_set, l), Apply(eval_set, r));
 
     default:
-      Util::ERROR("EvalExpression: SetBinOp %s not supported.", AST::ContOpNames[v.op()]);
+      std::stringstream ss;
+      ss << v.op();
+      Util::ERROR("EvalExpression: SetBinOp %s not supported.", ss.str().c_str());
       return 0;
   }
 }
@@ -381,20 +416,28 @@ ExprBaseType EvalExpression::operator()(AST::LExpBinOp v) const
 {
   AST::Expr l = v.left(), r = v.right();
   EvalLE visit_le(env_);
+  LIB::LExp lexp = Apply(visit_le, l), rexp = Apply(visit_le, r);
   switch (v.op()) {
-    case AST::Op::add:
-      return Apply(visit_le, l) + Apply(visit_le, r);
+    case AST::ExpOp::eq:
+      return lexp == rexp;
 
-    case AST::Op::sub:
-      return Apply(visit_le, l) - Apply(visit_le, r);
+    case AST::ExpOp::add:
+      return lexp + rexp;
+
+    case AST::ExpOp::sub:
+      return lexp - rexp;
 
     default:
-      Util::ERROR("EvalExpression: LExpBinOp %s not supported.", AST::OpNames[v.op()]);
+      std::stringstream ss;
+      ss << v.op();
+      Util::ERROR("EvalExpression: LExpBinOp %s not supported.", ss.str().c_str());
       return 0;
   }
 }
 
 ExprBaseType EvalExpression::operator()(AST::LinearMap v) const { return Apply(EvalMap(env_), AST::Expr(v)); }
+
+ExprBaseType EvalExpression::operator()(AST::PWLMap v) const { return Apply(EvalPWMap(env_), AST::Expr(v)); }
 
 } // namespace Eval
 

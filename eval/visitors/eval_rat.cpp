@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <eval/visitors/eval_rat.hpp>
+#include "eval/visitors/eval_rat.hpp"
 
 namespace SBG {
 
@@ -56,8 +56,31 @@ Util::RATIONAL EvalRat::operator()(Util::VariableName v) const
   return Util::RATIONAL(0, 1);
 }
 
+Util::RATIONAL EvalRat::operator()(AST::UnaryOp v) const 
+{ 
+  std::stringstream ss;
+  ss << v.op();
+
+  EvalRat visit_rat(env_);
+  Util::RATIONAL result = Apply(visit_rat, v.expr()); 
+  switch (v.op()) {
+    case AST::UnOp::neg:
+      return -result;
+
+    default:
+      Util::ERROR("EvalExpression: UnaryOp %s not supported.", ss.str().c_str());
+      return 0;
+  }
+
+  Util::ERROR("EvalExpression: UnaryOp %s not supported.", ss.str().c_str());
+  return 0;
+}
+
 Util::RATIONAL EvalRat::operator()(AST::BinOp v) const 
 {
+  std::stringstream ss;
+  ss << v.op();
+
   AST::Expr l = v.left(), r = v.right();
   switch (v.op()) {
     case AST::Op::add:
@@ -70,9 +93,12 @@ Util::RATIONAL EvalRat::operator()(AST::BinOp v) const
       return ApplyThis(l) * ApplyThis(r);
 
     default:
-      Util::ERROR("EvalRat: BinOp %s not supported.", AST::OpNames[v.op()]);
+      Util::ERROR("EvalRat: BinOp %s not supported.", ss.str().c_str());
       return Util::RATIONAL(0, 1);
   }
+
+  Util::ERROR("EvalExpression: BinOp %s not supported.", ss.str().c_str());
+  return 0;
 }
 
 Util::RATIONAL EvalRat::operator()(AST::Call v) const
@@ -132,6 +158,12 @@ Util::RATIONAL EvalRat::operator()(AST::LExpBinOp v) const
 Util::RATIONAL EvalRat::operator()(AST::LinearMap v) const
 {
   Util::ERROR("EvalRat: trying to evaluate an LinearMap");
+  return Util::RATIONAL(0, 1);
+}
+
+Util::RATIONAL EvalRat::operator()(AST::PWLMap v) const
+{
+  Util::ERROR("EvalRat: trying to evaluate an PWLMap");
   return Util::RATIONAL(0, 1);
 }
 

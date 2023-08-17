@@ -24,7 +24,7 @@
 #ifndef PARSER_PROGRAM_AST_HPP
 #define PARSER_PROGRAM_AST_HPP
 
-#include <ast/statement.hpp>
+#include "ast/statement.hpp"
 
 namespace SBG {
 

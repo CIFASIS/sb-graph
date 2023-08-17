@@ -24,7 +24,7 @@
 #ifndef AST_VISITOR_EVALSET
 #define AST_VISITOR_EVALSET
 
-#include <eval/visitors/eval_interval.hpp>
+#include "eval/visitors/eval_interval.hpp"
 
 namespace SBG {
 
@@ -39,6 +39,7 @@ struct EvalSet : public boost::static_visitor<LIB::Set> {
   LIB::Set operator()(AST::Rational v) const;
   LIB::Set operator()(AST::Boolean v) const;
   LIB::Set operator()(Util::VariableName v) const;
+  LIB::Set operator()(AST::UnaryOp v) const;
   LIB::Set operator()(AST::BinOp v) const;
   LIB::Set operator()(AST::Call v) const;
   LIB::Set operator()(AST::Interval v) const;
@@ -50,6 +51,7 @@ struct EvalSet : public boost::static_visitor<LIB::Set> {
   LIB::Set operator()(AST::LinearExp v) const;
   LIB::Set operator()(AST::LExpBinOp v) const;
   LIB::Set operator()(AST::LinearMap v) const;
+  LIB::Set operator()(AST::PWLMap v) const;
 
   private:
   mutable VarEnv env_;

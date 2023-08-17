@@ -26,8 +26,8 @@
 
 #include <boost/variant/static_visitor.hpp>
 
-#include <ast/expr.hpp>
-#include <eval/defs.hpp>
+#include "ast/expr.hpp"
+#include "eval/defs.hpp"
 
 namespace SBG {
 
@@ -42,6 +42,7 @@ struct EvalNat : public boost::static_visitor<Util::NAT> {
   Util::NAT operator()(AST::Rational v) const;
   Util::NAT operator()(AST::Boolean v) const;
   Util::NAT operator()(Util::VariableName v) const;
+  Util::NAT operator()(AST::UnaryOp v) const;
   Util::NAT operator()(AST::BinOp v) const;
   Util::NAT operator()(AST::Call v) const;
   Util::NAT operator()(AST::Interval v) const;
@@ -53,6 +54,7 @@ struct EvalNat : public boost::static_visitor<Util::NAT> {
   Util::NAT operator()(AST::LinearExp v) const;
   Util::NAT operator()(AST::LExpBinOp v) const;
   Util::NAT operator()(AST::LinearMap v) const;
+  Util::NAT operator()(AST::PWLMap v) const;
 
   private:
   mutable VarEnv env_;

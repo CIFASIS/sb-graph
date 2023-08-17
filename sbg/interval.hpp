@@ -31,12 +31,14 @@
 #ifndef SBG_INTERVAL_HPP
 #define SBG_INTERVAL_HPP
 
-#include <boost/foreach.hpp>
 #include <cmath>
 #include <numeric>
 #include <optional>
 
-#include <util/defs.hpp>
+#include <boost/foreach.hpp>
+#include <boost/functional/hash.hpp>
+
+#include "util/defs.hpp"
 
 namespace SBG {
 
@@ -76,6 +78,8 @@ Interval intersection(Interval i1, Interval i2);
 Interval least(Interval i1, Interval i2);
 typedef std::optional<Interval> MaybeInterval;
 MaybeInterval canonize(Interval i1, Interval i2);
+
+std::size_t hash_value(const Interval &i);
 
 typedef Interval SetPiece;
 

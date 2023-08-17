@@ -27,35 +27,45 @@
 #ifndef SBG_MAP_HPP
 #define SBG_MAP_HPP
 
-#include <boost/container/set.hpp>
-
-#include <sbg/lexp.hpp>
-#include <sbg/pw_inter.hpp>
-#include <util/debug.hpp>
+#include "sbg/lexp.hpp"
+#include "sbg/pw_inter.hpp"
+#include "util/debug.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 struct SBGMap {
-  member_class(SetPiece, dom);
-  member_class(LExp, exp);
+  member_class(Set, dom);
+  member_class(Exp, exp);
 
   SBGMap();
-  SBGMap(SetPiece dom, LExp exp);
+  SBGMap(Set dom, Exp exp);
 
   eq_class(SBGMap);
-  lt_class(SBGMap);
+  neq_class(SBGMap);
 };
 std::ostream &operator<<(std::ostream &out, const SBGMap &sbgmap);
 
 /**
  * @brief Traditional map operations.
  */
-SetPiece image(SBGMap sbgmap);
-SetPiece image(SetPiece subdom, SBGMap sbgmap);
-SetPiece preImage(SBGMap sbgmap);
-SetPiece preImage(SetPiece subcodom, SBGMap sbgmap);
+
+SBGMap restrict(Set subdom, SBGMap sbgmap);
+Set image(SBGMap sbgmap);
+Set image(Set subdom, SBGMap sbgmap);
+Set preImage(SBGMap sbgmap);
+Set preImage(Set subcodom, SBGMap sbgmap);
+SBGMap composition(SBGMap sbgmap1, SBGMap sbgmap2);
+
+/**
+ * @brief Extra operations.
+ */
+
+typedef std::optional<SBGMap> MaybeMap;
+MaybeMap canonize(SBGMap sbgmap1, SBGMap sbgmap2);
+
+std::size_t hash_value(const SBGMap &sbgmap);
 
 } // namespace LIB
 

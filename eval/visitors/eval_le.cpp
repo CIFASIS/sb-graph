@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <eval/visitors/eval_le.hpp>
+#include "eval/visitors/eval_le.hpp"
 
 namespace SBG {
 
@@ -55,6 +55,12 @@ LIB::LExp EvalLE::operator()(Util::VariableName v) const {
   }
 
   Util::ERROR("EvalLE: variable %s not defined", v.c_str());
+  return LIB::LExp(); 
+}
+
+LIB::LExp EvalLE::operator()(AST::UnaryOp v) const
+{
+  Util::ERROR("EvalLE: trying to evaluate an arithmetic UnaryOp");
   return LIB::LExp(); 
 }
 
@@ -119,14 +125,16 @@ LIB::LExp EvalLE::operator()(AST::LExpBinOp v) const
 {
   AST::Expr l = v.left(), r = v.right();
   switch (v.op()) {
-    case AST::Op::add:
+    case AST::ExpOp::add:
       return ApplyThis(l) + ApplyThis(r);
 
-    case AST::Op::sub:
-      return ApplyThis(l) + ApplyThis(r);
+    case AST::ExpOp::sub:
+      return ApplyThis(l) - ApplyThis(r);
 
     default:
-      Util::ERROR("EvalLE: LExpBinOp %s not supported.", AST::OpNames[v.op()]);
+      std::stringstream ss;
+      ss << v.op();
+      Util::ERROR("EvalLE: LExpBinOp %s not supported.", ss.str().c_str());
       return LIB::LExp(); 
   }
 }
@@ -134,6 +142,12 @@ LIB::LExp EvalLE::operator()(AST::LExpBinOp v) const
 LIB::LExp EvalLE::operator()(AST::LinearMap v) const 
 {
   Util::ERROR("EvalLE: trying to evaluate a LinearMap");
+  return LIB::LExp(); 
+}
+
+LIB::LExp EvalLE::operator()(AST::PWLMap v) const 
+{
+  Util::ERROR("EvalLE: trying to evaluate a PWLMap");
   return LIB::LExp(); 
 }
 

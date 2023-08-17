@@ -28,11 +28,9 @@
 #ifndef SBG_PW_INTERVAL_HPP
 #define SBG_PW_INTERVAL_HPP
 
-#include <set>
-
 #include <boost/container/flat_set.hpp>
 
-#include <sbg/interval.hpp>
+#include "sbg/interval.hpp"
 
 namespace SBG {
 
@@ -49,10 +47,9 @@ namespace LIB {
  * SetPieces, is not used).
  */
 struct LTInter {
+  LTInter();
+
   bool operator()(const SetPiece &x, const SetPiece &y) const;
-  typedef SetPiece first_argument_type;
-  typedef SetPiece second_argument_type;
-  typedef bool result_type;
 };
 
 typedef boost::container::flat_set<SetPiece, LTInter, boost::container::new_allocator<SetPiece>> InterSet;
@@ -70,6 +67,7 @@ struct PWInterval {
   PWInterval(InterSet pieces);
 
   eq_class(PWInterval);
+  lt_class(PWInterval);
 };
 std::ostream &operator<<(std::ostream &out, const PWInterval &i);
 
@@ -82,7 +80,7 @@ bool isEmpty(PWInterval i);
 bool isMember(NAT x, PWInterval i);
 Util::NAT minElem(PWInterval pwi);
 Util::NAT maxElem(PWInterval pwi);
-PWInterval intersection(PWInterval i1, PWInterval i2);
+PWInterval intersection(PWInterval pwi1, PWInterval pwi2);
 PWInterval cup(PWInterval i1, PWInterval i2);
 PWInterval complement(Interval i);
 PWInterval complement(PWInterval i);
@@ -97,8 +95,27 @@ PWInterval difference(PWInterval i1, PWInterval i2);
  * @brief This function determines if a pwi is compact (composed only by compact 
  * intervals).
  */
+bool isCompact(InterSet ii);
 
-bool isCompact(PWInterval pwi);
+/** @function optCond
+ *
+ * @brief Check if the InterSet satisfies the conditions to use optimizations.
+ */
+bool optConds(InterSet ii);
+
+/* @function canonize
+ *
+ * @brief Tries to convert the argument to canonical form. Currently works only
+ * with compact InterSet. 
+ */
+InterSet canonize(InterSet ii);
+
+/** @function concatenation
+ *
+ * @brief Function useful to unite two pwis in the case these are known to be
+ * disjoint.
+ */
+PWInterval concatenation(PWInterval pwi1, PWInterval pwi2);
 
 /** @function boundedTraverse
  *
@@ -109,10 +126,12 @@ InterSet boundedTraverse(PWInterval pwi1, PWInterval pwi2, SetPiece (*func)(SetP
 
 /** @function traverse
  *
- * @brief Traverse pwis in order reaching both ends, obtaining an orderedresult.
+ * @brief Traverse pwis in order reaching both ends, obtaining an ordered result.
  *   !!! Both pwis should be compact (not checked in this function).
  */
 InterSet traverse(PWInterval pwi1, PWInterval pwi2, SetPiece (*func)(SetPiece, SetPiece));
+
+std::size_t hash_value(const PWInterval &pwi);
 
 typedef PWInterval Set;
 

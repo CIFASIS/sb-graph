@@ -28,15 +28,12 @@
 #define SKIPPER_HPP
 
 #include <boost/spirit/include/qi.hpp>
-#include <boost/spirit/include/phoenix.hpp>
-#include <boost/spirit/repository/include/qi_kwd.hpp>
 
 namespace SBG {
 
 namespace Parser {
 
 namespace asc = boost::spirit::ascii;
-namespace phx = boost::phoenix;
 namespace qi = boost::spirit::qi;
 
 typedef std::string::const_iterator StrIt;

@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <eval/defs.hpp>
+#include "eval/defs.hpp"
 
 namespace SBG {
 
@@ -58,7 +58,7 @@ MaybeVValue VarEnv::operator[](VKey k) const
 
 FuncEnv::FuncEnv() {}
 FuncEnvType FuncEnv::mapping_ = {{"isEmpty", 0}, {"isMember", 1}, {"minElem", 2}, {"maxElem", 3}, {"lt", 4},
-  {"compose", 5}, {"inv", 6}, {"image", 7}, {"preImage", 8}};
+  {"compose", 5}, {"inv", 6}, {"image", 7}, {"preImage", 8}, {"dom", 9}, {"minAdj", 10}};
 
 MaybeFValue FuncEnv::operator[](FKey k) const
 {

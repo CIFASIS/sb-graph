@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <eval/visitors/stm_visitor.hpp>
+#include "eval/visitors/stm_visitor.hpp"
 
 namespace SBG {
 

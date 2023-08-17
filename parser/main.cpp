@@ -19,7 +19,7 @@
 
 #include <fstream>
 
-#include <parser/sbg_program.hpp> 
+#include "parser/sbg_program.hpp"
 
 void parseExprsFromFile(std::string str)
 {

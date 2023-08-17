@@ -19,8 +19,8 @@
 
 #include <fstream>
 
-#include <parser/expr.hpp> 
-#include <util/logger.hpp>
+#include "parser/expr.hpp"
+#include "util/logger.hpp"
 
 void parseExprsFromFile(std::string str)
 {

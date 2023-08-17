@@ -23,7 +23,8 @@ RUN_TESTS   := sbg-performance
 # Source files.
 MAIN_SRC = $(SRC_DIR)/main.cpp
 
-TEST_SRC = $(TEST_DIR)/set_perf.cpp
+TEST_SRC = $(TEST_DIR)/set_perf.cpp \
+  $(TEST_DIR)/pw_map_perf.cpp
 
 # Objects
 TEST_OBJ=$(addprefix $(BUILD_DIR)/test_, $(notdir $(TEST_SRC:.cpp=.o)))

@@ -15,6 +15,7 @@ PARSER_SRC := \
     $(AST_DIR)/sbg_program.cpp \
     $(PARSER_DIR)/sbg_program.cpp \
     $(PARSER_DIR)/skipper.cpp \
+    $(UTIL_DIR)/debug.cpp \
     $(UTIL_DIR)/defs.cpp
 
 # Objects

@@ -26,9 +26,8 @@
 
 #include <boost/variant/static_visitor.hpp>
 
-#include <eval/defs.hpp>
-#include <eval/visitors/eval_rat.hpp>
-#include <sbg/lexp.hpp>
+#include "eval/visitors/eval_rat.hpp"
+#include "sbg/lexp.hpp"
 
 namespace SBG {
 
@@ -43,6 +42,7 @@ struct EvalLE : public boost::static_visitor<LIB::LExp> {
   LIB::LExp operator()(AST::Rational v) const;
   LIB::LExp operator()(AST::Boolean v) const;
   LIB::LExp operator()(Util::VariableName v) const;
+  LIB::LExp operator()(AST::UnaryOp v) const;
   LIB::LExp operator()(AST::BinOp v) const;
   LIB::LExp operator()(AST::Call v) const;
   LIB::LExp operator()(AST::Interval v) const;
@@ -54,6 +54,7 @@ struct EvalLE : public boost::static_visitor<LIB::LExp> {
   LIB::LExp operator()(AST::LinearExp v) const;
   LIB::LExp operator()(AST::LExpBinOp v) const;
   LIB::LExp operator()(AST::LinearMap v) const;
+  LIB::LExp operator()(AST::PWLMap v) const;
 
   private:
   mutable VarEnv env_;

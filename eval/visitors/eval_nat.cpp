@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <eval/visitors/eval_nat.hpp>
+#include "eval/visitors/eval_nat.hpp"
 
 namespace SBG {
 
@@ -57,6 +57,12 @@ Util::NAT EvalNat::operator()(Util::VariableName v) const
   return 0;
 }
 
+Util::NAT EvalNat::operator()(AST::UnaryOp v) const 
+{
+  Util::ERROR("EvalNat: trying to evaluate an arithmetic UnaryOp");
+  return 0;
+}
+
 Util::NAT EvalNat::operator()(AST::BinOp v) const 
 {
   AST::Expr l = v.left(), r = v.right();
@@ -74,7 +80,9 @@ Util::NAT EvalNat::operator()(AST::BinOp v) const
       return pow(ApplyThis(l), ApplyThis(r));
 
     default:
-      Util::ERROR("EvalNat: BinOp %s not supported.", AST::OpNames[v.op()]);
+      std::stringstream ss;
+      ss << v.op();
+      Util::ERROR("EvalNat: BinOp %s not supported.", ss.str().c_str());
       return 0;
   }
 }
@@ -136,6 +144,12 @@ Util::NAT EvalNat::operator()(AST::LExpBinOp v) const
 Util::NAT EvalNat::operator()(AST::LinearMap v) const
 {
   Util::ERROR("EvalNat: trying to evaluate a LinearMap");
+  return 0;
+}
+
+Util::NAT EvalNat::operator()(AST::PWLMap v) const
+{
+  Util::ERROR("EvalNat: trying to evaluate a PWLMap");
   return 0;
 }
 

@@ -31,6 +31,8 @@
 #include <boost/range/combine.hpp>
 #include <boost/rational.hpp>
 
+#include "util/debug.hpp"
+
 namespace SBG {
 
 namespace Util {
@@ -119,11 +121,15 @@ struct RATIONAL{
   RATIONAL operator*=(const RATIONAL &r);
   RATIONAL operator/=(const RATIONAL &r);
 
+  bool operator==(const INT &other) const;
+
   eq_class(RATIONAL);
   lt_class(RATIONAL);
   gt_class(RATIONAL);
   neq_class(RATIONAL);
 };
+NAT toNat(RATIONAL r);
+INT toInt(RATIONAL r);
 RATIONAL operator+(const RATIONAL &r1, const RATIONAL &r2);
 RATIONAL operator-(const RATIONAL &r1, const RATIONAL &r2);
 RATIONAL operator*(const RATIONAL &r1, const RATIONAL &r2);

@@ -16,14 +16,16 @@
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
  ******************************************************************************/
-
-#include <sbg/pw_inter.hpp>
+#include <iostream>
+#include "sbg/pw_inter.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 // Type definitions ------------------------------------------------------------
+
+LTInter::LTInter() {}
 
 bool LTInter::operator()(const SetPiece &x, const SetPiece &y) const { return x < y; }
 
@@ -36,10 +38,12 @@ std::ostream &operator<<(std::ostream &out, const InterSet &ii)
   if (sz > 0) {
     auto it = aux.begin();
     for (int i = 0; i < sz - 1; ++i) {
-      out << *it << ", "; 
+      if (!isEmpty(*it))
+        out << *it << ", "; 
       ++it;
     }
-    out << *it;
+    if (!isEmpty(*it))
+      out << *it;
   }
   out << "}";
 
@@ -50,17 +54,25 @@ std::ostream &operator<<(std::ostream &out, const InterSet &ii)
 
 PWInterval::PWInterval() : pieces_() {}
 PWInterval::PWInterval(SetPiece i) : pieces_() { pieces_ref().insert(i); }
-PWInterval::PWInterval(InterSet ii) : pieces_(ii) {}
+PWInterval::PWInterval(InterSet ii) : pieces_(canonize(ii)) {}
 
 member_imp(PWInterval, InterSet, pieces);
 
 bool PWInterval::operator==(const PWInterval &other) const
 {
+  InterSet aux1 = this->pieces(), aux2 = other.pieces();
+  if (optConds(aux1) && optConds(aux2)) {
+    InterSet ii1 = canonize(aux1), ii2 = canonize(aux2);
+    return ii1 == ii2;
+  }
+
   PWInterval pwi1 = *this, pwi2 = other;
   if (pwi1.pieces_ref() == pwi2.pieces_ref()) return true;
 
   return isEmpty(difference(*this, other)) && isEmpty(difference(other, *this));
 }
+
+bool PWInterval::operator<(const PWInterval &other) const { return minElem(*this) < minElem(other); }
 
 std::ostream &operator<<(std::ostream &out, const PWInterval &pwi) 
 {
@@ -133,7 +145,6 @@ PWInterval intersection(PWInterval pwi1, PWInterval pwi2)
   return PWInterval(cap);
 }
 
-// TODO: choose better lt/gt pieces
 PWInterval cup(PWInterval pwi1, PWInterval pwi2)
 {
   InterSet un;
@@ -186,8 +197,8 @@ PWInterval cup(PWInterval pwi1, PWInterval pwi2)
   }
 
   PWInterval diff = difference(gt_pieces, lt_pieces);
-  if (isCompact(lt_pieces) && isCompact(gt_pieces))
-    un = traverse(lt_pieces, diff, &least);
+  if (optConds(lt_pieces.pieces()) && optConds(gt_pieces.pieces()))
+    return concatenation(lt_pieces, diff);
 
   else {
     BOOST_FOREACH (SetPiece i, lt_pieces.pieces_ref())
@@ -255,14 +266,52 @@ PWInterval difference(PWInterval pwi1, PWInterval pwi2) { return intersection(pw
 
 // Extra operations ------------------------------------------------------------
 
-bool isCompact(PWInterval pwi)
+bool isCompact(InterSet ii)
 {
-  BOOST_FOREACH (SetPiece i, pwi.pieces_ref())
+  BOOST_FOREACH (SetPiece i, ii)
     if (i.step() != 1)
       return false;
 
   return true;
 }
+
+bool optConds(InterSet ii) { return isCompact(ii); }
+
+InterSet canonize(InterSet ii)
+{
+  InterSet res;
+
+  unsigned int sz = ii.size();
+  if (sz == 1) res = ii;
+
+  if (optConds(ii) && sz > 1) {
+    InterSetIt it = ii.begin(), next_it = it;
+    ++next_it;
+    SetPiece ith = *it;
+    for (unsigned int j = 0; j < sz - 1; ++j) {
+      MaybeInterval i = canonize(ith, *next_it); 
+      if (i) ith = *i;
+
+      else {
+        if (!isEmpty(ith)) res.emplace_hint(res.cend(), ith);
+
+        if (j < (sz-2)) ith = *next_it;
+
+        else ith = *next_it; 
+      }
+
+      ++next_it;
+      ++it;
+    }
+    if (!isEmpty(ith)) res.emplace_hint(res.cend(), ith);
+  }
+
+  else res = ii;
+
+  return res;
+}
+
+PWInterval concatenation(PWInterval pwi1, PWInterval pwi2) { return PWInterval(traverse(pwi1.pieces(), pwi2.pieces(), &least)); }
 
 InterSet boundedTraverse(PWInterval pwi1, PWInterval pwi2, SetPiece (*func)(SetPiece, SetPiece))
 {
@@ -270,7 +319,7 @@ InterSet boundedTraverse(PWInterval pwi1, PWInterval pwi2, SetPiece (*func)(SetP
 
   if (isEmpty(pwi1) || isEmpty(pwi2)) return result;
 
-  if (isCompact(pwi1) && isCompact(pwi2)) {
+  if (optConds(pwi1.pieces()) && optConds(pwi2.pieces())) {
     InterSetIt it1 = pwi1.pieces_ref().begin(), it2 = pwi2.pieces_ref().begin();   
     InterSetIt end1 = pwi1.pieces_ref().end(), end2 = pwi2.pieces_ref().end();   
 
@@ -280,8 +329,7 @@ InterSet boundedTraverse(PWInterval pwi1, PWInterval pwi2, SetPiece (*func)(SetP
       i2 = *it2;
 
       SetPiece funci = func(i1, i2);
-      if (!isEmpty(funci))
-        result.emplace_hint(result.cend(), funci);
+      if (!isEmpty(funci)) result.emplace_hint(result.cend(), funci);
 
       if (maxElem(i1) < maxElem(i2)) ++it1;
 
@@ -305,38 +353,54 @@ InterSet traverse(PWInterval pwi1, PWInterval pwi2, SetPiece (*func)(SetPiece, S
 {
   InterSet result;
 
-  if (isEmpty(pwi1) || isEmpty(pwi2)) return result;
+  if (isEmpty(pwi1)) return pwi2.pieces();
 
-  InterSetIt it1 = pwi1.pieces_ref().begin(), it2 = pwi2.pieces_ref().begin();   
-  InterSetIt end1 = pwi1.pieces_ref().end(), end2 = pwi2.pieces_ref().end();   
+  if (isEmpty(pwi2)) return pwi1.pieces();
+  
+  if (optConds(pwi1.pieces()) && optConds(pwi2.pieces())) {
+    InterSetIt it1 = pwi1.pieces_ref().begin(), it2 = pwi2.pieces_ref().begin();   
+    InterSetIt end1 = pwi1.pieces_ref().end(), end2 = pwi2.pieces_ref().end();   
 
-  SetPiece i1, i2;
-  for (; it1 != end1 && it2 != end2;) {
-    i1 = *it1;
-    i2 = *it2;
+    SetPiece i1, i2;
+    for (; it1 != end1 && it2 != end2;) {
+      i1 = *it1;
+      i2 = *it2;
 
-    SetPiece funci = func(i1, i2);
-    if (!isEmpty(funci))
-      result.emplace_hint(result.cend(), funci);
+      SetPiece funci = func(i1, i2);
+      if (!isEmpty(funci)) result.emplace_hint(result.cend(), funci);
 
-    if (maxElem(i1) < maxElem(i2))
-      ++it1;
+      if (maxElem(i1) < maxElem(i2)) ++it1;
 
-    else
-      ++it2;
+      else ++it2;
+    }
+
+    for (; it1 != end1; ++it1) {
+      i1 = *it1;
+      result.emplace_hint(result.cend(), i1);
+    }
+
+    for (; it2 != end2; ++it2) {
+      i2 = *it2;
+      result.emplace_hint(result.cend(), i2);
+    }
   }
 
-  for (; it1 != end1; ++it1) {
-    i1 = *it1;
-    result.emplace_hint(result.cend(), i1);
-  }
-
-  for (; it2 != end2; ++it2) {
-    i2 = *it2;
-    result.emplace_hint(result.cend(), i2);
+  else {
+    BOOST_FOREACH (SetPiece i1, pwi1.pieces_ref())
+      BOOST_FOREACH (SetPiece i2, pwi2.pieces_ref()) {
+        SetPiece funci = func(i1, i2);
+        if (!isEmpty(funci))
+          result.emplace(funci);
+      }
   }
 
   return result;
+}
+
+std::size_t hash_value(const PWInterval &pwi)
+{
+  PWInterval aux_pwi = pwi;
+  return boost::hash_range(aux_pwi.pieces_ref().begin(), aux_pwi.pieces_ref().end());
 }
 
 } // namespace LIB

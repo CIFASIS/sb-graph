@@ -29,7 +29,9 @@
 
 #include <iostream>
 
-#include <util/defs.hpp>
+#include <boost/functional/hash.hpp>
+
+#include "util/defs.hpp"
 
 namespace SBG {
 
@@ -48,6 +50,7 @@ struct LExp {
   LExp operator-(const LExp &le); 
 
   eq_class(LExp);
+  lt_class(LExp);
 };
 std::ostream &operator<<(std::ostream &out, const LExp &le);
 
@@ -63,9 +66,16 @@ std::ostream &operator<<(std::ostream &out, const LExp &le);
 LExp composition(LExp le1, LExp le2);
 LExp inverse(LExp le);
 
+
 /**
  * @brief Extra operations.
  */
+
+bool isId(LExp le);
+bool isConstant(LExp le);
+std::size_t hash_value(const LExp &le);
+
+typedef LExp Exp;
 
 } // namespace LIB
 

@@ -36,6 +36,27 @@ std::ostream &operator<<(std::ostream &out, const Assign &asgn)
   return out;
 }
 
+ConfigDims::ConfigDims() : nmbr_dims_() {}
+ConfigDims::ConfigDims(Util::NAT nmbr_dims) : nmbr_dims_() {
+  if (nmbr_dims > 0) set_nmbr_dims(nmbr_dims);
+
+  else Util::ERROR("AST::ConfigDims: Should have ate least one dimension");
+}
+
+member_imp(ConfigDims, Util::NAT, nmbr_dims);
+
+std::ostream &operator<<(std::ostream &out, const ConfigDims &cfg)
+{
+  out << "nmbr_dims = " << cfg.nmbr_dims();
+
+  return out;
+}
+
+IsConfig::IsConfig() {}
+
+bool IsConfig::operator()(Assign v) const { return false; }
+bool IsConfig::operator()(ConfigDims v) const { return true; }
+
 std::ostream &operator<<(std::ostream &out, const StatementList &stml)
 {
   BOOST_FOREACH (Statement s, stml)

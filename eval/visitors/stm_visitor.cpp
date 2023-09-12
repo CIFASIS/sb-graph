@@ -35,6 +35,8 @@ void StmVisitor::operator()(AST::Assign asgn) const
   return;
 }
 
+void StmVisitor::operator()(AST::ConfigDims cfg) const { return; }
+
 } // namespace Eval
 
 } // namespace SBG

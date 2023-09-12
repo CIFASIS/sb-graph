@@ -38,6 +38,7 @@ namespace AST {
 
 typedef std::string Name;
 typedef Util::NAT Natural;
+typedef Util::MD_NAT MDNatural;
 typedef Util::RATIONAL Rational;
 typedef bool Boolean;
 struct UnaryOp;
@@ -45,27 +46,37 @@ struct BinOp;
 struct Interval;
 struct InterUnaryOp;
 struct InterBinOp;
+struct MultiDimInter;
+struct MDInterUnaryOp;
+struct MDInterBinOp;
 struct Set;
 struct SetUnaryOp;
 struct SetBinOp;
 struct LinearExp;
 struct LExpBinOp;
+struct MDLExp;
+struct MDLExpBinOp;
 struct LinearMap;
 struct PWLMap;
 struct Call;
 
-typedef boost::variant<Natural, Rational, Boolean, Util::VariableName, 
+typedef boost::variant<Natural, Rational, MDNatural, Boolean, Util::VariableName, 
   boost::recursive_wrapper<UnaryOp>, 
   boost::recursive_wrapper<BinOp>, 
   boost::recursive_wrapper<Call>, 
   boost::recursive_wrapper<Interval>, 
   boost::recursive_wrapper<InterUnaryOp>,
   boost::recursive_wrapper<InterBinOp>,
+  boost::recursive_wrapper<MultiDimInter>,
+  boost::recursive_wrapper<MDInterUnaryOp>,
+  boost::recursive_wrapper<MDInterBinOp>,
   boost::recursive_wrapper<Set>,
   boost::recursive_wrapper<SetUnaryOp>,
   boost::recursive_wrapper<SetBinOp>,
   boost::recursive_wrapper<LinearExp>,
   boost::recursive_wrapper<LExpBinOp>,
+  boost::recursive_wrapper<MDLExp>,
+  boost::recursive_wrapper<MDLExpBinOp>,
   boost::recursive_wrapper<LinearMap>,
   boost::recursive_wrapper<PWLMap>> Expr;
 typedef std::vector<Expr> ExprList;
@@ -160,6 +171,41 @@ struct InterBinOp {
 };
 std::ostream &operator<<(std::ostream &out, const InterBinOp &i);
 
+// Multi-dimensional intervals -------------------------------------------------
+
+struct MultiDimInter {
+  member_class(ExprList, intervals);
+
+  MultiDimInter();
+  MultiDimInter(ExprList intervals);
+
+  eq_class(MultiDimInter);
+};
+std::ostream &operator<<(std::ostream &out, const MultiDimInter &mdi);
+
+struct MDInterUnaryOp {
+  member_class(ContainerUOp, op);
+  member_class(Expr, e);
+
+  MDInterUnaryOp();
+  MDInterUnaryOp(ContainerUOp op, Expr e);
+
+  eq_class(MDInterUnaryOp);
+};
+std::ostream &operator<<(std::ostream &out, const MDInterUnaryOp &mdi);
+
+struct MDInterBinOp {
+  member_class(Expr, left);
+  member_class(ContainerOp, op);
+  member_class(Expr, right);
+
+  MDInterBinOp();
+  MDInterBinOp(Expr left, ContainerOp op, Expr right);
+
+  eq_class(MDInterBinOp);
+};
+std::ostream &operator<<(std::ostream &out, const MDInterBinOp &mdi);
+
 // Sets ------------------------------------------------------------------------
 
 struct Set {
@@ -222,6 +268,30 @@ struct LExpBinOp {
   eq_class(LExpBinOp);
 };
 std::ostream &operator<<(std::ostream &out, const LExpBinOp &lbop);
+
+// Multi-dimensional linear expression -----------------------------------------
+
+struct MDLExp {
+  member_class(ExprList, exps);
+
+  MDLExp();
+  MDLExp(ExprList exps);
+
+  eq_class(MDLExp);
+};
+std::ostream &operator<<(std::ostream &out, const MDLExp &le);
+
+struct MDLExpBinOp {
+  member_class(Expr, left);
+  member_class(ExpOp, op);
+  member_class(Expr, right);
+
+  MDLExpBinOp();
+  MDLExpBinOp(Expr left, ExpOp op, Expr right);
+
+  eq_class(MDLExpBinOp);
+};
+std::ostream &operator<<(std::ostream &out, const MDLExpBinOp &lbop);
 
 // SBG map ---------------------------------------------------------------------
 

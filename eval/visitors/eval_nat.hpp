@@ -21,8 +21,8 @@
 
  ******************************************************************************/
 
-#ifndef AST_VISITOR_EVALNAT
-#define AST_VISITOR_EVALNAT
+#ifndef AST_VISITOR_EVAL_NAT
+#define AST_VISITOR_EVAL_NAT
 
 #include <boost/variant/static_visitor.hpp>
 
@@ -39,6 +39,7 @@ struct EvalNat : public boost::static_visitor<Util::NAT> {
   EvalNat(VarEnv env);
 
   Util::NAT operator()(AST::Natural v) const;
+  Util::NAT operator()(AST::MDNatural v) const;
   Util::NAT operator()(AST::Rational v) const;
   Util::NAT operator()(AST::Boolean v) const;
   Util::NAT operator()(Util::VariableName v) const;
@@ -48,11 +49,16 @@ struct EvalNat : public boost::static_visitor<Util::NAT> {
   Util::NAT operator()(AST::Interval v) const;
   Util::NAT operator()(AST::InterUnaryOp v) const;
   Util::NAT operator()(AST::InterBinOp v) const;
+  Util::NAT operator()(AST::MultiDimInter v) const;
+  Util::NAT operator()(AST::MDInterUnaryOp v) const;
+  Util::NAT operator()(AST::MDInterBinOp v) const;
   Util::NAT operator()(AST::Set v) const;
   Util::NAT operator()(AST::SetUnaryOp v) const;
   Util::NAT operator()(AST::SetBinOp v) const;
   Util::NAT operator()(AST::LinearExp v) const;
   Util::NAT operator()(AST::LExpBinOp v) const;
+  Util::NAT operator()(AST::MDLExp v) const;
+  Util::NAT operator()(AST::MDLExpBinOp v) const;
   Util::NAT operator()(AST::LinearMap v) const;
   Util::NAT operator()(AST::PWLMap v) const;
 

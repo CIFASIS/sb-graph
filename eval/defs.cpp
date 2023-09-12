@@ -70,7 +70,15 @@ MaybeFValue FuncEnv::operator[](FKey k) const
 
 std::ostream &operator<<(std::ostream &out, const ExprEval &e)
 {
-  out << std::get<0>(e) << "\n  --> " << streamer{std::get<1>(e)} << "\n";
+  out << std::get<0>(e) << "\n  --> "; 
+  ExprBaseType ebt = std::get<1>(e);
+  std::visit(
+    Util::Overload {
+      [&](auto v) { out << v; }
+    }
+    , ebt
+  );
+  out << "\n";
 
   return out;
 }
@@ -83,9 +91,11 @@ std::ostream &operator<<(std::ostream &out, const ExprEvalList &ee)
   return out;
 }
 
-ProgramIO::ProgramIO() : stms_(), exprs_() {}
-ProgramIO::ProgramIO(AST::StatementList stms, ExprEvalList exprs) : stms_(stms), exprs_(exprs) {}
+ProgramIO::ProgramIO() : nmbr_dims_(1), stms_(), exprs_() {}
+ProgramIO::ProgramIO(AST::StatementList stms, ExprEvalList exprs) : nmbr_dims_(1), stms_(stms), exprs_(exprs) {}
+ProgramIO::ProgramIO(Util::NAT nmbr_dims, AST::StatementList stms, ExprEvalList exprs) : nmbr_dims_(nmbr_dims), stms_(stms), exprs_(exprs) {}
 
+member_imp(ProgramIO, Util::NAT, nmbr_dims);
 member_imp(ProgramIO, AST::StatementList, stms);
 member_imp(ProgramIO, ExprEvalList, exprs);
 

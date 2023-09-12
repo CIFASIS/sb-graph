@@ -41,10 +41,11 @@ struct StmRule : qi::grammar<Iterator, Skipper<Iterator>, AST::StatementList()> 
   qi::rule<Iterator, Util::VariableName()> ident;
 
   // Operators tokens
-  qi::rule<Iterator> ASSIGN;
+  qi::rule<Iterator> ASSIGN, NMBR_DIMS;
 
   // Other rules
   ExprRule<Iterator> expr;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Statement()> cfg_dims;
   qi::rule<Iterator, Skipper<Iterator>, AST::Statement()> assign;
   qi::rule<Iterator, Skipper<Iterator>, AST::Statement()> stm;
   qi::rule<Iterator, Skipper<Iterator>, AST::StatementList()> stms_comments;

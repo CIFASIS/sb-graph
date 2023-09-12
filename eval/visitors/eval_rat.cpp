@@ -28,6 +28,12 @@ EvalRat::EvalRat(VarEnv env) : env_(env) {}
 
 Util::RATIONAL EvalRat::operator()(AST::Natural v) const { return Util::RATIONAL(v, 1); }
 
+Util::RATIONAL EvalRat::operator()(AST::MDNatural v) const
+{
+  Util::ERROR("EvalRat: trying to evaluate a MDNatural");
+  return Util::RATIONAL(0, 1);
+}
+
 Util::RATIONAL EvalRat::operator()(AST::Rational v) const { return v; }
 
 Util::RATIONAL EvalRat::operator()(AST::Boolean v) const 
@@ -125,6 +131,24 @@ Util::RATIONAL EvalRat::operator()(AST::InterBinOp v) const
   return Util::RATIONAL(0, 1);
 }
 
+Util::RATIONAL EvalRat::operator()(AST::MultiDimInter v) const
+{
+  Util::ERROR("EvalRat: trying to evaluate an MultiDimInter");
+  return Util::RATIONAL(0, 1);
+}
+
+Util::RATIONAL EvalRat::operator()(AST::MDInterUnaryOp v) const
+{
+  Util::ERROR("EvalRat: trying to evaluate an MDInterUnaryOp");
+  return Util::RATIONAL(0, 1);
+}
+
+Util::RATIONAL EvalRat::operator()(AST::MDInterBinOp v) const
+{
+  Util::ERROR("EvalRat: trying to evaluate an MDInterBinOp");
+  return Util::RATIONAL(0, 1);
+}
+
 Util::RATIONAL EvalRat::operator()(AST::Set v) const
 {
   Util::ERROR("EvalRat: trying to evaluate an Set");
@@ -152,6 +176,18 @@ Util::RATIONAL EvalRat::operator()(AST::LinearExp v) const
 Util::RATIONAL EvalRat::operator()(AST::LExpBinOp v) const
 {
   Util::ERROR("EvalRat: trying to evaluate an LExpBinOp");
+  return Util::RATIONAL(0, 1);
+}
+
+Util::RATIONAL EvalRat::operator()(AST::MDLExp v) const
+{
+  Util::ERROR("EvalRat: trying to evaluate an MDLExp");
+  return Util::RATIONAL(0, 1);
+}
+
+Util::RATIONAL EvalRat::operator()(AST::MDLExpBinOp v) const
+{
+  Util::ERROR("EvalRat: trying to evaluate an MDLExpBinOp");
   return Util::RATIONAL(0, 1);
 }
 

@@ -39,6 +39,7 @@ struct EvalRat : public boost::static_visitor<Util::RATIONAL> {
   EvalRat(VarEnv env);
 
   Util::RATIONAL operator()(AST::Natural v) const;
+  Util::RATIONAL operator()(AST::MDNatural v) const;
   Util::RATIONAL operator()(AST::Rational v) const;
   Util::RATIONAL operator()(AST::Boolean v) const;
   Util::RATIONAL operator()(Util::VariableName v) const;
@@ -48,11 +49,16 @@ struct EvalRat : public boost::static_visitor<Util::RATIONAL> {
   Util::RATIONAL operator()(AST::Interval v) const;
   Util::RATIONAL operator()(AST::InterUnaryOp v) const;
   Util::RATIONAL operator()(AST::InterBinOp v) const;
+  Util::RATIONAL operator()(AST::MultiDimInter v) const;
+  Util::RATIONAL operator()(AST::MDInterUnaryOp v) const;
+  Util::RATIONAL operator()(AST::MDInterBinOp v) const;
   Util::RATIONAL operator()(AST::Set v) const;
   Util::RATIONAL operator()(AST::SetUnaryOp v) const;
   Util::RATIONAL operator()(AST::SetBinOp v) const;
   Util::RATIONAL operator()(AST::LinearExp v) const;
   Util::RATIONAL operator()(AST::LExpBinOp v) const;
+  Util::RATIONAL operator()(AST::MDLExp v) const;
+  Util::RATIONAL operator()(AST::MDLExpBinOp v) const;
   Util::RATIONAL operator()(AST::LinearMap v) const;
   Util::RATIONAL operator()(AST::PWLMap v) const;
 

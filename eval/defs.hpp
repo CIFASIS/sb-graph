@@ -28,13 +28,12 @@
 
 #include <map>
 #include <tuple>
-#include <variant>
 
 #include "ast/expr.hpp"
 #include "ast/statement.hpp"
+#include "sbg/unord_pw_mdinter.hpp"
+#include "sbg/ord_pw_mdinter.hpp"
 #include "sbg/pw_map.hpp"
-#include "util/debug.hpp"
-#include "util/defs.hpp"
 
 namespace SBG {
 
@@ -42,30 +41,20 @@ namespace Eval {
 
 // Type definitions ------------------------------------------------------------
 
-typedef std::variant<Util::NAT, Util::RATIONAL, LIB::Interval, LIB::Set, LIB::LExp, LIB::SBGMap, LIB::PWMap> ExprBaseType;
+typedef std::variant<Util::NAT
+  , Util::MD_NAT
+  , Util::RATIONAL
+  , LIB::Interval
+  , LIB::MultiDimInter
+  , LIB::UnordPWMDInter
+  , LIB::OrdPWMDInter
+  , LIB::LExp
+  , LIB::MDLExp
+  , LIB::BaseMap
+  , LIB::CanonMap
+  , LIB::BasePWMap
+  , LIB::CanonPWMap> ExprBaseType;
 typedef std::optional<ExprBaseType> MaybeEBT;
-
-template <class T>
-struct streamer {
-  const T &val;
-};
-template <class T> streamer(T) -> streamer<T>;
-
-template <class T>
-std::ostream &operator<<(std::ostream &out, streamer<T> s) 
-{
-  out << s.val;
-
-  return out;
-}
-
-template <class... Ts>
-std::ostream &operator<<(std::ostream &out, streamer<std::variant<Ts...>> sv)
-{
-  std::visit([&out](const auto &v) { out << streamer{v}; }, sv.val);
-
-  return out;
-}
 
 /** @function toNat
  *
@@ -117,16 +106,6 @@ struct FuncEnv{
 
 typedef enum { empty, member, min, max, lt, comp, inv, im, preim, dom, min_adj } Func;
 
-/** @struct Overload
- *
- * @brief To provide in-place lambdas for visitation for the different
- * operations. These is needed because different structures share the same
- * functions (for example, isEmpty can be applied to intervals, sets, etc.).
- */
-
-template<class... Ts> struct Overload : Ts... { using Ts::operator()...; };
-template<class... Ts> Overload(Ts...) -> Overload<Ts...>;
-
 // Classes for pretty printing ------------------------------------------------
 
 typedef std::tuple<AST::Expr, ExprBaseType> ExprEval;
@@ -143,11 +122,13 @@ std::ostream &operator<<(std::ostream &out, const ExprEvalList &ee);
  */
 
 struct ProgramIO {
+  member_class(Util::NAT, nmbr_dims);
   member_class(AST::StatementList, stms);
   member_class(ExprEvalList, exprs);
  
   ProgramIO(); 
   ProgramIO(AST::StatementList stms, ExprEvalList exprs);
+  ProgramIO(Util::NAT nmbr_dims, AST::StatementList stms, ExprEvalList exprs);
 };
 std::ostream &operator<<(std::ostream &out, const ProgramIO &p);
 

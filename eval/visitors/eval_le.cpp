@@ -26,22 +26,32 @@ namespace Eval {
 EvalLE::EvalLE() : env_() {}
 EvalLE::EvalLE(VarEnv env) : env_(env) {}
 
-LIB::LExp EvalLE::operator()(AST::Natural v) const { 
+LIB::LExp EvalLE::operator()(AST::Natural v) const
+{
   Util::ERROR("EvalLE: trying to evaluate a Natural");
   return LIB::LExp(); 
 }
 
-LIB::LExp EvalLE::operator()(AST::Rational v) const { 
+LIB::LExp EvalLE::operator()(AST::MDNatural v) const
+{
+  Util::ERROR("EvalLE: trying to evaluate a MDNatural");
+  return LIB::LExp(); 
+}
+
+LIB::LExp EvalLE::operator()(AST::Rational v) const
+{
   Util::ERROR("EvalLE: trying to evaluate a Rational");
   return LIB::LExp(); 
 }
 
-LIB::LExp EvalLE::operator()(AST::Boolean v) const { 
+LIB::LExp EvalLE::operator()(AST::Boolean v) const
+{
   Util::ERROR("EvalLE: trying to evaluate a Boolean");
   return LIB::LExp(); 
 }
 
-LIB::LExp EvalLE::operator()(Util::VariableName v) const { 
+LIB::LExp EvalLE::operator()(Util::VariableName v) const
+{
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
@@ -94,6 +104,24 @@ LIB::LExp EvalLE::operator()(AST::InterBinOp v) const
   return LIB::LExp(); 
 }
 
+LIB::LExp EvalLE::operator()(AST::MultiDimInter v) const
+{ 
+  Util::ERROR("EvalLE: trying to evaluate an MultiDimInter");
+  return LIB::LExp(); 
+}
+
+LIB::LExp EvalLE::operator()(AST::MDInterUnaryOp v) const
+{
+  Util::ERROR("EvalLE: trying to evaluate an MDInterUnaryOp");
+  return LIB::LExp(); 
+}
+
+LIB::LExp EvalLE::operator()(AST::MDInterBinOp v) const
+{
+  Util::ERROR("EvalLE: trying to evaluate an MDInterBinOp");
+  return LIB::LExp(); 
+}
+
 LIB::LExp EvalLE::operator()(AST::Set v) const 
 {
   Util::ERROR("EvalLE: trying to evaluate a Set");
@@ -112,11 +140,11 @@ LIB::LExp EvalLE::operator()(AST::SetBinOp v) const
   return LIB::LExp(); 
 }
 
-LIB::LExp EvalLE::operator()(AST::LinearExp le) const
+LIB::LExp EvalLE::operator()(AST::LinearExp v) const
 { 
   EvalRat visit_rat(env_);
-  AST::Expr m = le.slope();
-  AST::Expr h = le.offset();
+  AST::Expr m = v.slope();
+  AST::Expr h = v.offset();
 
   return LIB::LExp(Apply(visit_rat, m), Apply(visit_rat, h));
 }
@@ -137,6 +165,18 @@ LIB::LExp EvalLE::operator()(AST::LExpBinOp v) const
       Util::ERROR("EvalLE: LExpBinOp %s not supported.", ss.str().c_str());
       return LIB::LExp(); 
   }
+}
+
+LIB::LExp EvalLE::operator()(AST::MDLExp v) const
+{
+  Util::ERROR("EvalLE: trying to evaluate an MDLExp");
+  return LIB::LExp(); 
+}
+
+LIB::LExp EvalLE::operator()(AST::MDLExpBinOp v) const
+{
+  Util::ERROR("EvalLE: trying to evaluate an MDLExpBinOp");
+  return LIB::LExp(); 
 }
 
 LIB::LExp EvalLE::operator()(AST::LinearMap v) const 

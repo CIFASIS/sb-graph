@@ -7,6 +7,8 @@ PARSER      := bin/sbg-parser
 all: $(PARSER)
 
 PARSER_SRC := \
+    $(UTIL_DIR)/debug.cpp \
+    $(UTIL_DIR)/defs.cpp \
 	  $(PARSER_DIR)/main.cpp \
     $(AST_DIR)/expr.cpp \
     $(PARSER_DIR)/expr.cpp \
@@ -14,9 +16,7 @@ PARSER_SRC := \
     $(PARSER_DIR)/statement.cpp \
     $(AST_DIR)/sbg_program.cpp \
     $(PARSER_DIR)/sbg_program.cpp \
-    $(PARSER_DIR)/skipper.cpp \
-    $(UTIL_DIR)/debug.cpp \
-    $(UTIL_DIR)/defs.cpp
+    $(PARSER_DIR)/skipper.cpp
 
 # Objects
 PARSER_OBJ=$(addprefix $(BUILD_DIR)/, $(PARSER_SRC:.cpp=.o))

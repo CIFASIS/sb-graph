@@ -27,45 +27,71 @@
 #ifndef SBG_MAP_HPP
 #define SBG_MAP_HPP
 
-#include "sbg/lexp.hpp"
-#include "sbg/pw_inter.hpp"
+#include "sbg/multidim_inter.hpp"
+#include "sbg/multidim_lexp.hpp"
+#include "sbg/ord_pw_mdinter.hpp"
+#include "sbg/unord_pw_mdinter.hpp"
 #include "util/debug.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
+bool compatible(SetPiece mdi, Exp mdle);
+
+// Non-optimized implementation ------------------------------------------------
+
+template<typename Set>
 struct SBGMap {
+  typedef typename Set::iterator SetIt;
+
   member_class(Set, dom);
   member_class(Exp, exp);
 
   SBGMap();
+  SBGMap(Interval i, LExp le);
   SBGMap(Set dom, Exp exp);
 
   eq_class(SBGMap);
   neq_class(SBGMap);
 };
-std::ostream &operator<<(std::ostream &out, const SBGMap &sbgmap);
+template<typename Set>
+std::ostream &operator<<(std::ostream &out, const SBGMap<Set> &sbgmap);
 
 /**
  * @brief Traditional map operations.
  */
 
-SBGMap restrict(Set subdom, SBGMap sbgmap);
-Set image(SBGMap sbgmap);
-Set image(Set subdom, SBGMap sbgmap);
-Set preImage(SBGMap sbgmap);
-Set preImage(Set subcodom, SBGMap sbgmap);
-SBGMap composition(SBGMap sbgmap1, SBGMap sbgmap2);
+template<typename Set>
+SBGMap<Set> restrict(Set subdom, SBGMap<Set> sbgmap);
+
+Interval image(Interval i, LExp le);
+SetPiece image(SetPiece mdi, Exp le);
+
+template<typename Set>
+Set image(SBGMap<Set> sbgmap);
+
+template<typename Set>
+Set image(Set subdom, SBGMap<Set> sbgmap);
+
+template<typename Set>
+Set preImage(SBGMap<Set> sbgmap);
+
+template<typename Set>
+Set preImage(Set subcodom, SBGMap<Set> sbgmap);
+
+template<typename Set>
+SBGMap<Set> composition(SBGMap<Set> sbgmap1, SBGMap<Set> sbgmap2);
 
 /**
  * @brief Extra operations.
  */
 
-typedef std::optional<SBGMap> MaybeMap;
-MaybeMap canonize(SBGMap sbgmap1, SBGMap sbgmap2);
+template <typename Set>
+std::size_t hash_value(const SBGMap<Set> &sbgmap);
 
-std::size_t hash_value(const SBGMap &sbgmap);
+typedef SBGMap<UnordSet> BaseMap;
+typedef SBGMap<OrdSet> CanonMap;
 
 } // namespace LIB
 

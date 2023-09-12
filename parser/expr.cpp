@@ -35,6 +35,12 @@ BOOST_FUSION_ADAPT_STRUCT(SBG::AST::InterUnaryOp, (SBG::AST::ContainerUOp, op_)(
 
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::InterBinOp, (SBG::AST::Expr, left_)(SBG::AST::ContainerOp, op_)(SBG::AST::Expr, right_))
 
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::MultiDimInter, (SBG::AST::ExprList, intervals_))
+
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::MDInterUnaryOp, (SBG::AST::ContainerUOp, op_)(SBG::AST::Expr, e_))
+
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::MDInterBinOp, (SBG::AST::Expr, left_)(SBG::AST::ContainerOp, op_)(SBG::AST::Expr, right_))
+
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::Set, (SBG::AST::ExprList, pieces_))
 
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::SetUnaryOp, (SBG::AST::ContainerUOp, op_)(SBG::AST::Expr, e_))
@@ -44,6 +50,10 @@ BOOST_FUSION_ADAPT_STRUCT(SBG::AST::SetBinOp, (SBG::AST::Expr, left_)(SBG::AST::
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::LinearExp, (SBG::AST::Expr, slope_)(SBG::AST::Expr, offset_))
 
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::LExpBinOp, (SBG::AST::Expr, left_)(SBG::AST::ExpOp, op_)(SBG::AST::Expr, right_))
+
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::MDLExp, (SBG::AST::ExprList, exps_))
+
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::MDLExpBinOp, (SBG::AST::Expr, left_)(SBG::AST::ExpOp, op_)(SBG::AST::Expr, right_))
 
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::LinearMap, (SBG::AST::Expr, dom_)(SBG::AST::Expr, lexp_))
 
@@ -79,6 +89,8 @@ struct unary_symbol_struct : qi::symbols<char, AST::UnOp> {
   }
 } unary_symbol;
 
+// ------------ //
+
 struct inter_unary_struct : qi::symbols<char, AST::ContainerUOp> {
   inter_unary_struct(){
     add("#", AST::ContainerUOp::card);
@@ -90,6 +102,22 @@ struct inter_bin_struct : qi::symbols<char, AST::ContainerOp> {
     add("/\\", AST::ContainerOp::cap)("<", AST::ContainerOp::less)("==", AST::ContainerOp::eq);
   }
 } inter_bin;
+
+// ------------ //
+
+struct mdi_unary_struct : qi::symbols<char, AST::ContainerUOp> {
+  mdi_unary_struct(){
+    add("#", AST::ContainerUOp::card);
+  }
+} mdi_un;
+
+struct mdi_bin_struct : qi::symbols<char, AST::ContainerOp> {
+  mdi_bin_struct(){
+    add("/\\", AST::ContainerOp::cap)("==", AST::ContainerOp::eq);
+  }
+} mdi_bin;
+
+// ------------ //
 
 struct set_unary_struct : qi::symbols<char, AST::ContainerUOp> {
   set_unary_struct(){
@@ -103,11 +131,21 @@ struct set_bin_struct : qi::symbols<char, AST::ContainerOp> {
   }
 } set_bin;
 
+// ------------ //
+
 struct lexp_bin_struct : qi::symbols<char, AST::ExpOp> {
   lexp_bin_struct(){
     add("==", AST::ExpOp::eq)("+", AST::ExpOp::add)("-", AST::ExpOp::sub);
   }
 } lexp_bin;
+
+// ------------ //
+
+struct mdlexp_bin_struct : qi::symbols<char, AST::ExpOp> {
+  mdlexp_bin_struct(){
+    add("==", AST::ExpOp::eq)("+", AST::ExpOp::add)("-", AST::ExpOp::sub);
+  }
+} mdlexp_bin;
 
 template <typename Iterator>
 ExprRule<Iterator>::ExprRule(Iterator &it) : 
@@ -126,7 +164,9 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   FALSE("false"), 
   ARROW("->"),
   OANGLE("<<"),
-  CANGLE(">>")
+  CANGLE(">>"),
+  DIMS("x"),
+  PIPE("|")
 {
   ident = qi::lexeme[(qi::char_('_') | qi::alpha) >> *(qi::alnum | qi::char_('_'))] 
     | qi::lexeme[qi::char_('\'') >> *(qi::alnum | qi::char_('_')) > qi::char_('\'')];
@@ -175,13 +215,31 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
 
   // ------------ //
 
-  set = (OBRACE >> inter_list >> CBRACE)[qi::_val = phx::construct<AST::Set>(qi::_1)]
+  inter_times = interval[phx::push_back(qi::_val, qi::_1)] >> *(DIMS >> interval)[phx::push_back(qi::_val, qi::_1)];
+
+  md_inter = inter_times[qi::_val = phx::construct<AST::MultiDimInter>(qi::_1)];
+
+  mdi_unary = (mdi_un >> mdi_expr)[qi::_val = phx::construct<AST::MDInterUnaryOp>(qi::_1, qi::_2)];
+
+  mdi_binary = (OPAREN >> mdi_expr 
+    >> mdi_bin >> mdi_expr
+    > CPAREN)[qi::_val = phx::construct<AST::MDInterBinOp>(qi::_1, qi::_2, qi::_3)];
+
+  mdi_expr = mdi_unary[qi::_val = qi::_1]
+    | mdi_binary[qi::_val = qi::_1]
+    | md_inter[qi::_val = qi::_1];
+
+  mdi_list = md_inter[phx::push_back(qi::_val, qi::_1)] >> *(COMA >> md_inter)[phx::push_back(qi::_val, qi::_1)];
+
+  // ------------ //
+
+  set = (OBRACE >> mdi_list >> CBRACE)[qi::_val = phx::construct<AST::Set>(qi::_1)]
     | (OBRACE >> CBRACE)[qi::_val = phx::construct<AST::Set>()]
     | ident[qi::_val = qi::_1];
 
   set_unary = (set_un >> set_expr)[qi::_val = phx::construct<AST::SetUnaryOp>(qi::_1, qi::_2)]; 
  
-  set_binary = (OPAREN >> set
+  set_binary = (OPAREN >> set_expr
     >> set_bin >> set_expr 
     > CPAREN)[qi::_val = phx::construct<AST::SetBinOp>(qi::_1, qi::_2, qi::_3)];
   
@@ -206,7 +264,20 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
 
   // ------------ //
 
-  sbgmap = (set_expr >> ARROW >> lexp)[qi::_val = phx::construct<AST::LinearMap>(qi::_1, qi::_2)];
+  lexp_pipe = lexp[phx::push_back(qi::_val, qi::_1)] >> *(PIPE >> lexp)[phx::push_back(qi::_val, qi::_1)];
+
+  mdlexp = lexp_pipe[qi::_val = phx::construct<AST::MDLExp>(qi::_1)];
+
+  mdlexp_binary = OPAREN >> mdlexp[qi::_val = qi::_1] >> CPAREN 
+    >> *(mdlexp_bin > OPAREN >> mdlexp >> CPAREN)[qi::_val = phx::construct<AST::MDLExpBinOp>(qi::_val, qi::_1, qi::_2)];
+
+  mdlexp_expr = mdlexp[qi::_val = qi::_1]
+    | mdlexp_binary[qi::_val = qi::_1];
+
+
+  // ------------ //
+
+  sbgmap = (set_expr >> ARROW >> mdlexp_expr)[qi::_val = phx::construct<AST::LinearMap>(qi::_1, qi::_2)];
 
   map_expr = sbgmap;
 
@@ -221,7 +292,7 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
 
   // ------------ //
 
-  expr = pwl_expr | map_expr | lexp_expr | arithmetic_expr | interval_expr | set_expr;
+  expr = pwl_expr | map_expr | mdlexp_expr | lexp_expr | arithmetic_expr | set_expr | mdi_expr | interval_expr;
   
   expr_list = expr[phx::push_back(qi::_val, qi::_1)] >> *(COMA >> expr)[phx::push_back(qi::_val, qi::_1)];
 

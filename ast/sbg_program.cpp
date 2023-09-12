@@ -23,9 +23,11 @@ namespace SBG {
 
 namespace AST {
 
-Program::Program() : stms_(), exprs_() {}
-Program::Program(StatementList stms, ExprList exprs) : stms_(stms), exprs_(exprs) {}
+Program::Program() : nmbr_dims_(1), stms_(), exprs_() {}
+Program::Program(StatementList stms, ExprList exprs) : nmbr_dims_(1), stms_(stms), exprs_(exprs) {}
+Program::Program(Util::NAT nmbr_dims, StatementList stms, ExprList exprs) : nmbr_dims_(nmbr_dims), stms_(stms), exprs_(exprs) {}
 
+member_imp(Program, Util::NAT, nmbr_dims);
 member_imp(Program, StatementList, stms);
 member_imp(Program, ExprList, exprs);
 

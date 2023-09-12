@@ -27,8 +27,6 @@
 #ifndef SBG_LEXP_HPP
 #define SBG_LEXP_HPP
 
-#include <iostream>
-
 #include <boost/functional/hash.hpp>
 
 #include "util/defs.hpp"
@@ -66,7 +64,6 @@ std::ostream &operator<<(std::ostream &out, const LExp &le);
 LExp composition(LExp le1, LExp le2);
 LExp inverse(LExp le);
 
-
 /**
  * @brief Extra operations.
  */
@@ -74,8 +71,6 @@ LExp inverse(LExp le);
 bool isId(LExp le);
 bool isConstant(LExp le);
 std::size_t hash_value(const LExp &le);
-
-typedef LExp Exp;
 
 } // namespace LIB
 

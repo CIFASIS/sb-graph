@@ -28,6 +28,12 @@ EvalNat::EvalNat(VarEnv env) : env_(env) {}
 
 Util::NAT EvalNat::operator()(AST::Natural v) const { return v; }
 
+Util::NAT EvalNat::operator()(AST::MDNatural v) const 
+{
+  Util::ERROR("EvalNat: trying to evaluate a MDNatural");
+  return 0;
+}
+
 Util::NAT EvalNat::operator()(AST::Rational v) const 
 { 
   if (v.denominator() == 1)
@@ -50,7 +56,9 @@ Util::NAT EvalNat::operator()(Util::VariableName v) const
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    return toNat(value); 
+    if (std::holds_alternative<Util::NAT>(value)) return std::get<Util::NAT>(value);
+
+    else if (std::holds_alternative<Util::RATIONAL>(value)) return Util::toNat(std::get<Util::RATIONAL>(value)); 
   }
 
   Util::ERROR("EvalNat: variable %s not defined", v.c_str());
@@ -111,6 +119,24 @@ Util::NAT EvalNat::operator()(AST::InterBinOp v) const
   return 0;
 }
 
+Util::NAT EvalNat::operator()(AST::MultiDimInter v) const
+{
+  Util::ERROR("EvalNat: trying to evaluate an MultiDimInter");
+  return 0;
+}
+
+Util::NAT EvalNat::operator()(AST::MDInterUnaryOp v) const
+{
+  Util::ERROR("EvalNat: trying to evaluate an MDInterUnaryOp");
+  return 0;
+}
+
+Util::NAT EvalNat::operator()(AST::MDInterBinOp v) const
+{
+  Util::ERROR("EvalNat: trying to evaluate an MDInterBinOp");
+  return 0;
+}
+
 Util::NAT EvalNat::operator()(AST::Set v) const
 {
   Util::ERROR("EvalNat: trying to evaluate an Set");
@@ -138,6 +164,18 @@ Util::NAT EvalNat::operator()(AST::LinearExp v) const
 Util::NAT EvalNat::operator()(AST::LExpBinOp v) const
 {
   Util::ERROR("EvalNat: trying to evaluate a LExpBinOp");
+  return 0;
+}
+
+Util::NAT EvalNat::operator()(AST::MDLExp v) const
+{
+  Util::ERROR("EvalNat: trying to evaluate a MDLExp");
+  return 0;
+}
+
+Util::NAT EvalNat::operator()(AST::MDLExpBinOp v) const
+{
+  Util::ERROR("EvalNat: trying to evaluate a MDLExpBinOp");
   return 0;
 }
 

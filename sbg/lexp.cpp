@@ -23,7 +23,7 @@ namespace SBG {
 
 namespace LIB {
 
-LExp::LExp() : slope_(), offset_() {}
+LExp::LExp() : slope_(1), offset_(0) {}
 LExp::LExp(RAT slope, RAT offset) : slope_(slope), offset_(offset) {}
 
 member_imp(LExp, RAT, slope);
@@ -100,7 +100,7 @@ LExp inverse(LExp le)
   return LExp(new_slope, new_offset);
 }
 
-bool isId(LExp le) { return le.slope() == 1 && le.offset() == 0;}
+bool isId(LExp le) { return le.slope() == 1 && le.offset() == 0; }
 
 bool isConstant(LExp le) { return le.slope() == 0; }
 

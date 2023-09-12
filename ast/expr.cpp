@@ -23,7 +23,9 @@ namespace SBG {
 
 namespace AST {
 
+//------------------------------------------------------------------------------
 // Arithmetic expressions ------------------------------------------------------
+//------------------------------------------------------------------------------
 
 std::ostream &operator<<(std::ostream &out, const UnOp &op)
 {
@@ -140,7 +142,9 @@ std::ostream &operator<<(std::ostream &out, const Call &c)
   return out;
 }
 
+//------------------------------------------------------------------------------
 // SBG Structures --------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 std::ostream &operator<<(std::ostream &out, const ContainerUOp &op)
 {
@@ -250,6 +254,76 @@ std::ostream &operator<<(std::ostream &out, const InterBinOp &i)
   return out;
 }
 
+// Multi-dimensional interval --------------------------------------------------
+
+MultiDimInter::MultiDimInter() : intervals_() {}
+MultiDimInter::MultiDimInter(ExprList intervals) : intervals_(intervals) {}
+
+member_imp(MultiDimInter, ExprList, intervals);
+
+bool MultiDimInter::operator==(const MultiDimInter &other) const { return intervals() == other.intervals(); }
+
+std::ostream &operator<<(std::ostream &out, const MultiDimInter &mdi)
+{
+  MultiDimInter aux = mdi;
+  int sz = aux.intervals().size();
+
+  if (sz > 0) {
+    auto it = aux.intervals_ref().begin();
+    for (int i = 0; i < sz - 1; ++i) {
+      out << *it << " x "; 
+      ++it;
+    }
+    out << *it;
+  }
+
+  return out; 
+}
+
+MDInterUnaryOp::MDInterUnaryOp() : op_(), e_() {}
+MDInterUnaryOp::MDInterUnaryOp(ContainerUOp op, Expr e) : op_(op), e_(e) {}
+
+member_imp(MDInterUnaryOp, ContainerUOp, op);
+member_imp(MDInterUnaryOp, Expr, e);
+
+bool MDInterUnaryOp::operator==(const MDInterUnaryOp &other) const { return op() == other.op() && e() == other.e(); }
+
+std::ostream &operator<<(std::ostream &out, const MDInterUnaryOp &mdi)
+{
+  switch (mdi.op()) {
+    case ContainerUOp::comp: {
+      out << mdi.e() << mdi.op();
+      break;
+    }
+
+    default: {
+      out << mdi.op() << mdi.e();
+      break;
+    }
+  }
+
+  return out;
+}
+
+MDInterBinOp::MDInterBinOp() : left_(), op_(), right_() {}
+MDInterBinOp::MDInterBinOp(Expr left, ContainerOp op, Expr right) : left_(left), op_(op), right_(right) {}
+
+member_imp(MDInterBinOp, Expr, left);
+member_imp(MDInterBinOp, ContainerOp, op);
+member_imp(MDInterBinOp, Expr, right);
+
+bool MDInterBinOp::operator==(const MDInterBinOp &other) const
+{
+  return left() == other.left() && op() == other.op() && right() == other.right();
+}
+
+std::ostream &operator<<(std::ostream &out, const MDInterBinOp &mdi)
+{
+  out << mdi.left() << mdi.op() << mdi.right(); 
+
+  return out;
+}
+
 // Set -------------------------------------------------------------------------
 
 Set::Set() : pieces_() {}
@@ -257,10 +331,7 @@ Set::Set(ExprList pieces) : pieces_(pieces) {}
 
 member_imp(Set, ExprList, pieces);
 
-bool Set::operator==(const Set &other) const
-{
-  return pieces() == other.pieces();
-}
+bool Set::operator==(const Set &other) const { return pieces() == other.pieces(); }
 
 std::ostream &operator<<(std::ostream &out, const Set &s)
 {
@@ -287,10 +358,7 @@ SetUnaryOp::SetUnaryOp(ContainerUOp op, Expr e) : op_(op), e_(e) {}
 member_imp(SetUnaryOp, ContainerUOp, op);
 member_imp(SetUnaryOp, Expr, e);
 
-bool SetUnaryOp::operator==(const SetUnaryOp &other) const
-{
-  return e() == other.e() && op() == other.op();
-}
+bool SetUnaryOp::operator==(const SetUnaryOp &other) const { return e() == other.e() && op() == other.op(); }
 
 std::ostream &operator<<(std::ostream &out, const SetUnaryOp &s)
 {
@@ -321,9 +389,9 @@ bool SetBinOp::operator==(const SetBinOp &other) const
   return left() == other.left() && op() == other.op() && right() == other.right();
 }
 
-std::ostream &operator<<(std::ostream &out, const SetBinOp &i)
+std::ostream &operator<<(std::ostream &out, const SetBinOp &s)
 {
-  out << i.left() << i.op() << i.right(); 
+  out << s.left() << s.op() << s.right(); 
 
   return out;
 }
@@ -336,10 +404,7 @@ LinearExp::LinearExp(Expr slope, Expr offset) : slope_(slope), offset_(offset) {
 member_imp(LinearExp, Expr, slope);
 member_imp(LinearExp, Expr, offset);
 
-bool LinearExp::operator==(const LinearExp &other) const
-{
-  return slope() == other.slope() && offset() == other.offset();
-}
+bool LinearExp::operator==(const LinearExp &other) const { return slope() == other.slope() && offset() == other.offset(); }
 
 std::ostream &operator<<(std::ostream &out, const LinearExp &le)
 {
@@ -383,6 +448,51 @@ bool LExpBinOp::operator==(const LExpBinOp &other) const
 }
 
 std::ostream &operator<<(std::ostream &out, const LExpBinOp &lbop)
+{
+  out << "(" << lbop.left() << ")" << lbop.op() << "(" << lbop.right() << ")";
+
+  return out;
+}
+
+// Multi-dimensional linear expression -----------------------------------------
+
+MDLExp::MDLExp() : exps_() {}
+MDLExp::MDLExp(ExprList exps) : exps_(exps) {}
+
+member_imp(MDLExp, ExprList, exps);
+
+bool MDLExp::operator==(const MDLExp &other) const { return exps() == other.exps(); }
+
+std::ostream &operator<<(std::ostream &out, const MDLExp &le)
+{
+  MDLExp aux = le;
+  int sz = aux.exps().size();
+
+  if (sz > 0) {
+    auto it = aux.exps_ref().begin();
+    for (int i = 0; i < sz - 1; ++i) {
+      out << *it << "|";
+      ++it;
+    }
+    out << *it;
+  }
+
+  return out; 
+}
+
+MDLExpBinOp::MDLExpBinOp() : left_(), op_(), right_() {}
+MDLExpBinOp::MDLExpBinOp(Expr left, ExpOp op, Expr right) : left_(left), op_(op), right_(right) {}
+
+member_imp(MDLExpBinOp, Expr, left);
+member_imp(MDLExpBinOp, ExpOp, op);
+member_imp(MDLExpBinOp, Expr, right);
+
+bool MDLExpBinOp::operator==(const MDLExpBinOp &other) const
+{
+  return left() == other.left() && op() == other.op() && right() == other.right();
+}
+
+std::ostream &operator<<(std::ostream &out, const MDLExpBinOp &lbop)
 {
   out << "(" << lbop.left() << ")" << lbop.op() << "(" << lbop.right() << ")";
 

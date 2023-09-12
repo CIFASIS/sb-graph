@@ -29,13 +29,21 @@ ProgramIO ProgramVisitor::operator()(AST::Program p) const
 { 
   ProgramIO result;
 
+  AST::IsConfig cfg_visit;
   StmVisitor stm_visit;
   BOOST_FOREACH (AST::Statement s, p.stms()) {
-    Apply(stm_visit, s);
-    result.stms_ref().push_back(s);
+    if (Apply(cfg_visit, s)) {
+      AST::ConfigDims cfg = boost::get<AST::ConfigDims>(s);
+      result.set_nmbr_dims(cfg.nmbr_dims_ref());
+    }
+
+    else {
+      Apply(stm_visit, s);
+      result.stms_ref().push_back(s);
+    }
   }
 
-  EvalExpression eval_expr(stm_visit.env());
+  EvalExpression eval_expr(result.nmbr_dims(), stm_visit.env());
   BOOST_FOREACH (AST::Expr e, p.exprs()) {
     ExprBaseType expr_res = Apply(eval_expr, e);
     result.exprs_ref().push_back(ExprEval(e, expr_res));

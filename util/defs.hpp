@@ -27,7 +27,9 @@
 #define SBG_DEFS_HPP
 
 #include <optional>
+#include <variant>
 
+#include <boost/container/vector.hpp>
 #include <boost/range/combine.hpp>
 #include <boost/rational.hpp>
 
@@ -73,6 +75,7 @@ namespace Util {
 #define neq_class(X) bool operator!=(const X &other) const;
 #define lt_class(X) bool operator<(const X &other) const;
 #define gt_class(X) bool operator>(const X &other) const;
+#define leq_class(X) bool operator<=(const X &other) const;
 
 #define ApplyThis(X) boost::apply_visitor(*this, X)
 #define Apply(X, Y) boost::apply_visitor(X, Y)
@@ -87,18 +90,46 @@ namespace Util {
 #define parallel_foreach2(X, Y) for (auto&& items : boost::combine(X, Y))
 #define parallel_foreach3(X, Y, Z) for (auto&& items : boost::combine(X, Y, Z))
 #define parallel_foreach4(W, X, Y, Z) for (auto&& items : boost::combine(W, X, Y, Z))
+#define parallel_foreach5(V, W, X, Y, Z) for (auto&& items : boost::combine(V, W, X, Y, Z))
 
 // Intervals definitions -------------------------------------------------------
+
+typedef long long unsigned int NAT;
+std::string toStr(NAT x);
+
+typedef boost::container::vector<NAT> VNAT;
+struct MD_NAT {
+  typedef VNAT::iterator iterator;
+  typedef VNAT::const_iterator const_iterator;
+
+  member_class(VNAT, value);
+
+  MD_NAT();
+  MD_NAT(NAT x);
+  MD_NAT(iterator b, iterator e);
+
+  iterator begin(); 
+  iterator end(); 
+
+  std::size_t size();
+
+  void emplace(iterator it, NAT x);
+  void emplace_back(NAT x);
+
+  NAT &operator[](std::size_t n);
+
+  eq_class(MD_NAT);
+  lt_class(MD_NAT);
+  leq_class(MD_NAT);
+};
+std::ostream &operator<<(std::ostream &out, const MD_NAT &md);
+
+const NAT Inf = std::numeric_limits<NAT>::max();
 
 /** @typedef INT 
  *
  * @brief Representation of individual elements. 
  */
-typedef unsigned long long int NAT;
-std::string to_str(NAT);
-
-const NAT Inf = std::numeric_limits<NAT>::max();
-
 typedef long long int INT;
 
 /** @typedef RATIONAL 
@@ -106,7 +137,7 @@ typedef long long int INT;
  * @brief Used for coefficients in linear expressions. 
  */
 struct RATIONAL{
-  member_class(boost::rational<long long int>, value);
+  member_class(boost::rational<INT>, value);
 
   RATIONAL();
   RATIONAL(NAT n);
@@ -140,6 +171,18 @@ std::ostream &operator<<(std::ostream &out, const RATIONAL &r);
 // Parser definitions ----------------------------------------------------------
 
 typedef std::string VariableName;
+
+// std::variant definitions ----------------------------------------------------
+
+/** @struct Overload
+ *
+ * @brief To provide in-place lambdas for visitation for the different
+ * operations. These is needed because different structures share the same
+ * functions (for example, isEmpty can be applied to intervals, sets, etc.).
+ */
+
+template<class... Ts> struct Overload : Ts... { using Ts::operator()...; };
+template<class... Ts> Overload(Ts...) -> Overload<Ts...>;
 
 } // namespace Util
 

@@ -50,7 +50,7 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   qi::rule<Iterator, AST::Boolean()> boolean;
 
   // Operators tokens
-  qi::rule<Iterator> OPAREN, CPAREN, OBRACKET, CBRACKET, OBRACE, CBRACE, COLON, RAT, COMA, ARROW, OANGLE, CANGLE;
+  qi::rule<Iterator> OPAREN, CPAREN, OBRACKET, CBRACKET, OBRACE, CBRACE, COLON, RAT, COMA, ARROW, OANGLE, CANGLE, DIMS, PIPE;
 
   // Other rules
   qi::rule<Iterator, Skipper<Iterator>, Util::RATIONAL()> rational;
@@ -67,6 +67,13 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> interval_expr;
   qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> inter_list;
 
+  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> inter_times;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> md_inter;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> mdi_unary;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> mdi_binary;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> mdi_expr;
+  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> mdi_list;
+
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> set;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> set_unary;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> set_binary;
@@ -76,6 +83,12 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp_binary;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp_expr;
+
+  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> lexp_pipe;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> mdlexp;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> mdlexp_binary;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> mdlexp_expr;
+
 
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbgmap;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> map_expr;

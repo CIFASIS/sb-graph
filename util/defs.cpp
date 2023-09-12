@@ -23,7 +23,60 @@ namespace SBG {
 
 namespace Util {
 
-std::string to_str(NAT x) { return (x == Inf) ? "Inf" : std::to_string(x); };
+// Naturals --------------------------------------------------------------------
+
+std::string toStr(NAT x) { return std::to_string(x); }
+
+MD_NAT::MD_NAT() : value_() {}
+MD_NAT::MD_NAT(NAT x) : value_() { value_ref().emplace_back(x); }
+MD_NAT::MD_NAT(MD_NAT::iterator b, MD_NAT::iterator e) : value_(b, e) {}
+
+member_imp(MD_NAT, VNAT, value);
+
+MD_NAT::iterator MD_NAT::begin() { return value_ref().begin(); }
+MD_NAT::iterator MD_NAT::end() { return value_ref().end(); }
+
+std::size_t MD_NAT::size() { return value().size(); }
+
+void MD_NAT::emplace(MD_NAT::iterator it, NAT x) { value_ref().emplace(it, x); }
+void MD_NAT::emplace_back(NAT x) { value_ref().emplace_back(x); }
+
+NAT &MD_NAT::operator[](std::size_t n) { return value_ref()[n]; }
+
+bool MD_NAT::operator==(const MD_NAT &md) const { return value() == md.value(); }
+
+bool MD_NAT::operator<(const MD_NAT &x2) const
+{
+  MD_NAT aux1 = *this, aux2 = x2;
+
+  parallel_foreach2 (aux1.value_ref(), aux2.value_ref()) {
+    NAT e1 = boost::get<0>(items), e2 = boost::get<1>(items);
+    if (e1 < e2) return true;
+  }
+
+  return false;
+}
+
+bool MD_NAT::operator<=(const MD_NAT &x2) const { return *this == x2 || *this < x2; }
+
+std::ostream &operator<<(std::ostream &out, const MD_NAT &md)
+{
+  MD_NAT aux = md;
+  unsigned int sz = aux.size();
+
+  out << "(";
+  if (sz > 0) {
+    unsigned int j = 0;
+    for (; j < sz - 1; j++)
+      out << aux[j] << ", ";
+    out << aux[j];
+  }
+  out << ")";
+
+  return out;
+}
+
+// Rationals -------------------------------------------------------------------
 
 RATIONAL::RATIONAL() : value_() {}
 RATIONAL::RATIONAL(NAT n) : value_(boost::rational<INT>(n, 1)) {}

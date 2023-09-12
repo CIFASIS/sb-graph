@@ -6,8 +6,11 @@ SBG_ROOT := sbg
 	SBG_SRC := \
     $(UTIL_ROOT)/defs.cpp \
   	$(SBG_ROOT)/interval.cpp \
-    $(SBG_ROOT)/pw_inter.cpp \
+  	$(SBG_ROOT)/multidim_inter.cpp \
+  	$(SBG_ROOT)/ord_pw_mdinter.cpp \
+    $(SBG_ROOT)/unord_pw_mdinter.cpp \
     $(SBG_ROOT)/lexp.cpp \
+    $(SBG_ROOT)/multidim_lexp.cpp \
     $(SBG_ROOT)/map.cpp \
     $(SBG_ROOT)/pw_map.cpp
 

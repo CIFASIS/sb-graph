@@ -31,11 +31,13 @@ namespace SBG {
 namespace AST {
 
 struct Program {
+  member_class(Util::NAT, nmbr_dims);
   member_class(StatementList, stms);
   member_class(ExprList, exprs);
 
   Program();
   Program(StatementList stms, ExprList exprs);
+  Program(Util::NAT nmbr_dims, StatementList stms, ExprList exprs);
 };
 std::ostream &operator<<(std::ostream &out, const Program &prog);
 

@@ -32,6 +32,12 @@ LIB::Interval EvalInterval::operator()(AST::Natural v) const
   return LIB::Interval(); 
 }
 
+LIB::Interval EvalInterval::operator()(AST::MDNatural v) const 
+{ 
+  Util::ERROR("EvalInterval: trying to evaluate an MDNatural");
+  return LIB::Interval(); 
+}
+
 LIB::Interval EvalInterval::operator()(AST::Rational v) const 
 { 
   Util::ERROR("EvalInterval: trying to evaluate a Rational");
@@ -117,6 +123,24 @@ LIB::Interval EvalInterval::operator()(AST::InterBinOp v) const
   }
 }
 
+LIB::Interval EvalInterval::operator()(AST::MultiDimInter v) const 
+{
+  Util::ERROR("EvalInterval: trying to evaluate a MultiDimInter");
+  return LIB::Interval(); 
+}
+
+LIB::Interval EvalInterval::operator()(AST::MDInterUnaryOp v) const 
+{
+  Util::ERROR("EvalInterval: trying to evaluate a MDInterUnaryOp");
+  return LIB::Interval(); 
+}
+
+LIB::Interval EvalInterval::operator()(AST::MDInterBinOp v) const 
+{
+  Util::ERROR("EvalInterval: trying to evaluate a MDInterBinOp");
+  return LIB::Interval(); 
+}
+
 LIB::Interval EvalInterval::operator()(AST::Set v) const 
 {
   std::stringstream ss;
@@ -144,6 +168,18 @@ LIB::Interval EvalInterval::operator()(AST::LinearExp v) const
 }
 
 LIB::Interval EvalInterval::operator()(AST::LExpBinOp v) const 
+{
+  Util::ERROR("EvalInterval: trying to evaluate a LExpBinOp");
+  return LIB::Interval(); 
+}
+
+LIB::Interval EvalInterval::operator()(AST::MDLExp v) const 
+{
+  Util::ERROR("EvalInterval: trying to evaluate a LinearExp");
+  return LIB::Interval(); 
+}
+
+LIB::Interval EvalInterval::operator()(AST::MDLExpBinOp v) const 
 {
   Util::ERROR("EvalInterval: trying to evaluate a LExpBinOp");
   return LIB::Interval(); 

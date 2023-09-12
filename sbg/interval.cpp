@@ -45,21 +45,25 @@ bool Interval::operator==(const Interval &other) const
   return (begin() == other.begin()) && (step() == other.step()) && (end() == other.end());
 }
 
+bool Interval::operator!=(const Interval &other) const { return !(*this == other); }
+
 bool Interval::operator<(const Interval &other) const
 {
   if (begin() < other.begin()) return true;
 
   if (begin() == other.begin() && end() < other.end()) return true;
 
+  if (begin() == other.begin() && end() == other.end() && step() < other.step()) return true;
+
   return false;
 }
 
 std::ostream &operator<<(std::ostream &out, const Interval &i) 
 {
-  out << "[" << Util::to_str(i.begin());
+  out << "[" << Util::toStr(i.begin());
   if (i.step() != 1)
-    out << ":" << Util::to_str(i.step());
-  out << ":" << Util::to_str(i.end()) << "]";
+    out << ":" << Util::toStr(i.step());
+  out << ":" << Util::toStr(i.end()) << "]";
  
   return out;
 }

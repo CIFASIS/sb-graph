@@ -45,6 +45,7 @@ namespace SBG {
 namespace LIB {
 
 using NAT = Util::NAT;
+using MD_NAT = Util::MD_NAT;
 
 struct Interval {
   member_class(NAT, begin);
@@ -56,6 +57,7 @@ struct Interval {
   Interval(NAT begin, NAT step, NAT end);
 
   eq_class(Interval);
+  neq_class(Interval);
   lt_class(Interval);
 };
 std::ostream &operator<<(std::ostream &out, const Interval &i);
@@ -80,8 +82,6 @@ typedef std::optional<Interval> MaybeInterval;
 MaybeInterval canonize(Interval i1, Interval i2);
 
 std::size_t hash_value(const Interval &i);
-
-typedef Interval SetPiece;
 
 } // namespace LIB
 

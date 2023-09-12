@@ -39,7 +39,23 @@ struct Assign {
 };
 std::ostream &operator<<(std::ostream &out, const Assign &asgn);
 
-typedef boost::variant<Assign> Statement;
+struct ConfigDims {
+  member_class(Util::NAT, nmbr_dims);
+  
+  ConfigDims();
+  ConfigDims(Util::NAT nmbr_dims);
+};
+std::ostream &operator<<(std::ostream &out, const ConfigDims &cfg);
+
+struct IsConfig : public boost::static_visitor<bool> {
+  public:
+  IsConfig();
+
+  bool operator()(Assign v) const;
+  bool operator()(ConfigDims v) const;
+};
+
+typedef boost::variant<Assign, ConfigDims> Statement;
 typedef std::vector<Statement> StatementList;
 std::ostream &operator<<(std::ostream &out, const StatementList &stm);
 

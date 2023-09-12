@@ -37,6 +37,7 @@ struct EvalInterval : public boost::static_visitor<LIB::Interval> {
   EvalInterval(VarEnv env);
 
   LIB::Interval operator()(AST::Natural v) const;
+  LIB::Interval operator()(AST::MDNatural v) const;
   LIB::Interval operator()(AST::Rational v) const;
   LIB::Interval operator()(AST::Boolean v) const;
   LIB::Interval operator()(Util::VariableName v) const;
@@ -46,11 +47,16 @@ struct EvalInterval : public boost::static_visitor<LIB::Interval> {
   LIB::Interval operator()(AST::Interval v) const;
   LIB::Interval operator()(AST::InterUnaryOp v) const;
   LIB::Interval operator()(AST::InterBinOp v) const;
+  LIB::Interval operator()(AST::MultiDimInter v) const;
+  LIB::Interval operator()(AST::MDInterUnaryOp v) const;
+  LIB::Interval operator()(AST::MDInterBinOp v) const;
   LIB::Interval operator()(AST::Set v) const;
   LIB::Interval operator()(AST::SetUnaryOp v) const;
   LIB::Interval operator()(AST::SetBinOp v) const;
   LIB::Interval operator()(AST::LinearExp v) const;
   LIB::Interval operator()(AST::LExpBinOp v) const;
+  LIB::Interval operator()(AST::MDLExp v) const;
+  LIB::Interval operator()(AST::MDLExpBinOp v) const;
   LIB::Interval operator()(AST::LinearMap v) const;
   LIB::Interval operator()(AST::PWLMap v) const;
 

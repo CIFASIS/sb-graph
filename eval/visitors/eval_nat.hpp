@@ -24,9 +24,6 @@
 #ifndef AST_VISITOR_EVAL_NAT
 #define AST_VISITOR_EVAL_NAT
 
-#include <boost/variant/static_visitor.hpp>
-
-#include "ast/expr.hpp"
 #include "eval/defs.hpp"
 
 namespace SBG {

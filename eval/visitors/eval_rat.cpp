@@ -49,8 +49,8 @@ Util::RATIONAL EvalRat::operator()(Util::VariableName v) const
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (std::holds_alternative<Util::RATIONAL>(value))
-      return std::get<Util::RATIONAL>(value);
+    if (is<Util::RATIONAL>(value))
+      return boost::get<Util::RATIONAL>(value);
 
     else {
       Util::ERROR("EvalRat: variable %s is not rational", v.c_str());

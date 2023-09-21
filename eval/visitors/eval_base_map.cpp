@@ -55,8 +55,8 @@ LIB::BaseMap EvalBaseMap::operator()(Util::VariableName v) const
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (std::holds_alternative<LIB::BaseMap>(value))
-      return std::get<LIB::BaseMap>(value);
+    if (is<LIB::BaseMap>(value))
+      return boost::get<LIB::BaseMap>(value);
 
     else {
       Util::ERROR("EvalBaseMap: variable %s is not a linear expression", v.c_str());

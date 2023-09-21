@@ -56,9 +56,9 @@ Util::NAT EvalNat::operator()(Util::VariableName v) const
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (std::holds_alternative<Util::NAT>(value)) return std::get<Util::NAT>(value);
+    if (is<Util::NAT>(value)) return boost::get<Util::NAT>(value);
 
-    else if (std::holds_alternative<Util::RATIONAL>(value)) return Util::toNat(std::get<Util::RATIONAL>(value)); 
+    else if (is<Util::RATIONAL>(value)) return Util::toNat(boost::get<Util::RATIONAL>(value)); 
   }
 
   Util::ERROR("EvalNat: variable %s not defined", v.c_str());

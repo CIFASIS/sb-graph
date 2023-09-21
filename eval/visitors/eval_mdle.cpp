@@ -26,144 +26,144 @@ namespace Eval {
 EvalMDLE::EvalMDLE() : env_() {}
 EvalMDLE::EvalMDLE(VarEnv env) : env_(env) {}
 
-LIB::MDLExp EvalMDLE::operator()(AST::Natural v) const
+LIB::Exp EvalMDLE::operator()(AST::Natural v) const
 {
   Util::ERROR("EvalMDLE: trying to evaluate a Natural");
-  return LIB::MDLExp(); 
+  return LIB::Exp(); 
 }
 
-LIB::MDLExp EvalMDLE::operator()(AST::MDNatural v) const
+LIB::Exp EvalMDLE::operator()(AST::MDNatural v) const
 {
   Util::ERROR("EvalMDLE: trying to evaluate a MDNatural");
-  return LIB::MDLExp(); 
+  return LIB::Exp(); 
 }
 
-LIB::MDLExp EvalMDLE::operator()(AST::Rational v) const
+LIB::Exp EvalMDLE::operator()(AST::Rational v) const
 {
   Util::ERROR("EvalMDLE: trying to evaluate a Rational");
-  return LIB::MDLExp(); 
+  return LIB::Exp(); 
 }
 
-LIB::MDLExp EvalMDLE::operator()(AST::Boolean v) const
+LIB::Exp EvalMDLE::operator()(AST::Boolean v) const
 {
   Util::ERROR("EvalMDLE: trying to evaluate a Boolean");
-  return LIB::MDLExp(); 
+  return LIB::Exp(); 
 }
 
-LIB::MDLExp EvalMDLE::operator()(Util::VariableName v) const
+LIB::Exp EvalMDLE::operator()(Util::VariableName v) const
 {
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (std::holds_alternative<LIB::MDLExp>(value))
-      return std::get<LIB::MDLExp>(value);
+    if (is<LIB::Exp>(value))
+      return boost::get<LIB::Exp>(value);
 
     else {
       Util::ERROR("EvalMDLE: variable %s is not a linear expression", v.c_str());
-      return LIB::MDLExp(); 
+      return LIB::Exp(); 
     } 
   }
 
   Util::ERROR("EvalMDLE: variable %s not defined", v.c_str());
-  return LIB::MDLExp(); 
+  return LIB::Exp(); 
 }
 
-LIB::MDLExp EvalMDLE::operator()(AST::UnaryOp v) const
+LIB::Exp EvalMDLE::operator()(AST::UnaryOp v) const
 {
   Util::ERROR("EvalMDLE: trying to evaluate an arithmetic UnaryOp");
-  return LIB::MDLExp(); 
+  return LIB::Exp(); 
 }
 
-LIB::MDLExp EvalMDLE::operator()(AST::BinOp v) const 
+LIB::Exp EvalMDLE::operator()(AST::BinOp v) const 
 {
   Util::ERROR("EvalMDLE: trying to evaluate an arithmetic BinOp");
-  return LIB::MDLExp(); 
+  return LIB::Exp(); 
 }
 
-LIB::MDLExp EvalMDLE::operator()(AST::Call v) const
+LIB::Exp EvalMDLE::operator()(AST::Call v) const
 {
   Util::ERROR("EvalMDLE: trying to evaluate a Call");
-  return LIB::MDLExp(); 
+  return LIB::Exp(); 
 }
 
-LIB::MDLExp EvalMDLE::operator()(AST::Interval v) const
+LIB::Exp EvalMDLE::operator()(AST::Interval v) const
 { 
   Util::ERROR("EvalMDLE: trying to evaluate an Interval");
-  return LIB::MDLExp(); 
+  return LIB::Exp(); 
 }
 
-LIB::MDLExp EvalMDLE::operator()(AST::InterUnaryOp v) const
+LIB::Exp EvalMDLE::operator()(AST::InterUnaryOp v) const
 {
   Util::ERROR("EvalMDLE: trying to evaluate an InterUnaryOp");
-  return LIB::MDLExp(); 
+  return LIB::Exp(); 
 }
 
-LIB::MDLExp EvalMDLE::operator()(AST::InterBinOp v) const
+LIB::Exp EvalMDLE::operator()(AST::InterBinOp v) const
 {
   Util::ERROR("EvalMDLE: trying to evaluate an InterBinOp");
-  return LIB::MDLExp(); 
+  return LIB::Exp(); 
 }
 
-LIB::MDLExp EvalMDLE::operator()(AST::MultiDimInter v) const
+LIB::Exp EvalMDLE::operator()(AST::MultiDimInter v) const
 { 
   Util::ERROR("EvalMDLE: trying to evaluate an MultiDimInter");
-  return LIB::MDLExp(); 
+  return LIB::Exp(); 
 }
 
-LIB::MDLExp EvalMDLE::operator()(AST::MDInterUnaryOp v) const
+LIB::Exp EvalMDLE::operator()(AST::MDInterUnaryOp v) const
 {
   Util::ERROR("EvalMDLE: trying to evaluate an MDInterUnaryOp");
-  return LIB::MDLExp(); 
+  return LIB::Exp(); 
 }
 
-LIB::MDLExp EvalMDLE::operator()(AST::MDInterBinOp v) const
+LIB::Exp EvalMDLE::operator()(AST::MDInterBinOp v) const
 {
   Util::ERROR("EvalMDLE: trying to evaluate an MDInterBinOp");
-  return LIB::MDLExp(); 
+  return LIB::Exp(); 
 }
 
-LIB::MDLExp EvalMDLE::operator()(AST::Set v) const 
+LIB::Exp EvalMDLE::operator()(AST::Set v) const 
 {
   Util::ERROR("EvalMDLE: trying to evaluate a Set");
-  return LIB::MDLExp(); 
+  return LIB::Exp(); 
 }
 
-LIB::MDLExp EvalMDLE::operator()(AST::SetUnaryOp v) const 
+LIB::Exp EvalMDLE::operator()(AST::SetUnaryOp v) const 
 {
   Util::ERROR("EvalMDLE: trying to evaluate a SetUnaryOp");
-  return LIB::MDLExp(); 
+  return LIB::Exp(); 
 }
 
-LIB::MDLExp EvalMDLE::operator()(AST::SetBinOp v) const 
+LIB::Exp EvalMDLE::operator()(AST::SetBinOp v) const 
 {
   Util::ERROR("EvalMDLE: trying to evaluate a SetBinOp");
-  return LIB::MDLExp(); 
+  return LIB::Exp(); 
 }
 
-LIB::MDLExp EvalMDLE::operator()(AST::LinearExp v) const
+LIB::Exp EvalMDLE::operator()(AST::LinearExp v) const
 {
   Util::ERROR("EvalMDLE: trying to evaluate a LinearExp");
-  return LIB::MDLExp(); 
+  return LIB::Exp(); 
 }
 
-LIB::MDLExp EvalMDLE::operator()(AST::LExpBinOp v) const 
+LIB::Exp EvalMDLE::operator()(AST::LExpBinOp v) const 
 {
   Util::ERROR("EvalMDLE: trying to evaluate a LExpBinOp");
-  return LIB::MDLExp(); 
+  return LIB::Exp(); 
 }
 
-LIB::MDLExp EvalMDLE::operator()(AST::MDLExp v) const
+LIB::Exp EvalMDLE::operator()(AST::MDLExp v) const
 { 
-  LIB::MDLExp res;
+  LIB::Exp res;
 
   EvalLE visit_le(env_);
   BOOST_FOREACH (AST::Expr le, v.exps())
     res.emplaceBack(Apply(visit_le, le));
 
-  return LIB::MDLExp(res);
+  return LIB::Exp(res);
 }
 
-LIB::MDLExp EvalMDLE::operator()(AST::MDLExpBinOp v) const 
+LIB::Exp EvalMDLE::operator()(AST::MDLExpBinOp v) const 
 {
   AST::Expr l = v.left(), r = v.right();
   switch (v.op()) {
@@ -177,20 +177,20 @@ LIB::MDLExp EvalMDLE::operator()(AST::MDLExpBinOp v) const
       std::stringstream ss;
       ss << v.op();
       Util::ERROR("EvalMDLE: LExpBinOp %s not supported.", ss.str().c_str());
-      return LIB::MDLExp(); 
+      return LIB::Exp(); 
   }
 }
 
-LIB::MDLExp EvalMDLE::operator()(AST::LinearMap v) const 
+LIB::Exp EvalMDLE::operator()(AST::LinearMap v) const 
 {
   Util::ERROR("EvalMDLE: trying to evaluate a LinearMap");
-  return LIB::MDLExp(); 
+  return LIB::Exp(); 
 }
 
-LIB::MDLExp EvalMDLE::operator()(AST::PWLMap v) const 
+LIB::Exp EvalMDLE::operator()(AST::PWLMap v) const 
 {
   Util::ERROR("EvalMDLE: trying to evaluate a PWLMap");
-  return LIB::MDLExp(); 
+  return LIB::Exp(); 
 }
 
 } // namespace Eval

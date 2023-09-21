@@ -55,8 +55,8 @@ LIB::BasePWMap EvalBasePWMap::operator()(Util::VariableName v) const
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (std::holds_alternative<LIB::BasePWMap>(value))
-      return std::get<LIB::BasePWMap>(value);
+    if (is<LIB::BasePWMap>(value))
+      return boost::get<LIB::BasePWMap>(value);
 
     else {
       Util::ERROR("EvalBasePWMap: variable %s is not a PWMap", v.c_str());

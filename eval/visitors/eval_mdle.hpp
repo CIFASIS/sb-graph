@@ -31,34 +31,34 @@ namespace SBG {
 
 namespace Eval {
 
-struct EvalMDLE : public boost::static_visitor<LIB::MDLExp> {
+struct EvalMDLE : public boost::static_visitor<LIB::Exp> {
   public:
   EvalMDLE();
   EvalMDLE(VarEnv env);
 
-  LIB::MDLExp operator()(AST::Natural v) const;
-  LIB::MDLExp operator()(AST::MDNatural v) const;
-  LIB::MDLExp operator()(AST::Rational v) const;
-  LIB::MDLExp operator()(AST::Boolean v) const;
-  LIB::MDLExp operator()(Util::VariableName v) const;
-  LIB::MDLExp operator()(AST::UnaryOp v) const;
-  LIB::MDLExp operator()(AST::BinOp v) const;
-  LIB::MDLExp operator()(AST::Call v) const;
-  LIB::MDLExp operator()(AST::Interval v) const;
-  LIB::MDLExp operator()(AST::InterUnaryOp v) const;
-  LIB::MDLExp operator()(AST::InterBinOp v) const;
-  LIB::MDLExp operator()(AST::MultiDimInter v) const;
-  LIB::MDLExp operator()(AST::MDInterUnaryOp v) const;
-  LIB::MDLExp operator()(AST::MDInterBinOp v) const;
-  LIB::MDLExp operator()(AST::Set v) const;
-  LIB::MDLExp operator()(AST::SetUnaryOp v) const;
-  LIB::MDLExp operator()(AST::SetBinOp v) const;
-  LIB::MDLExp operator()(AST::LinearExp v) const;
-  LIB::MDLExp operator()(AST::LExpBinOp v) const;
-  LIB::MDLExp operator()(AST::MDLExp v) const;
-  LIB::MDLExp operator()(AST::MDLExpBinOp v) const;
-  LIB::MDLExp operator()(AST::LinearMap v) const;
-  LIB::MDLExp operator()(AST::PWLMap v) const;
+  LIB::Exp operator()(AST::Natural v) const;
+  LIB::Exp operator()(AST::MDNatural v) const;
+  LIB::Exp operator()(AST::Rational v) const;
+  LIB::Exp operator()(AST::Boolean v) const;
+  LIB::Exp operator()(Util::VariableName v) const;
+  LIB::Exp operator()(AST::UnaryOp v) const;
+  LIB::Exp operator()(AST::BinOp v) const;
+  LIB::Exp operator()(AST::Call v) const;
+  LIB::Exp operator()(AST::Interval v) const;
+  LIB::Exp operator()(AST::InterUnaryOp v) const;
+  LIB::Exp operator()(AST::InterBinOp v) const;
+  LIB::Exp operator()(AST::MultiDimInter v) const;
+  LIB::Exp operator()(AST::MDInterUnaryOp v) const;
+  LIB::Exp operator()(AST::MDInterBinOp v) const;
+  LIB::Exp operator()(AST::Set v) const;
+  LIB::Exp operator()(AST::SetUnaryOp v) const;
+  LIB::Exp operator()(AST::SetBinOp v) const;
+  LIB::Exp operator()(AST::LinearExp v) const;
+  LIB::Exp operator()(AST::LExpBinOp v) const;
+  LIB::Exp operator()(AST::MDLExp v) const;
+  LIB::Exp operator()(AST::MDLExpBinOp v) const;
+  LIB::Exp operator()(AST::LinearMap v) const;
+  LIB::Exp operator()(AST::PWLMap v) const;
 
   private:
   mutable VarEnv env_;

@@ -29,7 +29,7 @@ EvalMDI::EvalMDI(VarEnv env) : env_(env) {}
 LIB::MultiDimInter EvalMDI::operator()(AST::Natural v) const 
 { 
   Util::ERROR("EvalMDI: trying to evaluate an Natural");
-  return LIB::MultiDimInter(); 
+  return LIB::MultiDimInter();
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::MDNatural v) const 
@@ -55,8 +55,8 @@ LIB::MultiDimInter EvalMDI::operator()(Util::VariableName v) const
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (std::holds_alternative<LIB::MultiDimInter>(value))
-      return std::get<LIB::MultiDimInter>(value);
+    if (is<LIB::MultiDimInter>(value))
+      return boost::get<LIB::MultiDimInter>(value);
 
     else {
       Util::ERROR("EvalMDI: variable %s is not an interval", v.c_str());

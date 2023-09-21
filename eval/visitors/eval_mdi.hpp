@@ -30,34 +30,34 @@ namespace SBG {
 
 namespace Eval {
 
-struct EvalMDI : public boost::static_visitor<LIB::MultiDimInter> {
+struct EvalMDI : public boost::static_visitor<LIB::SetPiece> {
   public:
   EvalMDI();
   EvalMDI(VarEnv env);
 
-  LIB::MultiDimInter operator()(AST::Natural v) const;
-  LIB::MultiDimInter operator()(AST::MDNatural v) const;
-  LIB::MultiDimInter operator()(AST::Rational v) const;
-  LIB::MultiDimInter operator()(AST::Boolean v) const;
-  LIB::MultiDimInter operator()(Util::VariableName v) const;
-  LIB::MultiDimInter operator()(AST::UnaryOp v) const;
-  LIB::MultiDimInter operator()(AST::BinOp v) const;
-  LIB::MultiDimInter operator()(AST::Call v) const;
-  LIB::MultiDimInter operator()(AST::Interval v) const;
-  LIB::MultiDimInter operator()(AST::InterUnaryOp v) const;
-  LIB::MultiDimInter operator()(AST::InterBinOp v) const;
-  LIB::MultiDimInter operator()(AST::MultiDimInter v) const;
-  LIB::MultiDimInter operator()(AST::MDInterUnaryOp v) const;
-  LIB::MultiDimInter operator()(AST::MDInterBinOp v) const;
-  LIB::MultiDimInter operator()(AST::Set v) const;
-  LIB::MultiDimInter operator()(AST::SetUnaryOp v) const;
-  LIB::MultiDimInter operator()(AST::SetBinOp v) const;
-  LIB::MultiDimInter operator()(AST::LinearExp v) const;
-  LIB::MultiDimInter operator()(AST::LExpBinOp v) const;
-  LIB::MultiDimInter operator()(AST::MDLExp v) const;
-  LIB::MultiDimInter operator()(AST::MDLExpBinOp v) const;
-  LIB::MultiDimInter operator()(AST::LinearMap v) const;
-  LIB::MultiDimInter operator()(AST::PWLMap v) const;
+  LIB::SetPiece operator()(AST::Natural v) const;
+  LIB::SetPiece operator()(AST::MDNatural v) const;
+  LIB::SetPiece operator()(AST::Rational v) const;
+  LIB::SetPiece operator()(AST::Boolean v) const;
+  LIB::SetPiece operator()(Util::VariableName v) const;
+  LIB::SetPiece operator()(AST::UnaryOp v) const;
+  LIB::SetPiece operator()(AST::BinOp v) const;
+  LIB::SetPiece operator()(AST::Call v) const;
+  LIB::SetPiece operator()(AST::Interval v) const;
+  LIB::SetPiece operator()(AST::InterUnaryOp v) const;
+  LIB::SetPiece operator()(AST::InterBinOp v) const;
+  LIB::SetPiece operator()(AST::MultiDimInter v) const;
+  LIB::SetPiece operator()(AST::MDInterUnaryOp v) const;
+  LIB::SetPiece operator()(AST::MDInterBinOp v) const;
+  LIB::SetPiece operator()(AST::Set v) const;
+  LIB::SetPiece operator()(AST::SetUnaryOp v) const;
+  LIB::SetPiece operator()(AST::SetBinOp v) const;
+  LIB::SetPiece operator()(AST::LinearExp v) const;
+  LIB::SetPiece operator()(AST::LExpBinOp v) const;
+  LIB::SetPiece operator()(AST::MDLExp v) const;
+  LIB::SetPiece operator()(AST::MDLExpBinOp v) const;
+  LIB::SetPiece operator()(AST::LinearMap v) const;
+  LIB::SetPiece operator()(AST::PWLMap v) const;
 
   private:
   mutable VarEnv env_;

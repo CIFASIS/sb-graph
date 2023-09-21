@@ -55,8 +55,8 @@ LIB::Interval EvalInterval::operator()(Util::VariableName v) const
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (std::holds_alternative<LIB::Interval>(value))
-      return std::get<LIB::Interval>(value);
+    if (is<LIB::Interval>(value))
+      return boost::get<LIB::Interval>(value);
 
     else {
       Util::ERROR("EvalInterval: variable %s is not an interval", v.c_str());

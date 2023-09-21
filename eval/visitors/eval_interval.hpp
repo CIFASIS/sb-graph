@@ -24,7 +24,6 @@
 #ifndef AST_VISITOR_EVALINTERVAL
 #define AST_VISITOR_EVALINTERVAL
 
-#include "ast/expr.hpp"
 #include "eval/visitors/eval_nat.hpp"
 
 namespace SBG {

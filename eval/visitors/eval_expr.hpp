@@ -26,6 +26,10 @@
 
 #include "eval/visitors/eval_base_pwmap.hpp"
 #include "eval/visitors/eval_canon_pwmap.hpp"
+#include "eval/visitors/eval_natbt.hpp"
+#include "eval/visitors/eval_container.hpp"
+#include "eval/visitors/eval_linear.hpp"
+#include "eval/visitors/eval_map.hpp"
 
 namespace SBG {
 
@@ -35,7 +39,7 @@ struct EvalExpression : public boost::static_visitor<ExprBaseType> {
   public:
   EvalExpression();
   EvalExpression(VarEnv env);
-  EvalExpression(Util::NAT nmbr_dims, VarEnv env);
+  EvalExpression(unsigned int nmbr_dims, VarEnv env);
 
   ExprBaseType operator()(AST::Natural v) const;
   ExprBaseType operator()(AST::MDNatural v) const;
@@ -62,7 +66,7 @@ struct EvalExpression : public boost::static_visitor<ExprBaseType> {
   ExprBaseType operator()(AST::PWLMap v) const;
 
   private:
-  Util::NAT nmbr_dims_;
+  unsigned int nmbr_dims_;
   mutable VarEnv env_;
   const FuncEnv fenv_;
 };

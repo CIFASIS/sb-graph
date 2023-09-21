@@ -23,27 +23,33 @@ namespace SBG {
 
 namespace LIB {
 
-MultiDimInter::MultiDimInter() : intervals_(), dimensions_(1) {}
-MultiDimInter::MultiDimInter(unsigned int dim) : intervals_(), dimensions_(dim) {}
-MultiDimInter::MultiDimInter(NAT x) : intervals_(), dimensions_(1) { emplaceBack(Interval(x, 1, x)); }
-MultiDimInter::MultiDimInter(MD_NAT x) : intervals_(), dimensions_(x.size()) {
+MultiDimInter::MultiDimInter() : intervals_() {}
+MultiDimInter::MultiDimInter(MD_NAT x) : intervals_() {
   BOOST_FOREACH (NAT xi, x)
     emplaceBack(Interval(xi, 1, xi));
 }
-MultiDimInter::MultiDimInter(Interval i) : intervals_(), dimensions_(1) { emplaceBack(i); }
-MultiDimInter::MultiDimInter(unsigned int nmbr_copies, Interval i) : intervals_(), dimensions_(nmbr_copies) { 
-  for (unsigned int j = 0; j < nmbr_copies; ++j)
-    emplaceBack(i);
+MultiDimInter::MultiDimInter(Interval i) : intervals_() { emplaceBack(i); }
+MultiDimInter::MultiDimInter(unsigned int nmbr_copies, Interval i) : intervals_() { 
+  for (unsigned int j = 0; j < nmbr_copies; ++j) emplaceBack(i);
 }
-MultiDimInter::MultiDimInter(InterVector iv) : intervals_(iv), dimensions_(iv.size()) {}
+MultiDimInter::MultiDimInter(InterVector iv) : intervals_(iv) {}
 
-member_imp(MultiDimInter, unsigned int, dimensions);
 member_imp(MultiDimInter, InterVector, intervals);
 
 MultiDimInter::iterator MultiDimInter::begin() { return intervals_ref().begin(); }
 MultiDimInter::iterator MultiDimInter::end() { return intervals_ref().end(); }
 
-void MultiDimInter::emplaceBack(Interval i) { intervals_ref().emplace_back(i); }
+std::size_t MultiDimInter::size() const { return intervals().size(); }
+
+void MultiDimInter::emplaceBack(Interval i) 
+{
+  if (!isEmpty(i)) intervals_ref().emplace_back(i);
+
+  else {
+    InterVector aux;
+    set_intervals(aux);
+  }
+}
 
 Interval &MultiDimInter::operator[](std::size_t n) { return intervals_ref()[n]; }
 
@@ -55,7 +61,7 @@ bool MultiDimInter::operator<(const MultiDimInter &other) const
 {
   MultiDimInter aux1 = *this, aux2 = other;
 
-  if (intervals().size() == other.intervals().size()) {
+  if (aux1.size() == aux2.size()) {
     parallel_foreach2(aux1.intervals_ref(), aux2.intervals_ref()) {
       Interval i1 = boost::get<0>(items), i2 = boost::get<1>(items);
       if (i1 < i2) return true;
@@ -65,6 +71,7 @@ bool MultiDimInter::operator<(const MultiDimInter &other) const
 
     return false;
   }
+
 
   Util::ERROR("MultiDimInter operator<: comparing multi-dimensional intervals of different dimensions");
   return false;
@@ -103,6 +110,8 @@ bool isEmpty(MultiDimInter mdi) { return mdi.intervals().empty(); }
 
 bool isMember(MD_NAT x, MultiDimInter mdi)
 {
+  if (isEmpty(mdi)) return false;
+
   if (x.size() == mdi.intervals().size()) {
     parallel_foreach2 (x, mdi.intervals_ref()) {
       NAT xi = boost::get<0>(items);
@@ -114,7 +123,7 @@ bool isMember(MD_NAT x, MultiDimInter mdi)
     return true;
   }
 
-  Util::ERROR("MultiDimInter isMember: different dimensions");
+  Util::ERROR("LIB::MultiDimInter::isMember: dimensions don't match");
   return false;
 }
 
@@ -140,23 +149,31 @@ Util::MD_NAT maxElem(MultiDimInter mdi)
 
 MultiDimInter intersection(MultiDimInter mdi1, MultiDimInter mdi2)
 {
-  MultiDimInter res;
+  if (isEmpty(mdi1) || isEmpty(mdi2)) return MultiDimInter();
 
-  parallel_foreach2 (mdi2.intervals_ref(), mdi2.intervals_ref()) {
-    Interval i1 = boost::get<0>(items), i2 = boost::get<1>(items);
-    res.emplaceBack(intersection(i1, i2));
+  if (mdi1.size() == mdi2.size()) {
+    MultiDimInter res;
+
+    parallel_foreach2 (mdi1.intervals_ref(), mdi2.intervals_ref()) {
+      Interval i1 = boost::get<0>(items), i2 = boost::get<1>(items);
+      Interval ith = intersection(i1, i2);
+      if (!isEmpty(ith)) res.emplaceBack(intersection(i1, i2));
+
+      else return MultiDimInter();
+    }
+
+    return res;
   }
 
-  return res;
+  Util::ERROR("LIB::MultiDimInter::intersection: dimensions don't match");
+  return MultiDimInter();
 }
 
 // Extra operations ------------------------------------------------------------
 
 MultiDimInter least(MultiDimInter mdi1, MultiDimInter mdi2) { return std::min(mdi1, mdi2); }
 
-unsigned int nmbrDims(MultiDimInter mdi) { return mdi.intervals().size(); }
-
-bool isUnidim(MultiDimInter mdi) { return mdi.dimensions() == 1; }
+bool isUnidim(MultiDimInter mdi) { return mdi.size() <= 1; }
 
 std::size_t hash_value(const MultiDimInter &mdi)
 {

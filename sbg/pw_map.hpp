@@ -102,6 +102,8 @@ template<typename Set>
 Set preImage(Set subcodom, PWMap<Set> pw);
 
 template<typename Set>
+PWMap<Set> mapInf(PWMap<Set> pw, unsigned int n);
+template<typename Set>
 PWMap<Set> mapInf(PWMap<Set> pw);
 
 /** @function composition
@@ -125,23 +127,6 @@ PWMap<Set> concatenation(PWMap<Set> pw1, PWMap<Set> pw2);
 template<typename Set>
 PWMap<Set> combine(PWMap<Set> pw1, PWMap<Set> pw2);
 
-template<typename Set>
-PWMap<Set> minMap(Interval i, LExp le1, LExp le2, LExp le3, LExp le4);
-template<typename Set>
-PWMap<Set> minMap(Interval i, LExp le1, LExp le2);
-template<typename Set>
-PWMap<Set> minMap(SetPiece dom_piece, Exp e1, Exp e2, Exp e3, Exp e4);
-template<typename Set>
-PWMap<Set> minMap(SetPiece dom_piece, Exp e1, Exp e2);
-template<typename Set>
-PWMap<Set> minMap(Set dom, Exp e1, Exp e2, Exp e3, Exp e4);
-template<typename Set>
-PWMap<Set> minMap(Set dom, Exp e1, Exp e2);
-template<typename Set>
-PWMap<Set> minMap(PWMap<Set> pw1, PWMap<Set> pw2, PWMap<Set> pw3, PWMap<Set> pw4);
-template<typename Set>
-PWMap<Set> minMap(PWMap<Set> pw1, PWMap<Set> pw2);
-
 /** @function reduce
  *
  * @brief The reduce function calculates (if possible) the resulting map of
@@ -161,6 +146,25 @@ PWMap<Set> reduce(SBGMap<Set> sbgmap);
 template<typename Set>
 PWMap<Set> reduce(PWMap<Set> pw);
 
+template<typename Set>
+PWMap<Set> minMap(Interval i, LExp le1, LExp le2, LExp le3, LExp le4);
+template<typename Set>
+PWMap<Set> minMap(Interval i, LExp le1, LExp le2);
+template<typename Set>
+PWMap<Set> minMap(SetPiece dom_piece, Exp e1, Exp e2, Exp e3, Exp e4);
+template<typename Set>
+PWMap<Set> minMap(SetPiece dom_piece, Exp e1, Exp e2);
+template<typename Set>
+PWMap<Set> minMap(Set dom, Exp e1, Exp e2, Exp e3, Exp e4);
+template<typename Set>
+PWMap<Set> minMap(Set dom, Exp e1, Exp e2);
+template<typename Set>
+PWMap<Set> minMap(PWMap<Set> pw1, PWMap<Set> pw2, PWMap<Set> pw3, PWMap<Set> pw4);
+template<typename Set>
+PWMap<Set> minMap(PWMap<Set> pw1, PWMap<Set> pw2);
+
+template<typename Set>
+PWMap<Set> minAdjMap(PWMap<Set> pw1, PWMap<Set> pw2, PWMap<Set> pw3);
 template<typename Set>
 PWMap<Set> minAdjMap(PWMap<Set> pw1, PWMap<Set> pw2);
 

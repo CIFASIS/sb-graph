@@ -27,6 +27,8 @@
 #ifndef SBG_MAP_HPP
 #define SBG_MAP_HPP
 
+#include <iostream>
+
 #include "sbg/multidim_inter.hpp"
 #include "sbg/multidim_lexp.hpp"
 #include "sbg/ord_pw_mdinter.hpp"

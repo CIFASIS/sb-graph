@@ -52,7 +52,6 @@ struct UnordPWMDInter {
   typedef MDInterUnordSetConstIt const_iterator;
 
   member_class(MDInterUnordSet, pieces);
-  member_class(unsigned int, dimensions);
 
   UnordPWMDInter();
   UnordPWMDInter(SetPiece mdi);
@@ -81,8 +80,20 @@ Util::MD_NAT minElem(UnordPWMDInter pwi);
 Util::MD_NAT maxElem(UnordPWMDInter pwi);
 UnordPWMDInter intersection(UnordPWMDInter pwi1, UnordPWMDInter pwi2);
 UnordPWMDInter cup(UnordPWMDInter pwi1, UnordPWMDInter pwi2);
+
+/** @function complementAtom
+ *
+ * @brief This function calculates the complement for an UnordPWMDInter with only
+ * one piece.
+ *
+ * !!! Both complementAtom and complement return a collection of non-disjoint
+ * pieces, because they are only used by difference. These functions should
+ * NOT be called by any other function.
+ */
+
 UnordPWMDInter complementAtom(UnordPWMDInter mdi);
 UnordPWMDInter complement(UnordPWMDInter pwi);
+
 UnordPWMDInter difference(UnordPWMDInter pwi1, UnordPWMDInter pwi2);
 
 /**

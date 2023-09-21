@@ -53,6 +53,7 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   qi::rule<Iterator> OPAREN, CPAREN, OBRACKET, CBRACKET, OBRACE, CBRACE, COLON, RAT, COMA, ARROW, OANGLE, CANGLE, DIMS, PIPE;
 
   // Other rules
+  qi::rule<Iterator, Skipper<Iterator>, Util::MD_NAT()> md_nat;
   qi::rule<Iterator, Skipper<Iterator>, Util::RATIONAL()> rational;
   qi::rule<Iterator, Skipper<Iterator>, AST::Call()> call_exp;
   qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> function_call_args;
@@ -88,7 +89,6 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> mdlexp;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> mdlexp_binary;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> mdlexp_expr;
-
 
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbgmap;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> map_expr;

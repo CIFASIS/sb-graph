@@ -8,6 +8,6 @@ TEST_MODEL=${TEST_MODEL_FOLDER}/${MODEL}
 mkdir ${TEST_MODEL_FOLDER}
 TEST_FOLDER=`pwd`
 echo ${TEST_FOLDER}
-g++ ${GT_MODEL} -I../../ -L../../lib -std=c++17 -o ${TEST_MODEL} -lsbgraph  
+g++ ${GT_MODEL} -I../../ -L../../lib -std=c++17 -o ${TEST_MODEL} -lsbgraph -D BOOST_PHOENIX_STL_TUPLE_H_ -D BOOST_MPL_LIMIT_LIST_SIZE=30 -D BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
 cd ${TEST_MODEL_FOLDER}
 ./${MODEL}

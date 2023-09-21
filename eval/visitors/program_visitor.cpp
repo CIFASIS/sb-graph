@@ -34,7 +34,7 @@ ProgramIO ProgramVisitor::operator()(AST::Program p) const
   BOOST_FOREACH (AST::Statement s, p.stms()) {
     if (Apply(cfg_visit, s)) {
       AST::ConfigDims cfg = boost::get<AST::ConfigDims>(s);
-      result.set_nmbr_dims(cfg.nmbr_dims_ref());
+      result.set_nmbr_dims(cfg.nmbr_dims());
     }
 
     else {

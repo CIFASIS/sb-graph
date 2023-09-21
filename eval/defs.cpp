@@ -27,11 +27,11 @@ namespace Eval {
 
 Util::NAT toNat(ExprBaseType v) 
 { 
-  if (std::holds_alternative<Util::NAT>(v))
-    return std::get<Util::NAT>(v);
+  if (is<Util::NAT>(v))
+    return boost::get<Util::NAT>(v);
 
-  if (std::holds_alternative<Util::RATIONAL>(v)) {
-    Util::RATIONAL v_rat = std::get<Util::RATIONAL>(v);
+  if (is<Util::RATIONAL>(v)) {
+    Util::RATIONAL v_rat = boost::get<Util::RATIONAL>(v);
     if (v_rat.denominator() == 1 && v_rat.numerator() >= 0)
       return v_rat.numerator();
   }
@@ -58,7 +58,8 @@ MaybeVValue VarEnv::operator[](VKey k) const
 
 FuncEnv::FuncEnv() {}
 FuncEnvType FuncEnv::mapping_ = {{"isEmpty", 0}, {"isMember", 1}, {"minElem", 2}, {"maxElem", 3}, {"lt", 4},
-  {"compose", 5}, {"inv", 6}, {"image", 7}, {"preImage", 8}, {"dom", 9}, {"minAdj", 10}};
+  {"compose", 5}, {"inv", 6}, {"image", 7}, {"preImage", 8}, {"dom", 9}, {"combine", 10}, {"minMap", 11}, 
+  {"reduce", 12}, {"minAdj", 13}};
 
 MaybeFValue FuncEnv::operator[](FKey k) const
 {
@@ -72,12 +73,8 @@ std::ostream &operator<<(std::ostream &out, const ExprEval &e)
 {
   out << std::get<0>(e) << "\n  --> "; 
   ExprBaseType ebt = std::get<1>(e);
-  std::visit(
-    Util::Overload {
-      [&](auto v) { out << v; }
-    }
-    , ebt
-  );
+  auto printer = [&](auto v) { out << v; };
+  Apply(printer, ebt);
   out << "\n";
 
   return out;
@@ -85,17 +82,16 @@ std::ostream &operator<<(std::ostream &out, const ExprEval &e)
 
 std::ostream &operator<<(std::ostream &out, const ExprEvalList &ee)
 {
-  BOOST_FOREACH (ExprEval e, ee)
-    out << e << "\n";
+  BOOST_FOREACH (ExprEval e, ee) out << e << "\n";
 
   return out;
 }
 
 ProgramIO::ProgramIO() : nmbr_dims_(1), stms_(), exprs_() {}
 ProgramIO::ProgramIO(AST::StatementList stms, ExprEvalList exprs) : nmbr_dims_(1), stms_(stms), exprs_(exprs) {}
-ProgramIO::ProgramIO(Util::NAT nmbr_dims, AST::StatementList stms, ExprEvalList exprs) : nmbr_dims_(nmbr_dims), stms_(stms), exprs_(exprs) {}
+ProgramIO::ProgramIO(unsigned int nmbr_dims, AST::StatementList stms, ExprEvalList exprs) : nmbr_dims_(nmbr_dims), stms_(stms), exprs_(exprs) {}
 
-member_imp(ProgramIO, Util::NAT, nmbr_dims);
+member_imp(ProgramIO, unsigned int, nmbr_dims);
 member_imp(ProgramIO, AST::StatementList, stms);
 member_imp(ProgramIO, ExprEvalList, exprs);
 

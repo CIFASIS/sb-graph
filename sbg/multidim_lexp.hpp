@@ -43,13 +43,14 @@ struct MDLExp {
   member_class(LExpVector, exps);
 
   MDLExp();
-  MDLExp(unsigned int nmbr_dims);
+  MDLExp(unsigned int dimensions);
   MDLExp(LExp le);
   MDLExp(LExpVector v);
 
   iterator begin();
   iterator end();
 
+  std::size_t size() const;
   void emplaceBack(LExp le);
   LExp &operator[](std::size_t n);
 

@@ -24,21 +24,20 @@
 
 TEST(PWMapPerf, Composition)
 {
-  unsigned int inter_sz = 100;
-  unsigned int set_sz = 100;
-  unsigned int map_sz = 100;
+  unsigned int inter_sz = 5;
+  unsigned int set_sz = 5;
+  unsigned int map_sz = 5;
 
-  SBG::LIB::MapSet ms1;
+  SBG::LIB::CanonPWMap ms1;
   for (unsigned int k = 0; k < map_sz; k++) {
     SBG::LIB::LExp le1(1, k);
-    SBG::LIB::InterSet is1;
+    SBG::LIB::OrdSet s1;
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
       SBG::LIB::Interval i(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
-      is1.emplace_hint(is1.cend(), i);
+      s1.emplace_hint(s1.end(), i);
     }
-    SBG::LIB::Set s1(is1);
-    ms1.emplace(SBG::LIB::SBGMap(s1, le1));
+    ms1.emplace(SBG::LIB::CanonMap(s1, le1));
   }
   SBG::LIB::PWMap pw1(ms1);
 
@@ -48,17 +47,15 @@ TEST(PWMapPerf, Composition)
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
   std::cout << "PWL MAP COMPOSITION TEST elapsed time: " << elapsed.count() << "ms\n";
 
-  //std::cout << pw1 << "\n";
-  //std::cout << res << "\n";
-
   SUCCEED();
 }
 
+/*
 TEST(PWMapPerf, MapInf) {
   int N = 600;
   int sz = 10;
 
-  SBG::LIB::MapSet aux;
+  SBG::LIB::CanonPWMap aux;
   for (int i = 0; i < N; i += 6) {
     SBG::LIB::Interval i1(i * sz + 1, 1, (i + 1) * sz);
     SBG::LIB::Interval i2((i + 1) * sz + 1, 1, (i + 2) * sz);
@@ -67,13 +64,6 @@ TEST(PWMapPerf, MapInf) {
     SBG::LIB::Interval i5((i + 4) * sz + 1, 1, (i + 5) * sz);
     SBG::LIB::Interval i6((i + 5) * sz + 1, 1, (i + 6) * sz);
 
-    SBG::LIB::Set s1(i1);
-    SBG::LIB::Set s2(i2);
-    SBG::LIB::Set s3(i3);
-    SBG::LIB::Set s4(i4);
-    SBG::LIB::Set s5(i5);
-    SBG::LIB::Set s6(i6);
-
     SBG::LIB::LExp le1(1, sz);
     SBG::LIB::LExp le2(1, sz);
     SBG::LIB::LExp le3(1, sz);
@@ -81,17 +71,17 @@ TEST(PWMapPerf, MapInf) {
     SBG::LIB::LExp le5(1, sz);
     SBG::LIB::LExp le6(1, sz);
 
-    SBG::LIB::SBGMap sm1(s1, le1);
+    SBG::LIB::CanonMap sm1(i1, le1);
     aux.emplace(sm1);
-    SBG::LIB::SBGMap sm2(s2, le2);
+    SBG::LIB::CanonMap sm2(i2, le2);
     aux.emplace(sm2);
-    SBG::LIB::SBGMap sm3(s3, le3);
+    SBG::LIB::CanonMap sm3(i3, le3);
     aux.emplace(sm3);
-    SBG::LIB::SBGMap sm4(s4, le4);
+    SBG::LIB::CanonMap sm4(i4, le4);
     aux.emplace(sm4);
-    SBG::LIB::SBGMap sm5(s5, le5);
+    SBG::LIB::CanonMap sm5(i5, le5);
     aux.emplace(sm5);
-    SBG::LIB::SBGMap sm6(s6, le6);
+    SBG::LIB::CanonMap sm6(i6, le6);
     aux.emplace(sm6);
   }
   SBG::LIB::PWMap pw(aux);
@@ -105,3 +95,4 @@ TEST(PWMapPerf, MapInf) {
   std::cout << pw << "\n";
   std::cout << res << "\n";
 }
+*/

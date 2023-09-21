@@ -46,7 +46,7 @@ StmRule<Iterator>::StmRule(Iterator &it) :
 
   assign = (expr.ident >> ASSIGN >> expr.expr)[qi::_val = phx::construct<AST::Assign>(qi::_1, qi::_2)];
 
-  stm = assign;
+  stm = cfg_dims | assign;
 
   stms_comments = *(expr.comment | stm);
 };

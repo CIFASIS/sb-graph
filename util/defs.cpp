@@ -40,6 +40,7 @@ std::size_t MD_NAT::size() { return value().size(); }
 
 void MD_NAT::emplace(MD_NAT::iterator it, NAT x) { value_ref().emplace(it, x); }
 void MD_NAT::emplace_back(NAT x) { value_ref().emplace_back(x); }
+void MD_NAT::push_back(NAT x) { emplace_back(x); }
 
 NAT &MD_NAT::operator[](std::size_t n) { return value_ref()[n]; }
 
@@ -64,14 +65,19 @@ std::ostream &operator<<(std::ostream &out, const MD_NAT &md)
   MD_NAT aux = md;
   unsigned int sz = aux.size();
 
-  out << "(";
+  if (sz == 1) { 
+    out << aux[0];
+    return out;
+  }
+
   if (sz > 0) {
+    out << "(";
     unsigned int j = 0;
     for (; j < sz - 1; j++)
       out << aux[j] << ", ";
     out << aux[j];
+    out << ")";
   }
-  out << ")";
 
   return out;
 }
@@ -96,7 +102,9 @@ NAT toNat(RATIONAL r)
 {
   if (r.denominator() == 1 && 0 <= r.value()) return r.numerator();
 
-  ERROR("toNat: RATIONAL is not NAT");
+  std::stringstream ss;
+  ss << r;
+  ERROR("toNat: RATIONAL %s is not NAT", ss.str().c_str());
   return 0;
 }
 
@@ -183,12 +191,22 @@ RATIONAL operator-(const RATIONAL &r)
 std::ostream &operator<<(std::ostream &out, const RATIONAL &r)
 {
   boost::rational<INT> rv = r.value();
+  INT num = rv.numerator(), den = rv.denominator();
 
-  out << rv.numerator();
-  if (rv.denominator() != 1) out << "/" << rv.denominator();
+  if (num == 0) {
+    out << "0";
+    return out;
+  }
+
+  out << num;
+  if (den != 1) out << "/" << den;
 
   return out;
 }
+
+bool isZero(RATIONAL r) { return r.numerator() == 0; }
+
+bool isOne(RATIONAL r) { return r.numerator() == r.denominator(); }
 
 } // namespace Util
 

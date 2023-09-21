@@ -29,6 +29,8 @@
 #include <map>
 #include <tuple>
 
+#include <boost/variant/get.hpp>
+
 #include "ast/expr.hpp"
 #include "ast/statement.hpp"
 #include "sbg/unord_pw_mdinter.hpp"
@@ -41,20 +43,46 @@ namespace Eval {
 
 // Type definitions ------------------------------------------------------------
 
+/** @brief Types NatBaseType, ContainerBaseType, LinearBaseType and MapBaseType 
+ *  are defined to decrease the compilation memory consumption of eval_expr.cpp.
+ *  When evaluating an AST::Call, multiple std::visit are invoked, where each 
+ *  one generates a function table with size dependent of the number types in
+ *  the variant. Initially ExprBaseType was used.
+ */
+
 typedef std::variant<Util::NAT
+  , Util::MD_NAT> NatBaseType;
+
+typedef std::variant<LIB::Interval
+  , LIB::SetPiece
+  , LIB::UnordSet
+  , LIB::OrdSet> ContainerBaseType;
+
+typedef std::variant<LIB::LExp
+  , LIB::Exp> LinearBaseType;
+
+typedef std::variant<LIB::BaseMap
+  , LIB::CanonMap
+  , LIB::BasePWMap
+  , LIB::CanonPWMap> MapBaseType;
+
+typedef boost::variant<Util::NAT
   , Util::MD_NAT
   , Util::RATIONAL
   , LIB::Interval
-  , LIB::MultiDimInter
-  , LIB::UnordPWMDInter
-  , LIB::OrdPWMDInter
+  , LIB::SetPiece
+  , LIB::UnordSet
+  , LIB::OrdSet
   , LIB::LExp
-  , LIB::MDLExp
+  , LIB::Exp
   , LIB::BaseMap
   , LIB::CanonMap
   , LIB::BasePWMap
   , LIB::CanonPWMap> ExprBaseType;
 typedef std::optional<ExprBaseType> MaybeEBT;
+
+template <typename T>
+inline bool is(ExprBaseType e) { return e.type() == typeid(T); }
 
 /** @function toNat
  *
@@ -104,7 +132,7 @@ struct FuncEnv{
   static FuncEnvType mapping_;
 };
 
-typedef enum { empty, member, min, max, lt, comp, inv, im, preim, dom, min_adj } Func;
+typedef enum { empty, member, min, max, lt, comp, inv, im, preim, dom, comb, min_map, red, min_adj } Func;
 
 // Classes for pretty printing ------------------------------------------------
 
@@ -122,13 +150,13 @@ std::ostream &operator<<(std::ostream &out, const ExprEvalList &ee);
  */
 
 struct ProgramIO {
-  member_class(Util::NAT, nmbr_dims);
+  member_class(unsigned int, nmbr_dims);
   member_class(AST::StatementList, stms);
   member_class(ExprEvalList, exprs);
  
   ProgramIO(); 
   ProgramIO(AST::StatementList stms, ExprEvalList exprs);
-  ProgramIO(Util::NAT nmbr_dims, AST::StatementList stms, ExprEvalList exprs);
+  ProgramIO(unsigned int nmbr_dims, AST::StatementList stms, ExprEvalList exprs);
 };
 std::ostream &operator<<(std::ostream &out, const ProgramIO &p);
 

@@ -50,26 +50,19 @@ std::ostream &operator<<(std::ostream &out, const MDInterUnordSet &ii)
 // Non-optimized implementation ------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-UnordPWMDInter::UnordPWMDInter() : pieces_(), dimensions_(1) {}
-UnordPWMDInter::UnordPWMDInter(SetPiece mdi) : pieces_(), dimensions_(mdi.dimensions()) { pieces_ref().emplace(mdi); }
-UnordPWMDInter::UnordPWMDInter(MDInterUnordSet c) : pieces_(c), dimensions_(1)
-{
-  unsigned int dims = 1;
-  if (!c.empty()) dims = c.begin()->dimensions();
-
-  set_dimensions(dims);
-}
+UnordPWMDInter::UnordPWMDInter() : pieces_() {}
+UnordPWMDInter::UnordPWMDInter(SetPiece mdi) : pieces_() { pieces_ref().emplace(mdi); }
+UnordPWMDInter::UnordPWMDInter(MDInterUnordSet c) : pieces_(c) {}
 
 member_imp(UnordPWMDInter, MDInterUnordSet, pieces);
-member_imp(UnordPWMDInter, unsigned int, dimensions);
 
 std::size_t UnordPWMDInter::size() { return pieces().size(); }
 
-void UnordPWMDInter::emplace(SetPiece mdi) { pieces_ref().emplace(mdi); }
-void UnordPWMDInter::emplace_hint(MDInterUnordSetIt it, SetPiece mdi) { pieces_ref().emplace_hint(it, mdi); }
+void UnordPWMDInter::emplace(SetPiece mdi) { if (!isEmpty(mdi)) pieces_ref().emplace(mdi); }
+void UnordPWMDInter::emplace_hint(MDInterUnordSetIt it, SetPiece mdi) { if (!isEmpty(mdi)) pieces_ref().emplace_hint(it, mdi); }
 
-UnordPWMDInter::iterator UnordPWMDInter::begin() { return pieces().begin(); }
-UnordPWMDInter::const_iterator UnordPWMDInter::end() { return pieces().end(); }
+UnordPWMDInter::iterator UnordPWMDInter::begin() { return pieces_ref().begin(); }
+UnordPWMDInter::iterator UnordPWMDInter::end() { return pieces_ref().end(); }
 
 SetPiece UnordPWMDInter::operator[](std::size_t n)
 {
@@ -152,7 +145,7 @@ UnordPWMDInter intersection(UnordPWMDInter pwi1, UnordPWMDInter pwi2)
 
   if (isEmpty(pwi2)) return UnordPWMDInter();
 
-  if (pwi1 == pwi2) return pwi1;
+  if (pwi1.pieces() == pwi2.pieces()) return pwi1;
 
   // General case
   MDInterUnordSet cap;
@@ -175,7 +168,7 @@ UnordPWMDInter cup(UnordPWMDInter pwi1, UnordPWMDInter pwi2)
  
   if (isEmpty(pwi2)) return pwi1;
 
-  if (pwi1 == pwi2) return pwi1;
+  if (pwi1.pieces() == pwi2.pieces()) return pwi1;
 
   if (maxElem(pwi1) <= minElem(pwi2)) {
     BOOST_FOREACH (SetPiece i1, pwi1)
@@ -183,7 +176,7 @@ UnordPWMDInter cup(UnordPWMDInter pwi1, UnordPWMDInter pwi2)
 
     BOOST_FOREACH (SetPiece i2, pwi2)
       un.emplace_hint(un.cend(), i2);
-  
+    
     return UnordPWMDInter(un);
   }
 
@@ -212,11 +205,11 @@ UnordPWMDInter complementAtom(UnordPWMDInter pwi)
     SetPiece mdi = *pwi.begin();
 
     Interval univ(0, 1, Util::Inf);
-    SetPiece all(nmbrDims(mdi), univ);
+    SetPiece all(mdi.size(), univ);
 
-    if (isEmpty(mdi)) res = UnordPWMDInter(mdi);
+    if (isEmpty(mdi)) return all;
 
-    unsigned int dim = 1;
+    unsigned int dim = 0;
     BOOST_FOREACH (Interval i, mdi.intervals()) {
       MDInterUnordSet c;
 
@@ -247,18 +240,16 @@ UnordPWMDInter complementAtom(UnordPWMDInter pwi)
 
       else all[dim] = Interval(Util::Inf);
       c.emplace(all);
-      all[dim] = univ;
+      all[dim] = i;
 
       // Initialize result
-      if (dim == 1) res = UnordPWMDInter(c);
+      if (dim == 0) res = UnordPWMDInter(c);
  
-      else res = intersection(res, UnordPWMDInter(c));
+      else res = concatenation(res, UnordPWMDInter(c));
 
       ++dim;
     }
   }
-
-  else Util::ERROR("LIB::UnordPWMDInter::complementAtom: should have one piece");
 
   return res;
 }
@@ -283,7 +274,13 @@ UnordPWMDInter complement(UnordPWMDInter pwi)
   return res;
 }
 
-UnordPWMDInter difference(UnordPWMDInter pwi1, UnordPWMDInter pwi2) { return intersection(pwi1, complement(pwi2)); }
+UnordPWMDInter difference(UnordPWMDInter pwi1, UnordPWMDInter pwi2)
+{
+  if (isEmpty(pwi2)) return pwi1;
+
+  UnordPWMDInter diff = intersection(pwi1, complement(pwi2));
+  return diff;
+}
 
 // Extra operations ------------------------------------------------------------
 

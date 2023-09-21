@@ -52,26 +52,24 @@ std::ostream &operator<<(std::ostream &out, const MDInterOrdSet &ii)
 
 // OrdPWMDInter ------------------------------------------------------------------
 
-OrdPWMDInter::OrdPWMDInter() : pieces_(), dimensions_(1) {}
-OrdPWMDInter::OrdPWMDInter(Interval i) : pieces_(), dimensions_(1) { pieces_ref().insert(SetPiece(i)); }
-OrdPWMDInter::OrdPWMDInter(SetPiece mdi) : pieces_(), dimensions_(1) { 
-  if (isUnidim(mdi))
-    pieces_ref().insert(mdi);
+OrdPWMDInter::OrdPWMDInter() : pieces_() {}
+OrdPWMDInter::OrdPWMDInter(Interval i) : pieces_() { pieces_ref().insert(SetPiece(i)); }
+OrdPWMDInter::OrdPWMDInter(SetPiece mdi) : pieces_() { 
+  if (isUnidim(mdi)) pieces_ref().insert(mdi);
 
   else Util::ERROR("LIB::OrdPWMDInter: piece should be uni-dimensional");
 }
-OrdPWMDInter::OrdPWMDInter(MDInterOrdSet ii) : pieces_(), dimensions_(1) {
+OrdPWMDInter::OrdPWMDInter(MDInterOrdSet ii) : pieces_() {
   if (!ii.empty()) {
-    if (isUnidim(*ii.begin()) == 1)
-      set_pieces(ii);
+    BOOST_FOREACH (SetPiece mdi, ii)
+      if (!isUnidim(mdi)) Util::ERROR("LIB::OrdPWMDInter: piece should be uni-dimensional");
 
-    else Util::ERROR("LIB::OrdPWMDInter: piece should be uni-dimensional");
+    set_pieces(ii);
   }
 
 }
 
 member_imp(OrdPWMDInter, MDInterOrdSet, pieces);
-member_imp(OrdPWMDInter, unsigned int, dimensions);
 
 std::size_t OrdPWMDInter::size() { return pieces().size(); }
 
@@ -123,9 +121,9 @@ bool isEmpty(OrdPWMDInter pwi) { return pwi.pieces().empty(); }
 bool isMember(MD_NAT x, OrdPWMDInter pwi)
 {
    BOOST_FOREACH (SetPiece mdi, pwi) 
-    if (!isMember(x, mdi)) return false;
+     if (isMember(x, mdi)) return true;
 
-  return true;
+  return false;
 }
 
 Util::MD_NAT minElem(OrdPWMDInter pwi) 
@@ -185,7 +183,7 @@ OrdPWMDInter cup(OrdPWMDInter pwi1, OrdPWMDInter pwi2)
 
     BOOST_FOREACH (SetPiece mdi2, pwi2)
       un.emplace_hint(un.end(), mdi2);
-  
+    
     return OrdPWMDInter(un);
   }
 
@@ -210,7 +208,6 @@ OrdPWMDInter cup(OrdPWMDInter pwi1, OrdPWMDInter pwi2)
   BOOST_FOREACH (SetPiece mdi2, pwi2)
     c_size2 += mdi2.begin()->step();
 
-
   if (c_size1 < c_size2) {
     lt_pieces = pwi1;
     gt_pieces = pwi2;
@@ -229,7 +226,7 @@ OrdPWMDInter cup(OrdPWMDInter pwi1, OrdPWMDInter pwi2)
     BOOST_FOREACH (SetPiece mdi, lt_pieces)
       un.emplace(mdi);
 
-    BOOST_FOREACH (SetPiece mdi, gt_pieces)
+    BOOST_FOREACH (SetPiece mdi, diff)
       un.emplace(mdi);
   }
 
@@ -247,7 +244,7 @@ OrdPWMDInter complementAtom(OrdPWMDInter pwi)
     if (i.begin() != 0) {
       Interval i_res(0, 1, i.begin() - 1);
       if (!isEmpty(i_res))
-        c.emplace_hint(c.end(), i_res);  
+        c.emplace_hint(c.end(), SetPiece(i_res));  
     }
 
     // "During" interval
@@ -255,16 +252,16 @@ OrdPWMDInter complementAtom(OrdPWMDInter pwi)
       for (Util::NAT j = 1; j < i.step(); j++) {
         Interval i_res(i.begin() + j, i.step(), i.end());
         if (!isEmpty(i_res))
-          c.emplace_hint(c.end(), i_res);  
+          c.emplace_hint(c.end(), SetPiece(i_res));  
        }
     }
 
     // After interval
     if (maxElem(i) < Util::Inf)
-      c.emplace_hint(c.end(), Interval(maxElem(i) + 1, 1, Util::Inf));
+      c.emplace_hint(c.end(), SetPiece(Interval(maxElem(i) + 1, 1, Util::Inf)));
 
     else 
-      c.emplace_hint(c.end(), Interval(Util::Inf));
+      c.emplace_hint(c.end(), SetPiece(Interval(Util::Inf)));
   }
   
   else Util::ERROR("LIB::OrdPWMDInter:complementAtom: argument should have only one element");
@@ -285,7 +282,7 @@ OrdPWMDInter complement(OrdPWMDInter pwi)
   ++first_it;
   MDInterOrdSet second(first_it, pwi.end());
   BOOST_FOREACH (SetPiece mdi, second) {
-    OrdPWMDInter c = complement(OrdPWMDInter(mdi));
+    OrdPWMDInter c = complementAtom(OrdPWMDInter(mdi));
     res = intersection(res, c);
   }
 
@@ -341,7 +338,20 @@ MDInterOrdSet canonize(MDInterOrdSet ii)
   return res;
 }
 
-OrdPWMDInter concatenation(OrdPWMDInter pwi1, OrdPWMDInter pwi2) { return OrdPWMDInter(traverse(pwi1.pieces(), pwi2.pieces(), &least)); }
+OrdPWMDInter concatenation(OrdPWMDInter pwi1, OrdPWMDInter pwi2)
+{
+  OrdPWMDInter res;
+
+  if (optConds(pwi1.pieces()) && optConds(pwi2.pieces())) res = traverse(pwi1, pwi2, &least);
+
+  else {
+    BOOST_FOREACH (SetPiece mdi1, pwi1) res.emplace(mdi1);
+
+    BOOST_FOREACH (SetPiece mdi2, pwi2) res.emplace(mdi2);
+  }
+
+  return res;
+}
 
 MDInterOrdSet boundedTraverse(OrdPWMDInter pwi1, OrdPWMDInter pwi2, SetPiece (*func)(SetPiece, SetPiece))
 {

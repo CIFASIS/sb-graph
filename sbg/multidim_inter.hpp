@@ -41,11 +41,8 @@ struct MultiDimInter {
   typedef InterVectorConstIt const_iterator;
 
   member_class(InterVector, intervals);
-  member_class(unsigned int, dimensions);
 
   MultiDimInter();
-  MultiDimInter(unsigned int dim);
-  MultiDimInter(NAT x);
   MultiDimInter(MD_NAT x);
   MultiDimInter(Interval i);
   MultiDimInter(unsigned int nmbr_copies, Interval i);
@@ -53,7 +50,8 @@ struct MultiDimInter {
 
   iterator begin();
   iterator end();
-  
+
+  std::size_t size() const;  
   void emplaceBack(Interval i);
   Interval &operator[](std::size_t n);
 
@@ -79,7 +77,6 @@ MultiDimInter intersection(MultiDimInter mdi1, MultiDimInter mdi2);
  * @brief Extra operations.
  */
 
-unsigned int nmbrDims(MultiDimInter mdi);
 MultiDimInter least(MultiDimInter mdi1, MultiDimInter mdi2);
 bool isUnidim(MultiDimInter mdi);
 

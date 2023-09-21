@@ -2,7 +2,7 @@
 // !!! If this file is modified the corresponding SBG.log file
 //     in all the gt_data directories should be modified.
 
-2
+(2, 5)
 2+3 
 r(1, 2)
 2*10+3

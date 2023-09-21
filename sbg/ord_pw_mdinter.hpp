@@ -28,6 +28,8 @@
 #ifndef SBG_ORD_PW_MDINTERVAL_HPP
 #define SBG_ORD_PW_MDINTERVAL_HPP
 
+#include <iostream>
+
 #include <boost/container/flat_set.hpp>
 
 #include "sbg/multidim_inter.hpp"
@@ -64,7 +66,6 @@ struct OrdPWMDInter {
   typedef MDInterOrdSetConstIt const_iterator;
 
   member_class(MDInterOrdSet, pieces);
-  member_class(unsigned int, dimensions);
 
   /**
    * @brief Constructors don't check if intervals are disjoint (performance).
@@ -97,8 +98,20 @@ Util::MD_NAT minElem(OrdPWMDInter pwi);
 Util::MD_NAT maxElem(OrdPWMDInter pwi);
 OrdPWMDInter intersection(OrdPWMDInter pwi1, OrdPWMDInter pwi2);
 OrdPWMDInter cup(OrdPWMDInter i1, OrdPWMDInter i2);
+
+/** @function complementAtom
+ *
+ * @brief This function calculates the complement for an OrdPWMDInter with only
+ * one piece.
+ *
+ * !!! Both complementAtom and complement return a collection of non-disjoint
+ * pieces, because they are only used by difference. These functions should
+ * NOT be called by any other function.
+ */
+
 OrdPWMDInter complementAtom(OrdPWMDInter pwi);
 OrdPWMDInter complement(OrdPWMDInter i);
+
 OrdPWMDInter difference(OrdPWMDInter i1, OrdPWMDInter i2);
 
 /**

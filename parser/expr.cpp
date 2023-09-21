@@ -21,6 +21,8 @@
 
 // Adapt structures ------------------------------------------------------------
 
+BOOST_FUSION_ADAPT_STRUCT(SBG::Util::MD_NAT, (SBG::Util::VNAT, value_))
+
 BOOST_FUSION_ADAPT_STRUCT(SBG::Util::RATIONAL, (boost::rational<SBG::Util::INT>, value_))
 
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::UnaryOp, (SBG::AST::UnOp, op_)(SBG::AST::Expr, expr_))
@@ -173,6 +175,9 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
 
   boolean = TRUE[qi::_val = true] | FALSE[qi::_val = false];
 
+  md_nat = OPAREN >> qi::lexeme[qi::ulong_long][phx::push_back(qi::_val, qi::_1)] 
+    >> *(COMA >> qi::lexeme[qi::ulong_long])[phx::push_back(qi::_val, qi::_1)] >> CPAREN;
+
   rational = (RAT >> OPAREN >> qi::lexeme[qi::long_long] 
     >> COMA >> qi::lexeme[qi::long_long] >> CPAREN)[qi::_val = phx::construct<Util::RATIONAL>(qi::_1, qi::_2)];
 
@@ -182,6 +187,7 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
 
   primary = rational[qi::_val = qi::_1] 
     | qi::lexeme[qi::ulong_long][qi::_val = phx::construct<Util::NAT>(qi::_1)]
+    | md_nat[qi::_val = qi::_1]
     | boolean[qi::_val = qi::_1] 
     | call_exp[qi::_val = qi::_1]
     | ident[qi::_val = qi::_1];

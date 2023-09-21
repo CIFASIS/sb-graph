@@ -44,9 +44,9 @@ bool LExp::operator<(const LExp &other) const
 
 std::ostream &operator<<(std::ostream &out, const LExp &le)
 {
-  RAT zero, one(1), slo = le.slope();
+  RAT slo = le.slope(), off = le.offset();
 
-  if (slo != zero && slo != one) {
+  if (!isZero(slo) && !isOne(slo)) {
     if (slo.numerator() != 1)
       out << slo.numerator();
 
@@ -57,15 +57,17 @@ std::ostream &operator<<(std::ostream &out, const LExp &le)
       out << "x";
   }
 
-  if (slo == one) out << "x";
+  if (isOne(slo)) out << "x";
 
-  if (le.offset() != zero) {
-    if (le.offset() > 0 && le.slope() != 0)
-      out << "+" << le.offset();
+  if (!isZero(off)) {
+    if (off > 0 && !isZero(slo))
+      out << "+" << off;
 
     else
-      out << le.offset();
+      out << off;
   }
+
+  if (isZero(slo) && isZero(off)) out << "0"; 
 
   return out;
 }
@@ -85,16 +87,17 @@ LExp inverse(LExp le)
   RAT zero, one(1);
   RAT new_slope(0, 1), new_offset(0, 1);
 
-  // 
+  // Non constant map
   RAT slo = le.slope();
   if (slo != zero) {
     new_slope = RAT(slo.denominator(), slo.numerator());
     new_offset = (-le.offset())/slo;
   }
 
+  // Constant map
   else {
-    new_slope = RAT(Util::Inf, 1);
-    new_offset = RAT(-Util::Inf, 1);
+    new_slope = RAT(Util::INT_Inf, 1);
+    new_offset = RAT(-Util::INT_Inf, 1);
   }
 
   return LExp(new_slope, new_offset);

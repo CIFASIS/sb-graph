@@ -40,7 +40,10 @@ auto empty_visitor_ = Util::Overload {
 
 auto member_visitor_ = Util::Overload {
   [](Util::NAT a, LIB::Interval b) { return isMember(a, b); },
+  [](Util::NAT a, LIB::MultiDimInter b) { return isMember(Util::MD_NAT(a), b); },
   [](Util::MD_NAT a, LIB::MultiDimInter b) { return isMember(a, b); },
+  [](Util::NAT a, LIB::UnordSet b) { return isMember(Util::MD_NAT(a), b); },
+  [](Util::NAT a, LIB::OrdSet b) { return isMember(Util::MD_NAT(a), b); },
   [](Util::MD_NAT a, LIB::UnordSet b) { return isMember(a, b); },
   [](Util::MD_NAT a, LIB::OrdSet b) { return isMember(a, b); },
   [](auto a, auto b) { 
@@ -457,8 +460,8 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
           ContainerBaseType container = Apply(EvalContainer{}, eval_args[0]);
           EvalLinear visit_linear;
           LinearBaseType e1 = Apply(visit_linear, eval_args[1]), e2 = Apply(visit_linear, eval_args[2]);
-          ExprBaseType result;
 
+          ExprBaseType result;
           if (nmbr_dims_ == 1) result = std::visit(min_map_ord_visitor3_, container, e1, e2);
           else result = std::visit(min_map_unord_visitor3_, container, e1, e2);
 
@@ -471,6 +474,7 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
           EvalMap visit_map;
           MapBaseType pw1 = Apply(visit_map, eval_args[0]), pw2 = Apply(visit_map, eval_args[1]);
           MapBaseType pw3 = Apply(visit_map, eval_args[2]), pw4 = Apply(visit_map, eval_args[3]);
+
           ExprBaseType result = std::visit(min_map_visitor4_, pw1, pw2, pw3, pw4);
           return result;
         }

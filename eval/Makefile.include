@@ -22,17 +22,21 @@ EVAL_SRC := \
     $(PARSER_DIR)/statement.cpp \
     $(PARSER_DIR)/sbg_program.cpp \
     $(VISIT_DIR)/eval_nat.cpp \
+    $(VISIT_DIR)/eval_natbt.cpp \
     $(VISIT_DIR)/eval_rat.cpp \
     $(VISIT_DIR)/eval_interval.cpp \
     $(VISIT_DIR)/eval_mdi.cpp \
     $(VISIT_DIR)/eval_unord_set.cpp \
     $(VISIT_DIR)/eval_ord_set.cpp \
+    $(VISIT_DIR)/eval_container.cpp \
     $(VISIT_DIR)/eval_le.cpp \
     $(VISIT_DIR)/eval_mdle.cpp \
+    $(VISIT_DIR)/eval_linear.cpp \
     $(VISIT_DIR)/eval_base_map.cpp \
     $(VISIT_DIR)/eval_canon_map.cpp \
     $(VISIT_DIR)/eval_base_pwmap.cpp \
     $(VISIT_DIR)/eval_canon_pwmap.cpp \
+    $(VISIT_DIR)/eval_map.cpp \
     $(VISIT_DIR)/eval_expr.cpp \
     $(VISIT_DIR)/stm_visitor.cpp \
     $(VISIT_DIR)/program_visitor.cpp \

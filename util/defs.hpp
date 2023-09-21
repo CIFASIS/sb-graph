@@ -115,6 +115,7 @@ struct MD_NAT {
 
   void emplace(iterator it, NAT x);
   void emplace_back(NAT x);
+  void push_back(NAT x);
 
   NAT &operator[](std::size_t n);
 
@@ -131,6 +132,7 @@ const NAT Inf = std::numeric_limits<NAT>::max();
  * @brief Representation of individual elements. 
  */
 typedef long long int INT;
+const INT INT_Inf = std::numeric_limits<INT>::max();
 
 /** @typedef RATIONAL 
  *
@@ -167,6 +169,9 @@ RATIONAL operator*(const RATIONAL &r1, const RATIONAL &r2);
 RATIONAL operator/(const RATIONAL &r1, const RATIONAL &r2);
 RATIONAL operator-(const RATIONAL &r);
 std::ostream &operator<<(std::ostream &out, const RATIONAL &r);
+
+bool isZero(RATIONAL r);
+bool isOne(RATIONAL r);
 
 // Parser definitions ----------------------------------------------------------
 

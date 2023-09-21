@@ -25,10 +25,13 @@ namespace LIB {
 
 bool compatible(Interval i, LExp le)
 {
-  Util::RATIONAL im_step = i.step() * le.slope(), im_begin = minElem(i) * le.slope() + le.offset();
+  Util::RATIONAL st_rat(i.step()), min_rat(minElem(i)); 
+  Util::RATIONAL im_step = st_rat * le.slope(), im_begin = min_rat * le.slope() + le.offset();
   if (im_step.denominator() != 1 || im_begin.denominator() != 1) {
-    Util::ERROR("Ill-formed SBGMap");
-    return false;
+    if (im_step.numerator() != 0 || im_begin.numerator() != 0) {
+      Util::ERROR("Ill-formed SBGMap");
+      return false;
+    }
   }
 
   return true;
@@ -36,17 +39,21 @@ bool compatible(Interval i, LExp le)
 
 bool compatible(SetPiece mdi, Exp mdle)
 {
-  parallel_foreach2 (mdi.intervals_ref(), mdle.exps_ref()) {
-    Interval i = boost::get<0>(items);
-    LExp le = boost::get<1>(items);
-    if (!compatible(i, le)) return false;
+  if (isEmpty(mdi)) return true;
+
+  if (mdi.size() == mdle.size()) {
+    parallel_foreach2 (mdi.intervals_ref(), mdle.exps_ref()) {
+      Interval i = boost::get<0>(items);
+      LExp le = boost::get<1>(items);
+      if (!compatible(i, le)) { return false; }
+    }
   }
 
   return true;
 }
 
 template<typename Set>
-SBGMap<Set>::SBGMap() : dom_(), exp_() {}
+SBGMap<Set>::SBGMap() : dom_(Set()), exp_(Exp()) {}
 template<typename Set>
 SBGMap<Set>::SBGMap(Interval i, LExp le) : dom_(Set(SetPiece(i))), exp_(Exp(le)) {}
 template<typename Set>
@@ -96,6 +103,9 @@ Interval image(Interval i, LExp le) {
     return Interval(off, 1, off);
   }
 
+  Util::RATIONAL rat_inf(Util::INT_Inf, 1);
+  if (m == rat_inf || m > rat_inf) return Interval(0, 1, Util::Inf);
+
   // Increasing expression
   if (m > 0) {
     new_begin = toNat(m * minElem(i) + h); 
@@ -117,13 +127,20 @@ SetPiece image(SetPiece mdi, Exp mdle)
 {
   SetPiece res;
 
-  parallel_foreach2 (mdi.intervals(), mdle.exps()) {
-    Interval i = boost::get<0>(items);
-    LExp le = boost::get<1>(items);
-    res.emplaceBack(image(i, le));
+  if (isEmpty(mdi)) return mdi;
+
+  if (mdi.size() == mdle.size()) {
+    parallel_foreach2 (mdi.intervals_ref(), mdle.exps_ref()) {
+      Interval i = boost::get<0>(items);
+      LExp le = boost::get<1>(items);
+      res.emplaceBack(image(i, le));
+    }
+ 
+    return res;
   }
 
-  return res;
+  Util::ERROR("LIB::SBGMap::image: dimensions don't match");
+  return SetPiece();
 }
 
 template<typename Set>
@@ -135,9 +152,8 @@ Set image(Set subdom, SBGMap<Set> sbgmap)
   Set res;
 
   Exp le = sbgmap.exp();
-
   Set capdom = intersection(sbgmap.dom_ref(), subdom);
-  if (isEmpty(capdom)) return Set(); 
+  if (isEmpty(capdom)) return Set();
 
   else {
     BOOST_FOREACH (SetPiece atom, capdom) {
@@ -171,7 +187,7 @@ SBGMap<Set> composition(SBGMap<Set> sbgmap1, SBGMap<Set> sbgmap2)
   res_dom = preImage(res_dom, sbgmap2);
   Exp res_exp = composition(sbgmap1.exp(), sbgmap2.exp());
 
-  return SBGMap(Set(res_dom), res_exp);
+  return SBGMap(res_dom, res_exp);
 }
 
 // Extra functions -------------------------------------------------------------

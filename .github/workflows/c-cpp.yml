@@ -14,9 +14,10 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install deps.
       run: | 
+        sudo add-apt-repository ppa:mhier/libboost-latest
         sudo apt-get update
         sudo apt-get install autoconf
-        sudo apt-get install boost1.82
+        sudo apt-get install libboost1.81-dev
         sudo apt-get install cmake 
         sudo apt-get install g++
 

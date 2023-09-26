@@ -18,9 +18,10 @@ prefix 			  ?= /usr/local
 exec_prefix   ?= $(prefix)
 includedir    ?= $(prefix)/include
 libdir        ?= $(exec_prefix)/lib
+boost_libdir  ?= $(prefix)
 
 # Flags, Libraries and Includes
-INCLUDES := -I.
+INCLUDES := -I. -I$(boost_libdir)/include
 CXXFLAGS := -std=c++17 -Wall -Werror -Wno-reorder -O2 -D BOOST_PHOENIX_STL_TUPLE_H_ -D BOOST_MPL_LIMIT_LIST_SIZE=30 -D BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
 ifeq ($(MODE),Debug)
 CXXFLAGS 	+= -ggdb  
@@ -101,7 +102,7 @@ clean:
   done
 
 help:
-	@echo "make MODE=<Debug|Release> prefix=<PATH> exec_prefix=<PATH> includedir=<PATH> libdir=<PATH>"
+	@echo "make MODE=<Debug|Release> prefix=<PATH> exec_prefix=<PATH> includedir=<PATH> libdir=<PATH> boost_libdir=<PATH>"
 	@echo "Default values:"
 	@echo ""
 	@echo "MODE=Debug"
@@ -109,3 +110,4 @@ help:
 	@echo "exec_prefix=/usr/local"
 	@echo "includedir=/usr/local/include"
 	@echo "libdir=/usr/local/lib"
+	@echo "boost_libdir=/usr/local/include"

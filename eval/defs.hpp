@@ -35,7 +35,7 @@
 #include "ast/statement.hpp"
 #include "sbg/unord_pw_mdinter.hpp"
 #include "sbg/ord_pw_mdinter.hpp"
-#include "sbg/pw_map.hpp"
+#include "sbg/sbg.hpp"
 
 namespace SBG {
 
@@ -66,6 +66,9 @@ typedef std::variant<LIB::BaseMap
   , LIB::BasePWMap
   , LIB::CanonPWMap> MapBaseType;
 
+typedef std::variant<LIB::BaseSBG
+  , LIB::CanonSBG> SBGBaseType;
+
 typedef boost::variant<Util::NAT
   , Util::MD_NAT
   , Util::RATIONAL
@@ -78,7 +81,9 @@ typedef boost::variant<Util::NAT
   , LIB::BaseMap
   , LIB::CanonMap
   , LIB::BasePWMap
-  , LIB::CanonPWMap> ExprBaseType;
+  , LIB::CanonPWMap
+  , LIB::BaseSBG
+  , LIB::CanonSBG> ExprBaseType;
 typedef std::optional<ExprBaseType> MaybeEBT;
 
 template <typename T>
@@ -132,7 +137,8 @@ struct FuncEnv{
   static FuncEnvType mapping_;
 };
 
-typedef enum { empty, member, min, max, lt, comp, inv, im, preim, dom, comb, min_map, red, min_adj } Func;
+typedef enum { empty, member, min, max, lt, comp, inv, im, preim, dom, comb, min_map, red, min_adj
+  , connected } Func;
 
 // Classes for pretty printing ------------------------------------------------
 

@@ -198,6 +198,12 @@ LIB::UnordSet EvalUnordSet::operator()(AST::PWLMap v) const
   return LIB::UnordSet(); 
 }
 
+LIB::UnordSet EvalUnordSet::operator()(AST::SBG v) const
+{ 
+  Util::ERROR("EvalUnordSet: trying to evaluate a SBG");
+  return LIB::UnordSet(); 
+}
+
 } // namespace Eval
 
 } // namespace SBG

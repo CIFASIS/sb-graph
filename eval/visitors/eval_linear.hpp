@@ -47,6 +47,8 @@ struct EvalLinear : public boost::static_visitor<LinearBaseType> {
   LinearBaseType operator()(LIB::CanonMap v) const;
   LinearBaseType operator()(LIB::BasePWMap v) const;
   LinearBaseType operator()(LIB::CanonPWMap v) const;
+  LinearBaseType operator()(LIB::BaseSBG v) const;
+  LinearBaseType operator()(LIB::CanonSBG v) const;
 };
 
 } // namespace Eval

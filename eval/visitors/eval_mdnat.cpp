@@ -189,6 +189,12 @@ Util::MD_NAT EvalMDNat::operator()(AST::PWLMap v) const
   return 0;
 }
 
+Util::MD_NAT EvalMDNat::operator()(AST::SBG v) const
+{
+  Util::ERROR("EvalMDNat: trying to evaluate a SBG");
+  return 0;
+}
+
 } // namespace Eval
 
 } // namespace SBG

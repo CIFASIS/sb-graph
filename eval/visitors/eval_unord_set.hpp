@@ -58,6 +58,7 @@ struct EvalUnordSet : public boost::static_visitor<LIB::UnordSet> {
   LIB::UnordSet operator()(AST::MDLExpBinOp v) const;
   LIB::UnordSet operator()(AST::LinearMap v) const;
   LIB::UnordSet operator()(AST::PWLMap v) const;
+  LIB::UnordSet operator()(AST::SBG v) const;
 
   private:
   mutable VarEnv env_;

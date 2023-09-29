@@ -547,6 +547,35 @@ std::ostream &operator<<(std::ostream &out, const PWLMap &pwl)
   return out;
 }
 
+// -----------------------------------------------------------------------------
+// SBG -------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+
+SBG::SBG() : V_(), Vmap_(), map1_(), map2_(), Emap_() {}
+SBG::SBG(Expr V, Expr Vmap, Expr map1, Expr map2, Expr Emap) : V_(V), Vmap_(Vmap), map1_(map1), map2_(map2), Emap_(Emap) {}
+
+member_imp(SBG, Expr, V);
+member_imp(SBG, Expr, Vmap);
+member_imp(SBG, Expr, map1);
+member_imp(SBG, Expr, map2);
+member_imp(SBG, Expr, Emap);
+
+bool SBG::operator==(const SBG &other) const 
+{ 
+  return V() == other.V() && Vmap() == other.Vmap() && map1() == other.map1() && map2() == other.map2() && Emap() == other.Emap();
+}
+
+std::ostream &operator<<(std::ostream &out, const SBG &g)
+{
+  out << "V = " << g.V() << ";\n";
+  out << "Vmap = " << g.Vmap() << ";\n\n";
+  out << "map1 = " << g.map1() << ";\n";
+  out << "map2 = " << g.map2() << ";\n";
+  out << "Emap = " << g.Emap() << ";\n";
+
+  return out;
+}
+
 } // namespace AST
 
 } // namespace SBG

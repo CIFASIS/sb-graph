@@ -85,6 +85,18 @@ MapBaseType EvalMap::operator()(LIB::BasePWMap v) const { return MapBaseType(v);
 
 MapBaseType EvalMap::operator()(LIB::CanonPWMap v) const { return MapBaseType(v); }
 
+MapBaseType EvalMap::operator()(LIB::BaseSBG v) const
+{
+  Util::ERROR("EvalMap: trying to evaluate a a BaseSBG");
+  return MapBaseType();
+}
+
+MapBaseType EvalMap::operator()(LIB::CanonSBG v) const
+{
+  Util::ERROR("EvalMap: trying to evaluate a CanonSBG");
+  return MapBaseType();
+}
+
 } // namespace Eval
 
 } // namespace SBG

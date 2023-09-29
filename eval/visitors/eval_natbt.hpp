@@ -45,6 +45,8 @@ struct EvalNatBT : public boost::static_visitor<NatBaseType> {
   NatBaseType operator()(LIB::CanonMap v) const;
   NatBaseType operator()(LIB::BasePWMap v) const;
   NatBaseType operator()(LIB::CanonPWMap v) const;
+  NatBaseType operator()(LIB::BaseSBG v) const;
+  NatBaseType operator()(LIB::CanonSBG v) const;
 };
 
 } // namespace Eval

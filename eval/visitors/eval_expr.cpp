@@ -258,6 +258,15 @@ auto min_adj_visitor2_ = Util::Overload {
   }
 };
 
+auto connected_visitor_ = Util::Overload {
+  [](LIB::BaseSBG a) { return ExprBaseType(connectedComponents(a)); },
+  [](LIB::CanonSBG a) { return ExprBaseType(connectedComponents(a)); },
+  [](auto a, auto b) {
+    Util::ERROR("Wrong arguments for connectedComponents");
+    return ExprBaseType();
+  }
+};
+
 
 // -----------------------------------------------------------------------------
 // Expression evaluator --------------------------------------------------------
@@ -285,9 +294,24 @@ ExprBaseType EvalExpression::operator()(Util::VariableName v) const
   return 0; 
 }
 
-ExprBaseType EvalExpression::operator()(AST::UnaryOp v) const { return Apply(EvalRat(env_), AST::Expr(v)); }
+ExprBaseType EvalExpression::operator()(AST::UnaryOp v) const
+{
+  ExprBaseType x = ApplyThis(v.expr());
 
-ExprBaseType EvalExpression::operator()(AST::BinOp v) const { return Apply(EvalRat(env_), AST::Expr(v)); }
+  if (is<Util::NAT>(x)) return Apply(EvalNat(env_), AST::Expr(v));
+
+  return Apply(EvalRat(env_), AST::Expr(v));
+}
+
+ExprBaseType EvalExpression::operator()(AST::BinOp v) const
+{ 
+  ExprBaseType xl = ApplyThis(v.left()), xr = ApplyThis(v.right());
+  bool r1 = is<Util::RATIONAL>(xl), r2 = is<Util::RATIONAL>(xr);
+
+  if (!r1 && !r2) return Apply(EvalNat(env_), AST::Expr(v));
+
+  return Apply(EvalRat(env_), AST::Expr(v));
+}
 
 ExprBaseType EvalExpression::operator()(AST::Call v) const
 {
@@ -511,6 +535,16 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
 
           MapBaseType map1 = Apply(EvalMap{}, eval_args[0]), map2 = Apply(EvalMap{}, eval_args[1]);
           ExprBaseType result = std::visit(min_adj_visitor2_, map1, map2);
+          return result;
+        }
+        break;
+
+      case Eval::Func::connected:
+        if (eval_args.size() == 1) {
+          arity_ok = true;
+
+          SBGBaseType g = Apply(EvalGraph{}, eval_args[0]);
+          ExprBaseType result = std::visit(connected_visitor_, g);
           return result;
         }
         break;
@@ -829,6 +863,13 @@ ExprBaseType EvalExpression::operator()(AST::PWLMap v) const
   if (nmbr_dims_ == 1) return Apply(EvalCanonPWMap(env_), AST::Expr(v));
 
   return Apply(EvalBasePWMap(env_), AST::Expr(v));
+}
+
+ExprBaseType EvalExpression::operator()(AST::SBG v) const
+{
+  if (nmbr_dims_ == 1) return Apply(EvalCanonSBG(env_), AST::Expr(v));
+
+  return Apply(EvalBaseSBG(env_), AST::Expr(v));
 }
 
 } // namespace Eval

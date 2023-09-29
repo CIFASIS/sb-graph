@@ -47,6 +47,8 @@ struct EvalContainer : public boost::static_visitor<ContainerBaseType> {
   ContainerBaseType operator()(LIB::CanonMap v) const;
   ContainerBaseType operator()(LIB::BasePWMap v) const;
   ContainerBaseType operator()(LIB::CanonPWMap v) const;
+  ContainerBaseType operator()(LIB::BaseSBG v) const;
+  ContainerBaseType operator()(LIB::CanonSBG v) const;
 };
 
 } // namespace Eval

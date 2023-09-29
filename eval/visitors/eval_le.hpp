@@ -24,6 +24,7 @@
 #ifndef AST_VISITOR_EVALLE
 #define AST_VISITOR_EVALLE
 
+#include "eval/visitors/eval_nat.hpp"
 #include "eval/visitors/eval_rat.hpp"
 #include "sbg/lexp.hpp"
 
@@ -59,6 +60,7 @@ struct EvalLE : public boost::static_visitor<LIB::LExp> {
   LIB::LExp operator()(AST::MDLExpBinOp v) const;
   LIB::LExp operator()(AST::LinearMap v) const;
   LIB::LExp operator()(AST::PWLMap v) const;
+  LIB::LExp operator()(AST::SBG v) const;
 
   private:
   mutable VarEnv env_;

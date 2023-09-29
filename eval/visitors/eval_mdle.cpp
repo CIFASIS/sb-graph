@@ -193,6 +193,12 @@ LIB::Exp EvalMDLE::operator()(AST::PWLMap v) const
   return LIB::Exp(); 
 }
 
+LIB::Exp EvalMDLE::operator()(AST::SBG v) const 
+{
+  Util::ERROR("EvalMDLE: trying to evaluate a SBG");
+  return LIB::Exp(); 
+}
+
 } // namespace Eval
 
 } // namespace SBG

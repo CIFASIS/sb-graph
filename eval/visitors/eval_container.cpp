@@ -85,6 +85,18 @@ ContainerBaseType EvalContainer::operator()(LIB::CanonPWMap v) const
   return ContainerBaseType();
 }
 
+ContainerBaseType EvalContainer::operator()(LIB::BaseSBG v) const
+{
+  Util::ERROR("EvalContainer: trying to evaluate a BaseSBG");
+  return ContainerBaseType();
+}
+
+ContainerBaseType EvalContainer::operator()(LIB::CanonSBG v) const
+{
+  Util::ERROR("EvalContainer: trying to evaluate a CanonSBG");
+  return ContainerBaseType();
+}
+
 } // namespace Eval
 
 } // namespace SBG

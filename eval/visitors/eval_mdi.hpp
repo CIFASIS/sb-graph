@@ -58,6 +58,7 @@ struct EvalMDI : public boost::static_visitor<LIB::SetPiece> {
   LIB::SetPiece operator()(AST::MDLExpBinOp v) const;
   LIB::SetPiece operator()(AST::LinearMap v) const;
   LIB::SetPiece operator()(AST::PWLMap v) const;
+  LIB::SetPiece operator()(AST::SBG v) const;
 
   private:
   mutable VarEnv env_;

@@ -93,6 +93,18 @@ LinearBaseType EvalLinear::operator()(LIB::CanonPWMap v) const
   return LinearBaseType();
 }
 
+LinearBaseType EvalLinear::operator()(LIB::BaseSBG v) const
+{
+  Util::ERROR("EvalLinear: trying to evaluate a BaseSBG");
+  return LinearBaseType();
+}
+
+LinearBaseType EvalLinear::operator()(LIB::CanonSBG v) const
+{
+  Util::ERROR("EvalLinear: trying to evaluate a CanonSBG");
+  return LinearBaseType();
+}
+
 } // namespace Eval
 
 } // namespace SBG

@@ -43,8 +43,10 @@ struct MDLExp {
   member_class(LExpVector, exps);
 
   MDLExp();
+  MDLExp(Util::MD_NAT x); // Expression mapping to x
   MDLExp(unsigned int dimensions);
   MDLExp(LExp le);
+  MDLExp(unsigned int nmbr_copies, LExp le);
   MDLExp(LExpVector v);
 
   iterator begin();

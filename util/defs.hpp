@@ -106,6 +106,7 @@ struct MD_NAT {
 
   MD_NAT();
   MD_NAT(NAT x);
+  MD_NAT(unsigned int nmbr_copies, NAT x);
   MD_NAT(iterator b, iterator e);
 
   iterator begin(); 

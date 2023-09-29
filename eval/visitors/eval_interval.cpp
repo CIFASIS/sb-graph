@@ -197,6 +197,12 @@ LIB::Interval EvalInterval::operator()(AST::PWLMap v) const
   return LIB::Interval(); 
 }
 
+LIB::Interval EvalInterval::operator()(AST::SBG v) const 
+{
+  Util::ERROR("EvalInterval: trying to evaluate a SBG");
+  return LIB::Interval(); 
+}
+
 } // namespace Eval
 
 } // namespace SBG

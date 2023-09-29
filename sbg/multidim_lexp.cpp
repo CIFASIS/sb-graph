@@ -24,10 +24,16 @@ namespace SBG {
 namespace LIB {
 
 MDLExp::MDLExp() : exps_() {}
+MDLExp::MDLExp(Util::MD_NAT x) { BOOST_FOREACH (Util::NAT xi, x) emplaceBack(LExp(0, Util::RATIONAL(xi))); }
 MDLExp::MDLExp(unsigned int dimensions) : exps_() {
   for (unsigned int j = 0; j < dimensions; j++) emplaceBack(LExp());
 }
 MDLExp::MDLExp(LExp le) : exps_() { emplaceBack(le); }
+MDLExp::MDLExp(unsigned int nmbr_copies, LExp le) : exps_()
+{  
+  for (unsigned int j = 0; j < nmbr_copies; j++)
+    emplaceBack(le);
+}
 MDLExp::MDLExp(LExpVector v) : exps_(v) {}
 
 member_imp(MDLExp, LExpVector, exps);

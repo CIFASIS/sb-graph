@@ -93,6 +93,18 @@ NatBaseType EvalNatBT::operator()(LIB::CanonPWMap v) const
   return NatBaseType();
 }
 
+NatBaseType EvalNatBT::operator()(LIB::BaseSBG v) const
+{
+  Util::ERROR("EvalNatBT: trying to evaluate a BaseSBG");
+  return NatBaseType();
+}
+
+NatBaseType EvalNatBT::operator()(LIB::CanonSBG v) const
+{
+  Util::ERROR("EvalNatBT: trying to evaluate a CanonSBG");
+  return NatBaseType();
+}
+
 } // namespace Eval
 
 } // namespace SBG

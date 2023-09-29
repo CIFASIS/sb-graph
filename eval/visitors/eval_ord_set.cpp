@@ -198,6 +198,12 @@ LIB::OrdSet EvalOrdSet::operator()(AST::PWLMap v) const
   return LIB::OrdSet(); 
 }
 
+LIB::OrdSet EvalOrdSet::operator()(AST::SBG v) const
+{ 
+  Util::ERROR("EvalOrdSet: trying to evaluate a SBG");
+  return LIB::OrdSet(); 
+}
+
 } // namespace Eval
 
 } // namespace SBG

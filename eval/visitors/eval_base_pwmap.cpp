@@ -70,7 +70,7 @@ LIB::BasePWMap EvalBasePWMap::operator()(Util::VariableName v) const
 
 LIB::BasePWMap EvalBasePWMap::operator()(AST::UnaryOp v) const 
 {
-  Util::ERROR("EvalBasePWMap: trying to evaluate an arithmetic UnaryOp");
+  Util::ERROR("EvalBasePWMap: trying to evaluate an arithmetic BinOp");
   return LIB::BasePWMap(); 
 }
 
@@ -179,6 +179,12 @@ LIB::BasePWMap EvalBasePWMap::operator()(AST::PWLMap v) const
     res.emplace(Apply(visit_map, e));
 
   return LIB::BasePWMap(res); 
+}
+
+LIB::BasePWMap EvalBasePWMap::operator()(AST::SBG v) const 
+{
+  Util::ERROR("EvalBasePWMap: trying to evaluate a SBG");
+  return LIB::BasePWMap(); 
 }
 
 } // namespace Eval

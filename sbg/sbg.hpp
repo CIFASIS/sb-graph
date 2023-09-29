@@ -49,6 +49,12 @@ template<typename Set>
 std::ostream &operator<<(std::ostream &out, const SBGraph<Set> &pw);
 
 template<typename Set>
+void addSV(Set vertices, SBGraph<Set> &g);
+
+template<typename Set>
+void addSE(Set edges, SBGraph<Set> &g);
+
+template<typename Set>
 PWMap<Set> connectedComponents(SBGraph<Set> g);
 
 typedef SBGraph<UnordSet> BaseSBG;

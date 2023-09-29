@@ -43,6 +43,7 @@ typedef Util::RATIONAL Rational;
 typedef bool Boolean;
 struct UnaryOp;
 struct BinOp;
+struct Call;
 struct Interval;
 struct InterUnaryOp;
 struct InterBinOp;
@@ -58,7 +59,7 @@ struct MDLExp;
 struct MDLExpBinOp;
 struct LinearMap;
 struct PWLMap;
-struct Call;
+struct SBG;
 
 typedef boost::variant<Natural, Rational, MDNatural, Boolean, Util::VariableName, 
   boost::recursive_wrapper<UnaryOp>, 
@@ -78,7 +79,8 @@ typedef boost::variant<Natural, Rational, MDNatural, Boolean, Util::VariableName
   boost::recursive_wrapper<MDLExp>,
   boost::recursive_wrapper<MDLExpBinOp>,
   boost::recursive_wrapper<LinearMap>,
-  boost::recursive_wrapper<PWLMap>> Expr;
+  boost::recursive_wrapper<PWLMap>,
+  boost::recursive_wrapper<SBG>> Expr;
 typedef std::vector<Expr> ExprList;
 std::ostream &operator<<(std::ostream &out, const ExprList &el);
 
@@ -317,6 +319,22 @@ struct PWLMap {
   eq_class(PWLMap);
 };
 std::ostream &operator<<(std::ostream &out, const PWLMap &pwl);
+
+// SBG -------------------------------------------------------------------------
+
+struct SBG {
+  member_class(Expr, V);
+  member_class(Expr, Vmap);
+  member_class(Expr, map1);
+  member_class(Expr, map2);
+  member_class(Expr, Emap);
+
+  SBG();
+  SBG(Expr V, Expr Vmap, Expr map1, Expr map2, Expr Emap);
+
+  eq_class(SBG);
+};
+std::ostream &operator<<(std::ostream &out, const SBG &g);
 
 } // namespace AST
 

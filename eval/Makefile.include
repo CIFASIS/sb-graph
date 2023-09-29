@@ -1,3 +1,4 @@
+
 # The Directories, Source, Includes, Objects, Binary 
 AST_DIR     := ast
 EVAL_DIR    := eval
@@ -36,7 +37,10 @@ EVAL_SRC := \
     $(VISIT_DIR)/eval_canon_map.cpp \
     $(VISIT_DIR)/eval_base_pwmap.cpp \
     $(VISIT_DIR)/eval_canon_pwmap.cpp \
+    $(VISIT_DIR)/eval_base_sbg.cpp \
+    $(VISIT_DIR)/eval_canon_sbg.cpp \
     $(VISIT_DIR)/eval_map.cpp \
+    $(VISIT_DIR)/eval_graph.cpp \
     $(VISIT_DIR)/eval_expr.cpp \
     $(VISIT_DIR)/stm_visitor.cpp \
     $(VISIT_DIR)/program_visitor.cpp \
@@ -47,7 +51,9 @@ EVAL_SRC := \
     $(SBG_DIR)/lexp.cpp \
     $(SBG_DIR)/multidim_lexp.cpp \
     $(SBG_DIR)/map.cpp \
-    $(SBG_DIR)/pw_map.cpp
+    $(SBG_DIR)/pw_map.cpp \
+    $(SBG_DIR)/sbg.cpp \
+    $(SBG_DIR)/info.cpp 
 
 # Objects
 EVAL_OBJ=$(addprefix $(BUILD_DIR)/, $(EVAL_SRC:.cpp=.o))

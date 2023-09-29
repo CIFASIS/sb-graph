@@ -52,6 +52,9 @@ Util::RATIONAL EvalRat::operator()(Util::VariableName v) const
     if (is<Util::RATIONAL>(value))
       return boost::get<Util::RATIONAL>(value);
 
+    if (is<Util::NAT>(value))
+      return Util::RATIONAL(boost::get<Util::NAT>(value));
+
     else {
       Util::ERROR("EvalRat: variable %s is not rational", v.c_str());
       return Util::RATIONAL(0, 1);
@@ -133,73 +136,79 @@ Util::RATIONAL EvalRat::operator()(AST::InterBinOp v) const
 
 Util::RATIONAL EvalRat::operator()(AST::MultiDimInter v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate an MultiDimInter");
+  Util::ERROR("EvalRat: trying to evaluate a MultiDimInter");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::MDInterUnaryOp v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate an MDInterUnaryOp");
+  Util::ERROR("EvalRat: trying to evaluate a MDInterUnaryOp");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::MDInterBinOp v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate an MDInterBinOp");
+  Util::ERROR("EvalRat: trying to evaluate a MDInterBinOp");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::Set v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate an Set");
+  Util::ERROR("EvalRat: trying to evaluate a Set");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::SetUnaryOp v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate an SetUnaryOp");
+  Util::ERROR("EvalRat: trying to evaluate a SetUnaryOp");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::SetBinOp v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate an SetBinOp");
+  Util::ERROR("EvalRat: trying to evaluate a SetBinOp");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::LinearExp v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate an LinearExp");
+  Util::ERROR("EvalRat: trying to evaluate a LinearExp");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::LExpBinOp v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate an LExpBinOp");
+  Util::ERROR("EvalRat: trying to evaluate a LExpBinOp");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::MDLExp v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate an MDLExp");
+  Util::ERROR("EvalRat: trying to evaluate a MDLExp");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::MDLExpBinOp v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate an MDLExpBinOp");
+  Util::ERROR("EvalRat: trying to evaluate a MDLExpBinOp");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::LinearMap v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate an LinearMap");
+  Util::ERROR("EvalRat: trying to evaluate a LinearMap");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::PWLMap v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate an PWLMap");
+  Util::ERROR("EvalRat: trying to evaluate a PWLMap");
+  return Util::RATIONAL(0, 1);
+}
+
+Util::RATIONAL EvalRat::operator()(AST::SBG v) const
+{
+  Util::ERROR("EvalRat: trying to evaluate a SBG");
   return Util::RATIONAL(0, 1);
 }
 

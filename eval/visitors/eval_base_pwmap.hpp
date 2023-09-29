@@ -59,6 +59,7 @@ struct EvalBasePWMap : public boost::static_visitor<LIB::BasePWMap> {
   LIB::BasePWMap operator()(AST::MDLExpBinOp v) const;
   LIB::BasePWMap operator()(AST::LinearMap v) const;
   LIB::BasePWMap operator()(AST::PWLMap v) const;
+  LIB::BasePWMap operator()(AST::SBG v) const;
 
   private:
   mutable VarEnv env_;

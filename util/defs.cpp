@@ -29,6 +29,10 @@ std::string toStr(NAT x) { return std::to_string(x); }
 
 MD_NAT::MD_NAT() : value_() {}
 MD_NAT::MD_NAT(NAT x) : value_() { value_ref().emplace_back(x); }
+MD_NAT::MD_NAT(unsigned int nmbr_copies, NAT x) : value_() { 
+  for (unsigned int j = 0; j < nmbr_copies; j++)
+    value_ref().emplace_back(x); 
+}
 MD_NAT::MD_NAT(MD_NAT::iterator b, MD_NAT::iterator e) : value_(b, e) {}
 
 member_imp(MD_NAT, VNAT, value);

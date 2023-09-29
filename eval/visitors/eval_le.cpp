@@ -191,6 +191,12 @@ LIB::LExp EvalLE::operator()(AST::PWLMap v) const
   return LIB::LExp(); 
 }
 
+LIB::LExp EvalLE::operator()(AST::SBG v) const 
+{
+  Util::ERROR("EvalLE: trying to evaluate a SBG");
+  return LIB::LExp(); 
+}
+
 } // namespace Eval
 
 } // namespace SBG

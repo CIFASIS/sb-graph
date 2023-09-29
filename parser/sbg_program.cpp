@@ -21,7 +21,7 @@
 
 // Adapt structures ------------------------------------------------------------
 
-BOOST_FUSION_ADAPT_STRUCT(SBG::AST::Program, (SBG::Util::NAT, nmbr_dims_)(SBG::AST::StatementList, stms_)(SBG::AST::ExprList, exprs_))
+  BOOST_FUSION_ADAPT_STRUCT(SBG::AST::Program, (SBG::Util::NAT, nmbr_dims_)(SBG::AST::StatementList, stms_)(SBG::AST::ExprList, exprs_))
 
 // SBG program parser ----------------------------------------------------------
 

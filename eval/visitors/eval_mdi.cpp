@@ -197,6 +197,12 @@ LIB::MultiDimInter EvalMDI::operator()(AST::PWLMap v) const
   return LIB::MultiDimInter(); 
 }
 
+LIB::MultiDimInter EvalMDI::operator()(AST::SBG v) const 
+{
+  Util::ERROR("EvalMDI: trying to evaluate a SBG");
+  return LIB::MultiDimInter(); 
+}
+
 } // namespace Eval
 
 } // namespace SBG

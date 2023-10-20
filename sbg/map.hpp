@@ -89,6 +89,9 @@ SBGMap<Set> composition(SBGMap<Set> sbgmap1, SBGMap<Set> sbgmap2);
  * @brief Extra operations.
  */
 
+template<typename Set>
+SBGMap<Set> minInv(SBGMap<Set> sbgmap);
+
 template <typename Set>
 std::size_t hash_value(const SBGMap<Set> &sbgmap);
 

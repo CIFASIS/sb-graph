@@ -59,6 +59,7 @@ struct EvalMDNat : public boost::static_visitor<Util::MD_NAT> {
   Util::MD_NAT operator()(AST::LinearMap v) const;
   Util::MD_NAT operator()(AST::PWLMap v) const;
   Util::MD_NAT operator()(AST::SBG v) const;
+  Util::MD_NAT operator()(AST::DSBG v) const;
 
   private:
   mutable VarEnv env_;

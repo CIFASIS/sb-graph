@@ -187,6 +187,12 @@ LIB::CanonPWMap EvalCanonPWMap::operator()(AST::SBG v) const
   return LIB::CanonPWMap(); 
 }
 
+LIB::CanonPWMap EvalCanonPWMap::operator()(AST::DSBG v) const 
+{
+  Util::ERROR("EvalCanonPWMap: trying to evaluate a DSBG");
+  return LIB::CanonPWMap(); 
+}
+
 } // namespace Eval
 
 } // namespace SBG

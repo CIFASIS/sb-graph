@@ -61,6 +61,7 @@ struct PWMap {
   member_class(MapSet<Set>, maps);
 
   PWMap();
+  PWMap(Set s); // Create id with s as domain
   PWMap(SBGMap<Set> m);
   PWMap(MapSet<Set> maps);
 
@@ -69,6 +70,9 @@ struct PWMap {
   void emplace_hint(MapSetIt<Set> it, SBGMap<Set> m);
   iterator begin();
   iterator end();
+
+  PWMap operator+(const PWMap &pw);
+  //PWMap operator-(const PWMap &pw);
 
   // Two maps are equal iff they satisfy the extensional principle
   eq_class(PWMap);
@@ -140,8 +144,6 @@ PWMap<Set> combine(PWMap<Set> pw1, PWMap<Set> pw2);
 template<typename Set>
 PWMap<Set> reduce(Interval i, LExp e);
 template<typename Set>
-PWMap<Set> reduce(SetPiece dom_piece, Exp e);
-template<typename Set>
 PWMap<Set> reduce(SBGMap<Set> sbgmap);
 template<typename Set>
 PWMap<Set> reduce(PWMap<Set> pw);
@@ -167,6 +169,19 @@ template<typename Set>
 PWMap<Set> minAdjMap(PWMap<Set> pw1, PWMap<Set> pw2, PWMap<Set> pw3);
 template<typename Set>
 PWMap<Set> minAdjMap(PWMap<Set> pw1, PWMap<Set> pw2);
+
+template<typename Set>
+PWMap<Set> minInv(PWMap<Set> pw);
+
+template<typename Set>
+PWMap<Set> filterMap(PWMap<Set> pw, bool (*f)(SBGMap<Set>));
+
+// Returns elements in both doms, that have the same image in both maps
+template<typename Set>
+Set equalImage(PWMap<Set> pw1, PWMap<Set> pw2);
+
+template<typename Set>
+PWMap<Set> normalize(PWMap<Set> pw);
 
 typedef PWMap<UnordSet> BasePWMap;
 typedef PWMap<OrdSet> CanonPWMap;

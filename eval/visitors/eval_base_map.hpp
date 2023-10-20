@@ -61,6 +61,7 @@ struct EvalBaseMap : public boost::static_visitor<LIB::BaseMap> {
   LIB::BaseMap operator()(AST::LinearMap v) const;
   LIB::BaseMap operator()(AST::PWLMap v) const;
   LIB::BaseMap operator()(AST::SBG v) const;
+  LIB::BaseMap operator()(AST::DSBG v) const;
 
   private:
   mutable VarEnv env_;

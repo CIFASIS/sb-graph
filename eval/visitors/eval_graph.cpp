@@ -105,6 +105,10 @@ SBGBaseType EvalGraph::operator()(LIB::BaseSBG v) const { return SBGBaseType(v);
 
 SBGBaseType EvalGraph::operator()(LIB::CanonSBG v) const { return SBGBaseType(v); }
 
+SBGBaseType EvalGraph::operator()(LIB::BaseDSBG v) const { return SBGBaseType(v); }
+
+SBGBaseType EvalGraph::operator()(LIB::CanonDSBG v) const { return SBGBaseType(v); }
+
 } // namespace Eval
 
 } // namespace SBG

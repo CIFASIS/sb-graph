@@ -61,6 +61,10 @@ bool MultiDimInter::operator<(const MultiDimInter &other) const
 {
   MultiDimInter aux1 = *this, aux2 = other;
 
+  if (isEmpty(aux1)) return true;
+
+  if (isEmpty(aux2)) return false;
+
   if (aux1.size() == aux2.size()) {
     parallel_foreach2(aux1.intervals_ref(), aux2.intervals_ref()) {
       Interval i1 = boost::get<0>(items), i2 = boost::get<1>(items);

@@ -26,11 +26,14 @@
 
 #include "eval/visitors/eval_base_sbg.hpp"
 #include "eval/visitors/eval_canon_sbg.hpp"
+#include "eval/visitors/eval_base_dsbg.hpp"
+#include "eval/visitors/eval_canon_dsbg.hpp"
 #include "eval/visitors/eval_natbt.hpp"
 #include "eval/visitors/eval_container.hpp"
 #include "eval/visitors/eval_linear.hpp"
 #include "eval/visitors/eval_map.hpp"
 #include "eval/visitors/eval_graph.hpp"
+#include "sbg/sbg_algorithms.hpp"
 
 #include <iostream>
 
@@ -68,6 +71,7 @@ struct EvalExpression : public boost::static_visitor<ExprBaseType> {
   ExprBaseType operator()(AST::LinearMap v) const;
   ExprBaseType operator()(AST::PWLMap v) const;
   ExprBaseType operator()(AST::SBG v) const;
+  ExprBaseType operator()(AST::DSBG v) const;
 
   private:
   unsigned int nmbr_dims_;

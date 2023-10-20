@@ -190,6 +190,12 @@ LIB::BaseSBG EvalBaseSBG::operator()(AST::SBG v) const
   return LIB::BaseSBG(V, Vmap, map1, map2, Emap);
 }
 
+LIB::BaseSBG EvalBaseSBG::operator()(AST::DSBG v) const 
+{
+  Util::ERROR("EvalBaseSBG: trying to evaluate a DSBG");
+  return LIB::BaseSBG(); 
+}
+
 } // namespace Eval
 
 } // namespace SBG

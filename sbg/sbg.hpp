@@ -30,6 +30,8 @@ namespace SBG {
 
 namespace LIB {
 
+// Undirected SBG --------------------------------------------------------------
+
 template<typename Set>
 struct SBGraph {
   // Vertex definitions
@@ -52,13 +54,45 @@ template<typename Set>
 void addSV(Set vertices, SBGraph<Set> &g);
 
 template<typename Set>
-void addSE(Set edges, SBGraph<Set> &g);
+unsigned int nmbrSV(SBGraph<Set> g);
 
 template<typename Set>
-PWMap<Set> connectedComponents(SBGraph<Set> g);
+void addSE(Set edges, SBGraph<Set> &g);
 
 typedef SBGraph<UnordSet> BaseSBG;
 typedef SBGraph<OrdSet> CanonSBG;
+
+// Directed SBG ----------------------------------------------------------------
+
+template<typename Set>
+struct DSBGraph {
+  // Vertex definitions
+  member_class(Set, V);
+  member_class(PWMap<Set>, Vmap);
+
+  // Edge definitions
+  member_class(Set, E);
+  member_class(PWMap<Set>, mapB);
+  member_class(PWMap<Set>, mapD);
+  member_class(PWMap<Set>, Emap);
+
+  DSBGraph();
+  DSBGraph(Set V, PWMap<Set> VMap, PWMap<Set> mapB, PWMap<Set> mapD, PWMap<Set> Emap);
+};
+template<typename Set>
+std::ostream &operator<<(std::ostream &out, const DSBGraph<Set> &pw);
+
+template<typename Set>
+void addSV(Set vertices, DSBGraph<Set> &g);
+
+template<typename Set>
+unsigned int nmbrSV(DSBGraph<Set> g);
+
+template<typename Set>
+void addSE(Set edges, DSBGraph<Set> &g);
+
+typedef DSBGraph<UnordSet> BaseDSBG;
+typedef DSBGraph<OrdSet> CanonDSBG;
 
 } // namespace LIB
 

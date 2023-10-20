@@ -60,6 +60,7 @@ struct EvalCanonSBG : public boost::static_visitor<LIB::CanonSBG> {
   LIB::CanonSBG operator()(AST::LinearMap v) const;
   LIB::CanonSBG operator()(AST::PWLMap v) const;
   LIB::CanonSBG operator()(AST::SBG v) const;
+  LIB::CanonSBG operator()(AST::DSBG v) const;
 
   private:
   mutable VarEnv env_;

@@ -60,6 +60,7 @@ struct MDLExpBinOp;
 struct LinearMap;
 struct PWLMap;
 struct SBG;
+struct DSBG;
 
 typedef boost::variant<Natural, Rational, MDNatural, Boolean, Util::VariableName, 
   boost::recursive_wrapper<UnaryOp>, 
@@ -80,7 +81,8 @@ typedef boost::variant<Natural, Rational, MDNatural, Boolean, Util::VariableName
   boost::recursive_wrapper<MDLExpBinOp>,
   boost::recursive_wrapper<LinearMap>,
   boost::recursive_wrapper<PWLMap>,
-  boost::recursive_wrapper<SBG>> Expr;
+  boost::recursive_wrapper<SBG>,
+  boost::recursive_wrapper<DSBG>> Expr;
 typedef std::vector<Expr> ExprList;
 std::ostream &operator<<(std::ostream &out, const ExprList &el);
 
@@ -335,6 +337,22 @@ struct SBG {
   eq_class(SBG);
 };
 std::ostream &operator<<(std::ostream &out, const SBG &g);
+
+// DSBG -------------------------------------------------------------------------
+
+struct DSBG {
+  member_class(Expr, V);
+  member_class(Expr, Vmap);
+  member_class(Expr, mapB);
+  member_class(Expr, mapD);
+  member_class(Expr, Emap);
+
+  DSBG();
+  DSBG(Expr V, Expr Vmap, Expr mapB, Expr mapD, Expr Emap);
+
+  eq_class(DSBG);
+};
+std::ostream &operator<<(std::ostream &out, const DSBG &g);
 
 } // namespace AST
 

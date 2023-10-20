@@ -184,6 +184,12 @@ LIB::BaseMap EvalBaseMap::operator()(AST::SBG v) const
   return LIB::BaseMap(); 
 }
 
+LIB::BaseMap EvalBaseMap::operator()(AST::DSBG v) const 
+{
+  Util::ERROR("EvalBaseMap: trying to evaluate a DSBG");
+  return LIB::BaseMap(); 
+}
+
 } // namespace Eval
 
 } // namespace SBG

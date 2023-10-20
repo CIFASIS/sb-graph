@@ -39,6 +39,8 @@ EVAL_SRC := \
     $(VISIT_DIR)/eval_canon_pwmap.cpp \
     $(VISIT_DIR)/eval_base_sbg.cpp \
     $(VISIT_DIR)/eval_canon_sbg.cpp \
+    $(VISIT_DIR)/eval_base_dsbg.cpp \
+    $(VISIT_DIR)/eval_canon_dsbg.cpp \
     $(VISIT_DIR)/eval_map.cpp \
     $(VISIT_DIR)/eval_graph.cpp \
     $(VISIT_DIR)/eval_expr.cpp \
@@ -53,6 +55,7 @@ EVAL_SRC := \
     $(SBG_DIR)/map.cpp \
     $(SBG_DIR)/pw_map.cpp \
     $(SBG_DIR)/sbg.cpp \
+    $(SBG_DIR)/sbg_algorithms.cpp \
     $(SBG_DIR)/info.cpp 
 
 # Objects

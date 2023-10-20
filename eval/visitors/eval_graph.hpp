@@ -47,6 +47,8 @@ struct EvalGraph : public boost::static_visitor<SBGBaseType> {
   SBGBaseType operator()(LIB::CanonPWMap v) const;
   SBGBaseType operator()(LIB::BaseSBG v) const;
   SBGBaseType operator()(LIB::CanonSBG v) const;
+  SBGBaseType operator()(LIB::BaseDSBG v) const;
+  SBGBaseType operator()(LIB::CanonDSBG v) const;
 };
 
 } // namespace Eval

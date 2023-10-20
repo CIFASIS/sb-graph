@@ -52,31 +52,126 @@ std::ostream &operator<<(std::ostream &out, const SBGraph<Set> &g)
 }
 
 template<typename Set>
-void addSV(Set vertices, SBGraph<Set> &g)
+SBGraph<Set> addSV(Set vertices, SBGraph<Set> g)
 {
   if (!isEmpty(vertices) && isEmpty(intersection(vertices, g.V()))) {
-    g.set_V(cup(g.V(), vertices));
+    SBGraph res = g;
+
+    res.set_V(cup(g.V(), vertices));
 
     Set SV = image(g.Vmap()); // Identifiers of SV
     Util::NAT max = maxElem(SV)[0];
     std::size_t dims = maxElem(SV).size();
     MDLExp to_max(dims, LExp(0, Util::RATIONAL(max + 1)));
     PWMap<Set> new_Vmap(SBGMap<Set>(vertices, to_max));
-    g.set_Vmap(concatenation(g.Vmap(), new_Vmap));
+    res.set_Vmap(concatenation(g.Vmap(), new_Vmap));
+
+    return res;
   }
 
   else Util::ERROR("LIB::SBG::addSV: vertices should be non-empty and disjoint from current vertices");
 
-  return;
+  return SBGraph<Set>();
 }
 
 template<typename Set>
-void addSE(PWMap<Set> pw1, PWMap<Set> pw2, SBGraph<Set> &g)
+unsigned int nmbrSV(SBGraph<Set> g) { return image(g.Vmap()).size(); }
+
+template<typename Set>
+SBGraph<Set> addSE(PWMap<Set> pw1, PWMap<Set> pw2, SBGraph<Set> g)
 {
   Set edges, edges1 = dom(pw1), edges2 = dom(pw2);
   if (edges1 == edges2) {
     edges = intersection(edges1, edges2);
     if (!isEmpty(edges) && isEmpty(intersection(edges, g.E()))) {
+      SBGraph<Set> res = g;
+
+      res.set_E(cup(g.E(), edges));
+
+      Set SE = image(g.Emap()); // Identifiers of SV
+      Util::NAT max = maxElem(SE)[0];
+      std::size_t dims = maxElem(SE).size();
+      MDLExp to_max(dims, LExp(0, Util::RATIONAL(max + 1)));
+      PWMap<Set> new_Emap(SBGMap<Set>(edges, to_max));
+      res.set_Emap(concatenation(g.Emap(), new_Emap));
+
+      res.set_map1(concatenation(g.map1(), pw1));
+      res.set_map2(concatenation(g.map2(), pw2));
+
+      return res;
+    }
+
+    else Util::ERROR("LIB::SBG::addSE: edges should be non-empty and disjoint from current vertices");
+  }
+
+  else Util::ERROR("LIB::SBG::addSE: maps domains should coincide");
+
+  return SBGraph<Set>();
+}
+
+// Directed SBG ----------------------------------------------------------------
+
+template<typename Set>
+DSBGraph<Set>::DSBGraph() : V_(), Vmap_(), E_(), mapB_(), mapD_(), Emap_() {}
+template<typename Set>
+DSBGraph<Set>::DSBGraph(Set V, PWMap<Set> Vmap, PWMap<Set> mapB, PWMap<Set> mapD, PWMap<Set> Emap)
+  : V_(V), Vmap_(Vmap), E_(intersection(dom(mapB), dom(mapD))), mapB_(mapB), mapD_(mapD), Emap_(Emap) {}
+
+member_imp_temp(template<typename Set>, DSBGraph<Set>, Set, V);
+member_imp_temp(template<typename Set>, DSBGraph<Set>, PWMap<Set>, Vmap);
+member_imp_temp(template<typename Set>, DSBGraph<Set>, Set, E);
+member_imp_temp(template<typename Set>, DSBGraph<Set>, PWMap<Set>, mapB);
+member_imp_temp(template<typename Set>, DSBGraph<Set>, PWMap<Set>, mapD);
+member_imp_temp(template<typename Set>, DSBGraph<Set>, PWMap<Set>, Emap);
+
+template<typename Set>
+std::ostream &operator<<(std::ostream &out, const DSBGraph<Set> &g)
+{
+  out << "V = " << g.V() << ";\n";
+  out << "Vmap = " << g.Vmap() << ";\n\n";
+  out << "E = " << g.E() << "\n";
+  out << "mapB = " << g.mapB() << "\n";
+  out << "mapD = " << g.mapD() << "\n";
+  out << "Emap = " << g.Emap() << "\n";
+
+  return out;
+}
+
+template<typename Set>
+DSBGraph<Set> addSV(Set vertices, DSBGraph<Set> g)
+{
+  if (!isEmpty(vertices) && isEmpty(intersection(vertices, g.V()))) {
+    DSBGraph res = g;
+
+    res.set_V(cup(g.V(), vertices));
+
+    Set SV = image(g.Vmap()); // Identifiers of SV
+    Util::NAT max = maxElem(SV)[0];
+    std::size_t dims = maxElem(SV).size();
+    MDLExp to_max(dims, LExp(0, Util::RATIONAL(max + 1)));
+    PWMap<Set> new_Vmap(SBGMap<Set>(vertices, to_max));
+    res.set_Vmap(concatenation(g.Vmap(), new_Vmap));
+
+    return res;
+  }
+
+  else Util::ERROR("LIB::SBG::addSV: vertices should be non-empty and disjoint from current vertices");
+
+  return DSBGraph<Set>();
+}
+
+template<typename Set>
+unsigned int nmbrSV(DSBGraph<Set> g) { return image(g.Vmap()).size(); }
+
+template<typename Set>
+DSBGraph<Set> addSE(PWMap<Set> pw1, PWMap<Set> pw2, DSBGraph<Set> g)
+{
+  Set edges, edges1 = dom(pw1), edges2 = dom(pw2);
+  if (edges1 == edges2) {
+    edges = intersection(edges1, edges2);
+    if (!isEmpty(edges) && isEmpty(intersection(edges, g.E()))) {
+      DSBGraph<Set> res;
+
       g.set_E(cup(g.E(), edges));
 
       Set SE = image(g.Emap()); // Identifiers of SV
@@ -86,8 +181,10 @@ void addSE(PWMap<Set> pw1, PWMap<Set> pw2, SBGraph<Set> &g)
       PWMap<Set> new_Emap(SBGMap<Set>(edges, to_max));
       g.set_Emap(concatenation(g.Emap(), new_Emap));
 
-      g.set_map1(concatenation(g.map1(), pw1));
-      g.set_map2(concatenation(g.map2(), pw2));
+      g.set_mapB(concatenation(g.mapB(), pw1));
+      g.set_mapD(concatenation(g.mapD(), pw2));
+   
+      return res;
     }
 
     else Util::ERROR("LIB::SBG::addSE: edges should be non-empty and disjoint from current vertices");
@@ -95,60 +192,34 @@ void addSE(PWMap<Set> pw1, PWMap<Set> pw2, SBGraph<Set> &g)
 
   else Util::ERROR("LIB::SBG::addSE: maps domains should coincide");
 
-  return;
-}
-
-// Functions -------------------------------------------------------------------
-
-template<typename Set>
-PWMap<Set> connectedComponents(SBGraph<Set> g)
-{
-  if (!isEmpty(g.V())) {
-    unsigned int dims = g.V()[0].size();
-    SBGMap<Set> id(g.V(), Exp(dims));
-    PWMap<Set> rmap(id), old_rmap;
-
-    if (isEmpty(g.E())) return rmap;
-
-    do {
-      old_rmap = rmap;
-
-      PWMap<Set> ermap1 = composition(rmap, g.map1());
-      PWMap<Set> ermap2 = composition(rmap, g.map2());
-
-      PWMap<Set> rmap1 = minAdjMap(ermap1, ermap2);
-      PWMap<Set> rmap2 = minAdjMap(ermap2, ermap1);
-      rmap1 = combine(rmap1, rmap);
-      rmap2 = combine(rmap2, rmap);
-
-      PWMap aux_rmap = minMap(rmap1, rmap2);
-      rmap = minMap(rmap, aux_rmap);
-
-      if (!(rmap == old_rmap)) {
-        rmap = aux_rmap;
-        rmap = mapInf(rmap);
-      }
-    } while (rmap != old_rmap); 
-
-    return rmap;
-  }
-
-  return PWMap<Set>();
+  return DSBGraph<Set>();
 }
 
 // Template instantiations -----------------------------------------------------
 
 template struct SBGraph<UnordSet>;
 template std::ostream &operator<<(std::ostream &out, const BaseSBG &g);
-template void addSV<UnordSet>(UnordSet vertices, BaseSBG &g);
-template void addSE<UnordSet>(BasePWMap pw1, BasePWMap pw2, BaseSBG &g);
-template BasePWMap connectedComponents<UnordSet>(BaseSBG g);
+template BaseSBG addSV<UnordSet>(UnordSet vertices, BaseSBG g);
+template unsigned int nmbrSV<UnordSet>(BaseSBG g);
+template BaseSBG addSE<UnordSet>(BasePWMap pw1, BasePWMap pw2, BaseSBG g);
 
 template struct SBGraph<OrdSet>;
 template std::ostream &operator<<(std::ostream &out, const CanonSBG &g);
-template void addSV<OrdSet>(OrdSet vertices, CanonSBG &g);
-template void addSE<OrdSet>(CanonPWMap pw1, CanonPWMap pw2, CanonSBG &g);
-template CanonPWMap connectedComponents<OrdSet>(CanonSBG g);
+template CanonSBG addSV<OrdSet>(OrdSet vertices, CanonSBG g);
+template unsigned int nmbrSV<OrdSet>(CanonSBG g);
+template CanonSBG addSE<OrdSet>(CanonPWMap pw1, CanonPWMap pw2, CanonSBG g);
+
+template struct DSBGraph<UnordSet>;
+template std::ostream &operator<<(std::ostream &out, const BaseDSBG &g);
+template BaseDSBG addSV<UnordSet>(UnordSet vertices, BaseDSBG g);
+template unsigned int nmbrSV<UnordSet>(BaseDSBG g);
+template BaseDSBG addSE<UnordSet>(BasePWMap pw1, BasePWMap pw2, BaseDSBG g);
+
+template struct DSBGraph<OrdSet>;
+template std::ostream &operator<<(std::ostream &out, const CanonDSBG &g);
+template CanonDSBG addSV<OrdSet>(OrdSet vertices, CanonDSBG g);
+template unsigned int nmbrSV<OrdSet>(CanonDSBG g);
+template CanonDSBG addSE<OrdSet>(CanonPWMap pw1, CanonPWMap pw2, CanonDSBG g);
 
 } // namespace LIB
 

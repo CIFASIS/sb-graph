@@ -63,6 +63,8 @@ BOOST_FUSION_ADAPT_STRUCT(SBG::AST::PWLMap, (SBG::AST::ExprList, maps_))
 
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::SBG, (SBG::AST::Expr, V_)(SBG::AST::Expr, Vmap_)(SBG::AST::Expr, map1_)(SBG::AST::Expr, map2_)(SBG::AST::Expr, Emap_))
 
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::DSBG, (SBG::AST::Expr, V_)(SBG::AST::Expr, Vmap_)(SBG::AST::Expr, mapB_)(SBG::AST::Expr, mapD_)(SBG::AST::Expr, Emap_))
+
 // Expression parser -----------------------------------------------------------
 
 namespace SBG {
@@ -176,7 +178,9 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   VMAP("Vmap %="),
   MAP1("map1 %="),
   MAP2("map2 %="),
-  EMAP("Emap %=")
+  EMAP("Emap %="),
+  MAPB("mapB %="),
+  MAPD("mapD %=")
 {
   ident = qi::lexeme[(qi::char_('_') | qi::alpha) >> *(qi::alnum | qi::char_('_'))] 
     | qi::lexeme[qi::char_('\'') >> *(qi::alnum | qi::char_('_')) > qi::char_('\'')];
@@ -314,7 +318,15 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
 
   // ------------ //
 
-  expr = sbg | pwl_expr | map_expr | mdlexp_expr | lexp_expr | arithmetic_expr | set_expr | mdi_expr | interval_expr;
+  dsbg = (V >> set >> SEMI 
+     >> VMAP >> pwl >> SEMI 
+     >> MAPB >> pwl >> SEMI 
+     >> MAPD >> pwl >> SEMI 
+     >> EMAP >> pwl >> SEMI)[qi::_val = phx::construct<AST::DSBG>(qi::_1, qi::_2, qi::_3, qi::_4, qi::_5)];
+
+  // ------------ //
+
+  expr = dsbg | sbg | pwl_expr | map_expr | mdlexp_expr | lexp_expr | arithmetic_expr | set_expr | mdi_expr | interval_expr;
   
   expr_list = expr[phx::push_back(qi::_val, qi::_1)] >> *(COMA >> expr)[phx::push_back(qi::_val, qi::_1)];
 

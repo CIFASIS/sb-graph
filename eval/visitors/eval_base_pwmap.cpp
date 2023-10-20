@@ -187,6 +187,12 @@ LIB::BasePWMap EvalBasePWMap::operator()(AST::SBG v) const
   return LIB::BasePWMap(); 
 }
 
+LIB::BasePWMap EvalBasePWMap::operator()(AST::DSBG v) const 
+{
+  Util::ERROR("EvalBasePWMap: trying to evaluate a DSBG");
+  return LIB::BasePWMap(); 
+}
+
 } // namespace Eval
 
 } // namespace SBG

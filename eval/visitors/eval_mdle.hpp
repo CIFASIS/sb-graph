@@ -60,6 +60,7 @@ struct EvalMDLE : public boost::static_visitor<LIB::Exp> {
   LIB::Exp operator()(AST::LinearMap v) const;
   LIB::Exp operator()(AST::PWLMap v) const;
   LIB::Exp operator()(AST::SBG v) const;
+  LIB::Exp operator()(AST::DSBG v) const;
 
   private:
   mutable VarEnv env_;

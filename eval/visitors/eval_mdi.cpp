@@ -203,6 +203,12 @@ LIB::MultiDimInter EvalMDI::operator()(AST::SBG v) const
   return LIB::MultiDimInter(); 
 }
 
+LIB::MultiDimInter EvalMDI::operator()(AST::DSBG v) const 
+{
+  Util::ERROR("EvalMDI: trying to evaluate a DSBG");
+  return LIB::MultiDimInter(); 
+}
+
 } // namespace Eval
 
 } // namespace SBG

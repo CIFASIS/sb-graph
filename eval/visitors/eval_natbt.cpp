@@ -105,6 +105,18 @@ NatBaseType EvalNatBT::operator()(LIB::CanonSBG v) const
   return NatBaseType();
 }
 
+NatBaseType EvalNatBT::operator()(LIB::BaseDSBG v) const
+{
+  Util::ERROR("EvalNatBT: trying to evaluate a BaseDSBG");
+  return NatBaseType();
+}
+
+NatBaseType EvalNatBT::operator()(LIB::CanonDSBG v) const
+{
+  Util::ERROR("EvalNatBT: trying to evaluate a CanonDSBG");
+  return NatBaseType();
+}
+
 } // namespace Eval
 
 } // namespace SBG

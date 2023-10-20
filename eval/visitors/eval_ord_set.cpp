@@ -204,6 +204,12 @@ LIB::OrdSet EvalOrdSet::operator()(AST::SBG v) const
   return LIB::OrdSet(); 
 }
 
+LIB::OrdSet EvalOrdSet::operator()(AST::DSBG v) const
+{ 
+  Util::ERROR("EvalOrdSet: trying to evaluate a DSBG");
+  return LIB::OrdSet(); 
+}
+
 } // namespace Eval
 
 } // namespace SBG

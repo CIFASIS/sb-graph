@@ -63,6 +63,14 @@ std::ostream &operator<<(std::ostream &out, const MapSet<Set> &ms)
 template<typename Set>
 PWMap<Set>::PWMap() : maps_() {}
 template<typename Set>
+PWMap<Set>::PWMap(Set s) : maps_() {
+  if (!isEmpty(s)) {
+    unsigned int dims = s[0].size();
+    SBGMap<Set> sbg_map(s, Exp(dims));
+    maps_ref().emplace(sbg_map);
+  }
+}
+template<typename Set>
 PWMap<Set>::PWMap(SBGMap<Set> sm) : maps_() { maps_ref().emplace(sm); }
 template<typename Set>
 PWMap<Set>::PWMap(MapSet<Set> maps) : maps_(maps) {}
@@ -81,6 +89,42 @@ template<typename Set>
 typename PWMap<Set>::iterator PWMap<Set>::begin() { return maps_ref().begin(); }
 template<typename Set>
 typename PWMap<Set>::iterator PWMap<Set>::end() { return maps_ref().end(); }
+
+template<typename Set>
+PWMap<Set> PWMap<Set>::operator+(const PWMap<Set> &pw)
+{
+  PWMap<Set> res;
+
+  PWMap<Set> aux1 = *this, aux2 = pw;
+  BOOST_FOREACH (SBGMap<Set> sbgmap1, aux1.maps()) {
+    BOOST_FOREACH (SBGMap<Set> sbgmap2, aux2.maps()) {
+      Set ith_dom = intersection(sbgmap1.dom(), sbgmap2.dom());
+      Exp ith_exp = sbgmap1.exp() + sbgmap2.exp();
+      if (!isEmpty(ith_dom)) res.emplace(SBGMap<Set>(ith_dom, ith_exp));
+    }
+  }
+
+  return res;
+}
+
+/*
+template<typename Set>
+PWMap<Set> PWMap<Set>::operator-(const PWMap<Set> &pw)
+{
+  PWMap<Set> res;
+
+  PWMap<Set> aux1 = *this, aux2 = pw;
+  BOOST_FOREACH (SBGMap<Set> sbgmap1, aux1.maps()) {
+    BOOST_FOREACH (SBGMap<Set> sbgmap2, aux2.maps()) {
+      Set ith_dom = intersection(sbgmap1.dom(), sbgmap2.dom());
+      Exp ith_exp = sbgmap1.exp() - sbgmap2.exp();
+      if (!isEmpty(ith_dom)) res.emplace(SBGMap<Set>(ith_dom, ith_exp));
+    }
+  }
+
+  return res;
+}
+*/
 
 template<typename Set>
 bool PWMap<Set>::operator==(const PWMap &other) const 
@@ -197,8 +241,10 @@ PWMap<Set> composition(PWMap<Set> pw1, PWMap<Set> pw2)
   Set im = image(pw2), new_dom = preImage(im, pw2);
   PWMap map2 = restrict(new_dom, pw2);
 
-  BOOST_FOREACH (SBGMap sbgmap1, pw1) {
-    BOOST_FOREACH (SBGMap sbgmap2, map2) {
+  PWMap<Set> aux1 = normalize(pw1), aux2 = normalize(map2);
+  //PWMap<Set> aux1 = pw1, aux2 = map2;
+  BOOST_FOREACH (SBGMap sbgmap1, aux1) {
+    BOOST_FOREACH (SBGMap sbgmap2, aux2) {
       SBGMap ith = composition(sbgmap1, sbgmap2);
         if (!isEmpty(ith.dom_ref())) 
           res.emplace(ith);
@@ -213,7 +259,6 @@ PWMap<Set> mapInf(PWMap<Set> pw, unsigned int n)
 {
   PWMap<Set> res = pw, old_res;
 
-  std::cout << pw << "\n\n";
   Set pw_dom = dom(pw);
   if (!isEmpty(pw_dom)) {
     for (unsigned int j = 0; !(old_res == res) && j < n; j++) {
@@ -223,6 +268,7 @@ PWMap<Set> mapInf(PWMap<Set> pw, unsigned int n)
 
     if (old_res == res) return res;
 
+    res = reduce(res);
     do {
       old_res = res;
       res = composition(res, res);
@@ -256,7 +302,9 @@ PWMap<Set> combine(PWMap<Set> pw1, PWMap<Set> pw2)
 {
   PWMap res = pw1;
 
-  if (isEmpty(pw1) || isEmpty(pw2)) return res;
+  if (isEmpty(pw1)) return pw2;
+
+  if (isEmpty(pw2)) return pw1;
 
   Set dom1 = dom(pw1);
   BOOST_FOREACH (SBGMap sbgmap2, pw2) {
@@ -319,56 +367,50 @@ PWMap<Set> reduce(Interval i, LExp le)
 }
 
 template<typename Set>
-PWMap<Set> reduce(SetPiece dom_piece, Exp e)
-{
-  PWMap<Set> res;
- 
-  if (isEmpty(dom_piece)) return res;
-
-  if (dom_piece.size() == e.size()) {
-    unsigned int j = 0;
-    SetPiece aux_piece = dom_piece;
-    Exp aux_exp = e;
-    bool was_reduced = false;
-    parallel_foreach2 (dom_piece.intervals_ref(), e.exps_ref()) {
-      Interval i = boost::get<0>(items);
-      LExp le = boost::get<1>(items);
-
-      PWMap reduced = reduce<Set>(i, le);
-      BOOST_FOREACH (SBGMap ith_reduced, reduced) {
-        aux_piece[j] = ith_reduced.dom()[0][0];
-        aux_exp[j] = ith_reduced.exp()[0];
-        if (aux_piece != dom_piece) {
-          res.emplace_hint(res.end(), SBGMap<Set>(aux_piece, aux_exp));
-          was_reduced = true;
-        }
-
-        aux_piece = dom_piece;
-        aux_exp = e;
-      }
-
-      ++j;
-    }
-
-    if (!was_reduced) res.emplace_hint(res.end(), SBGMap<Set>(dom_piece, e));
-
-    return res;
-  }
-
-  Util::ERROR("LIB::PWMap::reduce: dimensions don't match");
-  return PWMap<Set>();
-}
-
-template<typename Set>
 PWMap<Set> reduce(SBGMap<Set> sbgmap)
 {
   PWMap<Set> res;
 
-  Set dom = sbgmap.dom();
-  BOOST_FOREACH (SetPiece dom_piece, dom) {
-    PWMap ith = reduce<Set>(dom_piece, sbgmap.exp());
-    res = concatenation(ith, res);
+  Set d = sbgmap.dom(), not_reduced;
+  Exp e = sbgmap.exp(); 
+  BOOST_FOREACH (SetPiece dom_piece, d) {
+    if (isEmpty(dom_piece)) return res;
+
+    if (dom_piece.size() == e.size()) {
+      unsigned int j = 0;
+      SetPiece aux_piece = dom_piece;
+      Exp aux_exp = e;
+      bool was_reduced = false;
+      parallel_foreach2 (dom_piece.intervals_ref(), e.exps_ref()) {
+        Interval i = boost::get<0>(items);
+        LExp le = boost::get<1>(items);
+
+        PWMap reduced = reduce<Set>(i, le);
+        BOOST_FOREACH (SBGMap ith_reduced, reduced) {
+          aux_piece[j] = ith_reduced.dom()[0][0];
+          aux_exp[j] = ith_reduced.exp()[0];
+          if (aux_piece != dom_piece || !(aux_exp == e)) {
+            res.emplace_hint(res.end(), SBGMap<Set>(aux_piece, aux_exp));
+            was_reduced = true;
+          }
+
+          aux_piece = dom_piece;
+          aux_exp = e;
+        }
+
+        ++j;
+      }
+
+      if (!was_reduced) not_reduced = concatenation(not_reduced, dom_piece);
+    }
+
+    else {
+      Util::ERROR("LIB::PWMap::reduce: dimensions don't match");
+      return PWMap<Set>();
+    }
   }
+
+  res.emplace(SBGMap<Set>(not_reduced, e)); // Add unreduced submaps
 
   return res;
 }
@@ -525,16 +567,28 @@ PWMap<Set> minMap(PWMap<Set> pw1, PWMap<Set> pw2, PWMap<Set> pw3, PWMap<Set> pw4
 {
   PWMap<Set> res;
   Set dom1 = dom(pw1), dom2 = dom(pw2), dom3 = dom(pw3), dom4 = dom(pw4);
-  Set cap12 = intersection(dom1, dom2), cap34 = intersection(dom3, dom4);
-  Set cap_dom = intersection(cap12, cap34);
+  Set dom21 = preImage(dom1, pw2), dom34 = preImage(dom4, pw3);
+  Set cap_dom23 = intersection(dom2, dom3), cap_dom14 = intersection(dom21, dom34);
+  Set cap_dom = intersection(cap_dom23, cap_dom14);
 
   BOOST_FOREACH (SetPiece mdi, cap_dom) {
     Set mdi_set(mdi);
     bool flag1 = false, flag2 = false, flag3 = false, flag4 = false;
     Exp e1, e2, e3, e4;
 
+    Set im2;
+    BOOST_FOREACH (SBGMap<Set> sbgmap2, pw2.maps()) {
+      Set d2 = sbgmap2.dom(), s2 = intersection(d2, mdi_set);
+      if (!isEmpty(s2)) {
+        e2 = sbgmap2.exp();
+        flag2 = true;
+        im2 = image(SBGMap<Set>(d2, e2));
+        break;
+      }
+    }
+
     BOOST_FOREACH (SBGMap<Set> sbgmap1, pw1.maps()) {
-      Set dom1 = sbgmap1.dom(), s1 = intersection(dom1, mdi_set);
+      Set s1 = intersection(sbgmap1.dom(), im2);
       if (!isEmpty(s1)) {
         e1 = sbgmap1.exp();
         flag1 = true;
@@ -542,26 +596,19 @@ PWMap<Set> minMap(PWMap<Set> pw1, PWMap<Set> pw2, PWMap<Set> pw3, PWMap<Set> pw4
       }
     }
 
-    BOOST_FOREACH (SBGMap<Set> sbgmap2, pw2.maps()) {
-      Set dom2 = sbgmap2.dom(), s2 = intersection(dom2, mdi_set);
-      if (!isEmpty(s2)) {
-        e2 = sbgmap2.exp();
-        flag2 = true;
-        break;
-      }
-    }
-
+    Set im3;
     BOOST_FOREACH (SBGMap<Set> sbgmap3, pw3.maps()) {
-      Set dom3 = sbgmap3.dom(), s3 = intersection(dom3, mdi_set);
+      Set d3 = sbgmap3.dom(), s3 = intersection(d3, mdi_set);
       if (!isEmpty(s3)) {
         e3 = sbgmap3.exp();
         flag3 = true;
+        im3 = image(SBGMap<Set>(d3, e3));
         break;
       }
     }
 
     BOOST_FOREACH (SBGMap<Set> sbgmap4, pw4.maps()) {
-      Set dom4 = sbgmap4.dom(), s4 = intersection(dom4, mdi_set);
+      Set s4 = intersection(sbgmap4.dom(), im3);
       if (!isEmpty(s4)) {
         e4 = sbgmap4.exp();
         flag4 = true;
@@ -586,7 +633,7 @@ PWMap<Set> minMap(PWMap<Set> pw1, PWMap<Set> pw2)
   Set first_dom = pw1.maps().begin()->dom();
   unsigned int nmbr_dims = first_dom.begin()->size();
   Exp id(nmbr_dims);
-  SBGMap<Set> aux1(dom(pw1), id), aux2(dom(pw2), id);
+  SBGMap<Set> aux1(image(pw1), id), aux2(image(pw2), id);
   PWMap<Set> id_map1(aux1), id_map2(aux2);
 
   PWMap<Set> res = minMap<Set>(id_map1, pw1, pw2, id_map2);
@@ -594,7 +641,7 @@ PWMap<Set> minMap(PWMap<Set> pw1, PWMap<Set> pw2)
   return minMap<Set>(id_map1, pw1, pw2, id_map2);
 }
 
-template <typename Set>
+template<typename Set>
 PWMap<Set> minAdjMap(PWMap<Set> pw1, PWMap<Set> pw2, PWMap<Set> pw3)
 {
   PWMap<Set> res;
@@ -623,12 +670,20 @@ PWMap<Set> minAdjMap(PWMap<Set> pw1, PWMap<Set> pw2, PWMap<Set> pw3)
       Set dom2 = sbgmap2.dom(), s2 = intersection(dom2, mdi_set);
       if (!isEmpty(s2)) {
         Set im2 = image(s2, sbgmap2);
-        BOOST_FOREACH (SBGMap<Set> sbgmap3, pw3) {
-          Set dom3 = sbgmap3.dom(), s3 = intersection(dom3, im2);
-          if (!isEmpty(s3)) { 
-            if (!isConstant(e1)) e_res = composition(composition(sbgmap3.exp(), sbgmap2.exp()), inverse(e1));
+        if (!isConstant(e1)) e_res = composition(sbgmap2.exp(), inverse(e1));
 
-            else e_res = MDLExp(minElem(image(s3, sbgmap3)));
+        else {
+          BOOST_FOREACH (SBGMap<Set> sbgmap3, pw3) {
+            Set dom3 = sbgmap3.dom(), s3 = intersection(dom3, im2);
+            if (!isEmpty(s3)) { 
+              if (!isConstant(sbgmap3.exp())) {
+                Set min3(minElem(image(s3, sbgmap3)));
+                MD_NAT min2 = minElem(preImage(min3, sbgmap3));
+                e_res = MDLExp(min2);
+              }
+
+              else e_res = MDLExp(minElem(im2));
+            }
           }
         }
       }
@@ -651,7 +706,7 @@ PWMap<Set> minAdjMap(PWMap<Set> pw1, PWMap<Set> pw2, PWMap<Set> pw3)
   return res;
 }
 
-template <typename Set>
+template<typename Set>
 PWMap<Set> minAdjMap(PWMap<Set> pw1, PWMap<Set> pw2)
 {
   Set first_dom = pw2.maps().begin()->dom();
@@ -663,6 +718,78 @@ PWMap<Set> minAdjMap(PWMap<Set> pw1, PWMap<Set> pw2)
   return minAdjMap(pw1, pw2, id_map2);
 }
 
+template<typename Set>
+PWMap<Set> minInv(PWMap<Set> pw)
+{
+  PWMap<Set> res;
+
+  if (!isEmpty(pw)) {
+    SBGMap<Set> first = *(pw.maps_ref().begin());
+    res.emplace(minInv(first));
+    BOOST_FOREACH (SBGMap<Set> sbgmap, pw.maps()) {
+      SBGMap<Set> ith = minInv(sbgmap);
+      Set cap_dom = intersection(ith.dom(), dom(res));
+
+      if (!isEmpty(cap_dom)) {
+        PWMap<Set> min = minMap(res, PWMap<Set>(ith));
+        res = combine(min, res);
+      }
+
+      else res.emplace(ith);
+    }
+  }
+
+  return res;
+}
+
+template<typename Set>
+PWMap<Set> filterMap(PWMap<Set> pw, bool (*f)(SBGMap<Set>))
+{
+  PWMap<Set> res;
+
+  BOOST_FOREACH (SBGMap<Set> sbgmap, pw.maps())
+    if (f(sbgmap)) res.emplace(sbgmap);
+
+  return res;
+}
+
+template<typename Set>
+Set equalImage(PWMap<Set> pw1, PWMap<Set> pw2)
+{
+  Set res;
+
+  BOOST_FOREACH (SBGMap<Set> sbgmap1, pw1.maps()) {
+    BOOST_FOREACH (SBGMap<Set> sbgmap2, pw2.maps()) {
+      Set cap_dom = intersection(sbgmap1.dom(), sbgmap2.dom());
+      if (!isEmpty(cap_dom)) {
+        SBGMap<Set> map1(cap_dom, sbgmap1.exp()), map2(cap_dom, sbgmap2.exp());
+        if (map1 == map2) res = concatenation(res, cap_dom);
+      }
+    }
+  }
+
+  return res; 
+}
+
+template<typename Set>
+PWMap<Set> normalize(PWMap<Set> pw)
+{
+  PWMap<Set> res;
+
+  Set visited;
+  BOOST_FOREACH (SBGMap<Set> sbgmap1, pw) {
+    if (isEmpty(intersection(sbgmap1.dom(), visited))) {
+      Set ith(sbgmap1.dom());
+      BOOST_FOREACH (SBGMap<Set> sbgmap2, pw) 
+        if (sbgmap1.exp() == sbgmap2.exp()) concatenation(ith, sbgmap2.dom()); 
+
+      visited = concatenation(visited, ith);
+      res.emplace(SBGMap<Set>(ith, sbgmap1.exp()));
+    }
+  }
+
+  return res;
+}
 
 // Template instantiations -----------------------------------------------------
 
@@ -689,11 +816,14 @@ template BasePWMap minMap<UnordSet>(UnordSet dom, Exp e1, Exp e2);
 template BasePWMap minMap<UnordSet>(BasePWMap pw1, BasePWMap pw2, BasePWMap pw3, BasePWMap pw4);
 template BasePWMap minMap<UnordSet>(BasePWMap pw1, BasePWMap pw2);
 template BasePWMap reduce<UnordSet>(Interval i, LExp e);
-template BasePWMap reduce<UnordSet>(SetPiece dom_piece, Exp e);
 template BasePWMap reduce<UnordSet>(BaseMap sbgmap);
 template BasePWMap reduce<UnordSet>(BasePWMap pw);
 template BasePWMap minAdjMap<UnordSet>(BasePWMap pw1, BasePWMap pw2, BasePWMap pw3);
 template BasePWMap minAdjMap<UnordSet>(BasePWMap pw1, BasePWMap pw2);
+template BasePWMap minInv<UnordSet>(BasePWMap pw);
+template BasePWMap filterMap<UnordSet>(BasePWMap pw, bool (*f)(BaseMap));
+template UnordSet equalImage<UnordSet>(BasePWMap pw1, BasePWMap pw2);
+template BasePWMap normalize<UnordSet>(BasePWMap pw);
 
 template std::ostream &operator<<(std::ostream &out, const MapSet<OrdSet> &ms);
 template struct PWMap<OrdSet>;
@@ -718,11 +848,14 @@ template CanonPWMap minMap<OrdSet>(OrdSet dom, Exp e1, Exp e2);
 template CanonPWMap minMap<OrdSet>(CanonPWMap pw1, CanonPWMap pw2, CanonPWMap pw3, CanonPWMap pw4);
 template CanonPWMap minMap<OrdSet>(CanonPWMap pw1, CanonPWMap pw2);
 template CanonPWMap reduce<OrdSet>(Interval i, LExp e);
-template CanonPWMap reduce<OrdSet>(SetPiece dom_piece, Exp e);
 template CanonPWMap reduce<OrdSet>(CanonMap sbgmap);
 template CanonPWMap reduce<OrdSet>(CanonPWMap pw);
 template CanonPWMap minAdjMap<OrdSet>(CanonPWMap pw1, CanonPWMap pw2, CanonPWMap pw3);
 template CanonPWMap minAdjMap<OrdSet>(CanonPWMap pw1, CanonPWMap pw2);
+template CanonPWMap minInv<OrdSet>(CanonPWMap pw);
+template CanonPWMap filterMap<OrdSet>(CanonPWMap pw, bool (*f)(CanonMap));
+template OrdSet equalImage<OrdSet>(CanonPWMap pw1, CanonPWMap pw2);
+template CanonPWMap normalize<OrdSet>(CanonPWMap pw);
 
 } // namespace LIB
 

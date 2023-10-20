@@ -105,6 +105,18 @@ LinearBaseType EvalLinear::operator()(LIB::CanonSBG v) const
   return LinearBaseType();
 }
 
+LinearBaseType EvalLinear::operator()(LIB::BaseDSBG v) const
+{
+  Util::ERROR("EvalLinear: trying to evaluate a BaseDSBG");
+  return LinearBaseType();
+}
+
+LinearBaseType EvalLinear::operator()(LIB::CanonDSBG v) const
+{
+  Util::ERROR("EvalLinear: trying to evaluate a CanonDSBG");
+  return LinearBaseType();
+}
+
 } // namespace Eval
 
 } // namespace SBG

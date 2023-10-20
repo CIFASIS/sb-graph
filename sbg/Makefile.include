@@ -13,6 +13,7 @@ SBG_ROOT := sbg
     $(SBG_ROOT)/multidim_lexp.cpp \
     $(SBG_ROOT)/map.cpp \
     $(SBG_ROOT)/sbg.cpp \
+    $(SBG_ROOT)/sbg_algorithms.cpp \
     $(SBG_ROOT)/info.cpp 
 
 # Objects

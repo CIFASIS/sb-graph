@@ -97,6 +97,18 @@ MapBaseType EvalMap::operator()(LIB::CanonSBG v) const
   return MapBaseType();
 }
 
+MapBaseType EvalMap::operator()(LIB::BaseDSBG v) const
+{
+  Util::ERROR("EvalMap: trying to evaluate a a BaseDSBG");
+  return MapBaseType();
+}
+
+MapBaseType EvalMap::operator()(LIB::CanonDSBG v) const
+{
+  Util::ERROR("EvalMap: trying to evaluate a CanonDSBG");
+  return MapBaseType();
+}
+
 } // namespace Eval
 
 } // namespace SBG

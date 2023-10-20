@@ -199,6 +199,12 @@ LIB::Exp EvalMDLE::operator()(AST::SBG v) const
   return LIB::Exp(); 
 }
 
+LIB::Exp EvalMDLE::operator()(AST::DSBG v) const 
+{
+  Util::ERROR("EvalMDLE: trying to evaluate a DSBG");
+  return LIB::Exp(); 
+}
+
 } // namespace Eval
 
 } // namespace SBG

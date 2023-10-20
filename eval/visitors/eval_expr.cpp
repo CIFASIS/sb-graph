@@ -261,8 +261,23 @@ auto min_adj_visitor2_ = Util::Overload {
 auto connected_visitor_ = Util::Overload {
   [](LIB::BaseSBG a) { return ExprBaseType(connectedComponents(a)); },
   [](LIB::CanonSBG a) { return ExprBaseType(connectedComponents(a)); },
-  [](auto a, auto b) {
+  [](auto a) {
     Util::ERROR("Wrong arguments for connectedComponents");
+    return ExprBaseType();
+  }
+};
+
+auto min_reach_visitor_ = Util::Overload {
+  [](LIB::BaseDSBG a) { 
+    LIB::BaseMR mr(a);
+    return ExprBaseType(mr.calculate().reps()); 
+  },
+  [](LIB::CanonDSBG a) {
+    LIB::CanonMR mr(a);
+    return ExprBaseType(mr.calculate().reps()); 
+  },
+  [](auto a) {
+    Util::ERROR("Wrong arguments for minReach");
     return ExprBaseType();
   }
 };
@@ -545,6 +560,16 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
 
           SBGBaseType g = Apply(EvalGraph{}, eval_args[0]);
           ExprBaseType result = std::visit(connected_visitor_, g);
+          return result;
+        }
+        break;
+
+      case Eval::Func::min_reach:
+        if (eval_args.size() == 1) {
+          arity_ok = true;
+
+          SBGBaseType g = Apply(EvalGraph{}, eval_args[0]);
+          ExprBaseType result = std::visit(min_reach_visitor_, g);
           return result;
         }
         break;
@@ -870,6 +895,13 @@ ExprBaseType EvalExpression::operator()(AST::SBG v) const
   if (nmbr_dims_ == 1) return Apply(EvalCanonSBG(env_), AST::Expr(v));
 
   return Apply(EvalBaseSBG(env_), AST::Expr(v));
+}
+
+ExprBaseType EvalExpression::operator()(AST::DSBG v) const
+{
+  if (nmbr_dims_ == 1) return Apply(EvalCanonDSBG(env_), AST::Expr(v));
+
+  return Apply(EvalBaseDSBG(env_), AST::Expr(v));
 }
 
 } // namespace Eval

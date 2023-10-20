@@ -47,6 +47,8 @@ struct EvalMap : public boost::static_visitor<MapBaseType> {
   MapBaseType operator()(LIB::CanonPWMap v) const;
   MapBaseType operator()(LIB::BaseSBG v) const;
   MapBaseType operator()(LIB::CanonSBG v) const;
+  MapBaseType operator()(LIB::BaseDSBG v) const;
+  MapBaseType operator()(LIB::CanonDSBG v) const;
 };
 
 } // namespace Eval

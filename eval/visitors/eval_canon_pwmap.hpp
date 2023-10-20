@@ -60,6 +60,7 @@ struct EvalCanonPWMap : public boost::static_visitor<LIB::CanonPWMap> {
   LIB::CanonPWMap operator()(AST::LinearMap v) const;
   LIB::CanonPWMap operator()(AST::PWLMap v) const;
   LIB::CanonPWMap operator()(AST::SBG v) const;
+  LIB::CanonPWMap operator()(AST::DSBG v) const;
 
   private:
   mutable VarEnv env_;

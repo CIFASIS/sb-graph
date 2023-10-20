@@ -212,6 +212,12 @@ Util::RATIONAL EvalRat::operator()(AST::SBG v) const
   return Util::RATIONAL(0, 1);
 }
 
+Util::RATIONAL EvalRat::operator()(AST::DSBG v) const
+{
+  Util::ERROR("EvalRat: trying to evaluate a DSBG");
+  return Util::RATIONAL(0, 1);
+}
+
 } // namespace Eval
 
 } // namespace SBG

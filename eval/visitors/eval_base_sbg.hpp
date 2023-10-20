@@ -60,6 +60,7 @@ struct EvalBaseSBG : public boost::static_visitor<LIB::BaseSBG> {
   LIB::BaseSBG operator()(AST::LinearMap v) const;
   LIB::BaseSBG operator()(AST::PWLMap v) const;
   LIB::BaseSBG operator()(AST::SBG v) const;
+  LIB::BaseSBG operator()(AST::DSBG v) const;
 
   private:
   mutable VarEnv env_;

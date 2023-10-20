@@ -61,6 +61,7 @@ struct EvalCanonMap : public boost::static_visitor<LIB::CanonMap> {
   LIB::CanonMap operator()(AST::LinearMap v) const;
   LIB::CanonMap operator()(AST::PWLMap v) const;
   LIB::CanonMap operator()(AST::SBG v) const;
+  LIB::CanonMap operator()(AST::DSBG v) const;
 
   private:
   mutable VarEnv env_;

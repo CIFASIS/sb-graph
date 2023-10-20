@@ -203,6 +203,12 @@ LIB::Interval EvalInterval::operator()(AST::SBG v) const
   return LIB::Interval(); 
 }
 
+LIB::Interval EvalInterval::operator()(AST::DSBG v) const 
+{
+  Util::ERROR("EvalInterval: trying to evaluate a DSBG");
+  return LIB::Interval(); 
+}
+
 } // namespace Eval
 
 } // namespace SBG

@@ -67,7 +67,9 @@ typedef std::variant<LIB::BaseMap
   , LIB::CanonPWMap> MapBaseType;
 
 typedef std::variant<LIB::BaseSBG
-  , LIB::CanonSBG> SBGBaseType;
+  , LIB::CanonSBG
+  , LIB::BaseDSBG
+  , LIB::CanonDSBG> SBGBaseType;
 
 typedef boost::variant<Util::NAT
   , Util::MD_NAT
@@ -83,7 +85,9 @@ typedef boost::variant<Util::NAT
   , LIB::BasePWMap
   , LIB::CanonPWMap
   , LIB::BaseSBG
-  , LIB::CanonSBG> ExprBaseType;
+  , LIB::CanonSBG
+  , LIB::BaseDSBG
+  , LIB::CanonDSBG> ExprBaseType;
 typedef std::optional<ExprBaseType> MaybeEBT;
 
 template <typename T>
@@ -138,7 +142,7 @@ struct FuncEnv{
 };
 
 typedef enum { empty, member, min, max, lt, comp, inv, im, preim, dom, comb, min_map, red, min_adj
-  , connected } Func;
+  , connected, min_reach } Func;
 
 // Classes for pretty printing ------------------------------------------------
 

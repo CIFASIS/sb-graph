@@ -184,6 +184,12 @@ LIB::CanonMap EvalCanonMap::operator()(AST::SBG v) const
   return LIB::CanonMap(); 
 }
 
+LIB::CanonMap EvalCanonMap::operator()(AST::DSBG v) const 
+{
+  Util::ERROR("EvalCanonMap: trying to evaluate a DSBG");
+  return LIB::CanonMap(); 
+}
+
 } // namespace Eval
 
 } // namespace SBG

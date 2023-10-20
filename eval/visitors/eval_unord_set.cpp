@@ -204,6 +204,12 @@ LIB::UnordSet EvalUnordSet::operator()(AST::SBG v) const
   return LIB::UnordSet(); 
 }
 
+LIB::UnordSet EvalUnordSet::operator()(AST::DSBG v) const
+{ 
+  Util::ERROR("EvalUnordSet: trying to evaluate a DSBG");
+  return LIB::UnordSet(); 
+}
+
 } // namespace Eval
 
 } // namespace SBG

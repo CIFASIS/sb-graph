@@ -576,6 +576,33 @@ std::ostream &operator<<(std::ostream &out, const SBG &g)
   return out;
 }
 
+// DSBG ------------------------------------------------------------------------
+
+DSBG::DSBG() : V_(), Vmap_(), mapB_(), mapD_(), Emap_() {}
+DSBG::DSBG(Expr V, Expr Vmap, Expr mapB, Expr mapD, Expr Emap) : V_(V), Vmap_(Vmap), mapB_(mapB), mapD_(mapD), Emap_(Emap) {}
+
+member_imp(DSBG, Expr, V);
+member_imp(DSBG, Expr, Vmap);
+member_imp(DSBG, Expr, mapB);
+member_imp(DSBG, Expr, mapD);
+member_imp(DSBG, Expr, Emap);
+
+bool DSBG::operator==(const DSBG &other) const 
+{ 
+  return V() == other.V() && Vmap() == other.Vmap() && mapB() == other.mapB() && mapD() == other.mapD() && Emap() == other.Emap();
+}
+
+std::ostream &operator<<(std::ostream &out, const DSBG &g)
+{
+  out << "V = " << g.V() << ";\n";
+  out << "Vmap = " << g.Vmap() << ";\n\n";
+  out << "mapB = " << g.mapB() << ";\n";
+  out << "mapD = " << g.mapD() << ";\n";
+  out << "Emap = " << g.Emap() << ";\n";
+
+  return out;
+}
+
 } // namespace AST
 
 } // namespace SBG

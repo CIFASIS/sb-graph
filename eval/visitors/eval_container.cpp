@@ -97,6 +97,18 @@ ContainerBaseType EvalContainer::operator()(LIB::CanonSBG v) const
   return ContainerBaseType();
 }
 
+ContainerBaseType EvalContainer::operator()(LIB::BaseDSBG v) const
+{
+  Util::ERROR("EvalContainer: trying to evaluate a BaseDSBG");
+  return ContainerBaseType();
+}
+
+ContainerBaseType EvalContainer::operator()(LIB::CanonDSBG v) const
+{
+  Util::ERROR("EvalContainer: trying to evaluate a CanonDSBG");
+  return ContainerBaseType();
+}
+
 } // namespace Eval
 
 } // namespace SBG

@@ -59,6 +59,7 @@ struct EvalInterval : public boost::static_visitor<LIB::Interval> {
   LIB::Interval operator()(AST::LinearMap v) const;
   LIB::Interval operator()(AST::PWLMap v) const;
   LIB::Interval operator()(AST::SBG v) const;
+  LIB::Interval operator()(AST::DSBG v) const;
 
   private:
   mutable VarEnv env_;

@@ -59,6 +59,7 @@ struct EvalOrdSet : public boost::static_visitor<LIB::OrdSet> {
   LIB::OrdSet operator()(AST::LinearMap v) const;
   LIB::OrdSet operator()(AST::PWLMap v) const;
   LIB::OrdSet operator()(AST::SBG v) const;
+  LIB::OrdSet operator()(AST::DSBG v) const;
 
   private:
   mutable VarEnv env_;

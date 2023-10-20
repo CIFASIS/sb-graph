@@ -190,6 +190,12 @@ LIB::CanonSBG EvalCanonSBG::operator()(AST::SBG v) const
   return LIB::CanonSBG(V, Vmap, map1, map2, Emap);
 }
 
+LIB::CanonSBG EvalCanonSBG::operator()(AST::DSBG v) const 
+{
+  Util::ERROR("EvalCanonSBG: trying to evaluate a DSBG");
+  return LIB::CanonSBG(); 
+}
+
 } // namespace Eval
 
 } // namespace SBG

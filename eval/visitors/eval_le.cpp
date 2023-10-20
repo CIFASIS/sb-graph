@@ -197,6 +197,13 @@ LIB::LExp EvalLE::operator()(AST::SBG v) const
   return LIB::LExp(); 
 }
 
+LIB::LExp EvalLE::operator()(AST::DSBG v) const 
+{
+  Util::ERROR("EvalLE: trying to evaluate a DSBG");
+  return LIB::LExp(); 
+}
+
+
 } // namespace Eval
 
 } // namespace SBG

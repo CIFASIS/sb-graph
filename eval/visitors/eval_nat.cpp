@@ -197,6 +197,12 @@ Util::NAT EvalNat::operator()(AST::SBG v) const
   return 0;
 }
 
+Util::NAT EvalNat::operator()(AST::DSBG v) const
+{
+  Util::ERROR("EvalNat: trying to evaluate a DSBG");
+  return 0;
+}
+
 } // namespace Eval
 
 } // namespace SBG

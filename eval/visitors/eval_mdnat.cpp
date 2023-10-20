@@ -195,6 +195,12 @@ Util::MD_NAT EvalMDNat::operator()(AST::SBG v) const
   return 0;
 }
 
+Util::MD_NAT EvalMDNat::operator()(AST::DSBG v) const
+{
+  Util::ERROR("EvalMDNat: trying to evaluate a DSBG");
+  return 0;
+}
+
 } // namespace Eval
 
 } // namespace SBG

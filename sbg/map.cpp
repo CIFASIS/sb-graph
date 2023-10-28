@@ -199,16 +199,19 @@ SBGMap<Set> composition(SBGMap<Set> sbgmap1, SBGMap<Set> sbgmap2)
 // Extra functions -------------------------------------------------------------
 
 template<typename Set>
-SBGMap<Set> minInv(SBGMap<Set> sbgmap)
+SBGMap<Set> minInv(Set d, SBGMap<Set> sbgmap)
 {
-  Set dom = sbgmap.dom();
+  Set dom = sbgmap.dom(), res_dom = image(restrict(d, sbgmap));
   Exp e = sbgmap.exp();
 
   if (cardinal(dom) == 1 || isConstant(e)) 
-    return SBGMap<Set>(image(sbgmap), Exp(minElem(dom)));
+    return SBGMap<Set>(res_dom, Exp(minElem(sbgmap.dom())));
 
-  return SBGMap<Set>(image(sbgmap), inverse(e));
+  return SBGMap<Set>(res_dom, inverse(e));
 }
+
+template<typename Set>
+SBGMap<Set> minInv(SBGMap<Set> sbgmap) { return minInv(sbgmap.dom(), sbgmap); }
 
 template<typename Set>
 std::size_t hash_value(const SBGMap<Set> &sbgmap)
@@ -230,6 +233,7 @@ template UnordSet image<UnordSet>(UnordSet subdom, BaseMap sbgmap);
 template UnordSet preImage<UnordSet>(BaseMap sbgmap);
 template UnordSet preImage<UnordSet>(UnordSet subdom, BaseMap sbgmap);
 template BaseMap composition<UnordSet>(BaseMap sbgmap1, BaseMap sbgmap2);
+template BaseMap minInv<UnordSet>(UnordSet im, BaseMap sbgmap);
 template BaseMap minInv<UnordSet>(BaseMap sbgmap);
 template std::size_t hash_value<UnordSet>(const BaseMap &sbgmap);
 
@@ -241,6 +245,7 @@ template OrdSet image<OrdSet>(OrdSet subdom, CanonMap sbgmap);
 template OrdSet preImage<OrdSet>(CanonMap sbgmap);
 template OrdSet preImage<OrdSet>(OrdSet subdom, CanonMap sbgmap);
 template CanonMap composition<OrdSet>(CanonMap sbgmap1, CanonMap sbgmap2);
+template CanonMap minInv<OrdSet>(OrdSet im, CanonMap sbgmap);
 template CanonMap minInv<OrdSet>(CanonMap sbgmap);
 template std::size_t hash_value<OrdSet>(const CanonMap &sbgmap);
 

@@ -145,6 +145,8 @@ MDInterOrdSet canonize(MDInterOrdSet ii);
  */
 OrdPWMDInter concatenation(OrdPWMDInter pwi1, OrdPWMDInter pwi2);
 
+OrdPWMDInter filterSet(bool (*f)(SetPiece), OrdPWMDInter pwi);
+
 /** @function boundedTraverse
  *
  * @brief Traverse pwis in order until one reaches its end, obtaining an ordered

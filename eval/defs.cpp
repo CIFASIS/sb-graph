@@ -59,7 +59,7 @@ MaybeVValue VarEnv::operator[](VKey k) const
 FuncEnv::FuncEnv() {}
 FuncEnvType FuncEnv::mapping_ = {{"isEmpty", 0}, {"isMember", 1}, {"minElem", 2}, {"maxElem", 3}, {"lt", 4},
   {"compose", 5}, {"inv", 6}, {"image", 7}, {"preImage", 8}, {"dom", 9}, {"combine", 10}, {"minMap", 11}, 
-  {"reduce", 12}, {"minAdj", 13}, {"CC", 14}, {"minReach", 15}};
+  {"reduce", 12}, {"minAdj", 13}, {"CC", 14}, {"minReach", 15}, {"matching", 16}};
 
 MaybeFValue FuncEnv::operator[](FKey k) const
 {

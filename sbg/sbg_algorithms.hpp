@@ -47,19 +47,18 @@ struct PathInfo {
 };
 
 template<typename Set>
-PWMap<Set> minReach1(Set V, PWMap<Set> mapB, PWMap<Set> mapD, PWMap<Set> smap, PWMap<Set> rmap);
+PWMap<Set> minReach1(Set V, Set E, PWMap<Set> mapB, PWMap<Set> mapD, PWMap<Set> smap, PWMap<Set> rmap);
 
-template<typename Set>
-PWMap<Set> recursion(unsigned int n, Set ER, DSBGraph<Set> dsbg, PWMap<Set> smap, PWMap<Set> semap, PWMap<Set> rmap);
 
 template<typename Set>
 struct MinReach {
-  member_class(DSBGraph<Set>, sbg);
+  member_class(DSBGraph<Set>, dsbg);
 
   MinReach();
-  MinReach(DSBGraph<Set> sbg);
+  MinReach(DSBGraph<Set> dsbg);
 
-  PathInfo<Set> calculate();
+  PathInfo<Set> recursion(unsigned int n, Set ER, Set not_rv, PWMap<Set> smap, PWMap<Set> rmap);
+  PathInfo<Set> calculate(Set unmatched_V);
 };
 
 typedef MinReach<UnordSet> BaseMR;
@@ -67,13 +66,79 @@ typedef MinReach<OrdSet> CanonMR;
 
 // Matching --------------------------------------------------------------------
 
+enum Direction { forward, backward };
+
+template<typename Set>
+struct MatchInfo {
+  member_class(Set, matched_edges);
+  member_class(bool, fully_matchedU);
+
+  MatchInfo();
+  MatchInfo(Set matched_edges, bool fully_matchedU);
+};
+template<typename Set>
+std::ostream &operator<<(std::ostream &out, const MatchInfo<Set> &m_info);
+
 template<typename Set>
 struct SBGMatching {
+  //*** SBG info, constant
   member_class(SBGraph<Set>, sbg);
+
+  member_class(Set, V);
+  member_class(PWMap<Set>, Vmap);
+
+  member_class(Set, E);
+  member_class(PWMap<Set>, Emap);
+  //-----------------------------
+
+  member_class(PWMap<Set>, smap); // Successors map
+  member_class(PWMap<Set>, rmap); // Representatives map
+
+  member_class(PWMap<Set>, omap); // Offset map
+  member_class(Util::MD_NAT, max_V); // Current maximum value
+
+  member_class(Set, F); // Left vertices, constant
+  member_class(Set, U); // Right vertices, constant
+  member_class(PWMap<Set>, mapF); // Left map, constant
+  member_class(PWMap<Set>, mapU); // Forward map, constant
+
+  member_class(PWMap<Set>, mapB); // Backward map, mutable
+  member_class(PWMap<Set>, mapD); // Forward map, mutable
+
+  member_class(Set, paths_edges); // Available edges in each step to find paths, mutable
+  member_class(Set, matched_E); // Matched edges, mutable
+  member_class(Set, unmatched_E); // Unmatched edges, mutable
+
+  member_class(Set, matched_V); // All matched vertices, mutable
+  member_class(Set, unmatched_V); // All matched vertices, mutable
+  member_class(Set, unmatched_F); // Left unmatched vertices, mutable
+  member_class(Set, matched_U); // Right matched vertices, mutable
+  member_class(Set, unmatched_U); // Right unmatched vertices, mutable
 
   SBGMatching();
   SBGMatching(SBGraph<Set> sbg);
+
+  Set getManyToOne(); // Find N:1 connections
+  void shortPathDirection(Set endings, Direction dir); 
+  void shortPathStep();
+  void shortPath();
+
+  PWMap<Set> directedOffset(PWMap<Set> dir_map);
+  DSBGraph<Set> offsetGraph(PWMap<Set> dir_omap);
+  void directedMinReach(PWMap<Set> dir_map);
+  void minReachableStep();
+  void minReachable();  
+
+  Set getAllowedEdges(); // Calculate edges used by paths
+  bool fullyMatchedU();
+  void offsetVertices();
+  void updatePaths();
+  void updateOffset();
+  MatchInfo<Set> calculate();
 };
+
+typedef SBGMatching<UnordSet> BaseMatch;
+typedef SBGMatching<OrdSet> CanonMatch;
 
 } // namespace LIB
 

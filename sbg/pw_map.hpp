@@ -171,14 +171,21 @@ template<typename Set>
 PWMap<Set> minAdjMap(PWMap<Set> pw1, PWMap<Set> pw2);
 
 template<typename Set>
+PWMap<Set> minInv(Set im, PWMap<Set> pw);
+template<typename Set>
 PWMap<Set> minInv(PWMap<Set> pw);
 
 template<typename Set>
-PWMap<Set> filterMap(PWMap<Set> pw, bool (*f)(SBGMap<Set>));
+PWMap<Set> filterMap(bool (*f)(SBGMap<Set>), PWMap<Set> pw);
 
 // Returns elements in both doms, that have the same image in both maps
 template<typename Set>
 Set equalImage(PWMap<Set> pw1, PWMap<Set> pw2);
+
+template<typename Set>
+PWMap<Set> offsetDom(PWMap<Set> off, PWMap<Set> pw);
+template<typename Set>
+PWMap<Set> offsetImage(Util::MD_NAT off, PWMap<Set> pw);
 
 template<typename Set>
 PWMap<Set> normalize(PWMap<Set> pw);

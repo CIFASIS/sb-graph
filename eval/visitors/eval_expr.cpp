@@ -267,6 +267,7 @@ auto connected_visitor_ = Util::Overload {
   }
 };
 
+/*
 auto min_reach_visitor_ = Util::Overload {
   [](LIB::BaseDSBG a) { 
     LIB::BaseMR mr(a);
@@ -281,7 +282,22 @@ auto min_reach_visitor_ = Util::Overload {
     return ExprBaseType();
   }
 };
+*/
 
+auto matching_visitor_ = Util::Overload {
+  [](LIB::BaseSBG a) { 
+    LIB::BaseMatch match(a);
+    return ExprBaseType(match.calculate().matched_edges()); 
+  },
+  [](LIB::CanonSBG a) {
+    LIB::CanonMatch match(a);
+    return ExprBaseType(match.calculate().matched_edges());
+  },
+  [](auto a) {
+    Util::ERROR("Wrong arguments for minReach");
+    return ExprBaseType();
+  }
+};
 
 // -----------------------------------------------------------------------------
 // Expression evaluator --------------------------------------------------------
@@ -564,12 +580,24 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
         }
         break;
 
+/*
       case Eval::Func::min_reach:
         if (eval_args.size() == 1) {
           arity_ok = true;
 
           SBGBaseType g = Apply(EvalGraph{}, eval_args[0]);
           ExprBaseType result = std::visit(min_reach_visitor_, g);
+          return result;
+        }
+        break;
+*/
+
+      case Eval::Func::matching:
+        if (eval_args.size() == 1) {
+          arity_ok = true;
+
+          SBGBaseType g = Apply(EvalGraph{}, eval_args[0]);
+          ExprBaseType result = std::visit(matching_visitor_, g);
           return result;
         }
         break;

@@ -353,6 +353,16 @@ OrdPWMDInter concatenation(OrdPWMDInter pwi1, OrdPWMDInter pwi2)
   return res;
 }
 
+OrdPWMDInter filterSet(bool (*f)(SetPiece), OrdPWMDInter pwi)
+{
+  OrdPWMDInter res;
+
+  BOOST_FOREACH (SetPiece mdi, pwi) 
+    if (f(mdi)) res.emplace_hint(res.end(), mdi);
+
+  return res;
+}
+
 MDInterOrdSet boundedTraverse(OrdPWMDInter pwi1, OrdPWMDInter pwi2, SetPiece (*func)(SetPiece, SetPiece))
 {
   MDInterOrdSet result;

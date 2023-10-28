@@ -90,6 +90,8 @@ SBGMap<Set> composition(SBGMap<Set> sbgmap1, SBGMap<Set> sbgmap2);
  */
 
 template<typename Set>
+SBGMap<Set> minInv(Set im, SBGMap<Set> sbgmap);
+template<typename Set>
 SBGMap<Set> minInv(SBGMap<Set> sbgmap);
 
 template <typename Set>

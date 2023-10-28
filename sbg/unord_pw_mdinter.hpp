@@ -106,7 +106,7 @@ UnordPWMDInter difference(UnordPWMDInter pwi1, UnordPWMDInter pwi2);
  * disjoint.
  */
 UnordPWMDInter concatenation(UnordPWMDInter pwi1, UnordPWMDInter pwi2);
-SetPiece oneElem(UnordPWMDInter pwi);
+UnordPWMDInter filterSet(bool (*f)(SetPiece), UnordPWMDInter pwi);
 
 std::size_t hash_value(const UnordPWMDInter &pwi);
 

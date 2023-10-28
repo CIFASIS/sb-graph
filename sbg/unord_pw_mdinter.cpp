@@ -295,6 +295,16 @@ UnordPWMDInter concatenation(UnordPWMDInter pwi1, UnordPWMDInter pwi2)
   return res;
 }
 
+UnordPWMDInter filterSet(bool (*f)(SetPiece), UnordPWMDInter pwi)
+{
+  UnordPWMDInter res;
+
+  BOOST_FOREACH (SetPiece mdi, pwi)
+    if (f(mdi)) res.emplace_hint(res.end(), mdi);
+
+  return res;
+}
+
 std::size_t hash_value(const UnordPWMDInter &pwi)
 {
   UnordPWMDInter aux_pwi = pwi;

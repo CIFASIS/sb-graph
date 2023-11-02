@@ -34,7 +34,11 @@ Util::RATIONAL EvalRat::operator()(AST::MDNatural v) const
   return Util::RATIONAL(0, 1);
 }
 
-Util::RATIONAL EvalRat::operator()(AST::Rational v) const { return v; }
+Util::RATIONAL EvalRat::operator()(AST::Rational v) const
+{
+  EvalNat visit_nat(env_);
+  return Util::RATIONAL(Apply(visit_nat, v.num()), Apply(visit_nat, v.den()));
+}
 
 Util::RATIONAL EvalRat::operator()(AST::Boolean v) const 
 { 

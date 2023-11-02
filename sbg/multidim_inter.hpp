@@ -77,6 +77,7 @@ MultiDimInter intersection(MultiDimInter mdi1, MultiDimInter mdi2);
  * @brief Extra operations.
  */
 
+MultiDimInter offset(Util::MD_NAT off, MultiDimInter mdi);
 MultiDimInter least(MultiDimInter mdi1, MultiDimInter mdi2);
 bool isUnidim(MultiDimInter mdi);
 

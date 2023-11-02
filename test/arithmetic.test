@@ -2,9 +2,12 @@
 // !!! If this file is modified the corresponding SBG.log file
 //     in all the gt_data directories should be modified.
 
+N = r(100, 1)-r(200,1)
+
 (2, 5)
 2+3 
 r(1, 2)
 2*10+3
 5-3
 r(1, 2)+r(1, 2)
+r(100, 1)-r(200,1)

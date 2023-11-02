@@ -24,6 +24,8 @@
 #ifndef SBG_SBGALGO_HPP
 #define SBG_SBGALGO_HPP
 
+#include<chrono>
+
 #include "sbg/sbg.hpp"
 
 namespace SBG {

@@ -25,6 +25,7 @@
 #define AST_VISITOR_EVALRAT
 
 #include "eval/defs.hpp"
+#include "eval/visitors/eval_nat.hpp"
 
 namespace SBG {
 

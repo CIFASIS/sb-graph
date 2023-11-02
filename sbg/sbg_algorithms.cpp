@@ -76,10 +76,10 @@ member_imp_temp(template<typename Set>, PathInfo<Set>, PWMap<Set>, succs);
 member_imp_temp(template<typename Set>, PathInfo<Set>, PWMap<Set>, reps);
 
 template<typename Set>
-bool eqId(SBGMap<Set> sbgmap) { return image(sbgmap) == sbgmap.dom(); }
+bool eqId(SBGMap<Set> sbgmap) { return isId(sbgmap); }
 
 template<typename Set>
-bool notEqId(SBGMap<Set> sbgmap) { return !(image(sbgmap) == sbgmap.dom()); }
+bool notEqId(SBGMap<Set> sbgmap) { return !(isId(sbgmap)); }
 
 // Update rep iff new is less than current. Without this function, if there are
 // vertices v1, v2, v3 and edges v1->v2, v1->v3 where rmap(v2) = rmap(v3) the
@@ -115,7 +115,7 @@ PWMap<Set> minReach1(Set V, Set E, PWMap<Set> mapB, PWMap<Set> mapD, PWMap<Set> 
   PWMap new_smap = minMap(rmap, adj_smap, restrict(usable_verts, smap), rmap); // Get minimum between current rep and adjacent reps
   new_smap = updateMap(V, smap, new_smap, rmap); // Update rep iff new is less than current
   new_smap = combine(new_smap, adj_smap); 
-  new_smap = combine(new_smap, smap); 
+  new_smap = combine(new_smap, smap);
 
   return new_smap;
 }
@@ -132,7 +132,6 @@ PathInfo<Set> MinReach<Set>::recursion(unsigned int n, Set ER, Set rv, PWMap<Set
 
   Set ER_plus = preImage(image(ER, Emap), Emap);
   Set VR_plus = cup(image(ER_plus, mapB), image(ER_plus, mapD));
-
 
   PWMap<Set> new_smap;
   Set repeated = intersection(start, end);
@@ -186,7 +185,7 @@ PathInfo<Set> MinReach<Set>::calculate(Set unmatched_V)
     Set Vc; // Vertices that changed sucessor
     Set Ec; // Edges that changed successor
 
-    Set unmatched_D = intersection(unmatched_V, image(mapD));
+    Set unmatched_D = intersection(unmatched_V, image(mapD)), unmatched_B = intersection(unmatched_V, image(mapB));
     Set reach_vertices = unmatched_D;
     Set reach_edges;
 
@@ -201,6 +200,11 @@ PathInfo<Set> MinReach<Set>::calculate(Set unmatched_V)
       new_smap = minReach1(V, reach_edges, mapB, mapD, new_smap, new_rmap); // Find adjacent vertex that reaches a minor vertex than current one
       Vc = difference(V, equalImage(old_smap, new_smap));
 
+      if (!isEmpty(intersection(reach_vertices, unmatched_B))) {
+        new_rmap = mapInf(new_smap); // Get minimum reachable following path
+        return PathInfo<Set>(new_smap, new_rmap);
+      }
+
       if (!isEmpty(Vc)) {
         new_rmap = mapInf(new_smap); // Get minimum reachable following path
 
@@ -212,36 +216,32 @@ PathInfo<Set> MinReach<Set>::calculate(Set unmatched_V)
           new_semap = combine(new_semap, old_semap);
 
           Set not_changed = equalImage(new_semap, old_semap);
-          Ec = difference(E, not_changed);    
+          Ec = difference(E, not_changed);
 
-          Set ER; // Recursive edges that changed its successor
-          Set visited_edges = cup(dom(new_semap), image(new_semap));
-          Set old_subset_edges, visited_subset_edges = image(visited_edges, Emap);
-          Set repeated_subset_edges;
-          PWMap<Set> semap_nth = composition(new_semap, new_semap);
-          unsigned int j = 0;
-          do { // The max depth of recursion is the number of SVs
-            ER = equalImage(Emap, composition(Emap, filterMap(notEqId, semap_nth))); 
-            semap_nth = composition(semap_nth, new_semap); 
+          if (!isEmpty(Ec)) {
+            Set ER;  // Recursive edges that changed its successor
+            PWMap<Set> old_semap_nth, semap_nth = composition(new_semap, new_semap);
+            unsigned int j = 0;
+            do {  // The max depth of recursion is the number of SVs
+              ER = equalImage(Emap, composition(Emap, filterMap(notEqId, semap_nth)));
+              old_semap_nth = semap_nth;
+              semap_nth = composition(new_semap, semap_nth);
 
-            visited_edges = image(visited_edges, new_semap);
-            old_subset_edges = visited_subset_edges;
-            visited_subset_edges = image(visited_edges, Emap); 
-            repeated_subset_edges = intersection(old_subset_edges, visited_subset_edges);
-            j++;
-          } while(isEmpty(ER) && isEmpty(repeated_subset_edges));
-          ER = intersection(ER, Ec);
+              j++;
+            } while (isEmpty(ER) && j < nmbrSV(dg) && !(old_semap_nth == semap_nth));
+            ER = intersection(ER, Ec);
 
-          semap_nth = new_semap;
-          for (unsigned int k = 0; k < j; k++) {
-            ER = cup(ER, image(ER, semap_nth));
-            semap_nth = composition(semap_nth, new_semap); 
-          }
+            semap_nth = new_semap;
+            for (unsigned int k = 0; k < j; k++) {
+              ER = cup(ER, image(ER, semap_nth));
+              semap_nth = composition(new_semap, semap_nth);
+            }
 
-          if (!isEmpty(ER)) { // There are recursions, lets handle one of them
-            PathInfo<Set> res = recursion(j, ER, reach_vertices, new_smap, new_rmap);
-            new_smap = res.succs();
-            new_rmap = res.reps();
+            if (!isEmpty(ER)) {  // There are recursions, lets handle one of them
+              PathInfo<Set> res = recursion(j, ER, reach_vertices, new_smap, new_rmap);
+              new_smap = res.succs();
+              new_rmap = res.reps();
+            }
           }
         }
       }
@@ -249,7 +249,6 @@ PathInfo<Set> MinReach<Set>::calculate(Set unmatched_V)
 
     return PathInfo<Set>(new_smap, new_rmap);
   }
-
 
   return PathInfo<Set>();
 }
@@ -315,13 +314,13 @@ void SBGMatching<Set>::shortPathDirection(Set endings, Direction dir)
     PWMap<Set> rmap_reach = composition(rmap(), smap_reach);
     set_rmap(combine(rmap_reach, rmap()));
 
+    reach_end = cup(reach_end, P);
     if (dir == forward) {
-      reach_end = cup(reach_end, P);
-      Set used_subset_edges = image(P, composition(Emap(), starts)); 
+      Set used_subset_edges = image(P, composition(Emap(), starts));
       set_paths_edges(difference(pe, preImage(used_subset_edges, Emap())));
     }
     k++;
-  } while (!isEmpty(reach_end) && k < nmbrSV(sbg()));
+  } while (!isEmpty(P) && k < nmbrSV(sbg()));
 
   return;
 }
@@ -356,12 +355,13 @@ void SBGMatching<Set>::shortPathStep()
 template<typename Set>
 void SBGMatching<Set>::shortPath()
 {
-  set_paths_edges(difference(E(), getManyToOne()));
+  Set allowed_edges = difference(E(), getManyToOne());
 
   // Finish if all unknowns are matched, or there aren't any available edges left
-  do { 
+  do {
+    set_paths_edges(allowed_edges);
     shortPathStep();
-  } while(!fullyMatchedU() && !isEmpty(paths_edges())); 
+  } while(!fullyMatchedU() && !isEmpty(paths_edges()));
 
   // In this case we only offset vertices here because shortPath isn't looking
   // for any minimum reachable vertex
@@ -377,8 +377,9 @@ PWMap<Set> SBGMatching<Set>::directedOffset(PWMap<Set> dir_map)
 {
   Set unmatched_side = image(paths_edges(), dir_map);
   unmatched_side = intersection(unmatched_side, unmatched_V());
+  Util::MD_NAT max_dirV = maxElem(image(omap()));
   PWMap<Set> res = restrict(unmatched_side, omap());
-  res = offsetImage(max_V(), res);
+  res = offsetImage(max_dirV, res);
 
   return combine(res, omap());
 }
@@ -402,7 +403,7 @@ void SBGMatching<Set>::directedMinReach(PWMap<Set> dir_map)
   PWMap<Set> dir_omap = directedOffset(dir_map);
   DSBGraph<Set> dsbg = offsetGraph(dir_omap);
   MinReach min_reach(dsbg);
-  PathInfo<Set> res = min_reach.calculate(unmatched_V());
+  PathInfo<Set> res = min_reach.calculate(image(unmatched_V(), dir_omap));
 
   PWMap<Set> aux_omap = combine(dir_omap, omap()), to_normal = minInv(aux_omap);
   PWMap<Set> aux_succs = composition(res.succs(), aux_omap);
@@ -600,10 +601,17 @@ void SBGMatching<Set>::updateOffset()
 template<typename Set>
 MatchInfo<Set> SBGMatching<Set>::calculate()
 {
+  auto begin = std::chrono::high_resolution_clock::now();
   shortPath();
+  std::cout << "shortPath: " << matched_E() << "\n";
 
   if (!fullyMatchedU()) minReachable();
-  
+  std::cout << "minReachable: " << matched_E() << "\n\n";
+  auto end = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+  std::cout << "Exec time: " << duration.count() << " [ms]\n";
+
+  std::cout << MatchInfo(matched_E(), fullyMatchedU()) << "\n\n";
   return MatchInfo(matched_E(), fullyMatchedU());
 }
 

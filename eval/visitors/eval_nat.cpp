@@ -36,8 +36,8 @@ Util::NAT EvalNat::operator()(AST::MDNatural v) const
 
 Util::NAT EvalNat::operator()(AST::Rational v) const 
 { 
-  if (v.denominator() == 1)
-    return v.numerator();
+  if (ApplyThis(v.den()) == 1)
+    return ApplyThis(v.num());
 
   Util::ERROR("EvalNat: trying to evaluate a Rational");
   return 0; 

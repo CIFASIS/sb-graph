@@ -175,6 +175,19 @@ MultiDimInter intersection(MultiDimInter mdi1, MultiDimInter mdi2)
 
 // Extra operations ------------------------------------------------------------
 
+MultiDimInter offset(Util::MD_NAT off, MultiDimInter mdi)
+{
+  MultiDimInter res;
+
+  parallel_foreach2 (off.value_ref(), mdi.intervals_ref()) {
+    Util::NAT o = boost::get<0>(items);
+    Interval i = boost::get<1>(items);
+    res.emplaceBack(offset(o, i));
+  }
+
+  return res;
+}
+
 MultiDimInter least(MultiDimInter mdi1, MultiDimInter mdi2) { return std::min(mdi1, mdi2); }
 
 bool isUnidim(MultiDimInter mdi) { return mdi.size() <= 1; }

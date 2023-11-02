@@ -94,6 +94,12 @@ SBGMap<Set> minInv(Set im, SBGMap<Set> sbgmap);
 template<typename Set>
 SBGMap<Set> minInv(SBGMap<Set> sbgmap);
 
+template<typename Set>
+bool isId(SBGMap<Set> sbgmap);
+
+template<typename Set>
+unsigned int nmbrDims(SBGMap<Set> sbgmap);
+
 template <typename Set>
 std::size_t hash_value(const SBGMap<Set> &sbgmap);
 

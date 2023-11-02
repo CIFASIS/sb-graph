@@ -75,6 +75,24 @@ std::ostream &operator<<(std::ostream &out, const ExprList &el)
   return out;
 }
 
+Rational::Rational() : num_(), den_() {}
+Rational::Rational(Expr num, Expr den) : num_(num), den_(den) {}
+
+member_imp(Rational, Expr, num);
+member_imp(Rational, Expr, den);
+
+bool Rational::operator==(const Rational &other) const
+{
+  return num() == other.num() && den() == other.den();
+}
+
+std::ostream &operator<<(std::ostream &out, const Rational &r)
+{
+  out << "(" << r.num() << "/" << r.den() << ")";
+
+  return out;
+}
+
 UnaryOp::UnaryOp() : op_(), expr_() {}
 UnaryOp::UnaryOp(UnOp op, Expr expr) : op_(op), expr_(expr) {}
 

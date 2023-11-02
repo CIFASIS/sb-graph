@@ -59,6 +59,9 @@ unsigned int nmbrSV(SBGraph<Set> g);
 template<typename Set>
 void addSE(Set edges, SBGraph<Set> &g);
 
+template<typename Set>
+SBGraph<Set> copy(unsigned int times, SBGraph<Set> g);
+
 typedef SBGraph<UnordSet> BaseSBG;
 typedef SBGraph<OrdSet> CanonSBG;
 

@@ -108,6 +108,8 @@ UnordPWMDInter difference(UnordPWMDInter pwi1, UnordPWMDInter pwi2);
 UnordPWMDInter concatenation(UnordPWMDInter pwi1, UnordPWMDInter pwi2);
 UnordPWMDInter filterSet(bool (*f)(SetPiece), UnordPWMDInter pwi);
 
+UnordPWMDInter offset(Util::MD_NAT off, UnordPWMDInter);
+
 std::size_t hash_value(const UnordPWMDInter &pwi);
 
 typedef UnordPWMDInter UnordSet;

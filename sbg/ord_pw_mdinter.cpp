@@ -75,6 +75,7 @@ std::size_t OrdPWMDInter::size() { return pieces().size(); }
 
 void OrdPWMDInter::emplace(SetPiece mdi) { pieces_ref().emplace(mdi); }
 void OrdPWMDInter::emplace_hint(MDInterOrdSetIt it, SetPiece mdi) { pieces_ref().emplace_hint(it, mdi); }
+void OrdPWMDInter::emplaceBack(SetPiece mdi) { pieces_ref().emplace_hint(pieces_ref().cend(), mdi); }
 
 OrdPWMDInter::iterator OrdPWMDInter::begin() { return pieces_ref().begin(); }
 OrdPWMDInter::iterator OrdPWMDInter::end() { return pieces_ref().end(); }
@@ -179,20 +180,20 @@ OrdPWMDInter cup(OrdPWMDInter pwi1, OrdPWMDInter pwi2)
 
   if (maxElem(pwi1) <= minElem(pwi2)) {
     BOOST_FOREACH (SetPiece mdi1, pwi1)
-      un.emplace_hint(un.end(), mdi1);
+      un.emplaceBack(mdi1);
 
     BOOST_FOREACH (SetPiece mdi2, pwi2)
-      un.emplace_hint(un.end(), mdi2);
+      un.emplaceBack(mdi2);
     
     return OrdPWMDInter(un);
   }
 
   if (maxElem(pwi2) <= minElem(pwi1)) {
     BOOST_FOREACH (SetPiece mdi2, pwi2)
-      un.emplace_hint(un.end(), mdi2);
+      un.emplaceBack(mdi2);
 
     BOOST_FOREACH (SetPiece mdi1, pwi1)
-      un.emplace_hint(un.end(), mdi1);
+      un.emplaceBack(mdi1);
 
     return OrdPWMDInter(un);
   }
@@ -244,7 +245,7 @@ OrdPWMDInter complementAtom(OrdPWMDInter pwi)
     if (i.begin() != 0) {
       Interval i_res(0, 1, i.begin() - 1);
       if (!isEmpty(i_res))
-        c.emplace_hint(c.end(), SetPiece(i_res));  
+        c.emplaceBack(SetPiece(i_res));
     }
 
     // "During" interval
@@ -252,16 +253,16 @@ OrdPWMDInter complementAtom(OrdPWMDInter pwi)
       for (Util::NAT j = 1; j < i.step(); j++) {
         Interval i_res(i.begin() + j, i.step(), i.end());
         if (!isEmpty(i_res))
-          c.emplace_hint(c.end(), SetPiece(i_res));  
+          c.emplaceBack(SetPiece(i_res));
        }
     }
 
     // After interval
     if (maxElem(i) < Util::Inf)
-      c.emplace_hint(c.end(), SetPiece(Interval(maxElem(i) + 1, 1, Util::Inf)));
+      c.emplaceBack(SetPiece(Interval(maxElem(i) + 1, 1, Util::Inf)));
 
     else 
-      c.emplace_hint(c.end(), SetPiece(Interval(Util::Inf)));
+      c.emplaceBack(SetPiece(Interval(Util::Inf)));
   }
   
   else Util::ERROR("LIB::OrdPWMDInter:complementAtom: argument should have only one element");
@@ -358,7 +359,16 @@ OrdPWMDInter filterSet(bool (*f)(SetPiece), OrdPWMDInter pwi)
   OrdPWMDInter res;
 
   BOOST_FOREACH (SetPiece mdi, pwi) 
-    if (f(mdi)) res.emplace_hint(res.end(), mdi);
+    if (f(mdi)) res.emplaceBack(mdi);
+
+  return res;
+}
+
+OrdPWMDInter offset(Util::MD_NAT off, OrdPWMDInter pwi)
+{
+  OrdPWMDInter res;
+
+  BOOST_FOREACH (SetPiece mdi, pwi) res.emplaceBack(offset(off, mdi));
 
   return res;
 }
@@ -392,7 +402,7 @@ MDInterOrdSet boundedTraverse(OrdPWMDInter pwi1, OrdPWMDInter pwi2, SetPiece (*f
       BOOST_FOREACH (SetPiece mdi2, pwi2) {
         SetPiece funci = func(mdi1, mdi2);
         if (!isEmpty(funci))
-          result.emplace(funci);
+          result.emplace_hint(result.cend(), funci);
       }
   }
 
@@ -440,7 +450,7 @@ MDInterOrdSet traverse(OrdPWMDInter pwi1, OrdPWMDInter pwi2, SetPiece (*func)(Se
       BOOST_FOREACH (SetPiece mdi2, pwi2) {
         SetPiece funci = func(mdi1, mdi2);
         if (!isEmpty(funci))
-          result.emplace(funci);
+          result.emplace_hint(result.cend(), funci);
       }
   }
 

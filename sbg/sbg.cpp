@@ -109,6 +109,51 @@ SBGraph<Set> addSE(PWMap<Set> pw1, PWMap<Set> pw2, SBGraph<Set> g)
   return SBGraph<Set>();
 }
 
+template<typename Set>
+SBGraph<Set> copy(unsigned int times, SBGraph<Set> g)
+{
+  Set V_ith = g.V(), V_new = V_ith;
+  PWMap<Set> Vmap_ith = g.Vmap(), Vmap_new = Vmap_ith;
+  PWMap<Set> map1_ith = g.map1(), map1_new = map1_ith;
+  PWMap<Set> map2_ith = g.map2(), map2_new = map2_ith;
+  PWMap<Set> Emap_ith = g.Emap(), Emap_new = Emap_ith;
+
+  Util::MD_NAT maxv = maxElem(V_ith);
+  Util::MD_NAT maxV = maxElem(image(Vmap_ith));
+  Util::MD_NAT maxe = maxElem(g.E());
+  Util::MD_NAT maxE = maxElem(image(Emap_ith));
+
+  Exp off;
+  parallel_foreach2 (maxv.value_ref(), maxe.value_ref()) {
+    Util::NAT v = boost::get<0>(items), e = boost::get<1>(items);
+    Util::RATIONAL o = Util::RATIONAL(v) - Util::RATIONAL(e);
+    off.emplaceBack(LExp(0, o));
+  }
+
+  for (unsigned int j = 0; j < times; j++) {
+    if (j > 0) {
+      V_new = concatenation(V_new, V_ith);
+      Vmap_new = concatenation(Vmap_new, Vmap_ith);
+      map1_new = concatenation(map1_new, map1_ith);
+      map2_new = concatenation(map2_new, map2_ith);
+      Emap_new = concatenation(Emap_new, Emap_ith);
+    }
+
+    V_ith = offset(maxv, V_ith);
+    Vmap_ith = offsetDom(maxv, Vmap_ith);
+    Vmap_ith = offsetImage(maxV, Vmap_ith);
+
+    map1_ith = offsetDom(maxe, map1_ith);
+    map1_ith = offsetImage(off, map1_ith);
+    map2_ith = offsetDom(maxe, map2_ith);
+    map2_ith = offsetImage(off, map2_ith);
+    Emap_ith = offsetDom(maxv, Emap_ith);
+    Emap_ith = offsetImage(maxE, Emap_ith);
+  }
+
+  return SBGraph<Set>(V_new, Vmap_new, map1_new, map2_new, Emap_new);
+}
+
 // Directed SBG ----------------------------------------------------------------
 
 template<typename Set>
@@ -202,12 +247,14 @@ template std::ostream &operator<<(std::ostream &out, const BaseSBG &g);
 template BaseSBG addSV<UnordSet>(UnordSet vertices, BaseSBG g);
 template unsigned int nmbrSV<UnordSet>(BaseSBG g);
 template BaseSBG addSE<UnordSet>(BasePWMap pw1, BasePWMap pw2, BaseSBG g);
+template BaseSBG copy<UnordSet>(unsigned int times, BaseSBG g);
 
 template struct SBGraph<OrdSet>;
 template std::ostream &operator<<(std::ostream &out, const CanonSBG &g);
 template CanonSBG addSV<OrdSet>(OrdSet vertices, CanonSBG g);
 template unsigned int nmbrSV<OrdSet>(CanonSBG g);
 template CanonSBG addSE<OrdSet>(CanonPWMap pw1, CanonPWMap pw2, CanonSBG g);
+template CanonSBG copy<OrdSet>(unsigned int times, CanonSBG g);
 
 template struct DSBGraph<UnordSet>;
 template std::ostream &operator<<(std::ostream &out, const BaseDSBG &g);

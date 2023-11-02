@@ -118,6 +118,13 @@ Interval intersection(Interval i1, Interval i2)
 
 // Extra operations ------------------------------------------------------------
 
+Interval offset(Util::NAT off, Interval i)
+{
+  Util::NAT new_b = i.begin() + off, new_e = i.end() + off;
+
+  return Interval(new_b, i.step(), new_e);
+}
+
 Interval least(Interval i1, Interval i2) { return std::min(i1, i2); }
 
 MaybeInterval canonize(Interval i1, Interval i2)

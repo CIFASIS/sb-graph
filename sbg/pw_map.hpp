@@ -65,14 +65,16 @@ struct PWMap {
   PWMap(SBGMap<Set> m);
   PWMap(MapSet<Set> maps);
 
-  std::size_t size();
-  void emplace(SBGMap<Set> m);
-  void emplace_hint(MapSetIt<Set> it, SBGMap<Set> m);
   iterator begin();
   iterator end();
 
+  std::size_t size();
+  void emplace(SBGMap<Set> m);
+  void emplace_hint(MapSetIt<Set> it, SBGMap<Set> m);
+  void emplaceBack(SBGMap<Set> m);
+  SBGMap<Set> &operator[](std::size_t n);
+
   PWMap operator+(const PWMap &pw);
-  //PWMap operator-(const PWMap &pw);
 
   // Two maps are equal iff they satisfy the extensional principle
   eq_class(PWMap);
@@ -183,9 +185,16 @@ template<typename Set>
 Set equalImage(PWMap<Set> pw1, PWMap<Set> pw2);
 
 template<typename Set>
+PWMap<Set> offsetDom(Util::MD_NAT off, PWMap<Set> pw);
+template<typename Set>
 PWMap<Set> offsetDom(PWMap<Set> off, PWMap<Set> pw);
 template<typename Set>
 PWMap<Set> offsetImage(Util::MD_NAT off, PWMap<Set> pw);
+template<typename Set>
+PWMap<Set> offsetImage(Exp off, PWMap<Set> pw);
+
+template<typename Set>
+unsigned int nmbrDims(PWMap<Set> pw);
 
 template<typename Set>
 PWMap<Set> normalize(PWMap<Set> pw);

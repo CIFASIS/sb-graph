@@ -78,6 +78,7 @@ struct OrdPWMDInter {
   std::size_t size();
   void emplace(SetPiece mdi);
   void emplace_hint(MDInterOrdSetIt it, SetPiece mdi);
+  void emplaceBack(SetPiece mdi);
   iterator begin();
   iterator end();
   SetPiece operator[](std::size_t n);
@@ -146,6 +147,7 @@ MDInterOrdSet canonize(MDInterOrdSet ii);
 OrdPWMDInter concatenation(OrdPWMDInter pwi1, OrdPWMDInter pwi2);
 
 OrdPWMDInter filterSet(bool (*f)(SetPiece), OrdPWMDInter pwi);
+OrdPWMDInter offset(Util::MD_NAT off, OrdPWMDInter pwi);
 
 /** @function boundedTraverse
  *

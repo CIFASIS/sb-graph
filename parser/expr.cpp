@@ -190,8 +190,8 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   md_nat = OPAREN >> qi::lexeme[qi::ulong_long][phx::push_back(qi::_val, qi::_1)] 
     >> *(COMA >> qi::lexeme[qi::ulong_long])[phx::push_back(qi::_val, qi::_1)] >> CPAREN;
 
-  rational = (RAT >> OPAREN >> qi::lexeme[qi::long_long] 
-    >> COMA >> qi::lexeme[qi::long_long] >> CPAREN)[qi::_val = phx::construct<Util::RATIONAL>(qi::_1, qi::_2)];
+  rational = (RAT >> OPAREN >> primary
+    >> COMA >> primary >> CPAREN)[qi::_val = phx::construct<AST::Rational>(qi::_1, qi::_2)];
 
   call_exp = (ident >> function_call_args)[qi::_val = phx::construct<AST::Call>(qi::_1, qi::_2)];
 

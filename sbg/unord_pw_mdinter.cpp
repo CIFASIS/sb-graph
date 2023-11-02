@@ -305,6 +305,15 @@ UnordPWMDInter filterSet(bool (*f)(SetPiece), UnordPWMDInter pwi)
   return res;
 }
 
+UnordPWMDInter offset(Util::MD_NAT off, UnordPWMDInter pwi)
+{
+  UnordPWMDInter res;
+
+  BOOST_FOREACH (SetPiece mdi, pwi) res.emplace(offset(off, mdi));
+
+  return res;
+}
+
 std::size_t hash_value(const UnordPWMDInter &pwi)
 {
   UnordPWMDInter aux_pwi = pwi;

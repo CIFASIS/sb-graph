@@ -77,6 +77,7 @@ Interval intersection(Interval i1, Interval i2);
  * @brief Extra operations.
  */
 
+Interval offset(Util::NAT off, Interval i);
 Interval least(Interval i1, Interval i2);
 typedef std::optional<Interval> MaybeInterval;
 MaybeInterval canonize(Interval i1, Interval i2);

@@ -55,7 +55,7 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
 
   // Other rules
   qi::rule<Iterator, Skipper<Iterator>, Util::MD_NAT()> md_nat;
-  qi::rule<Iterator, Skipper<Iterator>, Util::RATIONAL()> rational;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Rational> rational;
   qi::rule<Iterator, Skipper<Iterator>, AST::Call()> call_exp;
   qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> function_call_args;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> primary;

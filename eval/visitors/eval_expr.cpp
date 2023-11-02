@@ -267,23 +267,6 @@ auto connected_visitor_ = Util::Overload {
   }
 };
 
-/*
-auto min_reach_visitor_ = Util::Overload {
-  [](LIB::BaseDSBG a) { 
-    LIB::BaseMR mr(a);
-    return ExprBaseType(mr.calculate().reps()); 
-  },
-  [](LIB::CanonDSBG a) {
-    LIB::CanonMR mr(a);
-    return ExprBaseType(mr.calculate().reps()); 
-  },
-  [](auto a) {
-    Util::ERROR("Wrong arguments for minReach");
-    return ExprBaseType();
-  }
-};
-*/
-
 auto matching_visitor_ = Util::Overload {
   [](LIB::BaseSBG a) { 
     LIB::BaseMatch match(a);
@@ -311,7 +294,7 @@ ExprBaseType EvalExpression::operator()(AST::Natural v) const { return v; }
 
 ExprBaseType EvalExpression::operator()(AST::MDNatural v) const { return v; }
 
-ExprBaseType EvalExpression::operator()(AST::Rational v) const { return v; }
+ExprBaseType EvalExpression::operator()(AST::Rational v) const { return Apply(EvalRat(env_), AST::Expr(v)); }
 
 ExprBaseType EvalExpression::operator()(AST::Boolean v) const { return v; }
 
@@ -579,18 +562,6 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
           return result;
         }
         break;
-
-/*
-      case Eval::Func::min_reach:
-        if (eval_args.size() == 1) {
-          arity_ok = true;
-
-          SBGBaseType g = Apply(EvalGraph{}, eval_args[0]);
-          ExprBaseType result = std::visit(min_reach_visitor_, g);
-          return result;
-        }
-        break;
-*/
 
       case Eval::Func::matching:
         if (eval_args.size() == 1) {

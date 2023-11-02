@@ -214,6 +214,18 @@ template<typename Set>
 SBGMap<Set> minInv(SBGMap<Set> sbgmap) { return minInv(sbgmap.dom(), sbgmap); }
 
 template<typename Set>
+bool isId(SBGMap<Set> sbgmap)
+{
+  if (cardinal(sbgmap.dom()) == 1) return sbgmap.dom() == image(sbgmap);
+
+  return isId(sbgmap.exp());
+}
+
+// Function should be called on a non-empty sbgmap
+template<typename Set>
+unsigned int nmbrDims(SBGMap<Set> sbgmap) { return sbgmap.dom().size(); }
+
+template<typename Set>
 std::size_t hash_value(const SBGMap<Set> &sbgmap)
 {
   std::size_t seed = 0;
@@ -235,6 +247,8 @@ template UnordSet preImage<UnordSet>(UnordSet subdom, BaseMap sbgmap);
 template BaseMap composition<UnordSet>(BaseMap sbgmap1, BaseMap sbgmap2);
 template BaseMap minInv<UnordSet>(UnordSet im, BaseMap sbgmap);
 template BaseMap minInv<UnordSet>(BaseMap sbgmap);
+template bool isId<UnordSet>(BaseMap sbgmap);
+template unsigned int nmbrDims<UnordSet>(BaseMap sbgmap);
 template std::size_t hash_value<UnordSet>(const BaseMap &sbgmap);
 
 template struct SBGMap<OrdSet>;
@@ -247,6 +261,8 @@ template OrdSet preImage<OrdSet>(OrdSet subdom, CanonMap sbgmap);
 template CanonMap composition<OrdSet>(CanonMap sbgmap1, CanonMap sbgmap2);
 template CanonMap minInv<OrdSet>(OrdSet im, CanonMap sbgmap);
 template CanonMap minInv<OrdSet>(CanonMap sbgmap);
+template bool isId<OrdSet>(CanonMap sbgmap);
+template unsigned int nmbrDims<OrdSet>(CanonMap sbgmap);
 template std::size_t hash_value<OrdSet>(const CanonMap &sbgmap);
 
 } // namespace LIB

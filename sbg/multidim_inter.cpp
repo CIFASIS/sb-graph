@@ -25,7 +25,7 @@ namespace LIB {
 
 MultiDimInter::MultiDimInter() : intervals_() {}
 MultiDimInter::MultiDimInter(MD_NAT x) : intervals_() {
-  BOOST_FOREACH (NAT xi, x)
+  for (NAT xi : x)
     emplaceBack(Interval(xi, 1, xi));
 }
 MultiDimInter::MultiDimInter(Interval i) : intervals_() { emplaceBack(i); }
@@ -45,10 +45,7 @@ void MultiDimInter::emplaceBack(Interval i)
 {
   if (!isEmpty(i)) intervals_ref().emplace_back(i);
 
-  else {
-    InterVector aux;
-    set_intervals(aux);
-  }
+  else set_intervals(InterVector());
 }
 
 Interval &MultiDimInter::operator[](std::size_t n) { return intervals_ref()[n]; }
@@ -104,7 +101,7 @@ unsigned int cardinal(MultiDimInter mdi)
 {
   unsigned int res = 1;
 
-  BOOST_FOREACH (Interval i, mdi)
+  for (Interval i : mdi)
     res *= cardinal(i);
 
   return res;
@@ -135,7 +132,7 @@ Util::MD_NAT minElem(MultiDimInter mdi)
 {
   MD_NAT res;
 
-  BOOST_FOREACH (Interval i, mdi)
+  for (Interval i : mdi)
     res.emplace_back(minElem(i));
 
   return res;
@@ -145,7 +142,7 @@ Util::MD_NAT maxElem(MultiDimInter mdi)
 {
   MD_NAT res;
 
-  BOOST_FOREACH (Interval i, mdi)
+  for (Interval i : mdi)
     res.emplace_back(maxElem(i));
 
   return res;

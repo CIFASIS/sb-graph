@@ -23,91 +23,183 @@ namespace SBG {
 
 namespace Eval {
 
-SBGBaseType EvalGraph::operator()(Util::NAT v) const
+EvalGraphType::EvalGraphType() : sbg_(), dsbg_() {}
+EvalGraphType::EvalGraphType(LIB::SBGraph sbg) : sbg_(sbg), dsbg_() {}
+EvalGraphType::EvalGraphType(LIB::DSBGraph dsbg) : sbg_(), dsbg_(dsbg) {}
+
+member_imp(EvalGraphType, LIB::SBGraph, sbg);
+member_imp(EvalGraphType, LIB::DSBGraph, dsbg);
+
+EvalGraph::EvalGraph() : nmbr_dims_(), env_() {}
+EvalGraph::EvalGraph(unsigned int nmbr_dims, VarEnv env) : nmbr_dims_(nmbr_dims), env_(env) {}
+
+EvalGraphType EvalGraph::operator()(AST::Natural v) const
 {
-  Util::ERROR("EvalGraph: trying to evaluate a NAT");
-  return SBGBaseType();
+  Util::ERROR("EvalGraph: trying to evaluate a Natural");
+  return EvalGraphType();
 }
 
-SBGBaseType EvalGraph::operator()(Util::MD_NAT v) const 
+EvalGraphType EvalGraph::operator()(AST::MDNatural v) const
 {
-  Util::ERROR("EvalGraph: trying to evaluate a MD_NAT");
-  return SBGBaseType();
+  Util::ERROR("EvalGraph: trying to evaluate a MDNatural");
+  return EvalGraphType();
 }
 
-SBGBaseType EvalGraph::operator()(Util::RATIONAL v) const 
-{ 
-  Util::ERROR("EvalGraph: trying to evaluate a RATIONAL");
-  return SBGBaseType();
+EvalGraphType EvalGraph::operator()(AST::Rational v) const
+{
+  Util::ERROR("EvalGraph: trying to evaluate a Rational");
+  return EvalGraphType();
 }
 
-SBGBaseType EvalGraph::operator()(LIB::Interval v) const
+EvalGraphType EvalGraph::operator()(AST::Boolean v) const
+{
+  Util::ERROR("EvalGraph: trying to evaluate a Boolean");
+  return EvalGraphType();
+}
+
+EvalGraphType EvalGraph::operator()(Util::VariableName v) const
+{
+  Util::ERROR("EvalGraph: variable %s not defined", v.c_str());
+  return EvalGraphType();
+}
+
+EvalGraphType EvalGraph::operator()(AST::UnaryOp v) const
+{
+  Util::ERROR("EvalGraph: trying to evaluate an arithmetic UnaryOp");
+  return EvalGraphType();
+}
+
+EvalGraphType EvalGraph::operator()(AST::BinOp v) const
+{
+  Util::ERROR("EvalGraph: trying to evaluate an arithmetic BinOp");
+  return EvalGraphType();
+}
+
+EvalGraphType EvalGraph::operator()(AST::Call v) const
+{
+  Util::ERROR("EvalGraph: trying to evaluate a Call");
+  return EvalGraphType();
+}
+
+EvalGraphType EvalGraph::operator()(AST::Interval v) const
 {
   Util::ERROR("EvalGraph: trying to evaluate an Interval");
-  return SBGBaseType();
+  return EvalGraphType();
 }
 
-SBGBaseType EvalGraph::operator()(LIB::SetPiece v) const
+EvalGraphType EvalGraph::operator()(AST::InterUnaryOp v) const
 {
-  Util::ERROR("EvalGraph: trying to evaluate a SetPiece");
-  return SBGBaseType();
+  Util::ERROR("EvalGraph: trying to evaluate an InterUnaryOp");
+  return EvalGraphType();
 }
 
-SBGBaseType EvalGraph::operator()(LIB::UnordSet v) const
+EvalGraphType EvalGraph::operator()(AST::InterBinOp v) const
 {
-  Util::ERROR("EvalGraph: trying to evaluate an UnordSet");
-  return SBGBaseType();
+  Util::ERROR("EvalGraph: trying to evaluate an InterBinOp");
+  return EvalGraphType();
 }
 
-SBGBaseType EvalGraph::operator()(LIB::OrdSet v) const
+EvalGraphType EvalGraph::operator()(AST::MultiDimInter v) const
 {
-  Util::ERROR("EvalGraph: trying to evaluate an OrdSet");
-  return SBGBaseType();
+  Util::ERROR("EvalGraph: trying to evaluate an MultiDimInter");
+  return EvalGraphType();
 }
 
-SBGBaseType EvalGraph::operator()(LIB::LExp v) const
+EvalGraphType EvalGraph::operator()(AST::MDInterUnaryOp v) const
 {
-  Util::ERROR("EvalGraph: trying to evaluate a LExp");
-  return SBGBaseType();
+  Util::ERROR("EvalGraph: trying to evaluate an MDInterUnaryOp");
+  return EvalGraphType();
 }
 
-SBGBaseType EvalGraph::operator()(LIB::Exp v) const
-{ 
-  Util::ERROR("EvalGraph: trying to evaluate an Exp");
-  return SBGBaseType();
-}
-
-SBGBaseType EvalGraph::operator()(LIB::BaseMap v) const
+EvalGraphType EvalGraph::operator()(AST::MDInterBinOp v) const
 {
-  Util::ERROR("EvalGraph: trying to evaluate a BaseMap");
-  return SBGBaseType();
+  Util::ERROR("EvalGraph: trying to evaluate an MDInterBinOp");
+  return EvalGraphType();
 }
 
-SBGBaseType EvalGraph::operator()(LIB::CanonMap v) const
+EvalGraphType EvalGraph::operator()(AST::Set v) const
 {
-  Util::ERROR("EvalGraph: trying to evaluate a CanonMap");
-  return SBGBaseType();
+  Util::ERROR("EvalGraph: trying to evaluate a Set");
+  return EvalGraphType();
 }
 
-SBGBaseType EvalGraph::operator()(LIB::BasePWMap v) const
+EvalGraphType EvalGraph::operator()(AST::SetUnaryOp v) const
 {
-  Util::ERROR("EvalGraph: trying to evaluate a BasePWMap");
-  return SBGBaseType();
+  Util::ERROR("EvalGraph: trying to evaluate a SetUnaryOp");
+  return EvalGraphType();
 }
 
-SBGBaseType EvalGraph::operator()(LIB::CanonPWMap v) const
+EvalGraphType EvalGraph::operator()(AST::SetBinOp v) const
 {
-  Util::ERROR("EvalGraph: trying to evaluate a CanonPWMap");
-  return SBGBaseType();
+  Util::ERROR("EvalGraph: trying to evaluate a SetBinOp");
+  return EvalGraphType();
 }
 
-SBGBaseType EvalGraph::operator()(LIB::BaseSBG v) const { return SBGBaseType(v); }
+EvalGraphType EvalGraph::operator()(AST::LinearExp v) const
+{
+  Util::ERROR("EvalGraph: trying to evaluate a LinearExp");
+  return EvalGraphType();
+}
 
-SBGBaseType EvalGraph::operator()(LIB::CanonSBG v) const { return SBGBaseType(v); }
+EvalGraphType EvalGraph::operator()(AST::LExpBinOp v) const
+{
+  Util::ERROR("EvalGraph: trying to evaluate a LExpBinOp");
+  return EvalGraphType();
+}
 
-SBGBaseType EvalGraph::operator()(LIB::BaseDSBG v) const { return SBGBaseType(v); }
+EvalGraphType EvalGraph::operator()(AST::MDLExp v) const
+{
+  Util::ERROR("EvalGraph: trying to evaluate a MDLExp");
+  return EvalGraphType();
+}
 
-SBGBaseType EvalGraph::operator()(LIB::CanonDSBG v) const { return SBGBaseType(v); }
+EvalGraphType EvalGraph::operator()(AST::MDLExpBinOp v) const
+{
+  Util::ERROR("EvalGraph: trying to evaluate a MDLExpBinOp");
+  return EvalGraphType();
+}
+
+EvalGraphType EvalGraph::operator()(AST::LinearMap v) const
+{
+  Util::ERROR("EvalGraph: trying to evaluate a LinearMap");
+  return EvalGraphType();
+}
+
+EvalGraphType EvalGraph::operator()(AST::PWLMap v) const
+{
+  Util::ERROR("EvalGraph: trying to evaluate a PWLMap");
+  return EvalGraphType();
+}
+
+EvalGraphType EvalGraph::operator()(AST::SBG v) const
+{
+  EvalSet visit_set(nmbr_dims_, env_);
+  EvalPWMap visit_pwmap(nmbr_dims_, env_);
+
+  LIB::Set new_V = Apply(visit_set, v.V());
+  LIB::PWMap new_Vmap = Apply(visit_pwmap, v.Vmap());
+
+  LIB::PWMap new_map1 = Apply(visit_pwmap, v.map1());
+  LIB::PWMap new_map2 = Apply(visit_pwmap, v.map2());
+  LIB::PWMap new_Emap = Apply(visit_pwmap, v.Emap());
+
+  return EvalGraphType(LIB::SBGraph(new_V, new_Vmap, new_map1, new_map2, new_Emap));
+}
+
+EvalGraphType EvalGraph::operator()(AST::DSBG v) const
+{
+  EvalSet visit_set(nmbr_dims_, env_);
+  EvalPWMap visit_pwmap(nmbr_dims_, env_);
+
+  LIB::Set new_V = Apply(visit_set, v.V());
+  LIB::PWMap new_Vmap = Apply(visit_pwmap, v.Vmap());
+
+  LIB::PWMap new_mapB = Apply(visit_pwmap, v.mapB());
+  LIB::PWMap new_mapD = Apply(visit_pwmap, v.mapD());
+  LIB::PWMap new_Emap = Apply(visit_pwmap, v.Emap());
+
+  return EvalGraphType(LIB::SBGraph(new_V, new_Vmap, new_mapB, new_mapD, new_Emap));
+}
 
 } // namespace Eval
 

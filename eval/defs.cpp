@@ -82,7 +82,7 @@ std::ostream &operator<<(std::ostream &out, const ExprEval &e)
 
 std::ostream &operator<<(std::ostream &out, const ExprEvalList &ee)
 {
-  BOOST_FOREACH (ExprEval e, ee) out << e << "\n";
+  for (ExprEval e : ee) out << e << "\n";
 
   return out;
 }

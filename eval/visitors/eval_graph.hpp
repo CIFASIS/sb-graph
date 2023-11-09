@@ -1,6 +1,6 @@
 /** @file eval_graph.hpp
 
- @brief <b>Graph base type evaluator</b>
+ @brief <b>Graph expression evaluator</b>
 
  <hr>
 
@@ -24,31 +24,55 @@
 #ifndef AST_VISITOR_EVAL_GRAPH
 #define AST_VISITOR_EVAL_GRAPH
 
-#include "eval/defs.hpp"
+#include "eval/visitors/eval_pwmap.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-struct EvalGraph : public boost::static_visitor<SBGBaseType> {
+struct EvalGraphType {
+  member_class(LIB::SBGraph, sbg);
+  member_class(LIB::DSBGraph, dsbg);
+
+  EvalGraphType();
+  EvalGraphType(LIB::SBGraph sbg);
+  EvalGraphType(LIB::DSBGraph dsbg);
+};
+
+struct EvalGraph : public boost::static_visitor<EvalGraphType> {
   public:
-  SBGBaseType operator()(Util::NAT v) const;
-  SBGBaseType operator()(Util::MD_NAT v) const;
-  SBGBaseType operator()(Util::RATIONAL v) const;
-  SBGBaseType operator()(LIB::Interval v) const;
-  SBGBaseType operator()(LIB::SetPiece v) const;
-  SBGBaseType operator()(LIB::UnordSet v) const;
-  SBGBaseType operator()(LIB::OrdSet v) const;
-  SBGBaseType operator()(LIB::LExp v) const;
-  SBGBaseType operator()(LIB::Exp v) const;
-  SBGBaseType operator()(LIB::BaseMap v) const;
-  SBGBaseType operator()(LIB::CanonMap v) const;
-  SBGBaseType operator()(LIB::BasePWMap v) const;
-  SBGBaseType operator()(LIB::CanonPWMap v) const;
-  SBGBaseType operator()(LIB::BaseSBG v) const;
-  SBGBaseType operator()(LIB::CanonSBG v) const;
-  SBGBaseType operator()(LIB::BaseDSBG v) const;
-  SBGBaseType operator()(LIB::CanonDSBG v) const;
+  EvalGraph();
+  EvalGraph(unsigned int nmbr_dims, VarEnv env);
+
+  EvalGraphType operator()(AST::Natural v) const;
+  EvalGraphType operator()(AST::MDNatural v) const;
+  EvalGraphType operator()(AST::Rational v) const;
+  EvalGraphType operator()(AST::Boolean v) const;
+  EvalGraphType operator()(Util::VariableName v) const;
+  EvalGraphType operator()(AST::UnaryOp v) const;
+  EvalGraphType operator()(AST::BinOp v) const;
+  EvalGraphType operator()(AST::Call v) const;
+  EvalGraphType operator()(AST::Interval v) const;
+  EvalGraphType operator()(AST::InterUnaryOp v) const;
+  EvalGraphType operator()(AST::InterBinOp v) const;
+  EvalGraphType operator()(AST::MultiDimInter v) const;
+  EvalGraphType operator()(AST::MDInterUnaryOp v) const;
+  EvalGraphType operator()(AST::MDInterBinOp v) const;
+  EvalGraphType operator()(AST::Set v) const;
+  EvalGraphType operator()(AST::SetUnaryOp v) const;
+  EvalGraphType operator()(AST::SetBinOp v) const;
+  EvalGraphType operator()(AST::LinearExp v) const;
+  EvalGraphType operator()(AST::LExpBinOp v) const;
+  EvalGraphType operator()(AST::MDLExp v) const;
+  EvalGraphType operator()(AST::MDLExpBinOp v) const;
+  EvalGraphType operator()(AST::LinearMap v) const;
+  EvalGraphType operator()(AST::PWLMap v) const;
+  EvalGraphType operator()(AST::SBG v) const;
+  EvalGraphType operator()(AST::DSBG v) const;
+
+  private:
+  unsigned int nmbr_dims_;
+  mutable VarEnv env_;
 };
 
 } // namespace Eval

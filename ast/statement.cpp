@@ -59,7 +59,7 @@ bool IsConfig::operator()(ConfigDims v) const { return true; }
 
 std::ostream &operator<<(std::ostream &out, const StatementList &stml)
 {
-  BOOST_FOREACH (Statement s, stml)
+  for (Statement s : stml)
     out << s << "\n";
 
   return out;

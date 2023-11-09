@@ -24,7 +24,7 @@ namespace SBG {
 namespace LIB {
 
 MDLExp::MDLExp() : exps_() {}
-MDLExp::MDLExp(Util::MD_NAT x) { BOOST_FOREACH (Util::NAT xi, x) emplaceBack(LExp(0, Util::RATIONAL(xi))); }
+MDLExp::MDLExp(Util::MD_NAT x) { for (Util::NAT xi : x) emplaceBack(LExp(0, Util::RATIONAL(xi))); }
 MDLExp::MDLExp(unsigned int dimensions) : exps_() {
   for (unsigned int j = 0; j < dimensions; j++) emplaceBack(LExp());
 }
@@ -141,14 +141,14 @@ MDLExp inverse(MDLExp mdle)
 {
   MDLExp res;
 
-  BOOST_FOREACH (LExp le, mdle) res.emplaceBack(inverse(le));
+  for (LExp le : mdle) res.emplaceBack(inverse(le));
 
   return res;
 }
 
 bool isId(MDLExp mdle)
 {
-  BOOST_FOREACH (LExp le, mdle)
+  for (LExp le : mdle)
     if (!isId(le)) return false;
 
   return true;
@@ -156,7 +156,7 @@ bool isId(MDLExp mdle)
 
 bool isConstant(MDLExp mdle)
 {
-  BOOST_FOREACH (LExp le, mdle)
+  for (LExp le : mdle)
     if (!isConstant(le)) return false;
 
   return true;

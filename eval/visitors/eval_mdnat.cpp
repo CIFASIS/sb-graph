@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "eval/visitors/eval_nat.hpp"
+#include "eval/visitors/eval_mdnat.hpp"
 
 namespace SBG {
 
@@ -35,9 +35,10 @@ Util::MD_NAT EvalMDNat::operator()(AST::Natural v) const
 Util::MD_NAT EvalMDNat::operator()(AST::MDNatural v) const { return v; }
 
 Util::MD_NAT EvalMDNat::operator()(AST::Rational v) const 
-{ 
-  if (v.denominator() == 1)
-    return v.numerator();
+{
+  EvalNat visit_nat(env_);
+  if (Apply(visit_nat, v.den()) == 1)
+    return Util::MD_NAT(Apply(visit_nat, v.num()));
 
   Util::ERROR("EvalMDNat: trying to evaluate a Rational");
   return 0; 
@@ -71,26 +72,8 @@ Util::MD_NAT EvalMDNat::operator()(AST::UnaryOp v) const
 
 Util::MD_NAT EvalMDNat::operator()(AST::BinOp v) const 
 {
-  AST::Expr l = v.left(), r = v.right();
-  switch (v.op()) {
-    case AST::Op::add:
-      return ApplyThis(l) + ApplyThis(r);
-
-    case AST::Op::sub:
-      return ApplyThis(l) - ApplyThis(r);
-
-    case AST::Op::mult:
-      return ApplyThis(l) * ApplyThis(r);
-
-    case AST::Op::expo:
-      return pow(ApplyThis(l), ApplyThis(r));
-
-    default:
-      std::stringstream ss;
-      ss << v.op();
-      Util::ERROR("EvalMDNat: BinOp %s not supported.", ss.str().c_str());
-      return 0;
-  }
+  Util::ERROR("EvalMDNat: trying to evaluate a BinOp");
+  return 0;
 }
 
 Util::MD_NAT EvalMDNat::operator()(AST::Call v) const

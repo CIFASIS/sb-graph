@@ -26,7 +26,6 @@
 
 #include "eval/visitors/eval_nat.hpp"
 #include "eval/visitors/eval_rat.hpp"
-#include "sbg/lexp.hpp"
 
 namespace SBG {
 

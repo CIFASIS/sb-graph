@@ -53,7 +53,7 @@ std::ostream &operator<<(std::ostream &out, const DeclRanged &dr)
 
 std::ostream &operator<<(std::ostream &out, const DeclsRanged &ddr)
 {
-  BOOST_FOREACH (DeclRanged dr, ddr) out << dr << "\n";
+  for (DeclRanged dr : ddr) out << dr << "\n";
 
   return out;
 }
@@ -72,7 +72,7 @@ std::ostream &operator<<(std::ostream &out, const VertexInfo &vi)
 
 std::ostream &operator<<(std::ostream &out, const VerticesInfo &vvi)
 {
-  BOOST_FOREACH (VertexInfo vi, vvi) out << vi << "\n";
+  for (VertexInfo vi : vvi) out << vi << "\n";
 
   return out;
 }
@@ -107,7 +107,7 @@ std::ostream &operator<<(std::ostream &out, const UseRanged &ur)
 
 std::ostream &operator<<(std::ostream &out, const UsesRanged &uur)
 {
-  BOOST_FOREACH (UseRanged ur, uur) out << ur;
+  for (UseRanged ur : uur) out << ur;
 
   return out;
 }
@@ -153,7 +153,7 @@ std::ostream &operator<<(std::ostream &out, const EdgeInfo &ei)
 
 std::ostream &operator<<(std::ostream &out, const EdgesInfo &eei)
 {
-  BOOST_FOREACH (EdgeInfo ei, eei) out << ei << "\n";
+  for (EdgeInfo ei : eei) out << ei << "\n";
 
   return out;
 }

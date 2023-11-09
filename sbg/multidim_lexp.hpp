@@ -24,8 +24,6 @@
 #ifndef SBG_MULTIDIM_LEXP_HPP
 #define SBG_MULTIDIM_LEXP_HPP
 
-#include <boost/foreach.hpp>
-
 #include "lexp.hpp"
 
 namespace SBG {

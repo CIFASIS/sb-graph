@@ -31,7 +31,7 @@ ProgramIO ProgramVisitor::operator()(AST::Program p) const
 
   AST::IsConfig cfg_visit;
   StmVisitor stm_visit;
-  BOOST_FOREACH (AST::Statement s, p.stms()) {
+  for (AST::Statement s : p.stms()) {
     if (Apply(cfg_visit, s)) {
       AST::ConfigDims cfg = boost::get<AST::ConfigDims>(s);
       result.set_nmbr_dims(cfg.nmbr_dims());
@@ -43,9 +43,9 @@ ProgramIO ProgramVisitor::operator()(AST::Program p) const
     }
   }
 
-  EvalExpression eval_expr(result.nmbr_dims(), stm_visit.env());
-  BOOST_FOREACH (AST::Expr e, p.exprs()) {
-    ExprBaseType expr_res = Apply(eval_expr, e);
+  EvalExpression visit_expr(result.nmbr_dims(), stm_visit.env());
+  for (AST::Expr e : p.exprs()) {
+    ExprBaseType expr_res = Apply(visit_expr, e);
     result.exprs_ref().push_back(ExprEval(e, expr_res));
   }
 

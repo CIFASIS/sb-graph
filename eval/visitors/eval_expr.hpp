@@ -24,14 +24,7 @@
 #ifndef AST_VISITOR_EVALEXP
 #define AST_VISITOR_EVALEXP
 
-#include "eval/visitors/eval_base_sbg.hpp"
-#include "eval/visitors/eval_canon_sbg.hpp"
-#include "eval/visitors/eval_base_dsbg.hpp"
-#include "eval/visitors/eval_canon_dsbg.hpp"
-#include "eval/visitors/eval_natbt.hpp"
-#include "eval/visitors/eval_container.hpp"
-#include "eval/visitors/eval_linear.hpp"
-#include "eval/visitors/eval_map.hpp"
+#include "eval/visitors/eval_mdnat.hpp"
 #include "eval/visitors/eval_graph.hpp"
 #include "sbg/sbg_algorithms.hpp"
 

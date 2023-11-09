@@ -39,7 +39,10 @@ bool compatible(Interval i, LExp le)
 
 bool compatible(SetPiece mdi, Exp mdle)
 {
-  if (isEmpty(mdi)) return true;
+  if (isEmpty(mdi)) {
+    Util::ERROR("LIB::SBGMap::compatible: empty mdis not allowed");
+    return false;
+  }
 
   if (mdi.size() == mdle.size()) {
     parallel_foreach2 (mdi.intervals_ref(), mdle.exps_ref()) {
@@ -52,20 +55,31 @@ bool compatible(SetPiece mdi, Exp mdle)
   return true;
 }
 
-template<typename Set>
-SBGMap<Set>::SBGMap() : dom_(Set()), exp_(Exp()) {}
-template<typename Set>
-SBGMap<Set>::SBGMap(Interval i, LExp le) : dom_(Set(SetPiece(i))), exp_(Exp(le)) {}
-template<typename Set>
-SBGMap<Set>::SBGMap(Set dom, Exp exp) : dom_(dom), exp_(exp) {
-  BOOST_FOREACH (SetPiece mdi, dom) compatible(mdi, exp);
+SBGMap::SBGMap() : dom_(Set()), exp_(Exp()) {}
+SBGMap::SBGMap(Interval i, LExp le) : dom_(), exp_() {
+  if (compatible(i, le)) {
+    set_dom(Set(SetPiece(i)));
+    set_exp(Exp(le));
+  }
+}
+SBGMap::SBGMap(SetPiece mdi, Exp mdle) : dom_(), exp_() {
+  if (compatible(mdi, mdle)) {
+    set_dom(Set(mdi));
+    set_exp(mdle);
+  }
+}
+SBGMap::SBGMap(Set dom, Exp exp) : dom_(dom), exp_(exp) {
+  auto f = [exp](SetPiece mdi) {
+    compatible(mdi, exp);
+    return;
+  };
+  foreach(f, dom);
 }
 
-member_imp_temp(template<typename Set>, SBGMap<Set>, Set, dom);
-member_imp_temp(template<typename Set>, SBGMap<Set>, Exp, exp);
+member_imp(SBGMap, Set, dom);
+member_imp(SBGMap, Exp, exp);
 
-template<typename Set>
-bool SBGMap<Set>::operator==(const SBGMap<Set> &other) const
+bool SBGMap::operator==(const SBGMap &other) const
 {
   if (dom() == other.dom()) {
     if (cardinal(dom()) == 1) {
@@ -78,11 +92,9 @@ bool SBGMap<Set>::operator==(const SBGMap<Set> &other) const
   return false;
 }
 
-template<typename Set>
-bool SBGMap<Set>::operator!=(const SBGMap<Set> &other) const { return !(*this == other); }
+bool SBGMap::operator!=(const SBGMap &other) const { return !(*this == other); }
 
-template<typename Set>
-std::ostream &operator<<(std::ostream &out, const SBGMap<Set> &sbgmap)
+std::ostream &operator<<(std::ostream &out, const SBGMap &sbgmap)
 {
   out << sbgmap.dom() << " ↦ " << sbgmap.exp();
 
@@ -91,8 +103,7 @@ std::ostream &operator<<(std::ostream &out, const SBGMap<Set> &sbgmap)
 
 // SBGMap functions ------------------------------------------------------------
 
-template<typename Set>
-SBGMap<Set> restrict(Set subdom, SBGMap<Set> sbgmap)
+SBGMap restrict(Set subdom, SBGMap sbgmap)
 {
   Set restricted_dom = intersection(sbgmap.dom_ref(), subdom);
   return SBGMap(restricted_dom, sbgmap.exp());
@@ -149,33 +160,27 @@ SetPiece image(SetPiece mdi, Exp mdle)
   return SetPiece();
 }
 
-template<typename Set>
-Set image(SBGMap<Set> sbgmap) { return image(sbgmap.dom(), sbgmap);}
+Set image(SBGMap sbgmap) { return image(sbgmap.dom(), sbgmap);}
 
-template<typename Set>
-Set image(Set subdom, SBGMap<Set> sbgmap) 
+Set image(Set subdom, SBGMap sbgmap)
 {
   Set res;
 
   Exp le = sbgmap.exp();
   Set capdom = intersection(sbgmap.dom_ref(), subdom);
-  if (isEmpty(capdom)) return Set();
 
-  else {
-    BOOST_FOREACH (SetPiece atom, capdom) {
-      SetPiece new_atom = image(atom, le);
-      res.emplace(new_atom);
-    }
-  }
+  auto f = [le, &res](SetPiece atom) {
+    SetPiece new_atom = image(atom, le);
+    res.emplace(new_atom);
+  };
+  foreach(f, capdom);
 
   return res;
 }
 
-template<typename Set>
-Set preImage(SBGMap<Set> sbgmap) { return sbgmap.dom(); }
+Set preImage(SBGMap sbgmap) { return sbgmap.dom(); }
 
-template<typename Set>
-Set preImage(Set subcodom, SBGMap<Set> sbgmap)
+Set preImage(Set subcodom, SBGMap sbgmap)
 {
   SBGMap inv(image(sbgmap), inverse(sbgmap.exp()));
   Set im = image(sbgmap);
@@ -185,8 +190,7 @@ Set preImage(Set subcodom, SBGMap<Set> sbgmap)
   return intersection(sbgmap.dom_ref(), inv_im);
 }
 
-template<typename Set>
-SBGMap<Set> composition(SBGMap<Set> sbgmap1, SBGMap<Set> sbgmap2)
+SBGMap composition(SBGMap sbgmap1, SBGMap sbgmap2)
 {
   Set dom1 = sbgmap1.dom(), im2 = image(sbgmap2);
   Set res_dom = intersection(im2, dom1);
@@ -198,23 +202,20 @@ SBGMap<Set> composition(SBGMap<Set> sbgmap1, SBGMap<Set> sbgmap2)
 
 // Extra functions -------------------------------------------------------------
 
-template<typename Set>
-SBGMap<Set> minInv(Set d, SBGMap<Set> sbgmap)
+SBGMap minInv(Set d, SBGMap sbgmap)
 {
   Set dom = sbgmap.dom(), res_dom = image(restrict(d, sbgmap));
   Exp e = sbgmap.exp();
 
   if (cardinal(dom) == 1 || isConstant(e)) 
-    return SBGMap<Set>(res_dom, Exp(minElem(sbgmap.dom())));
+    return SBGMap(res_dom, Exp(minElem(sbgmap.dom())));
 
-  return SBGMap<Set>(res_dom, inverse(e));
+  return SBGMap(res_dom, inverse(e));
 }
 
-template<typename Set>
-SBGMap<Set> minInv(SBGMap<Set> sbgmap) { return minInv(sbgmap.dom(), sbgmap); }
+SBGMap minInv(SBGMap sbgmap) { return minInv(sbgmap.dom(), sbgmap); }
 
-template<typename Set>
-bool isId(SBGMap<Set> sbgmap)
+bool isId(SBGMap sbgmap)
 {
   if (cardinal(sbgmap.dom()) == 1) return sbgmap.dom() == image(sbgmap);
 
@@ -222,11 +223,9 @@ bool isId(SBGMap<Set> sbgmap)
 }
 
 // Function should be called on a non-empty sbgmap
-template<typename Set>
-unsigned int nmbrDims(SBGMap<Set> sbgmap) { return sbgmap.dom().size(); }
+unsigned int nmbrDims(SBGMap sbgmap) { return sbgmap.dom().size(); }
 
-template<typename Set>
-std::size_t hash_value(const SBGMap<Set> &sbgmap)
+std::size_t hash_value(const SBGMap &sbgmap)
 {
   std::size_t seed = 0;
   boost::hash_combine(seed, sbgmap.dom());
@@ -234,36 +233,6 @@ std::size_t hash_value(const SBGMap<Set> &sbgmap)
 
   return seed;
 }
-
-// Template instantiations -----------------------------------------------------
-
-template struct SBGMap<UnordSet>;
-template std::ostream &operator<<(std::ostream &out, const BaseMap &sbgmap);
-template BaseMap restrict<UnordSet>(UnordSet subdom, BaseMap sbgmap);
-template UnordSet image<UnordSet>(BaseMap sbgmap);
-template UnordSet image<UnordSet>(UnordSet subdom, BaseMap sbgmap);
-template UnordSet preImage<UnordSet>(BaseMap sbgmap);
-template UnordSet preImage<UnordSet>(UnordSet subdom, BaseMap sbgmap);
-template BaseMap composition<UnordSet>(BaseMap sbgmap1, BaseMap sbgmap2);
-template BaseMap minInv<UnordSet>(UnordSet im, BaseMap sbgmap);
-template BaseMap minInv<UnordSet>(BaseMap sbgmap);
-template bool isId<UnordSet>(BaseMap sbgmap);
-template unsigned int nmbrDims<UnordSet>(BaseMap sbgmap);
-template std::size_t hash_value<UnordSet>(const BaseMap &sbgmap);
-
-template struct SBGMap<OrdSet>;
-template std::ostream &operator<<(std::ostream &out, const CanonMap &sbgmap);
-template CanonMap restrict<OrdSet>(OrdSet subdom, CanonMap sbgmap);
-template OrdSet image<OrdSet>(CanonMap sbgmap);
-template OrdSet image<OrdSet>(OrdSet subdom, CanonMap sbgmap);
-template OrdSet preImage<OrdSet>(CanonMap sbgmap);
-template OrdSet preImage<OrdSet>(OrdSet subdom, CanonMap sbgmap);
-template CanonMap composition<OrdSet>(CanonMap sbgmap1, CanonMap sbgmap2);
-template CanonMap minInv<OrdSet>(OrdSet im, CanonMap sbgmap);
-template CanonMap minInv<OrdSet>(CanonMap sbgmap);
-template bool isId<OrdSet>(CanonMap sbgmap);
-template unsigned int nmbrDims<OrdSet>(CanonMap sbgmap);
-template std::size_t hash_value<OrdSet>(const CanonMap &sbgmap);
 
 } // namespace LIB
 

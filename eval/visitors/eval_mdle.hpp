@@ -25,7 +25,6 @@
 #define AST_VISITOR_EVAL_MDLE
 
 #include "eval/visitors/eval_le.hpp"
-#include "sbg/multidim_lexp.hpp"
 
 namespace SBG {
 

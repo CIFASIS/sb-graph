@@ -69,7 +69,7 @@ std::ostream &operator<<(std::ostream &out, const Op &op)
 
 std::ostream &operator<<(std::ostream &out, const ExprList &el)
 {
-  BOOST_FOREACH (Expr e, el)
+  for (Expr e : el)
     out << e << "\n";
 
   return out;

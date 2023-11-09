@@ -157,7 +157,7 @@ LIB::Exp EvalMDLE::operator()(AST::MDLExp v) const
   LIB::Exp res;
 
   EvalLE visit_le(env_);
-  BOOST_FOREACH (AST::Expr le, v.exps())
+  for (AST::Expr le : v.exps())
     res.emplaceBack(Apply(visit_le, le));
 
   return LIB::Exp(res);

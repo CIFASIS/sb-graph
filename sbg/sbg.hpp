@@ -32,70 +32,51 @@ namespace LIB {
 
 // Undirected SBG --------------------------------------------------------------
 
-template<typename Set>
 struct SBGraph {
   // Vertex definitions
   member_class(Set, V);
-  member_class(PWMap<Set>, Vmap);
+  member_class(PWMap, Vmap);
 
   // Edge definitions
   member_class(Set, E);
-  member_class(PWMap<Set>, map1);
-  member_class(PWMap<Set>, map2);
-  member_class(PWMap<Set>, Emap);
+  member_class(PWMap, map1);
+  member_class(PWMap, map2);
+  member_class(PWMap, Emap);
 
   SBGraph();
-  SBGraph(Set V, PWMap<Set> VMap, PWMap<Set> map1, PWMap<Set> map2, PWMap<Set> Emap);
+  SBGraph(Set V, PWMap VMap, PWMap map1, PWMap map2, PWMap Emap);
 };
-template<typename Set>
-std::ostream &operator<<(std::ostream &out, const SBGraph<Set> &pw);
+std::ostream &operator<<(std::ostream &out, const SBGraph &pw);
 
-template<typename Set>
-void addSV(Set vertices, SBGraph<Set> &g);
+void addSV(Set vertices, SBGraph &g);
+unsigned int nmbrSV(SBGraph g);
 
-template<typename Set>
-unsigned int nmbrSV(SBGraph<Set> g);
+void addSE(Set edges, SBGraph &g);
 
-template<typename Set>
-void addSE(Set edges, SBGraph<Set> &g);
-
-template<typename Set>
-SBGraph<Set> copy(unsigned int times, SBGraph<Set> g);
-
-typedef SBGraph<UnordSet> BaseSBG;
-typedef SBGraph<OrdSet> CanonSBG;
+SBGraph copy(unsigned int times, SBGraph g);
 
 // Directed SBG ----------------------------------------------------------------
 
-template<typename Set>
 struct DSBGraph {
   // Vertex definitions
   member_class(Set, V);
-  member_class(PWMap<Set>, Vmap);
+  member_class(PWMap, Vmap);
 
   // Edge definitions
   member_class(Set, E);
-  member_class(PWMap<Set>, mapB);
-  member_class(PWMap<Set>, mapD);
-  member_class(PWMap<Set>, Emap);
+  member_class(PWMap, mapB);
+  member_class(PWMap, mapD);
+  member_class(PWMap, Emap);
 
   DSBGraph();
-  DSBGraph(Set V, PWMap<Set> VMap, PWMap<Set> mapB, PWMap<Set> mapD, PWMap<Set> Emap);
+  DSBGraph(Set V, PWMap VMap, PWMap mapB, PWMap mapD, PWMap Emap);
 };
-template<typename Set>
-std::ostream &operator<<(std::ostream &out, const DSBGraph<Set> &pw);
+std::ostream &operator<<(std::ostream &out, const DSBGraph &pw);
 
-template<typename Set>
-void addSV(Set vertices, DSBGraph<Set> &g);
+void addSV(Set vertices, DSBGraph &g);
+unsigned int nmbrSV(DSBGraph g);
 
-template<typename Set>
-unsigned int nmbrSV(DSBGraph<Set> g);
-
-template<typename Set>
-void addSE(Set edges, DSBGraph<Set> &g);
-
-typedef DSBGraph<UnordSet> BaseDSBG;
-typedef DSBGraph<OrdSet> CanonDSBG;
+void addSE(Set edges, DSBGraph &g);
 
 } // namespace LIB
 

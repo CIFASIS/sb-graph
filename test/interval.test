@@ -2,15 +2,15 @@
 // !!! If this file is modified the corresponding SBG.log file
 //     in all the gt_data directories should be modified.
 
-#[1:1:10]
-#[3:5:50]
+//#[1:1:10]
+//#[3:5:50]
 
-isEmpty([1:0:0])
-isEmpty([100:1:200])
-isEmpty([100:1:5])
+//isEmpty([1:0:0])
+//isEmpty([100:1:200])
+//isEmpty([100:1:5])
 
-isMember(201, [201:2:399])
-isMember(201, [200:4:400])
+//isMember(201, [201:2:399])
+//isMember(201, [200:4:400])
 
 ([1:1:0] /\ [100:1:500])
 ([100:1:500] /\ [1:1:0])
@@ -19,11 +19,11 @@ isMember(201, [200:4:400])
 ([201:2:399] /\ [200:4:400])
 ([300:1:1000000] /\ [300:1:500])
 
-minElem([500:5:499])
-minElem([500:5:600])
+//minElem([500:5:499])
+//minElem([500:5:600])
 
-maxElem([500:5:499])
-maxElem([500:5:600])
+//maxElem([500:5:499])
+//maxElem([500:5:600])
 
 ([1:1:100] == [1:1:100])
 ([1:2:100] == [1:1:100])

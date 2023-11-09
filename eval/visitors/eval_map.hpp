@@ -1,6 +1,6 @@
 /** @file eval_map.hpp
 
- @brief <b>Map base type evaluator</b>
+ @brief <b>Linear map expression evaluator</b>
 
  <hr>
 
@@ -24,31 +24,48 @@
 #ifndef AST_VISITOR_EVAL_MAP
 #define AST_VISITOR_EVAL_MAP
 
-#include "eval/defs.hpp"
+#include "eval/visitors/eval_mdle.hpp"
+#include "eval/visitors/eval_set.hpp"
+#include "sbg/map.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-struct EvalMap : public boost::static_visitor<MapBaseType> {
+struct EvalMap : public boost::static_visitor<LIB::SBGMap> {
   public:
-  MapBaseType operator()(Util::NAT v) const;
-  MapBaseType operator()(Util::MD_NAT v) const;
-  MapBaseType operator()(Util::RATIONAL v) const;
-  MapBaseType operator()(LIB::Interval v) const;
-  MapBaseType operator()(LIB::SetPiece v) const;
-  MapBaseType operator()(LIB::UnordSet v) const;
-  MapBaseType operator()(LIB::OrdSet v) const;
-  MapBaseType operator()(LIB::LExp v) const;
-  MapBaseType operator()(LIB::Exp v) const;
-  MapBaseType operator()(LIB::BaseMap v) const;
-  MapBaseType operator()(LIB::CanonMap v) const;
-  MapBaseType operator()(LIB::BasePWMap v) const;
-  MapBaseType operator()(LIB::CanonPWMap v) const;
-  MapBaseType operator()(LIB::BaseSBG v) const;
-  MapBaseType operator()(LIB::CanonSBG v) const;
-  MapBaseType operator()(LIB::BaseDSBG v) const;
-  MapBaseType operator()(LIB::CanonDSBG v) const;
+  EvalMap();
+  EvalMap(unsigned int nmbr_dims_, VarEnv env);
+
+  LIB::SBGMap operator()(AST::Natural v) const;
+  LIB::SBGMap operator()(AST::MDNatural v) const;
+  LIB::SBGMap operator()(AST::Rational v) const;
+  LIB::SBGMap operator()(AST::Boolean v) const;
+  LIB::SBGMap operator()(Util::VariableName v) const;
+  LIB::SBGMap operator()(AST::UnaryOp v) const;
+  LIB::SBGMap operator()(AST::BinOp v) const;
+  LIB::SBGMap operator()(AST::Call v) const;
+  LIB::SBGMap operator()(AST::Interval v) const;
+  LIB::SBGMap operator()(AST::InterUnaryOp v) const;
+  LIB::SBGMap operator()(AST::InterBinOp v) const;
+  LIB::SBGMap operator()(AST::MultiDimInter v) const;
+  LIB::SBGMap operator()(AST::MDInterUnaryOp v) const;
+  LIB::SBGMap operator()(AST::MDInterBinOp v) const;
+  LIB::SBGMap operator()(AST::Set v) const;
+  LIB::SBGMap operator()(AST::SetUnaryOp v) const;
+  LIB::SBGMap operator()(AST::SetBinOp v) const;
+  LIB::SBGMap operator()(AST::LinearExp v) const;
+  LIB::SBGMap operator()(AST::LExpBinOp v) const;
+  LIB::SBGMap operator()(AST::MDLExp v) const;
+  LIB::SBGMap operator()(AST::MDLExpBinOp v) const;
+  LIB::SBGMap operator()(AST::LinearMap v) const;
+  LIB::SBGMap operator()(AST::PWLMap v) const;
+  LIB::SBGMap operator()(AST::SBG v) const;
+  LIB::SBGMap operator()(AST::DSBG v) const;
+
+  private:
+  unsigned int nmbr_dims_;
+  mutable VarEnv env_;
 };
 
 } // namespace Eval

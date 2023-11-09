@@ -27,13 +27,8 @@
 #ifndef SBG_MAP_HPP
 #define SBG_MAP_HPP
 
-#include <iostream>
-
-#include "sbg/multidim_inter.hpp"
 #include "sbg/multidim_lexp.hpp"
-#include "sbg/ord_pw_mdinter.hpp"
-#include "sbg/unord_pw_mdinter.hpp"
-#include "util/debug.hpp"
+#include "sbg/set.hpp"
 
 namespace SBG {
 
@@ -43,68 +38,48 @@ bool compatible(SetPiece mdi, Exp mdle);
 
 // Non-optimized implementation ------------------------------------------------
 
-template<typename Set>
 struct SBGMap {
-  typedef typename Set::iterator SetIt;
-
   member_class(Set, dom);
   member_class(Exp, exp);
 
   SBGMap();
   SBGMap(Interval i, LExp le);
+  SBGMap(SetPiece mdi, Exp mdle);
   SBGMap(Set dom, Exp exp);
 
   eq_class(SBGMap);
   neq_class(SBGMap);
 };
-template<typename Set>
-std::ostream &operator<<(std::ostream &out, const SBGMap<Set> &sbgmap);
+std::ostream &operator<<(std::ostream &out, const SBGMap &sbgmap);
 
 /**
  * @brief Traditional map operations.
  */
 
-template<typename Set>
-SBGMap<Set> restrict(Set subdom, SBGMap<Set> sbgmap);
+SBGMap restrict(Set subdom, SBGMap sbgmap);
 
 Interval image(Interval i, LExp le);
 SetPiece image(SetPiece mdi, Exp le);
+Set image(SBGMap sbgmap);
+Set image(Set subdom, SBGMap sbgmap);
 
-template<typename Set>
-Set image(SBGMap<Set> sbgmap);
+Set preImage(SBGMap sbgmap);
+Set preImage(Set subcodom, SBGMap sbgmap);
 
-template<typename Set>
-Set image(Set subdom, SBGMap<Set> sbgmap);
-
-template<typename Set>
-Set preImage(SBGMap<Set> sbgmap);
-
-template<typename Set>
-Set preImage(Set subcodom, SBGMap<Set> sbgmap);
-
-template<typename Set>
-SBGMap<Set> composition(SBGMap<Set> sbgmap1, SBGMap<Set> sbgmap2);
+SBGMap composition(SBGMap sbgmap1, SBGMap sbgmap2);
 
 /**
  * @brief Extra operations.
  */
 
-template<typename Set>
-SBGMap<Set> minInv(Set im, SBGMap<Set> sbgmap);
-template<typename Set>
-SBGMap<Set> minInv(SBGMap<Set> sbgmap);
+SBGMap minInv(Set im, SBGMap sbgmap);
+SBGMap minInv(SBGMap sbgmap);
 
-template<typename Set>
-bool isId(SBGMap<Set> sbgmap);
+bool isId(SBGMap sbgmap);
 
-template<typename Set>
-unsigned int nmbrDims(SBGMap<Set> sbgmap);
+unsigned int nmbrDims(SBGMap sbgmap);
 
-template <typename Set>
-std::size_t hash_value(const SBGMap<Set> &sbgmap);
-
-typedef SBGMap<UnordSet> BaseMap;
-typedef SBGMap<OrdSet> CanonMap;
+std::size_t hash_value(const SBGMap &sbgmap);
 
 } // namespace LIB
 

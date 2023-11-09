@@ -29,8 +29,8 @@ VarEnv StmVisitor::env() { return env_; }
 
 void StmVisitor::operator()(AST::Assign asgn) const 
 { 
-  EvalExpression eval_expr(env_);
-  env_.insert(asgn.l(), Apply(eval_expr, asgn.r()));
+  EvalExpression visit_expr(env_);
+  env_.insert(asgn.l(), Apply(visit_expr, asgn.r()));
 
   return;
 }

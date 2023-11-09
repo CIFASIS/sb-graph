@@ -163,6 +163,8 @@ MDInterOrdSet boundedTraverse(OrdPWMDInter pwi1, OrdPWMDInter pwi2, SetPiece (*f
  */
 MDInterOrdSet traverse(OrdPWMDInter pwi1, OrdPWMDInter pwi2, SetPiece (*func)(SetPiece, SetPiece));
 
+void foreach(OrdPWMDInter pwi, void (*f)(SetPiece));
+
 std::size_t hash_value(const OrdPWMDInter &pwi);
 
 typedef OrdPWMDInter OrdSet;

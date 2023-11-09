@@ -53,29 +53,32 @@ std::ostream &operator<<(std::ostream &out, const MDInterOrdSet &ii)
 // OrdPWMDInter ------------------------------------------------------------------
 
 OrdPWMDInter::OrdPWMDInter() : pieces_() {}
-OrdPWMDInter::OrdPWMDInter(Interval i) : pieces_() { pieces_ref().insert(SetPiece(i)); }
+OrdPWMDInter::OrdPWMDInter(Interval i) : pieces_() { emplaceBack(SetPiece(i)); }
 OrdPWMDInter::OrdPWMDInter(SetPiece mdi) : pieces_() { 
-  if (isUnidim(mdi)) pieces_ref().insert(mdi);
+  if (isUnidim(mdi)) emplaceBack(mdi);
 
   else Util::ERROR("LIB::OrdPWMDInter: piece should be uni-dimensional");
 }
 OrdPWMDInter::OrdPWMDInter(MDInterOrdSet ii) : pieces_() {
   if (!ii.empty()) {
-    BOOST_FOREACH (SetPiece mdi, ii)
+    for (SetPiece mdi : ii) {
       if (!isUnidim(mdi)) Util::ERROR("LIB::OrdPWMDInter: piece should be uni-dimensional");
-
-    set_pieces(ii);
+      emplaceBack(mdi);
+    }
   }
-
 }
 
 member_imp(OrdPWMDInter, MDInterOrdSet, pieces);
 
 std::size_t OrdPWMDInter::size() { return pieces().size(); }
 
-void OrdPWMDInter::emplace(SetPiece mdi) { pieces_ref().emplace(mdi); }
-void OrdPWMDInter::emplace_hint(MDInterOrdSetIt it, SetPiece mdi) { pieces_ref().emplace_hint(it, mdi); }
-void OrdPWMDInter::emplaceBack(SetPiece mdi) { pieces_ref().emplace_hint(pieces_ref().cend(), mdi); }
+void OrdPWMDInter::emplace(SetPiece mdi) {
+  if (!isEmpty(mdi)) pieces_ref().emplace(mdi);
+}
+void OrdPWMDInter::emplace_hint(MDInterOrdSetIt it, SetPiece mdi) {
+  if (!isEmpty(mdi)) pieces_ref().emplace_hint(it, mdi);
+}
+void OrdPWMDInter::emplaceBack(SetPiece mdi) { emplace_hint(end(), mdi); }
 
 OrdPWMDInter::iterator OrdPWMDInter::begin() { return pieces_ref().begin(); }
 OrdPWMDInter::iterator OrdPWMDInter::end() { return pieces_ref().end(); }
@@ -111,7 +114,7 @@ unsigned int cardinal(OrdPWMDInter pwi)
 {
   unsigned int result = 0;
 
-  BOOST_FOREACH (SetPiece mdi, pwi)
+  for (SetPiece mdi : pwi)
     result += cardinal(mdi);
 
   return result;
@@ -121,7 +124,7 @@ bool isEmpty(OrdPWMDInter pwi) { return pwi.pieces().empty(); }
 
 bool isMember(MD_NAT x, OrdPWMDInter pwi)
 {
-   BOOST_FOREACH (SetPiece mdi, pwi) 
+   for (SetPiece mdi : pwi) 
      if (isMember(x, mdi)) return true;
 
   return false;
@@ -179,20 +182,20 @@ OrdPWMDInter cup(OrdPWMDInter pwi1, OrdPWMDInter pwi2)
   if (pwi1.pieces_ref() == pwi2.pieces_ref()) return pwi1;
 
   if (maxElem(pwi1) <= minElem(pwi2)) {
-    BOOST_FOREACH (SetPiece mdi1, pwi1)
+    for (SetPiece mdi1 : pwi1)
       un.emplaceBack(mdi1);
 
-    BOOST_FOREACH (SetPiece mdi2, pwi2)
+    for (SetPiece mdi2 : pwi2)
       un.emplaceBack(mdi2);
     
     return OrdPWMDInter(un);
   }
 
   if (maxElem(pwi2) <= minElem(pwi1)) {
-    BOOST_FOREACH (SetPiece mdi2, pwi2)
+    for (SetPiece mdi2 : pwi2)
       un.emplaceBack(mdi2);
 
-    BOOST_FOREACH (SetPiece mdi1, pwi1)
+    for (SetPiece mdi1 : pwi1)
       un.emplaceBack(mdi1);
 
     return OrdPWMDInter(un);
@@ -204,9 +207,9 @@ OrdPWMDInter cup(OrdPWMDInter pwi1, OrdPWMDInter pwi2)
   // one with least quantity of them.  
   OrdPWMDInter lt_pieces, gt_pieces;
   int c_size1 = 0, c_size2 = 0;
-  BOOST_FOREACH (SetPiece mdi1, pwi1) 
+  for (SetPiece mdi1 : pwi1)
     c_size1 += mdi1.begin()->step();
-  BOOST_FOREACH (SetPiece mdi2, pwi2)
+  for (SetPiece mdi2 : pwi2)
     c_size2 += mdi2.begin()->step();
 
   if (c_size1 < c_size2) {
@@ -224,10 +227,10 @@ OrdPWMDInter cup(OrdPWMDInter pwi1, OrdPWMDInter pwi2)
     return concatenation(lt_pieces, diff);
 
   else {
-    BOOST_FOREACH (SetPiece mdi, lt_pieces)
+    for (SetPiece mdi : lt_pieces)
       un.emplace(mdi);
 
-    BOOST_FOREACH (SetPiece mdi, diff)
+    for (SetPiece mdi : diff)
       un.emplace(mdi);
   }
 
@@ -282,7 +285,7 @@ OrdPWMDInter complement(OrdPWMDInter pwi)
 
   ++first_it;
   MDInterOrdSet second(first_it, pwi.end());
-  BOOST_FOREACH (SetPiece mdi, second) {
+  for (SetPiece mdi : second) {
     OrdPWMDInter c = complementAtom(OrdPWMDInter(mdi));
     res = intersection(res, c);
   }
@@ -296,7 +299,7 @@ OrdPWMDInter difference(OrdPWMDInter pwi1, OrdPWMDInter pwi2) { return intersect
 
 bool isCompact(MDInterOrdSet ii)
 {
-  BOOST_FOREACH (SetPiece mdi, ii)
+  for (SetPiece mdi : ii)
     if (mdi.begin()->step() != 1)
       return false;
 
@@ -346,9 +349,9 @@ OrdPWMDInter concatenation(OrdPWMDInter pwi1, OrdPWMDInter pwi2)
   if (optConds(pwi1.pieces()) && optConds(pwi2.pieces())) res = traverse(pwi1, pwi2, &least);
 
   else {
-    BOOST_FOREACH (SetPiece mdi1, pwi1) res.emplace(mdi1);
+    for (SetPiece mdi1 : pwi1) res.emplace(mdi1);
 
-    BOOST_FOREACH (SetPiece mdi2, pwi2) res.emplace(mdi2);
+    for (SetPiece mdi2 : pwi2) res.emplace(mdi2);
   }
 
   return res;
@@ -358,7 +361,7 @@ OrdPWMDInter filterSet(bool (*f)(SetPiece), OrdPWMDInter pwi)
 {
   OrdPWMDInter res;
 
-  BOOST_FOREACH (SetPiece mdi, pwi) 
+  for (SetPiece mdi : pwi) 
     if (f(mdi)) res.emplaceBack(mdi);
 
   return res;
@@ -368,7 +371,7 @@ OrdPWMDInter offset(Util::MD_NAT off, OrdPWMDInter pwi)
 {
   OrdPWMDInter res;
 
-  BOOST_FOREACH (SetPiece mdi, pwi) res.emplaceBack(offset(off, mdi));
+  for (SetPiece mdi : pwi) res.emplaceBack(offset(off, mdi));
 
   return res;
 }
@@ -398,8 +401,8 @@ MDInterOrdSet boundedTraverse(OrdPWMDInter pwi1, OrdPWMDInter pwi2, SetPiece (*f
   }
 
   else {
-    BOOST_FOREACH (SetPiece mdi1, pwi1)
-      BOOST_FOREACH (SetPiece mdi2, pwi2) {
+    for (SetPiece mdi1 : pwi1)
+      for (SetPiece mdi2 : pwi2) {
         SetPiece funci = func(mdi1, mdi2);
         if (!isEmpty(funci))
           result.emplace_hint(result.cend(), funci);
@@ -446,8 +449,8 @@ MDInterOrdSet traverse(OrdPWMDInter pwi1, OrdPWMDInter pwi2, SetPiece (*func)(Se
   }
 
   else {
-    BOOST_FOREACH (SetPiece mdi1, pwi1)
-      BOOST_FOREACH (SetPiece mdi2, pwi2) {
+    for (SetPiece mdi1 : pwi1)
+      for (SetPiece mdi2 : pwi2) {
         SetPiece funci = func(mdi1, mdi2);
         if (!isEmpty(funci))
           result.emplace_hint(result.cend(), funci);
@@ -455,6 +458,13 @@ MDInterOrdSet traverse(OrdPWMDInter pwi1, OrdPWMDInter pwi2, SetPiece (*func)(Se
   }
 
   return result;
+}
+
+void foreach(OrdPWMDInter pwi, void (*f)(SetPiece))
+{
+  for (SetPiece mdi : pwi) f(mdi);
+
+  return;
 }
 
 std::size_t hash_value(const OrdPWMDInter &pwi)

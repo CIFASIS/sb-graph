@@ -109,7 +109,7 @@ LIB::MultiDimInter EvalMDI::operator()(AST::MultiDimInter v) const
   LIB::MultiDimInter res;
 
   EvalInterval visit_inter(env_);
-  BOOST_FOREACH (AST::Expr ith, v.intervals()) res.emplaceBack(Apply(visit_inter, ith));
+  for (AST::Expr ith : v.intervals()) res.emplaceBack(Apply(visit_inter, ith));
 
   return res;
 }

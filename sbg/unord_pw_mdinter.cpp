@@ -30,7 +30,7 @@ std::ostream &operator<<(std::ostream &out, const MDInterUnordSet &ii)
   MDInterUnordSet aux = ii;
   int sz = aux.size();
 
-  out << "{";
+  out << "{{";
   if (sz > 0) {
     auto it = aux.begin();
     for (int i = 0; i < sz - 1; ++i) {
@@ -41,7 +41,7 @@ std::ostream &operator<<(std::ostream &out, const MDInterUnordSet &ii)
     if (!isEmpty(*it))
       out << *it;
   }
-  out << "}";
+  out << "}}";
 
   return out;
 }
@@ -51,8 +51,11 @@ std::ostream &operator<<(std::ostream &out, const MDInterUnordSet &ii)
 ////////////////////////////////////////////////////////////////////////////////
 
 UnordPWMDInter::UnordPWMDInter() : pieces_() {}
-UnordPWMDInter::UnordPWMDInter(SetPiece mdi) : pieces_() { pieces_ref().emplace(mdi); }
-UnordPWMDInter::UnordPWMDInter(MDInterUnordSet c) : pieces_(c) {}
+UnordPWMDInter::UnordPWMDInter(Interval i) : pieces_() { emplaceBack(SetPiece(i)); }
+UnordPWMDInter::UnordPWMDInter(SetPiece mdi) : pieces_() { emplaceBack(mdi); }
+UnordPWMDInter::UnordPWMDInter(MDInterUnordSet c) : pieces_(c) {
+  for (SetPiece mdi : c) emplaceBack(mdi);
+}
 
 member_imp(UnordPWMDInter, MDInterUnordSet, pieces);
 
@@ -60,6 +63,7 @@ std::size_t UnordPWMDInter::size() { return pieces().size(); }
 
 void UnordPWMDInter::emplace(SetPiece mdi) { if (!isEmpty(mdi)) pieces_ref().emplace(mdi); }
 void UnordPWMDInter::emplace_hint(MDInterUnordSetIt it, SetPiece mdi) { if (!isEmpty(mdi)) pieces_ref().emplace_hint(it, mdi); }
+void UnordPWMDInter::emplaceBack(SetPiece mdi) { emplace_hint(pieces_ref().end(), mdi); }
 
 UnordPWMDInter::iterator UnordPWMDInter::begin() { return pieces_ref().begin(); }
 UnordPWMDInter::iterator UnordPWMDInter::end() { return pieces_ref().end(); }
@@ -96,7 +100,7 @@ unsigned int cardinal(UnordPWMDInter pwi)
 {
   unsigned int result = 0;
 
-  BOOST_FOREACH (SetPiece mdi, pwi)
+  for (SetPiece mdi : pwi)
     result += cardinal(mdi);
 
   return result;
@@ -106,10 +110,10 @@ bool isEmpty(UnordPWMDInter pwi) { return pwi.pieces().empty(); }
 
 bool isMember(MD_NAT x, UnordPWMDInter pwi)
 {
-  BOOST_FOREACH (SetPiece mdi, pwi)
-    if (!isMember(x, mdi)) return false;
+  for (SetPiece mdi : pwi)
+    if (isMember(x, mdi)) return true;
 
-  return true;
+  return false;
 }
 
 Util::MD_NAT minElem(UnordPWMDInter pwi)
@@ -118,7 +122,7 @@ Util::MD_NAT minElem(UnordPWMDInter pwi)
     return MD_NAT(0);
 
   MD_NAT res = minElem(*pwi.begin());
-  BOOST_FOREACH (SetPiece mdi, pwi)
+  for (SetPiece mdi : pwi)
     if (minElem(mdi) < res)
       res = minElem(mdi);
 
@@ -131,7 +135,7 @@ Util::MD_NAT maxElem(UnordPWMDInter pwi)
     return MD_NAT(0);
 
   MD_NAT res = maxElem(*pwi.begin());
-  BOOST_FOREACH (SetPiece mdi, pwi)
+  for (SetPiece mdi : pwi)
     if (res < maxElem(mdi))
       res = maxElem(mdi);
 
@@ -149,9 +153,9 @@ UnordPWMDInter intersection(UnordPWMDInter pwi1, UnordPWMDInter pwi2)
 
   // General case
   MDInterUnordSet cap;
-  BOOST_FOREACH (SetPiece mi1, pwi1) {
-    BOOST_FOREACH (SetPiece mi2, pwi2) {
-      SetPiece ith = intersection(mi1, mi2);
+  for (SetPiece mdi1 : pwi1) {
+    for (SetPiece mdi2 : pwi2) {
+      SetPiece ith = intersection(mdi1, mdi2);
 
       if (!isEmpty(ith)) cap.insert(ith); 
     }
@@ -171,21 +175,21 @@ UnordPWMDInter cup(UnordPWMDInter pwi1, UnordPWMDInter pwi2)
   if (pwi1.pieces() == pwi2.pieces()) return pwi1;
 
   if (maxElem(pwi1) <= minElem(pwi2)) {
-    BOOST_FOREACH (SetPiece i1, pwi1)
-      un.emplace_hint(un.cend(), i1);
+    for (SetPiece mdi1 : pwi1)
+      un.emplace_hint(un.cend(), mdi1);
 
-    BOOST_FOREACH (SetPiece i2, pwi2)
-      un.emplace_hint(un.cend(), i2);
+    for (SetPiece mdi2 : pwi2)
+      un.emplace_hint(un.cend(), mdi2);
     
     return UnordPWMDInter(un);
   }
 
   if (maxElem(pwi2) <= minElem(pwi1)) {
-    BOOST_FOREACH (SetPiece i2, pwi2)
-      un.emplace_hint(un.cend(), i2);
+    for (SetPiece mdi2 : pwi2)
+      un.emplace_hint(un.cend(), mdi2);
 
-    BOOST_FOREACH (SetPiece i1, pwi1)
-      un.emplace_hint(un.cend(), i1);
+    for (SetPiece mdi1 : pwi1)
+      un.emplace_hint(un.cend(), mdi1);
 
     return UnordPWMDInter(un);
   }
@@ -210,7 +214,7 @@ UnordPWMDInter complementAtom(UnordPWMDInter pwi)
     if (isEmpty(mdi)) return all;
 
     unsigned int dim = 0;
-    BOOST_FOREACH (Interval i, mdi.intervals()) {
+    for (Interval i : mdi) {
       MDInterUnordSet c;
 
       // Before interval
@@ -265,7 +269,7 @@ UnordPWMDInter complement(UnordPWMDInter pwi)
 
     ++first_it;
     MDInterUnordSet second(first_it, pwi.end());
-    BOOST_FOREACH (SetPiece mdi, second) {
+    for (SetPiece mdi : second) {
       UnordPWMDInter c = complementAtom(UnordPWMDInter(mdi));
       res = intersection(res, c);
     }
@@ -288,9 +292,9 @@ UnordPWMDInter concatenation(UnordPWMDInter pwi1, UnordPWMDInter pwi2)
 {
   UnordPWMDInter res;
 
-  BOOST_FOREACH (SetPiece mdi, pwi1) res.emplace_hint(res.end(), mdi);
+  for (SetPiece mdi : pwi1) res.emplace_hint(res.end(), mdi);
 
-  BOOST_FOREACH (SetPiece mdi, pwi2) res.emplace_hint(res.end(), mdi);
+  for (SetPiece mdi : pwi2) res.emplace_hint(res.end(), mdi);
 
   return res;
 }
@@ -299,7 +303,7 @@ UnordPWMDInter filterSet(bool (*f)(SetPiece), UnordPWMDInter pwi)
 {
   UnordPWMDInter res;
 
-  BOOST_FOREACH (SetPiece mdi, pwi)
+  for (SetPiece mdi : pwi)
     if (f(mdi)) res.emplace_hint(res.end(), mdi);
 
   return res;
@@ -309,9 +313,16 @@ UnordPWMDInter offset(Util::MD_NAT off, UnordPWMDInter pwi)
 {
   UnordPWMDInter res;
 
-  BOOST_FOREACH (SetPiece mdi, pwi) res.emplace(offset(off, mdi));
+  for (SetPiece mdi : pwi) res.emplace(offset(off, mdi));
 
   return res;
+}
+
+void foreach(UnordPWMDInter pwi, void (*f)(SetPiece))
+{
+  for (SetPiece mdi : pwi) f(mdi);
+
+  return;
 }
 
 std::size_t hash_value(const UnordPWMDInter &pwi)

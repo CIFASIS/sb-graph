@@ -9,12 +9,14 @@ SBG_ROOT := sbg
   	$(SBG_ROOT)/multidim_inter.cpp \
   	$(SBG_ROOT)/ord_pw_mdinter.cpp \
     $(SBG_ROOT)/unord_pw_mdinter.cpp \
+    $(SBG_ROOT)/set.cpp \
     $(SBG_ROOT)/lexp.cpp \
     $(SBG_ROOT)/multidim_lexp.cpp \
     $(SBG_ROOT)/map.cpp \
+    $(SBG_ROOT)/pw_map.cpp \
     $(SBG_ROOT)/sbg.cpp \
     $(SBG_ROOT)/sbg_algorithms.cpp \
-    $(SBG_ROOT)/info.cpp 
+    $(SBG_ROOT)/info.cpp
 
 # Objects
 SBG_OBJ=$(addprefix $(BUILD_DIR)/, $(SBG_SRC:.cpp=.o))

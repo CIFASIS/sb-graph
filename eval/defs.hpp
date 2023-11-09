@@ -33,8 +33,6 @@
 
 #include "ast/expr.hpp"
 #include "ast/statement.hpp"
-#include "sbg/unord_pw_mdinter.hpp"
-#include "sbg/ord_pw_mdinter.hpp"
 #include "sbg/sbg.hpp"
 
 namespace SBG {
@@ -43,51 +41,18 @@ namespace Eval {
 
 // Type definitions ------------------------------------------------------------
 
-/** @brief Types NatBaseType, ContainerBaseType, LinearBaseType and MapBaseType 
- *  are defined to decrease the compilation memory consumption of eval_expr.cpp.
- *  When evaluating an AST::Call, multiple std::visit are invoked, where each 
- *  one generates a function table with size dependent of the number types in
- *  the variant. Initially ExprBaseType was used.
- */
-
-typedef std::variant<Util::NAT
-  , Util::MD_NAT> NatBaseType;
-
-typedef std::variant<LIB::Interval
-  , LIB::SetPiece
-  , LIB::UnordSet
-  , LIB::OrdSet> ContainerBaseType;
-
-typedef std::variant<LIB::LExp
-  , LIB::Exp> LinearBaseType;
-
-typedef std::variant<LIB::BaseMap
-  , LIB::CanonMap
-  , LIB::BasePWMap
-  , LIB::CanonPWMap> MapBaseType;
-
-typedef std::variant<LIB::BaseSBG
-  , LIB::CanonSBG
-  , LIB::BaseDSBG
-  , LIB::CanonDSBG> SBGBaseType;
-
 typedef boost::variant<Util::NAT
   , Util::MD_NAT
   , Util::RATIONAL
   , LIB::Interval
   , LIB::SetPiece
-  , LIB::UnordSet
-  , LIB::OrdSet
+  , LIB::Set
   , LIB::LExp
   , LIB::Exp
-  , LIB::BaseMap
-  , LIB::CanonMap
-  , LIB::BasePWMap
-  , LIB::CanonPWMap
-  , LIB::BaseSBG
-  , LIB::CanonSBG
-  , LIB::BaseDSBG
-  , LIB::CanonDSBG> ExprBaseType;
+  , LIB::SBGMap
+  , LIB::PWMap
+  , LIB::SBGraph
+  , LIB::DSBGraph> ExprBaseType;
 typedef std::optional<ExprBaseType> MaybeEBT;
 
 template <typename T>

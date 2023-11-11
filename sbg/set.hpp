@@ -38,8 +38,6 @@ typedef std::variant<UnordSet, OrdSet> SetType;
 struct Set {
   member_class(SetType, pieces);
 
-  Set();
-  Set(SetPiece mdi);
   Set(UnordSet c);
   Set(OrdSet c);
 

@@ -27,8 +27,6 @@ namespace LIB {
 // Generic implementation ------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-Set::Set() : pieces_(UnordSet()) {}
-Set::Set(SetPiece mdi) : pieces_() { emplace(mdi); }
 Set::Set(UnordSet c) : pieces_(c) {}
 Set::Set(OrdSet c) : pieces_(c) {}
 
@@ -36,9 +34,9 @@ member_imp(Set, SetType, pieces);
 
 std::size_t Set::size()
 {
-  return std::visit([](auto v) {
-    return v.size();
-  }, pieces());
+  return std::visit([mdi](auto &v) {
+    v.size();
+  }, pieces_ref());
 }
 
 void Set::emplace(SetPiece mdi)

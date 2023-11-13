@@ -147,8 +147,8 @@ struct RATIONAL{
   RATIONAL(boost::rational<INT> value);
   RATIONAL(INT n, INT d);
 
-  INT numerator();
-  INT denominator();
+  INT numerator() const;
+  INT denominator() const;
 
   RATIONAL operator+=(const RATIONAL &r);
   RATIONAL operator-=(const RATIONAL &r);

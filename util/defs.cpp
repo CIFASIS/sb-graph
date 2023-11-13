@@ -102,9 +102,9 @@ RATIONAL::RATIONAL(INT n, INT d) : value_() {
 
 member_imp(RATIONAL, boost::rational<INT>, value);
 
-INT RATIONAL::numerator() { return value().numerator(); }
+INT RATIONAL::numerator() const { return value().numerator(); }
 
-INT RATIONAL::denominator() { return value().denominator(); }
+INT RATIONAL::denominator() const { return value().denominator(); }
 
 NAT toNat(RATIONAL r)
 {

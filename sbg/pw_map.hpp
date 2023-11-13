@@ -70,7 +70,7 @@ struct PWMap {
   iterator begin();
   iterator end();
 
-  std::size_t size();
+  std::size_t size() const;
   void emplace(SBGMap<Set> m);
   void emplace_hint(MapSetIt<Set> it, SBGMap<Set> m);
   void emplaceBack(SBGMap<Set> m);

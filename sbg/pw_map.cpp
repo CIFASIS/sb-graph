@@ -84,7 +84,7 @@ template<typename Set>
 typename PWMap<Set>::iterator PWMap<Set>::end() { return maps_.end(); }
 
 template<typename Set>
-std::size_t PWMap<Set>::size() { return maps_.size(); }
+std::size_t PWMap<Set>::size() const { return maps_.size(); }
 
 template<typename Set>
 void PWMap<Set>::emplace(SBGMap<Set> sbgmap) { 

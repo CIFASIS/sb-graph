@@ -28,41 +28,46 @@ namespace Util {
 std::string toStr(NAT x) { return std::to_string(x); }
 
 MD_NAT::MD_NAT() : value_() {}
-MD_NAT::MD_NAT(NAT x) : value_() { value_ref().emplace_back(x); }
+MD_NAT::MD_NAT(NAT x) : value_() { value_.emplace_back(x); }
 MD_NAT::MD_NAT(unsigned int nmbr_copies, NAT x) : value_() { 
   for (unsigned int j = 0; j < nmbr_copies; j++)
-    value_ref().emplace_back(x); 
+    value_.emplace_back(x); 
 }
 MD_NAT::MD_NAT(MD_NAT::iterator b, MD_NAT::iterator e) : value_(b, e) {}
 
 member_imp(MD_NAT, VNAT, value);
 
-MD_NAT::iterator MD_NAT::begin() { return value_ref().begin(); }
-MD_NAT::iterator MD_NAT::end() { return value_ref().end(); }
+MD_NAT::iterator MD_NAT::begin() { return value_.begin(); }
+MD_NAT::iterator MD_NAT::end() { return value_.end(); }
 
 std::size_t MD_NAT::size() { return value().size(); }
 
-void MD_NAT::emplace(MD_NAT::iterator it, NAT x) { value_ref().emplace(it, x); }
-void MD_NAT::emplace_back(NAT x) { value_ref().emplace_back(x); }
+void MD_NAT::emplace(MD_NAT::iterator it, NAT x) { value_.emplace(it, x); }
+void MD_NAT::emplace_back(NAT x) { value_.emplace_back(x); }
 void MD_NAT::push_back(NAT x) { emplace_back(x); }
 
-NAT &MD_NAT::operator[](std::size_t n) { return value_ref()[n]; }
+NAT &MD_NAT::operator[](std::size_t n) { return value_[n]; }
 
-bool MD_NAT::operator==(const MD_NAT &md) const { return value() == md.value(); }
+bool MD_NAT::operator==(const MD_NAT &md) const
+{ 
+  return value() == md.value();
+}
 
 bool MD_NAT::operator<(const MD_NAT &x2) const
 {
   MD_NAT aux1 = *this, aux2 = x2;
 
-  parallel_foreach2 (aux1.value_ref(), aux2.value_ref()) {
-    NAT e1 = boost::get<0>(items), e2 = boost::get<1>(items);
-    if (e1 < e2) return true;
-  }
+  for (auto const &[e1, e2] : boost::combine(aux1, aux2)) 
+    if (e1 < e2)
+      return true;
 
   return false;
 }
 
-bool MD_NAT::operator<=(const MD_NAT &x2) const { return *this == x2 || *this < x2; }
+bool MD_NAT::operator<=(const MD_NAT &x2) const
+{
+  return *this == x2 || *this < x2;
+}
 
 std::ostream &operator<<(std::ostream &out, const MD_NAT &md)
 {
@@ -76,10 +81,9 @@ std::ostream &operator<<(std::ostream &out, const MD_NAT &md)
 
   if (sz > 0) {
     out << "(";
-    unsigned int j = 0;
-    for (; j < sz - 1; j++)
+    for (unsigned int j = 0; j < sz - 1; j++)
       out << aux[j] << ", ";
-    out << aux[j];
+    out << aux[sz-1];
     out << ")";
   }
 
@@ -104,7 +108,8 @@ INT RATIONAL::denominator() { return value().denominator(); }
 
 NAT toNat(RATIONAL r)
 {
-  if (r.denominator() == 1 && 0 <= r.value()) return r.numerator();
+  if (r.denominator() == 1 && 0 <= r.value())
+    return r.numerator();
 
   std::stringstream ss;
   ss << r;
@@ -114,7 +119,8 @@ NAT toNat(RATIONAL r)
 
 INT toInt(RATIONAL r)
 {
-  if (r.denominator() == 1) return r.numerator();
+  if (r.denominator() == 1)
+    return r.numerator();
 
   ERROR("toInt: RATIONAL is not INT");
   return 0;
@@ -178,13 +184,25 @@ bool RATIONAL::operator==(const INT &r) const
   return aux.numerator() == r && aux.denominator() == 1;
 }
 
-bool RATIONAL::operator==(const RATIONAL &r) const { return value() == r.value(); }
+bool RATIONAL::operator==(const RATIONAL &r) const
+{
+  return value() == r.value();
+}
 
-bool RATIONAL::operator<(const RATIONAL &r) const { return value() < r.value(); }
+bool RATIONAL::operator<(const RATIONAL &r) const
+{
+  return value() < r.value();
+}
 
-bool RATIONAL::operator>(const RATIONAL &r) const { return value() > r.value(); }
+bool RATIONAL::operator>(const RATIONAL &r) const
+{
+  return value() > r.value();
+}
 
-bool RATIONAL::operator!=(const RATIONAL &r) const { return value() != r.value(); }
+bool RATIONAL::operator!=(const RATIONAL &r) const
+{
+  return value() != r.value();
+}
 
 RATIONAL operator-(const RATIONAL &r) 
 {
@@ -203,7 +221,8 @@ std::ostream &operator<<(std::ostream &out, const RATIONAL &r)
   }
 
   out << num;
-  if (den != 1) out << "/" << den;
+  if (den != 1)
+    out << "/" << den;
 
   return out;
 }

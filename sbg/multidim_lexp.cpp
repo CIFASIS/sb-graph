@@ -24,63 +24,67 @@ namespace SBG {
 namespace LIB {
 
 MDLExp::MDLExp() : exps_() {}
-MDLExp::MDLExp(Util::MD_NAT x) { BOOST_FOREACH (Util::NAT xi, x) emplaceBack(LExp(0, Util::RATIONAL(xi))); }
-MDLExp::MDLExp(unsigned int dimensions) : exps_() {
-  for (unsigned int j = 0; j < dimensions; j++) emplaceBack(LExp());
+MDLExp::MDLExp(Util::MD_NAT x)
+{
+  Util::ERROR_UNLESS(x.size() > 0, "LIB::MDLE1: empty not allowed");
+
+  for (Util::NAT xi : x)
+    exps_.emplace_back(LExp(0, Util::RATIONAL(xi)));
 }
-MDLExp::MDLExp(LExp le) : exps_() { emplaceBack(le); }
+MDLExp::MDLExp(unsigned int dimensions) : exps_() {
+  Util::ERROR_UNLESS(dimensions > 0, "LIB::MDLE2: empty not allowed");
+
+  for (unsigned int j = 0; j < dimensions; j++)
+    exps_.emplace_back(LExp());
+}
+MDLExp::MDLExp(LExp le) : exps_() { exps_.emplace_back(le); }
 MDLExp::MDLExp(unsigned int nmbr_copies, LExp le) : exps_()
 {  
+  Util::ERROR_UNLESS(nmbr_copies > 0, "LIB::MDLE3: empty not allowed");
+
   for (unsigned int j = 0; j < nmbr_copies; j++)
-    emplaceBack(le);
+    exps_.emplace_back(le);
 }
 MDLExp::MDLExp(LExpVector v) : exps_(v) {}
 
 member_imp(MDLExp, LExpVector, exps);
 
-MDLExp::iterator MDLExp::begin() { return exps_ref().begin(); }
-MDLExp::iterator MDLExp::end() { return exps_ref().end(); }
+MDLExp::iterator MDLExp::begin() { return exps_.begin(); }
+MDLExp::iterator MDLExp::end() { return exps_.end(); }
 
-std::size_t MDLExp::size() const { return exps().size(); }
+std::size_t MDLExp::size() const { return exps_.size(); }
 
-void MDLExp::emplaceBack(LExp le) { exps_ref().emplace_back(le); }
+void MDLExp::emplaceBack(LExp le) { exps_.emplace_back(le); }
 
-LExp &MDLExp::operator[](std::size_t n) { return exps_ref()[n]; }
+LExp &MDLExp::operator[](std::size_t n) { return exps_[n]; }
+const LExp &MDLExp::operator[](std::size_t n) const { return exps_[n]; }
 
 MDLExp MDLExp::operator+(const MDLExp &r)
 {
   MDLExp aux1 = *this, aux2 = r;
-  if (aux1.size() == aux2.size()) {
-    MDLExp res;
 
-    parallel_foreach2 (aux1.exps_ref(), aux2.exps_ref()) {
-      LExp le1 = boost::get<0>(items), le2 = boost::get<1>(items);
-      res.emplaceBack(le1 + le2);
-    }
+  Util::ERROR_UNLESS(aux1.size() == aux2.size()
+                     , "LIB::MDLE::operator+: dimensions don't match");
 
-    return res;
-  }
+  MDLExp res;
+  for (auto const &[le1, le2] : boost::combine(aux1, aux2)) 
+    res.emplaceBack(le1 + le2);
 
-  Util::ERROR("LIB::MDLExp::operator+: dimensions don't match");
-  return MDLExp();
+  return res;
 }
 
 MDLExp MDLExp::operator-(const MDLExp &r)
 {
   MDLExp aux1 = *this, aux2 = r;
-  if (aux1.size() == aux2.size()) {
-    MDLExp res;
- 
-    parallel_foreach2 (aux1.exps_ref(), aux2.exps_ref()) {
-      LExp le1 = boost::get<0>(items), le2 = boost::get<1>(items);
-      res.emplaceBack(le1 - le2);
-    }
 
-    return res;
-  }
+  Util::ERROR_UNLESS(aux1.size() == aux2.size()
+                     , "LIB::MDLE::operator-: dimensions don't match");
 
-  Util::ERROR("LIB::MDLExp::operator-: dimensions don't match");
-  return MDLExp();
+  MDLExp res;
+  for (auto const &[le1, le2] : boost::combine(aux1, aux2)) 
+    res.emplaceBack(le1 - le2);
+
+  return res;
 }
 
 bool MDLExp::operator==(const MDLExp &other) const { return exps() == other.exps(); }
@@ -88,31 +92,25 @@ bool MDLExp::operator==(const MDLExp &other) const { return exps() == other.exps
 bool MDLExp::operator<(const MDLExp &other) const 
 {
   MDLExp aux1 = *this, aux2 = other;
-  if (aux1.size() == aux2.size()) {
-    parallel_foreach2 (aux1.exps_ref(), aux2.exps_ref()) {
-      LExp le1 = boost::get<0>(items), le2 = boost::get<1>(items);
-      if (le1 < le2) return true;
-    }
 
-    return false;
-  }
+  Util::ERROR_UNLESS(aux1.size() == aux2.size()
+                     , "LIB::MDLE::operator<: dimensions don't match");
 
-  Util::ERROR("LIB::MDLExp::operator<: dimensions don't match");
+  for (auto const &[le1, le2] : boost::combine(aux1, aux2)) 
+    if (le1 < le2)
+      return true;
+
   return false;
 }
 
 std::ostream &operator<<(std::ostream &out, const MDLExp &mdle)
 {
-  MDLExp aux = mdle;
-  unsigned int sz = aux.exps().size();
+  unsigned int sz = mdle.size();
 
   if (sz > 0) {
-    auto it = aux.begin();
-    for (unsigned int j = 0; j < sz-1; ++j) {
-      out << *it << "|";
-      ++it;
-    }
-    out << *it;
+    for (unsigned int j = 0; j < sz-1; ++j) 
+      out << mdle[j] << "|";
+    out << mdle[sz-1];
   }
 
   return out;
@@ -122,42 +120,41 @@ std::ostream &operator<<(std::ostream &out, const MDLExp &mdle)
 
 MDLExp composition(MDLExp mdle1, MDLExp mdle2)
 {
-  if (mdle1.size() == mdle2.size()) {
-    MDLExp res;
+  Util::ERROR_UNLESS(mdle1.size() == mdle2.size()
+                     , "LIB::MDLE::composition: dimensions don't match");
 
-    parallel_foreach2 (mdle1.exps_ref(), mdle2.exps_ref()) {
-      LExp le1 = boost::get<0>(items), le2 = boost::get<1>(items);
-      res.emplaceBack(composition(le1, le2));
-    }
+  MDLExp res;
 
-    return res;
-  }
+  for (auto const &[le1, le2] : boost::combine(mdle1, mdle2)) 
+    res.emplaceBack(composition(le1, le2));
 
-  Util::ERROR("LIB::MDLExp::composition: dimensions don't match");
-  return MDLExp();
+  return res;
 }
 
 MDLExp inverse(MDLExp mdle)
 {
   MDLExp res;
 
-  BOOST_FOREACH (LExp le, mdle) res.emplaceBack(inverse(le));
+  for (LExp le : mdle)
+    res.emplaceBack(inverse(le));
 
   return res;
 }
 
 bool isId(MDLExp mdle)
 {
-  BOOST_FOREACH (LExp le, mdle)
-    if (!isId(le)) return false;
+  for (LExp le : mdle)
+    if (!isId(le))
+      return false;
 
   return true;
 }
 
 bool isConstant(MDLExp mdle)
 {
-  BOOST_FOREACH (LExp le, mdle)
-    if (!isConstant(le)) return false;
+  for (LExp le : mdle)
+    if (!isConstant(le))
+      return false;
 
   return true;
 }

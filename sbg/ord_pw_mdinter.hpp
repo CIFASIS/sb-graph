@@ -28,8 +28,7 @@
 #ifndef SBG_ORD_PW_MDINTERVAL_HPP
 #define SBG_ORD_PW_MDINTERVAL_HPP
 
-#include <iostream>
-
+#include <boost/foreach.hpp>
 #include <boost/container/flat_set.hpp>
 
 #include "sbg/multidim_inter.hpp"
@@ -46,9 +45,9 @@ namespace LIB {
 
 /* @struct LTMDInter
  *
- * @brief This function is defined to be used by the MDMDInterOrdSet definition. The
- * two inputs are disjoint (that's why the operator<, that compares any sort of
- * SetPieces, is not used).
+ * @brief This function is defined to be used by the MDMDInterOrdSet definition.
+ * The two inputs are disjoint (that's why the operator<, that compares any sort
+ * of SetPieces, is not used).
  */
 struct LTMDInter {
   LTMDInter();
@@ -56,7 +55,9 @@ struct LTMDInter {
   bool operator()(const SetPiece &x, const SetPiece &y) const; 
 };
 
-typedef boost::container::flat_set<SetPiece, LTMDInter, boost::container::new_allocator<SetPiece>> MDInterOrdSet;
+typedef boost::container::flat_set<
+  SetPiece, LTMDInter, boost::container::new_allocator<SetPiece>
+> MDInterOrdSet;
 typedef MDInterOrdSet::iterator MDInterOrdSetIt;
 typedef MDInterOrdSet::const_iterator MDInterOrdSetConstIt;
 std::ostream &operator<<(std::ostream &out, const MDInterOrdSet &ii);
@@ -75,13 +76,13 @@ struct OrdPWMDInter {
   OrdPWMDInter(SetPiece mdi);
   OrdPWMDInter(MDInterOrdSet pieces);
 
-  std::size_t size();
+  std::size_t size() const;
   void emplace(SetPiece mdi);
-  void emplace_hint(MDInterOrdSetIt it, SetPiece mdi);
   void emplaceBack(SetPiece mdi);
   iterator begin();
   iterator end();
   SetPiece operator[](std::size_t n);
+  const SetPiece &operator[](std::size_t n) const;
 
   eq_class(OrdPWMDInter);
   lt_class(OrdPWMDInter);
@@ -110,7 +111,7 @@ OrdPWMDInter cup(OrdPWMDInter i1, OrdPWMDInter i2);
  * NOT be called by any other function.
  */
 
-OrdPWMDInter complementAtom(OrdPWMDInter pwi);
+OrdPWMDInter complementAtom(OrdPWMDInter mdi);
 OrdPWMDInter complement(OrdPWMDInter i);
 
 OrdPWMDInter difference(OrdPWMDInter i1, OrdPWMDInter i2);
@@ -128,7 +129,8 @@ bool isCompact(MDInterOrdSet ii);
 
 /** @function optCond
  *
- * @brief Check if the MDInterOrdSet satisfies the conditions to use optimizations.
+ * @brief Check if the MDInterOrdSet satisfies the conditions to use
+ * optimizations.
  */
 bool optConds(MDInterOrdSet ii);
 
@@ -154,14 +156,18 @@ OrdPWMDInter offset(Util::MD_NAT off, OrdPWMDInter pwi);
  * @brief Traverse pwis in order until one reaches its end, obtaining an ordered
  * result.
  */
-MDInterOrdSet boundedTraverse(OrdPWMDInter pwi1, OrdPWMDInter pwi2, SetPiece (*func)(SetPiece, SetPiece));
+MDInterOrdSet boundedTraverse(OrdPWMDInter pwi1
+                              , OrdPWMDInter pwi2
+                              , SetPiece (*func)(SetPiece, SetPiece));
 
 /** @function traverse
  *
  * @brief Traverse pwis in order reaching both ends, obtaining an ordered result.
  *   !!! Both pwis should be compact (not checked in this function).
  */
-MDInterOrdSet traverse(OrdPWMDInter pwi1, OrdPWMDInter pwi2, SetPiece (*func)(SetPiece, SetPiece));
+MDInterOrdSet traverse(OrdPWMDInter pwi1
+                       , OrdPWMDInter pwi2
+                       , SetPiece (*func)(SetPiece, SetPiece));
 
 std::size_t hash_value(const OrdPWMDInter &pwi);
 

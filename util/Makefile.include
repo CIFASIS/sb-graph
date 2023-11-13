@@ -5,7 +5,6 @@ UTIL_DIR    := util
 	UTIL_SRC := \
     $(UTIL_DIR)/defs.cpp \
     $(UTIL_DIR)/logger.cpp \
-    $(UTIL_DIR)/env.cpp \
     $(UTIL_DIR)/debug.cpp
 
 # Objects

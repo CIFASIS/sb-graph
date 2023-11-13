@@ -24,6 +24,7 @@
 #ifndef SBG_MULTIDIM_INTERVAL_HPP
 #define SBG_MULTIDIM_INTERVAL_HPP
 
+#include <boost/foreach.hpp>
 #include "sbg/interval.hpp"
 
 namespace SBG {
@@ -32,9 +33,9 @@ namespace LIB {
 
 using NAT = Util::NAT;
 
-typedef boost::container::vector<Interval> InterVector;
-typedef boost::container::vector<Interval>::iterator InterVectorIt;
-typedef boost::container::vector<Interval>::iterator InterVectorConstIt;
+typedef std::vector<Interval> InterVector;
+typedef InterVector::iterator InterVectorIt;
+typedef InterVector::const_iterator InterVectorConstIt;
 
 struct MultiDimInter {
   typedef InterVectorIt iterator;
@@ -54,6 +55,7 @@ struct MultiDimInter {
   std::size_t size() const;  
   void emplaceBack(Interval i);
   Interval &operator[](std::size_t n);
+  const Interval &operator[](std::size_t n) const;
 
   eq_class(MultiDimInter);
   neq_class(MultiDimInter);

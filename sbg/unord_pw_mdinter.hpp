@@ -29,6 +29,7 @@
 #ifndef SBG_UNORD_PW_MDINTERVAL_HPP
 #define SBG_UNORD_PW_MDINTERVAL_HPP
 
+#include <boost/foreach.hpp>
 #include <boost/range.hpp>
 #include <boost/unordered/unordered_flat_set.hpp>
 
@@ -57,12 +58,15 @@ struct UnordPWMDInter {
   UnordPWMDInter(SetPiece mdi);
   UnordPWMDInter(MDInterUnordSet c);
 
-  std::size_t size();
+  std::size_t size() const;
   void emplace(SetPiece mdi);
-  void emplace_hint(MDInterUnordSetIt it, SetPiece mdi);
+  void emplaceBack(SetPiece mdi);
   iterator begin();
-  const_iterator end();
+  iterator end();
   SetPiece operator[](std::size_t n);
+  const SetPiece &operator[](std::size_t n) const;
+
+  unsigned int dims() const;
 
   eq_class(UnordPWMDInter);
   lt_class(UnordPWMDInter);

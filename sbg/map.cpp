@@ -23,42 +23,45 @@ namespace SBG {
 
 namespace LIB {
 
-bool compatible(Interval i, LExp le)
+void compatible(Interval i, LExp le)
 {
   Util::RATIONAL st_rat(i.step()), min_rat(minElem(i)); 
-  Util::RATIONAL im_step = st_rat * le.slope(), im_begin = min_rat * le.slope() + le.offset();
-  if (im_step.denominator() != 1 || im_begin.denominator() != 1) {
+  Util::RATIONAL im_step = st_rat * le.slope()
+                 , im_begin = min_rat * le.slope() + le.offset();
+  if (im_step.denominator() != 1 || im_begin.denominator() != 1) 
     if (im_step.numerator() != 0 || im_begin.numerator() != 0) {
-      Util::ERROR("Ill-formed SBGMap");
-      return false;
+      Util::ERROR("LIB::SBGMap::compatible: uncompatible i/le");
+      return;
     }
-  }
 
-  return true;
+  return;
 }
 
-bool compatible(SetPiece mdi, Exp mdle)
+void compatible(SetPiece mdi, Exp mdle)
 {
-  if (isEmpty(mdi)) return true;
+  Util::ERROR_UNLESS(mdi.size() == mdle.size()
+               , "LIB::SBGMap::compatible: dimensions don't match");
 
-  if (mdi.size() == mdle.size()) {
-    parallel_foreach2 (mdi.intervals_ref(), mdle.exps_ref()) {
-      Interval i = boost::get<0>(items);
-      LExp le = boost::get<1>(items);
-      if (!compatible(i, le)) { return false; }
-    }
-  }
+  for (auto const &[i, le] : boost::combine(mdi, mdle)) 
+    compatible(i, le);
 
-  return true;
+  return;
 }
 
 template<typename Set>
 SBGMap<Set>::SBGMap() : dom_(Set()), exp_(Exp()) {}
 template<typename Set>
-SBGMap<Set>::SBGMap(Interval i, LExp le) : dom_(Set(SetPiece(i))), exp_(Exp(le)) {}
+SBGMap<Set>::SBGMap(Interval i, LExp le) : dom_(), exp_() {
+  compatible(i, le);
+  dom_ = Set(SetPiece(i));
+  exp_ = Exp(le);
+}
 template<typename Set>
-SBGMap<Set>::SBGMap(Set dom, Exp exp) : dom_(dom), exp_(exp) {
-  BOOST_FOREACH (SetPiece mdi, dom) compatible(mdi, exp);
+SBGMap<Set>::SBGMap(Set dom, Exp exp) : dom_(), exp_() {
+  for (SetPiece mdi : dom)
+    compatible(mdi, exp);
+  dom_ = dom;
+  exp_ = exp;
 }
 
 member_imp_temp(template<typename Set>, SBGMap<Set>, Set, dom);
@@ -69,17 +72,20 @@ bool SBGMap<Set>::operator==(const SBGMap<Set> &other) const
 {
   if (dom() == other.dom()) {
     if (cardinal(dom()) == 1) {
-      if (image(*this) == image(other)) return true;
+      return image(*this) == image(other);
     }
-
-    else if (exp() == other.exp()) return true;
+    else 
+      return exp() == other.exp();
   }
 
   return false;
 }
 
 template<typename Set>
-bool SBGMap<Set>::operator!=(const SBGMap<Set> &other) const { return !(*this == other); }
+bool SBGMap<Set>::operator!=(const SBGMap<Set> &other) const
+{
+  return !(*this == other);
+}
 
 template<typename Set>
 std::ostream &operator<<(std::ostream &out, const SBGMap<Set> &sbgmap)
@@ -94,7 +100,7 @@ std::ostream &operator<<(std::ostream &out, const SBGMap<Set> &sbgmap)
 template<typename Set>
 SBGMap<Set> restrict(Set subdom, SBGMap<Set> sbgmap)
 {
-  Set restricted_dom = intersection(sbgmap.dom_ref(), subdom);
+  Set restricted_dom = intersection(sbgmap.dom(), subdom);
   return SBGMap(restricted_dom, sbgmap.exp());
 }
 
@@ -102,7 +108,8 @@ Interval image(Interval i, LExp le) {
   Util::RATIONAL m = le.slope(), h = le.offset(); 
   Util::NAT new_begin = 0, new_step = 0, new_end = 0;
 
-  if (isId(le)) return i;
+  if (isId(le))
+    return i;
 
   if (isConstant(le)) {
     Util::NAT off = toNat(le.offset());
@@ -110,7 +117,8 @@ Interval image(Interval i, LExp le) {
   }
 
   Util::RATIONAL rat_inf(Util::INT_Inf, 1);
-  if (m == rat_inf || m > rat_inf) return Interval(0, 1, Util::Inf);
+  if (m == rat_inf || m > rat_inf)
+    return Interval(0, 1, Util::Inf);
 
   // Increasing expression
   if (m > 0) {
@@ -131,38 +139,37 @@ Interval image(Interval i, LExp le) {
 
 SetPiece image(SetPiece mdi, Exp mdle)
 {
+  if (isEmpty(mdi))
+    return mdi;
+  
+  Util::ERROR_UNLESS(mdi.size() == mdle.size()
+               , "LIB::SBGMap::image: dimensions don't match");
+
   SetPiece res;
+  for (auto const &[i, le] : boost::combine(mdi, mdle)) 
+    res.emplaceBack(image(i, le));
 
-  if (isEmpty(mdi)) return mdi;
-
-  if (mdi.size() == mdle.size()) {
-    parallel_foreach2 (mdi.intervals_ref(), mdle.exps_ref()) {
-      Interval i = boost::get<0>(items);
-      LExp le = boost::get<1>(items);
-      res.emplaceBack(image(i, le));
-    }
- 
-    return res;
-  }
-
-  Util::ERROR("LIB::SBGMap::image: dimensions don't match");
-  return SetPiece();
+  return res;
 }
 
 template<typename Set>
-Set image(SBGMap<Set> sbgmap) { return image(sbgmap.dom(), sbgmap);}
+Set image(SBGMap<Set> sbgmap) { return image(sbgmap.dom(), sbgmap); }
 
 template<typename Set>
 Set image(Set subdom, SBGMap<Set> sbgmap) 
 {
   Set res;
 
+  if (isEmpty(subdom))
+    return Set();
+
   Exp le = sbgmap.exp();
-  Set capdom = intersection(sbgmap.dom_ref(), subdom);
-  if (isEmpty(capdom)) return Set();
+  Set capdom = intersection(sbgmap.dom(), subdom);
+  if (isEmpty(capdom))
+    return Set();
 
   else {
-    BOOST_FOREACH (SetPiece atom, capdom) {
+    for (SetPiece atom : capdom) {
       SetPiece new_atom = image(atom, le);
       res.emplace(new_atom);
     }
@@ -182,7 +189,7 @@ Set preImage(Set subcodom, SBGMap<Set> sbgmap)
   Set cap_subcodom = intersection(im, subcodom);
   Set inv_im = image(cap_subcodom, inv);
 
-  return intersection(sbgmap.dom_ref(), inv_im);
+  return intersection(sbgmap.dom(), inv_im);
 }
 
 template<typename Set>
@@ -193,7 +200,7 @@ SBGMap<Set> composition(SBGMap<Set> sbgmap1, SBGMap<Set> sbgmap2)
   res_dom = preImage(res_dom, sbgmap2);
   Exp res_exp = composition(sbgmap1.exp(), sbgmap2.exp());
 
-  return SBGMap(res_dom, res_exp);
+  return SBGMap<Set>(res_dom, res_exp);
 }
 
 // Extra functions -------------------------------------------------------------
@@ -216,14 +223,15 @@ SBGMap<Set> minInv(SBGMap<Set> sbgmap) { return minInv(sbgmap.dom(), sbgmap); }
 template<typename Set>
 bool isId(SBGMap<Set> sbgmap)
 {
-  if (cardinal(sbgmap.dom()) == 1) return sbgmap.dom() == image(sbgmap);
+  if (cardinal(sbgmap.dom()) == 1)
+    return sbgmap.dom() == image(sbgmap);
 
   return isId(sbgmap.exp());
 }
 
 // Function should be called on a non-empty sbgmap
 template<typename Set>
-unsigned int nmbrDims(SBGMap<Set> sbgmap) { return sbgmap.dom().size(); }
+unsigned int nmbrDims(SBGMap<Set> sbgmap) { return sbgmap.dom()[0].size(); }
 
 template<typename Set>
 std::size_t hash_value(const SBGMap<Set> &sbgmap)

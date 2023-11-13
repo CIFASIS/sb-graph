@@ -127,7 +127,7 @@ LIB::OrdSet EvalOrdSet::operator()(AST::Set v) const
   LIB::OrdSet res;
 
   EvalMDI mdi_visit(env_);
-  BOOST_FOREACH (AST::Expr e, v.pieces()) res.emplace_hint(res.end(), Apply(mdi_visit, e));     
+  BOOST_FOREACH (AST::Expr e, v.pieces()) res.emplaceBack(Apply(mdi_visit, e));     
 
   return res;
 }

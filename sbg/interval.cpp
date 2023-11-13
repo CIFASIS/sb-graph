@@ -29,11 +29,11 @@ Interval::Interval(NAT begin, NAT step, NAT end) : begin_(begin), step_(step), e
 {
   if (end >= begin) {
     int rem = fmod(end - begin, step);
-    set_end(end - rem);
+    end_ = end - rem;
   }
 
-  if (cardinal(*this) == 1) set_step(1);
-    
+  if (cardinal(*this) == 1)
+    step_ = 1;
 }
 
 member_imp(Interval, NAT, begin);
@@ -42,18 +42,28 @@ member_imp(Interval, NAT, end);
 
 bool Interval::operator==(const Interval &other) const
 {
-  return (begin() == other.begin()) && (step() == other.step()) && (end() == other.end());
+  return (begin() == other.begin()) 
+          && (step() == other.step()) 
+          && (end() == other.end());
 }
 
-bool Interval::operator!=(const Interval &other) const { return !(*this == other); }
+bool Interval::operator!=(const Interval &other) const
+{
+  return !(*this == other);
+}
 
 bool Interval::operator<(const Interval &other) const
 {
-  if (begin() < other.begin()) return true;
+  if (begin() < other.begin())
+    return true;
 
-  if (begin() == other.begin() && end() < other.end()) return true;
+  if (begin() == other.begin() && end() < other.end())
+    return true;
 
-  if (begin() == other.begin() && end() == other.end() && step() < other.step()) return true;
+  if (begin() == other.begin() 
+      && end() == other.end() 
+      && step() < other.step())
+    return true;
 
   return false;
 }
@@ -72,7 +82,8 @@ std::ostream &operator<<(std::ostream &out, const Interval &i)
 
 unsigned int cardinal(Interval i) 
 {
-  if (!isEmpty(i)) return (i.end() - i.begin()) / i.step() + 1;
+  if (!isEmpty(i))
+    return (i.end() - i.begin()) / i.step() + 1;
 
   return 0;
 }
@@ -81,7 +92,8 @@ bool isEmpty(Interval i) { return i.end() < i.begin(); }
 
 bool isMember(NAT x, Interval i)
 {
-  if (x < i.begin() || x > i.end()) return false;
+  if (x < i.begin() || x > i.end())
+    return false;
 
   int rem = fmod(x - i.begin(), i.step());
 
@@ -94,15 +106,21 @@ Util::NAT maxElem(Interval i) { return i.end(); }
 
 Interval intersection(Interval i1, Interval i2)
 {
-  if (isEmpty(i1) || isEmpty(i2)) return Interval();
+  if (isEmpty(i1) || isEmpty(i2))
+    return Interval();
 
-  if ((i1.end() < i2.begin()) || (i2.end() < i1.begin())) return Interval();
+  if ((i1.end() < i2.begin()) || (i2.end() < i1.begin()))
+    return Interval();
 
   // Two non overlapping intervals with the same step
-  if (i1.step() == i2.step() && !isMember(i1.begin(), i2) && !isMember(i2.begin(), i1)) return Interval();
+  if (i1.step() == i2.step() 
+      && !isMember(i1.begin(), i2) 
+      && !isMember(i2.begin(), i1)) return Interval();
 
   NAT max_begin = std::max(i1.begin(), i2.begin());    
-  NAT new_step = std::lcm(i1.step(), i2.step()), new_begin = max_begin, new_end = std::min(i1.end(), i2.end());
+  NAT new_step = std::lcm(i1.step(), i2.step())
+      , new_begin = max_begin
+      , new_end = std::min(i1.end(), i2.end());
   bool found_member = false;
   for (NAT x = max_begin; x < max_begin + new_step; x++) 
     if (isMember(x, i1) && isMember(x, i2)) {

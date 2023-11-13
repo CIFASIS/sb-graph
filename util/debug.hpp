@@ -42,7 +42,8 @@ namespace Util {
  *
  * If the flag is "+", we enable all DEBUG messages.
  *
- * "flagList" is a string of characters for whose DEBUG messages are to be enabled.
+ * "flagList" is a string of characters for whose DEBUG messages are to be
+ * enabled.
  */
 void debugInit(const char *flags);
 
@@ -71,7 +72,7 @@ void ERROR_UNLESS(bool condition, const char *format, ...);
 void WARNING(const char *format, ...);
 
 /**
- * Print an WARNING message if condition is false.
+ * Print a WARNING message if condition is false.
  * Then continues with the execution.
  */
 void WARNING_UNLESS(bool condition, const char *format, ...);

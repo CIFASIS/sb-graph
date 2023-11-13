@@ -24,7 +24,8 @@
 #ifndef SBG_SBGALGO_HPP
 #define SBG_SBGALGO_HPP
 
-#include<chrono>
+#include <chrono>
+#include <iostream>
 
 #include "sbg/sbg.hpp"
 
@@ -49,16 +50,13 @@ struct PathInfo {
 };
 
 template<typename Set>
-PWMap<Set> minReach1(Set V, Set E, PWMap<Set> mapB, PWMap<Set> mapD, PWMap<Set> smap, PWMap<Set> rmap);
-
-
-template<typename Set>
 struct MinReach {
   member_class(DSBGraph<Set>, dsbg);
 
   MinReach();
   MinReach(DSBGraph<Set> dsbg);
 
+  PWMap<Set> minReach1(Set reach, PWMap<Set> smap, PWMap<Set> rmap);
   PathInfo<Set> recursion(unsigned int n, Set ER, Set not_rv, PWMap<Set> smap, PWMap<Set> rmap);
   PathInfo<Set> calculate(Set unmatched_V);
 };

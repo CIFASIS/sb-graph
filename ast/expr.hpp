@@ -24,7 +24,6 @@
 #ifndef PARSER_EXPR_AST_HPP
 #define PARSER_EXPR_AST_HPP
 
-#include <boost/foreach.hpp>
 #include <boost/variant/variant.hpp>
 #include <boost/variant/recursive_wrapper.hpp>
 

@@ -35,7 +35,8 @@
 #include <numeric>
 #include <optional>
 
-#include <boost/foreach.hpp>
+#include <iostream>
+
 #include <boost/functional/hash.hpp>
 
 #include "util/defs.hpp"

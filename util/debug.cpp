@@ -25,7 +25,8 @@ namespace SBG {
 
 namespace Util {
 
-static const char *enableFlags = NULL;  // controls which DEBUG messages are printed
+// controls which DEBUG messages are printed
+static const char *enableFlags = NULL;
 
 void debugInit(const char *flagList) { enableFlags = flagList; }
 
@@ -70,7 +71,8 @@ void ERROR(const char *format, ...)
   va_list ap;
   va_start(ap, format);
   const char *error_string = "Error: ";
-  char *new_format = new char[sizeof(char) * strlen(error_string) + strlen(format) + 1];
+  char *new_format 
+    = new char[sizeof(char) * strlen(error_string) + strlen(format) + 1];
   strcpy(new_format, error_string);
   strcat(new_format, format);
   vfprintf(stderr, new_format, ap);
@@ -96,7 +98,8 @@ void WARNING(const char *format, ...)
   va_list ap;
   va_start(ap, format);
   const char *error_string = "Warning: ";
-  char *new_format = new char[sizeof(char) * strlen(error_string) + strlen(format) + 1];
+  char *new_format
+    = new char[sizeof(char) * strlen(error_string) + strlen(format) + 1];
   strcpy(new_format, error_string);
   strcat(new_format, format);
   vfprintf(stderr, new_format, ap);

@@ -25,16 +25,15 @@
 #define SBG_MULTIDIM_LEXP_HPP
 
 #include <boost/foreach.hpp>
-
 #include "lexp.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
-typedef boost::container::vector<LExp> LExpVector;
-typedef boost::container::vector<LExp>::iterator LExpVectorIt;
-typedef boost::container::vector<LExp>::const_iterator LExpVectorConstIt;
+typedef std::vector<LExp> LExpVector;
+typedef LExpVector::iterator LExpVectorIt;
+typedef LExpVector::const_iterator LExpVectorConstIt;
 
 struct MDLExp {
   typedef LExpVectorIt iterator;
@@ -55,6 +54,7 @@ struct MDLExp {
   std::size_t size() const;
   void emplaceBack(LExp le);
   LExp &operator[](std::size_t n);
+  const LExp &operator[](std::size_t n) const;
 
   MDLExp operator+(const MDLExp &le); 
   MDLExp operator-(const MDLExp &le); 

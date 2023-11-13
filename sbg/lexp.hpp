@@ -27,8 +27,6 @@
 #ifndef SBG_LEXP_HPP
 #define SBG_LEXP_HPP
 
-#include <iostream>
-
 #include <boost/functional/hash.hpp>
 
 #include "util/defs.hpp"

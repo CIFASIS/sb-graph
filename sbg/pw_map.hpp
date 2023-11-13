@@ -45,7 +45,9 @@ struct LTMap {
 
 
 template<typename Set>
-using MapSet = boost::container::flat_set<SBGMap<Set>, LTMap<Set>, boost::container::new_allocator<SBGMap<Set>>>;
+using MapSet = boost::container::flat_set<
+  SBGMap<Set>, LTMap<Set>, boost::container::new_allocator<SBGMap<Set>>
+>;
 template<typename Set>
 using MapSetIt = typename MapSet<Set>::iterator;
 template<typename Set>
@@ -73,6 +75,7 @@ struct PWMap {
   void emplace_hint(MapSetIt<Set> it, SBGMap<Set> m);
   void emplaceBack(SBGMap<Set> m);
   SBGMap<Set> &operator[](std::size_t n);
+  const SBGMap<Set> &operator[](std::size_t n) const;
 
   PWMap operator+(const PWMap &pw);
 
@@ -163,7 +166,8 @@ PWMap<Set> minMap(Set dom, Exp e1, Exp e2, Exp e3, Exp e4);
 template<typename Set>
 PWMap<Set> minMap(Set dom, Exp e1, Exp e2);
 template<typename Set>
-PWMap<Set> minMap(PWMap<Set> pw1, PWMap<Set> pw2, PWMap<Set> pw3, PWMap<Set> pw4);
+PWMap<Set> minMap(PWMap<Set> pw1, PWMap<Set> pw2
+                  , PWMap<Set> pw3, PWMap<Set> pw4);
 template<typename Set>
 PWMap<Set> minMap(PWMap<Set> pw1, PWMap<Set> pw2);
 

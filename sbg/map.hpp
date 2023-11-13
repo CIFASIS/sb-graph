@@ -27,9 +27,6 @@
 #ifndef SBG_MAP_HPP
 #define SBG_MAP_HPP
 
-#include <iostream>
-
-#include "sbg/multidim_inter.hpp"
 #include "sbg/multidim_lexp.hpp"
 #include "sbg/ord_pw_mdinter.hpp"
 #include "sbg/unord_pw_mdinter.hpp"
@@ -38,8 +35,6 @@
 namespace SBG {
 
 namespace LIB {
-
-bool compatible(SetPiece mdi, Exp mdle);
 
 // Non-optimized implementation ------------------------------------------------
 

@@ -29,11 +29,20 @@ LExp::LExp(RAT slope, RAT offset) : slope_(slope), offset_(offset) {}
 member_imp(LExp, RAT, slope);
 member_imp(LExp, RAT, offset);
 
-LExp LExp::operator+(const LExp &r) { return LExp(slope() + r.slope(), offset() + r.offset()); }
+LExp LExp::operator+(const LExp &r)
+{
+  return LExp(slope() + r.slope(), offset() + r.offset());
+}
 
-LExp LExp::operator-(const LExp &r) { return LExp(slope() - r.slope(), offset() - r.offset()); }
+LExp LExp::operator-(const LExp &r)
+{
+  return LExp(slope() - r.slope(), offset() - r.offset());
+}
 
-bool LExp::operator==(const LExp &other) const { return slope() == other.slope() && offset() == other.offset(); }
+bool LExp::operator==(const LExp &other) const
+{
+  return slope() == other.slope() && offset() == other.offset();
+}
 
 bool LExp::operator<(const LExp &other) const 
 {

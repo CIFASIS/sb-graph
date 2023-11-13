@@ -231,6 +231,15 @@ bool isZero(RATIONAL r) { return r.numerator() == 0; }
 
 bool isOne(RATIONAL r) { return r.numerator() == r.denominator(); }
 
+std::size_t hash_value(const RATIONAL &r)
+{
+  std::size_t seed = 0;
+  boost::hash_combine(seed, r.numerator());
+  boost::hash_combine(seed, r.denominator());
+
+  return seed;
+}
+
 } // namespace Util
 
 } // namespace SBG

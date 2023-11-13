@@ -30,6 +30,7 @@
 #include <variant>
 
 #include <boost/container/vector.hpp>
+#include <boost/functional/hash.hpp>
 #include <boost/range/combine.hpp>
 #include <boost/rational.hpp>
 
@@ -173,6 +174,8 @@ std::ostream &operator<<(std::ostream &out, const RATIONAL &r);
 
 bool isZero(RATIONAL r);
 bool isOne(RATIONAL r);
+
+std::size_t hash_value(const RATIONAL &r);
 
 // Parser definitions ----------------------------------------------------------
 

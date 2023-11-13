@@ -37,8 +37,6 @@
 
 #include <iostream>
 
-#include <boost/functional/hash.hpp>
-
 #include "util/defs.hpp"
 
 namespace SBG {

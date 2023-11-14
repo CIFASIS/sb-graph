@@ -46,6 +46,14 @@ member_imp(MultiDimInter, InterVector, intervals);
 
 MultiDimInter::iterator MultiDimInter::begin() { return intervals_.begin(); }
 MultiDimInter::iterator MultiDimInter::end() { return intervals_.end(); }
+MultiDimInter::const_iterator MultiDimInter::begin() const
+{
+  return intervals_.begin();
+}
+MultiDimInter::const_iterator MultiDimInter::end() const
+{
+  return intervals_.end();
+}
 
 std::size_t MultiDimInter::size() const { return intervals_.size(); }
 
@@ -212,12 +220,7 @@ bool isUnidim(MultiDimInter mdi) { return mdi.size() <= 1; }
 
 std::size_t hash_value(const MultiDimInter &mdi)
 {
-  std::size_t seed = 0;
-
-  MultiDimInter aux = mdi;  
-  boost::hash_range(seed, aux.begin(), aux.end());
-
-  return seed;
+  return boost::hash_range(mdi.begin(), mdi.end());
 }
 
 } // namespace LIB

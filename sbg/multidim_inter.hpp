@@ -51,6 +51,8 @@ struct MultiDimInter {
 
   iterator begin();
   iterator end();
+  const_iterator begin() const;
+  const_iterator end() const;
 
   std::size_t size() const;  
   void emplaceBack(Interval i);

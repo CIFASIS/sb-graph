@@ -58,11 +58,14 @@ struct UnordPWMDInter {
   UnordPWMDInter(SetPiece mdi);
   UnordPWMDInter(MDInterUnordSet c);
 
+  iterator begin();
+  iterator end();
+  const_iterator begin() const;
+  const_iterator end() const;
+
   std::size_t size() const;
   void emplace(SetPiece mdi);
   void emplaceBack(SetPiece mdi);
-  iterator begin();
-  iterator end();
   SetPiece operator[](std::size_t n);
   const SetPiece &operator[](std::size_t n) const;
 

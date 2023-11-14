@@ -89,6 +89,11 @@ void OrdPWMDInter::emplaceBack(SetPiece mdi)
 
 OrdPWMDInter::iterator OrdPWMDInter::begin() { return pieces_.begin(); }
 OrdPWMDInter::iterator OrdPWMDInter::end() { return pieces_.end(); }
+OrdPWMDInter::const_iterator OrdPWMDInter::begin() const
+{
+  return pieces_.begin();
+}
+OrdPWMDInter::const_iterator OrdPWMDInter::end() const { return pieces_.end(); }
 
 SetPiece OrdPWMDInter::operator[](std::size_t n)
 {
@@ -518,8 +523,7 @@ MDInterOrdSet traverse(OrdPWMDInter pwi1
 
 std::size_t hash_value(const OrdPWMDInter &pwi)
 {
-  OrdPWMDInter aux_pwi = pwi;
-  return boost::hash_range(aux_pwi.begin(), aux_pwi.end());
+  return boost::hash_range(pwi.begin(), pwi.end());
 }
 
 } // namespace LIB

@@ -51,6 +51,8 @@ member_imp(MDLExp, LExpVector, exps);
 
 MDLExp::iterator MDLExp::begin() { return exps_.begin(); }
 MDLExp::iterator MDLExp::end() { return exps_.end(); }
+MDLExp::const_iterator MDLExp::begin() const { return exps_.begin(); }
+MDLExp::const_iterator MDLExp::end() const { return exps_.end(); }
 
 std::size_t MDLExp::size() const { return exps_.size(); }
 
@@ -161,12 +163,7 @@ bool isConstant(MDLExp mdle)
 
 std::size_t hash_value(const MDLExp &mdle)
 {
-  std::size_t seed = 0;
-
-  MDLExp aux = mdle;
-  boost::hash_range(seed, aux.begin(), aux.end());
-
-  return seed;
+  return boost::hash_range(mdle.begin(), mdle.end());
 }
 
 } // namespace LIB

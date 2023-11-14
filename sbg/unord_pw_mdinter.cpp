@@ -73,6 +73,14 @@ void UnordPWMDInter::emplaceBack(SetPiece mdi)
 
 UnordPWMDInter::iterator UnordPWMDInter::begin() { return pieces_.begin(); }
 UnordPWMDInter::iterator UnordPWMDInter::end() { return pieces_.end(); }
+UnordPWMDInter::const_iterator UnordPWMDInter::begin() const
+{
+  return pieces_.begin();
+}
+UnordPWMDInter::const_iterator UnordPWMDInter::end() const
+{
+  return pieces_.end();
+}
 
 SetPiece UnordPWMDInter::operator[](std::size_t n)
 {
@@ -394,8 +402,7 @@ UnordPWMDInter offset(Util::MD_NAT off, UnordPWMDInter pwi)
 
 std::size_t hash_value(const UnordPWMDInter &pwi)
 {
-  UnordPWMDInter aux_pwi = pwi;
-  return boost::hash_range(aux_pwi.begin(), aux_pwi.end());
+  return boost::hash_range(pwi.begin(), pwi.end());
 }
 
 } // namespace LIB

@@ -82,6 +82,16 @@ template<typename Set>
 typename PWMap<Set>::iterator PWMap<Set>::begin() { return maps_.begin(); }
 template<typename Set>
 typename PWMap<Set>::iterator PWMap<Set>::end() { return maps_.end(); }
+template<typename Set>
+typename PWMap<Set>::const_iterator PWMap<Set>::begin() const
+{
+  return maps_.begin();
+}
+template<typename Set>
+typename PWMap<Set>::const_iterator PWMap<Set>::end() const
+{
+  return maps_.end();
+}
 
 template<typename Set>
 std::size_t PWMap<Set>::size() const { return maps_.size(); }
@@ -897,7 +907,6 @@ PWMap<Set> normalize(PWMap<Set> pw)
 template<typename Set>
 std::size_t hash_value(const PWMap<Set> &pw)
 {
-  std::size_t seed = 0;
   return boost::hash_range(pw.begin(), pw.end());
 }
 
@@ -940,6 +949,7 @@ template BasePWMap offsetImage<UnordSet>(Util::MD_NAT off, BasePWMap pw);
 template BasePWMap offsetImage<UnordSet>(Exp off, BasePWMap pw);
 template unsigned int nmbrDims<UnordSet>(BasePWMap pw);
 template BasePWMap normalize<UnordSet>(BasePWMap pw);
+template std::size_t hash_value<UnordSet>(const BasePWMap &pw);
 
 template std::ostream &operator<<(std::ostream &out, const MapSet<OrdSet> &ms);
 template struct PWMap<OrdSet>;
@@ -978,6 +988,7 @@ template CanonPWMap offsetImage<OrdSet>(Util::MD_NAT off, CanonPWMap pw);
 template CanonPWMap offsetImage<OrdSet>(Exp off, CanonPWMap pw);
 template unsigned int nmbrDims<OrdSet>(CanonPWMap pw);
 template CanonPWMap normalize<OrdSet>(CanonPWMap pw);
+template std::size_t hash_value<OrdSet>(const CanonPWMap &pw);
 
 } // namespace LIB
 

@@ -47,6 +47,7 @@ void MD_NAT::emplace_back(NAT x) { value_.emplace_back(x); }
 void MD_NAT::push_back(NAT x) { emplace_back(x); }
 
 NAT &MD_NAT::operator[](std::size_t n) { return value_[n]; }
+const NAT &MD_NAT::operator[](std::size_t n) const { return value_[n]; }
 
 bool MD_NAT::operator==(const MD_NAT &md) const
 { 

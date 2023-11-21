@@ -34,7 +34,7 @@ MDLExp::MDLExp(Util::MD_NAT x)
 MDLExp::MDLExp(unsigned int dimensions) : exps_() {
   Util::ERROR_UNLESS(dimensions > 0, "LIB::MDLE2: empty not allowed");
 
-  for (unsigned int j = 0; j < dimensions; j++)
+  for (unsigned int j = 0; j < dimensions; ++j)
     exps_.emplace_back(LExp());
 }
 MDLExp::MDLExp(LExp le) : exps_() { exps_.emplace_back(le); }
@@ -42,7 +42,7 @@ MDLExp::MDLExp(unsigned int nmbr_copies, LExp le) : exps_()
 {  
   Util::ERROR_UNLESS(nmbr_copies > 0, "LIB::MDLE3: empty not allowed");
 
-  for (unsigned int j = 0; j < nmbr_copies; j++)
+  for (unsigned int j = 0; j < nmbr_copies; ++j)
     exps_.emplace_back(le);
 }
 MDLExp::MDLExp(LExpVector v) : exps_(v) {}

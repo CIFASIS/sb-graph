@@ -130,7 +130,7 @@ SBGraph<Set> copy(unsigned int times, SBGraph<Set> g)
     off.emplaceBack(LExp(0, o));
   }
 
-  for (unsigned int j = 0; j < times; j++) {
+  for (unsigned int j = 0; j < times; ++j) {
     if (j > 0) {
       V_new = concatenation(V_new, V_ith);
       Vmap_new = concatenation(Vmap_new, Vmap_ith);

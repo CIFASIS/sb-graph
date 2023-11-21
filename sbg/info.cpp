@@ -40,7 +40,7 @@ std::ostream &operator<<(std::ostream &out, const DeclRanged &dr)
   if (sz > 0) {
     out << "[";
     unsigned int j = 0;
-    for (; j < sz - 1; j++) {
+    for (; j < sz - 1; ++j) {
       out << cardinal(mdi[j]) << ", ";
     }
     out << cardinal(mdi[j]);
@@ -95,7 +95,7 @@ std::ostream &operator<<(std::ostream &out, const UseRanged &ur)
   if (sz > 0) {
     out << "[";
     unsigned int j = 0;
-    for (; j < sz - 1; j++) out << mdle[j] << ", ";
+    for (; j < sz - 1; ++j) out << mdle[j] << ", ";
     out << mdle[j];
     out << "]"; 
   }
@@ -128,7 +128,7 @@ std::ostream &operator<<(std::ostream &out, const RangedExpr &re)
     out << "for ";
 
     unsigned int j = 0;
-    for (; j < sz - 1; j++) out << iterators[j] << " in " << mdi[j] << ", ";
+    for (; j < sz - 1; ++j) out << iterators[j] << " in " << mdi[j] << ", ";
     out << iterators[j] << " in " << mdi[j];
 
     out << " loop\n" << re.expr() << "\nend for;";

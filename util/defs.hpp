@@ -120,6 +120,7 @@ struct MD_NAT {
   void push_back(NAT x);
 
   NAT &operator[](std::size_t n);
+  const NAT &operator[](std::size_t n) const;
 
   eq_class(MD_NAT);
   lt_class(MD_NAT);

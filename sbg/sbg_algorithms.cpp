@@ -250,7 +250,7 @@ PathInfo<Set> MinReach<Set>::calculate(Set unmatched_V)
               old_semap_nth = semap_nth;
               semap_nth = composition(new_semap, semap_nth);
 
-              j++;
+              ++j;
             } while (isEmpty(ER) && j < nmbrSV(dg) 
                      && !(old_semap_nth == semap_nth));
             ER = intersection(ER, Ec);

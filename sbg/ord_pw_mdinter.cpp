@@ -293,7 +293,7 @@ OrdPWMDInter complementAtom(OrdPWMDInter pwi)
 
   // "During" interval
   if (i.begin() < Util::Inf) {
-    for (Util::NAT j = 1; j < i.step(); j++) {
+    for (Util::NAT j = 1; j < i.step(); ++j) {
       Interval i_res(i.begin() + j, i.step(), i.end());
       if (!isEmpty(i_res))
         c.emplaceBack(SetPiece(i_res));
@@ -440,7 +440,7 @@ MDInterOrdSet boundedTraverse(OrdPWMDInter pwi1
     MDInterOrdSetIt end1 = pwi1.end(), end2 = pwi2.end();   
 
     SetPiece mdi1, mdi2;
-    for (int j = 0; it1 != end1 && it2 != end2; j++) {
+    for (int j = 0; it1 != end1 && it2 != end2; ++j) {
       mdi1 = *it1;
       mdi2 = *it2;
 

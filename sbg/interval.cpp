@@ -122,7 +122,7 @@ Interval intersection(Interval i1, Interval i2)
       , new_begin = max_begin
       , new_end = std::min(i1.end(), i2.end());
   bool found_member = false;
-  for (NAT x = max_begin; x < max_begin + new_step; x++) 
+  for (NAT x = max_begin; x < max_begin + new_step; ++x) 
     if (isMember(x, i1) && isMember(x, i2)) {
       new_begin = x;
       found_member = true;

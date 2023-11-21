@@ -121,8 +121,8 @@ SBGMap<Set> &PWMap<Set>::operator[](std::size_t n)
                , "LIB::PWMap::operator[]: invalid n");
 
   auto first = maps_.begin();
-  for (unsigned int j = 0; j < n; j++) 
-    first++;
+  for (unsigned int j = 0; j < n; ++j) 
+    ++first;
   return *first;
 }
 
@@ -133,8 +133,8 @@ const SBGMap<Set> &PWMap<Set>::operator[](std::size_t n) const
                , "LIB::PWMap::operator[]: invalid n");
 
   auto first = maps_.begin();
-  for (unsigned int j = 0; j < n; j++) 
-    first++;
+  for (unsigned int j = 0; j < n; ++j) 
+    ++first;
   return *first;
 }
 
@@ -291,7 +291,7 @@ PWMap<Set> mapInf(PWMap<Set> pw, unsigned int n)
 
   Set pw_dom = dom(pw);
   if (!isEmpty(pw_dom)) {
-    for (unsigned int j = 0; !(old_res == res) && j < n; j++) {
+    for (unsigned int j = 0; !(old_res == res) && j < n; ++j) {
       old_res = res;
       res = composition(res, pw);
     }
@@ -557,7 +557,7 @@ PWMap<Set> minMap(SetPiece dom_piece, Exp e1, Exp e2, Exp e3, Exp e4)
       }
         
       aux_dom = dom_piece;
-      j++;
+      ++j;
     }
   }
 

@@ -39,6 +39,14 @@ LExp LExp::operator-(const LExp &r)
   return LExp(slope() - r.slope(), offset() - r.offset());
 }
 
+LExp LExp::operator*(const LExp &r)
+{
+  Util::ERROR_UNLESS(isZero(r.slope())
+                     , "LIB::LExp::operator*: result is not a LExp");
+
+  return LExp(slope() * r.offset(), offset()); 
+}
+
 bool LExp::operator==(const LExp &other) const
 {
   return slope() == other.slope() && offset() == other.offset();
@@ -110,6 +118,32 @@ LExp inverse(LExp le)
   }
 
   return LExp(new_slope, new_offset);
+}
+
+LExp mod(LExp le1, LExp le2) 
+{
+  Util::ERROR_UNLESS(isZero(le2.slope())
+                     , "LIB::LExp::mod: not supported currently");
+ 
+  return LExp();
+}
+
+LExp floorDiv(LExp le1, LExp le2)
+{
+  Util::ERROR_UNLESS(isZero(le2.slope())
+                     , "LIB::LExp::floorDiv: result is not a LExp");
+
+  Util::RATIONAL div = le2.offset();
+  return LExp(le1.slope() / div, le1.offset() / div);
+}
+
+LExp ceilDiv(LExp le1, LExp le2)
+{
+  Util::ERROR_UNLESS(isZero(le2.slope())
+                     , "LIB::LExp::ceilDiv: result is not a LExp");
+
+  Util::RATIONAL div = le2.offset();
+  return LExp(le1.slope() / div, le1.offset() / div);
 }
 
 bool isId(LExp le) { return le.slope() == 1 && le.offset() == 0; }

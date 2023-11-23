@@ -46,6 +46,7 @@ struct LExp {
 
   LExp operator+(const LExp &le); 
   LExp operator-(const LExp &le); 
+  LExp operator*(const LExp &le);
 
   eq_class(LExp);
   lt_class(LExp);
@@ -63,6 +64,9 @@ std::ostream &operator<<(std::ostream &out, const LExp &le);
 
 LExp composition(LExp le1, LExp le2);
 LExp inverse(LExp le);
+LExp mod(LExp le1, LExp le2);
+LExp floorDiv(LExp le1, LExp le2);
+LExp ceilDiv(LExp le1, LExp le2);
 
 /**
  * @brief Extra operations.

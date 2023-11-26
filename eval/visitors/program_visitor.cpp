@@ -31,21 +31,21 @@ ProgramIO ProgramVisitor::operator()(AST::Program p) const
 
   AST::IsConfig cfg_visit;
   StmVisitor stm_visit;
-  BOOST_FOREACH (AST::Statement s, p.stms()) {
-    if (Apply(cfg_visit, s)) {
+  for (AST::Statement s : p.stms()) {
+    if (boost::apply_visitor(cfg_visit, s)) {
       AST::ConfigDims cfg = boost::get<AST::ConfigDims>(s);
       result.set_nmbr_dims(cfg.nmbr_dims());
     }
 
     else {
-      Apply(stm_visit, s);
+      boost::apply_visitor(stm_visit, s);
       result.stms_ref().push_back(s);
     }
   }
 
   EvalExpression eval_expr(result.nmbr_dims(), stm_visit.env());
-  BOOST_FOREACH (AST::Expr e, p.exprs()) {
-    ExprBaseType expr_res = Apply(eval_expr, e);
+  for (AST::Expr e : p.exprs()) {
+    ExprBaseType expr_res = boost::apply_visitor(eval_expr, e);
     result.exprs_ref().push_back(ExprEval(e, expr_res));
   }
 

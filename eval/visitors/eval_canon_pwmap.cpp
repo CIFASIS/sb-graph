@@ -176,7 +176,7 @@ LIB::CanonPWMap EvalCanonPWMap::operator()(AST::PWLMap v) const
 
   EvalCanonMap visit_map(env_);
   BOOST_FOREACH (AST::Expr e, v.maps())
-    res.emplace(Apply(visit_map, e));
+    res.emplace(boost::apply_visitor(visit_map, e));
 
   return res;
 }

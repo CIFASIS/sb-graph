@@ -96,7 +96,7 @@ struct Rational {
   Rational();
   Rational(Expr num, Expr den);
 
-  eq_class(Rational);
+  bool operator==(const Rational &r) const;
 };
 std::ostream &operator<<(std::ostream &out, const Rational &op);
 
@@ -110,7 +110,7 @@ struct UnaryOp {
   UnaryOp();
   UnaryOp(UnOp op, Expr expr);
 
-  eq_class(UnaryOp);
+ bool operator==(const UnaryOp &uop) const;
 };
 std::ostream &operator<<(std::ostream &out, const UnaryOp &uop);
 
@@ -125,7 +125,7 @@ struct BinOp {
   BinOp();
   BinOp(Expr left, Op op, Expr right);
 
-  eq_class(BinOp);
+  bool operator==(const BinOp &bop) const;
 };
 std::ostream &operator<<(std::ostream &out, const BinOp &bop);
 
@@ -137,7 +137,7 @@ struct Call {
   Call(Name name, Expr args);
   Call(Name name, ExprList args);
 
-  eq_class(Call);
+  bool operator==(const Call &c) const;
 };
 std::ostream &operator<<(std::ostream &out, const Call &c);
 
@@ -159,7 +159,7 @@ struct Interval {
   Interval();
   Interval(Expr begin, Expr step, Expr end);
 
-  eq_class(Interval);
+  bool operator==(const Interval &i) const;
 };
 std::ostream &operator<<(std::ostream &out, const Interval &i);
 
@@ -170,7 +170,7 @@ struct InterUnaryOp {
   InterUnaryOp();
   InterUnaryOp(ContainerUOp op, Expr e);
 
-  eq_class(InterUnaryOp);
+  bool operator==(const InterUnaryOp &iuop) const;
 };
 std::ostream &operator<<(std::ostream &out, const InterUnaryOp &i);
 
@@ -182,7 +182,7 @@ struct InterBinOp {
   InterBinOp();
   InterBinOp(Expr left, ContainerOp op, Expr right);
 
-  eq_class(InterBinOp);
+  bool operator==(const InterBinOp &ibop) const;
 };
 std::ostream &operator<<(std::ostream &out, const InterBinOp &i);
 
@@ -194,7 +194,7 @@ struct MultiDimInter {
   MultiDimInter();
   MultiDimInter(ExprList intervals);
 
-  eq_class(MultiDimInter);
+  bool operator==(const MultiDimInter &mdi) const;
 };
 std::ostream &operator<<(std::ostream &out, const MultiDimInter &mdi);
 
@@ -205,7 +205,7 @@ struct MDInterUnaryOp {
   MDInterUnaryOp();
   MDInterUnaryOp(ContainerUOp op, Expr e);
 
-  eq_class(MDInterUnaryOp);
+  bool operator==(const MDInterUnaryOp &mdiuop) const;
 };
 std::ostream &operator<<(std::ostream &out, const MDInterUnaryOp &mdi);
 
@@ -217,7 +217,7 @@ struct MDInterBinOp {
   MDInterBinOp();
   MDInterBinOp(Expr left, ContainerOp op, Expr right);
 
-  eq_class(MDInterBinOp);
+  bool operator==(const MDInterBinOp &bop) const;
 };
 std::ostream &operator<<(std::ostream &out, const MDInterBinOp &mdi);
 
@@ -229,7 +229,7 @@ struct Set {
   Set();
   Set(ExprList pieces);
 
-  eq_class(Set);
+  bool operator==(const Set &s) const;
 };
 std::ostream &operator<<(std::ostream &out, const Set &s); 
 
@@ -240,7 +240,7 @@ struct SetUnaryOp {
   SetUnaryOp();
   SetUnaryOp(ContainerUOp op, Expr e);
 
-  eq_class(SetUnaryOp);
+  bool operator==(const SetUnaryOp &uop) const;
 };
 std::ostream &operator<<(std::ostream &out, const SetUnaryOp &s);
 
@@ -252,7 +252,7 @@ struct SetBinOp {
   SetBinOp();
   SetBinOp(Expr left, ContainerOp op, Expr right);
 
-  eq_class(SetBinOp);
+  bool operator==(const SetBinOp &bop) const;
 };
 std::ostream &operator<<(std::ostream &out, const SetBinOp &s);
 
@@ -265,7 +265,7 @@ struct LinearExp {
   LinearExp();
   LinearExp(Expr slope, Expr offset);
 
-  eq_class(LinearExp);
+  bool operator==(const LinearExp &le) const;
 };
 std::ostream &operator<<(std::ostream &out, const LinearExp &le);
 
@@ -280,7 +280,7 @@ struct LExpBinOp {
   LExpBinOp();
   LExpBinOp(Expr left, ExpOp op, Expr right);
 
-  eq_class(LExpBinOp);
+  bool operator==(const LExpBinOp &bop) const;
 };
 std::ostream &operator<<(std::ostream &out, const LExpBinOp &lbop);
 
@@ -292,7 +292,7 @@ struct MDLExp {
   MDLExp();
   MDLExp(ExprList exps);
 
-  eq_class(MDLExp);
+  bool operator==(const MDLExp &mdle) const;
 };
 std::ostream &operator<<(std::ostream &out, const MDLExp &le);
 
@@ -304,7 +304,7 @@ struct MDLExpBinOp {
   MDLExpBinOp();
   MDLExpBinOp(Expr left, ExpOp op, Expr right);
 
-  eq_class(MDLExpBinOp);
+  bool operator==(const MDLExpBinOp &bop) const;
 };
 std::ostream &operator<<(std::ostream &out, const MDLExpBinOp &lbop);
 
@@ -317,7 +317,7 @@ struct LinearMap {
   LinearMap();
   LinearMap(Expr dom, Expr lexp);
 
-  eq_class(LinearMap);
+  bool operator==(const LinearMap &lmap) const;
 };
 std::ostream &operator<<(std::ostream &out, const LinearMap &lm);
 
@@ -329,7 +329,7 @@ struct PWLMap {
   PWLMap();
   PWLMap(ExprList maps);
 
-  eq_class(PWLMap);
+  bool operator==(const PWLMap &pw) const;
 };
 std::ostream &operator<<(std::ostream &out, const PWLMap &pwl);
 
@@ -345,7 +345,7 @@ struct SBG {
   SBG();
   SBG(Expr V, Expr Vmap, Expr map1, Expr map2, Expr Emap);
 
-  eq_class(SBG);
+  bool operator==(const SBG &sbg) const;
 };
 std::ostream &operator<<(std::ostream &out, const SBG &g);
 
@@ -361,7 +361,7 @@ struct DSBG {
   DSBG();
   DSBG(Expr V, Expr Vmap, Expr mapB, Expr mapD, Expr Emap);
 
-  eq_class(DSBG);
+  bool operator==(const DSBG &dsbg) const;
 };
 std::ostream &operator<<(std::ostream &out, const DSBG &g);
 

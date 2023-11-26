@@ -52,40 +52,26 @@ std::ostream &operator<<(std::ostream &out, const MDInterOrdSet &ii)
 OrdPWMDInter::OrdPWMDInter() : pieces_() {}
 OrdPWMDInter::OrdPWMDInter(Interval i) : pieces_()
 {
-  Util::ERROR_UNLESS(!isEmpty(i)
+  Util::ERROR_UNLESS(!i.isEmpty()
                      , "LIB::Ord1: should be uni-dimensional");
   pieces_.insert(SetPiece(i));
 }
 OrdPWMDInter::OrdPWMDInter(SetPiece mdi) : pieces_() { 
-  Util::ERROR_UNLESS(isUnidim(mdi) && !isEmpty(mdi)
+  Util::ERROR_UNLESS(mdi.isUnidim() && !mdi.isEmpty()
                      , "LIB::Ord2: should be uni-dimensional");
 
   pieces_.insert(mdi);
 }
-OrdPWMDInter::OrdPWMDInter(MDInterOrdSet ii) : pieces_() {
-  if (!ii.empty()) {
-    for (SetPiece mdi : ii)
-      Util::ERROR_UNLESS(isUnidim(mdi)
-                         , "LIB::Ord3: should be uni-dimensional");
+OrdPWMDInter::OrdPWMDInter(MDInterOrdSet container) : pieces_() {
+  for (const SetPiece &mdi : container) {
+    Util::ERROR_UNLESS(mdi.isUnidim() && !mdi.isEmpty()
+                       , "LIB::Ord3:: should be uni-dimensional");
 
-    pieces_ = ii;
+    pieces_.insert(mdi);
   }
 }
 
 member_imp(OrdPWMDInter, MDInterOrdSet, pieces);
-
-std::size_t OrdPWMDInter::size() const { return pieces_.size(); }
-
-void OrdPWMDInter::emplace(SetPiece mdi)
-{
-  Util::ERROR_UNLESS(!isEmpty(mdi), "LIB::Ord3: empty not allowed");
-  pieces_.emplace(mdi);
-}
-void OrdPWMDInter::emplaceBack(SetPiece mdi)
-{
-  Util::ERROR_UNLESS(!isEmpty(mdi), "LIB::Ord4: empty not allowed");
-  pieces_.emplace_hint(pieces_.cend(), mdi);
-}
 
 OrdPWMDInter::iterator OrdPWMDInter::begin() { return pieces_.begin(); }
 OrdPWMDInter::iterator OrdPWMDInter::end() { return pieces_.end(); }
@@ -95,148 +81,134 @@ OrdPWMDInter::const_iterator OrdPWMDInter::begin() const
 }
 OrdPWMDInter::const_iterator OrdPWMDInter::end() const { return pieces_.end(); }
 
-SetPiece OrdPWMDInter::operator[](std::size_t n)
+std::size_t OrdPWMDInter::size() const { return pieces_.size(); }
+
+void OrdPWMDInter::emplace(SetPiece mdi)
 {
-  Util::ERROR_UNLESS(n < pieces_.size() && pieces_.size() > 0
-                     , "LIB::Ord::operator[]: invalid n");
-  return *pieces_.nth(n);
+  Util::ERROR_UNLESS(!mdi.isEmpty(), "LIB::Ord3: empty not allowed");
+  pieces_.emplace(mdi);
 }
-const SetPiece &OrdPWMDInter::operator[](std::size_t n) const
+void OrdPWMDInter::emplaceBack(SetPiece mdi)
 {
-  Util::ERROR_UNLESS(n < pieces_.size() && pieces_.size() > 0
-                     , "LIB::Ord::operator[]: invalid n");
-  return *pieces_.nth(n);
+  Util::ERROR_UNLESS(!mdi.isEmpty(), "LIB::Ord4: empty not allowed");
+  pieces_.emplace_hint(pieces_.cend(), mdi);
 }
 
 bool OrdPWMDInter::operator==(const OrdPWMDInter &other) const
 {
-  MDInterOrdSet aux1 = this->pieces(), aux2 = other.pieces();
-  if (optConds(aux1) && optConds(aux2)) {
-    MDInterOrdSet ii1 = canonize(aux1), ii2 = canonize(aux2);
-    return ii1 == ii2;
-  }
+  MDInterOrdSet aux1 = this->pieces_, aux2 = other.pieces_;
+  if (optConds() && other.optConds())
+    return canonize() == other.canonize();
 
-  OrdPWMDInter pwi1 = *this, pwi2 = other;
-  if (pwi1.pieces_ref() == pwi2.pieces_ref())
+  if (aux1 == aux2)
     return true;
 
-  return isEmpty(difference(*this, other)) && isEmpty(difference(other, *this));
+  return difference(other).isEmpty() && other.difference(*this).isEmpty();
+}
+
+bool OrdPWMDInter::operator!=(const OrdPWMDInter &other) const
+{
+  return !(*this == other);
 }
 
 bool OrdPWMDInter::operator<(const OrdPWMDInter &other) const
 {
-  return minElem(*this) < minElem(other);
+  return this->minElem() < other.minElem();
 }
 
-std::ostream &operator<<(std::ostream &out, const OrdPWMDInter &pwi) 
+std::ostream &operator<<(std::ostream &out, const OrdPWMDInter &pwi)
 {
   out << pwi.pieces();
- 
+
   return out;
 }
 
 // Set functions ---------------------------------------------------------------
 
-unsigned int cardinal(OrdPWMDInter pwi) 
+unsigned int OrdPWMDInter::cardinal() const
 {
   unsigned int result = 0;
 
-  for (SetPiece mdi : pwi)
-    result += cardinal(mdi);
+  for (const SetPiece &mdi : pieces_)
+    result += mdi.cardinal();
 
   return result;
 }
 
-bool isEmpty(OrdPWMDInter pwi) { return pwi.pieces().empty(); }
+bool OrdPWMDInter::isEmpty() const { return pieces_.empty(); }
 
-bool isMember(MD_NAT x, OrdPWMDInter pwi)
+Util::MD_NAT OrdPWMDInter::minElem() const
 {
-  if (isEmpty(pwi))
-    return false;
+  Util::ERROR_UNLESS(!isEmpty(), "LIB::Ord::minElem: shouldn't be empty");
 
-  Util::ERROR_UNLESS(x.size() == 1
-               , "LIB::Ord::isMember: dimensions don't match");
-
-  for (SetPiece mdi : pwi) 
-    if (isMember(x, mdi))
-      return true;
-
-  return false;
+  return begin()->minElem();
 }
 
-Util::MD_NAT minElem(OrdPWMDInter pwi) 
+Util::MD_NAT OrdPWMDInter::maxElem() const
 {
-  Util::ERROR_UNLESS(!isEmpty(pwi), "LIB::Ord::minElem: shouldn't be empty");
+  Util::ERROR_UNLESS(!isEmpty(), "LIB::Ord::maxElem: shouldn't be empty");
 
-  return minElem(pwi[0]);
+  auto it = end();
+  --it;
+  return it->maxElem();
 }
 
-Util::MD_NAT maxElem(OrdPWMDInter pwi) 
-{
-  Util::ERROR_UNLESS(!isEmpty(pwi), "LIB::Ord::maxElem: shouldn't be empty");
-
-  return maxElem(pwi[pwi.size()-1]);
-}
-
-OrdPWMDInter intersection(OrdPWMDInter pwi1, OrdPWMDInter pwi2)
+OrdPWMDInter OrdPWMDInter::intersection(const OrdPWMDInter &other) const
 {
   // Special cases to enhance performance
-  if (isEmpty(pwi1))
+  if (isEmpty() || other.isEmpty())
     return OrdPWMDInter();
 
-  if (isEmpty(pwi2))
+  if (maxElem() < other.minElem())
     return OrdPWMDInter();
 
-  if (maxElem(pwi1) < minElem(pwi2))
+  if (other.maxElem() < minElem())
     return OrdPWMDInter();
 
-  if (maxElem(pwi2) < minElem(pwi1))
-    return OrdPWMDInter();
-
-  if (maxElem(pwi1) == minElem(pwi2)) {
-    return OrdPWMDInter(SetPiece(maxElem(pwi1)));
+  if (maxElem() == other.minElem()) {
+    return OrdPWMDInter(SetPiece(maxElem()));
   }
 
-  if (maxElem(pwi2) == minElem(pwi1))
-    return OrdPWMDInter(SetPiece(maxElem(pwi2)));
+  if (other.maxElem() == minElem())
+    return OrdPWMDInter(SetPiece(other.maxElem()));
 
-  if (pwi1.pieces_ref() == pwi2.pieces_ref())
-    return pwi1;
+  if (pieces_ == other.pieces_)
+    return *this;
 
   // General case
-  MDInterOrdSet cap = boundedTraverse(pwi1, pwi2, &intersection);
+  MDInterOrdSet cap = boundedTraverse(&SetPiece::intersection, other);
 
   return OrdPWMDInter(cap);
 }
 
-OrdPWMDInter cup(OrdPWMDInter pwi1, OrdPWMDInter pwi2)
+OrdPWMDInter OrdPWMDInter::cup(const OrdPWMDInter &other) const
 {
   OrdPWMDInter un;
 
-  if (isEmpty(pwi1))
-    return pwi2;
+  if (isEmpty())
+    return other;
  
-  if (isEmpty(pwi2))
-    return pwi1;
+  if (other.isEmpty())
+    return *this;
 
-  if (pwi1.pieces_ref() == pwi2.pieces_ref())
-    return pwi1;
+  if (pieces_ == other.pieces_)
+    return pieces_;
 
-  if (maxElem(pwi1) <= minElem(pwi2)) {
-    for (SetPiece mdi1 : pwi1)
+  if (maxElem() <= other.minElem()) {
+    for (const SetPiece &mdi1 : pieces_)
       un.emplaceBack(mdi1);
 
-    for (SetPiece mdi2 : pwi2)
+    for (const SetPiece &mdi2 : other.pieces_)
       un.emplaceBack(mdi2);
     
     return OrdPWMDInter(un);
   }
 
-  if (maxElem(pwi2) <= minElem(pwi1)) {
-    for (SetPiece mdi2 : pwi2)
+  if (other.maxElem() <= minElem()) {
+    for (const SetPiece &mdi2 : other.pieces_)
       un.emplaceBack(mdi2);
 
-    for (SetPiece mdi1 : pwi1)
+    for (const SetPiece &mdi1 : pieces_)
       un.emplaceBack(mdi1);
 
     return OrdPWMDInter(un);
@@ -248,120 +220,163 @@ OrdPWMDInter cup(OrdPWMDInter pwi1, OrdPWMDInter pwi2)
   // one with least quantity of them.  
   OrdPWMDInter lt_pieces, gt_pieces;
   int c_size1 = 0, c_size2 = 0;
-  for (SetPiece mdi1 : pwi1) 
+  for (const SetPiece &mdi1 : pieces_)
     c_size1 += mdi1.begin()->step();
-  for (SetPiece mdi2 : pwi2)
+  for (const SetPiece &mdi2 : other.pieces_)
     c_size2 += mdi2.begin()->step();
 
   if (c_size1 < c_size2) {
-    lt_pieces = pwi1;
-    gt_pieces = pwi2;
+    lt_pieces = *this;
+    gt_pieces = other;
   }
 
   else {
-    lt_pieces = pwi2;
-    gt_pieces = pwi1;
+    lt_pieces = other;
+    gt_pieces = *this;
   }
 
-  OrdPWMDInter diff = difference(gt_pieces, lt_pieces);
-  if (optConds(lt_pieces.pieces()) && optConds(gt_pieces.pieces()))
-    return concatenation(lt_pieces, diff);
+  OrdPWMDInter diff = gt_pieces.difference(lt_pieces);
+  if (lt_pieces.optConds() && gt_pieces.optConds())
+    return lt_pieces.concatenation(diff);
 
   else {
-    for (SetPiece mdi : lt_pieces)
+    for (const SetPiece &mdi : lt_pieces)
       un.emplace(mdi);
 
-    for (SetPiece mdi : diff)
+    for (const SetPiece &mdi : diff)
       un.emplace(mdi);
   }
 
   return un;
 }
 
-OrdPWMDInter complementAtom(OrdPWMDInter pwi)
+OrdPWMDInter OrdPWMDInter::complementAtom() const
 {
-  OrdPWMDInter c;
+  OrdPWMDInter res;
 
-  Interval i = pwi[0][0];
+  Interval i = begin()->operator[](0);
 
   // Before interval
   if (i.begin() != 0) {
     Interval i_res(0, 1, i.begin() - 1);
-    if (!isEmpty(i_res))
-      c.emplaceBack(SetPiece(i_res));
+    if (!i_res.isEmpty())
+      res.emplaceBack(SetPiece(i_res));
   }
 
   // "During" interval
   if (i.begin() < Util::Inf) {
     for (Util::NAT j = 1; j < i.step(); ++j) {
       Interval i_res(i.begin() + j, i.step(), i.end());
-      if (!isEmpty(i_res))
-        c.emplaceBack(SetPiece(i_res));
+      if (!i_res.isEmpty())
+        res.emplaceBack(SetPiece(i_res));
      }
   }
 
   // After interval
-  if (maxElem(i) < Util::Inf)
-    c.emplaceBack(SetPiece(Interval(maxElem(i) + 1, 1, Util::Inf)));
+  if (i.maxElem() < Util::Inf)
+    res.emplaceBack(SetPiece(Interval(i.maxElem() + 1, 1, Util::Inf)));
   else 
-    c.emplaceBack(SetPiece(Interval(Util::Inf)));
+    res.emplaceBack(SetPiece(Interval(Util::Inf)));
 
-  return c;
+  return res;
 }
 
-OrdPWMDInter complement(OrdPWMDInter pwi)
+OrdPWMDInter OrdPWMDInter::complement() const
 {
   OrdPWMDInter res;
 
-  if (isEmpty(pwi)) 
+  if (isEmpty())
     return OrdPWMDInter(Interval(0, 1, Util::Inf));
 
-  MDInterOrdSetIt first_it = pwi.begin();
+  auto first_it = begin();
   SetPiece first = *first_it;
-  res = complementAtom(OrdPWMDInter(first));
+  res = OrdPWMDInter(first).complementAtom();
 
   ++first_it;
-  MDInterOrdSet second(first_it, pwi.end());
-  for (SetPiece mdi : second) {
-    OrdPWMDInter c = complementAtom(OrdPWMDInter(mdi));
-    res = intersection(res, c);
+  MDInterOrdSet second(first_it, end());
+  for (const SetPiece &mdi : second) {
+    OrdPWMDInter c = OrdPWMDInter(mdi).complementAtom();
+    res = res.intersection(c);
   }
 
   return res;
 }
 
-OrdPWMDInter difference(OrdPWMDInter pwi1, OrdPWMDInter pwi2)
+OrdPWMDInter OrdPWMDInter::difference(const OrdPWMDInter &other) const
 {
-  return intersection(pwi1, complement(pwi2));
+  return this->intersection(other.complement());
 }
 
 // Extra operations ------------------------------------------------------------
 
-bool isCompact(MDInterOrdSet ii)
+OrdPWMDInter OrdPWMDInter::concatenation(const OrdPWMDInter &other) const
 {
-  for (SetPiece mdi : ii)
-    if (mdi.begin()->step() != 1)
+  OrdPWMDInter res;
+
+  if (optConds() && other.optConds())
+     res = traverse(&SetPiece::least, other);
+
+  else {
+    for (const SetPiece &mdi1 : pieces_)
+      res.emplace(mdi1);
+
+    for (const SetPiece &mdi2 : other.pieces_)
+      res.emplace(mdi2);
+  }
+
+  return res;
+}
+
+OrdPWMDInter OrdPWMDInter::filterSet(bool (*f)(const SetPiece &mdi)) const
+{
+  OrdPWMDInter res;
+
+  for (const SetPiece &mdi : pieces_)
+    if (f(mdi))
+      res.emplaceBack(mdi);
+
+  return res;
+}
+
+OrdPWMDInter OrdPWMDInter::offset(Util::MD_NAT off) const
+{
+  OrdPWMDInter res;
+
+  for (const SetPiece &mdi : pieces_)
+    res.emplaceBack(mdi.offset(off));
+
+  return res;
+}
+
+bool OrdPWMDInter::isCompact() const
+{
+  if (isEmpty())
+    return true;
+
+  for (const SetPiece &mdi : pieces_)
+    if (mdi[0].step() != 1)
       return false;
 
   return true;
 }
 
-bool optConds(MDInterOrdSet ii) { return isCompact(ii); }
+bool OrdPWMDInter::optConds() const { return isCompact(); }
 
-MDInterOrdSet canonize(MDInterOrdSet ii)
+//TODO
+MDInterOrdSet OrdPWMDInter::canonize() const
 {
-  MDInterOrdSet res;
+  /*
+  unsigned int sz = size();
+  if (sz == 1)
+    res = pieces_;
 
-  unsigned int sz = ii.size();
-  if (sz == 1) res = ii;
-
-  if (optConds(ii) && sz > 1) {
-    MDInterOrdSetIt it = ii.begin(), next_it = it;
+  if (optConds() && sz > 1) {
+    auto it = begin(), next_it = it;
     ++next_it;
     SetPiece ith = *it;
     for (unsigned int j = 0; j < sz - 1; ++j) {
-      MaybeInterval i = canonize(*ith.begin(), *next_it->begin()); 
-      if (i) 
+      MaybeInterval i = canonize(*ith.begin(), *next_it->begin());
+      if (i)
         ith = SetPiece(*i);
 
       else {
@@ -384,71 +399,34 @@ MDInterOrdSet canonize(MDInterOrdSet ii)
 
   else
     res = ii;
+  */
 
-  return res;
+  return pieces_;
 }
 
-OrdPWMDInter concatenation(OrdPWMDInter pwi1, OrdPWMDInter pwi2)
+MDInterOrdSet OrdPWMDInter::boundedTraverse(
+    SetPiece (SetPiece::*f)(const SetPiece &) const, const OrdPWMDInter &other
+) const
 {
-  OrdPWMDInter res;
+  MDInterOrdSet res;
 
-  if (optConds(pwi1.pieces()) && optConds(pwi2.pieces()))
-     res = traverse(pwi1, pwi2, &least);
+  if (isEmpty() || other.isEmpty())
+    return res;
 
-  else {
-    for (SetPiece mdi1 : pwi1)
-      res.emplace(mdi1);
-
-    for (SetPiece mdi2 : pwi2)
-      res.emplace(mdi2);
-  }
-
-  return res;
-}
-
-OrdPWMDInter filterSet(bool (*f)(SetPiece), OrdPWMDInter pwi)
-{
-  OrdPWMDInter res;
-
-  for (SetPiece mdi : pwi) 
-    if (f(mdi)) res.emplaceBack(mdi);
-
-  return res;
-}
-
-OrdPWMDInter offset(Util::MD_NAT off, OrdPWMDInter pwi)
-{
-  OrdPWMDInter res;
-
-  for (SetPiece mdi : pwi)
-    res.emplaceBack(offset(off, mdi));
-
-  return res;
-}
-
-MDInterOrdSet boundedTraverse(OrdPWMDInter pwi1
-                              , OrdPWMDInter pwi2
-                              , SetPiece (*func)(SetPiece, SetPiece))
-{
-  MDInterOrdSet result;
-
-  if (isEmpty(pwi1) || isEmpty(pwi2))
-    return result;
-
-  if (optConds(pwi1.pieces()) && optConds(pwi2.pieces())) {
-    MDInterOrdSetIt it1 = pwi1.begin(), it2 = pwi2.begin();   
-    MDInterOrdSetIt end1 = pwi1.end(), end2 = pwi2.end();   
+  if (optConds() && other.optConds()) {
+    auto it1 = begin(), it2 = other.begin();
+    auto end1 = end(), end2 = other.end();
 
     SetPiece mdi1, mdi2;
     for (int j = 0; it1 != end1 && it2 != end2; ++j) {
       mdi1 = *it1;
       mdi2 = *it2;
 
-      SetPiece funci = func(mdi1, mdi2);
-      if (!isEmpty(funci))
-        result.emplace_hint(result.cend(), funci);
+      SetPiece funci = (mdi1.*f)(mdi2);
+      if (!funci.isEmpty())
+        res.emplace_hint(res.cend(), funci);
 
-      if (maxElem(mdi1) < maxElem(mdi2))
+      if (mdi1.maxElem() < mdi2.maxElem())
         ++it1;
       else 
         ++it2;
@@ -456,43 +434,43 @@ MDInterOrdSet boundedTraverse(OrdPWMDInter pwi1
   }
 
   else {
-    for (SetPiece mdi1 : pwi1)
-      for (SetPiece mdi2 : pwi2) {
-        SetPiece funci = func(mdi1, mdi2);
-        if (!isEmpty(funci))
-          result.emplace_hint(result.cend(), funci);
+    for (const SetPiece &mdi1 : pieces_)
+      for (const SetPiece &mdi2 : other.pieces_) {
+        SetPiece funci = (mdi1.*f)(mdi2);
+        if (!funci.isEmpty())
+          res.emplace_hint(res.cend(), funci);
       }
   }
 
-  return result;
+  return res;
 }
 
-MDInterOrdSet traverse(OrdPWMDInter pwi1
-                       , OrdPWMDInter pwi2
-                       , SetPiece (*func)(SetPiece, SetPiece))
+MDInterOrdSet OrdPWMDInter::traverse(
+    SetPiece (SetPiece::*f)(const SetPiece &) const, const OrdPWMDInter &other
+) const
 {
-  MDInterOrdSet result;
+  MDInterOrdSet res;
 
-  if (isEmpty(pwi1))
-    return pwi2.pieces();
+  if (isEmpty())
+    return other.pieces_;
 
-  if (isEmpty(pwi2))
-    return pwi1.pieces();
+  if (other.isEmpty())
+    return pieces_;
   
-  if (optConds(pwi1.pieces()) && optConds(pwi2.pieces())) {
-    MDInterOrdSetIt it1 = pwi1.begin(), it2 = pwi2.begin();   
-    MDInterOrdSetIt end1 = pwi1.end(), end2 = pwi2.end();   
+  if (optConds() && other.optConds()) {
+    auto it1 = begin(), it2 = other.begin();
+    auto end1 = end(), end2 = other.end();
 
     SetPiece mdi1, mdi2;
     for (; it1 != end1 && it2 != end2;) {
       mdi1 = *it1;
       mdi2 = *it2;
 
-      SetPiece funci = func(mdi1, mdi2);
-      if (!isEmpty(funci))
-        result.emplace_hint(result.cend(), funci);
+      SetPiece funci = (mdi1.*f)(mdi2);
+      if (!funci.isEmpty())
+        res.emplace_hint(res.cend(), funci);
 
-      if (maxElem(mdi1) < maxElem(mdi2))
+      if (mdi1.maxElem() < mdi2.maxElem())
         ++it1;
       else
         ++it2;
@@ -500,25 +478,25 @@ MDInterOrdSet traverse(OrdPWMDInter pwi1
 
     for (; it1 != end1; ++it1) {
       mdi1 = *it1;
-      result.emplace_hint(result.cend(), mdi1);
+      res.emplace_hint(res.cend(), mdi1);
     }
 
     for (; it2 != end2; ++it2) {
       mdi2 = *it2;
-      result.emplace_hint(result.cend(), mdi2);
+      res.emplace_hint(res.cend(), mdi2);
     }
   }
 
   else {
-    for (SetPiece mdi1 : pwi1)
-      for (SetPiece mdi2 : pwi2) {
-        SetPiece funci = func(mdi1, mdi2);
-        if (!isEmpty(funci))
-          result.emplace_hint(result.cend(), funci);
+    for (const SetPiece &mdi1 : pieces_)
+      for (const SetPiece &mdi2 : other.pieces_) {
+        SetPiece funci = (mdi1.*f)(mdi2);
+        if (!funci.isEmpty())
+          res.emplace_hint(res.cend(), funci);
       }
   }
 
-  return result;
+  return res;
 }
 
 std::size_t hash_value(const OrdPWMDInter &pwi)

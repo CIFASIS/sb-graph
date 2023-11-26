@@ -37,7 +37,8 @@ Util::RATIONAL EvalRat::operator()(AST::MDNatural v) const
 Util::RATIONAL EvalRat::operator()(AST::Rational v) const
 {
   EvalNat visit_nat(env_);
-  return Util::RATIONAL(Apply(visit_nat, v.num()), Apply(visit_nat, v.den()));
+  return Util::RATIONAL(boost::apply_visitor(visit_nat, v.num())
+                        , boost::apply_visitor(visit_nat, v.den()));
 }
 
 Util::RATIONAL EvalRat::operator()(AST::Boolean v) const 
@@ -75,7 +76,7 @@ Util::RATIONAL EvalRat::operator()(AST::UnaryOp v) const
   ss << v.op();
 
   EvalRat visit_rat(env_);
-  Util::RATIONAL result = Apply(visit_rat, v.expr()); 
+  Util::RATIONAL result = boost::apply_visitor(visit_rat, v.expr());
   switch (v.op()) {
     case AST::UnOp::neg:
       return -result;
@@ -94,16 +95,17 @@ Util::RATIONAL EvalRat::operator()(AST::BinOp v) const
   std::stringstream ss;
   ss << v.op();
 
-  AST::Expr l = v.left(), r = v.right();
+  Util::RATIONAL l = boost::apply_visitor(*this, v.left());
+  Util::RATIONAL r = boost::apply_visitor(*this, v.right());
   switch (v.op()) {
     case AST::Op::add:
-      return ApplyThis(l) + ApplyThis(r);
+      return l + r;
 
     case AST::Op::sub:
-      return ApplyThis(l) - ApplyThis(r);
+      return l - r;
 
     case AST::Op::mult:
-      return ApplyThis(l) * ApplyThis(r);
+      return l * r;
 
     default:
       Util::ERROR("EvalRat: BinOp %s not supported.", ss.str().c_str());

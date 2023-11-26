@@ -36,54 +36,51 @@ typedef LExpVector::iterator LExpVectorIt;
 typedef LExpVector::const_iterator LExpVectorConstIt;
 
 struct MDLExp {
-  typedef LExpVectorIt iterator;
-  typedef LExpVectorConstIt const_iterator;
-
   member_class(LExpVector, exps);
 
   MDLExp();
   MDLExp(Util::MD_NAT x); // Expression mapping to x
-  MDLExp(unsigned int dimensions);
   MDLExp(LExp le);
   MDLExp(unsigned int nmbr_copies, LExp le);
   MDLExp(LExpVector v);
 
+  typedef LExpVectorIt iterator;
+  typedef LExpVectorConstIt const_iterator;
   iterator begin();
   iterator end();
   const_iterator begin() const;
   const_iterator end() const;
-
   std::size_t size() const;
   void emplaceBack(LExp le);
   LExp &operator[](std::size_t n);
   const LExp &operator[](std::size_t n) const;
 
-  MDLExp operator+(const MDLExp &le); 
-  MDLExp operator-(const MDLExp &le); 
+  bool operator==(const MDLExp &other) const;
+  bool operator!=(const MDLExp &other) const;
+  bool operator<(const MDLExp &other) const;
 
-  eq_class(MDLExp);
-  lt_class(MDLExp);
+  MDLExp operator+(const MDLExp &other) const;
+  MDLExp operator-(const MDLExp &other) const;
+
+  /**
+   * @brief Traditional expression operations.
+   */
+
+  /* @function composition
+   *
+   * @brief Calculate the composition of le1 with le2, i.e. le1(le2)
+   */
+  MDLExp composition(const MDLExp &other) const;
+  MDLExp inverse() const;
+
+  /**
+   * @brief Extra operations.
+   */
+  bool isId() const;
+  bool isConstant() const;
 };
 std::ostream &operator<<(std::ostream &out, const MDLExp &mdle);
 
-/**
- * @brief Traditional expression operations.
- */
-
-/* @function composition
- *
- * @brief Calculate the composition of le1 with le2, i.e. le1(le2)
- */
-
-MDLExp composition(MDLExp le1, MDLExp mdle2);
-MDLExp inverse(MDLExp mdle);
-
-/**
- * @brief Extra operations.
- */
-
-bool isId(MDLExp mdle);
-bool isConstant(MDLExp mdle);
 std::size_t hash_value(const MDLExp &mdle);
 
 typedef MDLExp Exp;

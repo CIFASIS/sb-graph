@@ -146,18 +146,20 @@ LIB::LExp EvalLE::operator()(AST::LinearExp v) const
   AST::Expr m = v.slope();
   AST::Expr h = v.offset();
 
-  return LIB::LExp(Apply(visit_rat, m), Apply(visit_rat, h));
+  return LIB::LExp(boost::apply_visitor(visit_rat, m)
+                   , boost::apply_visitor(visit_rat, h));
 }
 
 LIB::LExp EvalLE::operator()(AST::LExpBinOp v) const 
 {
-  AST::Expr l = v.left(), r = v.right();
+  LIB::LExp l = boost::apply_visitor(*this, v.left());
+  LIB::LExp r = boost::apply_visitor(*this, v.right());
   switch (v.op()) {
     case AST::ExpOp::add:
-      return ApplyThis(l) + ApplyThis(r);
+      return l + r;
 
     case AST::ExpOp::sub:
-      return ApplyThis(l) - ApplyThis(r);
+      return l - r;
 
     default:
       std::stringstream ss;

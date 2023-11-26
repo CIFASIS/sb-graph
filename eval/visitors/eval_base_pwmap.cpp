@@ -175,8 +175,8 @@ LIB::BasePWMap EvalBasePWMap::operator()(AST::PWLMap v) const
   LIB::BasePWMap res;
 
   EvalBaseMap visit_map(env_);
-  BOOST_FOREACH (AST::Expr e, v.maps())
-    res.emplace(Apply(visit_map, e));
+  for (AST::Expr e : v.maps())
+    res.emplace(boost::apply_visitor(visit_map, e));
 
   return LIB::BasePWMap(res); 
 }

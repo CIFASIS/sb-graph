@@ -49,73 +49,65 @@ std::ostream &operator<<(std::ostream &out, const MDInterUnordSet &ii);
 // Non-optimized implementation ------------------------------------------------
 
 struct UnordPWMDInter {
-  typedef MDInterUnordSetIt iterator;
-  typedef MDInterUnordSetConstIt const_iterator;
-
   member_class(MDInterUnordSet, pieces);
 
   UnordPWMDInter();
+  UnordPWMDInter(Interval i);
   UnordPWMDInter(SetPiece mdi);
   UnordPWMDInter(MDInterUnordSet c);
 
+  typedef MDInterUnordSetIt iterator;
+  typedef MDInterUnordSetConstIt const_iterator;
   iterator begin();
   iterator end();
   const_iterator begin() const;
   const_iterator end() const;
-
   std::size_t size() const;
   void emplace(SetPiece mdi);
   void emplaceBack(SetPiece mdi);
-  SetPiece operator[](std::size_t n);
-  const SetPiece &operator[](std::size_t n) const;
 
-  unsigned int dims() const;
+  bool operator==(const UnordPWMDInter &other) const;
+  bool operator!=(const UnordPWMDInter &other) const;
+  bool operator<(const UnordPWMDInter &other) const;
 
-  eq_class(UnordPWMDInter);
-  lt_class(UnordPWMDInter);
+  /**
+   * @brief Traditional set operations.
+   */
+  unsigned int cardinal() const;
+  bool isEmpty() const;
+  Util::MD_NAT minElem() const;
+  Util::MD_NAT maxElem() const;
+  UnordPWMDInter intersection(const UnordPWMDInter &other) const;
+  UnordPWMDInter cup(const UnordPWMDInter &other) const;
+  UnordPWMDInter difference(const UnordPWMDInter &other) const;
+
+  /**
+   * @brief Extra operations.
+   */
+
+  /** @function concatenation
+   *
+   * @brief Function useful to unite two pwis in the case these are known to be
+   * disjoint.
+   */
+  UnordPWMDInter concatenation(const UnordPWMDInter &other) const;
+  UnordPWMDInter filterSet(bool (*f)(const SetPiece &mdi)) const;
+  UnordPWMDInter offset(const Util::MD_NAT &off) const;
+
+  private:
+  /** @function complementAtom
+   *
+   * @brief This function calculates the complement for an UnordPWMDInter with only
+   * one piece.
+   *
+   * !!! Both complementAtom and complement return a collection of non-disjoint
+   * pieces, because they are only used by difference. These functions should
+   * NOT be called by any other function.
+   */
+  UnordPWMDInter complementAtom() const;
+  UnordPWMDInter complement() const;
 };
 std::ostream &operator<<(std::ostream &out, const UnordPWMDInter &pwi);
-
-/**
- * @brief Traditional set operations.
- */
-
-unsigned int cardinal(UnordPWMDInter pwi);
-bool isEmpty(UnordPWMDInter pwi);
-bool isMember(MD_NAT x, UnordPWMDInter pwi);
-Util::MD_NAT minElem(UnordPWMDInter pwi);
-Util::MD_NAT maxElem(UnordPWMDInter pwi);
-UnordPWMDInter intersection(UnordPWMDInter pwi1, UnordPWMDInter pwi2);
-UnordPWMDInter cup(UnordPWMDInter pwi1, UnordPWMDInter pwi2);
-
-/** @function complementAtom
- *
- * @brief This function calculates the complement for an UnordPWMDInter with only
- * one piece.
- *
- * !!! Both complementAtom and complement return a collection of non-disjoint
- * pieces, because they are only used by difference. These functions should
- * NOT be called by any other function.
- */
-
-UnordPWMDInter complementAtom(UnordPWMDInter mdi);
-UnordPWMDInter complement(UnordPWMDInter pwi);
-
-UnordPWMDInter difference(UnordPWMDInter pwi1, UnordPWMDInter pwi2);
-
-/**
- * @brief Extra operations.
- */
-
-/** @function concatenation
- *
- * @brief Function useful to unite two pwis in the case these are known to be
- * disjoint.
- */
-UnordPWMDInter concatenation(UnordPWMDInter pwi1, UnordPWMDInter pwi2);
-UnordPWMDInter filterSet(bool (*f)(SetPiece), UnordPWMDInter pwi);
-
-UnordPWMDInter offset(Util::MD_NAT off, UnordPWMDInter);
 
 std::size_t hash_value(const UnordPWMDInter &pwi);
 

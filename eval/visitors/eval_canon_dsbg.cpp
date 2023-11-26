@@ -187,11 +187,11 @@ LIB::CanonDSBG EvalCanonDSBG::operator()(AST::DSBG v) const
   EvalOrdSet visit_set(env_);
   EvalCanonPWMap visit_pw(env_);
 
-  LIB::OrdSet V = Apply(visit_set, v.V());
-  LIB::CanonPWMap Vmap = Apply(visit_pw, v.Vmap());
-  LIB::CanonPWMap mapB = Apply(visit_pw, v.mapB());
-  LIB::CanonPWMap mapD = Apply(visit_pw, v.mapD());
-  LIB::CanonPWMap Emap = Apply(visit_pw, v.Emap());
+  LIB::OrdSet V = boost::apply_visitor(visit_set, v.V());
+  LIB::CanonPWMap Vmap = boost::apply_visitor(visit_pw, v.Vmap());
+  LIB::CanonPWMap mapB = boost::apply_visitor(visit_pw, v.mapB());
+  LIB::CanonPWMap mapD = boost::apply_visitor(visit_pw, v.mapD());
+  LIB::CanonPWMap Emap = boost::apply_visitor(visit_pw, v.Emap());
 
   return LIB::CanonDSBG(V, Vmap, mapB, mapD, Emap);
 }

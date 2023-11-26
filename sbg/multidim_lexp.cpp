@@ -31,16 +31,10 @@ MDLExp::MDLExp(Util::MD_NAT x)
   for (Util::NAT xi : x)
     exps_.emplace_back(LExp(0, Util::RATIONAL(xi)));
 }
-MDLExp::MDLExp(unsigned int dimensions) : exps_() {
-  Util::ERROR_UNLESS(dimensions > 0, "LIB::MDLE2: empty not allowed");
-
-  for (unsigned int j = 0; j < dimensions; ++j)
-    exps_.emplace_back(LExp());
-}
 MDLExp::MDLExp(LExp le) : exps_() { exps_.emplace_back(le); }
 MDLExp::MDLExp(unsigned int nmbr_copies, LExp le) : exps_()
 {  
-  Util::ERROR_UNLESS(nmbr_copies > 0, "LIB::MDLE3: empty not allowed");
+  Util::ERROR_UNLESS(nmbr_copies > 0, "LIB::MDLE2: empty not allowed");
 
   for (unsigned int j = 0; j < nmbr_copies; ++j)
     exps_.emplace_back(le);
@@ -61,48 +55,44 @@ void MDLExp::emplaceBack(LExp le) { exps_.emplace_back(le); }
 LExp &MDLExp::operator[](std::size_t n) { return exps_[n]; }
 const LExp &MDLExp::operator[](std::size_t n) const { return exps_[n]; }
 
-MDLExp MDLExp::operator+(const MDLExp &r)
+bool MDLExp::operator==(const MDLExp &other) const
 {
-  MDLExp aux1 = *this, aux2 = r;
-
-  Util::ERROR_UNLESS(aux1.size() == aux2.size()
-                     , "LIB::MDLE::operator+: dimensions don't match");
-
-  MDLExp res;
-  for (auto const &[le1, le2] : boost::combine(aux1, aux2)) 
-    res.emplaceBack(le1 + le2);
-
-  return res;
+  return exps_ == other.exps_;
 }
 
-MDLExp MDLExp::operator-(const MDLExp &r)
+bool MDLExp::operator!=(const MDLExp &other) const
 {
-  MDLExp aux1 = *this, aux2 = r;
-
-  Util::ERROR_UNLESS(aux1.size() == aux2.size()
-                     , "LIB::MDLE::operator-: dimensions don't match");
-
-  MDLExp res;
-  for (auto const &[le1, le2] : boost::combine(aux1, aux2)) 
-    res.emplaceBack(le1 - le2);
-
-  return res;
+  return !(*this == other);
 }
-
-bool MDLExp::operator==(const MDLExp &other) const { return exps() == other.exps(); }
 
 bool MDLExp::operator<(const MDLExp &other) const 
 {
-  MDLExp aux1 = *this, aux2 = other;
-
-  Util::ERROR_UNLESS(aux1.size() == aux2.size()
+  Util::ERROR_UNLESS(size() == other.size()
                      , "LIB::MDLE::operator<: dimensions don't match");
 
-  for (auto const &[le1, le2] : boost::combine(aux1, aux2)) 
-    if (le1 < le2)
+  for (unsigned j = 0; j < size(); ++j)
+    if (operator[](j) < other[j])
       return true;
 
   return false;
+}
+
+MDLExp MDLExp::operator+(const MDLExp &other) const
+{
+  MDLExp res;
+  for (unsigned int j = 0; j < size(); ++j)
+    res.emplaceBack(operator[](j) + other[j]);
+
+  return res;
+}
+
+MDLExp MDLExp::operator-(const MDLExp &other) const
+{
+  MDLExp res;
+  for (unsigned int j = 0; j < size(); ++j)
+    res.emplaceBack(operator[](j) - other[j]);
+
+  return res;
 }
 
 std::ostream &operator<<(std::ostream &out, const MDLExp &mdle)
@@ -120,42 +110,42 @@ std::ostream &operator<<(std::ostream &out, const MDLExp &mdle)
 
 // Linear expression functions -------------------------------------------------
 
-MDLExp composition(MDLExp mdle1, MDLExp mdle2)
+MDLExp MDLExp::composition(const MDLExp &other) const
 {
-  Util::ERROR_UNLESS(mdle1.size() == mdle2.size()
+  Util::ERROR_UNLESS(size() == other.size()
                      , "LIB::MDLE::composition: dimensions don't match");
 
   MDLExp res;
 
-  for (auto const &[le1, le2] : boost::combine(mdle1, mdle2)) 
-    res.emplaceBack(composition(le1, le2));
+  for (unsigned int j = 0; j < size(); ++j)
+    res.emplaceBack(operator[](j).composition(other[j]));
 
   return res;
 }
 
-MDLExp inverse(MDLExp mdle)
+MDLExp MDLExp::inverse() const
 {
   MDLExp res;
 
-  for (LExp le : mdle)
-    res.emplaceBack(inverse(le));
+  for (const LExp &le : exps_)
+    res.emplaceBack(le.inverse());
 
   return res;
 }
 
-bool isId(MDLExp mdle)
+bool MDLExp::isId() const
 {
-  for (LExp le : mdle)
-    if (!isId(le))
+  for (const LExp &le : exps_)
+    if (!le.isId())
       return false;
 
   return true;
 }
 
-bool isConstant(MDLExp mdle)
+bool MDLExp::isConstant() const
 {
-  for (LExp le : mdle)
-    if (!isConstant(le))
+  for (const LExp &le : exps_)
+    if (!le.isConstant())
       return false;
 
   return true;

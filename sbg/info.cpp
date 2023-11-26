@@ -40,10 +40,13 @@ std::ostream &operator<<(std::ostream &out, const DeclRanged &dr)
   if (sz > 0) {
     out << "[";
     unsigned int j = 0;
+    Interval i;
     for (; j < sz - 1; ++j) {
-      out << cardinal(mdi[j]) << ", ";
+      i = mdi[j];
+      out << mdi[j].cardinal() << ", ";
     }
-    out << cardinal(mdi[j]);
+    i = mdi[j];
+    out << i.cardinal();
     out << "]";
   }
   out << ";";

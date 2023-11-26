@@ -169,7 +169,8 @@ LIB::BaseMap EvalBaseMap::operator()(AST::LinearMap v) const
   EvalUnordSet visit_set(env_);
   EvalMDLE visit_mdle(env_);
 
-  return LIB::BaseMap(Apply(visit_set, v.dom()), Apply(visit_mdle, v.lexp()));
+  return LIB::BaseMap(boost::apply_visitor(visit_set, v.dom())
+                      , boost::apply_visitor(visit_mdle, v.lexp()));
 }
 
 LIB::BaseMap EvalBaseMap::operator()(AST::PWLMap v) const 

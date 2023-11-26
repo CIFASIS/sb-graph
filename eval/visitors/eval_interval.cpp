@@ -89,9 +89,9 @@ LIB::Interval EvalInterval::operator()(AST::Call v) const
 LIB::Interval EvalInterval::operator()(AST::Interval v) const 
 { 
   EvalNat visit_nat(env_);
-  Util::NAT b = Apply(visit_nat, v.begin());
-  Util::NAT s = Apply(visit_nat, v.step());
-  Util::NAT e = Apply(visit_nat, v.end());
+  Util::NAT b = boost::apply_visitor(visit_nat, v.begin());
+  Util::NAT s = boost::apply_visitor(visit_nat, v.step());
+  Util::NAT e = boost::apply_visitor(visit_nat, v.end());
 
   return LIB::Interval(b, s, e);
 }
@@ -110,10 +110,11 @@ LIB::Interval EvalInterval::operator()(AST::InterUnaryOp v) const
 
 LIB::Interval EvalInterval::operator()(AST::InterBinOp v) const
 {
-  AST::Expr l = v.left(), r = v.right();
+  LIB::Interval l = boost::apply_visitor(*this, v.left());
+  LIB::Interval r = boost::apply_visitor(*this, v.right());
   switch (v.op()) {
     case AST::ContainerOp::cap:
-      return intersection(ApplyThis(l), ApplyThis(r));
+      return l.intersection(r);
 
     default:
       std::stringstream ss;

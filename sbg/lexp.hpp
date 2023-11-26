@@ -44,36 +44,37 @@ struct LExp {
   LExp();
   LExp(RAT slope, RAT offset);
 
-  LExp operator+(const LExp &le); 
-  LExp operator-(const LExp &le); 
-  LExp operator*(const LExp &le);
+  bool operator==(const LExp &other) const;
+  bool operator!=(const LExp &other) const;
+  bool operator<(const LExp &other) const;
 
-  eq_class(LExp);
-  lt_class(LExp);
+  LExp operator+(const LExp &other) const;
+  LExp operator-(const LExp &other) const;
+  LExp operator*(const LExp &other) const;
+
+  /**
+   * @brief Traditional expression operations.
+   */
+
+  /* @function composition
+   *
+   * @brief Calculate the composition of le1 with le2, i.e. le1(le2)
+   */
+  LExp composition(const LExp &other) const;
+  LExp inverse() const;
+  LExp mod(const LExp &other) const;
+  LExp floorDiv(const LExp &other) const;
+  LExp ceilDiv(const LExp &other) const;
+
+  /**
+   * @brief Extra operations.
+   */
+  bool isId() const;
+  bool isConstant() const;
+  LExp offset(const Util::NAT &off) const;
 };
 std::ostream &operator<<(std::ostream &out, const LExp &le);
 
-/**
- * @brief Traditional expression operations.
- */
-
-/* @function composition
- *
- * @brief Calculate the composition of le1 with le2, i.e. le1(le2)
- */
-
-LExp composition(LExp le1, LExp le2);
-LExp inverse(LExp le);
-LExp mod(LExp le1, LExp le2);
-LExp floorDiv(LExp le1, LExp le2);
-LExp ceilDiv(LExp le1, LExp le2);
-
-/**
- * @brief Extra operations.
- */
-
-bool isId(LExp le);
-bool isConstant(LExp le);
 std::size_t hash_value(const LExp &le);
 
 } // namespace LIB

@@ -127,7 +127,8 @@ LIB::OrdSet EvalOrdSet::operator()(AST::Set v) const
   LIB::OrdSet res;
 
   EvalMDI mdi_visit(env_);
-  BOOST_FOREACH (AST::Expr e, v.pieces()) res.emplaceBack(Apply(mdi_visit, e));     
+  for (AST::Expr e : v.pieces())
+    res.emplaceBack(boost::apply_visitor(mdi_visit, e));
 
   return res;
 }
@@ -146,13 +147,14 @@ LIB::OrdSet EvalOrdSet::operator()(AST::SetUnaryOp v) const
 
 LIB::OrdSet EvalOrdSet::operator()(AST::SetBinOp v) const 
 {
-  AST::Expr l = v.left(), r = v.right();
+  LIB::OrdSet l = boost::apply_visitor(*this, v.left());
+  LIB::OrdSet r = boost::apply_visitor(*this, v.right());
   switch (v.op()) {
     case AST::ContainerOp::cap:
-      return intersection(ApplyThis(l), ApplyThis(r));
+      return l.intersection(r);
 
     case AST::ContainerOp::diff:
-      return difference(ApplyThis(l), ApplyThis(r));
+      return l.difference(r);
 
     default:
       std::stringstream ss;

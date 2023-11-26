@@ -31,12 +31,12 @@ MultiDimInter::MultiDimInter(MD_NAT x) : intervals_() {
 }
 MultiDimInter::MultiDimInter(Interval i) : intervals_()
 {
-  Util::ERROR_UNLESS(!isEmpty(i), "LIB::MDI2: empty not allowed");
+  Util::ERROR_UNLESS(!i.isEmpty(), "LIB::MDI2: empty not allowed");
   intervals_.emplace_back(i);
 }
 MultiDimInter::MultiDimInter(unsigned int nmbr_copies
-                             , Interval i) : intervals_() { 
-  Util::ERROR_UNLESS(!isEmpty(i), "LIB::MDI3: empty not allowed");
+                             , Interval i) : intervals_() {
+  Util::ERROR_UNLESS(!i.isEmpty(), "LIB::MDI3: empty not allowed");
   for (unsigned int j = 0; j < nmbr_copies; ++j)
     intervals_.emplace_back(i);
 }
@@ -59,8 +59,11 @@ std::size_t MultiDimInter::size() const { return intervals_.size(); }
 
 void MultiDimInter::emplaceBack(Interval i) 
 {
-  Util::ERROR_UNLESS(!isEmpty(i), "LIB::MDI::emplaceBack: empty not allowed");
-  intervals_.emplace_back(i);
+  if (i.isEmpty())
+    intervals_ = InterVector();
+  else
+    intervals_.emplace_back(i);
+  return;
 }
 
 Interval &MultiDimInter::operator[](std::size_t n)
@@ -80,38 +83,39 @@ const Interval &MultiDimInter::operator[](std::size_t n) const
 bool MultiDimInter::operator==(const MultiDimInter &other) const
 {
   Util::ERROR_UNLESS(size() == other.size()
-               , "LIB::MDI::operator==: dimensions don't match");
-  return intervals() == other.intervals();
+      , "LIB::MDI::operator==: dimensions don't match");
+  return intervals_ == other.intervals_;
 }
 
 bool MultiDimInter::operator!=(const MultiDimInter &other) const
 {
   Util::ERROR_UNLESS(size() == other.size()
-               , "LIB::MDI::operator!=: dimensions don't match");
+      , "LIB::MDI::operator!=: dimensions don't match");
   return !(*this == other);
 }
 
 bool MultiDimInter::operator<(const MultiDimInter &other) const
 {
   Util::ERROR_UNLESS(size() == other.size()
-               , "LIB::MDI::operator<: dimensions don't match");
+      , "LIB::MDI::operator<: dimensions don't match");
 
-  MultiDimInter aux1 = *this, aux2 = other;
+  if (isEmpty())
+    return true;
 
-  if (isEmpty(aux1)) return true;
+  if (other.isEmpty())
+    return false;
 
-  if (isEmpty(aux2)) return false;
-
-  for (auto const &[i1, i2] : boost::combine(aux1, aux2)) {
-    if (i1 < i2) return true;
-
-    else if (i2 < i1) return false;
+  for (unsigned int j = 0; j < size(); ++j) {
+    if (operator[](j) < other[j])
+      return true;
+    else if (other[j] < operator[](j))
+      return false;
   }
 
   return false;
 }
 
-std::ostream &operator<<(std::ostream &out, const MultiDimInter &mdi) 
+std::ostream &operator<<(std::ostream &out, const MultiDimInter &mdi)
 {
   std::size_t sz = mdi.size();
 
@@ -120,73 +124,75 @@ std::ostream &operator<<(std::ostream &out, const MultiDimInter &mdi)
       out << mdi[j] << "x";
     out << mdi[sz-1];
   }
- 
+
   return out;
 }
 
 // Set functions ---------------------------------------------------------------
 
-unsigned int cardinal(MultiDimInter mdi)
+unsigned int MultiDimInter::cardinal() const
 {
   unsigned int res = 1;
 
-  for (Interval i : mdi) res *= cardinal(i);
+  for (const Interval &i : intervals_)
+    res *= i.cardinal();
 
   return res;
 }
 
-bool isEmpty(MultiDimInter mdi) { return mdi.intervals().empty(); }
+bool MultiDimInter::isEmpty() const { return intervals_.empty(); }
 
-bool isMember(MD_NAT x, MultiDimInter mdi)
+bool MultiDimInter::isMember(const MD_NAT &x) const
 {
-  Util::ERROR_UNLESS(x.size() == mdi.size()
-               , "LIB::MDI::isMember: dimensions don't match"); 
+  Util::ERROR_UNLESS(x.size() == size()
+      , "LIB::MDI::isMember: dimensions don't match");
 
-  if (isEmpty(mdi)) return false;
+  if (isEmpty())
+    return false;
 
-  for (auto const &[xi, ii] : boost::combine(x, mdi))
-    if (!isMember(xi, ii)) return false;
+  for (unsigned int j = 0; j < size(); ++j)
+    if (!operator[](j).isMember(x[j]))
+      return false;
 
   return true;
 }
-
-Util::MD_NAT minElem(MultiDimInter mdi)
+Util::MD_NAT MultiDimInter::minElem() const
 {
-  Util::ERROR_UNLESS(!isEmpty(mdi), "LIB::MDI::minElem: shouldn't be empty");
+  Util::ERROR_UNLESS(!isEmpty(), "LIB::MDI::minElem: shouldn't be empty");
 
   MD_NAT res;
 
-  for (Interval i : mdi) 
-    res.emplace_back(minElem(i));
+  for (const Interval &i : intervals_)
+    res.emplaceBack(i.minElem());
 
   return res;
 }
 
-Util::MD_NAT maxElem(MultiDimInter mdi)
+Util::MD_NAT MultiDimInter::maxElem() const
 {
-  Util::ERROR_UNLESS(!isEmpty(mdi), "LIB::MDI::maxElem: shouldn't be empty");
+  Util::ERROR_UNLESS(!isEmpty(), "LIB::MDI::maxElem: shouldn't be empty");
 
   MD_NAT res;
 
-  for (Interval i : mdi)
-    res.emplace_back(maxElem(i));
+  for (const Interval &i : intervals_)
+    res.emplaceBack(i.maxElem());
 
   return res;
 }
 
-MultiDimInter intersection(MultiDimInter mdi1, MultiDimInter mdi2)
+MultiDimInter MultiDimInter::intersection(const MultiDimInter &other) const
 {
-  Util::ERROR_UNLESS(mdi1.size() == mdi2.size()
-               , "LIB::MDI::intersection: dimensions don't match");
+  Util::ERROR_UNLESS(size() == other.size()
+    , "LIB::MDI::intersection: dimensions don't match");
 
-  if (isEmpty(mdi1) || isEmpty(mdi2))
+  if (isEmpty() || other.isEmpty())
     return MultiDimInter();
 
   MultiDimInter res;
 
-  for (auto const &[i1, i2] : boost::combine(mdi1, mdi2)) {
-    Interval ith = intersection(i1, i2);
-    if (!isEmpty(ith))
+  for (unsigned int j = 0; j < size(); ++j) {
+    Interval ith = operator[](j).intersection(other[j]);
+    if (!ith.isEmpty())
       res.emplaceBack(ith);
 
     else
@@ -198,25 +204,25 @@ MultiDimInter intersection(MultiDimInter mdi1, MultiDimInter mdi2)
 
 // Extra operations ------------------------------------------------------------
 
-MultiDimInter offset(Util::MD_NAT off, MultiDimInter mdi)
+MultiDimInter MultiDimInter::offset(const MD_NAT &off) const
 {
-  Util::ERROR_UNLESS(off.size() == mdi.size()
-               , "LIB::MDI::offset: dimensions don't match");
+  Util::ERROR_UNLESS(off.size() == size()
+      , "LIB::MDI::offset: dimensions don't match");
 
   MultiDimInter res;
 
-  for (auto const &[o, i] : boost::combine(off, mdi))
-    res.emplaceBack(offset(o, i));
+  for (unsigned int j = 0; j < size(); ++j)
+    res.emplaceBack(operator[](j).offset(off[j]));
 
   return res;
 }
 
-MultiDimInter least(MultiDimInter mdi1, MultiDimInter mdi2)
+MultiDimInter MultiDimInter::least(const MultiDimInter &other) const
 {
-  return std::min(mdi1, mdi2);
+  return std::min(*this, other);
 }
 
-bool isUnidim(MultiDimInter mdi) { return mdi.size() <= 1; }
+bool MultiDimInter::isUnidim() const { return size() <= 1; }
 
 std::size_t hash_value(const MultiDimInter &mdi)
 {

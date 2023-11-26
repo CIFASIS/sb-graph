@@ -187,11 +187,11 @@ LIB::BaseDSBG EvalBaseDSBG::operator()(AST::DSBG v) const
   EvalUnordSet visit_set(env_);
   EvalBasePWMap visit_pw(env_);
 
-  LIB::UnordSet V = Apply(visit_set, v.V());
-  LIB::BasePWMap Vmap = Apply(visit_pw, v.Vmap());
-  LIB::BasePWMap mapB = Apply(visit_pw, v.mapB());
-  LIB::BasePWMap mapD = Apply(visit_pw, v.mapD());
-  LIB::BasePWMap Emap = Apply(visit_pw, v.Emap());
+  LIB::UnordSet V = boost::apply_visitor(visit_set, v.V());
+  LIB::BasePWMap Vmap = boost::apply_visitor(visit_pw, v.Vmap());
+  LIB::BasePWMap mapB = boost::apply_visitor(visit_pw, v.mapB());
+  LIB::BasePWMap mapD = boost::apply_visitor(visit_pw, v.mapD());
+  LIB::BasePWMap Emap = boost::apply_visitor(visit_pw, v.Emap());
 
   return LIB::BaseDSBG(V, Vmap, mapB, mapD, Emap);
 }

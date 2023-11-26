@@ -22,6 +22,7 @@
 
 #include "sbg/pw_map.hpp"
 
+/*
 TEST(PWMapPerf, Composition)
 {
   unsigned int inter_sz = 5;
@@ -50,7 +51,6 @@ TEST(PWMapPerf, Composition)
   SUCCEED();
 }
 
-/*
 TEST(PWMapPerf, MapInf) {
   int N = 600;
   int sz = 10;

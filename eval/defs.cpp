@@ -74,7 +74,7 @@ std::ostream &operator<<(std::ostream &out, const ExprEval &e)
   out << std::get<0>(e) << "\n  --> "; 
   ExprBaseType ebt = std::get<1>(e);
   auto printer = [&](auto v) { out << v; };
-  Apply(printer, ebt);
+  boost::apply_visitor(printer, ebt);
   out << "\n";
 
   return out;

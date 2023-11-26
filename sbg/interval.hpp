@@ -35,8 +35,6 @@
 #include <numeric>
 #include <optional>
 
-#include <iostream>
-
 #include "util/defs.hpp"
 
 namespace SBG {
@@ -54,32 +52,28 @@ struct Interval {
   Interval();
   Interval(NAT x);
   Interval(NAT begin, NAT step, NAT end);
+ 
+  bool operator==(const Interval &i) const;
+  bool operator!=(const Interval &i) const;
+  bool operator<(const Interval &i) const;
 
-  eq_class(Interval);
-  neq_class(Interval);
-  lt_class(Interval);
+  /**
+   * @brief Traditional set operations.
+   */
+  unsigned int cardinal() const;
+  bool isEmpty() const;
+  bool isMember(NAT x) const;
+  Util::NAT minElem() const;
+  Util::NAT maxElem() const;
+  Interval intersection(const Interval &i2) const;
+
+  /**
+   * @brief Extra operations.
+   */
+  Interval offset(Util::NAT off) const;
+  Interval least(const Interval &i2) const;
 };
 std::ostream &operator<<(std::ostream &out, const Interval &i);
-
-/**
- * @brief Traditional set operations.
- */
-
-unsigned int cardinal(Interval i);
-bool isEmpty(Interval i);
-bool isMember(NAT x, Interval i);
-Util::NAT minElem(Interval i);
-Util::NAT maxElem(Interval i);
-Interval intersection(Interval i1, Interval i2);
-
-/**
- * @brief Extra operations.
- */
-
-Interval offset(Util::NAT off, Interval i);
-Interval least(Interval i1, Interval i2);
-typedef std::optional<Interval> MaybeInterval;
-MaybeInterval canonize(Interval i1, Interval i2);
 
 std::size_t hash_value(const Interval &i);
 

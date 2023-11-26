@@ -169,7 +169,8 @@ LIB::CanonMap EvalCanonMap::operator()(AST::LinearMap v) const
   EvalOrdSet visit_set(env_);
   EvalMDLE visit_mdle(env_);
 
-  return LIB::CanonMap(Apply(visit_set, v.dom()), Apply(visit_mdle, v.lexp()));
+  return LIB::CanonMap(boost::apply_visitor(visit_set, v.dom())
+                       , boost::apply_visitor(visit_mdle, v.lexp()));
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::PWLMap v) const 

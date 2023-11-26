@@ -17,6 +17,7 @@
 
  ******************************************************************************/
 
+#include <iostream>
 #include "sbg/sbg.hpp"
 
 namespace SBG {
@@ -28,8 +29,9 @@ namespace LIB {
 template<typename Set>
 SBGraph<Set>::SBGraph() : V_(), Vmap_(), E_(), map1_(), map2_(), Emap_() {}
 template<typename Set>
-SBGraph<Set>::SBGraph(Set V, PWMap<Set> Vmap, PWMap<Set> map1, PWMap<Set> map2, PWMap<Set> Emap)
-  : V_(V), Vmap_(Vmap), E_(intersection(dom(map1), dom(map2))), map1_(map1), map2_(map2), Emap_(Emap) {}
+SBGraph<Set>::SBGraph(Set V, PW Vmap, PW map1, PW map2, PW Emap)
+  : V_(V), Vmap_(Vmap), E_(map1.dom().intersection(map2.dom()))
+    , map1_(map1), map2_(map2), Emap_(Emap) {}
 
 member_imp_temp(template<typename Set>, SBGraph<Set>, Set, V);
 member_imp_temp(template<typename Set>, SBGraph<Set>, PWMap<Set>, Vmap);
@@ -52,51 +54,52 @@ std::ostream &operator<<(std::ostream &out, const SBGraph<Set> &g)
 }
 
 template<typename Set>
-SBGraph<Set> addSV(Set vertices, SBGraph<Set> g)
+SBGraph<Set> SBGraph<Set>::addSV(const Set &vertices) const
 {
-  if (!isEmpty(vertices) && isEmpty(intersection(vertices, g.V()))) {
-    SBGraph res = g;
+  if (!vertices.isEmpty() && vertices.intersection(V_).isEmpty()) {
+    SBGraph res = *this;
 
-    res.set_V(cup(g.V(), vertices));
+    res.set_V(V_.cup(vertices));
 
-    Set SV = image(g.Vmap()); // Identifiers of SV
-    Util::NAT max = maxElem(SV)[0];
-    std::size_t dims = maxElem(SV).size();
+    Set SV = Vmap_.image(); // Identifiers of SV
+    Util::NAT max = SV.maxElem()[0];
+    std::size_t dims = SV.maxElem().size();
     MDLExp to_max(dims, LExp(0, Util::RATIONAL(max + 1)));
-    PWMap<Set> new_Vmap(SBGMap<Set>(vertices, to_max));
-    res.set_Vmap(concatenation(g.Vmap(), new_Vmap));
+    PW new_Vmap(SBGMap(vertices, to_max));
+    res.set_Vmap(Vmap_.concatenation(new_Vmap));
 
     return res;
   }
 
-  else Util::ERROR("LIB::SBG::addSV: vertices should be non-empty and disjoint from current vertices");
+  else
+    Util::ERROR("LIB::SBG::addSV: vertices should be non-empty and disjoint from current vertices");
 
-  return SBGraph<Set>();
+  return SBGraph();
 }
 
 template<typename Set>
-unsigned int nmbrSV(SBGraph<Set> g) { return image(g.Vmap()).size(); }
+unsigned int SBGraph<Set>::nmbrSV() const { return Vmap_.image().size(); }
 
 template<typename Set>
-SBGraph<Set> addSE(PWMap<Set> pw1, PWMap<Set> pw2, SBGraph<Set> g)
+SBGraph<Set> SBGraph<Set>::addSE(const PW &pw1, const PW &pw2) const
 {
-  Set edges, edges1 = dom(pw1), edges2 = dom(pw2);
+  Set edges, edges1 = pw1.dom(), edges2 = pw2.dom();
   if (edges1 == edges2) {
-    edges = intersection(edges1, edges2);
-    if (!isEmpty(edges) && isEmpty(intersection(edges, g.E()))) {
-      SBGraph<Set> res = g;
+    edges = edges1.intersection(edges2);
+    if (!edges.isEmpty() && edges.intersection(E_).isEmpty()) {
+      SBGraph res = *this;
 
-      res.set_E(cup(g.E(), edges));
+      res.set_E(E_.cup(edges));
 
-      Set SE = image(g.Emap()); // Identifiers of SV
-      Util::NAT max = maxElem(SE)[0];
-      std::size_t dims = maxElem(SE).size();
+      Set SE = Emap_.image(); // Identifiers of SV
+      Util::NAT max = SE.maxElem()[0];
+      std::size_t dims = SE.maxElem().size();
       MDLExp to_max(dims, LExp(0, Util::RATIONAL(max + 1)));
-      PWMap<Set> new_Emap(SBGMap<Set>(edges, to_max));
-      res.set_Emap(concatenation(g.Emap(), new_Emap));
+      PW new_Emap(SBGMap(edges, to_max));
+      res.set_Emap(Emap_.concatenation(new_Emap));
 
-      res.set_map1(concatenation(g.map1(), pw1));
-      res.set_map2(concatenation(g.map2(), pw2));
+      res.set_map1(map1_.concatenation(pw1));
+      res.set_map2(map2_.concatenation(pw2));
 
       return res;
     }
@@ -110,47 +113,49 @@ SBGraph<Set> addSE(PWMap<Set> pw1, PWMap<Set> pw2, SBGraph<Set> g)
 }
 
 template<typename Set>
-SBGraph<Set> copy(unsigned int times, SBGraph<Set> g)
+SBGraph<Set> SBGraph<Set>::copy(unsigned int times) const
 {
-  Set V_ith = g.V(), V_new = V_ith;
-  PWMap<Set> Vmap_ith = g.Vmap(), Vmap_new = Vmap_ith;
-  PWMap<Set> map1_ith = g.map1(), map1_new = map1_ith;
-  PWMap<Set> map2_ith = g.map2(), map2_new = map2_ith;
-  PWMap<Set> Emap_ith = g.Emap(), Emap_new = Emap_ith;
+  Set V_ith = V_, V_new = V_ith;
+  PW Vmap_ith = Vmap_, Vmap_new = Vmap_ith;
+  PW map1_ith = map1_, map1_new = map1_ith;
+  PW map2_ith = map2_, map2_new = map2_ith;
+  PW Emap_ith = Emap_, Emap_new = Emap_ith;
 
-  Util::MD_NAT maxv = maxElem(V_ith);
-  Util::MD_NAT maxV = maxElem(image(Vmap_ith));
-  Util::MD_NAT maxe = maxElem(g.E());
-  Util::MD_NAT maxE = maxElem(image(Emap_ith));
+  Util::MD_NAT maxv = V_ith.maxElem();
+  Util::MD_NAT maxV = Vmap_ith.image().maxElem();
+  Util::MD_NAT maxe = E_.maxElem();
+  Util::MD_NAT maxE = Emap_ith.image().maxElem();
 
   Exp off;
-  parallel_foreach2 (maxv.value_ref(), maxe.value_ref()) {
-    Util::NAT v = boost::get<0>(items), e = boost::get<1>(items);
-    Util::RATIONAL o = Util::RATIONAL(v) - Util::RATIONAL(e);
+  for (unsigned int j = 0; j < maxv.size(); ++j) {
+    Util::RATIONAL o = Util::RATIONAL(maxv[j]) - Util::RATIONAL(maxe[j]);
     off.emplaceBack(LExp(0, o));
   }
 
   for (unsigned int j = 0; j < times; ++j) {
     if (j > 0) {
-      V_new = concatenation(V_new, V_ith);
-      Vmap_new = concatenation(Vmap_new, Vmap_ith);
-      map1_new = concatenation(map1_new, map1_ith);
-      map2_new = concatenation(map2_new, map2_ith);
-      Emap_new = concatenation(Emap_new, Emap_ith);
+      V_new = V_new.concatenation(V_ith);
+      Vmap_new = Vmap_new.concatenation(Vmap_ith);
+      map1_new = map1_new.concatenation(map1_ith);
+      map2_new = map2_new.concatenation(map2_ith);
+      Emap_new = Emap_new.concatenation(Emap_ith);
     }
 
-    V_ith = offset(maxv, V_ith);
-    Vmap_ith = offsetDom(maxv, Vmap_ith);
-    Vmap_ith = offsetImage(maxV, Vmap_ith);
+    V_ith = V_ith.offset(maxv);
+    Vmap_ith = Vmap_ith.offsetDom(maxv);
+    Vmap_ith = Vmap_ith.offsetImage(maxV);
 
-    map1_ith = offsetDom(maxe, map1_ith);
-    map1_ith = offsetImage(off, map1_ith);
-    map2_ith = offsetDom(maxe, map2_ith);
-    map2_ith = offsetImage(off, map2_ith);
-    Emap_ith = offsetDom(maxv, Emap_ith);
-    Emap_ith = offsetImage(maxE, Emap_ith);
+    map1_ith = map1_ith.offsetDom(maxe);
+    map1_ith = map1_ith.offsetImage(off);
+    map2_ith = map2_ith.offsetDom(maxe);
+    map2_ith = map2_ith.offsetImage(off);
+    Emap_ith = Emap_ith.offsetDom(maxe);
+    Emap_ith = Emap_ith.offsetImage(maxE);
   }
 
+  SBGraph<Set> res(V_new, Vmap_new, map1_new, map2_new, Emap_new);
+  std::cout << *this << "\n";
+  std::cout << res << "\n\n";
   return SBGraph<Set>(V_new, Vmap_new, map1_new, map2_new, Emap_new);
 }
 
@@ -159,8 +164,9 @@ SBGraph<Set> copy(unsigned int times, SBGraph<Set> g)
 template<typename Set>
 DSBGraph<Set>::DSBGraph() : V_(), Vmap_(), E_(), mapB_(), mapD_(), Emap_() {}
 template<typename Set>
-DSBGraph<Set>::DSBGraph(Set V, PWMap<Set> Vmap, PWMap<Set> mapB, PWMap<Set> mapD, PWMap<Set> Emap)
-  : V_(V), Vmap_(Vmap), E_(intersection(dom(mapB), dom(mapD))), mapB_(mapB), mapD_(mapD), Emap_(Emap) {}
+DSBGraph<Set>::DSBGraph(Set V, PW Vmap, PW mapB, PW mapD, PW Emap)
+  : V_(V), Vmap_(Vmap), E_(mapB.dom().intersection(mapD.dom()))
+    , mapB_(mapB), mapD_(mapD), Emap_(Emap) {}
 
 member_imp_temp(template<typename Set>, DSBGraph<Set>, Set, V);
 member_imp_temp(template<typename Set>, DSBGraph<Set>, PWMap<Set>, Vmap);
@@ -183,19 +189,19 @@ std::ostream &operator<<(std::ostream &out, const DSBGraph<Set> &g)
 }
 
 template<typename Set>
-DSBGraph<Set> addSV(Set vertices, DSBGraph<Set> g)
+DSBGraph<Set> DSBGraph<Set>::addSV(const Set &vertices) const
 {
-  if (!isEmpty(vertices) && isEmpty(intersection(vertices, g.V()))) {
-    DSBGraph res = g;
+  if (!vertices.isEmpty() && vertices.intersection(V_).isEmpty()) {
+    DSBGraph res = *this;
 
-    res.set_V(cup(g.V(), vertices));
+    res.set_V(V_.cup(vertices));
 
-    Set SV = image(g.Vmap()); // Identifiers of SV
-    Util::NAT max = maxElem(SV)[0];
-    std::size_t dims = maxElem(SV).size();
+    Set SV = Vmap_.image(); // Identifiers of SV
+    Util::NAT max = SV.maxElem()[0];
+    std::size_t dims = SV.maxElem().size();
     MDLExp to_max(dims, LExp(0, Util::RATIONAL(max + 1)));
-    PWMap<Set> new_Vmap(SBGMap<Set>(vertices, to_max));
-    res.set_Vmap(concatenation(g.Vmap(), new_Vmap));
+    PW new_Vmap(SBGMap<Set>(vertices, to_max));
+    res.set_Vmap(Vmap_.concatenation(new_Vmap));
 
     return res;
   }
@@ -206,28 +212,28 @@ DSBGraph<Set> addSV(Set vertices, DSBGraph<Set> g)
 }
 
 template<typename Set>
-unsigned int nmbrSV(DSBGraph<Set> g) { return image(g.Vmap()).size(); }
+unsigned int DSBGraph<Set>::nmbrSV() const { return Vmap_.image().size(); }
 
 template<typename Set>
-DSBGraph<Set> addSE(PWMap<Set> pw1, PWMap<Set> pw2, DSBGraph<Set> g)
+DSBGraph<Set> DSBGraph<Set>::addSE(const PW &pw1, const PW &pw2) const
 {
-  Set edges, edges1 = dom(pw1), edges2 = dom(pw2);
+  Set edges, edges1 = pw1.dom(), edges2 = pw2.dom();
   if (edges1 == edges2) {
-    edges = intersection(edges1, edges2);
-    if (!isEmpty(edges) && isEmpty(intersection(edges, g.E()))) {
-      DSBGraph<Set> res;
+    edges = edges1.intersection(edges2);
+    if (!edges.isEmpty() && edges.intersection(E_).isEmpty()) {
+      DSBGraph res;
 
-      g.set_E(cup(g.E(), edges));
+      res.set_E(E_.cup(edges));
 
-      Set SE = image(g.Emap()); // Identifiers of SV
-      Util::NAT max = maxElem(SE)[0];
-      std::size_t dims = maxElem(SE).size();
+      Set SE = Emap_.image(); // Identifiers of SV
+      Util::NAT max = SE.maxElem()[0];
+      std::size_t dims = SE.maxElem().size();
       MDLExp to_max(dims, LExp(0, Util::RATIONAL(max + 1)));
-      PWMap<Set> new_Emap(SBGMap<Set>(edges, to_max));
-      g.set_Emap(concatenation(g.Emap(), new_Emap));
+      PW new_Emap(SBGMap<Set>(edges, to_max));
+      res.set_Emap(Emap_.concatenation(new_Emap));
 
-      g.set_mapB(concatenation(g.mapB(), pw1));
-      g.set_mapD(concatenation(g.mapD(), pw2));
+      res.set_mapB(mapB_.concatenation(pw1));
+      res.set_mapD(mapD_.concatenation(pw2));
    
       return res;
     }
@@ -241,32 +247,14 @@ DSBGraph<Set> addSE(PWMap<Set> pw1, PWMap<Set> pw2, DSBGraph<Set> g)
 }
 
 // Template instantiations -----------------------------------------------------
-
 template struct SBGraph<UnordSet>;
 template std::ostream &operator<<(std::ostream &out, const BaseSBG &g);
-template BaseSBG addSV<UnordSet>(UnordSet vertices, BaseSBG g);
-template unsigned int nmbrSV<UnordSet>(BaseSBG g);
-template BaseSBG addSE<UnordSet>(BasePWMap pw1, BasePWMap pw2, BaseSBG g);
-template BaseSBG copy<UnordSet>(unsigned int times, BaseSBG g);
-
 template struct SBGraph<OrdSet>;
 template std::ostream &operator<<(std::ostream &out, const CanonSBG &g);
-template CanonSBG addSV<OrdSet>(OrdSet vertices, CanonSBG g);
-template unsigned int nmbrSV<OrdSet>(CanonSBG g);
-template CanonSBG addSE<OrdSet>(CanonPWMap pw1, CanonPWMap pw2, CanonSBG g);
-template CanonSBG copy<OrdSet>(unsigned int times, CanonSBG g);
-
 template struct DSBGraph<UnordSet>;
 template std::ostream &operator<<(std::ostream &out, const BaseDSBG &g);
-template BaseDSBG addSV<UnordSet>(UnordSet vertices, BaseDSBG g);
-template unsigned int nmbrSV<UnordSet>(BaseDSBG g);
-template BaseDSBG addSE<UnordSet>(BasePWMap pw1, BasePWMap pw2, BaseDSBG g);
-
 template struct DSBGraph<OrdSet>;
 template std::ostream &operator<<(std::ostream &out, const CanonDSBG &g);
-template CanonDSBG addSV<OrdSet>(OrdSet vertices, CanonDSBG g);
-template unsigned int nmbrSV<OrdSet>(CanonDSBG g);
-template CanonDSBG addSE<OrdSet>(CanonPWMap pw1, CanonPWMap pw2, CanonDSBG g);
 
 } // namespace LIB
 

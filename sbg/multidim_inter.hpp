@@ -38,9 +38,6 @@ typedef InterVector::iterator InterVectorIt;
 typedef InterVector::const_iterator InterVectorConstIt;
 
 struct MultiDimInter {
-  typedef InterVectorIt iterator;
-  typedef InterVectorConstIt const_iterator;
-
   member_class(InterVector, intervals);
 
   MultiDimInter();
@@ -49,41 +46,39 @@ struct MultiDimInter {
   MultiDimInter(unsigned int nmbr_copies, Interval i);
   MultiDimInter(InterVector iv);
 
+  typedef InterVectorIt iterator;
+  typedef InterVectorConstIt const_iterator;
   iterator begin();
   iterator end();
   const_iterator begin() const;
   const_iterator end() const;
-
-  std::size_t size() const;  
+  std::size_t size() const;
   void emplaceBack(Interval i);
   Interval &operator[](std::size_t n);
   const Interval &operator[](std::size_t n) const;
 
-  eq_class(MultiDimInter);
-  neq_class(MultiDimInter);
-  lt_class(MultiDimInter);
+  bool operator==(const MultiDimInter &other) const;
+  bool operator!=(const MultiDimInter &other) const;
+  bool operator<(const MultiDimInter &other) const;
+
+  /**
+   * @brief Traditional set operations.
+   */
+  unsigned int cardinal() const;
+  bool isEmpty() const;
+  bool isMember(const MD_NAT &x) const; // Useful?
+  Util::MD_NAT minElem() const;
+  Util::MD_NAT maxElem() const;
+  MultiDimInter intersection(const MultiDimInter &other) const;
+
+  /**
+   * @brief Extra operations.
+   */
+  MultiDimInter offset(const MD_NAT &off) const;
+  MultiDimInter least(const MultiDimInter &other) const;
+  bool isUnidim() const;
 };
 std::ostream &operator<<(std::ostream &out, const MultiDimInter &mi);
-
-/**
- * @brief Traditional set operations.
-
- */
-
-unsigned int cardinal(MultiDimInter mdi);
-bool isEmpty(MultiDimInter mdi);
-bool isMember(MD_NAT x, MultiDimInter mdi); // Useful?
-Util::MD_NAT minElem(MultiDimInter mdi);
-Util::MD_NAT maxElem(MultiDimInter mdi);
-MultiDimInter intersection(MultiDimInter mdi1, MultiDimInter mdi2);
-
-/**
- * @brief Extra operations.
- */
-
-MultiDimInter offset(Util::MD_NAT off, MultiDimInter mdi);
-MultiDimInter least(MultiDimInter mdi1, MultiDimInter mdi2);
-bool isUnidim(MultiDimInter mdi);
 
 std::size_t hash_value(const MultiDimInter &mdi);
 

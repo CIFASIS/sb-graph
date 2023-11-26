@@ -157,21 +157,22 @@ LIB::Exp EvalMDLE::operator()(AST::MDLExp v) const
   LIB::Exp res;
 
   EvalLE visit_le(env_);
-  BOOST_FOREACH (AST::Expr le, v.exps())
-    res.emplaceBack(Apply(visit_le, le));
+  for (AST::Expr le : v.exps())
+    res.emplaceBack(boost::apply_visitor(visit_le, le));
 
   return LIB::Exp(res);
 }
 
 LIB::Exp EvalMDLE::operator()(AST::MDLExpBinOp v) const 
 {
-  AST::Expr l = v.left(), r = v.right();
+  LIB::Exp l = boost::apply_visitor(*this, v.left());
+  LIB::Exp r = boost::apply_visitor(*this, v.right());
   switch (v.op()) {
     case AST::ExpOp::add:
-      return ApplyThis(l) + ApplyThis(r);
+      return l + r;
 
     case AST::ExpOp::sub:
-      return ApplyThis(l) - ApplyThis(r);
+      return l - r;
 
     default:
       std::stringstream ss;

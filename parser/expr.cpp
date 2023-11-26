@@ -326,7 +326,8 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
 
   // ------------ //
 
-  expr = dsbg | sbg | pwl_expr | map_expr | mdlexp_expr | lexp_expr | arithmetic_expr | set_expr | mdi_expr | interval_expr;
+  //expr = dsbg | sbg | pwl_expr | map_expr | mdlexp_expr | lexp_expr | arithmetic_expr | set_expr | mdi_expr | interval_expr;
+  expr = dsbg | sbg | pwl_expr | map_expr | mdlexp_expr | lexp_expr | arithmetic_expr | set_expr | interval_expr | mdi_expr;
   
   expr_list = expr[phx::push_back(qi::_val, qi::_1)] >> *(COMA >> expr)[phx::push_back(qi::_val, qi::_1)];
 

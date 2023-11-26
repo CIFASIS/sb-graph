@@ -39,35 +39,59 @@ member_imp(MD_NAT, VNAT, value);
 
 MD_NAT::iterator MD_NAT::begin() { return value_.begin(); }
 MD_NAT::iterator MD_NAT::end() { return value_.end(); }
+MD_NAT::const_iterator MD_NAT::begin() const { return value_.begin(); }
+MD_NAT::const_iterator MD_NAT::end() const { return value_.end(); }
 
-std::size_t MD_NAT::size() { return value().size(); }
+std::size_t MD_NAT::size() const { return value_.size(); }
 
 void MD_NAT::emplace(MD_NAT::iterator it, NAT x) { value_.emplace(it, x); }
-void MD_NAT::emplace_back(NAT x) { value_.emplace_back(x); }
-void MD_NAT::push_back(NAT x) { emplace_back(x); }
+void MD_NAT::emplaceBack(NAT x) { value_.emplace_back(x); }
+void MD_NAT::push_back(NAT x) { emplaceBack(x); }
 
 NAT &MD_NAT::operator[](std::size_t n) { return value_[n]; }
 const NAT &MD_NAT::operator[](std::size_t n) const { return value_[n]; }
 
-bool MD_NAT::operator==(const MD_NAT &md) const
-{ 
-  return value() == md.value();
+bool MD_NAT::operator==(const MD_NAT &other) const
+{
+  ERROR_UNLESS(
+      size() == other.size()
+      , "Util::MD_NAT::operator==: dimensions don't match"
+  );
+
+  return value_ == other.value_;
 }
 
-bool MD_NAT::operator<(const MD_NAT &x2) const
+bool MD_NAT::operator<(const MD_NAT &other) const
 {
-  MD_NAT aux1 = *this, aux2 = x2;
+  ERROR_UNLESS(
+      size() == other.size()
+      , "Util::MD_NAT::operator<: dimensions don't match"
+  );
 
-  for (auto const &[e1, e2] : boost::combine(aux1, aux2)) 
-    if (e1 < e2)
+  for (unsigned int j = 0; j < size(); ++j)
+    if (operator[](j) < other[j])
       return true;
 
   return false;
 }
 
-bool MD_NAT::operator<=(const MD_NAT &x2) const
+bool MD_NAT::operator<=(const MD_NAT &other) const
 {
-  return *this == x2 || *this < x2;
+  return *this == other || *this < other;
+}
+
+MD_NAT MD_NAT::operator+=(const MD_NAT &other) const
+{
+  MD_NAT res = *this;
+  for (unsigned int j = 0; j < size(); ++j)
+    res[j] += other[j];
+
+  return res;
+}
+
+MD_NAT MD_NAT::operator+(const MD_NAT &other) const
+{
+  return *this += other;
 }
 
 std::ostream &operator<<(std::ostream &out, const MD_NAT &md)
@@ -103,112 +127,114 @@ RATIONAL::RATIONAL(INT n, INT d) : value_() {
 
 member_imp(RATIONAL, boost::rational<INT>, value);
 
-INT RATIONAL::numerator() const { return value().numerator(); }
-
-INT RATIONAL::denominator() const { return value().denominator(); }
-
-NAT toNat(RATIONAL r)
-{
-  if (r.denominator() == 1 && 0 <= r.value())
-    return r.numerator();
-
-  std::stringstream ss;
-  ss << r;
-  ERROR("toNat: RATIONAL %s is not NAT", ss.str().c_str());
-  return 0;
-}
-
-INT toInt(RATIONAL r)
-{
-  if (r.denominator() == 1)
-    return r.numerator();
-
-  ERROR("toInt: RATIONAL is not INT");
-  return 0;
-}
-
-RATIONAL RATIONAL::operator+=(const RATIONAL &r)
-{
-  value_ref() += r.value();
-  return *this;
-}
-
-RATIONAL RATIONAL::operator-=(const RATIONAL &r) 
-{
-  value_ref() -= r.value();
-  return *this;
-}
-
-RATIONAL RATIONAL::operator*=(const RATIONAL &r) 
-{
-  value_ref() *= r.value();
-  return *this;
-}
-
-RATIONAL RATIONAL::operator/=(const RATIONAL &r)
-{
-  value_ref() /= r.value();
-  return *this;
-}
-
-RATIONAL operator+(const RATIONAL &r1, const RATIONAL &r2)
-{ 
-  RATIONAL res(r1);
-  res += r2;
-  return res;
-}
-
-RATIONAL operator-(const RATIONAL &r1, const RATIONAL &r2)
-{
-  RATIONAL res(r1);
-  res -= r2;
-  return res;
-}
-
-RATIONAL operator*(const RATIONAL &r1, const RATIONAL &r2)
-{
-  RATIONAL res(r1);
-  res *= r2;
-  return res;
-}
-
-RATIONAL operator/(const RATIONAL &r1, const RATIONAL &r2)
-{
-  RATIONAL res(r1);
-  res /= r2;
-  return res;
-}
-
-bool RATIONAL::operator==(const INT &r) const
-{
-  RATIONAL aux = *this;
-  return aux.numerator() == r && aux.denominator() == 1;
-}
-
 bool RATIONAL::operator==(const RATIONAL &r) const
 {
-  return value() == r.value();
-}
-
-bool RATIONAL::operator<(const RATIONAL &r) const
-{
-  return value() < r.value();
-}
-
-bool RATIONAL::operator>(const RATIONAL &r) const
-{
-  return value() > r.value();
+  return value_ == r.value_;
 }
 
 bool RATIONAL::operator!=(const RATIONAL &r) const
 {
-  return value() != r.value();
+  return value_ != r.value_;
 }
 
-RATIONAL operator-(const RATIONAL &r) 
+bool RATIONAL::operator<(const RATIONAL &r) const
 {
-  auto aux = r; 
-  return RATIONAL(-aux.numerator(), aux.denominator());
+  return value_ < r.value_;
+}
+
+bool RATIONAL::operator>(const RATIONAL &r) const
+{
+  return value_ > r.value_;
+}
+
+bool RATIONAL::operator==(const INT &other) const
+{
+  RATIONAL aux = *this;
+  return aux.numerator() == other && aux.denominator() == 1;
+}
+
+RATIONAL RATIONAL::operator-() const
+{
+  return RATIONAL(-numerator(), denominator());
+}
+
+RATIONAL RATIONAL::operator+=(const RATIONAL &other) const
+{
+  boost::rational<INT> value_res = value_;
+
+  value_res += other.value_;
+
+  return RATIONAL(value_res);
+}
+
+RATIONAL RATIONAL::operator+(const RATIONAL &other) const
+{
+  return *this += other;
+}
+
+RATIONAL RATIONAL::operator-=(const RATIONAL &other) const
+{
+  boost::rational<INT> value_res = value_;
+
+  value_res -= other.value_;
+
+  return RATIONAL(value_res);
+}
+
+RATIONAL RATIONAL::operator-(const RATIONAL &other) const
+{
+  return *this -= other;
+}
+
+RATIONAL RATIONAL::operator*=(const RATIONAL &other) const
+{
+  boost::rational<INT> value_res = value_;
+
+  value_res *= other.value_;
+
+  return RATIONAL(value_res);
+}
+
+RATIONAL RATIONAL::operator*(const RATIONAL &other) const
+{
+  return *this *= other;
+}
+
+RATIONAL RATIONAL::operator/=(const RATIONAL &other) const
+{
+  boost::rational<INT> value_res = value_;
+
+  value_res *= other.value_;
+
+  return RATIONAL(value_res);
+}
+
+RATIONAL RATIONAL::operator/(const RATIONAL &other) const
+{
+  return *this /= other;
+}
+
+
+INT RATIONAL::numerator() const { return value_.numerator(); }
+
+INT RATIONAL::denominator() const { return value_.denominator(); }
+
+NAT RATIONAL::toNat() const
+{
+  if (denominator() == 1 && 0 <= value_)
+    return numerator();
+
+  ERROR("toNat: RATIONAL is not NAT");
+  return 0;
+}
+
+INT RATIONAL::toInt() const
+{
+  if (denominator() == 1)
+    return numerator();
+
+  ERROR("toInt: RATIONAL is not INT");
+  return 0;
 }
 
 std::ostream &operator<<(std::ostream &out, const RATIONAL &r)
@@ -227,10 +253,6 @@ std::ostream &operator<<(std::ostream &out, const RATIONAL &r)
 
   return out;
 }
-
-bool isZero(RATIONAL r) { return r.numerator() == 0; }
-
-bool isOne(RATIONAL r) { return r.numerator() == r.denominator(); }
 
 std::size_t hash_value(const RATIONAL &r)
 {

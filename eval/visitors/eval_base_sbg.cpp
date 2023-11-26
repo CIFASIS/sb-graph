@@ -181,11 +181,11 @@ LIB::BaseSBG EvalBaseSBG::operator()(AST::SBG v) const
   EvalUnordSet visit_set(env_);
   EvalBasePWMap visit_pw(env_);
 
-  LIB::UnordSet V = Apply(visit_set, v.V());
-  LIB::BasePWMap Vmap = Apply(visit_pw, v.Vmap());
-  LIB::BasePWMap map1 = Apply(visit_pw, v.map1());
-  LIB::BasePWMap map2 = Apply(visit_pw, v.map2());
-  LIB::BasePWMap Emap = Apply(visit_pw, v.Emap());
+  LIB::UnordSet V = boost::apply_visitor(visit_set, v.V());
+  LIB::BasePWMap Vmap = boost::apply_visitor(visit_pw, v.Vmap());
+  LIB::BasePWMap map1 = boost::apply_visitor(visit_pw, v.map1());
+  LIB::BasePWMap map2 = boost::apply_visitor(visit_pw, v.map2());
+  LIB::BasePWMap Emap = boost::apply_visitor(visit_pw, v.Emap());
 
   return LIB::BaseSBG(V, Vmap, map1, map2, Emap);
 }

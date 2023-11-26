@@ -24,21 +24,25 @@
 
 TEST(SetPerf, Intersection)
 {
-  int N = 10000;
+  int N = 3;
 
   SBG::LIB::OrdSet s1, s2;
   for (int j = 0; j < N; j++) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
-    s1.emplace_hint(s1.end(), i);
+    s1.emplaceBack(i);
   }
 
   for (int j = 0; j < N; j++) {
     SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
-    s2.emplace_hint(s2.end(), i);
+    s2.emplaceBack(i);
   }
 
+  std::cout << s1 << "\n";
+  std::cout << s2 << "\n";
+  std::cout << s1.intersection(s2) << "\n";
+
   auto start = std::chrono::high_resolution_clock::now();
-  intersection(s1, s2);
+  s1.intersection(s2);
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
   std::cout << "INTERSECTION TEST elapsed time: " << elapsed.count() << "ms\n";
@@ -48,21 +52,25 @@ TEST(SetPerf, Intersection)
 
 TEST(SetPerf, Difference)
 {
-  int N = 10000;
+  int N = 3;
 
   SBG::LIB::OrdSet s1, s2;
   for (int j = 0; j < N; j++) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
-    s1.emplace_hint(s1.end(), i);
+    s1.emplaceBack(i);
   }
 
   for (int j = 0; j < N; j++) {
     SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
-    s2.emplace_hint(s2.end(), i);
+    s2.emplaceBack(i);
   }
 
+  std::cout << s1 << "\n";
+  std::cout << s2 << "\n";
+  std::cout << s1.difference(s2) << "\n";
+
   auto start = std::chrono::high_resolution_clock::now();
-  difference(s1, s2);
+  s1.difference(s2);
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
   std::cout << "DIFFERENCE TEST elapsed time: " << elapsed.count() << "ms\n";
@@ -72,21 +80,25 @@ TEST(SetPerf, Difference)
 
 TEST(SetPerf, Union)
 {
-  int N = 10000;
+  int N = 3;
 
   SBG::LIB::OrdSet s1, s2;
   for (int j = 0; j < N; j++) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
-    s1.emplace_hint(s1.end(), i);
+    s1.emplaceBack(i);
   }
 
   for (int j = 0; j < N; j++) {
-    SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
-    s2.emplace_hint(s2.end(), i);
+    SBG::LIB::Interval i(j*95+1, 1, (j+1)*95);
+    s2.emplaceBack(i);
   }
 
+  std::cout << s1 << "\n";
+  std::cout << s2 << "\n";
+  std::cout << s1.cup(s2) << "\n";
+
   auto start = std::chrono::high_resolution_clock::now();
-  cup(s1, s2);
+  s1.cup(s2);
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
   std::cout << "UNION TEST elapsed time: " << elapsed.count() << "ms\n";

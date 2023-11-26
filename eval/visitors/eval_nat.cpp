@@ -36,8 +36,8 @@ Util::NAT EvalNat::operator()(AST::MDNatural v) const
 
 Util::NAT EvalNat::operator()(AST::Rational v) const 
 { 
-  if (ApplyThis(v.den()) == 1)
-    return ApplyThis(v.num());
+  if (boost::apply_visitor(*this, v.den()) == 1)
+    return boost::apply_visitor(*this, v.num());
 
   Util::ERROR("EvalNat: trying to evaluate a Rational");
   return 0; 
@@ -58,7 +58,8 @@ Util::NAT EvalNat::operator()(Util::VariableName v) const
     ExprBaseType value = *v_opt;
     if (is<Util::NAT>(value)) return boost::get<Util::NAT>(value);
 
-    else if (is<Util::RATIONAL>(value)) return Util::toNat(boost::get<Util::RATIONAL>(value)); 
+    else if (is<Util::RATIONAL>(value))
+      return boost::get<Util::RATIONAL>(value).toNat();
   }
 
   Util::ERROR("EvalNat: variable %s not defined", v.c_str());
@@ -73,19 +74,20 @@ Util::NAT EvalNat::operator()(AST::UnaryOp v) const
 
 Util::NAT EvalNat::operator()(AST::BinOp v) const 
 {
-  AST::Expr l = v.left(), r = v.right();
+  Util::NAT l = boost::apply_visitor(*this, v.left());
+  Util::NAT r = boost::apply_visitor(*this, v.right());
   switch (v.op()) {
     case AST::Op::add:
-      return ApplyThis(l) + ApplyThis(r);
+      return l + r;
 
     case AST::Op::sub:
-      return ApplyThis(l) - ApplyThis(r);
+      return l - r;
 
     case AST::Op::mult:
-      return ApplyThis(l) * ApplyThis(r);
+      return l * r;
 
     case AST::Op::expo:
-      return pow(ApplyThis(l), ApplyThis(r));
+      return pow(l, r);
 
     default:
       std::stringstream ss;

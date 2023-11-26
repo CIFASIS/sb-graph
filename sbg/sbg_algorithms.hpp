@@ -51,14 +51,18 @@ struct PathInfo {
 
 template<typename Set>
 struct MinReach {
+  using PW = PWMap<Set>;
+  using PI = PathInfo<Set>;
+
   member_class(DSBGraph<Set>, dsbg);
 
   MinReach();
   MinReach(DSBGraph<Set> dsbg);
 
-  PWMap<Set> minReach1(Set reach, PWMap<Set> smap, PWMap<Set> rmap);
-  PathInfo<Set> recursion(unsigned int n, Set ER, Set not_rv, PWMap<Set> smap, PWMap<Set> rmap);
-  PathInfo<Set> calculate(Set unmatched_V);
+  PW minReach1(const Set &reach, const PW &smap, const PW &rmap) const;
+  PI recursion(unsigned int n, const Set &ER, const Set &not_rv
+               , const PW &smap, const PW &rmap) const;
+  PI calculate(const Set &unmatched_V) const;
 };
 
 typedef MinReach<UnordSet> BaseMR;
@@ -81,6 +85,9 @@ std::ostream &operator<<(std::ostream &out, const MatchInfo<Set> &m_info);
 
 template<typename Set>
 struct SBGMatching {
+  using Map = SBGMap<Set>;
+  using PW = PWMap<Set>;
+
   //*** SBG info, constant
   member_class(SBGraph<Set>, sbg);
 
@@ -89,8 +96,8 @@ struct SBGMatching {
 
   member_class(Set, E);
   member_class(PWMap<Set>, Emap);
-  //-----------------------------
 
+  //-----------------------------
   member_class(PWMap<Set>, smap); // Successors map
   member_class(PWMap<Set>, rmap); // Representatives map
 
@@ -118,19 +125,19 @@ struct SBGMatching {
   SBGMatching();
   SBGMatching(SBGraph<Set> sbg);
 
-  Set getManyToOne(); // Find N:1 connections
-  void shortPathDirection(Set endings, Direction dir); 
+  Set getManyToOne() const; // Find N:1 connections
+  void shortPathDirection(const Set &endings, Direction dir);
   void shortPathStep();
   void shortPath();
 
-  PWMap<Set> directedOffset(PWMap<Set> dir_map);
-  DSBGraph<Set> offsetGraph(PWMap<Set> dir_omap);
-  void directedMinReach(PWMap<Set> dir_map);
+  PW directedOffset(const PW &dir_map) const;
+  DSBGraph<Set> offsetGraph(const PW &dir_omap) const;
+  void directedMinReach(const PW &dir_map);
   void minReachableStep();
   void minReachable();  
 
-  Set getAllowedEdges(); // Calculate edges used by paths
-  bool fullyMatchedU();
+  Set getAllowedEdges() const; // Calculate edges used by paths
+  bool fullyMatchedU() const;
   void offsetVertices();
   void updatePaths();
   void updateOffset();

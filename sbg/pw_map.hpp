@@ -37,173 +37,130 @@ namespace LIB {
  */
 
 template<typename Set>
-struct LTMap {
-  LTMap();
-
-  bool operator()(const SBGMap<Set> &x, const SBGMap<Set> &y) const;
-};
-
-
-template<typename Set>
-using MapSet = boost::container::flat_set<
-  SBGMap<Set>, LTMap<Set>, boost::container::new_allocator<SBGMap<Set>>
->;
-template<typename Set>
-using MapSetIt = typename MapSet<Set>::iterator;
-template<typename Set>
-using MapSetConstIt = typename MapSet<Set>::const_iterator;
+using MapSet = boost::unordered::unordered_flat_set<SBGMap<Set>>;
 template<typename Set>
 std::ostream &operator<<(std::ostream &out, const MapSet<Set> &ms);
 
 template<typename Set>
 struct PWMap {
-  typedef MapSetIt<Set> iterator;
-  typedef MapSetConstIt<Set> const_iterator;
+  using MS = MapSet<Set>;
+  using Map = SBGMap<Set>;
 
-  member_class(MapSet<Set>, maps);
+  member_class(MS, maps);
 
   PWMap();
   PWMap(Set s); // Create id with s as domain
   PWMap(SBGMap<Set> m);
   PWMap(MapSet<Set> maps);
 
+  typedef typename MS::iterator iterator;
+  typedef typename MS::const_iterator const_iterator;
   iterator begin();
   iterator end();
   const_iterator begin() const;
   const_iterator end() const;
-
   std::size_t size() const;
   void emplace(SBGMap<Set> m);
-  void emplace_hint(MapSetIt<Set> it, SBGMap<Set> m);
   void emplaceBack(SBGMap<Set> m);
-  SBGMap<Set> &operator[](std::size_t n);
-  const SBGMap<Set> &operator[](std::size_t n) const;
-
-  PWMap operator+(const PWMap &pw);
 
   // Two maps are equal iff they satisfy the extensional principle
-  eq_class(PWMap);
-  neq_class(PWMap);
+  bool operator==(const PWMap &other) const;
+  bool operator!=(const PWMap &other) const;
+
+  PWMap operator+(const PWMap &pw) const;
+
+  /**
+   * @brief Traditional map operations.
+   */
+  bool isEmpty() const;
+  Set dom() const;
+  PWMap restrict(const Set &subdom) const;
+  Set image() const;
+  Set image(const Set &subdom) const;
+  Set preImage() const;
+  Set preImage(const Set &subcodom) const;
+  /** @function composition
+   *
+   * @brief Apply first pw2, then pw1 (i.e. pw1(pw2(x)) is calculated).
+   */
+  PWMap composition(const PWMap &pw2) const;
+  PWMap mapInf(unsigned int n) const;
+  PWMap mapInf() const;
+
+  /**
+   * @brief Extra operations.
+   */
+
+  /** @function concatenation
+   *
+   * @brief Concatenation of two pwis.
+   * !!! Result is correct iff pw1 and pw2 are domain-disjoint.
+   */
+  PWMap concatenation(const PWMap &other) const;
+  /** @function combine
+   *
+   * @brief For each element in the dom of pw1 applies the corresponding
+   * expression of pw1, and applies the corresponding pw2 expression for all
+   * remaining elements.
+   */
+  PWMap combine(const PWMap &other) const;
+
+  /** @function reduce
+   *
+   * @brief The reduce function calculates (if possible) the resulting map of
+   * composing the argument with itself up to convergence.
+   *
+   * Currently, the only expressions that can be efficiently reduced are:
+   *   - x+h
+   *   - x-h
+   *   - h
+   */
+  PWMap reduce(const Interval &i, const LExp &e) const;
+  PWMap reduce(const Map &sbgmap) const;
+  PWMap reduce() const;
+
+  PWMap minMap(
+    const Interval &i, const LExp &le1, const LExp &le2
+    , const LExp &le3, const LExp &le4
+  ) const;
+  PWMap minMap(const Interval &i, const LExp &le1, const LExp &le2) const;
+  PWMap minMap(
+    const SetPiece &dom_piece, const Exp &e1, const Exp &e2
+    , const Exp &e3, const Exp &e4
+  ) const;
+  PWMap minMap(const SetPiece &dom_piece, const Exp &e1, const Exp &e2) const;
+  PWMap minMap(
+    const Set &dom, const Exp &e1, const Exp &e2, const Exp &e3, const Exp &e4
+  ) const;
+  PWMap minMap(const Set &dom, const Exp &e1, const Exp &e2) const;
+  PWMap minMap(
+    const PWMap &other2, const PWMap &other3, const PWMap &other4
+  ) const;
+  PWMap minMap(const PWMap &other) const;
+
+  PWMap minAdjMap(const PWMap &other1, const PWMap &other2) const;
+  PWMap minAdjMap(const PWMap &other) const;
+
+  PWMap minInv(const Set &im) const;
+  PWMap minInv() const;
+
+  PWMap filterMap(bool (*f)(const SBGMap<Set> &)) const;
+
+  // Returns elements in both doms, that have the same image in both maps
+  Set equalImage(const PWMap &other) const;
+
+  PWMap offsetDom(const Util::MD_NAT &off) const;
+  PWMap offsetDom(const PWMap &off) const;
+  PWMap offsetImage(const Util::MD_NAT &off) const;
+  PWMap offsetImage(const Exp &off) const;
+
+  unsigned int nmbrDims() const;
+
+  PWMap normalize(const PWMap &other) const;
 };
 template<typename Set>
 std::ostream &operator<<(std::ostream &out, const PWMap<Set> &pw);
 
-/**
- * @brief Traditional map operations.
- */
-template<typename Set>
-bool isEmpty(PWMap<Set> pw);
-
-template<typename Set>
-Set dom(PWMap<Set> pw);
-
-template<typename Set>
-PWMap<Set> restrict(Set subdom, PWMap<Set> pw);
-
-template<typename Set>
-Set image(PWMap<Set> pw);
-
-template<typename Set>
-Set image(Set subdom, PWMap<Set> pw);
-
-template<typename Set>
-Set preImage(PWMap<Set> pw);
-
-template<typename Set>
-Set preImage(Set subcodom, PWMap<Set> pw);
-
-template<typename Set>
-PWMap<Set> mapInf(PWMap<Set> pw, unsigned int n);
-template<typename Set>
-PWMap<Set> mapInf(PWMap<Set> pw);
-
-/** @function composition
- *
- * @brief Apply first pw2, then pw1 (i.e. pw1(pw2(x)) is calculated).
- */
-template<typename Set>
-PWMap<Set> composition(PWMap<Set> pw1, PWMap<Set> pw2);
-
-/**
- * @brief Extra operations.
- */
-
-/** @function concatenation
- *
- * @brief Concatenation of two pwis.
- * !!! Result is correct iff pw1 and pw2 are domain-disjoint.
- */
-template<typename Set>
-PWMap<Set> concatenation(PWMap<Set> pw1, PWMap<Set> pw2);
-template<typename Set>
-PWMap<Set> combine(PWMap<Set> pw1, PWMap<Set> pw2);
-
-/** @function reduce
- *
- * @brief The reduce function calculates (if possible) the resulting map of
- * composing the argument with itself up to convergence.
- *
- * Currently, the only expressions that can be efficiently reduced are:
- *   - x+h
- *   - x-h
- *   - h
- */
-template<typename Set>
-PWMap<Set> reduce(Interval i, LExp e);
-template<typename Set>
-PWMap<Set> reduce(SBGMap<Set> sbgmap);
-template<typename Set>
-PWMap<Set> reduce(PWMap<Set> pw);
-
-template<typename Set>
-PWMap<Set> minMap(Interval i, LExp le1, LExp le2, LExp le3, LExp le4);
-template<typename Set>
-PWMap<Set> minMap(Interval i, LExp le1, LExp le2);
-template<typename Set>
-PWMap<Set> minMap(SetPiece dom_piece, Exp e1, Exp e2, Exp e3, Exp e4);
-template<typename Set>
-PWMap<Set> minMap(SetPiece dom_piece, Exp e1, Exp e2);
-template<typename Set>
-PWMap<Set> minMap(Set dom, Exp e1, Exp e2, Exp e3, Exp e4);
-template<typename Set>
-PWMap<Set> minMap(Set dom, Exp e1, Exp e2);
-template<typename Set>
-PWMap<Set> minMap(PWMap<Set> pw1, PWMap<Set> pw2
-                  , PWMap<Set> pw3, PWMap<Set> pw4);
-template<typename Set>
-PWMap<Set> minMap(PWMap<Set> pw1, PWMap<Set> pw2);
-
-template<typename Set>
-PWMap<Set> minAdjMap(PWMap<Set> pw1, PWMap<Set> pw2, PWMap<Set> pw3);
-template<typename Set>
-PWMap<Set> minAdjMap(PWMap<Set> pw1, PWMap<Set> pw2);
-
-template<typename Set>
-PWMap<Set> minInv(Set im, PWMap<Set> pw);
-template<typename Set>
-PWMap<Set> minInv(PWMap<Set> pw);
-
-template<typename Set>
-PWMap<Set> filterMap(bool (*f)(SBGMap<Set>), PWMap<Set> pw);
-
-// Returns elements in both doms, that have the same image in both maps
-template<typename Set>
-Set equalImage(PWMap<Set> pw1, PWMap<Set> pw2);
-
-template<typename Set>
-PWMap<Set> offsetDom(Util::MD_NAT off, PWMap<Set> pw);
-template<typename Set>
-PWMap<Set> offsetDom(PWMap<Set> off, PWMap<Set> pw);
-template<typename Set>
-PWMap<Set> offsetImage(Util::MD_NAT off, PWMap<Set> pw);
-template<typename Set>
-PWMap<Set> offsetImage(Exp off, PWMap<Set> pw);
-
-template<typename Set>
-unsigned int nmbrDims(PWMap<Set> pw);
-
-template<typename Set>
-PWMap<Set> normalize(PWMap<Set> pw);
 
 template<typename Set>
 std::size_t hash_value(const PWMap<Set> &pw);

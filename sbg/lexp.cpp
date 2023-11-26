@@ -29,41 +29,44 @@ LExp::LExp(RAT slope, RAT offset) : slope_(slope), offset_(offset) {}
 member_imp(LExp, RAT, slope);
 member_imp(LExp, RAT, offset);
 
-LExp LExp::operator+(const LExp &r)
-{
-  return LExp(slope() + r.slope(), offset() + r.offset());
-}
-
-LExp LExp::operator-(const LExp &r)
-{
-  return LExp(slope() - r.slope(), offset() - r.offset());
-}
-
-LExp LExp::operator*(const LExp &r)
-{
-  Util::ERROR_UNLESS(isZero(r.slope())
-                     , "LIB::LExp::operator*: result is not a LExp");
-
-  return LExp(slope() * r.offset(), offset()); 
-}
-
 bool LExp::operator==(const LExp &other) const
 {
-  return slope() == other.slope() && offset() == other.offset();
+  return slope_ == other.slope_ && offset_ == other.offset_;
 }
 
-bool LExp::operator<(const LExp &other) const 
-{
-  if (slope() < other.slope()) return true;
+bool LExp::operator!=(const LExp &other) const { return !(*this == other); }
 
-  return offset() < other.offset();
+bool LExp::operator<(const LExp &other) const
+{
+  if (slope_ < other.slope_)
+    return true;
+
+  return offset_ < other.offset_;
+}
+
+LExp LExp::operator+(const LExp &other) const
+{
+  return LExp(slope_ + other.slope_, offset_ + other.offset_);
+}
+
+LExp LExp::operator-(const LExp &other) const
+{
+  return LExp(slope_ - other.slope_, offset_ - other.offset_);
+}
+
+LExp LExp::operator*(const LExp &other) const
+{
+  Util::ERROR_UNLESS(other.slope_ == 0
+                     , "LIB::LExp::operator*: result is not a LExp");
+
+  return LExp(slope_ * other.offset_, offset_);
 }
 
 std::ostream &operator<<(std::ostream &out, const LExp &le)
 {
-  RAT slo = le.slope(), off = le.offset();
+  RAT slo = le.slope_, off = le.offset_;
 
-  if (!isZero(slo) && !isOne(slo)) {
+  if (slo != 0 && slo != 1) {
     if (slo.numerator() != 1)
       out << slo.numerator();
 
@@ -74,41 +77,43 @@ std::ostream &operator<<(std::ostream &out, const LExp &le)
       out << "x";
   }
 
-  if (isOne(slo)) out << "x";
+  if (slo == 1)
+    out << "x";
 
-  if (!isZero(off)) {
-    if (off > 0 && !isZero(slo))
+  if (off != 0) {
+    if (off > 0 && slo != 0)
       out << "+" << off;
 
     else
       out << off;
   }
 
-  if (isZero(slo) && isZero(off)) out << "0"; 
+  if (slo == 0 && off == 0)
+    out << "0";
 
   return out;
 }
 
 // Linear expression functions -------------------------------------------------
 
-LExp composition(LExp le1, LExp le2)
+LExp LExp::composition(const LExp &other)const
 {
-  RAT new_slope = le2.slope() * le1.slope();
-  RAT new_offset = le1.slope() * le2.offset() + le1.offset();
+  RAT new_slope = other.slope_ * slope_;
+  RAT new_offset = slope_ * other.offset_ + offset_;
 
   return LExp(new_slope, new_offset);
 }
 
-LExp inverse(LExp le)
+LExp LExp::inverse() const
 {
   RAT zero, one(1);
   RAT new_slope(0, 1), new_offset(0, 1);
 
   // Non constant map
-  RAT slo = le.slope();
+  RAT slo = slope_;
   if (slo != zero) {
     new_slope = RAT(slo.denominator(), slo.numerator());
-    new_offset = (-le.offset())/slo;
+    new_offset = (-offset_)/slo;
   }
 
   // Constant map
@@ -120,35 +125,35 @@ LExp inverse(LExp le)
   return LExp(new_slope, new_offset);
 }
 
-LExp mod(LExp le1, LExp le2) 
+LExp LExp::mod(const LExp &other) const
 {
-  Util::ERROR_UNLESS(isZero(le2.slope())
+  Util::ERROR_UNLESS(other.slope_ == 0
                      , "LIB::LExp::mod: not supported currently");
  
   return LExp();
 }
 
-LExp floorDiv(LExp le1, LExp le2)
+LExp LExp::floorDiv(const LExp &other) const
 {
-  Util::ERROR_UNLESS(isZero(le2.slope())
+  Util::ERROR_UNLESS(other.slope_ == 0
                      , "LIB::LExp::floorDiv: result is not a LExp");
 
-  Util::RATIONAL div = le2.offset();
-  return LExp(le1.slope() / div, le1.offset() / div);
+  Util::RATIONAL div = other.offset_;
+  return LExp(slope_ / div, offset_ / div);
 }
 
-LExp ceilDiv(LExp le1, LExp le2)
+LExp LExp::ceilDiv(const LExp &other) const
 {
-  Util::ERROR_UNLESS(isZero(le2.slope())
+  Util::ERROR_UNLESS(other.slope_ == 0
                      , "LIB::LExp::ceilDiv: result is not a LExp");
 
-  Util::RATIONAL div = le2.offset();
-  return LExp(le1.slope() / div, le1.offset() / div);
+  Util::RATIONAL div = other.offset_;
+  return LExp(slope_ / div, offset_ / div);
 }
 
-bool isId(LExp le) { return le.slope() == 1 && le.offset() == 0; }
+bool LExp::isId() const { return slope_ == 1 && offset_ == 0; }
 
-bool isConstant(LExp le) { return le.slope() == 0; }
+bool LExp::isConstant() const { return slope_ == 0; }
 
 std::size_t hash_value(const LExp &le)
 {

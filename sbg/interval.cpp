@@ -25,26 +25,35 @@ namespace LIB {
 
 Interval::Interval() : begin_(1), step_(1), end_(0) {}
 Interval::Interval(NAT x) : begin_(x), step_(1), end_(x) {}
-Interval::Interval(NAT begin, NAT step, NAT end) : begin_(begin), step_(step), end_(end) 
+Interval::Interval(NAT begin, NAT step, NAT end) 
+  : begin_(begin), step_(step), end_(end) 
 {
   if (end >= begin) {
     int rem = fmod(end - begin, step);
     end_ = end - rem;
+
+    if (cardinal() == 1)
+      step_ = 1;
   }
 
-  if (cardinal(*this) == 1)
+  else {
+    begin_ = 1;
     step_ = 1;
+    end_ = 0;
+  }
 }
 
 member_imp(Interval, NAT, begin);
 member_imp(Interval, NAT, step);
 member_imp(Interval, NAT, end);
 
+// Operators -------------------------------------------------------------------
+
 bool Interval::operator==(const Interval &other) const
 {
-  return (begin() == other.begin()) 
-          && (step() == other.step()) 
-          && (end() == other.end());
+  return (begin_ == other.begin_)
+          && (step_ == other.step_)
+          && (end_ == other.end_);
 }
 
 bool Interval::operator!=(const Interval &other) const
@@ -54,15 +63,15 @@ bool Interval::operator!=(const Interval &other) const
 
 bool Interval::operator<(const Interval &other) const
 {
-  if (begin() < other.begin())
+  if (begin_ < other.begin_)
     return true;
 
-  if (begin() == other.begin() && end() < other.end())
+  if (begin_ == other.begin_ && end_ < other.end_)
     return true;
 
-  if (begin() == other.begin() 
-      && end() == other.end() 
-      && step() < other.step())
+  if (begin_ == other.begin_
+      && end_ == other.end_
+      && step_ < other.step_)
     return true;
 
   return false;
@@ -71,7 +80,7 @@ bool Interval::operator<(const Interval &other) const
 std::ostream &operator<<(std::ostream &out, const Interval &i) 
 {
   out << "[" << Util::toStr(i.begin());
-  if (i.step() != 1)
+  if (i.step_ != 1)
     out << ":" << Util::toStr(i.step());
   out << ":" << Util::toStr(i.end()) << "]";
  
@@ -80,50 +89,48 @@ std::ostream &operator<<(std::ostream &out, const Interval &i)
 
 // Set functions ---------------------------------------------------------------
 
-unsigned int cardinal(Interval i) 
+unsigned int Interval::cardinal() const
 {
-  if (!isEmpty(i))
-    return (i.end() - i.begin()) / i.step() + 1;
-
-  return 0;
+  return (end_ - begin_) / step_ + 1;
 }
 
-bool isEmpty(Interval i) { return i.end() < i.begin(); }
+bool Interval::isEmpty() const { return end_ < begin_; }
 
-bool isMember(NAT x, Interval i)
+bool Interval::isMember(NAT x) const
 {
-  if (x < i.begin() || x > i.end())
+  if (x < begin_ || x > end_)
     return false;
 
-  int rem = fmod(x - i.begin(), i.step());
+  int rem = fmod(x - begin_, step_);
 
   return rem == 0;
 }
 
-Util::NAT minElem(Interval i) { return i.begin(); }
+Util::NAT Interval::minElem() const { return begin_; }
 
-Util::NAT maxElem(Interval i) { return i.end(); }
+Util::NAT Interval::maxElem() const { return end_; }
 
-Interval intersection(Interval i1, Interval i2)
+Interval Interval::intersection(const Interval &other)const
 {
-  if (isEmpty(i1) || isEmpty(i2))
+  if (isEmpty() || other.isEmpty())
     return Interval();
 
-  if ((i1.end() < i2.begin()) || (i2.end() < i1.begin()))
+  if ((end_ < other.begin_) || (other.end_ < begin_))
     return Interval();
 
   // Two non overlapping intervals with the same step
-  if (i1.step() == i2.step() 
-      && !isMember(i1.begin(), i2) 
-      && !isMember(i2.begin(), i1)) return Interval();
+  if (step_ == other.step_
+      && !other.isMember(begin_)
+      && !isMember(other.begin_))
+    return Interval();
 
-  NAT max_begin = std::max(i1.begin(), i2.begin());    
-  NAT new_step = std::lcm(i1.step(), i2.step())
-      , new_begin = max_begin
-      , new_end = std::min(i1.end(), i2.end());
+  NAT max_begin = std::max(begin_, other.begin_);
+  NAT new_step = std::lcm(step_, other.step_)
+  , new_begin = max_begin
+  , new_end = std::min(end_, other.end_);
   bool found_member = false;
-  for (NAT x = max_begin; x < max_begin + new_step; ++x) 
-    if (isMember(x, i1) && isMember(x, i2)) {
+  for (NAT x = max_begin; x < max_begin + new_step; ++x)
+    if (isMember(x) && other.isMember(x)) {
       new_begin = x;
       found_member = true;
     }
@@ -136,21 +143,16 @@ Interval intersection(Interval i1, Interval i2)
 
 // Extra operations ------------------------------------------------------------
 
-Interval offset(Util::NAT off, Interval i)
+Interval Interval::offset(Util::NAT off) const
 {
-  Util::NAT new_b = i.begin() + off, new_e = i.end() + off;
+  Util::NAT new_b = begin_ + off, new_e = end_ + off;
 
-  return Interval(new_b, i.step(), new_e);
+  return Interval(new_b, step_, new_e);
 }
 
-Interval least(Interval i1, Interval i2) { return std::min(i1, i2); }
-
-MaybeInterval canonize(Interval i1, Interval i2)
+Interval Interval::least(const Interval &other) const
 {
-  if (i1.end() + i1.step() == i2.begin() && i1.step() == i2.step())
-    return Interval(i1.begin(), i1.step(), i2.end());
-
-  return {};
+  return std::min(*this, other);
 }
 
 std::size_t hash_value(const Interval &i)

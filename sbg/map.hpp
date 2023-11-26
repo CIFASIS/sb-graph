@@ -36,12 +36,11 @@ namespace SBG {
 
 namespace LIB {
 
-// Non-optimized implementation ------------------------------------------------
+Interval image(Interval i, LExp le);
+SetPiece image(SetPiece mdi, Exp le);
 
 template<typename Set>
 struct SBGMap {
-  typedef typename Set::iterator SetIt;
-
   member_class(Set, dom);
   member_class(Exp, exp);
 
@@ -49,54 +48,35 @@ struct SBGMap {
   SBGMap(Interval i, LExp le);
   SBGMap(Set dom, Exp exp);
 
-  eq_class(SBGMap);
-  neq_class(SBGMap);
+  bool operator==(const SBGMap &other) const;
+  bool operator!=(const SBGMap &other) const;
+
+  /**
+   * @brief Traditional map operations.
+   */
+  SBGMap restrict(const Set &subdom) const;
+  Set image() const;
+  Set image(const Set &subdom) const;
+  Set preImage() const;
+  Set preImage(const Set &subcodom) const;
+  SBGMap composition(const SBGMap &sbgmap2) const;
+
+  /**
+   * @brief Extra operations.
+   */
+  SBGMap minInv() const;
+  SBGMap minInv(const Set &im) const;
+  bool isId() const;
+  unsigned int nmbrDims() const;
 };
 template<typename Set>
 std::ostream &operator<<(std::ostream &out, const SBGMap<Set> &sbgmap);
 
-/**
- * @brief Traditional map operations.
- */
-
 template<typename Set>
-SBGMap<Set> restrict(Set subdom, SBGMap<Set> sbgmap);
-
-Interval image(Interval i, LExp le);
-SetPiece image(SetPiece mdi, Exp le);
-
-template<typename Set>
-Set image(SBGMap<Set> sbgmap);
-
-template<typename Set>
-Set image(Set subdom, SBGMap<Set> sbgmap);
-
-template<typename Set>
-Set preImage(SBGMap<Set> sbgmap);
-
-template<typename Set>
-Set preImage(Set subcodom, SBGMap<Set> sbgmap);
-
-template<typename Set>
-SBGMap<Set> composition(SBGMap<Set> sbgmap1, SBGMap<Set> sbgmap2);
-
-/**
- * @brief Extra operations.
- */
-
-template<typename Set>
-SBGMap<Set> minInv(Set im, SBGMap<Set> sbgmap);
-template<typename Set>
-SBGMap<Set> minInv(SBGMap<Set> sbgmap);
-
-template<typename Set>
-bool isId(SBGMap<Set> sbgmap);
-
-template<typename Set>
-unsigned int nmbrDims(SBGMap<Set> sbgmap);
-
-template <typename Set>
 std::size_t hash_value(const SBGMap<Set> &sbgmap);
+
+template<typename Set>
+using SBGMap = SBGMap<Set>;
 
 typedef SBGMap<UnordSet> BaseMap;
 typedef SBGMap<OrdSet> CanonMap;

@@ -109,7 +109,8 @@ LIB::MultiDimInter EvalMDI::operator()(AST::MultiDimInter v) const
   LIB::MultiDimInter res;
 
   EvalInterval visit_inter(env_);
-  BOOST_FOREACH (AST::Expr ith, v.intervals()) res.emplaceBack(Apply(visit_inter, ith));
+  for (AST::Expr ith : v.intervals())
+    res.emplaceBack(boost::apply_visitor(visit_inter, ith));
 
   return res;
 }
@@ -128,10 +129,11 @@ LIB::MultiDimInter EvalMDI::operator()(AST::MDInterUnaryOp v) const
 
 LIB::MultiDimInter EvalMDI::operator()(AST::MDInterBinOp v) const 
 {
-  AST::Expr l = v.left(), r = v.right();
+  LIB::MultiDimInter l = boost::apply_visitor(*this, v.left());
+  LIB::MultiDimInter r = boost::apply_visitor(*this, v.right());
   switch (v.op()) {
     case AST::ContainerOp::cap:
-      return intersection(ApplyThis(l), ApplyThis(r));
+      return l.intersection(r);
 
     default:
       std::stringstream ss;

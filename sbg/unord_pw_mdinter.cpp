@@ -50,14 +50,13 @@ std::ostream &operator<<(std::ostream &out, const MDInterUnordSet &ii)
 
 UnordPWMDInter::UnordPWMDInter() : pieces_() {}
 UnordPWMDInter::UnordPWMDInter(Interval i) : pieces_() {
-  Util::ERROR_UNLESS(!i.isEmpty()
-                         , "LIB::Unord1: empty not allowed");
-  pieces_.insert(SetPiece(i));
+  if (!i.isEmpty())
+   pieces_.insert(SetPiece(i));
 }
 UnordPWMDInter::UnordPWMDInter(SetPiece mdi) : pieces_()
 {
-  Util::ERROR_UNLESS(!mdi.isEmpty(), "LIB::Unord2: empty not allowed");
-  pieces_.emplace_hint(pieces_.end(), mdi);
+  if (!mdi.isEmpty())
+    pieces_.emplace_hint(pieces_.end(), mdi);
 }
 UnordPWMDInter::UnordPWMDInter(MDInterUnordSet c) : pieces_(c) {}
 
@@ -78,13 +77,13 @@ std::size_t UnordPWMDInter::size() const { return pieces_.size(); }
 
 void UnordPWMDInter::emplace(SetPiece mdi)
 {
-  Util::ERROR_UNLESS(!mdi.isEmpty(), "LIB::Unord2: empty not allowed");
-  pieces_.emplace(mdi);
+  if (!mdi.isEmpty())
+    pieces_.emplace(mdi);
 }
 void UnordPWMDInter::emplaceBack(SetPiece mdi)
 {
-  Util::ERROR_UNLESS(!mdi.isEmpty(), "LIB::Unord3: empty not allowed");
-  pieces_.emplace_hint(pieces_.end(), mdi);
+  if (!mdi.isEmpty())
+    pieces_.emplace_hint(pieces_.end(), mdi);
 }
 
 bool UnordPWMDInter::operator==(const UnordPWMDInter &other) const

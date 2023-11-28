@@ -52,22 +52,20 @@ std::ostream &operator<<(std::ostream &out, const MDInterOrdSet &ii)
 OrdPWMDInter::OrdPWMDInter() : pieces_() {}
 OrdPWMDInter::OrdPWMDInter(Interval i) : pieces_()
 {
-  Util::ERROR_UNLESS(!i.isEmpty()
-                     , "LIB::Ord1: should be uni-dimensional");
-  pieces_.insert(SetPiece(i));
+  if (!i.isEmpty())
+    pieces_.insert(SetPiece(i));
 }
 OrdPWMDInter::OrdPWMDInter(SetPiece mdi) : pieces_() { 
-  Util::ERROR_UNLESS(mdi.isUnidim() && !mdi.isEmpty()
-                     , "LIB::Ord2: should be uni-dimensional");
+  Util::ERROR_UNLESS(mdi.isUnidim(), "LIB::Ord2: should be uni-dimensional");
 
-  pieces_.insert(mdi);
+  if (!mdi.isEmpty())
+    pieces_.insert(mdi);
 }
 OrdPWMDInter::OrdPWMDInter(MDInterOrdSet container) : pieces_() {
   for (const SetPiece &mdi : container) {
-    Util::ERROR_UNLESS(mdi.isUnidim() && !mdi.isEmpty()
-                       , "LIB::Ord3:: should be uni-dimensional");
-
-    pieces_.insert(mdi);
+    Util::ERROR_UNLESS(mdi.isUnidim(), "LIB::Ord3:: should be uni-dimensional");
+    if (!mdi.isEmpty())
+      pieces_.insert(mdi);
   }
 }
 
@@ -85,13 +83,13 @@ std::size_t OrdPWMDInter::size() const { return pieces_.size(); }
 
 void OrdPWMDInter::emplace(SetPiece mdi)
 {
-  Util::ERROR_UNLESS(!mdi.isEmpty(), "LIB::Ord3: empty not allowed");
-  pieces_.emplace(mdi);
+  if (!mdi.isEmpty())
+    pieces_.emplace(mdi);
 }
 void OrdPWMDInter::emplaceBack(SetPiece mdi)
 {
-  Util::ERROR_UNLESS(!mdi.isEmpty(), "LIB::Ord4: empty not allowed");
-  pieces_.emplace_hint(pieces_.cend(), mdi);
+  if (!mdi.isEmpty())
+    pieces_.emplace_hint(pieces_.cend(), mdi);
 }
 
 bool OrdPWMDInter::operator==(const OrdPWMDInter &other) const

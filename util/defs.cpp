@@ -115,6 +115,11 @@ std::ostream &operator<<(std::ostream &out, const MD_NAT &md)
   return out;
 }
 
+std::size_t hash_value(const MD_NAT &n)
+{
+  return boost::hash_range(n.begin(), n.end());
+}
+
 // Rationals -------------------------------------------------------------------
 
 RATIONAL::RATIONAL() : value_() {}

@@ -107,6 +107,8 @@ struct MD_NAT {
 };
 std::ostream &operator<<(std::ostream &out, const MD_NAT &md);
 
+std::size_t hash_value(const MD_NAT &n);
+
 const NAT Inf = std::numeric_limits<NAT>::max();
 
 /** @typedef INT 

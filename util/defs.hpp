@@ -29,7 +29,6 @@
 #include <optional>
 #include <variant>
 
-#include <boost/container/vector.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/range/combine.hpp>
 #include <boost/rational.hpp>
@@ -77,7 +76,7 @@ namespace Util {
 typedef long long unsigned int NAT;
 std::string toStr(NAT x);
 
-typedef boost::container::vector<NAT> VNAT;
+typedef std::vector<NAT> VNAT;
 struct MD_NAT {
   member_class(VNAT, value);
 

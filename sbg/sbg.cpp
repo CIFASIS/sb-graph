@@ -62,10 +62,11 @@ SBGraph<Set> SBGraph<Set>::addSV(const Set &vertices) const
     res.set_V(V_.cup(vertices));
 
     Set SV = Vmap_.image(); // Identifiers of SV
-    Util::NAT max = SV.maxElem()[0];
-    std::size_t dims = SV.maxElem().size();
-    MDLExp to_max(dims, LExp(0, Util::RATIONAL(max + 1)));
-    PW new_Vmap(SBGMap(vertices, to_max));
+    std::size_t dims = vertices.begin()->size();
+    Util::MD_NAT max = SV.isEmpty() ? Util::MD_NAT(dims, 0) : SV.maxElem();
+    for (unsigned int j = 0; j < dims; ++j)
+      max[j] = max[j] + 1;
+    PW new_Vmap(SBGMap(vertices, max));
     res.set_Vmap(Vmap_.concatenation(new_Vmap));
 
     return res;
@@ -92,10 +93,11 @@ SBGraph<Set> SBGraph<Set>::addSE(const PW &pw1, const PW &pw2) const
       res.set_E(E_.cup(edges));
 
       Set SE = Emap_.image(); // Identifiers of SV
-      Util::NAT max = SE.maxElem()[0];
-      std::size_t dims = SE.maxElem().size();
-      MDLExp to_max(dims, LExp(0, Util::RATIONAL(max + 1)));
-      PW new_Emap(SBGMap(edges, to_max));
+      std::size_t dims = edges.begin()->size();
+      Util::MD_NAT max = SE.isEmpty() ? Util::MD_NAT(dims, 0) : SE.maxElem();
+      for (unsigned int j = 0; j < dims; ++j)
+        max[j] = max[j] + 1;
+      PW new_Emap(SBGMap(edges, max));
       res.set_Emap(Emap_.concatenation(new_Emap));
 
       res.set_map1(map1_.concatenation(pw1));
@@ -197,10 +199,11 @@ DSBGraph<Set> DSBGraph<Set>::addSV(const Set &vertices) const
     res.set_V(V_.cup(vertices));
 
     Set SV = Vmap_.image(); // Identifiers of SV
-    Util::NAT max = SV.maxElem()[0];
-    std::size_t dims = SV.maxElem().size();
-    MDLExp to_max(dims, LExp(0, Util::RATIONAL(max + 1)));
-    PW new_Vmap(SBGMap<Set>(vertices, to_max));
+    std::size_t dims = vertices.begin()->size();
+    Util::MD_NAT max = SV.isEmpty() ? Util::MD_NAT(dims, 0) : SV.maxElem();
+    for (unsigned int j = 0; j < dims; ++j)
+      max[j] = max[j] + 1;
+    PW new_Vmap(SBGMap<Set>(vertices, max));
     res.set_Vmap(Vmap_.concatenation(new_Vmap));
 
     return res;
@@ -226,10 +229,11 @@ DSBGraph<Set> DSBGraph<Set>::addSE(const PW &pw1, const PW &pw2) const
       res.set_E(E_.cup(edges));
 
       Set SE = Emap_.image(); // Identifiers of SV
-      Util::NAT max = SE.maxElem()[0];
-      std::size_t dims = SE.maxElem().size();
-      MDLExp to_max(dims, LExp(0, Util::RATIONAL(max + 1)));
-      PW new_Emap(SBGMap<Set>(edges, to_max));
+      std::size_t dims = edges.begin()->size();
+      Util::MD_NAT max = SE.isEmpty() ? Util::MD_NAT(dims, 0) : SE.maxElem();
+      for (unsigned int j = 0; j < dims; ++j)
+        max[j] = max[j] + 1;
+      PW new_Emap(SBGMap<Set>(edges, max));
       res.set_Emap(Emap_.concatenation(new_Emap));
 
       res.set_mapB(mapB_.concatenation(pw1));

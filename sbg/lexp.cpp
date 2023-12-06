@@ -125,6 +125,7 @@ LExp LExp::inverse() const
   return LExp(new_slope, new_offset);
 }
 
+
 LExp LExp::mod(const LExp &other) const
 {
   Util::ERROR_UNLESS(other.slope_ == 0

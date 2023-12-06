@@ -27,12 +27,16 @@ namespace LIB {
 
 void compatible(Interval i, LExp le)
 {
+  Util::RATIONAL rat_inf(Util::INT_Inf, 1);
+  if (le.slope() == rat_inf || le.slope() > rat_inf)
+    return;
+
   Util::RATIONAL st_rat(i.step()), min_rat(i.minElem());
   Util::RATIONAL im_step = st_rat * le.slope()
                  , im_begin = min_rat * le.slope() + le.offset();
   if (im_step.denominator() != 1 || im_begin.denominator() != 1) 
     if (im_step.numerator() != 0 || im_begin.numerator() != 0) {
-      Util::ERROR("LIB::SBGMap::compatible: uncompatible i/le");
+      Util::ERROR("LIB::SBGMap::compatible: incompatible i/le");
       return;
     }
 
@@ -63,6 +67,9 @@ Interval image(Interval i, LExp le) {
   }
 
   Util::RATIONAL rat_inf(Util::INT_Inf, 1);
+  // TODO: is it right? if (m == rat_inf && h == -rat_inf)
+  //  return i;
+
   if (m == rat_inf || m > rat_inf)
     return Interval(0, 1, Util::Inf);
 
@@ -186,10 +193,22 @@ Set SBGMap<Set>::preImage() const { return dom_; }
 template<typename Set>
 Set SBGMap<Set>::preImage(const Set &subcodom) const
 {
-  SBGMap inv(image(), exp_.inverse());
   Set im = image();
   Set cap_subcodom = im.intersection(subcodom);
-  Set inv_im = inv.image(cap_subcodom);
+  if (cap_subcodom.isEmpty()) 
+    return Set();
+
+  Util::MD_NAT min = cap_subcodom.minElem();
+  Exp inv_exp = exp_.inverse();
+  for (unsigned int j = 0; j < inv_exp.size(); ++j) {
+    Util::RATIONAL m = exp_[j].slope(), h = exp_[j].offset();
+    Util::RATIONAL rat_inf(Util::INT_Inf, 1);
+    if (m == rat_inf && h == -rat_inf) {
+      inv_exp[j] = LExp(0, min[j]);
+    }
+  }
+  SBGMap inv(cap_subcodom, inv_exp);
+  Set inv_im = inv.image();
 
   return dom_.intersection(inv_im);
 }

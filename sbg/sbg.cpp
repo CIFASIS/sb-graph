@@ -155,8 +155,6 @@ SBGraph<Set> SBGraph<Set>::copy(unsigned int times) const
   }
 
   SBGraph<Set> res(V_new, Vmap_new, map1_new, map2_new, Emap_new);
-  std::cout << *this << "\n";
-  std::cout << res << "\n\n";
   return SBGraph<Set>(V_new, Vmap_new, map1_new, map2_new, Emap_new);
 }
 

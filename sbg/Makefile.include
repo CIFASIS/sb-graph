@@ -4,7 +4,6 @@ SBG_ROOT := sbg
 
 # Sources
 	SBG_SRC := \
-    $(UTIL_ROOT)/defs.cpp \
   	$(SBG_ROOT)/interval.cpp \
   	$(SBG_ROOT)/multidim_inter.cpp \
   	$(SBG_ROOT)/ord_pw_mdinter.cpp \
@@ -16,6 +15,8 @@ SBG_ROOT := sbg
     $(SBG_ROOT)/sbg.cpp \
     $(SBG_ROOT)/sbg_algorithms.cpp
     #$(SBG_ROOT)/info.cpp
+
+include util/Makefile.include
 
 # Objects
 SBG_OBJ=$(addprefix $(BUILD_DIR)/, $(SBG_SRC:.cpp=.o))

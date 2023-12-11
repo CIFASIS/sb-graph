@@ -28,6 +28,7 @@
 #include <iostream>
 
 #include "sbg/sbg.hpp"
+#include "util/logger.hpp"
 
 namespace SBG {
 
@@ -61,7 +62,7 @@ struct MinReach {
 
   PW minReach1(const Set &reach, const PW &smap, const PW &rmap) const;
   PI recursion(unsigned int n, const Set &ER, const Set &not_rv
-               , const PW &smap, const PW &rmap) const;
+               , const PW &semap, const PW &smap, const PW &rmap) const;
   PI calculate(const Set &unmatched_V) const;
 };
 
@@ -92,25 +93,25 @@ struct SBGMatching {
   member_class(SBGraph<Set>, sbg);
 
   member_class(Set, V);
-  member_class(PWMap<Set>, Vmap);
+  member_class(PW, Vmap);
 
   member_class(Set, E);
-  member_class(PWMap<Set>, Emap);
+  member_class(PW, Emap);
 
   //-----------------------------
-  member_class(PWMap<Set>, smap); // Successors map
-  member_class(PWMap<Set>, rmap); // Representatives map
+  member_class(PW, smap); // Successors map
+  member_class(PW, rmap); // Representatives map
 
-  member_class(PWMap<Set>, omap); // Offset map
+  member_class(PW, omap); // Offset map
   member_class(Util::MD_NAT, max_V); // Current maximum value
 
   member_class(Set, F); // Left vertices, constant
   member_class(Set, U); // Right vertices, constant
-  member_class(PWMap<Set>, mapF); // Left map, constant
-  member_class(PWMap<Set>, mapU); // Forward map, constant
+  member_class(PW, mapF); // Left map, constant
+  member_class(PW, mapU); // Forward map, constant
 
-  member_class(PWMap<Set>, mapB); // Backward map, mutable
-  member_class(PWMap<Set>, mapD); // Forward map, mutable
+  member_class(PW, mapB); // Backward map, mutable
+  member_class(PW, mapD); // Forward map, mutable
 
   member_class(Set, paths_edges); // Available edges in each step to find paths, mutable
   member_class(Set, matched_E); // Matched edges, mutable

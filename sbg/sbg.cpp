@@ -26,11 +26,22 @@ namespace LIB {
 // SBG -------------------------------------------------------------------------
 
 template<typename Set>
-SBGraph<Set>::SBGraph() : V_(), Vmap_(), E_(), map1_(), map2_(), Emap_() {}
+SBGraph<Set>::SBGraph() : V_(), Vmap_(), E_(), map1_(), map2_(), Emap_()
+  , subE_map_() {}
 template<typename Set>
 SBGraph<Set>::SBGraph(Set V, PW Vmap, PW map1, PW map2, PW Emap)
   : V_(V), Vmap_(Vmap), E_(map1.dom().intersection(map2.dom()))
-    , map1_(map1), map2_(map2), Emap_(Emap) {}
+    , map1_(map1), map2_(map2), Emap_(Emap), subE_map_() {
+  unsigned int j = 0;
+  for (const SBGMap<Set> &sbgmap : Emap) {
+    Set dom = sbgmap.dom();
+    for (const SetPiece &mdi : dom) {
+      Exp off(Util::MD_NAT(mdi.size(), j));
+      subE_map_.emplaceBack(SBGMap(Set(mdi), off)); 
+      ++j;
+    }
+  }
+}
 
 member_imp_temp(template<typename Set>, SBGraph<Set>, Set, V);
 member_imp_temp(template<typename Set>, SBGraph<Set>, PWMap<Set>, Vmap);
@@ -38,6 +49,7 @@ member_imp_temp(template<typename Set>, SBGraph<Set>, Set, E);
 member_imp_temp(template<typename Set>, SBGraph<Set>, PWMap<Set>, map1);
 member_imp_temp(template<typename Set>, SBGraph<Set>, PWMap<Set>, map2);
 member_imp_temp(template<typename Set>, SBGraph<Set>, PWMap<Set>, Emap);
+member_imp_temp(template<typename Set>, SBGraph<Set>, PWMap<Set>, subE_map);
 
 template<typename Set>
 std::ostream &operator<<(std::ostream &out, const SBGraph<Set> &g)
@@ -48,6 +60,7 @@ std::ostream &operator<<(std::ostream &out, const SBGraph<Set> &g)
   out << "map1 = " << g.map1() << "\n";
   out << "map2 = " << g.map2() << "\n";
   out << "Emap = " << g.Emap() << "\n";
+  out << "sub_Emap = " << g.subE_map() << "\n";
 
   return out;
 }
@@ -161,11 +174,22 @@ SBGraph<Set> SBGraph<Set>::copy(unsigned int times) const
 // Directed SBG ----------------------------------------------------------------
 
 template<typename Set>
-DSBGraph<Set>::DSBGraph() : V_(), Vmap_(), E_(), mapB_(), mapD_(), Emap_() {}
+DSBGraph<Set>::DSBGraph() : V_(), Vmap_(), E_(), mapB_(), mapD_(), Emap_()
+  , subE_map_() {}
 template<typename Set>
 DSBGraph<Set>::DSBGraph(Set V, PW Vmap, PW mapB, PW mapD, PW Emap)
   : V_(V), Vmap_(Vmap), E_(mapB.dom().intersection(mapD.dom()))
-    , mapB_(mapB), mapD_(mapD), Emap_(Emap) {}
+    , mapB_(mapB), mapD_(mapD), Emap_(Emap), subE_map_() {
+  unsigned int j = 0;
+  for (const SBGMap<Set> &sbgmap : Emap) {
+    Set dom = sbgmap.dom();
+    for (const SetPiece &mdi : dom) {
+      Exp off(Util::MD_NAT(mdi.size(), j));
+      subE_map_.emplaceBack(SBGMap(Set(mdi), off)); 
+      ++j;
+    }
+  }
+}
 
 member_imp_temp(template<typename Set>, DSBGraph<Set>, Set, V);
 member_imp_temp(template<typename Set>, DSBGraph<Set>, PWMap<Set>, Vmap);
@@ -173,6 +197,7 @@ member_imp_temp(template<typename Set>, DSBGraph<Set>, Set, E);
 member_imp_temp(template<typename Set>, DSBGraph<Set>, PWMap<Set>, mapB);
 member_imp_temp(template<typename Set>, DSBGraph<Set>, PWMap<Set>, mapD);
 member_imp_temp(template<typename Set>, DSBGraph<Set>, PWMap<Set>, Emap);
+member_imp_temp(template<typename Set>, DSBGraph<Set>, PWMap<Set>, subE_map);
 
 template<typename Set>
 std::ostream &operator<<(std::ostream &out, const DSBGraph<Set> &g)
@@ -183,6 +208,7 @@ std::ostream &operator<<(std::ostream &out, const DSBGraph<Set> &g)
   out << "mapB = " << g.mapB() << "\n";
   out << "mapD = " << g.mapD() << "\n";
   out << "Emap = " << g.Emap() << "\n";
+  out << "subE_map = " << g.subE_map() << "\n";
 
   return out;
 }

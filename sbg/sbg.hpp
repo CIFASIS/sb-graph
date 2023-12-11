@@ -45,6 +45,7 @@ struct SBGraph {
   member_class(PW, map1);
   member_class(PW, map2);
   member_class(PW, Emap);
+  member_class(PW, subE_map);
 
   SBGraph();
   SBGraph(Set V, PW VMap, PW map1, PW map2, PW Emap);
@@ -75,6 +76,7 @@ struct DSBGraph {
   member_class(PW, mapB);
   member_class(PW, mapD);
   member_class(PW, Emap);
+  member_class(PW, subE_map);
 
   DSBGraph();
   DSBGraph(Set V, PW VMap, PW mapB, PW mapD, PW Emap);

@@ -145,11 +145,12 @@ PWMap<Set> MinReach<Set>::minReach1(
 // Handle ONE recursion
 template<typename Set>
 PathInfo<Set> MinReach<Set>::recursion(
-  unsigned int n, const Set &ER, const Set &rv, const PW &smap, const PW &rmap
+  unsigned int n, const Set &ER, const Set &rv
+  , const PW &semap, const PW &smap, const PW &rmap
 ) const
 {
   PW mapB = dsbg().mapB(), mapD = dsbg().mapD()
-     , Emap = dsbg().Emap(), Vmap = dsbg().Vmap();
+     , Vmap = dsbg().Vmap(), Emap = dsbg().Emap(), subE_map = dsbg().subE_map();
   PW ERB = mapB.restrict(ER), ERD = mapD.restrict(ER);
 
   Set start = ERB.image(), end = ERD.image(), aux_start = start;
@@ -162,18 +163,18 @@ PathInfo<Set> MinReach<Set>::recursion(
   Set repeated = start.intersection(end);
   Set available_vertices = dsbg().V();
   while (repeated.isEmpty()) {
-    Set side = VR_plus.intersection(Vmap.preImage(Vmap.image(start)));
     Set ER_side = mapB.preImage(start);
-    Set ER_plus_side = Emap.preImage(Emap.image(ER_side));
+    Set ER_plus_side = subE_map.preImage(subE_map.image(ER_side));
 
     PW sideB  = mapB.restrict(ER_plus_side)
-       , sideD = mapD.restrict(ER_plus_side);
+      , sideD = mapD.restrict(ER_plus_side);
     PW ith = sideD.composition(sideB.minInv()).restrict(available_vertices);
     new_smap = ith.combine(new_smap);
  
+    Set side = VR_plus.intersection(Vmap.preImage(Vmap.image(start)));
+    available_vertices = available_vertices.difference(side);
     start = smap.image(start);
     repeated = start.intersection(end);
-    available_vertices = available_vertices.difference(side);
   }
 
   new_smap = smap.restrict(rv).combine(new_smap);
@@ -219,6 +220,8 @@ PathInfo<Set> MinReach<Set>::calculate(const Set &unmatched_V) const
       new_smap = minReach1(reach_edges, new_smap, new_rmap); 
       Vc = V.difference(old_smap.equalImage(new_smap));
 
+      // If the condition is met, unmatched "backward" vertices reach unmatched
+      // "forward" vertices
       if (!reach_vertices.intersection(unmatched_B).isEmpty()) {
         new_rmap = new_smap.mapInf(); // Get minimum reachable following path
         return PathInfo<Set>(new_smap, new_rmap);
@@ -242,7 +245,7 @@ PathInfo<Set> MinReach<Set>::calculate(const Set &unmatched_V) const
             Set ER;  // Recursive edges that changed its successor
             PW old_semap_nth , semap_nth = new_semap.composition(new_semap);
             unsigned int j = 0;
-            do {  // The max depth of recursion is the number of SVs
+            do { // The max depth of recursion is the number of SVs
               PW other = semap_nth.filterMap([](const SBGMap<Set> &sbgmap) {
                 return notEqId(sbgmap);
               });
@@ -263,7 +266,7 @@ PathInfo<Set> MinReach<Set>::calculate(const Set &unmatched_V) const
 
             if (!ER.isEmpty()) { // There are recursions, lets handle one of them
               PathInfo<Set> res;
-              res = recursion(j, ER, reach_vertices, new_smap, new_rmap);
+              res = recursion(j, ER, reach_vertices, new_semap, new_smap, new_rmap);
               new_smap = res.succs();
               new_rmap = res.reps();
             }
@@ -345,10 +348,6 @@ void SBGMatching<Set>::shortPathDirection(const Set &endings, Direction dir)
     set_rmap(rmap_reach.combine(rmap()));
 
     reach_end = reach_end.cup(P);
-    if (dir == forward) {
-      Set used_subset_edges = Emap_.composition(starts).image(P);
-      set_paths_edges(pe.difference(Emap_.preImage(used_subset_edges)));
-    }
     k++;
   } while (!P.isEmpty() && k < sbg().nmbrSV());
 
@@ -376,6 +375,10 @@ void SBGMatching<Set>::shortPathStep()
   set_mapD(mapB());
   set_mapB(auxB);
 
+  shortPathDirection(unmatched_F(), forward);
+  pe = pe.intersection(getAllowedEdges());
+  set_paths_edges(pe);
+
   // *** Update structures to reflect new matched edges
   updatePaths(); 
  
@@ -387,9 +390,10 @@ void SBGMatching<Set>::shortPath()
 {
   Set allowed_edges = E().difference(getManyToOne());
 
-  // Finish if all unknowns are matched or no there aren't available edges
+  // Finish if all unknowns are matched or there aren't available edges
   do {
     set_paths_edges(allowed_edges);
+    //Util::SBG_LOG << "short step smap: " << smap() << "\n\n";
     shortPathStep();
   } while(!fullyMatchedU() && !paths_edges().isEmpty());
 
@@ -487,6 +491,7 @@ void SBGMatching<Set>::minReachable()
 {
   do {
     set_paths_edges(E());
+    //Util::SBG_LOG << "minimum reachable step smap: " << smap() << "\n\n";
     minReachableStep();
   } while (!fullyMatchedU() && !paths_edges().isEmpty());
 
@@ -646,6 +651,7 @@ void SBGMatching<Set>::updateOffset()
 template<typename Set>
 MatchInfo<Set> SBGMatching<Set>::calculate()
 {
+  //Util::SBG_LOG << sbg() << "\n";
   auto begin = std::chrono::high_resolution_clock::now();
   shortPath();
   std::cout << "shortPath: " << matched_E() << "\n";

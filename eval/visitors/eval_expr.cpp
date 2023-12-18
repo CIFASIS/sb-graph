@@ -286,15 +286,15 @@ auto connected_visitor_ = Util::Overload {
 };
 
 auto matching_visitor_ = Util::Overload {
-  [](LIB::BaseSBG a) { 
-    LIB::BaseMatch match(a);
+  [](LIB::BaseSBG a, Util::NAT b) { 
+    LIB::BaseMatch match(a.copy(b));
     return ExprBaseType(match.calculate().matched_edges()); 
   },
-  [](LIB::CanonSBG a) {
-    LIB::CanonMatch match(a);
+  [](LIB::CanonSBG a, Util::NAT b) {
+    LIB::CanonMatch match(a.copy(b));
     return ExprBaseType(match.calculate().matched_edges());
   },
-  [](auto a) {
+  [](auto a, auto b) {
     Util::ERROR("Wrong arguments for minReach");
     return ExprBaseType();
   }
@@ -600,11 +600,12 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
         break;
 
       case Eval::Func::matching:
-        if (eval_args.size() == 1) {
+        if (eval_args.size() == 2) {
           arity_ok = true;
 
           SBGBaseType g = boost::apply_visitor(EvalGraph{}, eval_args[0]);
-          ExprBaseType result = std::visit(matching_visitor_, g);
+          NatBaseType copies = boost::apply_visitor(EvalNatBT{}, eval_args[1]);
+          ExprBaseType result = std::visit(matching_visitor_, g, copies);
           return result;
         }
         break;

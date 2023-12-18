@@ -25,12 +25,11 @@
 /sbg/doc/*
 /sbg/util/doc/*
 
-# Examples
-/examples/*
-
 # Compile/Autoconf files.
 config.*
 configure
 Makefile
 /autom4te.cache
 
+# Log files
+SBG.log

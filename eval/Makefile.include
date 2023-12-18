@@ -11,10 +11,11 @@ EVAL        := bin/sbg-eval
 all: $(EVAL)
 
 EVAL_SRC := \
-	  $(EVAL_DIR)/main.cpp \
-    $(EVAL_DIR)/defs.cpp \
     $(UTIL_DIR)/debug.cpp \
     $(UTIL_DIR)/defs.cpp \
+    $(UTIL_DIR)/logger.cpp \
+	  $(EVAL_DIR)/main.cpp \
+    $(EVAL_DIR)/defs.cpp \
     $(AST_DIR)/expr.cpp \
     $(AST_DIR)/statement.cpp \
     $(AST_DIR)/sbg_program.cpp \

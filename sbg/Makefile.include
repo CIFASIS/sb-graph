@@ -4,6 +4,7 @@ SBG_ROOT := sbg
 
 # Sources
 	SBG_SRC := \
+    $(UTIL_ROOT)/logger.cpp \
   	$(SBG_ROOT)/interval.cpp \
   	$(SBG_ROOT)/multidim_inter.cpp \
   	$(SBG_ROOT)/ord_pw_mdinter.cpp \

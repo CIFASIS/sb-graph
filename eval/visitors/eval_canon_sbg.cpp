@@ -55,8 +55,11 @@ LIB::CanonSBG EvalCanonSBG::operator()(Util::VariableName v) const
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (is<LIB::CanonSBG>(value))
-      return boost::get<LIB::CanonSBG>(value);
+    if (std::holds_alternative<SBGBaseType>(value)) {
+      auto sbg = std::get<SBGBaseType>(value);
+      if (std::holds_alternative<LIB::CanonSBG>(sbg))
+        return std::get<LIB::CanonSBG>(sbg);
+    }
 
     else {
       Util::ERROR("EvalCanonSBG: variable %s is not a PWMap", v.c_str());

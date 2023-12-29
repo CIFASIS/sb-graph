@@ -55,8 +55,11 @@ LIB::BaseSBG EvalBaseSBG::operator()(Util::VariableName v) const
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (is<LIB::BaseSBG>(value))
-      return boost::get<LIB::BaseSBG>(value);
+    if (std::holds_alternative<SBGBaseType>(value)) {
+      auto sbg = std::get<SBGBaseType>(value);
+      if (std::holds_alternative<LIB::BaseSBG>(sbg))
+        return std::get<LIB::BaseSBG>(sbg);
+    }
 
     else {
       Util::ERROR("EvalBaseSBG: variable %s is not a PWMap", v.c_str());

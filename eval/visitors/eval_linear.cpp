@@ -23,12 +23,6 @@ namespace SBG {
 
 namespace Eval {
 
-LinearBaseType EvalLinear::operator()(Util::NAT v) const
-{
-  Util::ERROR("EvalLinear: trying to evaluate a NAT");
-  return LinearBaseType();
-}
-
 LinearBaseType EvalLinear::operator()(Util::MD_NAT v) const 
 {
   Util::ERROR("EvalLinear: trying to evaluate a MD_NAT");
@@ -41,82 +35,34 @@ LinearBaseType EvalLinear::operator()(Util::RATIONAL v) const
   return LinearBaseType();
 }
 
-LinearBaseType EvalLinear::operator()(LIB::Interval v) const
+LinearBaseType EvalLinear::operator()(ContainerBaseType v) const
 {
-  Util::ERROR("EvalLinear: trying to evaluate an Interval");
+  Util::ERROR("EvalLinear: trying to evaluate a ContainerBaseType");
   return LinearBaseType();
 }
 
-LinearBaseType EvalLinear::operator()(LIB::SetPiece v) const
+LinearBaseType EvalLinear::operator()(LinearBaseType v) const
 {
-  Util::ERROR("EvalLinear: trying to evaluate a SetPiece");
+  return v;
+}
+
+LinearBaseType EvalLinear::operator()(MapBaseType v) const
+{
+  Util::ERROR("EvalLinear: trying to evaluate a BaseType");
   return LinearBaseType();
 }
 
-LinearBaseType EvalLinear::operator()(LIB::UnordSet v) const
+LinearBaseType EvalLinear::operator()(SBGBaseType v) const
 {
-  Util::ERROR("EvalLinear: trying to evaluate an UnordSet");
+  Util::ERROR("EvalLinear: trying to evaluate a BaseType");
   return LinearBaseType();
 }
 
-LinearBaseType EvalLinear::operator()(LIB::OrdSet v) const
+LinearBaseType EvalLinear::operator()(InfoBaseType v) const
 {
-  Util::ERROR("EvalLinear: trying to evaluate an OrdSet");
+  Util::ERROR("EvalLinear: trying to evaluate a BaseType");
   return LinearBaseType();
 }
-
-LinearBaseType EvalLinear::operator()(LIB::LExp v) const { return LinearBaseType(v); }
-
-LinearBaseType EvalLinear::operator()(LIB::Exp v) const { return LinearBaseType(v); }
-
-LinearBaseType EvalLinear::operator()(LIB::BaseMap v) const
-{
-  Util::ERROR("EvalLinear: trying to evaluate a BaseMap");
-  return LinearBaseType();
-}
-
-LinearBaseType EvalLinear::operator()(LIB::CanonMap v) const
-{
-  Util::ERROR("EvalLinear: trying to evaluate a CanonMap");
-  return LinearBaseType();
-}
-
-LinearBaseType EvalLinear::operator()(LIB::BasePWMap v) const
-{
-  Util::ERROR("EvalLinear: trying to evaluate a BasePWMap");
-  return LinearBaseType();
-}
-
-LinearBaseType EvalLinear::operator()(LIB::CanonPWMap v) const
-{
-  Util::ERROR("EvalLinear: trying to evaluate a CanonPWMap");
-  return LinearBaseType();
-}
-
-LinearBaseType EvalLinear::operator()(LIB::BaseSBG v) const
-{
-  Util::ERROR("EvalLinear: trying to evaluate a BaseSBG");
-  return LinearBaseType();
-}
-
-LinearBaseType EvalLinear::operator()(LIB::CanonSBG v) const
-{
-  Util::ERROR("EvalLinear: trying to evaluate a CanonSBG");
-  return LinearBaseType();
-}
-
-LinearBaseType EvalLinear::operator()(LIB::BaseDSBG v) const
-{
-  Util::ERROR("EvalLinear: trying to evaluate a BaseDSBG");
-  return LinearBaseType();
-}
-
-LinearBaseType EvalLinear::operator()(LIB::CanonDSBG v) const
-{
-  Util::ERROR("EvalLinear: trying to evaluate a CanonDSBG");
-  return LinearBaseType();
-}
-
 } // namespace Eval
 
 } // namespace SBG

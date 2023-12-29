@@ -55,8 +55,11 @@ LIB::BaseDSBG EvalBaseDSBG::operator()(Util::VariableName v) const
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (is<LIB::BaseDSBG>(value))
-      return boost::get<LIB::BaseDSBG>(value);
+    if (std::holds_alternative<SBGBaseType>(value)) {
+      auto sbg = std::get<SBGBaseType>(value);
+      if (std::holds_alternative<LIB::BaseDSBG>(sbg))
+        return std::get<LIB::BaseDSBG>(sbg);
+    }
 
     else {
       Util::ERROR("EvalBaseDSBG: variable %s is not a PWMap", v.c_str());

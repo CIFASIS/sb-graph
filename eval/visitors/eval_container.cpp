@@ -23,12 +23,6 @@ namespace SBG {
 
 namespace Eval {
 
-ContainerBaseType EvalContainer::operator()(Util::NAT v) const
-{
-  Util::ERROR("EvalContainer: trying to evaluate a NAT");
-  return ContainerBaseType();
-}
-
 ContainerBaseType EvalContainer::operator()(Util::MD_NAT v) const 
 {
   Util::ERROR("EvalContainer: trying to evaluate a MD_NAT");
@@ -41,71 +35,32 @@ ContainerBaseType EvalContainer::operator()(Util::RATIONAL v) const
   return ContainerBaseType();
 }
 
-ContainerBaseType EvalContainer::operator()(LIB::Interval v) const { return ContainerBaseType(v); }
-
-ContainerBaseType EvalContainer::operator()(LIB::SetPiece v) const { return ContainerBaseType(v); }
-
-ContainerBaseType EvalContainer::operator()(LIB::UnordSet v) const { return ContainerBaseType(v); }
-
-ContainerBaseType EvalContainer::operator()(LIB::OrdSet v) const { return ContainerBaseType(v); }
-
-ContainerBaseType EvalContainer::operator()(LIB::LExp v) const 
+ContainerBaseType EvalContainer::operator()(ContainerBaseType v) const
 {
-  Util::ERROR("EvalContainer: trying to evaluate a LExp");
+  return v;
+}
+
+ContainerBaseType EvalContainer::operator()(LinearBaseType v) const
+{
+  Util::ERROR("EvalContainer: trying to evaluate a LinearBaseType");
   return ContainerBaseType();
 }
 
-ContainerBaseType EvalContainer::operator()(LIB::Exp v) const
+ContainerBaseType EvalContainer::operator()(MapBaseType v) const
 {
-  Util::ERROR("EvalContainer: trying to evaluate an Exp");
+  Util::ERROR("EvalContainer: trying to evaluate a MapBaseType");
   return ContainerBaseType();
 }
 
-ContainerBaseType EvalContainer::operator()(LIB::BaseMap v) const
+ContainerBaseType EvalContainer::operator()(SBGBaseType v) const
 {
-  Util::ERROR("EvalContainer: trying to evaluate a BaseMap");
+  Util::ERROR("EvalContainer: trying to evaluate a SBGBaseType");
   return ContainerBaseType();
 }
 
-ContainerBaseType EvalContainer::operator()(LIB::CanonMap v) const
+ContainerBaseType EvalContainer::operator()(InfoBaseType v) const
 {
-  Util::ERROR("EvalContainer: trying to evaluate a CanonMap");
-  return ContainerBaseType();
-}
-
-ContainerBaseType EvalContainer::operator()(LIB::BasePWMap v) const
-{
-  Util::ERROR("EvalContainer: trying to evaluate a BasePWMap");
-  return ContainerBaseType();
-}
-
-ContainerBaseType EvalContainer::operator()(LIB::CanonPWMap v) const
-{
-  Util::ERROR("EvalContainer: trying to evaluate a CanonPWMap");
-  return ContainerBaseType();
-}
-
-ContainerBaseType EvalContainer::operator()(LIB::BaseSBG v) const
-{
-  Util::ERROR("EvalContainer: trying to evaluate a BaseSBG");
-  return ContainerBaseType();
-}
-
-ContainerBaseType EvalContainer::operator()(LIB::CanonSBG v) const
-{
-  Util::ERROR("EvalContainer: trying to evaluate a CanonSBG");
-  return ContainerBaseType();
-}
-
-ContainerBaseType EvalContainer::operator()(LIB::BaseDSBG v) const
-{
-  Util::ERROR("EvalContainer: trying to evaluate a BaseDSBG");
-  return ContainerBaseType();
-}
-
-ContainerBaseType EvalContainer::operator()(LIB::CanonDSBG v) const
-{
-  Util::ERROR("EvalContainer: trying to evaluate a CanonDSBG");
+  Util::ERROR("EvalContainer: trying to evaluate an InfoBaseType");
   return ContainerBaseType();
 }
 

@@ -24,33 +24,21 @@
 #ifndef AST_VISITOR_EVAL_CONTAINER
 #define AST_VISITOR_EVAL_CONTAINER
 
-#include <boost/variant/static_visitor.hpp>
-
 #include "eval/defs.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-struct EvalContainer : public boost::static_visitor<ContainerBaseType> {
+struct EvalContainer {
   public:
-  ContainerBaseType operator()(Util::NAT v) const;
   ContainerBaseType operator()(Util::MD_NAT v) const;
   ContainerBaseType operator()(Util::RATIONAL v) const;
-  ContainerBaseType operator()(LIB::Interval v) const;
-  ContainerBaseType operator()(LIB::SetPiece v) const;
-  ContainerBaseType operator()(LIB::UnordSet v) const;
-  ContainerBaseType operator()(LIB::OrdSet v) const;
-  ContainerBaseType operator()(LIB::LExp v) const;
-  ContainerBaseType operator()(LIB::Exp v) const;
-  ContainerBaseType operator()(LIB::BaseMap v) const;
-  ContainerBaseType operator()(LIB::CanonMap v) const;
-  ContainerBaseType operator()(LIB::BasePWMap v) const;
-  ContainerBaseType operator()(LIB::CanonPWMap v) const;
-  ContainerBaseType operator()(LIB::BaseSBG v) const;
-  ContainerBaseType operator()(LIB::CanonSBG v) const;
-  ContainerBaseType operator()(LIB::BaseDSBG v) const;
-  ContainerBaseType operator()(LIB::CanonDSBG v) const;
+  ContainerBaseType operator()(ContainerBaseType v) const;
+  ContainerBaseType operator()(LinearBaseType v) const;
+  ContainerBaseType operator()(MapBaseType v) const;
+  ContainerBaseType operator()(SBGBaseType v) const;
+  ContainerBaseType operator()(InfoBaseType v) const;
 };
 
 } // namespace Eval

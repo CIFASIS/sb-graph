@@ -56,7 +56,8 @@ Util::MD_NAT EvalMDNat::operator()(Util::VariableName v) const
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    return toNat(value); 
+    if (std::holds_alternative<Util::MD_NAT>(value)) 
+      return std::get<Util::MD_NAT>(value);
   }
 
   Util::ERROR("EvalMDNat: variable %s not defined", v.c_str());

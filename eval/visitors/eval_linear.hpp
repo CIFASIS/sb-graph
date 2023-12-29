@@ -24,33 +24,21 @@
 #ifndef AST_VISITOR_EVAL_LINEAR
 #define AST_VISITOR_EVAL_LINEAR
 
-#include <iostream>
-
 #include "eval/defs.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-struct EvalLinear : public boost::static_visitor<LinearBaseType> {
+struct EvalLinear {
   public:
-  LinearBaseType operator()(Util::NAT v) const;
   LinearBaseType operator()(Util::MD_NAT v) const;
   LinearBaseType operator()(Util::RATIONAL v) const;
-  LinearBaseType operator()(LIB::Interval v) const;
-  LinearBaseType operator()(LIB::SetPiece v) const;
-  LinearBaseType operator()(LIB::UnordSet v) const;
-  LinearBaseType operator()(LIB::OrdSet v) const;
-  LinearBaseType operator()(LIB::LExp v) const;
-  LinearBaseType operator()(LIB::Exp v) const;
-  LinearBaseType operator()(LIB::BaseMap v) const;
-  LinearBaseType operator()(LIB::CanonMap v) const;
-  LinearBaseType operator()(LIB::BasePWMap v) const;
-  LinearBaseType operator()(LIB::CanonPWMap v) const;
-  LinearBaseType operator()(LIB::BaseSBG v) const;
-  LinearBaseType operator()(LIB::CanonSBG v) const;
-  LinearBaseType operator()(LIB::BaseDSBG v) const;
-  LinearBaseType operator()(LIB::CanonDSBG v) const;
+  LinearBaseType operator()(ContainerBaseType v) const;
+  LinearBaseType operator()(LinearBaseType v) const;
+  LinearBaseType operator()(MapBaseType v) const;
+  LinearBaseType operator()(SBGBaseType v) const;
+  LinearBaseType operator()(InfoBaseType v) const;
 };
 
 } // namespace Eval

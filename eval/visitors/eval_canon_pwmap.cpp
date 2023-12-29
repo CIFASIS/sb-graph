@@ -55,8 +55,11 @@ LIB::CanonPWMap EvalCanonPWMap::operator()(Util::VariableName v) const
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (is<LIB::CanonPWMap>(value))
-      return boost::get<LIB::CanonPWMap>(value);
+    if (std::holds_alternative<MapBaseType>(value)) {
+      auto m = std::get<MapBaseType>(value);
+      if (std::holds_alternative<LIB::CanonPWMap>(m))
+        return std::get<LIB::CanonPWMap>(m);
+    }
 
     else {
       Util::ERROR("EvalCanonPWMap: variable %s is not a PWMap", v.c_str());
@@ -175,7 +178,7 @@ LIB::CanonPWMap EvalCanonPWMap::operator()(AST::PWLMap v) const
   LIB::CanonPWMap res;
 
   EvalCanonMap visit_map(env_);
-  BOOST_FOREACH (AST::Expr e, v.maps())
+  for (const AST::Expr &e : v.maps())
     res.emplace(boost::apply_visitor(visit_map, e));
 
   return res;

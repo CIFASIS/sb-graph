@@ -23,9 +23,7 @@ namespace SBG {
 
 namespace Eval {
 
-NatBaseType EvalNatBT::operator()(Util::NAT v) const { return NatBaseType(v); }
-
-NatBaseType EvalNatBT::operator()(Util::MD_NAT v) const { return NatBaseType(v); }
+NatBaseType EvalNatBT::operator()(Util::MD_NAT v) const { return v; }
 
 NatBaseType EvalNatBT::operator()(Util::RATIONAL v) const 
 { 
@@ -33,87 +31,33 @@ NatBaseType EvalNatBT::operator()(Util::RATIONAL v) const
   return NatBaseType();
 }
 
-NatBaseType EvalNatBT::operator()(LIB::Interval v) const
+NatBaseType EvalNatBT::operator()(ContainerBaseType v) const
 {
-  Util::ERROR("EvalNatBT: trying to evaluate an Interval");
+  Util::ERROR("EvalNatBT: trying to evaluate a ContainerBaseType");
   return NatBaseType();
 }
 
-NatBaseType EvalNatBT::operator()(LIB::SetPiece v) const
+NatBaseType EvalNatBT::operator()(LinearBaseType v) const
 {
-  Util::ERROR("EvalNatBT: trying to evaluate a SetPiece");
+  Util::ERROR("EvalNatBT: trying to evaluate a LinearBaseType");
   return NatBaseType();
 }
 
-NatBaseType EvalNatBT::operator()(LIB::UnordSet v) const
+NatBaseType EvalNatBT::operator()(MapBaseType v) const
 {
-  Util::ERROR("EvalNatBT: trying to evaluate an UnordSet");
+  Util::ERROR("EvalNatBT: trying to evaluate a MapBaseType");
   return NatBaseType();
 }
 
-NatBaseType EvalNatBT::operator()(LIB::OrdSet v) const
+NatBaseType EvalNatBT::operator()(SBGBaseType v) const
 {
-  Util::ERROR("EvalNatBT: trying to evaluate an OrdSet");
+  Util::ERROR("EvalNatBT: trying to evaluate a SBGBaseType");
   return NatBaseType();
 }
 
-NatBaseType EvalNatBT::operator()(LIB::LExp v) const
+NatBaseType EvalNatBT::operator()(InfoBaseType v) const
 {
-  Util::ERROR("EvalNatBT: trying to evaluate a LExp");
-  return NatBaseType();
-}
-
-NatBaseType EvalNatBT::operator()(LIB::Exp v) const
-{
-  Util::ERROR("EvalNatBT: trying to evaluate an Exp");
-  return NatBaseType();
-}
-
-NatBaseType EvalNatBT::operator()(LIB::BaseMap v) const
-{
-  Util::ERROR("EvalNatBT: trying to evaluate a BaseMap");
-  return NatBaseType();
-}
-
-NatBaseType EvalNatBT::operator()(LIB::CanonMap v) const
-{
-  Util::ERROR("EvalNatBT: trying to evaluate a CanonMap");
-  return NatBaseType();
-}
-
-NatBaseType EvalNatBT::operator()(LIB::BasePWMap v) const
-{
-  Util::ERROR("EvalNatBT: trying to evaluate a BasePWMap");
-  return NatBaseType();
-}
-
-NatBaseType EvalNatBT::operator()(LIB::CanonPWMap v) const
-{
-  Util::ERROR("EvalNatBT: trying to evaluate a CanonPWMap");
-  return NatBaseType();
-}
-
-NatBaseType EvalNatBT::operator()(LIB::BaseSBG v) const
-{
-  Util::ERROR("EvalNatBT: trying to evaluate a BaseSBG");
-  return NatBaseType();
-}
-
-NatBaseType EvalNatBT::operator()(LIB::CanonSBG v) const
-{
-  Util::ERROR("EvalNatBT: trying to evaluate a CanonSBG");
-  return NatBaseType();
-}
-
-NatBaseType EvalNatBT::operator()(LIB::BaseDSBG v) const
-{
-  Util::ERROR("EvalNatBT: trying to evaluate a BaseDSBG");
-  return NatBaseType();
-}
-
-NatBaseType EvalNatBT::operator()(LIB::CanonDSBG v) const
-{
-  Util::ERROR("EvalNatBT: trying to evaluate a CanonDSBG");
+  Util::ERROR("EvalNatBT: trying to evaluate an InfoBaseType");
   return NatBaseType();
 }
 

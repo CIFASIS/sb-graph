@@ -23,12 +23,6 @@ namespace SBG {
 
 namespace Eval {
 
-SBGBaseType EvalGraph::operator()(Util::NAT v) const
-{
-  Util::ERROR("EvalGraph: trying to evaluate a NAT");
-  return SBGBaseType();
-}
-
 SBGBaseType EvalGraph::operator()(Util::MD_NAT v) const 
 {
   Util::ERROR("EvalGraph: trying to evaluate a MD_NAT");
@@ -36,78 +30,39 @@ SBGBaseType EvalGraph::operator()(Util::MD_NAT v) const
 }
 
 SBGBaseType EvalGraph::operator()(Util::RATIONAL v) const 
-{ 
+{
   Util::ERROR("EvalGraph: trying to evaluate a RATIONAL");
   return SBGBaseType();
 }
 
-SBGBaseType EvalGraph::operator()(LIB::Interval v) const
+SBGBaseType EvalGraph::operator()(ContainerBaseType v) const
 {
-  Util::ERROR("EvalGraph: trying to evaluate an Interval");
+  Util::ERROR("EvalGraph: trying to evaluate a ContainerBaseType");
   return SBGBaseType();
 }
 
-SBGBaseType EvalGraph::operator()(LIB::SetPiece v) const
+SBGBaseType EvalGraph::operator()(LinearBaseType v) const
 {
-  Util::ERROR("EvalGraph: trying to evaluate a SetPiece");
+  Util::ERROR("EvalGraph: trying to evaluate a LinearBaseType");
   return SBGBaseType();
 }
 
-SBGBaseType EvalGraph::operator()(LIB::UnordSet v) const
+SBGBaseType EvalGraph::operator()(MapBaseType v) const
 {
-  Util::ERROR("EvalGraph: trying to evaluate an UnordSet");
+  Util::ERROR("EvalGraph: trying to evaluate a MapBaseType");
   return SBGBaseType();
 }
 
-SBGBaseType EvalGraph::operator()(LIB::OrdSet v) const
+SBGBaseType EvalGraph::operator()(SBGBaseType v) const
 {
-  Util::ERROR("EvalGraph: trying to evaluate an OrdSet");
-  return SBGBaseType();
+  return v;
 }
 
-SBGBaseType EvalGraph::operator()(LIB::LExp v) const
+SBGBaseType EvalGraph::operator()(InfoBaseType v) const
 {
-  Util::ERROR("EvalGraph: trying to evaluate a LExp");
+  Util::ERROR("EvalGraph: trying to evaluate an InfoBaseType");
   return SBGBaseType();
 }
-
-SBGBaseType EvalGraph::operator()(LIB::Exp v) const
-{ 
-  Util::ERROR("EvalGraph: trying to evaluate an Exp");
-  return SBGBaseType();
-}
-
-SBGBaseType EvalGraph::operator()(LIB::BaseMap v) const
-{
-  Util::ERROR("EvalGraph: trying to evaluate a BaseMap");
-  return SBGBaseType();
-}
-
-SBGBaseType EvalGraph::operator()(LIB::CanonMap v) const
-{
-  Util::ERROR("EvalGraph: trying to evaluate a CanonMap");
-  return SBGBaseType();
-}
-
-SBGBaseType EvalGraph::operator()(LIB::BasePWMap v) const
-{
-  Util::ERROR("EvalGraph: trying to evaluate a BasePWMap");
-  return SBGBaseType();
-}
-
-SBGBaseType EvalGraph::operator()(LIB::CanonPWMap v) const
-{
-  Util::ERROR("EvalGraph: trying to evaluate a CanonPWMap");
-  return SBGBaseType();
-}
-
-SBGBaseType EvalGraph::operator()(LIB::BaseSBG v) const { return SBGBaseType(v); }
-
-SBGBaseType EvalGraph::operator()(LIB::CanonSBG v) const { return SBGBaseType(v); }
-
-SBGBaseType EvalGraph::operator()(LIB::BaseDSBG v) const { return SBGBaseType(v); }
-
-SBGBaseType EvalGraph::operator()(LIB::CanonDSBG v) const { return SBGBaseType(v); }
 
 } // namespace Eval
 

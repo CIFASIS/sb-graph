@@ -35,8 +35,6 @@
 #include "eval/visitors/eval_graph.hpp"
 #include "sbg/sbg_algorithms.hpp"
 
-#include <iostream>
-
 namespace SBG {
 
 namespace Eval {

@@ -55,8 +55,11 @@ LIB::MultiDimInter EvalMDI::operator()(Util::VariableName v) const
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (is<LIB::MultiDimInter>(value))
-      return boost::get<LIB::MultiDimInter>(value);
+    if (std::holds_alternative<ContainerBaseType>(value)) {
+      auto c = std::get<ContainerBaseType>(value);
+      if (std::holds_alternative<LIB::MultiDimInter>(c))
+        return std::get<LIB::MultiDimInter>(c);
+    }
 
     else {
       Util::ERROR("EvalMDI: variable %s is not an interval", v.c_str());

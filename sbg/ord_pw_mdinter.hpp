@@ -28,7 +28,6 @@
 #ifndef SBG_ORD_PW_MDINTERVAL_HPP
 #define SBG_ORD_PW_MDINTERVAL_HPP
 
-#include <boost/foreach.hpp>
 #include <boost/container/flat_set.hpp>
 
 #include "sbg/multidim_inter.hpp"

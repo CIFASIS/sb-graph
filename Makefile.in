@@ -34,7 +34,7 @@ include sbg/Makefile.include
 include parser/Makefile.include
 include util/Makefile.include
 include eval/Makefile.include
-#include test/Makefile.include
+include test/Makefile.include
 
 $(BUILD_DIR)/%.o : %.cpp
 	$(CC) $(INCLUDES) $(CXXFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<

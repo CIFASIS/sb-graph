@@ -29,13 +29,9 @@
 #include <map>
 #include <tuple>
 
-#include <boost/variant/get.hpp>
-
 #include "ast/expr.hpp"
 #include "ast/statement.hpp"
-#include "sbg/unord_pw_mdinter.hpp"
-#include "sbg/ord_pw_mdinter.hpp"
-#include "sbg/sbg.hpp"
+#include "sbg/sbg_algorithms.hpp"
 
 namespace SBG {
 
@@ -71,33 +67,19 @@ typedef std::variant<LIB::BaseSBG
   , LIB::BaseDSBG
   , LIB::CanonDSBG> SBGBaseType;
 
-typedef boost::variant<Util::NAT
-  , Util::MD_NAT
+typedef std::variant<LIB::MatchInfo<LIB::UnordSet>
+  , LIB::MatchInfo<LIB::OrdSet>
+  , LIB::VertexOrder<LIB::UnordSet>
+  , LIB::VertexOrder<LIB::OrdSet>> InfoBaseType;
+
+typedef std::variant<Util::MD_NAT
   , Util::RATIONAL
-  , LIB::Interval
-  , LIB::SetPiece
-  , LIB::UnordSet
-  , LIB::OrdSet
-  , LIB::LExp
-  , LIB::Exp
-  , LIB::BaseMap
-  , LIB::CanonMap
-  , LIB::BasePWMap
-  , LIB::CanonPWMap
-  , LIB::BaseSBG
-  , LIB::CanonSBG
-  , LIB::BaseDSBG
-  , LIB::CanonDSBG> ExprBaseType;
+  , ContainerBaseType
+  , LinearBaseType
+  , MapBaseType
+  , SBGBaseType
+  , InfoBaseType> ExprBaseType;
 typedef std::optional<ExprBaseType> MaybeEBT;
-
-template <typename T>
-inline bool is(ExprBaseType e) { return e.type() == typeid(T); }
-
-/** @function toNat
- *
- * @brief Converts a positive rational n/1 to n (if possible).
- */
-Util::NAT toNat(ExprBaseType t);
 
 // Environments ----------------------------------------------------------------
 
@@ -142,7 +124,7 @@ struct FuncEnv{
 };
 
 typedef enum { empty, member, min, max, lt, comp, inv, im, preim, dom, comb, min_map, red, min_adj
-  , connected, min_reach, matching } Func;
+  , connected, min_reach, matching, scc, ts } Func;
 
 // Classes for pretty printing ------------------------------------------------
 

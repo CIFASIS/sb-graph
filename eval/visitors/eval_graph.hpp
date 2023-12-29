@@ -30,25 +30,15 @@ namespace SBG {
 
 namespace Eval {
 
-struct EvalGraph : public boost::static_visitor<SBGBaseType> {
+struct EvalGraph {
   public:
-  SBGBaseType operator()(Util::NAT v) const;
   SBGBaseType operator()(Util::MD_NAT v) const;
   SBGBaseType operator()(Util::RATIONAL v) const;
-  SBGBaseType operator()(LIB::Interval v) const;
-  SBGBaseType operator()(LIB::SetPiece v) const;
-  SBGBaseType operator()(LIB::UnordSet v) const;
-  SBGBaseType operator()(LIB::OrdSet v) const;
-  SBGBaseType operator()(LIB::LExp v) const;
-  SBGBaseType operator()(LIB::Exp v) const;
-  SBGBaseType operator()(LIB::BaseMap v) const;
-  SBGBaseType operator()(LIB::CanonMap v) const;
-  SBGBaseType operator()(LIB::BasePWMap v) const;
-  SBGBaseType operator()(LIB::CanonPWMap v) const;
-  SBGBaseType operator()(LIB::BaseSBG v) const;
-  SBGBaseType operator()(LIB::CanonSBG v) const;
-  SBGBaseType operator()(LIB::BaseDSBG v) const;
-  SBGBaseType operator()(LIB::CanonDSBG v) const;
+  SBGBaseType operator()(ContainerBaseType v) const;
+  SBGBaseType operator()(LinearBaseType v) const;
+  SBGBaseType operator()(MapBaseType v) const;
+  SBGBaseType operator()(SBGBaseType v) const;
+  SBGBaseType operator()(InfoBaseType v) const;
 };
 
 } // namespace Eval

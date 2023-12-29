@@ -55,8 +55,11 @@ LIB::OrdSet EvalOrdSet::operator()(Util::VariableName v) const
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (is<LIB::OrdSet>(value))
-      return boost::get<LIB::OrdSet>(value);
+    if (std::holds_alternative<ContainerBaseType>(value)) {
+      auto c = std::get<ContainerBaseType>(value);
+      if (std::holds_alternative<LIB::OrdSet>(c))
+        return std::get<LIB::OrdSet>(c);
+    }
 
     else {
       Util::ERROR("EvalOrdSet: variable %s is not a set", v.c_str());

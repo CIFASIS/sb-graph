@@ -55,8 +55,11 @@ LIB::LExp EvalLE::operator()(Util::VariableName v) const
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (is<LIB::LExp>(value))
-      return boost::get<LIB::LExp>(value);
+    if (std::holds_alternative<LinearBaseType>(value)) {
+      auto l = std::get<LinearBaseType>(value);
+      if (std::holds_alternative<LIB::LExp>(l)) 
+        return std::get<LIB::LExp>(l);
+    }
 
     else {
       Util::ERROR("EvalLE: variable %s is not a linear expression", v.c_str());

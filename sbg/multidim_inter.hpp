@@ -24,7 +24,6 @@
 #ifndef SBG_MULTIDIM_INTERVAL_HPP
 #define SBG_MULTIDIM_INTERVAL_HPP
 
-#include <boost/foreach.hpp>
 #include "sbg/interval.hpp"
 
 namespace SBG {

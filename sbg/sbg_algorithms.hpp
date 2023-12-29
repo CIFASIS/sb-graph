@@ -26,6 +26,7 @@
 
 #include <chrono>
 #include <iostream>
+#include <list>
 
 #include "sbg/sbg.hpp"
 #include "util/logger.hpp"
@@ -60,10 +61,12 @@ struct MinReach {
   MinReach();
   MinReach(DSBGraph<Set> dsbg);
 
+  PI calculate(const Set &starts, const Set &endings) const;
+
+  private:
   PW minReach1(const Set &reach, const PW &smap, const PW &rmap) const;
   PI recursion(unsigned int n, const Set &ER, const Set &not_rv
                , const PW &semap, const PW &smap, const PW &rmap) const;
-  PI calculate(const Set &unmatched_V) const;
 };
 
 typedef MinReach<UnordSet> BaseMR;
@@ -126,6 +129,9 @@ struct SBGMatching {
   SBGMatching();
   SBGMatching(SBGraph<Set> sbg);
 
+  MatchInfo<Set> calculate();
+
+  private:
   Set getManyToOne() const; // Find N:1 connections
   void shortPathDirection(const Set &endings, Direction dir);
   void shortPathStep();
@@ -142,11 +148,90 @@ struct SBGMatching {
   void offsetVertices();
   void updatePaths();
   void updateOffset();
-  MatchInfo<Set> calculate();
 };
 
 typedef SBGMatching<UnordSet> BaseMatch;
 typedef SBGMatching<OrdSet> CanonMatch;
+
+// SCC -------------------------------------------------------------------------
+
+template<typename Set>
+struct SBGSCC {
+  using Map = SBGMap<Set>;
+  using PW = PWMap<Set>;
+
+  //*** SBG info, constant
+  member_class(DSBGraph<Set>, dsbg);
+
+  member_class(Set, V);
+  member_class(PW, Vmap);
+
+  member_class(Set, E);
+  member_class(PW, Emap);
+
+  //-----------------------------
+  member_class(Set, Ediff); // Edges between different SCC in each step
+
+  member_class(PW, mapB);
+  member_class(PW, mapD);
+ 
+  member_class(PW, rmap);
+
+  SBGSCC();
+  SBGSCC(DSBGraph<Set> dsbg);
+
+  PW calculate();
+
+  private:
+  void sccStep();
+};
+
+typedef SBGSCC<UnordSet> BaseSCC;
+typedef SBGSCC<OrdSet> CanonSCC;
+
+// Topological sort ------------------------------------------------------------
+
+template<typename Set>
+struct VertexOrder {
+  member_class(std::vector<Set>, container); 
+
+  VertexOrder();
+
+  void emplaceBack(const Set &s);
+
+  bool operator==(const VertexOrder &other) const;
+  bool operator!=(const VertexOrder &other) const;
+};
+template<typename Set>
+std::ostream &operator<<(std::ostream &out, const VertexOrder<Set> &vo);
+
+typedef VertexOrder<UnordSet> BaseVO;
+typedef VertexOrder<OrdSet> CanonVO;
+
+template<typename Set>
+struct SBGTopSort {
+  using PW = PWMap<Set>;
+
+  //*** SBG info, constant
+  member_class(DSBGraph<Set>, dsbg);
+
+  //-----------------------------
+  member_class(PW, mapB);
+  member_class(PW, mapD);
+
+  member_class(Set, disordered);
+
+  SBGTopSort();
+  SBGTopSort(DSBGraph<Set> dsbg);
+
+  VertexOrder<Set> calculate(); 
+
+  private:
+  Set topSortStep();
+};
+
+typedef SBGTopSort<UnordSet> BaseTopSort;
+typedef SBGTopSort<OrdSet> CanonTopSort;
 
 } // namespace LIB
 

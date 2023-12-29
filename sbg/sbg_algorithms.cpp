@@ -195,7 +195,9 @@ PathInfo<Set> MinReach<Set>::recursion(
 }
 
 template<typename Set>
-PathInfo<Set> MinReach<Set>::calculate(const Set &unmatched_V) const
+PathInfo<Set> MinReach<Set>::calculate(
+  const Set &starts, const Set &endings
+) const
 {
   DSBGraph dg = dsbg();
 
@@ -210,26 +212,25 @@ PathInfo<Set> MinReach<Set>::calculate(const Set &unmatched_V) const
     Set Vc; // Vertices that changed sucessor
     Set Ec; // Edges that changed successor
 
-    Set unmatched_D = unmatched_V.intersection(mapD.image())
-        , unmatched_B = unmatched_V.intersection(mapB.image());
     // Vertices and edges that reach unmatched vertices
-    Set reach_vertices = unmatched_D, reach_edges;
+    Set reach_vertices = endings, reach_edges;
 
     // If a vertex changes its successor, then a new path was found. If it is
     // an augmenting one, a new matching can be obtained. That is why the loop
     // iterates until Vc is empty.
     do {
-      reach_vertices = reach_vertices.cup(new_rmap.preImage(unmatched_D));
+      reach_vertices = reach_vertices.cup(new_rmap.preImage(endings));
       reach_edges = mapD.preImage(reach_vertices);
 
       old_smap = new_smap;
       // Find adjacent vertex that reaches a minor vertex than the current one
       new_smap = minReach1(reach_edges, new_smap, new_rmap); 
+      Util::SBG_LOG << "minReach1 new_smap: " << new_smap << "\n\n";
       Vc = V.difference(old_smap.equalImage(new_smap));
 
       // If the condition is met, unmatched "backward" vertices reach unmatched
       // "forward" vertices
-      if (!new_rmap.image(unmatched_B).intersection(unmatched_D).isEmpty()) {
+      if (!new_rmap.image(starts).intersection(endings).isEmpty()) {
         new_rmap = new_smap.mapInf(); // Get minimum reachable following path
         return PathInfo<Set>(new_smap, new_rmap);
       }
@@ -299,34 +300,6 @@ PathInfo<Set> MinReach<Set>::calculate(const Set &unmatched_V) const
 
 // Short path ------------------------------------------------------------------
 
-bool moreThanOne(SetPiece mdi) { return mdi.cardinal() > 1; }
-
-template<typename Set>
-Set SBGMatching<Set>::getManyToOne() const
-{
-  Set res;
-
-  for (const Map &sbgmapB : mapB()) {
-    for (const Map &sbgmapD : mapD()) {
-      Exp expB = sbgmapB.exp(), expD = sbgmapD.exp();
-      if (expD.isConstant()) {
-        Set dom = sbgmapB.dom().intersection(sbgmapD.dom());
-        if (!dom.isEmpty()) {
-          dom = dom.intersection(paths_edges());
-          if (!dom.isEmpty()) {
-            Set multi_sized = dom.filterSet([](const SetPiece &mdi) {
-              return moreThanOne(mdi);
-            });
-            res = res.cup(multi_sized);
-          }
-        }
-      }
-    }
-  }
-
-  return res;
-}
-
 template<typename Set>
 void SBGMatching<Set>::shortPathDirection(const Set &endings, Direction dir)
 {
@@ -346,15 +319,6 @@ void SBGMatching<Set>::shortPathDirection(const Set &endings, Direction dir)
   unsigned int k = 0; // Current length of path
 
   do {
-/*
-    Set pe = paths_edges();
-
-    if (dir == forward) {
-      auxB = auxB.restrict(pe);
-      auxD = auxD.restrict(pe);
-    }
-*/
-
     // Start of edges entering reach_end
     P = auxB.image(auxD.preImage(reach_end));
     P = P.difference(reach_end); // Take out vertices that are self-reps
@@ -409,13 +373,12 @@ void SBGMatching<Set>::shortPathStep()
 template<typename Set>
 void SBGMatching<Set>::shortPath()
 {
-  Set allowed_edges = E().difference(getManyToOne());
-
   // Finish if all unknowns are matched or there aren't available edges
   do {
-    set_paths_edges(allowed_edges);
-    Util::SBG_LOG << "short step smap: " << smap() << "\n\n";
+    set_paths_edges(E());
     shortPathStep();
+    Util::SBG_LOG << "short step smap: " << smap() << "\n";
+    Util::SBG_LOG << "short step matched edges: " << matched_E() << "\n\n";
   } while(!fullyMatchedU() && !paths_edges().isEmpty());
 
   // In this case we only offset vertices here because shortPath isn't looking
@@ -459,7 +422,11 @@ void SBGMatching<Set>::directedMinReach(const PW &dir_map)
   DSBGraph<Set> dsbg = offsetGraph(dir_omap);
   dsbg.set_subE_map(sbg().subE_map());
   MinReach min_reach(dsbg);
-  PathInfo<Set> res = min_reach.calculate(dir_omap.image(unmatched_V()));
+  Set unmatched_B = mapB().image().intersection(unmatched_V());
+  Set unmatched_D = mapD().image().intersection(unmatched_V());
+  PathInfo<Set> res = min_reach.calculate(
+    dir_omap.image(unmatched_B), dir_omap.image(unmatched_D)
+  );
 
   PW aux_omap = dir_omap.combine(omap()), to_normal = aux_omap.minInv();
   PW aux_succs = res.succs().composition(aux_omap);
@@ -513,8 +480,8 @@ void SBGMatching<Set>::minReachable()
 {
   do {
     set_paths_edges(E());
-    Util::SBG_LOG << "minimum reachable step smap: " << smap() << "\n\n";
     minReachableStep();
+    Util::SBG_LOG << "minimum reachable step smap: " << smap() << "\n\n";
   } while (!fullyMatchedU() && !paths_edges().isEmpty());
 
   return;
@@ -535,9 +502,11 @@ template<typename Set>
 std::ostream &operator<<(std::ostream &out, const MatchInfo<Set> &m_info)
 {
   out << m_info.matched_edges();
-  if (m_info.fully_matchedU()) out << " [FULLY MATCHED]";
+  if (m_info.fully_matchedU())
+    out << " [FULLY MATCHED]";
 
-   else out << " [UNMATCHED]";
+  else 
+    out << " [UNMATCHED]";
 
   return out;
 }
@@ -554,29 +523,29 @@ SBGMatching<Set>::SBGMatching(SBGraph<Set> sbg)
   set_E(Emap_.dom());
 
   PW id_vertex(V_);
-  set_smap(id_vertex);
-  set_rmap(id_vertex);
+  smap_ = id_vertex;
+  rmap_ = id_vertex;
 
-  set_omap(id_vertex);
-  set_max_V(V_.maxElem());
+  omap_ = id_vertex;
+  max_V_ = V_.maxElem();
 
-  set_F(sbg.map1().image());
-  set_U(sbg.map2().image());
-  set_mapF(sbg.map1());
-  set_mapU(sbg.map2());
+  F_ = sbg.map1().image();
+  U_ = sbg.map2().image();
+  mapF_ = sbg.map1();
+  mapU_ = sbg.map2();
 
-  set_mapB(sbg.map2());
-  set_mapD(sbg.map1());
+  mapB_ = sbg.map2();
+  mapD_ = sbg.map1();
 
-  set_paths_edges(E_);
-  set_matched_E(Set());
-  set_unmatched_E(E_);
+  paths_edges_ = E_;
+  matched_E_ = Set();
+  unmatched_E_ = E_;
 
-  set_matched_V(Set());
-  set_unmatched_V(V_);
-  set_unmatched_F(F_);
-  set_matched_U(Set());
-  set_unmatched_U(U_);
+  matched_V_ = Set();
+  unmatched_V_ = V_;
+  unmatched_F_ = F_;
+  matched_U_ = Set();
+  unmatched_U_ = U_;
 }
 
 member_imp_temp(template<typename Set>, SBGMatching<Set>, SBGraph<Set>, sbg);
@@ -714,6 +683,179 @@ MatchInfo<Set> SBGMatching<Set>::calculate()
   return MatchInfo(matched_E(), fullyMatchedU());
 }
 
+// -----------------------------------------------------------------------------
+// SCC -------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+
+template<typename Set>
+SBGSCC<Set>::SBGSCC() : dsbg_(), V_(), Vmap_(), E_(), Emap_(), Ediff_(), mapB_()
+  , mapD_(), rmap_() {}
+template<typename Set>
+SBGSCC<Set>::SBGSCC(DSBGraph<Set> dsbg) : dsbg_(dsbg) {
+  V_ = dsbg.V();
+  Vmap_ = dsbg.Vmap();
+  
+  E_ = dsbg.E();
+  Emap_ = dsbg.Emap();
+
+  mapB_ = dsbg.mapB();
+  mapD_ = dsbg.mapD(); 
+
+  Ediff_ = Set();
+
+  rmap_ = PW(V_);
+}
+
+member_imp_temp(template<typename Set>, SBGSCC<Set>, DSBGraph<Set>, dsbg);
+member_imp_temp(template<typename Set>, SBGSCC<Set>, Set, V);
+member_imp_temp(template<typename Set>, SBGSCC<Set>, PWMap<Set>, Vmap);
+member_imp_temp(template<typename Set>, SBGSCC<Set>, Set, E);
+member_imp_temp(template<typename Set>, SBGSCC<Set>, PWMap<Set>, Emap);
+
+member_imp_temp(template<typename Set>, SBGSCC<Set>, PWMap<Set>, mapB);
+member_imp_temp(template<typename Set>, SBGSCC<Set>, PWMap<Set>, mapD);
+
+member_imp_temp(template<typename Set>, SBGSCC<Set>, Set, Ediff);
+
+member_imp_temp(template<typename Set>, SBGSCC<Set>, PWMap<Set>, rmap);
+
+template<typename Set>
+void SBGSCC<Set>::sccStep()
+{
+  PW id_V(V());
+ 
+  DSBGraph<Set> aux_dsbg(
+    V(), Vmap()
+    , mapB().restrict(E()), mapD().restrict(E()), Emap().restrict(E())
+  );
+  MinReach min_reach(aux_dsbg);
+  PW new_rmap = min_reach.calculate(Set(), V()).reps();
+  PW rmap_B = new_rmap.composition(mapB());
+  PW rmap_D = new_rmap.composition(mapD());
+  Set Esame = rmap_B.equalImage(rmap_D); // Edges in the same SCC
+
+  // Leave edges in the same SCC
+  set_E(Esame);
+  set_Ediff(E().difference(Esame));
+
+  // Swap directions
+  PW aux_B = mapB();
+  set_mapB(mapD());
+  set_mapD(aux_B);
+
+  return;
+}
+
+template<typename Set>
+PWMap<Set> SBGSCC<Set>::calculate()
+{
+  do {
+    sccStep();
+    sccStep();
+  } while (Ediff() != Set());
+
+  DSBGraph<Set> aux_dsbg(
+    V(), Vmap()
+    , mapB().restrict(E()), mapD().restrict(E()), Emap().restrict(E())
+  );
+  MinReach min_reach(aux_dsbg);
+  PW new_rmap = min_reach.calculate(Set(), V()).reps();
+  set_rmap(new_rmap);
+
+  return rmap();
+}
+
+// -----------------------------------------------------------------------------
+// Topological sort ------------------------------------------------------------
+// -----------------------------------------------------------------------------
+
+template<typename Set>
+VertexOrder<Set>::VertexOrder() : container_() {}
+
+member_imp_temp(
+  template<typename Set>, VertexOrder<Set>, std::vector<Set>, container
+);
+
+template<typename Set>
+void VertexOrder<Set>::emplaceBack(const Set &s) { container_.emplace_back(s); }
+
+template<typename Set>
+bool VertexOrder<Set>::operator==(const VertexOrder &other) const
+{
+  if (container_.size() != other.container_.size())
+    return false;
+
+  for (unsigned int j = 0; j < container_.size(); ++j)
+    if (container_[j] != other.container_[j])
+      return false;
+
+  return true;
+}
+
+template<typename Set>
+bool VertexOrder<Set>::operator!=(const VertexOrder &other) const
+{
+  return !(*this == other);
+}
+
+template<typename Set>
+std::ostream &operator<<(std::ostream &out, const VertexOrder<Set> &vo)
+{
+  for (const Set &s : vo.container()) 
+    out << s;
+
+  return out;
+}
+
+template<typename Set>
+SBGTopSort<Set>::SBGTopSort() : dsbg_(), mapB_(), mapD_(), disordered_() {}
+template<typename Set>
+SBGTopSort<Set>::SBGTopSort(DSBGraph<Set> dsbg) : dsbg_(dsbg)
+  , mapB_(dsbg.mapB()), mapD_(dsbg.mapD()), disordered_(dsbg.V()) {}
+
+member_imp_temp(template<typename Set>, SBGTopSort<Set>, DSBGraph<Set>, dsbg);
+member_imp_temp(template<typename Set>, SBGTopSort<Set>, PWMap<Set>, mapB);
+member_imp_temp(template<typename Set>, SBGTopSort<Set>, PWMap<Set>, mapD);
+member_imp_temp(template<typename Set>, SBGTopSort<Set>, Set, disordered);
+
+template<typename Set>
+Set SBGTopSort<Set>::topSortStep()
+{
+  DSBGraph<Set> aux_dsbg = dsbg();
+
+  // Vertices without outgoing edges
+  Set nth = disordered().difference(mapB().image());
+
+  // Ingoing edges to nth
+  Set ingoing = mapD().preImage(nth);
+  Set subset_ids = aux_dsbg.subE_map().image(ingoing);
+  // Ingoing edges in the same subset-edge as "ingoing" 
+  Set ingoing_plus = aux_dsbg.subE_map().preImage(subset_ids);
+
+  Set domB_minus = mapB().dom().difference(ingoing_plus);
+  Set domD_minus = mapD().dom().difference(ingoing_plus);
+  set_mapB(mapB().restrict(domB_minus));
+  set_mapD(mapD().restrict(domD_minus));
+
+  set_disordered(disordered().difference(nth));
+
+  return nth;
+}
+
+template<typename Set>
+VertexOrder<Set> SBGTopSort<Set>::calculate()
+{
+  VertexOrder<Set> res;
+
+  do {
+    Set nth = topSortStep();
+    if (!nth.isEmpty())
+      res.emplaceBack(nth);
+  } while (!disordered().isEmpty());
+
+  return res;
+}
+
 // Template instantiations -----------------------------------------------------
 
 template BasePWMap connectedComponents<UnordSet>(BaseSBG g);
@@ -726,10 +868,31 @@ template struct MinReach<UnordSet>;
 template struct MinReach<OrdSet>;
 
 template struct MatchInfo<UnordSet>;
+template std::ostream &operator<<(
+  std::ostream &out, const MatchInfo<UnordSet> &mi
+);
 template struct MatchInfo<OrdSet>;
+template std::ostream &operator<<(
+  std::ostream &out, const MatchInfo<OrdSet> &mi
+);
 
 template struct SBGMatching<UnordSet>;
 template struct SBGMatching<OrdSet>;
+
+template struct SBGSCC<UnordSet>;
+template struct SBGSCC<OrdSet>;
+
+template struct VertexOrder<UnordSet>;
+template std::ostream &operator<<(
+  std::ostream &out, const BaseVO &vo
+);
+template struct VertexOrder<OrdSet>;
+template std::ostream &operator<<(
+  std::ostream &out, const CanonVO &vo
+);
+
+template struct SBGTopSort<UnordSet>;
+template struct SBGTopSort<OrdSet>;
 
 } // namespace LIB
 

@@ -62,7 +62,7 @@ int main(int argc, char** argv)
 {
   std::string fnames[3] = {"../../../pw_map1.test", "../../../pw_map2.test", "../../../pw_map3.test"};
 
-  BOOST_FOREACH (std::string fname, fnames) {
+  for (std::string fname : fnames) {
     if (fname != "") {
       std::ifstream in(fname.c_str());
       if (in.fail()) {

@@ -55,8 +55,11 @@ LIB::CanonMap EvalCanonMap::operator()(Util::VariableName v) const
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (is<LIB::CanonMap>(value))
-      return boost::get<LIB::CanonMap>(value);
+    if (std::holds_alternative<MapBaseType>(value)) {
+      auto m = std::get<MapBaseType>(value);
+      if (std::holds_alternative<LIB::CanonMap>(m))
+        return std::get<LIB::CanonMap>(m);
+    }
 
     else {
       Util::ERROR("EvalCanonMap: variable %s is not a linear expression", v.c_str());

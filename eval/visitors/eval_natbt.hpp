@@ -32,23 +32,13 @@ namespace Eval {
 
 struct EvalNatBT : public boost::static_visitor<NatBaseType> {
   public:
-  NatBaseType operator()(Util::NAT v) const;
   NatBaseType operator()(Util::MD_NAT v) const;
   NatBaseType operator()(Util::RATIONAL v) const;
-  NatBaseType operator()(LIB::Interval v) const;
-  NatBaseType operator()(LIB::SetPiece v) const;
-  NatBaseType operator()(LIB::UnordSet v) const;
-  NatBaseType operator()(LIB::OrdSet v) const;
-  NatBaseType operator()(LIB::LExp v) const;
-  NatBaseType operator()(LIB::Exp v) const;
-  NatBaseType operator()(LIB::BaseMap v) const;
-  NatBaseType operator()(LIB::CanonMap v) const;
-  NatBaseType operator()(LIB::BasePWMap v) const;
-  NatBaseType operator()(LIB::CanonPWMap v) const;
-  NatBaseType operator()(LIB::BaseSBG v) const;
-  NatBaseType operator()(LIB::CanonSBG v) const;
-  NatBaseType operator()(LIB::BaseDSBG v) const;
-  NatBaseType operator()(LIB::CanonDSBG v) const;
+  NatBaseType operator()(ContainerBaseType v) const;
+  NatBaseType operator()(LinearBaseType v) const;
+  NatBaseType operator()(MapBaseType v) const;
+  NatBaseType operator()(SBGBaseType v) const;
+  NatBaseType operator()(InfoBaseType v) const;
 };
 
 } // namespace Eval

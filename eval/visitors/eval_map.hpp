@@ -30,25 +30,15 @@ namespace SBG {
 
 namespace Eval {
 
-struct EvalMap : public boost::static_visitor<MapBaseType> {
+struct EvalMap {
   public:
-  MapBaseType operator()(Util::NAT v) const;
   MapBaseType operator()(Util::MD_NAT v) const;
   MapBaseType operator()(Util::RATIONAL v) const;
-  MapBaseType operator()(LIB::Interval v) const;
-  MapBaseType operator()(LIB::SetPiece v) const;
-  MapBaseType operator()(LIB::UnordSet v) const;
-  MapBaseType operator()(LIB::OrdSet v) const;
-  MapBaseType operator()(LIB::LExp v) const;
-  MapBaseType operator()(LIB::Exp v) const;
-  MapBaseType operator()(LIB::BaseMap v) const;
-  MapBaseType operator()(LIB::CanonMap v) const;
-  MapBaseType operator()(LIB::BasePWMap v) const;
-  MapBaseType operator()(LIB::CanonPWMap v) const;
-  MapBaseType operator()(LIB::BaseSBG v) const;
-  MapBaseType operator()(LIB::CanonSBG v) const;
-  MapBaseType operator()(LIB::BaseDSBG v) const;
-  MapBaseType operator()(LIB::CanonDSBG v) const;
+  MapBaseType operator()(ContainerBaseType v) const;
+  MapBaseType operator()(LinearBaseType v) const;
+  MapBaseType operator()(MapBaseType v) const;
+  MapBaseType operator()(SBGBaseType v) const;
+  MapBaseType operator()(InfoBaseType v) const;
 };
 
 } // namespace Eval

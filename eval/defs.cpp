@@ -23,23 +23,6 @@ namespace SBG {
 
 namespace Eval {
 
-// Type definitions ------------------------------------------------------------
-
-Util::NAT toNat(ExprBaseType v) 
-{ 
-  if (is<Util::NAT>(v))
-    return boost::get<Util::NAT>(v);
-
-  if (is<Util::RATIONAL>(v)) {
-    Util::RATIONAL v_rat = boost::get<Util::RATIONAL>(v);
-    if (v_rat.denominator() == 1 && v_rat.numerator() >= 0)
-      return v_rat.numerator();
-  }
-
-  Util::ERROR("toNat: expression is not integer");
-  return 0; 
-}
-
 // Environments ----------------------------------------------------------------
 
 VarEnv::VarEnv() : mapping_() {}
@@ -59,7 +42,8 @@ MaybeVValue VarEnv::operator[](VKey k) const
 FuncEnv::FuncEnv() {}
 FuncEnvType FuncEnv::mapping_ = {{"isEmpty", 0}, {"isMember", 1}, {"minElem", 2}, {"maxElem", 3}, {"lt", 4},
   {"compose", 5}, {"inv", 6}, {"image", 7}, {"preImage", 8}, {"dom", 9}, {"combine", 10}, {"minMap", 11}, 
-  {"reduce", 12}, {"minAdj", 13}, {"CC", 14}, {"minReach", 15}, {"matching", 16}};
+  {"reduce", 12}, {"minAdj", 13}, {"CC", 14}, {"minReach", 15}, {"matching", 16}, {"scc", 17},
+  {"sort", 18}};
 
 MaybeFValue FuncEnv::operator[](FKey k) const
 {
@@ -69,12 +53,21 @@ MaybeFValue FuncEnv::operator[](FKey k) const
 
 // Classes for pretty printing ------------------------------------------------
 
+template<typename T, typename... Ts>
+std::ostream& operator<<(std::ostream& os, const std::variant<T, Ts...>& v)
+{
+    std::visit([&os](auto&& arg) {
+        os << arg;
+    }, v);
+    return os;
+}
+
 std::ostream &operator<<(std::ostream &out, const ExprEval &e)
 {
   out << std::get<0>(e) << "\n  --> "; 
   ExprBaseType ebt = std::get<1>(e);
   auto printer = [&](auto v) { out << v; };
-  boost::apply_visitor(printer, ebt);
+  std::visit(printer, ebt);
   out << "\n";
 
   return out;
@@ -82,7 +75,8 @@ std::ostream &operator<<(std::ostream &out, const ExprEval &e)
 
 std::ostream &operator<<(std::ostream &out, const ExprEvalList &ee)
 {
-  BOOST_FOREACH (ExprEval e, ee) out << e << "\n";
+  for (ExprEval e : ee)
+    out << e << "\n";
 
   return out;
 }

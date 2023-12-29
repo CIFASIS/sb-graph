@@ -55,8 +55,11 @@ LIB::UnordSet EvalUnordSet::operator()(Util::VariableName v) const
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (is<LIB::UnordSet>(value))
-      return boost::get<LIB::UnordSet>(value);
+    if (std::holds_alternative<ContainerBaseType>(value)) {
+      auto c = std::get<ContainerBaseType>(value);
+      if (std::holds_alternative<LIB::UnordSet>(c))
+        return std::get<LIB::UnordSet>(c);
+    }
 
     else {
       Util::ERROR("EvalUnordSet: variable %s is not a set", v.c_str());

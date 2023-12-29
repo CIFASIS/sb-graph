@@ -55,8 +55,11 @@ LIB::Exp EvalMDLE::operator()(Util::VariableName v) const
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (is<LIB::Exp>(value))
-      return boost::get<LIB::Exp>(value);
+    if (std::holds_alternative<LinearBaseType>(value)) {
+      auto l = std::get<LinearBaseType>(value);
+      if (std::holds_alternative<LIB::Exp>(l))
+        return std::get<LIB::Exp>(l);
+    }
 
     else {
       Util::ERROR("EvalMDLE: variable %s is not a linear expression", v.c_str());

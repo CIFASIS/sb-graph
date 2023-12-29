@@ -29,8 +29,6 @@
 #ifndef SBG_UNORD_PW_MDINTERVAL_HPP
 #define SBG_UNORD_PW_MDINTERVAL_HPP
 
-#include <boost/foreach.hpp>
-#include <boost/range.hpp>
 #include <boost/unordered/unordered_flat_set.hpp>
 
 #include "sbg/multidim_inter.hpp"

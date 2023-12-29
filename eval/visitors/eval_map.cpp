@@ -23,12 +23,6 @@ namespace SBG {
 
 namespace Eval {
 
-MapBaseType EvalMap::operator()(Util::NAT v) const
-{
-  Util::ERROR("EvalMap: trying to evaluate a NAT");
-  return MapBaseType();
-}
-
 MapBaseType EvalMap::operator()(Util::MD_NAT v) const 
 {
   Util::ERROR("EvalMap: trying to evaluate a MD_NAT");
@@ -41,71 +35,32 @@ MapBaseType EvalMap::operator()(Util::RATIONAL v) const
   return MapBaseType();
 }
 
-MapBaseType EvalMap::operator()(LIB::Interval v) const
+MapBaseType EvalMap::operator()(ContainerBaseType v) const
 {
-  Util::ERROR("EvalMap: trying to evaluate an Interval");
+  Util::ERROR("EvalMap: trying to evaluate a ContainerBaseType");
   return MapBaseType();
 }
 
-MapBaseType EvalMap::operator()(LIB::SetPiece v) const
+MapBaseType EvalMap::operator()(LinearBaseType v) const
 {
-  Util::ERROR("EvalMap: trying to evaluate a SetPiece");
+  Util::ERROR("EvalMap: trying to evaluate a LinearBaseType");
   return MapBaseType();
 }
 
-MapBaseType EvalMap::operator()(LIB::UnordSet v) const
+MapBaseType EvalMap::operator()(MapBaseType v) const
 {
-  Util::ERROR("EvalMap: trying to evaluate an UnordSet");
+  return v;
+}
+
+MapBaseType EvalMap::operator()(SBGBaseType v) const
+{
+  Util::ERROR("EvalMap: trying to evaluate a SBGBaseType");
   return MapBaseType();
 }
 
-MapBaseType EvalMap::operator()(LIB::OrdSet v) const
+MapBaseType EvalMap::operator()(InfoBaseType v) const
 {
-  Util::ERROR("EvalMap: trying to evaluate an OrdSet");
-  return MapBaseType();
-}
-
-MapBaseType EvalMap::operator()(LIB::LExp v) const 
-{
-  Util::ERROR("EvalMap: trying to evaluate a LExp");
-  return MapBaseType();
-}
-
-MapBaseType EvalMap::operator()(LIB::Exp v) const
-{
-  Util::ERROR("EvalMap: trying to evaluate an Exp");
-  return MapBaseType();
-}
-
-MapBaseType EvalMap::operator()(LIB::BaseMap v) const { return MapBaseType(v); }
-
-MapBaseType EvalMap::operator()(LIB::CanonMap v) const { return MapBaseType(v); }
-
-MapBaseType EvalMap::operator()(LIB::BasePWMap v) const { return MapBaseType(v); }
-
-MapBaseType EvalMap::operator()(LIB::CanonPWMap v) const { return MapBaseType(v); }
-
-MapBaseType EvalMap::operator()(LIB::BaseSBG v) const
-{
-  Util::ERROR("EvalMap: trying to evaluate a a BaseSBG");
-  return MapBaseType();
-}
-
-MapBaseType EvalMap::operator()(LIB::CanonSBG v) const
-{
-  Util::ERROR("EvalMap: trying to evaluate a CanonSBG");
-  return MapBaseType();
-}
-
-MapBaseType EvalMap::operator()(LIB::BaseDSBG v) const
-{
-  Util::ERROR("EvalMap: trying to evaluate a a BaseDSBG");
-  return MapBaseType();
-}
-
-MapBaseType EvalMap::operator()(LIB::CanonDSBG v) const
-{
-  Util::ERROR("EvalMap: trying to evaluate a CanonDSBG");
+  Util::ERROR("EvalMap: trying to evaluate an InfoBaseType");
   return MapBaseType();
 }
 

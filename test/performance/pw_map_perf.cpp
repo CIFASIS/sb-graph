@@ -22,12 +22,11 @@
 
 #include "sbg/pw_map.hpp"
 
-/*
 TEST(PWMapPerf, Composition)
 {
-  unsigned int inter_sz = 5;
-  unsigned int set_sz = 5;
-  unsigned int map_sz = 5;
+  unsigned int inter_sz = 10000;
+  unsigned int set_sz = 100;
+  unsigned int map_sz = 1000;
 
   SBG::LIB::CanonPWMap ms1;
   for (unsigned int k = 0; k < map_sz; k++) {
@@ -36,14 +35,13 @@ TEST(PWMapPerf, Composition)
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
       SBG::LIB::Interval i(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
-      s1.emplace_hint(s1.end(), i);
+      s1.emplaceBack(i);
     }
     ms1.emplace(SBG::LIB::CanonMap(s1, le1));
   }
-  SBG::LIB::PWMap pw1(ms1);
 
   auto start = std::chrono::high_resolution_clock::now();
-  SBG::LIB::PWMap res = composition(pw1, pw1);
+  SBG::LIB::PWMap res = ms1.composition(ms1);
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
   std::cout << "PWL MAP COMPOSITION TEST elapsed time: " << elapsed.count() << "ms\n";
@@ -53,7 +51,7 @@ TEST(PWMapPerf, Composition)
 
 TEST(PWMapPerf, MapInf) {
   int N = 600;
-  int sz = 10;
+  int sz = 10000;
 
   SBG::LIB::CanonPWMap aux;
   for (int i = 0; i < N; i += 6) {
@@ -87,12 +85,8 @@ TEST(PWMapPerf, MapInf) {
   SBG::LIB::PWMap pw(aux);
 
   auto start = std::chrono::high_resolution_clock::now();
-  SBG::LIB::PWMap res = mapInf(pw);
+  SBG::LIB::PWMap res = pw.mapInf();
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
   std::cout << "PWL MAP MAPINF TEST elapsed time: " << elapsed.count() << "ms\n";
-
-  std::cout << pw << "\n";
-  std::cout << res << "\n";
 }
-*/

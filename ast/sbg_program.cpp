@@ -33,7 +33,9 @@ member_imp(Program, ExprList, exprs);
 
 std::ostream &operator<<(std::ostream &out, const Program &prog)
 {
-  out << prog.stms() << "\n" << prog.exprs();  
+  if (!prog.stms().empty())
+    out << prog.stms() << "\n";
+  out<< prog.exprs();  
 
   return out;
 }

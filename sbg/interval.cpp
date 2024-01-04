@@ -66,12 +66,12 @@ bool Interval::operator<(const Interval &other) const
   if (begin_ < other.begin_)
     return true;
 
-  if (begin_ == other.begin_ && end_ < other.end_)
+  if (begin_ == other.begin_ && step_ < other.step_)
     return true;
 
   if (begin_ == other.begin_
-      && end_ == other.end_
-      && step_ < other.step_)
+      && step_ == other.step_
+      && end_ < other.end_)
     return true;
 
   return false;

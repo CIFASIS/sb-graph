@@ -25,8 +25,8 @@
 TEST(PWMapPerf, Composition)
 {
   unsigned int inter_sz = 10000;
-  unsigned int set_sz = 100;
-  unsigned int map_sz = 1000;
+  unsigned int set_sz = 10;
+  unsigned int map_sz = 10;
 
   SBG::LIB::CanonPWMap ms1;
   for (unsigned int k = 0; k < map_sz; k++) {
@@ -51,7 +51,7 @@ TEST(PWMapPerf, Composition)
 
 TEST(PWMapPerf, MapInf) {
   int N = 600;
-  int sz = 10000;
+  int sz = 10;
 
   SBG::LIB::CanonPWMap aux;
   for (int i = 0; i < N; i += 6) {

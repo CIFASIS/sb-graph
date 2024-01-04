@@ -19,32 +19,40 @@
 
 #include <fstream>
 
-#include "parser/expr.hpp"
+#include "parser/sbg_program.hpp"
 #include "util/logger.hpp"
 
-void parseExprsFromFile(std::string str)
+void parseProgramFromFile(std::string fname)
 {
+  std::ifstream in(fname.c_str());
+  if (in.fail()) 
+    SBG::Util::ERROR("Unable to open file");
+  in.unsetf(std::ios::skipws);
+
+  std::string str(
+    (std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>()
+  );
   SBG::Parser::StrIt iter = str.begin();
   SBG::Parser::StrIt end = str.end();
 
-  SBG::Parser::ExprRule g(iter); // Grammar
-  SBG::AST::ExprList result;
-  bool r = boost::spirit::qi::phrase_parse(iter, end, g, SBG::Parser::Skipper<SBG::Parser::StrIt>(), result);
+  SBG::Parser::SBGProgramRule g(iter); // Grammar
+  SBG::AST::SBGProgram result;
+  bool r = boost::spirit::qi::phrase_parse(
+    iter, end, g, SBG::Parser::Skipper<SBG::Parser::StrIt>(), result
+  );
 
   SBG::Util::SBG_LOG << "-------------------------\n";
-
   if (r && iter == end) {
     SBG::Util::SBG_LOG << "Parsing succeeded\n";
-    SBG::Util::SBG_LOG << "result = \n\n" << result << "\n\n";
+    SBG::Util::SBG_LOG << "-------------------------\n";
+    SBG::Util::SBG_LOG << "\n" << result;
   }
-
   else {
     std::string rest(iter, end);
     SBG::Util::SBG_LOG << "Parsing failed\n";
-    SBG::Util::SBG_LOG << "stopped at: " << rest << "\"\n";
+    SBG::Util::SBG_LOG << "-------------------------\n";
+    SBG::Util::SBG_LOG << "\nstopped at: \n" << rest << "\n";
   }
-
-  SBG::Util::SBG_LOG << "-------------------------\n";
 
   return;
 }
@@ -53,22 +61,10 @@ int main(int argc, char** argv)
 {
   std::string fname = "../../../interval.test";
 
-  if (fname != "") {
-    std::ifstream in(fname.c_str());
-    if (in.fail()) {
-      std::cerr << "Unable to open file " << fname << std::endl;
-      exit(-1);
-    }
-    in.unsetf(std::ios::skipws);
-
-    std::string str((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-    parseExprsFromFile(str);
-  } 
-
+  if (fname != "") 
+    parseProgramFromFile(fname);
   else 
     SBG::Util::SBG_LOG << "A filename should be provided\n";
-
-  SBG::Util::SBG_LOG << "Bye... :-)\n";
 
   return 0;
 }

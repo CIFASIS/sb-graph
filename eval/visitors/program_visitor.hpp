@@ -38,12 +38,13 @@ namespace Eval {
 
 struct ProgramVisitor : public boost::static_visitor<ProgramIO> {
   public:
-  ProgramVisitor();
+  ProgramVisitor(bool debug);
  
   ProgramIO operator()(AST::Program p) const; 
 
   private:
   mutable VarEnv env_;
+  mutable bool debug_;
 };
 
 } // namespace Eval

@@ -82,8 +82,10 @@ std::ostream &operator<<(std::ostream &out, const ExprEvalList &ee)
 }
 
 ProgramIO::ProgramIO() : nmbr_dims_(1), stms_(), exprs_() {}
-ProgramIO::ProgramIO(AST::StatementList stms, ExprEvalList exprs) : nmbr_dims_(1), stms_(stms), exprs_(exprs) {}
-ProgramIO::ProgramIO(unsigned int nmbr_dims, AST::StatementList stms, ExprEvalList exprs) : nmbr_dims_(nmbr_dims), stms_(stms), exprs_(exprs) {}
+ProgramIO::ProgramIO(AST::StatementList stms, ExprEvalList exprs) 
+  : nmbr_dims_(1), stms_(stms), exprs_(exprs) {}
+ProgramIO::ProgramIO(unsigned int nmbr_dims, AST::StatementList stms, ExprEvalList exprs)
+  : nmbr_dims_(nmbr_dims), stms_(stms), exprs_(exprs) {}
 
 member_imp(ProgramIO, unsigned int, nmbr_dims);
 member_imp(ProgramIO, AST::StatementList, stms);
@@ -91,7 +93,9 @@ member_imp(ProgramIO, ExprEvalList, exprs);
 
 std::ostream &operator<<(std::ostream &out, const ProgramIO &p)
 {
-  out << p.stms() << "\n" << p.exprs();
+  if (!p.stms().empty())
+    out << p.stms() << "\n";
+  out << p.exprs();
 
   return out;
 }

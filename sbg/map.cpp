@@ -67,9 +67,6 @@ Interval image(Interval i, LExp le) {
   }
 
   Util::RATIONAL rat_inf(Util::INT_Inf, 1);
-  // TODO: is it right? if (m == rat_inf && h == -rat_inf)
-  //  return i;
-
   if (m == rat_inf || m > rat_inf)
     return Interval(0, 1, Util::Inf);
 

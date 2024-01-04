@@ -57,9 +57,10 @@ struct MinReach {
   using PI = PathInfo<Set>;
 
   member_class(DSBGraph<Set>, dsbg);
+  member_class(bool, debug);
 
   MinReach();
-  MinReach(DSBGraph<Set> dsbg);
+  MinReach(DSBGraph<Set> dsbg, bool debug);
 
   PI calculate(const Set &starts, const Set &endings) const;
 
@@ -126,8 +127,10 @@ struct SBGMatching {
   member_class(Set, matched_U); // Right matched vertices, mutable
   member_class(Set, unmatched_U); // Right unmatched vertices, mutable
 
+  member_class(bool, debug);
+
   SBGMatching();
-  SBGMatching(SBGraph<Set> sbg);
+  SBGMatching(SBGraph<Set> sbg, bool debug);
 
   MatchInfo<Set> calculate();
 
@@ -177,8 +180,10 @@ struct SBGSCC {
  
   member_class(PW, rmap);
 
+  member_class(bool, debug);
+
   SBGSCC();
-  SBGSCC(DSBGraph<Set> dsbg);
+  SBGSCC(DSBGraph<Set> dsbg, bool debug);
 
   PW calculate();
 
@@ -221,8 +226,10 @@ struct SBGTopSort {
 
   member_class(Set, disordered);
 
+  member_class(bool, debug);
+
   SBGTopSort();
-  SBGTopSort(DSBGraph<Set> dsbg);
+  SBGTopSort(DSBGraph<Set> dsbg, bool debug);
 
   VertexOrder<Set> calculate(); 
 

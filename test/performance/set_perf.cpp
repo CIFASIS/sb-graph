@@ -37,10 +37,6 @@ TEST(SetPerf, Intersection)
     s2.emplaceBack(i);
   }
 
-  std::cout << s1 << "\n";
-  std::cout << s2 << "\n";
-  std::cout << s1.intersection(s2) << "\n";
-
   auto start = std::chrono::high_resolution_clock::now();
   s1.intersection(s2);
   auto end = std::chrono::high_resolution_clock::now();
@@ -65,10 +61,6 @@ TEST(SetPerf, Difference)
     s2.emplaceBack(i);
   }
 
-  std::cout << s1 << "\n";
-  std::cout << s2 << "\n";
-  std::cout << s1.difference(s2) << "\n";
-
   auto start = std::chrono::high_resolution_clock::now();
   s1.difference(s2);
   auto end = std::chrono::high_resolution_clock::now();
@@ -92,10 +84,6 @@ TEST(SetPerf, Union)
     SBG::LIB::Interval i(j*95+1, 1, (j+1)*95);
     s2.emplaceBack(i);
   }
-
-  std::cout << s1 << "\n";
-  std::cout << s2 << "\n";
-  std::cout << s1.cup(s2) << "\n";
 
   auto start = std::chrono::high_resolution_clock::now();
   s1.cup(s2);

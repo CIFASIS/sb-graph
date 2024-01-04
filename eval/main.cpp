@@ -26,87 +26,120 @@
  ******************************************************************************/
 
 #include <fstream>
+#include <getopt.h>
 
 #include "parser/sbg_program.hpp"
 #include "eval/visitors/program_visitor.hpp"
 
-void parseEvalProgramFromFile(std::string str)
+void parseEvalProgramFromFile(std::string fname, bool debug)
 {
+  std::ifstream in(fname.c_str());
+  if (in.fail()) 
+    SBG::Util::ERROR("Unable to open file");
+  in.unsetf(std::ios::skipws);
+
+  std::string str(
+    (std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>()
+  );
   SBG::Parser::StrIt iter = str.begin();
   SBG::Parser::StrIt end = str.end();
 
   SBG::Parser::SBGProgramRule g(iter); // Grammar
   SBG::AST::SBGProgram parser_result;
-  bool r = boost::spirit::qi::phrase_parse(iter, end, g, SBG::Parser::Skipper<SBG::Parser::StrIt>(), parser_result);
+  bool r = boost::spirit::qi::phrase_parse(
+    iter, end, g, SBG::Parser::Skipper<SBG::Parser::StrIt>(), parser_result
+  );
 
   std::cout << "-------------------------\n";
-  std::cout << ">>>>> Parser result <<<<<\n";
-  std::cout << "-------------------------\n";
-
   if (r && iter == end) {
     std::cout << "Parsing succeeded\n";
-    std::cout << "result = \n\n" << parser_result << "\n\n";
-
     std::cout << "-------------------------\n";
     std::cout << ">>>>>> Eval result <<<<<<\n";
-    std::cout << "-------------------------\n";
+    std::cout << "-------------------------\n\n";
 
-    SBG::Eval::ProgramVisitor program_visit; 
+    SBG::Eval::ProgramVisitor program_visit(debug); 
     SBG::Eval::ProgramIO visit_result = boost::apply_visitor(
       program_visit, parser_result
     );
-
-    std::cout << "Visit result = \n\n" << visit_result;
+    std::cout << visit_result;
   }
-
   else {
     std::string rest(iter, end);
     std::cout << "Parsing failed\n";
-    std::cout << "stopped at: " << rest << "\"\n";
+    std::cout << "-------------------------\n";
+    std::cout << "\nstopped at: \n" << rest << "\n";
   }
 
   return;
 }
 
-int main(int argc, char**argv) {
-  std::cout << "\n/////////////////////////////////////////////////////////\n\n";
-  std::cout << "SBG evaluator\n\n";
-  std::cout << "/////////////////////////////////////////////////////////\n\n";
+void usage()
+{
+  std::cout << "Usage parser [options] file" << std::endl;
+  std::cout << "Parses a SBG program." << std::endl;
+  std::cout << std::endl;
+  std::cout << "-f, --file      SBG program file used as input " << std::endl;
+  std::cout << "-h, --help      Display this information and exit" << std::endl;
+  std::cout << "-d, --debug     Activate debug" << std::endl;
+  std::cout << "-v, --version   Display version information and exit"
+    << std::endl;
+  std::cout << std::endl;
+  std::cout << "SBG library home page: https://github.com/CIFASIS/sb-graph"
+    << std::endl;
+}
 
-  std::cout << "[1] Parse + Evaluate program\n";
+void version()
+{
+  std::cout << "SBG library v3.0\n";
+  std::cout << "License GPLv3+: GNU GPL version 3 or later"
+    << " <http://gnu.org/licenses/gpl.html>\n";
+  std::cout << "This is free software: you are free to change and redistribute" 
+    << "it.\n";
+  std::cout << "There is NO WARRANTY, to the extent permitted by law.\n";
+}
 
+int main(int argc, char**argv)
+{
+  std::string filename;
   int opt;
-  std::cout << "Select one option:\n";
-  std::cin >> opt;
+  extern char* optarg;
+  bool debug = false;
 
-  std::cout << "Type filename: ";
-  std::string fname;
-  std::cin >> fname;
-
-  if (fname != "") {
-    std::ifstream in(fname.c_str());
-    if (in.fail()) {
-      std::cerr << "Unable to open file " << fname << std::endl;
-      exit(-1);
-    }
-    in.unsetf(std::ios::skipws);
-
-    std::string str((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+  while (true) {
+    static struct option long_options[] = {{"file", required_argument, 0, 'f'}
+                                           , {"help", no_argument, 0, 'h'}
+                                           , {"debug", no_argument, 0, 'd'}
+                                           , {"version", no_argument, 0, 'v'}
+                                           , {0, 0, 0, 0}};
+    opt = getopt_long(argc, argv, "f:hdv", long_options, nullptr);
+    if (opt == EOF) 
+      break;
     switch (opt) {
-      case 1:
-        parseEvalProgramFromFile(str);
+      case 'f':
+        filename = optarg;
         break;
-
+      case 'h':
+        usage();
+        exit(0);
+      case 'd':
+        debug = true;
+        break;
+      case 'v':
+        version();
+        exit(0);
+      case '?':
+        usage();
+        exit(-1);
+        break;
       default:
-        parseEvalProgramFromFile(str);
-        break;
+        abort();
     }
-  } 
+  }
 
-  else 
-    std::cout << "A filename should be provided\n";
-
-  std::cout << "Bye... :-) \n\n";
+  if (!filename.empty())
+    parseEvalProgramFromFile(filename, debug);
+  else
+    SBG::Util::ERROR("A filename should be provided");
 
   return 0;
 }

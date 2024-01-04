@@ -105,11 +105,13 @@ PWMap<Set> updateMap(const Set &V, const PWMap<Set> &smap
 }
 
 template<typename Set>
-MinReach<Set>::MinReach() : dsbg_() {}
+MinReach<Set>::MinReach() : dsbg_(), debug_(false) {}
 template<typename Set>
-MinReach<Set>::MinReach(DSBGraph<Set> sbg) : dsbg_(sbg) {}
+MinReach<Set>::MinReach(DSBGraph<Set> sbg, bool debug)
+  : dsbg_(sbg), debug_(debug) {}
 
 member_imp_temp(template<typename Set>, MinReach<Set>, DSBGraph<Set>, dsbg);
+member_imp_temp(template<typename Set>, MinReach<Set>, bool, debug);
 
 template<typename Set>
 PWMap<Set> MinReach<Set>::minReach1(
@@ -225,7 +227,8 @@ PathInfo<Set> MinReach<Set>::calculate(
       old_smap = new_smap;
       // Find adjacent vertex that reaches a minor vertex than the current one
       new_smap = minReach1(reach_edges, new_smap, new_rmap); 
-      Util::SBG_LOG << "minReach1 new_smap: " << new_smap << "\n\n";
+      if (debug())
+        Util::SBG_LOG << "minReach1 new_smap: " << new_smap << "\n\n";
       Vc = V.difference(old_smap.equalImage(new_smap));
 
       // If the condition is met, unmatched "backward" vertices reach unmatched
@@ -377,8 +380,10 @@ void SBGMatching<Set>::shortPath()
   do {
     set_paths_edges(E());
     shortPathStep();
-    Util::SBG_LOG << "short step smap: " << smap() << "\n";
-    Util::SBG_LOG << "short step matched edges: " << matched_E() << "\n\n";
+    if (debug()) {
+      Util::SBG_LOG << "short step smap: " << smap() << "\n";
+      Util::SBG_LOG << "short step matched edges: " << matched_E() << "\n\n";
+    }
   } while(!fullyMatchedU() && !paths_edges().isEmpty());
 
   // In this case we only offset vertices here because shortPath isn't looking
@@ -421,7 +426,7 @@ void SBGMatching<Set>::directedMinReach(const PW &dir_map)
   PW dir_omap = directedOffset(dir_map);
   DSBGraph<Set> dsbg = offsetGraph(dir_omap);
   dsbg.set_subE_map(sbg().subE_map());
-  MinReach min_reach(dsbg);
+  MinReach min_reach(dsbg, debug());
   Set unmatched_B = mapB().image().intersection(unmatched_V());
   Set unmatched_D = mapD().image().intersection(unmatched_V());
   PathInfo<Set> res = min_reach.calculate(
@@ -481,7 +486,8 @@ void SBGMatching<Set>::minReachable()
   do {
     set_paths_edges(E());
     minReachableStep();
-    Util::SBG_LOG << "minimum reachable step smap: " << smap() << "\n\n";
+    if (debug())
+      Util::SBG_LOG << "minimum reachable step smap: " << smap() << "\n\n";
   } while (!fullyMatchedU() && !paths_edges().isEmpty());
 
   return;
@@ -516,10 +522,10 @@ SBGMatching<Set>::SBGMatching()
   : sbg_(), V_(), Vmap_(), E_(), Emap_(), smap_(), rmap_(), omap_()
     , max_V_(), F_(), U_(), mapF_(), mapU_(), mapB_(), mapD_(), paths_edges_()
     , matched_E_(), unmatched_E_(), matched_V_(), unmatched_V_(), unmatched_F_()
-    , matched_U_(), unmatched_U_() {}
+    , matched_U_(), unmatched_U_(), debug_(false) {}
 template<typename Set>
-SBGMatching<Set>::SBGMatching(SBGraph<Set> sbg) 
-  : sbg_(sbg), V_(sbg.V()), Vmap_(sbg.Vmap()), Emap_(sbg.Emap()) {
+SBGMatching<Set>::SBGMatching(SBGraph<Set> sbg, bool debug)
+  : sbg_(sbg), V_(sbg.V()), Vmap_(sbg.Vmap()), Emap_(sbg.Emap()), debug_(debug) {
   set_E(Emap_.dom());
 
   PW id_vertex(V_);
@@ -577,6 +583,8 @@ member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, unmatched_V);
 member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, unmatched_F);
 member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, matched_U);
 member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, unmatched_U);
+
+member_imp_temp(template<typename Set>, SBGMatching<Set>, bool, debug);
 
 template<typename Set>
 Set SBGMatching<Set>::getAllowedEdges() const
@@ -642,7 +650,8 @@ void SBGMatching<Set>::updateOffset()
 template<typename Set>
 MatchInfo<Set> SBGMatching<Set>::calculate()
 {
-  Util::SBG_LOG << sbg() << "\n";
+  if (debug())
+    Util::SBG_LOG << sbg() << "\n";
 
   auto begin = std::chrono::high_resolution_clock::now();
   shortPath();
@@ -651,7 +660,8 @@ MatchInfo<Set> SBGMatching<Set>::calculate()
     end - begin
   );
 
-  Util::SBG_LOG << "shortPath: " << matched_E() << "\n\n";
+  if (debug())
+    Util::SBG_LOG << "shortPath: " << matched_E() << "\n\n";
 
   bool mr_used = false;
   if (!fullyMatchedU()) {
@@ -659,7 +669,8 @@ MatchInfo<Set> SBGMatching<Set>::calculate()
     minReachable();
     end = std::chrono::high_resolution_clock::now();
 
-    Util::SBG_LOG << "minReachable: " << matched_E() << "\n\n";
+    if (debug())
+      Util::SBG_LOG << "minReachable: " << matched_E() << "\n\n";
     mr_used = true;
   }
 
@@ -689,9 +700,10 @@ MatchInfo<Set> SBGMatching<Set>::calculate()
 
 template<typename Set>
 SBGSCC<Set>::SBGSCC() : dsbg_(), V_(), Vmap_(), E_(), Emap_(), Ediff_(), mapB_()
-  , mapD_(), rmap_() {}
+  , mapD_(), rmap_(), debug_(false) {}
 template<typename Set>
-SBGSCC<Set>::SBGSCC(DSBGraph<Set> dsbg) : dsbg_(dsbg) {
+SBGSCC<Set>::SBGSCC(DSBGraph<Set> dsbg, bool debug)
+  : dsbg_(dsbg), debug_(debug) {
   V_ = dsbg.V();
   Vmap_ = dsbg.Vmap();
   
@@ -719,6 +731,8 @@ member_imp_temp(template<typename Set>, SBGSCC<Set>, Set, Ediff);
 
 member_imp_temp(template<typename Set>, SBGSCC<Set>, PWMap<Set>, rmap);
 
+member_imp_temp(template<typename Set>, SBGSCC<Set>, bool, debug);
+
 template<typename Set>
 void SBGSCC<Set>::sccStep()
 {
@@ -728,7 +742,7 @@ void SBGSCC<Set>::sccStep()
     V(), Vmap()
     , mapB().restrict(E()), mapD().restrict(E()), Emap().restrict(E())
   );
-  MinReach min_reach(aux_dsbg);
+  MinReach min_reach(aux_dsbg, debug());
   PW new_rmap = min_reach.calculate(Set(), V()).reps();
   PW rmap_B = new_rmap.composition(mapB());
   PW rmap_D = new_rmap.composition(mapD());
@@ -758,7 +772,7 @@ PWMap<Set> SBGSCC<Set>::calculate()
     V(), Vmap()
     , mapB().restrict(E()), mapD().restrict(E()), Emap().restrict(E())
   );
-  MinReach min_reach(aux_dsbg);
+  MinReach min_reach(aux_dsbg, debug());
   PW new_rmap = min_reach.calculate(Set(), V()).reps();
   set_rmap(new_rmap);
 
@@ -808,15 +822,18 @@ std::ostream &operator<<(std::ostream &out, const VertexOrder<Set> &vo)
 }
 
 template<typename Set>
-SBGTopSort<Set>::SBGTopSort() : dsbg_(), mapB_(), mapD_(), disordered_() {}
+SBGTopSort<Set>::SBGTopSort()
+  : dsbg_(), mapB_(), mapD_(), disordered_(), debug_(false) {}
 template<typename Set>
-SBGTopSort<Set>::SBGTopSort(DSBGraph<Set> dsbg) : dsbg_(dsbg)
-  , mapB_(dsbg.mapB()), mapD_(dsbg.mapD()), disordered_(dsbg.V()) {}
+SBGTopSort<Set>::SBGTopSort(DSBGraph<Set> dsbg, bool debug)
+  : dsbg_(dsbg), mapB_(dsbg.mapB()), mapD_(dsbg.mapD()), disordered_(dsbg.V())
+    , debug_(debug) {}
 
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, DSBGraph<Set>, dsbg);
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, PWMap<Set>, mapB);
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, PWMap<Set>, mapD);
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, Set, disordered);
+member_imp_temp(template<typename Set>, SBGTopSort<Set>, bool, debug);
 
 template<typename Set>
 Set SBGTopSort<Set>::topSortStep()

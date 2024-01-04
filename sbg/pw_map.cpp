@@ -489,23 +489,27 @@ PWMap<Set> PWMap<Set>::minMap(
                        , "LIB::PWMap::minMap: dimensions don't match");
 
     for (unsigned int j = 0; j < dom_piece.size(); ++j) {
-      PWMap ith = minMap(dom_piece[j], e1[j], e2[j], e3[j], e4[j]);
+      if (e2[j] != e3[j]) {
+        PWMap ith = minMap(dom_piece[j], e1[j], e2[j], e3[j], e4[j]);
 
-      if (!ith.isEmpty()) {
-        for (const Map &map : ith) {
-          aux_dom[j] = map.dom().begin()->operator[](0);
+        if (!ith.isEmpty()) {
+          for (const Map &map : ith) {
+            aux_dom[j] = map.dom().begin()->operator[](0);
 
-          Map new_ith;
-          if (map.exp() == e2[j])
-            new_ith = Map(aux_dom, e2);
-          else
-            new_ith = Map(aux_dom, e3);
+            Map new_ith;
+            if (map.exp() == e2[j])
+              new_ith = Map(aux_dom, e2);
+            else
+              new_ith = Map(aux_dom, e3);
 
-          res.emplaceBack(new_ith);
+            res.emplaceBack(new_ith);
+          }
+
+          aux_dom = dom_piece;
         }
+
+        break;
       }
-        
-      aux_dom = dom_piece;
     }
   }
 

@@ -111,7 +111,7 @@ LExp LExp::inverse() const
 
   // Non constant map
   RAT slo = slope_;
-  if (slo != zero) {
+  if (slo != 0) {
     new_slope = RAT(slo.denominator(), slo.numerator());
     new_offset = (-offset_)/slo;
   }

@@ -209,7 +209,7 @@ RATIONAL RATIONAL::operator/=(const RATIONAL &other) const
 {
   boost::rational<INT> value_res = value_;
 
-  value_res *= other.value_;
+  value_res /= other.value_;
 
   return RATIONAL(value_res);
 }

@@ -23,7 +23,7 @@ namespace SBG {
 
 namespace Eval {
 
-ProgramVisitor::ProgramVisitor() : env_() {}
+ProgramVisitor::ProgramVisitor(bool debug) : env_(), debug_(debug) {}
 
 ProgramIO ProgramVisitor::operator()(AST::Program p) const 
 { 
@@ -43,7 +43,7 @@ ProgramIO ProgramVisitor::operator()(AST::Program p) const
     }
   }
 
-  EvalExpression eval_expr(result.nmbr_dims(), stm_visit.env());
+  EvalExpression eval_expr(result.nmbr_dims(), stm_visit.env(), debug_);
   for (AST::Expr e : p.exprs()) {
     ExprBaseType expr_res = boost::apply_visitor(eval_expr, e);
     result.exprs_ref().push_back(ExprEval(e, expr_res));

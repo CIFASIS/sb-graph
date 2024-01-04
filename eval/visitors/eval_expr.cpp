@@ -292,46 +292,46 @@ auto connected_visitor_ = Util::Overload {
 };
 
 auto matching_visitor_ = Util::Overload {
-  [](LIB::BaseSBG a, Util::NAT b) { 
-    LIB::BaseMatch match(a.copy(b));
+  [](LIB::BaseSBG a, Util::MD_NAT b, bool c) { 
+    LIB::BaseMatch match(a.copy(b[0]), c);
     return InfoBaseType(match.calculate()); 
   },
-  [](LIB::CanonSBG a, Util::NAT b) {
-    LIB::CanonMatch match(a.copy(b));
+  [](LIB::CanonSBG a, Util::MD_NAT b, bool c) {
+    LIB::CanonMatch match(a.copy(b[0]), c);
     return InfoBaseType(match.calculate());
   },
-  [](auto a, auto b) {
-    Util::ERROR("Wrong arguments for minReach");
+  [](auto a, auto b, auto c) {
+    Util::ERROR("Wrong arguments for matching");
     return InfoBaseType();
   }
 };
 
 auto scc_visitor_ = Util::Overload {
-  [](LIB::BaseDSBG a) { 
-    LIB::BaseSCC scc(a);
+  [](LIB::BaseDSBG a, bool b) { 
+    LIB::BaseSCC scc(a, b);
     return MapBaseType(scc.calculate());
   },
-  [](LIB::CanonDSBG a) {
-    LIB::CanonSCC scc(a);
+  [](LIB::CanonDSBG a, bool b) {
+    LIB::CanonSCC scc(a, b);
     return MapBaseType(scc.calculate());
   },
-  [](auto a) {
-    Util::ERROR("Wrong arguments for minReach");
+  [](auto a, auto b) {
+    Util::ERROR("Wrong arguments for scc");
     return MapBaseType();
   }
 };
 
 auto ts_visitor_ = Util::Overload {
-  [](LIB::BaseDSBG a) { 
-    LIB::BaseTopSort ts(a);
+  [](LIB::BaseDSBG a, bool b) { 
+    LIB::BaseTopSort ts(a, b);
     return InfoBaseType(ts.calculate()); 
   },
-  [](LIB::CanonDSBG a) {
-    LIB::CanonTopSort ts(a);
+  [](LIB::CanonDSBG a, bool b) {
+    LIB::CanonTopSort ts(a, b);
     return InfoBaseType(ts.calculate());
   },
-  [](auto a) {
-    Util::ERROR("Wrong arguments for minReach");
+  [](auto a, auto b) {
+    Util::ERROR("Wrong arguments for ts");
     return InfoBaseType();
   }
 };
@@ -340,10 +340,11 @@ auto ts_visitor_ = Util::Overload {
 // Expression evaluator --------------------------------------------------------
 // -----------------------------------------------------------------------------
 
-EvalExpression::EvalExpression() : nmbr_dims_(1), env_() {}
-EvalExpression::EvalExpression(VarEnv env) : nmbr_dims_(1), env_(env) {}
-EvalExpression::EvalExpression(unsigned int nmbr_dims, VarEnv env)
-  : nmbr_dims_(nmbr_dims), env_(env) {}
+EvalExpression::EvalExpression() : nmbr_dims_(1), env_(), debug_(false) {}
+EvalExpression::EvalExpression(VarEnv env)
+  : nmbr_dims_(1), env_(env), debug_(false) {}
+EvalExpression::EvalExpression(unsigned int nmbr_dims, VarEnv env, bool debug)
+  : nmbr_dims_(nmbr_dims), env_(env), debug_(debug) {}
 
 ExprBaseType EvalExpression::operator()(AST::Natural v) const
 {
@@ -666,7 +667,9 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
 
           SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
           NatBaseType copies = std::visit(EvalNatBT{}, eval_args[1]);
-          InfoBaseType result = std::visit(matching_visitor_, g, copies);
+          InfoBaseType result = std::visit(
+            matching_visitor_, g, copies, std::variant<bool>(debug_)
+          );
           return result;
         }
         break;
@@ -676,7 +679,9 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
           arity_ok = true;
 
           SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
-          MapBaseType result = std::visit(scc_visitor_, g);
+          MapBaseType result = std::visit(
+            scc_visitor_, g, std::variant<bool>(debug_)
+          );
           return result;
         }
         break;
@@ -686,7 +691,9 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
           arity_ok = true;
 
           SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
-          InfoBaseType result = std::visit(ts_visitor_, g);
+          InfoBaseType result = std::visit(
+            ts_visitor_, g, std::variant<bool>(debug_)
+          );
           return result;
         }
         break;

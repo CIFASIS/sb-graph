@@ -21,39 +21,45 @@
 
 #include "eval/visitors/program_visitor.hpp"
 #include "parser/sbg_program.hpp"
-#include "util/logger.hpp"
 
-void parseProgramFromFile(std::string str)
+void parseEvalProgramFromFile(std::string fname)
 {
+  std::ifstream in(fname.c_str());
+  if (in.fail()) 
+    SBG::Util::ERROR("Unable to open file");
+  in.unsetf(std::ios::skipws);
+
+  std::string str(
+    (std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>()
+  );
   SBG::Parser::StrIt iter = str.begin();
   SBG::Parser::StrIt end = str.end();
 
   SBG::Parser::SBGProgramRule g(iter); // Grammar
   SBG::AST::SBGProgram parser_result;
-  bool r = boost::spirit::qi::phrase_parse(iter, end, g, SBG::Parser::Skipper<SBG::Parser::StrIt>(), parser_result);
+  bool r = boost::spirit::qi::phrase_parse(
+    iter, end, g, SBG::Parser::Skipper<SBG::Parser::StrIt>(), parser_result
+  );
 
   SBG::Util::SBG_LOG << "-------------------------\n";
-
   if (r && iter == end) {
     SBG::Util::SBG_LOG << "Parsing succeeded\n";
-
     SBG::Util::SBG_LOG << "-------------------------\n";
     SBG::Util::SBG_LOG << ">>>>>> Eval result <<<<<<\n";
-    SBG::Util::SBG_LOG << "-------------------------\n";
+    SBG::Util::SBG_LOG << "-------------------------\n\n";
 
-    SBG::Eval::ProgramVisitor program_visit; 
-    SBG::Eval::ProgramIO visit_result = Apply(program_visit, parser_result);
-
-    SBG::Util::SBG_LOG << "Visit result = \n\n" << visit_result;
+    SBG::Eval::ProgramVisitor program_visit(false);
+    SBG::Eval::ProgramIO visit_result = boost::apply_visitor(
+      program_visit, parser_result
+    );
+    SBG::Util::SBG_LOG << visit_result;
   }
-
   else {
     std::string rest(iter, end);
     SBG::Util::SBG_LOG << "Parsing failed\n";
-    SBG::Util::SBG_LOG << "stopped at: " << rest << "\"\n";
+    SBG::Util::SBG_LOG << "-------------------------\n";
+    SBG::Util::SBG_LOG << "\nstopped at: \n" << rest << "\n";
   }
-
-  SBG::Util::SBG_LOG << "-------------------------\n";
 
   return;
 }
@@ -62,22 +68,10 @@ int main(int argc, char** argv)
 {
   std::string fname = "../../../map.test";
 
-  if (fname != "") {
-    std::ifstream in(fname.c_str());
-    if (in.fail()) {
-      std::cerr << "Unable to open file " << fname << std::endl;
-      exit(-1);
-    }
-    in.unsetf(std::ios::skipws);
-
-    std::string str((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-    parseProgramFromFile(str);
-  } 
-
+  if (fname != "")
+    parseEvalProgramFromFile(fname);
   else 
     SBG::Util::SBG_LOG << "A filename should be provided\n";
-
-  SBG::Util::SBG_LOG << "Bye... :-)\n";
 
   return 0;
 }

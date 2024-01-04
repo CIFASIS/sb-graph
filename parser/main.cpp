@@ -18,140 +18,107 @@
  ******************************************************************************/
 
 #include <fstream>
+#include <getopt.h>
 
 #include "parser/sbg_program.hpp"
 
-void parseExprsFromFile(std::string str)
+void parseProgramFromFile(std::string fname)
 {
-  SBG::Parser::StrIt iter = str.begin();
-  SBG::Parser::StrIt end = str.end();
+  std::ifstream in(fname.c_str());
+  if (in.fail()) 
+    SBG::Util::ERROR("Unable to open file");
+  in.unsetf(std::ios::skipws);
 
-  SBG::Parser::ExprRule g(iter); // Grammar
-  SBG::AST::ExprList result;
-  bool r = boost::spirit::qi::phrase_parse(iter, end, g, SBG::Parser::Skipper<SBG::Parser::StrIt>(), result);
-
-  std::cout << "-------------------------\n";
-
-  if (r && iter == end) {
-    std::cout << "Parsing succeeded\n";
-    std::cout << "result = \n\n" << result << "\n\n";
-  }
-
-  else {
-    std::string rest(iter, end);
-    std::cout << "Parsing failed\n";
-    std::cout << "stopped at: " << rest << "\"\n";
-  }
-
-  std::cout << "-------------------------\n";
-
-  return;
-}
-
-void parseStmsFromFile(std::string str)
-{
-  SBG::Parser::StrIt iter = str.begin();
-  SBG::Parser::StrIt end = str.end();
-
-  SBG::Parser::StmRule g(iter); // Grammar
-  SBG::AST::StatementList result;
-  bool r = boost::spirit::qi::phrase_parse(iter, end, g, SBG::Parser::Skipper<SBG::Parser::StrIt>(), result);
-
-  std::cout << "-------------------------\n";
-
-  if (r && iter == end) {
-    std::cout << "Parsing succeeded\n";
-    std::cout << "result = \n\n" << result << "\n\n";
-  }
-
-  else {
-    std::string rest(iter, end);
-    std::cout << "Parsing failed\n";
-    std::cout << "stopped at: " << rest << "\"\n";
-  }
-
-  std::cout << "-------------------------\n";
-
-  return;
-}
-
-void parseProgramFromFile(std::string str)
-{
+  std::string str(
+    (std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>()
+  );
   SBG::Parser::StrIt iter = str.begin();
   SBG::Parser::StrIt end = str.end();
 
   SBG::Parser::SBGProgramRule g(iter); // Grammar
   SBG::AST::SBGProgram result;
-  bool r = boost::spirit::qi::phrase_parse(iter, end, g, SBG::Parser::Skipper<SBG::Parser::StrIt>(), result);
+  bool r = boost::spirit::qi::phrase_parse(
+    iter, end, g, SBG::Parser::Skipper<SBG::Parser::StrIt>(), result
+  );
 
   std::cout << "-------------------------\n";
-
   if (r && iter == end) {
     std::cout << "Parsing succeeded\n";
-    std::cout << "result = \n\n" << result << "\n\n";
+    std::cout << "-------------------------\n";
+    std::cout << "\n" << result;
   }
-
   else {
     std::string rest(iter, end);
     std::cout << "Parsing failed\n";
-    std::cout << "stopped at: " << rest << "\"\n";
+    std::cout << "-------------------------\n";
+    std::cout << "\nstopped at: \n" << rest << "\n";
   }
-
-  std::cout << "-------------------------\n";
 
   return;
 }
 
+void usage()
+{
+  std::cout << "Usage parser [options] file" << std::endl;
+  std::cout << "Parses a SBG program." << std::endl;
+  std::cout << std::endl;
+  std::cout << "-f, --file      SBG program file used as input " << std::endl;
+  std::cout << "-h, --help      Display this information and exit" << std::endl;
+  
+  std::cout << "-v, --version   Display version information and exit"
+    << std::endl;
+  std::cout << std::endl;
+  std::cout << "SBG library home page: https://github.com/CIFASIS/sb-graph"
+    << std::endl;
+}
+
+void version()
+{
+  std::cout << "SBG library v3.0\n";
+  std::cout << "License GPLv3+: GNU GPL version 3 or later"
+    << " <http://gnu.org/licenses/gpl.html>\n";
+  std::cout << "This is free software: you are free to change and redistribute" 
+    << "it.\n";
+  std::cout << "There is NO WARRANTY, to the extent permitted by law.\n";
+}
+
 int main(int argc, char** argv) 
 {
-  std::cout << "\n/////////////////////////////////////////////////////////\n\n";
-  std::cout << "SBG parser\n\n";
-  std::cout << "/////////////////////////////////////////////////////////\n\n";
-
-  std::cout << "[1] Parse expressions\n";
-  std::cout << "[2] Parse statements\n";
-  std::cout << "[3] Parse SBG program\n";
-
+  std::string filename;
   int opt;
-  std::cout << "Select one option:\n";
-  std::cin >> opt;
+  extern char* optarg;
 
-  std::cout << "Type filename: ";
-  std::string fname;
-  std::cin >> fname;
-
-  if (fname != "") {
-    std::ifstream in(fname.c_str());
-    if (in.fail()) {
-      std::cerr << "Unable to open file " << fname << std::endl;
-      exit(-1);
-    }
-    in.unsetf(std::ios::skipws);
-
-    std::string str((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+  while (true) {
+    static struct option long_options[] = {{"version", no_argument, 0, 'v'}
+                                           , {"help", no_argument, 0, 'h'}
+                                           , {"file", required_argument, 0, 'f'}
+                                           , {0, 0, 0, 0}};
+    opt = getopt_long(argc, argv, "vhf:", long_options, nullptr);
+    if (opt == EOF) 
+      break;
     switch (opt) {
-      case 1:
-        parseExprsFromFile(str);
+      case 'v':
+        version();
+        exit(0);
+      case 'h':
+        usage();
+        exit(0);
+      case 'f':
+        filename = optarg;
         break;
-
-      case 2:
-        parseStmsFromFile(str);
+      case '?':
+        usage();
+        exit(-1);
         break;
-
-      case 3:
-        parseProgramFromFile(str);
-        break;
-
       default:
-        parseProgramFromFile(str);
-        break;
+        abort();
     }
-  } 
+  }
 
-  else 
-    std::cout << "A filename should be provided\n";
-
-  std::cout << "Bye... :-) \n\n";
+  if (!filename.empty())
+    parseProgramFromFile(filename);
+  else
+    SBG::Util::ERROR("A filename should be provided");
 
   return 0;
 }

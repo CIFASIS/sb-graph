@@ -197,7 +197,7 @@ UnordPWMDInter UnordPWMDInter::cup(const UnordPWMDInter &other) const
   if (pieces_ == other.pieces_)
     return *this;
 
-  if (maxElem() <= other.minElem()) {
+  if (maxElem() < other.minElem()) {
     for (const SetPiece &mdi1 : pieces_)
       res.emplaceBack(mdi1);
 
@@ -207,7 +207,7 @@ UnordPWMDInter UnordPWMDInter::cup(const UnordPWMDInter &other) const
     return res;
   }
 
-  if (other.maxElem() <= minElem()) {
+  if (other.maxElem() < minElem()) {
     for (const SetPiece &mdi2 : other.pieces_)
       res.emplaceBack(mdi2);
 

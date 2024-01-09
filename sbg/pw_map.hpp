@@ -24,8 +24,6 @@
 #ifndef SBG_PWMAP_HPP
 #define SBG_PWMAP_HPP
 
-#include <boost/container/flat_set.hpp>
-
 #include "sbg/map.hpp"
 
 namespace SBG {
@@ -37,7 +35,7 @@ namespace LIB {
  */
 
 template<typename Set>
-using MapSet = boost::unordered::unordered_flat_set<SBGMap<Set>>;
+using MapSet = std::vector<SBGMap<Set>>;
 template<typename Set>
 std::ostream &operator<<(std::ostream &out, const MapSet<Set> &ms);
 
@@ -79,6 +77,12 @@ struct PWMap {
   Set image(const Set &subdom) const;
   Set preImage() const;
   Set preImage(const Set &subcodom) const;
+  /** @function inverse
+   *
+   * @brief Calculate the inverse of a bijective pw_map. Throws error if it is
+   * not bijective.
+   */
+  PWMap inverse() const;
   /** @function composition
    *
    * @brief Apply first pw2, then pw1 (i.e. pw1(pw2(x)) is calculated).
@@ -141,12 +145,23 @@ struct PWMap {
   PWMap minAdjMap(const PWMap &other1, const PWMap &other2) const;
   PWMap minAdjMap(const PWMap &other) const;
 
-  PWMap minInv(const Set &im) const;
-  PWMap minInv() const;
+  /** @function firstInv
+   *
+   * @brief Calculate the inverse of a pw_map. If it is not injective,
+   * for the elements with more than one preImage, it will assign the first
+   * appearing inverted expression that maps to that element.
+   *
+   * @param allowed 
+   */
+  PWMap firstInv(const Set &allowed) const;
+  PWMap firstInv() const;
 
   PWMap filterMap(bool (*f)(const SBGMap<Set> &)) const;
 
-  // Returns elements in both doms, that have the same image in both maps
+  /** @function equalImage
+   *
+   * @brief Return elements in both doms, that have the same image in both maps
+   */
   Set equalImage(const PWMap &other) const;
 
   PWMap offsetDom(const Util::MD_NAT &off) const;

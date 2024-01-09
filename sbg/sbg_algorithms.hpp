@@ -25,7 +25,6 @@
 #define SBG_SBGALGO_HPP
 
 #include <chrono>
-#include <iostream>
 #include <list>
 
 #include "sbg/sbg.hpp"
@@ -127,12 +126,14 @@ struct SBGMatching {
   member_class(Set, matched_U); // Right matched vertices, mutable
   member_class(Set, unmatched_U); // Right unmatched vertices, mutable
 
+  member_class(unsigned int, k); // Depth of shortPath
+
   member_class(bool, debug);
 
   SBGMatching();
   SBGMatching(SBGraph<Set> sbg, bool debug);
 
-  MatchInfo<Set> calculate();
+  MatchInfo<Set> calculate(unsigned int k);
 
   private:
   Set getManyToOne() const; // Find N:1 connections

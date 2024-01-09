@@ -223,9 +223,9 @@ SBGMap<Set> SBGMap<Set>::composition(const SBGMap &other) const
 // Extra functions -------------------------------------------------------------
 
 template<typename Set>
-SBGMap<Set> SBGMap<Set>::minInv(const Set &d) const
+SBGMap<Set> SBGMap<Set>::minInv(const Set &allowed) const
 {
-  Set res_dom = restrict(d).image();
+  Set res_dom = restrict(allowed).image();
 
   if (dom_.cardinal() == 1 || exp_.isConstant())
     return SBGMap<Set>(res_dom, Exp(dom_.minElem()));

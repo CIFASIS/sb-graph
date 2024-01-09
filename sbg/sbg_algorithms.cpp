@@ -144,7 +144,7 @@ PWMap<Set> MinReach<Set>::minReach1(
   return new_smap;
 }
 
-// Handle ONE recursion
+// Handle recursion
 template<typename Set>
 PathInfo<Set> MinReach<Set>::recursion(
   unsigned int n, const Set &ER, const Set &rv
@@ -172,9 +172,8 @@ PathInfo<Set> MinReach<Set>::recursion(
 
     PW sideB  = mapB.restrict(ER_plus_side)
       , sideD = mapD.restrict(ER_plus_side);
-    // Get successor in recursion. minInv is used because each vertex has only
-    // one possible option.
-    PW ith = sideD.composition(sideB.minInv());
+    // Get successor in recursion
+    PW ith = sideD.composition(sideB.inverse());
     new_smap = ith.combine(new_smap);
  
     // Vertices in the same set vertex as start
@@ -241,12 +240,13 @@ PathInfo<Set> MinReach<Set>::calculate(
       if (!Vc.isEmpty()) {
         new_rmap = new_smap.mapInf(); // Get minimum reachable following path
 
+        // Edges used in paths to reach a minimum
         Set E_succ = mapD.equalImage(new_smap.composition(mapB));
         if (!E_succ.isEmpty()) { // A new path was chosen
           old_semap = new_semap;
           PW mapB_succ = mapB.restrict(E_succ)
                      , mapD_succ = mapD.restrict(E_succ);
-          new_semap = mapB_succ.minInv(E_succ).composition(mapD_succ);
+          new_semap = mapB_succ.inverse().composition(mapD_succ);
           new_semap = new_semap.combine(old_semap);
 
           Set not_changed = new_semap.equalImage(old_semap);
@@ -285,6 +285,8 @@ PathInfo<Set> MinReach<Set>::calculate(
               res = recursion(j, ER, reach_vertices, new_semap, new_smap, new_rmap);
               new_smap = res.succs();
               new_rmap = res.reps();
+              if (debug())
+                Util::SBG_LOG << "recursion new_smap: " << new_smap << "\n\n";
             }
           }
         }
@@ -306,7 +308,8 @@ PathInfo<Set> MinReach<Set>::calculate(
 template<typename Set>
 void SBGMatching<Set>::shortPathDirection(const Set &endings, Direction dir)
 {
-  PW auxB = mapB().restrict(paths_edges()), auxD = mapD().restrict(paths_edges());
+  PW auxB = mapB().restrict(paths_edges())
+    , auxD = mapD().restrict(paths_edges());
   
   Set unmatched;
   if (dir == forward)
@@ -319,8 +322,8 @@ void SBGMatching<Set>::shortPathDirection(const Set &endings, Direction dir)
 
   Set reach_end = endings; // Vertices that reach endings
   Set P; // Vertices adjacent to reach_end
-  unsigned int k = 0; // Current length of path
 
+  unsigned int j = 0; // Current length of path
   do {
     // Start of edges entering reach_end
     P = auxB.image(auxD.preImage(reach_end));
@@ -328,16 +331,16 @@ void SBGMatching<Set>::shortPathDirection(const Set &endings, Direction dir)
     // Edges that reach reach_end
     Set reach_edges = auxB.preImage(P).intersection(auxD.preImage(reach_end));
     // Map from starts to the edges that take them to reach_end
-    PW starts = auxB.minInv(reach_edges);
+    PW starts = auxB.firstInv(reach_edges);
     PW smap_reach = auxD.composition(starts);
     set_smap(smap_reach.combine(smap()));
     PW rmap_reach = rmap().composition(smap_reach);
     set_rmap(rmap_reach.combine(rmap()));
 
     reach_end = reach_end.cup(P);
-    k++;
+    j++;
   } while (!P.isEmpty() && P.intersection(unmatched).isEmpty() 
-           && k < sbg().nmbrSV());
+           && j < k());
 
   return;
 }
@@ -382,7 +385,8 @@ void SBGMatching<Set>::shortPath()
     shortPathStep();
     if (debug()) {
       Util::SBG_LOG << "short step smap: " << smap() << "\n";
-      Util::SBG_LOG << "short step matched edges: " << matched_E() << "\n\n";
+      Util::SBG_LOG << "short step matched edges: " << matched_E() << "\n";
+      Util::SBG_LOG << "short step unmatched V: " << unmatched_V() << "\n\n";
     }
   } while(!fullyMatchedU() && !paths_edges().isEmpty());
 
@@ -433,7 +437,7 @@ void SBGMatching<Set>::directedMinReach(const PW &dir_map)
     dir_omap.image(unmatched_B), dir_omap.image(unmatched_D)
   );
 
-  PW aux_omap = dir_omap.combine(omap()), to_normal = aux_omap.minInv();
+  PW aux_omap = dir_omap.combine(omap()), to_normal = aux_omap.inverse();
   PW aux_succs = res.succs().composition(aux_omap);
   set_smap(to_normal.composition(aux_succs));
   PW aux_reps = res.reps().composition(aux_omap);
@@ -445,10 +449,9 @@ void SBGMatching<Set>::minReachableStep()
 {
   // *** Forward direction
   directedMinReach(mapU());
+  Set reach_unmatched = rmap().preImage(unmatched_F());
   Set pe = getAllowedEdges();
-  Set reach_unmatched = rmap().preImage(unmatched_V());
-  reach_unmatched = mapB().preImage(reach_unmatched);
-  set_paths_edges(pe.intersection(reach_unmatched));
+  set_paths_edges(pe);
 
   // *** Backward direction
   PWMap<Set> auxB = mapB();
@@ -456,16 +459,12 @@ void SBGMatching<Set>::minReachableStep()
   set_mapD(auxB);
 
   directedMinReach(mapF());
+  // Vertices that reach unmatched left and right vertices 
+  reach_unmatched = reach_unmatched.intersection(rmap().preImage(unmatched_U()));
   pe = paths_edges().intersection(getAllowedEdges());
 
-  // *** Edges that connect unmatched left vertices with unmatched right ones 
-  reach_unmatched = rmap().preImage(unmatched_V());
   set_rmap(rmap().restrict(reach_unmatched));
   set_smap(smap().restrict(reach_unmatched));
-
-  pe = pe.intersection(mapB().preImage(reach_unmatched));
-  pe = pe.intersection(mapD().preImage(reach_unmatched));
-  set_paths_edges(pe);
 
   // *** Initial direction
   set_mapD(mapB());
@@ -486,8 +485,10 @@ void SBGMatching<Set>::minReachable()
   do {
     set_paths_edges(E());
     minReachableStep();
-    if (debug())
-      Util::SBG_LOG << "minimum reachable step smap: " << smap() << "\n\n";
+    if (debug()) {
+      Util::SBG_LOG << "minimum reachable step smap: " << smap() << "\n";
+      Util::SBG_LOG << "minimum reachable unmatched V: " << unmatched_V() << "\n\n";
+    }
   } while (!fullyMatchedU() && !paths_edges().isEmpty());
 
   return;
@@ -522,10 +523,11 @@ SBGMatching<Set>::SBGMatching()
   : sbg_(), V_(), Vmap_(), E_(), Emap_(), smap_(), rmap_(), omap_()
     , max_V_(), F_(), U_(), mapF_(), mapU_(), mapB_(), mapD_(), paths_edges_()
     , matched_E_(), unmatched_E_(), matched_V_(), unmatched_V_(), unmatched_F_()
-    , matched_U_(), unmatched_U_(), debug_(false) {}
+    , matched_U_(), unmatched_U_(), k_(6), debug_(false) {}
 template<typename Set>
 SBGMatching<Set>::SBGMatching(SBGraph<Set> sbg, bool debug)
-  : sbg_(sbg), V_(sbg.V()), Vmap_(sbg.Vmap()), Emap_(sbg.Emap()), debug_(debug) {
+  : sbg_(sbg), V_(sbg.V()), Vmap_(sbg.Vmap()), Emap_(sbg.Emap()), k_(6)
+    , debug_(debug) {
   set_E(Emap_.dom());
 
   PW id_vertex(V_);
@@ -583,6 +585,8 @@ member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, unmatched_V);
 member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, unmatched_F);
 member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, matched_U);
 member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, unmatched_U);
+
+member_imp_temp(template<typename Set>, SBGMatching<Set>, unsigned int, k);
 
 member_imp_temp(template<typename Set>, SBGMatching<Set>, bool, debug);
 
@@ -648,10 +652,11 @@ void SBGMatching<Set>::updateOffset()
 }
 
 template<typename Set>
-MatchInfo<Set> SBGMatching<Set>::calculate()
+MatchInfo<Set> SBGMatching<Set>::calculate(unsigned int k)
 {
   if (debug())
     Util::SBG_LOG << sbg() << "\n";
+  set_k(k);
 
   auto begin = std::chrono::high_resolution_clock::now();
   shortPath();

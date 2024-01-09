@@ -54,14 +54,14 @@ PWMap<Set>::PWMap() : maps_() {}
 template<typename Set>
 PWMap<Set>::PWMap(Set s) : maps_() {
   if (!s.isEmpty()) {
-    SBGMap<Set> sbgmap(s, Exp(s.begin()->size(), LExp()));
-    maps_.emplace(sbgmap);
+    SBGMap<Set> map(s, Exp(s.begin()->size(), LExp()));
+    maps_.push_back(map);
   }
 }
 template<typename Set>
 PWMap<Set>::PWMap(Map map) : maps_() {
   if (!map.dom().isEmpty())
-    maps_.emplace(map);
+    maps_.push_back(map);
 }
 template<typename Set>
 PWMap<Set>::PWMap(MS maps) : maps_(maps) {}
@@ -89,13 +89,13 @@ std::size_t PWMap<Set>::size() const { return maps_.size(); }
 template<typename Set>
 void PWMap<Set>::emplace(Map map) {
   if (!map.dom().isEmpty())
-    maps_.emplace_hint(maps_.end(), map);
+    maps_.push_back(map);
 }
 template<typename Set>
 void PWMap<Set>::emplaceBack(Map map)
 {
   if (!map.dom().isEmpty())
-    maps_.emplace_hint(maps_.end(), map);
+    maps_.push_back(map);
 }
 
 template<typename Set>
@@ -224,6 +224,30 @@ Set PWMap<Set>::preImage(const Set &subcodom) const
 }
 
 template<typename Set>
+PWMap<Set> PWMap<Set>::inverse() const
+{
+  PWMap res;
+
+  for (const Map &map : maps_) {
+    if (!map.exp().isConstant()) {
+      Set new_dom = map.image();
+      Exp new_exp = map.exp().inverse();
+      res.emplaceBack(Map(new_dom, new_exp));
+    }
+    else if (map.dom().cardinal() == 1) {
+      Set new_dom = map.image();
+      Exp new_exp(map.dom().minElem());
+      res.emplaceBack(Map(new_dom, new_exp));
+    }
+    else {
+      Util::ERROR("LIB::PWMap::inverse: map is not bijective");
+    }
+  }
+
+  return res;
+}
+
+template<typename Set>
 PWMap<Set> PWMap<Set>::composition(const PWMap &other) const
 {
   PWMap<Set> res;
@@ -285,16 +309,16 @@ PWMap<Set> PWMap<Set>::concatenation(const PWMap &other) const
 template<typename Set>
 PWMap<Set> PWMap<Set>::combine(const PWMap &other) const
 {
-  PWMap res = *this;
-
   if (isEmpty())
     return other;
 
   if (other.isEmpty())
     return *this;
 
+  PWMap res = *this;
+  Set dom1 = dom();
   for (const Map &map2 : other.maps_) {
-    Set dom2 = map2.dom(), new_dom = dom2.difference(dom());
+    Set dom2 = map2.dom(), new_dom = dom2.difference(dom1);
     res.emplaceBack(Map(new_dom, map2.exp()));
   }
 
@@ -721,25 +745,18 @@ PWMap<Set> PWMap<Set>::minAdjMap(const PWMap &other) const
 }
 
 template<typename Set>
-PWMap<Set> PWMap<Set>::minInv(const Set &d) const
+PWMap<Set> PWMap<Set>::firstInv(const Set &allowed) const
 {
   PWMap res;
 
-  if (!isEmpty() && !d.isEmpty()) {
-    Map first = *begin();
-    res.emplaceBack(first.minInv(d));
-    for (const Map &map : maps_) {
-      Map ith = map.minInv(d);
-      Set cap_dom = ith.dom().intersection(res.dom());
+  Set visited;
+  for (const Map &map : maps_) {
+    Set res_dom = map.image(allowed).difference(visited);
+    if (!res_dom.isEmpty()) {
+      Map new_map(map.preImage(res_dom), map.exp());
+      res.emplaceBack(new_map.minInv());
 
-      if (!cap_dom.isEmpty()) {
-        PWMap min = res.minMap(PWMap(ith));
-        res = min.combine(res);
-        Set diff = ith.dom().difference(res.dom());
-        res.emplaceBack(Map(diff, ith.exp()));
-      }
-      else
-        res.emplaceBack(ith);
+      visited = visited.cup(map.image(allowed));
     }
   }
 
@@ -747,7 +764,7 @@ PWMap<Set> PWMap<Set>::minInv(const Set &d) const
 }
 
 template<typename Set>
-PWMap<Set> PWMap<Set>::minInv() const { return minInv(dom()); }
+PWMap<Set> PWMap<Set>::firstInv() const { return firstInv(dom()); }
 
 template<typename Set>
 PWMap<Set> PWMap<Set>::filterMap(bool (*f)(const SBGMap<Set> &)) const
@@ -847,9 +864,9 @@ PWMap<Set> PWMap<Set>::normalize(const PWMap &other) const
 {
   PWMap res;
 
-  Set visited;
+  Set visited, dom1;
   for (const Map &map1 : maps_) {
-    Set ith = dom();
+    Set ith = dom1;
     if (ith.intersection(visited).isEmpty()) {
       for (const Map &map2 : maps_)
         if (map1.exp() == map2.exp())

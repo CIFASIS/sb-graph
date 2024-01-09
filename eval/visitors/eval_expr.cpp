@@ -85,28 +85,6 @@ auto compose_map_visitor_ = Util::Overload {
   }
 };
 
-/*
-auto inverse_visitor_ = Util::Overload {
-  [](LIB::LExp a) { return LinearBaseType(a.inverse()); },
-  [](LIB::Exp a) { return LinearBaseType(a.inverse()); },
-  [](auto a) { 
-    Util::ERROR("Wrong arguments for inversion"); 
-    return ExprBaseType();
-  }
-};
-
-auto image_visitor1_ = Util::Overload {
-  [](LIB::BaseMap a) { return ContainerBaseType(a.image()); },
-  [](LIB::CanonMap a) { return ContainerBaseType(a.image()); },
-  [](LIB::BasePWMap a) { return ContainerBaseType(a.image()); },
-  [](LIB::CanonPWMap a) { return ContainerBaseType(a.image()); },
-  [](auto a) { 
-    Util::ERROR("Wrong arguments for image 1"); 
-    return ExprBaseType(); 
-  }
-};
-*/
-
 auto image_visitor2_ = Util::Overload {
   [](LIB::UnordSet a, LIB::BaseMap b) { return ContainerBaseType(b.image(a)); },
   [](LIB::OrdSet a, LIB::CanonMap b) { return ContainerBaseType(b.image(a)); },
@@ -121,19 +99,6 @@ auto image_visitor2_ = Util::Overload {
     return ContainerBaseType();
   }
 };
-
-/*
-auto pre_image_visitor1_ = Util::Overload {
-  [](LIB::BaseMap a) { return ContainerBaseType(a.preImage()); },
-  [](LIB::CanonMap a) { return ContainerBaseType(a.preImage()); },
-  [](LIB::BasePWMap a) { return ContainerBaseType(a.preImage()); },
-  [](LIB::CanonPWMap a) { return ContainerBaseType(a.preImage()); },
-  [](auto a) { 
-    Util::ERROR("Wrong arguments for pre image 1"); 
-    return ExprBaseType(); 
-  }
-};
-*/
 
 auto pre_image_visitor2_ = Util::Overload {
   [](LIB::UnordSet a, LIB::BaseMap b) {
@@ -153,17 +118,6 @@ auto pre_image_visitor2_ = Util::Overload {
     return ContainerBaseType(); 
   }
 };
-
-/*
-auto dom_visitor_ = Util::Overload {
-  [](LIB::BasePWMap a) { return ContainerBaseType(a.dom()); },
-  [](LIB::CanonPWMap a) { return ContainerBaseType(a.dom()); },
-  [](auto a) { 
-    Util::ERROR("Wrong arguments for dom"); 
-    return ContainerBaseType(); 
-  }
-};
-*/
 
 auto combine_visitor_ = Util::Overload {
   [](LIB::BasePWMap a, LIB::BasePWMap b) { return MapBaseType(a.combine(b)); },
@@ -292,15 +246,15 @@ auto connected_visitor_ = Util::Overload {
 };
 
 auto matching_visitor_ = Util::Overload {
-  [](LIB::BaseSBG a, Util::MD_NAT b, bool c) { 
-    LIB::BaseMatch match(a.copy(b[0]), c);
-    return InfoBaseType(match.calculate()); 
+  [](LIB::BaseSBG a, Util::MD_NAT b, Util::MD_NAT c, bool d) { 
+    LIB::BaseMatch match(a.copy(b[0]), d);
+    return InfoBaseType(match.calculate(c[0]));
   },
-  [](LIB::CanonSBG a, Util::MD_NAT b, bool c) {
-    LIB::CanonMatch match(a.copy(b[0]), c);
-    return InfoBaseType(match.calculate());
+  [](LIB::CanonSBG a, Util::MD_NAT b, Util::MD_NAT c, bool d) {
+    LIB::CanonMatch match(a.copy(b[0]), d);
+    return InfoBaseType(match.calculate(c[0]));
   },
-  [](auto a, auto b, auto c) {
+  [](auto a, auto b, auto c, auto d) {
     Util::ERROR("Wrong arguments for matching");
     return InfoBaseType();
   }
@@ -333,6 +287,19 @@ auto ts_visitor_ = Util::Overload {
   [](auto a, auto b) {
     Util::ERROR("Wrong arguments for ts");
     return InfoBaseType();
+  }
+};
+
+auto first_inv_visitor_ = Util::Overload {
+  [](LIB::BasePWMap a) { 
+    return MapBaseType(a.firstInv()); 
+  },
+  [](LIB::CanonPWMap a) {
+    return MapBaseType(a.firstInv());
+  },
+  [](auto a) {
+    Util::ERROR("Wrong arguments for firstInv");
+    return MapBaseType();
   }
 };
 
@@ -662,13 +629,14 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
         break;
 
       case Eval::Func::matching:
-        if (eval_args.size() == 2) {
+        if (eval_args.size() == 3) {
           arity_ok = true;
 
           SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
           NatBaseType copies = std::visit(EvalNatBT{}, eval_args[1]);
+          NatBaseType k = std::visit(EvalNatBT{}, eval_args[2]);
           InfoBaseType result = std::visit(
-            matching_visitor_, g, copies, std::variant<bool>(debug_)
+            matching_visitor_, g, copies, k, std::variant<bool>(debug_)
           );
           return result;
         }
@@ -697,6 +665,15 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
           return result;
         }
         break;
+
+      case Eval::Func::first_inv:
+        if (eval_args.size() == 1) {
+          arity_ok = true;
+
+          MapBaseType pw = std::visit(EvalMap(), eval_args[0]); 
+          MapBaseType result = std::visit(first_inv_visitor_, pw);
+          return result;
+        }
 
       default:
         Util::ERROR("EvalExpression: function %s not implemented", vname.c_str());

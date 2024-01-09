@@ -64,8 +64,8 @@ struct SBGMap {
   /**
    * @brief Extra operations.
    */
+  SBGMap minInv(const Set &allowed) const;
   SBGMap minInv() const;
-  SBGMap minInv(const Set &im) const;
   bool isId() const;
   unsigned int nmbrDims() const;
 };

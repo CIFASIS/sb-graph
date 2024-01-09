@@ -22,6 +22,33 @@
 
 #include "sbg/pw_map.hpp"
 
+TEST(PWMapPerf, Combine)
+{
+  unsigned int inter_sz = 10000;
+  unsigned int set_sz = 10;
+  unsigned int map_sz = 200;
+
+  SBG::LIB::CanonPWMap ms1;
+  for (unsigned int k = 0; k < map_sz; k++) {
+    SBG::LIB::LExp le1(1, k);
+    SBG::LIB::OrdSet s1;
+    int map_offset = k * inter_sz * set_sz;
+    for (unsigned int j = 0; j < set_sz; j++) {
+      SBG::LIB::Interval i(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      s1.emplaceBack(i);
+    }
+    ms1.emplace(SBG::LIB::CanonMap(s1, le1));
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  SBG::LIB::PWMap res = ms1.combine(ms1);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "PWL MAP COMBINE TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
 TEST(PWMapPerf, Composition)
 {
   unsigned int inter_sz = 10000;
@@ -50,7 +77,7 @@ TEST(PWMapPerf, Composition)
 }
 
 TEST(PWMapPerf, MapInf) {
-  int N = 600;
+  int N = 1200;
   int sz = 10;
 
   SBG::LIB::CanonPWMap aux;

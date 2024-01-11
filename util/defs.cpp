@@ -61,6 +61,8 @@ bool MD_NAT::operator==(const MD_NAT &other) const
   return value_ == other.value_;
 }
 
+bool MD_NAT::operator!=(const MD_NAT &other) const { return !(*this == other); }
+
 bool MD_NAT::operator<(const MD_NAT &other) const
 {
   ERROR_UNLESS(

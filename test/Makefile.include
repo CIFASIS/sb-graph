@@ -3,6 +3,7 @@ SBG_DIR         := sbg
 PARSER_DIR      := parser
 TEST_DIR        := test
 PERF_TEST_DIR   := $(TEST_DIR)/performance
+BOOST_TEST_DIR  := $(PERF_TEST_DIR)/boost
 PARSER_TEST_DIR := $(TEST_DIR)/parser
 EVAL_TEST_DIR   := $(TEST_DIR)/eval
 SBG_TEST        := sbg-test
@@ -11,6 +12,7 @@ $(SBG_TEST):
 	@echo BUILDING PERFORMANCE SYSTEM TESTS
 	@cd $(PERF_TEST_DIR) && rm -rf bin/ obj/
 	@cd $(PERF_TEST_DIR) && $(MAKE) bin/sbg-performance
+	@cd $(BOOST_TEST_DIR) && $(MAKE) bin/boost-performance
 	@echo Done
 	@echo RUNNING PERFORMANCE SYSTEM TESTS
 	@cd $(PERF_TEST_DIR) && $(MAKE) sbg-performance

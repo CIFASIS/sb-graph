@@ -99,6 +99,7 @@ struct MD_NAT {
   const NAT &operator[](std::size_t n) const;
 
   bool operator==(const MD_NAT &other) const;
+  bool operator!=(const MD_NAT &other) const;
   bool operator<(const MD_NAT &other) const;
   bool operator<=(const MD_NAT &other) const;
 

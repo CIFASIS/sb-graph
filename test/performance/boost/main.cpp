@@ -1,10 +1,11 @@
-/** @file main.hpp
+/** @file main.cpp
 
- @brief <b>SBG program evaluator</b>
+ @brief <b>Boost matching profiling</b>
 
- This modules allows the user to test the SBG modules. To do so the user should
- provide a SBG program file. The file will be parser, and next the visitors
- will be used to return a result.
+ This file is meant to test the three examples presented in the paper
+ "Efficient Matching of Large Systems ...". When executed it will ten times
+ the Boost Edmonds matching algorithm and report the average execiton time
+ for each of them.
 
  <hr>
 
@@ -25,13 +26,50 @@
 
  ******************************************************************************/
 
+#include <chrono>
 #include <fstream>
 #include <getopt.h>
+#include <iostream>
 
-#include "parser/sbg_program.hpp"
-#include "eval/visitors/program_visitor.hpp"
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/max_cardinality_matching.hpp>
+#include <gtest/gtest.h>
 
-void parseEvalProgramFromFile(std::string fname, bool debug)
+#include <eval/visitors/program_visitor.hpp>
+#include <parser/sbg_program.hpp>
+#include <test/performance/boost/ordinary_graph_builder.hpp>
+
+template<typename Set>
+void computeMaxCardinalityMatching(SBG::LIB::SBGraph<Set> sb_graph)
+{
+  OG::OrdinaryGraphBuilder ordinary_graph_builder(sb_graph);
+
+  OG::Graph graph = ordinary_graph_builder.build();
+
+  int n_vertices = num_vertices(graph);
+
+  std::vector<boost::graph_traits<OG::Graph>::vertex_descriptor>
+    mate(n_vertices);
+  auto begin = std::chrono::high_resolution_clock::now();
+  checked_edmonds_maximum_cardinality_matching(graph, &mate[0]);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto total = std::chrono::duration_cast<std::chrono::microseconds>(
+    end - begin
+  );
+
+  SBG::Util::SBG_LOG << "Boost Edmonds Maximum cardinality matching time: " 
+    << total.count() << " [μs]" << std::endl;
+  SBG::Util::SBG_LOG << "Mathcing sz: " << matching_size(graph, &mate[0]) << "\n";
+}
+
+template void computeMaxCardinalityMatching<SBG::LIB::UnordSet>(
+  SBG::LIB::BaseSBG sbg
+);
+template void computeMaxCardinalityMatching<SBG::LIB::OrdSet>(
+  SBG::LIB::CanonSBG sbg
+);
+
+void parseEvalProgramFromFile(std::string fname)
 {
   std::ifstream in(fname.c_str());
   if (in.fail()) 
@@ -50,24 +88,28 @@ void parseEvalProgramFromFile(std::string fname, bool debug)
     iter, end, g, SBG::Parser::Skipper<SBG::Parser::StrIt>(), parser_result
   );
 
-  std::cout << "-------------------------\n";
   if (r && iter == end) {
-    std::cout << "Parsing succeeded\n";
-    std::cout << "-------------------------\n";
-    std::cout << ">>>>>> Eval result <<<<<<\n";
-    std::cout << "-------------------------\n\n";
-
-    SBG::Eval::ProgramVisitor program_visit(debug); 
+    SBG::Eval::ProgramVisitor program_visit(false); 
     SBG::Eval::ProgramIO visit_result = boost::apply_visitor(
       program_visit, parser_result
     );
-    std::cout << visit_result;
+
+    for (const SBG::Eval::ExprEval &ev : visit_result.exprs()) {
+      auto e = std::get<1>(ev);
+      if (std::holds_alternative<SBG::Eval::SBGBaseType>(e)) {
+        auto g_variant = std::get<SBG::Eval::SBGBaseType>(e);
+        if (std::holds_alternative<SBG::LIB::CanonSBG>(g_variant)) {
+          auto g = std::get<SBG::LIB::CanonSBG>(g_variant);
+          computeMaxCardinalityMatching(g);
+        }
+      }
+    }
   }
   else {
     std::string rest(iter, end);
-    std::cout << "Parsing failed\n";
-    std::cout << "-------------------------\n";
-    std::cout << "\nstopped at: \n" << rest << "\n";
+    SBG::Util::SBG_LOG << "Parsing failed\n";
+    SBG::Util::SBG_LOG << "-------------------------\n";
+    SBG::Util::SBG_LOG << "\nstopped at: \n" << rest << "\n";
   }
 
   return;
@@ -75,12 +117,11 @@ void parseEvalProgramFromFile(std::string fname, bool debug)
 
 void usage()
 {
-  std::cout << "Usage evaluator [options] file" << std::endl;
+  std::cout << "Usage parser [options] file" << std::endl;
   std::cout << "Parses a SBG program." << std::endl;
   std::cout << std::endl;
   std::cout << "-f, --file      SBG program file used as input " << std::endl;
   std::cout << "-h, --help      Display this information and exit" << std::endl;
-  std::cout << "-d, --debug     Activate debug" << std::endl;
   std::cout << "-v, --version   Display version information and exit"
     << std::endl;
   std::cout << std::endl;
@@ -103,15 +144,13 @@ int main(int argc, char**argv)
   std::string filename;
   int opt;
   extern char* optarg;
-  bool debug = false;
 
   while (true) {
     static struct option long_options[] = {{"file", required_argument, 0, 'f'}
                                            , {"help", no_argument, 0, 'h'}
-                                           , {"debug", no_argument, 0, 'd'}
                                            , {"version", no_argument, 0, 'v'}
                                            , {0, 0, 0, 0}};
-    opt = getopt_long(argc, argv, "f:hdv", long_options, nullptr);
+    opt = getopt_long(argc, argv, "f:hv", long_options, nullptr);
     if (opt == EOF) 
       break;
     switch (opt) {
@@ -121,9 +160,6 @@ int main(int argc, char**argv)
       case 'h':
         usage();
         exit(0);
-      case 'd':
-        debug = true;
-        break;
       case 'v':
         version();
         exit(0);
@@ -137,7 +173,7 @@ int main(int argc, char**argv)
   }
 
   if (!filename.empty())
-    parseEvalProgramFromFile(filename, debug);
+    parseEvalProgramFromFile(filename);
   else
     SBG::Util::ERROR("A filename should be provided");
 

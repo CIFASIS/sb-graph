@@ -1,4 +1,3 @@
-
 # The Directories, Source, Includes, Objects, Binary 
 AST_DIR     := ast
 EVAL_DIR    := eval

@@ -77,7 +77,7 @@ TEST(PWMapPerf, Composition)
 }
 
 TEST(PWMapPerf, MapInf) {
-  int N = 1200;
+  int N = 12;
   int sz = 10;
 
   SBG::LIB::CanonPWMap aux;

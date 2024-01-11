@@ -661,7 +661,7 @@ MatchInfo<Set> SBGMatching<Set>::calculate(unsigned int k)
   auto begin = std::chrono::high_resolution_clock::now();
   shortPath();
   auto end = std::chrono::high_resolution_clock::now();
-  auto duration1 = std::chrono::duration_cast<std::chrono::milliseconds>(
+  auto duration1 = std::chrono::duration_cast<std::chrono::microseconds>(
     end - begin
   );
 
@@ -681,20 +681,20 @@ MatchInfo<Set> SBGMatching<Set>::calculate(unsigned int k)
 
   Util::SBG_LOG << MatchInfo(matched_E(), fullyMatchedU()) << "\n\n";
 
-  Util::SBG_LOG << "ShortPath exec time: " << duration1.count() << " [ms]\n";
+  Util::SBG_LOG << "ShortPath exec time: " << duration1.count() << " [μs]\n";
   if (mr_used) {
-    auto duration2 = std::chrono::duration_cast<std::chrono::milliseconds>(
+    auto duration2 = std::chrono::duration_cast<std::chrono::microseconds>(
       end - begin
     );
-    Util::SBG_LOG << "MinReach exec time: " << duration2.count() << " [ms]\n";
+    Util::SBG_LOG << "MinReach exec time: " << duration2.count() << " [μs]\n";
 
-    auto total = std::chrono::duration_cast<std::chrono::milliseconds>(
+    auto total = std::chrono::duration_cast<std::chrono::microseconds>(
       duration1 + duration2
     );
-    Util::SBG_LOG << "Total exec time: " << total.count() << " [ms]\n\n"; 
+    Util::SBG_LOG << "Total exec time: " << total.count() << " [μs]\n\n"; 
   }
   else
-    Util::SBG_LOG << "Total exec time: " << duration1.count() << " [ms]\n\n"; 
+    Util::SBG_LOG << "Total exec time: " << duration1.count() << " [μs]\n\n"; 
 
   return MatchInfo(matched_E(), fullyMatchedU());
 }

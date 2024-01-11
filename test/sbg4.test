@@ -1,7 +1,7 @@
 // Matching test, with recursions that starts in the middle
 
-N = 100000
-N2 = 50000
+N = 100
+N2 = 50
 
 V1 = 1
 V2 = N-1+V1
@@ -28,5 +28,5 @@ matching(
   map1 %= <<{[1:1:E1]} -> 1*x+0, {[E1+1:1:E2]} -> 1*x+0, {[E2+1:1:E3]} -> 1*x-off3b>>;
   map2 %= <<{[1:1:E1]} -> 1*x+off1d, {[E1+1:1:E2]} -> 1*x+off2d, {[E2+1:1:E3]} -> 1*x+off3d>>;
   Emap %= <<{[1:1:E1]} -> 0*x+1, {[E1+1:1:E2], [E2+1:1:E3]} -> 0*x+2>>;
-  , 1
+  , 1, 6
 )

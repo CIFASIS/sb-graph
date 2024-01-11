@@ -366,10 +366,6 @@ void SBGMatching<Set>::shortPathStep()
   set_mapD(mapB());
   set_mapB(auxB);
 
-  shortPathDirection(unmatched_F(), forward);
-  pe = pe.intersection(getAllowedEdges());
-  set_paths_edges(pe);
-
   // *** Update structures to reflect new matched edges
   updatePaths(); 
  

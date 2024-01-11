@@ -3,6 +3,7 @@
 file=$1
 iterations=$2
 size=$3
+copies=$4
 
 echo > test_values
 echo > test_file
@@ -18,7 +19,7 @@ done < $file
 
 for i in $(seq "$iterations"); do
 	echo $i
-	./boost/bin/boost-performance -f test_file
+	./boost/bin/boost-performance -f test_file -c $copies
 	mv SBG.log SBG_${i}.log
 	echo
     while read line; do

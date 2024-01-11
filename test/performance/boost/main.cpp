@@ -69,7 +69,7 @@ template void computeMaxCardinalityMatching<SBG::LIB::OrdSet>(
   SBG::LIB::CanonSBG sbg
 );
 
-void parseEvalProgramFromFile(std::string fname)
+void parseEvalProgramFromFile(std::string fname, int copies)
 {
   std::ifstream in(fname.c_str());
   if (in.fail()) 
@@ -100,7 +100,7 @@ void parseEvalProgramFromFile(std::string fname)
         auto g_variant = std::get<SBG::Eval::SBGBaseType>(e);
         if (std::holds_alternative<SBG::LIB::CanonSBG>(g_variant)) {
           auto g = std::get<SBG::LIB::CanonSBG>(g_variant);
-          computeMaxCardinalityMatching(g);
+          computeMaxCardinalityMatching(g.copy(copies));
         }
       }
     }
@@ -124,6 +124,7 @@ void usage()
   std::cout << "-h, --help      Display this information and exit" << std::endl;
   std::cout << "-v, --version   Display version information and exit"
     << std::endl;
+  std::cout << "-c, --copies    Number of SBG copies" << std::endl;
   std::cout << std::endl;
   std::cout << "SBG library home page: https://github.com/CIFASIS/sb-graph"
     << std::endl;
@@ -142,15 +143,16 @@ void version()
 int main(int argc, char**argv)
 {
   std::string filename;
-  int opt;
+  int opt, copies = 1;
   extern char* optarg;
 
   while (true) {
     static struct option long_options[] = {{"file", required_argument, 0, 'f'}
                                            , {"help", no_argument, 0, 'h'}
                                            , {"version", no_argument, 0, 'v'}
+                                           , {"copies", required_argument, 0, 'c'}
                                            , {0, 0, 0, 0}};
-    opt = getopt_long(argc, argv, "f:hv", long_options, nullptr);
+    opt = getopt_long(argc, argv, "f:hvc:", long_options, nullptr);
     if (opt == EOF) 
       break;
     switch (opt) {
@@ -163,6 +165,9 @@ int main(int argc, char**argv)
       case 'v':
         version();
         exit(0);
+      case 'c':
+        copies = atoi(optarg); 
+        break;
       case '?':
         usage();
         exit(-1);
@@ -173,7 +178,7 @@ int main(int argc, char**argv)
   }
 
   if (!filename.empty())
-    parseEvalProgramFromFile(filename);
+    parseEvalProgramFromFile(filename, copies);
   else
     SBG::Util::ERROR("A filename should be provided");
 

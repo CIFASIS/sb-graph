@@ -1,6 +1,6 @@
 // Matching test, RC circuit with variables iR, vA, vB, der(vC)
 
-N = 10000
+N = 100000
 
 F1 = 1
 F2 = N+F1

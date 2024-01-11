@@ -457,10 +457,11 @@ void SBGMatching<Set>::minReachableStep()
   directedMinReach(mapF());
   // Vertices that reach unmatched left and right vertices 
   reach_unmatched = reach_unmatched.intersection(rmap().preImage(unmatched_U()));
-  pe = paths_edges().intersection(getAllowedEdges());
-
   set_rmap(rmap().restrict(reach_unmatched));
   set_smap(smap().restrict(reach_unmatched));
+
+  pe = paths_edges().intersection(getAllowedEdges());
+  set_paths_edges(pe);
 
   // *** Initial direction
   set_mapD(mapB());
@@ -483,7 +484,7 @@ void SBGMatching<Set>::minReachable()
     minReachableStep();
     if (debug()) {
       Util::SBG_LOG << "minimum reachable step smap: " << smap() << "\n";
-      Util::SBG_LOG << "minimum reachable unmatched V: " << unmatched_V() << "\n\n";
+      Util::SBG_LOG << "minimum reachable matched_E: " << matched_E() << "\n\n";
     }
   } while (!fullyMatchedU() && !paths_edges().isEmpty());
 

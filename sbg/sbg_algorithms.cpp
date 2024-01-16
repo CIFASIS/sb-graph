@@ -226,8 +226,6 @@ PathInfo<Set> MinReach<Set>::calculate(
       old_smap = new_smap;
       // Find adjacent vertex that reaches a minor vertex than the current one
       new_smap = minReach1(reach_edges, new_smap, new_rmap); 
-      if (debug())
-        Util::SBG_LOG << "minReach1 new_smap: " << new_smap << "\n\n";
       Vc = V.difference(old_smap.equalImage(new_smap));
 
       // If the condition is met, unmatched "backward" vertices reach unmatched
@@ -285,8 +283,6 @@ PathInfo<Set> MinReach<Set>::calculate(
               res = recursion(j, ER, reach_vertices, new_semap, new_smap, new_rmap);
               new_smap = res.succs();
               new_rmap = res.reps();
-              if (debug())
-                Util::SBG_LOG << "recursion new_smap: " << new_smap << "\n\n";
             }
           }
         }
@@ -350,7 +346,8 @@ void SBGMatching<Set>::shortPathStep()
 {
   // *** Forward direction
   shortPathDirection(unmatched_F(), forward);
-  Set pe = getAllowedEdges();
+  PW rmapd = rmap();
+  Set pe = edgesInPaths();
   set_paths_edges(pe);
 
   // *** Backward direction
@@ -359,7 +356,9 @@ void SBGMatching<Set>::shortPathStep()
   set_mapD(auxB);
 
   shortPathDirection(unmatched_U(), backward);
-  pe = pe.intersection(getAllowedEdges());
+  const PW &rmaprmapd = rmap().composition(rmapd);
+  Set edgesb = edgesSameRepLR(rmaprmapd);
+  pe = pe.intersection(edgesInPaths().intersection(edgesb));
   set_paths_edges(pe);
 
   // *** Initial direction
@@ -398,6 +397,8 @@ void SBGMatching<Set>::shortPath()
 template<typename Set>
 PWMap<Set> SBGMatching<Set>::directedOffset(const PW &dir_map) const
 {
+  if (debug())
+    Util::SBG_LOG << "directedOffset unmatched_V: " << unmatched_V() << "\n\n";
   Set unmatched_side = dir_map.image(paths_edges());
   unmatched_side = unmatched_side.intersection(unmatched_V());
   PW res = omap().restrict(unmatched_side);
@@ -424,6 +425,8 @@ template<typename Set>
 void SBGMatching<Set>::directedMinReach(const PW &dir_map)
 {
   PW dir_omap = directedOffset(dir_map);
+  if (debug())
+    Util::SBG_LOG << "dir_omap: " << dir_omap << "\n";
   DSBGraph<Set> dsbg = offsetGraph(dir_omap);
   dsbg.set_subE_map(sbg().subE_map());
   MinReach min_reach(dsbg, debug());
@@ -445,8 +448,9 @@ void SBGMatching<Set>::minReachableStep()
 {
   // *** Forward direction
   directedMinReach(mapU());
+  PW rmapd = rmap();
   Set reach_unmatched = rmap().preImage(unmatched_F());
-  Set pe = getAllowedEdges();
+  Set pe = edgesInPaths();
   set_paths_edges(pe);
 
   // *** Backward direction
@@ -460,7 +464,9 @@ void SBGMatching<Set>::minReachableStep()
   set_rmap(rmap().restrict(reach_unmatched));
   set_smap(smap().restrict(reach_unmatched));
 
-  pe = paths_edges().intersection(getAllowedEdges());
+  const PW &rmaprmapd = rmap().composition(rmapd);
+  Set edgesb = edgesSameRepLR(rmaprmapd);
+  pe = pe.intersection(edgesInPaths().intersection(edgesb));
   set_paths_edges(pe);
 
   // *** Initial direction
@@ -588,7 +594,7 @@ member_imp_temp(template<typename Set>, SBGMatching<Set>, unsigned int, k);
 member_imp_temp(template<typename Set>, SBGMatching<Set>, bool, debug);
 
 template<typename Set>
-Set SBGMatching<Set>::getAllowedEdges() const
+Set SBGMatching<Set>::edgesInPaths() const
 {
   // Vertices that are successor of other vertices in a path
   Set succs = smap().filterMap([](const SBGMap<Set> &sbgmap) {
@@ -601,8 +607,22 @@ Set SBGMatching<Set>::getAllowedEdges() const
   // Map from edge to the successor of its start
   PWMap<Set> map_succs = smap().composition(auxB);
  
-  // Edges that connect vertices with their successors
   return map_succs.equalImage(mapD());
+}
+
+template<typename Set>
+Set SBGMatching<Set>::edgesSameRepLR(const PW &rmaprmapd) const
+{
+  PW rmap_neq_id = rmap().filterMap([](const SBGMap<Set> &sbgmap) {
+    return notEqId(sbgmap);
+  });
+  PW rmapb = rmap_neq_id.composition(mapB());
+  PW rmaprmapd_neq_id = rmaprmapd.filterMap([](const SBGMap<Set> &sbgmap) {
+    return notEqId(sbgmap);
+  }); 
+  PW rmaprmapdb = rmaprmapd_neq_id.composition(mapB());
+  
+  return rmapb.equalImage(rmaprmapdb);
 }
 
 template<typename Set>

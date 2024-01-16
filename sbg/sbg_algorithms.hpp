@@ -147,7 +147,12 @@ struct SBGMatching {
   void minReachableStep();
   void minReachable();  
 
-  Set getAllowedEdges() const; // Calculate edges used by paths
+  Set edgesInPaths() const; // Calculate edges used by paths
+  // Several vertices can share the same left representant "vl", through paths
+  // p1, p2, ..., pk. When vl chooses its right representant "vr" through path
+  // pj all the other paths should be discarded. This function discards all
+  // the edges in paths p1, ..., pj-1, pj+1, ..., pk.
+  Set edgesSameRepLR(const PW &rmapd) const; 
   bool fullyMatchedU() const;
   void offsetVertices();
   void updatePaths();

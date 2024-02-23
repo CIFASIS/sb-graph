@@ -91,6 +91,7 @@ struct UnordPWMDInter {
   UnordPWMDInter concatenation(const UnordPWMDInter &other) const;
   UnordPWMDInter filterSet(bool (*f)(const SetPiece &mdi)) const;
   UnordPWMDInter offset(const Util::MD_NAT &off) const;
+  UnordPWMDInter compact() const;
 
   private:
   /** @function complementAtom

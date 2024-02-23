@@ -224,6 +224,37 @@ MultiDimInter MultiDimInter::least(const MultiDimInter &other) const
 
 bool MultiDimInter::isUnidim() const { return size() <= 1; }
 
+MultiDimInter::MaybeMDI MultiDimInter::compact(const MultiDimInter &other) const
+{
+  MultiDimInter res;
+
+  unsigned int j = 0;
+  for (; j < size(); ++j) {
+    auto ith = operator[](j).compact(other[j]);
+    if (ith) {
+      res.emplaceBack(ith.value());
+      ++j;
+      break;
+    }
+
+    else if (operator[](j) != other[j])
+      return {};
+
+    else
+      res.emplaceBack(operator[](j));
+  }
+
+  for (; j < size(); ++j) {
+    if (operator[](j) != other[j])
+      return {};
+
+    else
+      res.emplaceBack(operator[](j));
+  }
+
+  return res;
+}
+
 std::size_t hash_value(const MultiDimInter &mdi)
 {
   return boost::hash_range(mdi.begin(), mdi.end());

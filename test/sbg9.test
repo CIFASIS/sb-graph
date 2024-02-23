@@ -1,6 +1,6 @@
 // Matching Test1 of the paper, one copy
 
-N = 1000000
+N = 100000
 
 F1 = N
 F2 = N+F1

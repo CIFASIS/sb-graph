@@ -43,7 +43,7 @@ FuncEnv::FuncEnv() {}
 FuncEnvType FuncEnv::mapping_ = {{"isEmpty", 0}, {"isMember", 1}, {"minElem", 2}, {"maxElem", 3}, {"lt", 4},
   {"compose", 5}, {"inv", 6}, {"image", 7}, {"preImage", 8}, {"dom", 9}, {"combine", 10}, {"minMap", 11}, 
   {"reduce", 12}, {"minAdj", 13}, {"CC", 14}, {"minReach", 15}, {"matching", 16}, {"scc", 17},
-  {"sort", 18}, {"firstInv", 19}};
+  {"sort", 18}, {"firstInv", 19}, {"matchSCC", 20}};
 
 MaybeFValue FuncEnv::operator[](FKey k) const
 {

@@ -155,6 +155,25 @@ Interval Interval::least(const Interval &other) const
   return std::min(*this, other);
 }
 
+Interval::MaybeInterval Interval::compact(const Interval &other) const
+{
+  if (step_ == other.step_) {
+    if (end_+step_ == other.begin_)
+      return Interval(begin_, step_, other.end_);
+
+    else if (other.end_+step_ == begin_)
+      return Interval(other.begin_, step_, end_);
+
+    else if (!intersection(other).isEmpty()) {
+      Util::NAT new_b = std::min(begin_, other.begin_);
+      Util::NAT new_e = std::max(end_, other.end_);
+      return Interval(new_b, step_, new_e);
+    }
+  }
+
+  return {};
+}
+
 std::size_t hash_value(const Interval &i)
 {
   std::size_t seed = 0;

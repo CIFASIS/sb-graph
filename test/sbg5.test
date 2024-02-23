@@ -1,6 +1,6 @@
 // Matching test, with a simple recursion
 
-N = 1000000
+N = 1000
 
 V1 = 1
 V2 = N-1+V1

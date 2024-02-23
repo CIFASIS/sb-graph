@@ -303,6 +303,25 @@ auto first_inv_visitor_ = Util::Overload {
   }
 };
 
+auto match_scc_visitor_ = Util::Overload {
+  [](LIB::BaseSBG a, Util::MD_NAT b, Util::MD_NAT c, bool d) { 
+    LIB::BaseMatch match(a.copy(b[0]), d);
+    match.calculate(c[0]);
+    LIB::BaseSCC scc(buildSCCFromMatching(match), d);
+    return MapBaseType(scc.calculate());
+  },
+  [](LIB::CanonSBG a, Util::MD_NAT b, Util::MD_NAT c, bool d) {
+    LIB::CanonMatch match(a.copy(b[0]), d);
+    match.calculate(c[0]);
+    LIB::CanonSCC scc(buildSCCFromMatching(match), d);
+    return MapBaseType(scc.calculate());
+  },
+  [](auto a, auto b, auto c, auto d) {
+    Util::ERROR("Wrong arguments for scc");
+    return MapBaseType();
+  }
+};
+
 // -----------------------------------------------------------------------------
 // Expression evaluator --------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -654,6 +673,7 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
         }
         break;
 
+
       case Eval::Func::ts:
         if (eval_args.size() == 1) {
           arity_ok = true;
@@ -674,6 +694,20 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
           MapBaseType result = std::visit(first_inv_visitor_, pw);
           return result;
         }
+
+      case Eval::Func::match_scc:
+        if (eval_args.size() == 3) {
+          arity_ok = true;
+
+          SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
+          NatBaseType copies = std::visit(EvalNatBT{}, eval_args[1]);
+          NatBaseType k = std::visit(EvalNatBT{}, eval_args[2]);
+          MapBaseType result = std::visit(
+            match_scc_visitor_, g, copies, k, std::variant<bool>(debug_)
+          );
+          return result;
+        }
+        break;
 
       default:
         Util::ERROR("EvalExpression: function %s not implemented", vname.c_str());

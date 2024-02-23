@@ -45,6 +45,8 @@ using NAT = Util::NAT;
 using MD_NAT = Util::MD_NAT;
 
 struct Interval {
+  using MaybeInterval = std::optional<Interval>;
+
   member_class(NAT, begin);
   member_class(NAT, step);
   member_class(NAT, end);
@@ -72,6 +74,7 @@ struct Interval {
    */
   Interval offset(Util::NAT off) const;
   Interval least(const Interval &i2) const;
+  MaybeInterval compact(const Interval &i2) const;
 };
 std::ostream &operator<<(std::ostream &out, const Interval &i);
 

@@ -171,7 +171,7 @@ struct PWMap {
 
   unsigned int nmbrDims() const;
 
-  PWMap normalize(const PWMap &other) const;
+  PWMap compact() const;
 };
 template<typename Set>
 std::ostream &operator<<(std::ostream &out, const PWMap<Set> &pw);

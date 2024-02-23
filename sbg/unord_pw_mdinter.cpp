@@ -365,6 +365,39 @@ UnordPWMDInter UnordPWMDInter::offset(const Util::MD_NAT &off) const
   return res;
 }
 
+UnordPWMDInter UnordPWMDInter::compact() const
+{
+  UnordPWMDInter res;
+
+  if (isEmpty())
+    return res;
+
+  UnordPWMDInter compacted;
+  for (auto it = begin(); it != end(); ++it) {
+    auto next_it = it;
+    ++next_it;
+    UnordPWMDInter ith_compacted = compacted.intersection(UnordPWMDInter(*it));
+    if (ith_compacted.isEmpty()) {
+      SetPiece new_ith = *it;
+      for (; next_it != end(); ++next_it) {
+        UnordPWMDInter next_compacted 
+          = compacted.intersection(UnordPWMDInter(*next_it));
+        if (next_compacted.isEmpty()) {
+          auto ith = new_ith.compact(*next_it);
+          if (ith) {
+            new_ith = ith.value();
+            compacted.emplaceBack(*next_it);
+          }
+        }
+      }
+
+      res.emplaceBack(new_ith);
+    }
+  }
+
+  return res;
+}
+
 std::size_t hash_value(const UnordPWMDInter &pwi)
 {
   return boost::hash_range(pwi.begin(), pwi.end());

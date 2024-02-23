@@ -109,6 +109,7 @@ struct OrdPWMDInter {
   OrdPWMDInter concatenation(const OrdPWMDInter &other) const;
   OrdPWMDInter filterSet(bool (*f)(const SetPiece &mdi)) const;
   OrdPWMDInter offset(Util::MD_NAT off) const;
+  OrdPWMDInter compact() const;
 
   private:
   /** @function complementAtom
@@ -123,12 +124,12 @@ struct OrdPWMDInter {
   OrdPWMDInter complementAtom() const;
   OrdPWMDInter complement() const;
 
-  /** @function isCompact
+  /** @function isDense
    *
    * @brief This function determines if a pwi is compact (composed only by compact
    * intervals).
    */
-  bool isCompact() const;
+  bool isDense() const;
 
   /** @function optCond
    *
@@ -136,7 +137,6 @@ struct OrdPWMDInter {
    * optimizations.
    */
   bool optConds() const;
-  MDInterOrdSet canonize() const;
 
   /** @function boundedTraverse
    *

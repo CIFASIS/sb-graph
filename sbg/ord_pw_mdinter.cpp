@@ -96,7 +96,7 @@ bool OrdPWMDInter::operator==(const OrdPWMDInter &other) const
 {
   MDInterOrdSet aux1 = this->pieces_, aux2 = other.pieces_;
   if (optConds() && other.optConds())
-    return canonize() == other.canonize();
+    return compact().pieces_ == other.compact().pieces_;
 
   if (aux1 == aux2)
     return true;
@@ -346,7 +346,40 @@ OrdPWMDInter OrdPWMDInter::offset(Util::MD_NAT off) const
   return res;
 }
 
-bool OrdPWMDInter::isCompact() const
+OrdPWMDInter OrdPWMDInter::compact() const
+{
+  OrdPWMDInter res;
+
+  if (isEmpty())
+    return res;
+
+  OrdPWMDInter compacted;
+  for (auto it = begin(); it != end(); ++it) {
+    auto next_it = it;
+    ++next_it;
+    OrdPWMDInter ith_compacted = compacted.intersection(OrdPWMDInter(*it));
+    if (ith_compacted.isEmpty()) {
+      SetPiece new_ith = *it;
+      for (; next_it != end(); ++next_it) {
+        OrdPWMDInter next_compacted 
+          = compacted.intersection(OrdPWMDInter(*next_it));
+        if (next_compacted.isEmpty()) {
+          auto ith = new_ith.compact(*next_it);
+          if (ith) {
+            new_ith = ith.value();
+            compacted.emplaceBack(*next_it);
+          }
+        }
+      }
+
+      res.emplaceBack(new_ith);
+    }
+  }
+
+  return res;
+}
+
+bool OrdPWMDInter::isDense() const
 {
   if (isEmpty())
     return true;
@@ -358,49 +391,7 @@ bool OrdPWMDInter::isCompact() const
   return true;
 }
 
-bool OrdPWMDInter::optConds() const { return isCompact(); }
-
-//TODO
-MDInterOrdSet OrdPWMDInter::canonize() const
-{
-  /*
-  unsigned int sz = size();
-  if (sz == 1)
-    res = pieces_;
-
-  if (optConds() && sz > 1) {
-    auto it = begin(), next_it = it;
-    ++next_it;
-    SetPiece ith = *it;
-    for (unsigned int j = 0; j < sz - 1; ++j) {
-      MaybeInterval i = canonize(*ith.begin(), *next_it->begin());
-      if (i)
-        ith = SetPiece(*i);
-
-      else {
-        if (!isEmpty(ith))
-          res.emplace_hint(res.cend(), ith);
-
-        if (j < (sz-2))
-          ith = SetPiece(*next_it);
-        else
-          ith = SetPiece(*next_it);
-      }
-
-      ++next_it;
-      ++it;
-    }
-
-    if (!isEmpty(ith))
-      res.emplace_hint(res.cend(), ith);
-  }
-
-  else
-    res = ii;
-  */
-
-  return pieces_;
-}
+bool OrdPWMDInter::optConds() const { return isDense(); }
 
 MDInterOrdSet OrdPWMDInter::boundedTraverse(
     SetPiece (SetPiece::*f)(const SetPiece &) const, const OrdPWMDInter &other

@@ -37,6 +37,8 @@ typedef InterVector::iterator InterVectorIt;
 typedef InterVector::const_iterator InterVectorConstIt;
 
 struct MultiDimInter {
+  using MaybeMDI = std::optional<MultiDimInter>;
+
   member_class(InterVector, intervals);
 
   MultiDimInter();
@@ -76,6 +78,7 @@ struct MultiDimInter {
   MultiDimInter offset(const MD_NAT &off) const;
   MultiDimInter least(const MultiDimInter &other) const;
   bool isUnidim() const;
+  MaybeMDI compact(const MultiDimInter &other) const;
 };
 std::ostream &operator<<(std::ostream &out, const MultiDimInter &mi);
 

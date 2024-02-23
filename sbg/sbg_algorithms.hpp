@@ -26,6 +26,8 @@
 
 #include <chrono>
 #include <list>
+#include <set>
+#include <iostream>
 
 #include "sbg/sbg.hpp"
 #include "util/logger.hpp"
@@ -66,7 +68,7 @@ struct MinReach {
   private:
   PW minReach1(const Set &reach, const PW &smap, const PW &rmap) const;
   PI recursion(unsigned int n, const Set &ER, const Set &not_rv
-               , const PW &semap, const PW &smap, const PW &rmap) const;
+               , const PW &smap, const PW &rmap) const;
 };
 
 typedef MinReach<UnordSet> BaseMR;
@@ -111,7 +113,7 @@ struct SBGMatching {
   member_class(Set, F); // Left vertices, constant
   member_class(Set, U); // Right vertices, constant
   member_class(PW, mapF); // Left map, constant
-  member_class(PW, mapU); // Forward map, constant
+  member_class(PW, mapU); // Right map, constant
 
   member_class(PW, mapB); // Backward map, mutable
   member_class(PW, mapD); // Forward map, mutable
@@ -245,6 +247,11 @@ struct SBGTopSort {
 
 typedef SBGTopSort<UnordSet> BaseTopSort;
 typedef SBGTopSort<OrdSet> CanonTopSort;
+
+// Additional operations ------------------------------------------------------
+
+template<typename Set>
+DSBGraph<Set> buildSCCFromMatching(const SBGMatching<Set> &match);
 
 } // namespace LIB
 

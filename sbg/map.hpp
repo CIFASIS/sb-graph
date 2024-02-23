@@ -41,6 +41,8 @@ SetPiece image(SetPiece mdi, Exp le);
 
 template<typename Set>
 struct SBGMap {
+  using MaybeMap = std::optional<SBGMap<Set>>;
+
   member_class(Set, dom);
   member_class(Exp, exp);
 
@@ -68,6 +70,7 @@ struct SBGMap {
   SBGMap minInv() const;
   bool isId() const;
   unsigned int nmbrDims() const;
+  MaybeMap compact(const SBGMap<Set> &other) const; 
 };
 template<typename Set>
 std::ostream &operator<<(std::ostream &out, const SBGMap<Set> &sbgmap);

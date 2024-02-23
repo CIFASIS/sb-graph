@@ -17,6 +17,7 @@
 
  ******************************************************************************/
 
+#include <iostream>
 #include "sbg/pw_map.hpp"
 
 namespace SBG {
@@ -512,7 +513,8 @@ PWMap<Set> PWMap<Set>::minMap(
     Util::ERROR_UNLESS(cond1 && cond2 && cond3 && cond4
                        , "LIB::PWMap::minMap: dimensions don't match");
 
-    for (unsigned int j = 0; j < dom_piece.size(); ++j) {
+    unsigned int j = 0;
+    for (; j < dom_piece.size(); ++j) {
       if (e2[j] != e3[j]) {
         PWMap ith = minMap(dom_piece[j], e1[j], e2[j], e3[j], e4[j]);
 
@@ -535,6 +537,9 @@ PWMap<Set> PWMap<Set>::minMap(
         break;
       }
     }
+
+    if (j == dom_piece.size())
+      res.emplaceBack(Map(dom_piece, e2));
   }
 
   return res;
@@ -640,8 +645,8 @@ PWMap<Set> PWMap<Set>::minMap(
     }
 
     if (flag1 && flag2 && flag3 && flag4) {
-        PWMap ith = minMap(mdi_set, e1, e2, e3, e4);
-        res = ith.combine(res);
+      PWMap ith = minMap(mdi_set, e1, e2, e3, e4);
+      res = ith.combine(res);
     }
   }
 
@@ -860,22 +865,37 @@ unsigned int PWMap<Set>::nmbrDims() const
 }
 
 template<typename Set>
-PWMap<Set> PWMap<Set>::normalize(const PWMap &other) const
+PWMap<Set> PWMap<Set>::compact() const
 {
   PWMap res;
+  std::cout << "this: " << *this << "\n";
 
-  Set visited, dom1;
-  for (const Map &map1 : maps_) {
-    Set ith = dom1;
-    if (ith.intersection(visited).isEmpty()) {
-      for (const Map &map2 : maps_)
-        if (map1.exp() == map2.exp())
-          ith = ith.cup(map2.dom());
+  if (dom().isEmpty())
+    return res;
 
-      visited = visited.cup(ith);
-      res.emplaceBack(Map(ith, map1.exp()));
+  Set compacted;
+  for (auto it = begin(); it != end(); ++it) {
+    auto next_it = it;
+    ++next_it;
+    Set ith_compacted = compacted.intersection(it->dom());
+    if (ith_compacted.isEmpty()) {
+      Map new_ith(it->dom().compact(), it->exp());
+      for (; next_it != end(); ++next_it) {
+        Set next_compacted = compacted.intersection(next_it->dom());
+        if (next_compacted.isEmpty()) {
+          auto ith = new_ith.compact(*next_it);
+          if (ith) {
+            new_ith = ith.value();
+            compacted = compacted.cup(next_it->dom());
+          }
+        }
+      }
+
+      res.emplaceBack(new_ith);
     }
   }
+
+  std::cout << "res: " << res << "\n\n";
 
   return res;
 }

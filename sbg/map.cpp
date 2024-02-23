@@ -250,6 +250,15 @@ template<typename Set>
 unsigned int SBGMap<Set>::nmbrDims() const { return dom_.begin()->size(); }
 
 template<typename Set>
+std::optional<SBGMap<Set>> SBGMap<Set>::compact(const SBGMap<Set> &other) const
+{
+  if (exp_ == other.exp_)
+    return SBGMap<Set>(dom_.cup(other.dom_).compact(), exp_);
+
+  return {};
+}
+
+template<typename Set>
 std::size_t hash_value(const SBGMap<Set> &sbgmap)
 {
   std::size_t seed = 0;

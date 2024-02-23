@@ -274,6 +274,7 @@ DSBGraph<Set> DSBGraph<Set>::addSE(const PW &pw1, const PW &pw2) const
 }
 
 // Template instantiations -----------------------------------------------------
+
 template struct SBGraph<UnordSet>;
 template std::ostream &operator<<(std::ostream &out, const BaseSBG &g);
 template struct SBGraph<OrdSet>;

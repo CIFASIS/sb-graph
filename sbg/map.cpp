@@ -113,6 +113,12 @@ SBGMap<Set>::SBGMap(Interval i, LExp le) : dom_(), exp_() {
   exp_ = Exp(le);
 }
 template<typename Set>
+SBGMap<Set>::SBGMap(SetPiece mdi, Exp exp) : dom_(), exp_() {
+  compatible(mdi, exp);
+  dom_ = Set(mdi);
+  exp_ = exp;
+}
+template<typename Set>
 SBGMap<Set>::SBGMap(Set dom, Exp exp) : dom_(), exp_() {
   if (!dom.isEmpty()) {
     for (const SetPiece &mdi : dom)

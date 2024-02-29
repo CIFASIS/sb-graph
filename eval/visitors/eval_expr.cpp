@@ -317,8 +317,31 @@ auto match_scc_visitor_ = Util::Overload {
     return MapBaseType(scc.calculate());
   },
   [](auto a, auto b, auto c, auto d) {
-    Util::ERROR("Wrong arguments for scc");
+    Util::ERROR("Wrong arguments for matching+scc");
     return MapBaseType();
+  }
+};
+
+auto match_scc_ts_visitor_ = Util::Overload {
+  [](LIB::BaseSBG a, Util::MD_NAT b, Util::MD_NAT c, bool d) { 
+    LIB::BaseMatch match(a.copy(b[0]), d);
+    match.calculate(c[0]);
+    LIB::BaseSCC scc(buildSCCFromMatching(match), d);
+    LIB::BasePWMap scc_res = scc.calculate();
+    LIB::BaseTopSort ts(buildSortFromSCC(scc, scc_res), d);
+    return InfoBaseType(ts.calculate());
+  },
+  [](LIB::CanonSBG a, Util::MD_NAT b, Util::MD_NAT c, bool d) {
+    LIB::CanonMatch match(a.copy(b[0]), d);
+    match.calculate(c[0]);
+    LIB::CanonSCC scc(buildSCCFromMatching(match), d);
+    LIB::CanonPWMap scc_res = scc.calculate();
+    LIB::CanonTopSort ts(buildSortFromSCC(scc, scc_res), d);
+    return InfoBaseType(ts.calculate());
+  },
+  [](auto a, auto b, auto c, auto d) {
+    Util::ERROR("Wrong arguments for matching+scc+ts");
+    return InfoBaseType();
   }
 };
 
@@ -704,6 +727,20 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
           NatBaseType k = std::visit(EvalNatBT{}, eval_args[2]);
           MapBaseType result = std::visit(
             match_scc_visitor_, g, copies, k, std::variant<bool>(debug_)
+          );
+          return result;
+        }
+        break;
+
+      case Eval::Func::match_scc_ts:
+        if (eval_args.size() == 3) {
+          arity_ok = true;
+
+          SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
+          NatBaseType copies = std::visit(EvalNatBT{}, eval_args[1]);
+          NatBaseType k = std::visit(EvalNatBT{}, eval_args[2]);
+          InfoBaseType result = std::visit(
+            match_scc_ts_visitor_, g, copies, k, std::variant<bool>(debug_)
           );
           return result;
         }

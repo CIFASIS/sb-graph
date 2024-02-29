@@ -1,6 +1,24 @@
-// Matching Test3 of the paper, multiple copies
+/*
+model Test2
+  //Model with possibly wrong initial matching
+  constant Integer N = 100;
+  Real a[N], x[N], b[N];
+equation 
+  for i in 2:N-1 loop
+    der(x[i]) = a[i] - x[i];
+    a[i + 1] = a[i] + b[i];
+    b[i] = x[i - 1];
+  end for;
+  b[1] = 0;
+  b[N] = x[N - 1];
+  der(x[1]) = a[1] - x[1];
+  der(x[N]) = a[N] - x[N];
+  a[2] = a[1] + b[1];
+  a[N] = 1;
+end Test2;
+*/
 
-N = 10000
+N = 100000
 
 F1 = N-2
 F2 = N-2+F1
@@ -30,7 +48,7 @@ E12 = 1+E11 // F7 - der(x[N])
 E13 = 1+E12 // F8 - a[1]
 E14 = 1+E13 // F8 - a[2]
 E15 = 1+E14 // F8 - b[1]
-E16 = 1+E15 // F9 - a[1]
+E16 = 1+E15 // F9 - a[N]
 
 off1d = 0
 off2d = r(F1, 1)-r(E2, 1)
@@ -64,7 +82,7 @@ off12b = r(U3, 1)-E12
 off13b = r(U1, 1)-E13-N+1
 off14b = r(U1, 1)-E14-N+2
 off15b = r(U2, 1)-E15-N+1
-off16b = r(U1, 1)-E16-N+1
+off16b = r(U1, 1)-E16
 
 V %= {[1:1:F1], [F1+1:1:F2], [F2+1:1:F3], [F3+1:1:F4], [F4+1:1:F5], [F5+1:1:F6]
   , [F6+1:1:F7], [F7+1:1:F8], [F8+1:1:F9]
@@ -118,5 +136,5 @@ Emap %= <<{[1:1:E1]} -> 0*x+1, {[E1+1:1:E2]} -> 0*x+2, {[E2+1:1:E3], [E3+1:1:E4]
   , {[E9+1:1:E10]} -> 0*x+9, {[E10+1:1:E11]} -> 0*x+10, {[E11+1:1:E12]} -> 0*x+11
   , {[E12+1:1:E13], [E13+1:1:E14]} -> 0*x+12, {[E14+1:1:E15]} -> 0*x+13
   , {[E15+1:1:E16]} -> 0*x+14>>;
-, 4, 2
+, 1, 6
 )

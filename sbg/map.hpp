@@ -48,6 +48,7 @@ struct SBGMap {
 
   SBGMap();
   SBGMap(Interval i, LExp le);
+  SBGMap(SetPiece mdi, Exp exp);
   SBGMap(Set dom, Exp exp);
 
   bool operator==(const SBGMap &other) const;

@@ -123,8 +123,9 @@ struct FuncEnv{
   static FuncEnvType mapping_;
 };
 
-typedef enum { empty, member, min, max, lt, comp, inv, im, preim, dom, comb, min_map, red, min_adj
-  , connected, min_reach, matching, scc, ts, first_inv, match_scc } Func;
+typedef enum { empty, member, min, max, lt, comp, inv, im, preim, dom, comb
+  , min_map, red, min_adj, connected, min_reach, matching, scc, ts, first_inv
+  , match_scc, match_scc_ts } Func;
 
 // Classes for pretty printing ------------------------------------------------
 

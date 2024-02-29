@@ -261,6 +261,10 @@ PWMap<Set> PWMap<Set>::composition(const PWMap &other) const
     for (const Map &map2 : map2.maps_)
       res.emplaceBack(map1.composition(map2));
 
+  std::cout << *this << "\n";
+  std::cout << other << "\n";
+  std::cout << res << "\n\n";
+
   return res;
 }
 
@@ -868,7 +872,6 @@ template<typename Set>
 PWMap<Set> PWMap<Set>::compact() const
 {
   PWMap res;
-  std::cout << "this: " << *this << "\n";
 
   if (dom().isEmpty())
     return res;
@@ -894,8 +897,6 @@ PWMap<Set> PWMap<Set>::compact() const
       res.emplaceBack(new_ith);
     }
   }
-
-  std::cout << "res: " << res << "\n\n";
 
   return res;
 }

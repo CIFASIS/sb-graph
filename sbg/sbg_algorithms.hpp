@@ -177,10 +177,10 @@ struct SBGSCC {
   member_class(Set, V);
   member_class(PW, Vmap);
 
-  member_class(Set, E);
   member_class(PW, Emap);
 
   //-----------------------------
+  member_class(Set, E); // Edges in the same SCC in each step
   member_class(Set, Ediff); // Edges between different SCC in each step
 
   member_class(PW, mapB);
@@ -252,6 +252,9 @@ typedef SBGTopSort<OrdSet> CanonTopSort;
 
 template<typename Set>
 DSBGraph<Set> buildSCCFromMatching(const SBGMatching<Set> &match);
+
+template<typename Set>
+DSBGraph<Set> buildSortFromSCC(const SBGSCC<Set> &scc, const PWMap<Set> &rmap);
 
 } // namespace LIB
 

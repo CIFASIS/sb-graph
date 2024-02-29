@@ -673,7 +673,7 @@ template<typename Set>
 MatchInfo<Set> SBGMatching<Set>::calculate(unsigned int k)
 {
   if (debug())
-    Util::SBG_LOG << sbg() << "\n";
+    Util::SBG_LOG << "Matching sbg: " << sbg() << "\n\n";
   set_k(k);
 
   auto begin = std::chrono::high_resolution_clock::now();
@@ -790,15 +790,11 @@ template<typename Set>
 PWMap<Set> SBGSCC<Set>::calculate()
 {
   if (debug())
-    Util::SBG_LOG << dsbg() << "\n\n";
+    Util::SBG_LOG << "SCC dsbg: " << dsbg() << "\n\n";
 
   do {
     sccStep();
-    if (debug())
-      Util::SBG_LOG << "Call\n\n";
     sccStep();
-    if (debug())
-      Util::SBG_LOG << "Call\n\n";
   } while (Ediff() != Set());
 
   DSBGraph<Set> aux_dsbg(
@@ -809,6 +805,9 @@ PWMap<Set> SBGSCC<Set>::calculate()
   MinReach min_reach(aux_dsbg, debug());
   PW new_rmap = min_reach.calculate(Set(), V()).reps();
   set_rmap(new_rmap);
+
+  if (debug())
+    Util::SBG_LOG << "SCC result: " << new_rmap << "\n\n";
 
   return rmap();
 }
@@ -896,6 +895,9 @@ Set SBGTopSort<Set>::topSortStep()
 template<typename Set>
 VertexOrder<Set> SBGTopSort<Set>::calculate()
 {
+  if (debug())
+    Util::SBG_LOG << "Topological sort dsbg:\n" << dsbg() << "\n\n";
+
   VertexOrder<Set> res;
 
   do {
@@ -903,6 +905,9 @@ VertexOrder<Set> SBGTopSort<Set>::calculate()
     if (!nth.isEmpty())
       res.emplaceBack(nth);
   } while (!disordered().isEmpty());
+
+  if (debug())
+    Util::SBG_LOG << "Topological sort result:\n" << res << "\n\n";
 
   return res;
 }
@@ -998,6 +1003,53 @@ DSBGraph<Set> buildSCCFromMatching(const SBGMatching<Set> &match)
 
 template BaseDSBG buildSCCFromMatching(const BaseMatch &match);
 template CanonDSBG buildSCCFromMatching(const CanonMatch &match);
+
+template<typename Set>
+DSBGraph<Set> buildSortFromSCC(
+  const SBGSCC<Set> &scc, const PWMap<Set> &rmap
+)
+{
+  PWMap<Set> aux_rmap = rmap.compact();
+  PWMap<Set> reps_rmap = aux_rmap.filterMap([](const SBGMap<Set> &sbgmap) {
+    return eqId(sbgmap);
+  });
+  Set V = reps_rmap.dom();
+
+  PWMap<Set> Vmap;
+  unsigned int j = 1, dims = rmap.nmbrDims();
+  for (SetPiece mdi : V) {
+    Util::MD_NAT v(dims, j);
+    Vmap.emplaceBack(SBGMap<Set>(mdi, Exp(v)));
+    ++j;
+  }
+
+  DSBGraph dsbg = scc.dsbg();
+  Set Ediff = dsbg.E().difference(scc.E());
+  PWMap<Set> mapB = rmap.composition(dsbg.mapB().restrict(Ediff));
+  PWMap<Set> mapD = rmap.composition(dsbg.mapD().restrict(Ediff));
+
+  j = 1;
+  PWMap<Set> Emap;
+  for (const SBGMap<Set> &map1 : Vmap) {
+    Set edges1 = mapB.preImage(map1.dom());
+    for (const SBGMap<Set> &map2 : Vmap) {
+      Set edges2 = mapD.preImage(map2.dom());
+      Set dom = edges1.intersection(edges2);
+      Exp exp(Util::MD_NAT(dims, j));
+
+      Emap.emplaceBack(SBGMap<Set>(dom.compact(), exp));
+      ++j;
+    }
+  }
+  PWMap<Set> subE_map = dsbg.subE_map().restrict(Ediff);
+
+  DSBGraph<Set> res(V, Vmap, mapB, mapD, Emap);
+  res.set_subE_map(subE_map);
+  return res;
+}
+
+template BaseDSBG buildSortFromSCC(const BaseSCC &scc, const BasePWMap &rmap);
+template CanonDSBG buildSortFromSCC(const CanonSCC &scc, const CanonPWMap &rmap);
 
 } // namespace LIB
 

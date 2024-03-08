@@ -196,13 +196,35 @@ struct SBGSCC {
   PW calculate();
 
   private:
-  void sccStep();
+  PW sccStep();
 };
 
 typedef SBGSCC<UnordSet> BaseSCC;
 typedef SBGSCC<OrdSet> CanonSCC;
 
 // Topological sort ------------------------------------------------------------
+
+// Save the order in which vertices are taken out in a recursion 
+template<typename Set>
+struct OrderInfo {
+  member_class(SetPiece, vs);
+  member_class(Util::MD_NAT, first);
+  member_class(Util::MD_NAT, step);
+  member_class(Util::MD_NAT, last);
+
+  OrderInfo();
+  OrderInfo(
+    SetPiece vs, Util::MD_NAT first, Util::MD_NAT step, Util::MD_NAT last
+  );
+  
+  bool operator==(const OrderInfo &other) const; 
+  bool operator!=(const OrderInfo &other) const; 
+};
+template<typename Set>
+std::ostream &operator<<(std::ostream &out, const OrderInfo<Set> &oi);
+
+typedef OrderInfo<UnordSet> BaseOI;
+typedef OrderInfo<OrdSet> CanonOI;
 
 template<typename Set>
 struct VertexOrder {
@@ -233,6 +255,7 @@ struct SBGTopSort {
   member_class(PW, mapD);
 
   member_class(Set, disordered);
+  member_class(Set, deletedE); // Deleted edges
 
   member_class(bool, debug);
 

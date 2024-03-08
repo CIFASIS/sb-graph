@@ -673,7 +673,7 @@ template<typename Set>
 MatchInfo<Set> SBGMatching<Set>::calculate(unsigned int k)
 {
   if (debug())
-    Util::SBG_LOG << "Matching sbg: " << sbg() << "\n\n";
+    Util::SBG_LOG << "Matching sbg: \n" << sbg() << "\n\n";
   set_k(k);
 
   auto begin = std::chrono::high_resolution_clock::now();
@@ -757,7 +757,7 @@ member_imp_temp(template<typename Set>, SBGSCC<Set>, PWMap<Set>, rmap);
 member_imp_temp(template<typename Set>, SBGSCC<Set>, bool, debug);
 
 template<typename Set>
-void SBGSCC<Set>::sccStep()
+PWMap<Set> SBGSCC<Set>::sccStep()
 {
   PW id_V(V());
  
@@ -783,33 +783,26 @@ void SBGSCC<Set>::sccStep()
   set_mapB(mapD());
   set_mapD(aux_B);
 
-  return;
+  return new_rmap;
 }
 
 template<typename Set>
 PWMap<Set> SBGSCC<Set>::calculate()
 {
   if (debug())
-    Util::SBG_LOG << "SCC dsbg: " << dsbg() << "\n\n";
+    Util::SBG_LOG << "SCC dsbg: \n" << dsbg() << "\n\n";
 
   do {
     sccStep();
     sccStep();
   } while (Ediff() != Set());
-
-  DSBGraph<Set> aux_dsbg(
-    V(), Vmap()
-    , mapB().restrict(E()), mapD().restrict(E()), Emap().restrict(E())
-  );
-  aux_dsbg.set_subE_map(dsbg().subE_map());
-  MinReach min_reach(aux_dsbg, debug());
-  PW new_rmap = min_reach.calculate(Set(), V()).reps();
-  set_rmap(new_rmap);
+  PW rmap = sccStep(); 
+  set_rmap(rmap);
 
   if (debug())
-    Util::SBG_LOG << "SCC result: " << new_rmap << "\n\n";
+    Util::SBG_LOG << "SCC result: " << rmap << "\n\n";
 
-  return rmap();
+  return rmap;
 }
 
 // -----------------------------------------------------------------------------
@@ -856,31 +849,63 @@ std::ostream &operator<<(std::ostream &out, const VertexOrder<Set> &vo)
 
 template<typename Set>
 SBGTopSort<Set>::SBGTopSort()
-  : dsbg_(), mapB_(), mapD_(), disordered_(), debug_(false) {}
+  : dsbg_(), mapB_(), mapD_(), disordered_(), deletedE_(), debug_(false) {}
 template<typename Set>
 SBGTopSort<Set>::SBGTopSort(DSBGraph<Set> dsbg, bool debug)
   : dsbg_(dsbg), mapB_(dsbg.mapB()), mapD_(dsbg.mapD()), disordered_(dsbg.V())
-    , debug_(debug) {}
+    , deletedE_(), debug_(debug) {}
 
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, DSBGraph<Set>, dsbg);
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, PWMap<Set>, mapB);
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, PWMap<Set>, mapD);
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, Set, disordered);
+member_imp_temp(template<typename Set>, SBGTopSort<Set>, Set, deletedE);
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, bool, debug);
 
 template<typename Set>
 Set SBGTopSort<Set>::topSortStep()
 {
   DSBGraph<Set> aux_dsbg = dsbg();
+  PW subE_map = aux_dsbg.subE_map();
 
   // Vertices without outgoing edges
   Set nth = disordered().difference(mapB().image());
 
   // Ingoing edges to nth
-  Set ingoing = mapD().preImage(nth);
-  Set subset_ids = aux_dsbg.subE_map().image(ingoing);
-  // Ingoing edges in the same subset-edge as "ingoing" 
-  Set ingoing_plus = aux_dsbg.subE_map().preImage(subset_ids);
+  Set ingoing = mapD().preImage(nth), ingoing_plus = ingoing;
+  // Subset edges id's with an ingoing edge to nth
+  Set ith_ids = subE_map.image(ingoing);
+  Set repeated = ith_ids.intersection(subE_map.image(deletedE()));
+  // Already visited subset edge
+  if (!repeated.isEmpty()) {
+    Set start_rec = ingoing.intersection(subE_map.preImage(repeated));
+    Set end_rec = deletedE().intersection(subE_map.preImage(repeated));
+
+    for (const SBGMap<Set> &map : subE_map) {
+      Set sub_first = map.dom().intersection(start_rec);
+      Set sub_last = map.dom().intersection(end_rec);
+
+      Set v_start = aux_dsbg.mapD().image(sub_first); // Ending vertex of start
+      Set start_ith = aux_dsbg.mapB().preImage(v_start); // Following edge from the start
+      Set v_end = aux_dsbg.mapB().image(sub_last); // Starting vertex of end
+      Set end_ith = aux_dsbg.mapD().preImage(v_end); // Following edge from the end
+      Set start_path = sub_first, end_path = sub_last; 
+      for (unsigned int j = 0; j < 3; ++j) {
+        start_path = start_path.cup(start_ith);
+        end_path = end_path.cup(end_ith);
+        if (!start_ith.intersection(sub_last).isEmpty())
+          break;
+
+        v_start = aux_dsbg.mapD().image(start_ith); // Ending vertex of start_ith
+        start_ith = aux_dsbg.mapB().preImage(v_start); // Following edge from the start_ith
+        v_end = aux_dsbg.mapB().image(end_ith); // Starting vertex of end_ith
+        end_ith = aux_dsbg.mapD().preImage(v_end); // Following edge from the end_ith
+      }
+
+      Set rec_path = start_path.intersection(end_path);
+      ingoing_plus = ingoing_plus.cup(subE_map.preImage(subE_map.image(rec_path)));
+    }
+  }
 
   Set domB_minus = mapB().dom().difference(ingoing_plus);
   Set domD_minus = mapD().dom().difference(ingoing_plus);
@@ -888,6 +913,7 @@ Set SBGTopSort<Set>::topSortStep()
   set_mapD(mapD().restrict(domD_minus));
 
   set_disordered(disordered().difference(nth));
+  set_deletedE(deletedE().cup(ingoing_plus));
 
   return nth;
 }
@@ -1026,7 +1052,9 @@ DSBGraph<Set> buildSortFromSCC(
   DSBGraph dsbg = scc.dsbg();
   Set Ediff = dsbg.E().difference(scc.E());
   PWMap<Set> mapB = rmap.composition(dsbg.mapB().restrict(Ediff));
+  mapB = mapB.compact();
   PWMap<Set> mapD = rmap.composition(dsbg.mapD().restrict(Ediff));
+  mapD = mapD.compact();
 
   j = 1;
   PWMap<Set> Emap;
@@ -1041,7 +1069,8 @@ DSBGraph<Set> buildSortFromSCC(
       ++j;
     }
   }
-  PWMap<Set> subE_map = dsbg.subE_map().restrict(Ediff);
+  // TODO: partition subset-edge
+  PWMap<Set> subE_map = dsbg.subE_map().restrict(Ediff); 
 
   DSBGraph<Set> res(V, Vmap, mapB, mapD, Emap);
   res.set_subE_map(subE_map);

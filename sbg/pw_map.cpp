@@ -261,10 +261,6 @@ PWMap<Set> PWMap<Set>::composition(const PWMap &other) const
     for (const Map &map2 : map2.maps_)
       res.emplaceBack(map1.composition(map2));
 
-  std::cout << *this << "\n";
-  std::cout << other << "\n";
-  std::cout << res << "\n\n";
-
   return res;
 }
 

@@ -849,63 +849,86 @@ std::ostream &operator<<(std::ostream &out, const VertexOrder<Set> &vo)
 
 template<typename Set>
 SBGTopSort<Set>::SBGTopSort()
-  : dsbg_(), mapB_(), mapD_(), disordered_(), deletedE_(), debug_(false) {}
+  : dsbg_(), mapB_(), mapD_(), disordered_(), rec_map_(), debug_(false) {}
 template<typename Set>
 SBGTopSort<Set>::SBGTopSort(DSBGraph<Set> dsbg, bool debug)
   : dsbg_(dsbg), mapB_(dsbg.mapB()), mapD_(dsbg.mapD()), disordered_(dsbg.V())
-    , deletedE_(), debug_(debug) {}
+    , rec_map_(), debug_(debug) {}
 
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, DSBGraph<Set>, dsbg);
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, PWMap<Set>, mapB);
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, PWMap<Set>, mapD);
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, Set, disordered);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, Set, deletedE);
+member_imp_temp(template<typename Set>, SBGTopSort<Set>, PWMap<Set>, rec_map);
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, bool, debug);
+
+template<typename Set>
+void SBGTopSort<Set>::findRecursions()
+{
+  PW res;
+
+  DSBGraph<Set> aux_dsbg = dsbg();
+  PW subE_map = aux_dsbg.subE_map();
+
+  Set unvisited = subE_map.dom(); 
+  Util::NAT dims = subE_map.nmbrDims();
+  unsigned int k = 1;
+  for (const SBGMap<Set> &map : subE_map) {
+    Set first = map.dom().intersection(unvisited), last = first;
+
+    if (!first.isEmpty()) {
+      Set v_start = aux_dsbg.mapD().image(first); // Ending vertex of start
+      Set start_ith = aux_dsbg.mapB().preImage(v_start); // Following edge from the start
+      Set v_end = aux_dsbg.mapB().image(last); // Starting vertex of end
+      Set end_ith = aux_dsbg.mapD().preImage(v_end); // Following edge from the end
+      Set start_path = first, end_path = last, rec_path; 
+
+      if (!start_ith.intersection(first).isEmpty()) {
+        rec_path = start_path.intersection(end_path);
+        rec_path = subE_map.preImage(subE_map.image(rec_path));
+
+        unvisited = unvisited.difference(rec_path);
+        Util::MD_NAT id(dims, k);
+        rec_map_ref().emplaceBack(SBGMap<Set>(rec_path, Exp(id)));
+        ++k;
+      }
+
+      else {
+        for (unsigned int j = 0; j < aux_dsbg.Vmap().size(); ++j) {
+          start_path = start_path.cup(start_ith);
+          end_path = end_path.cup(end_ith);
+          if (!start_ith.intersection(first).isEmpty())
+            break;
+
+          v_start = aux_dsbg.mapD().image(start_ith); // Ending vertex of start_ith
+          start_ith = aux_dsbg.mapB().preImage(v_start); // Following edge from the start_ith
+          v_end = aux_dsbg.mapB().image(end_ith); // Starting vertex of end_ith
+          end_ith = aux_dsbg.mapD().preImage(v_end); // Following edge from end_ith
+        }
+
+        rec_path = start_path.intersection(end_path);
+        rec_path = subE_map.preImage(subE_map.image(rec_path));
+
+        if (first != rec_path) {
+          unvisited = unvisited.difference(rec_path);
+          Util::MD_NAT id(dims, k);
+          rec_map_ref().emplaceBack(SBGMap<Set>(rec_path, Exp(id)));
+          ++k;
+        }
+      }
+    }
+  }
+}
 
 template<typename Set>
 Set SBGTopSort<Set>::topSortStep()
 {
-  DSBGraph<Set> aux_dsbg = dsbg();
-  PW subE_map = aux_dsbg.subE_map();
-
   // Vertices without outgoing edges
   Set nth = disordered().difference(mapB().image());
 
   // Ingoing edges to nth
-  Set ingoing = mapD().preImage(nth), ingoing_plus = ingoing;
-  // Subset edges id's with an ingoing edge to nth
-  Set ith_ids = subE_map.image(ingoing);
-  Set repeated = ith_ids.intersection(subE_map.image(deletedE()));
-  // Already visited subset edge
-  if (!repeated.isEmpty()) {
-    Set start_rec = ingoing.intersection(subE_map.preImage(repeated));
-    Set end_rec = deletedE().intersection(subE_map.preImage(repeated));
-
-    for (const SBGMap<Set> &map : subE_map) {
-      Set sub_first = map.dom().intersection(start_rec);
-      Set sub_last = map.dom().intersection(end_rec);
-
-      Set v_start = aux_dsbg.mapD().image(sub_first); // Ending vertex of start
-      Set start_ith = aux_dsbg.mapB().preImage(v_start); // Following edge from the start
-      Set v_end = aux_dsbg.mapB().image(sub_last); // Starting vertex of end
-      Set end_ith = aux_dsbg.mapD().preImage(v_end); // Following edge from the end
-      Set start_path = sub_first, end_path = sub_last; 
-      for (unsigned int j = 0; j < 3; ++j) {
-        start_path = start_path.cup(start_ith);
-        end_path = end_path.cup(end_ith);
-        if (!start_ith.intersection(sub_last).isEmpty())
-          break;
-
-        v_start = aux_dsbg.mapD().image(start_ith); // Ending vertex of start_ith
-        start_ith = aux_dsbg.mapB().preImage(v_start); // Following edge from the start_ith
-        v_end = aux_dsbg.mapB().image(end_ith); // Starting vertex of end_ith
-        end_ith = aux_dsbg.mapD().preImage(v_end); // Following edge from the end_ith
-      }
-
-      Set rec_path = start_path.intersection(end_path);
-      ingoing_plus = ingoing_plus.cup(subE_map.preImage(subE_map.image(rec_path)));
-    }
-  }
+  Set ingoing = mapD().preImage(nth);
+  Set ingoing_plus = ingoing.cup(rec_map().preImage(rec_map().image(ingoing)));
 
   Set domB_minus = mapB().dom().difference(ingoing_plus);
   Set domD_minus = mapD().dom().difference(ingoing_plus);
@@ -913,7 +936,6 @@ Set SBGTopSort<Set>::topSortStep()
   set_mapD(mapD().restrict(domD_minus));
 
   set_disordered(disordered().difference(nth));
-  set_deletedE(deletedE().cup(ingoing_plus));
 
   return nth;
 }
@@ -926,6 +948,9 @@ VertexOrder<Set> SBGTopSort<Set>::calculate()
 
   VertexOrder<Set> res;
 
+  findRecursions();
+  if (debug())
+    Util::SBG_LOG << "rec_map: " << rec_map() << "\n\n";
   do {
     Set nth = topSortStep();
     if (!nth.isEmpty())

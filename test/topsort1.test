@@ -1,6 +1,6 @@
 // Topological sort test, with a simple recursion
 
-N = 10
+N = 10000
 
 V1 = 1
 V2 = N-1+V1

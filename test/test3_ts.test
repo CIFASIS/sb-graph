@@ -29,15 +29,18 @@ equation
   b[1] = 0;
   b[N] = x[N-1];
   a[1] = 1;
-  der(x[1]) = a[1] - x[1];
   a[2] = a[1] + b[1];
-  der(x[2]) = a[2] - x[2]; 
+  der(x[1]) = a[1] - x[1];
+  der(x[2]) = a[2] - x[2];
   a[3] = a[2] + b[2];
-  for i in 3:N-2 loop
-    der(x[i]) = a[i] - x[i];
+  der(x[3]) = a[3] - x[3];
+  for i in 3:N-1 loop
     a[i+1] = a[i] + b[i];
   end for;
-  der(x[N]) = a[N] - x[N];
+  for i in loop
+    der(x[i]) = a[i] - x[i];
+  end for;
+  der(x[N]) = a[N] - x[N]; 
 end Test3;
 */
 

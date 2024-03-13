@@ -255,7 +255,10 @@ struct SBGTopSort {
   member_class(PW, mapD);
 
   member_class(Set, disordered);
-  member_class(Set, deletedE); // Deleted edges
+
+  // Auxiliary map where recursive paths are grouped as pertaining to the same
+  // subset-edge
+  member_class(PW, rec_map);
 
   member_class(bool, debug);
 
@@ -265,6 +268,7 @@ struct SBGTopSort {
   VertexOrder<Set> calculate(); 
 
   private:
+  void findRecursions(); // Find all possible recursions
   Set topSortStep();
 };
 

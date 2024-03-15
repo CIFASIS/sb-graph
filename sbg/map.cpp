@@ -154,7 +154,7 @@ bool SBGMap<Set>::operator!=(const SBGMap &other) const
 template<typename Set>
 std::ostream &operator<<(std::ostream &out, const SBGMap<Set> &sbgmap)
 {
-  out << sbgmap.dom() << " ↦ " << sbgmap.exp();
+  out << sbgmap.dom() << " -> " << sbgmap.exp();
 
   return out;
 }

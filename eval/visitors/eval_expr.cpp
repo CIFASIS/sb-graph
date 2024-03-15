@@ -325,19 +325,23 @@ auto match_scc_visitor_ = Util::Overload {
 auto match_scc_ts_visitor_ = Util::Overload {
   [](LIB::BaseSBG a, Util::MD_NAT b, Util::MD_NAT c, bool d) { 
     LIB::BaseMatch match(a.copy(b[0]), d);
-    match.calculate(c[0]);
+    LIB::UnordSet match_res = match.calculate(c[0]).matched_edges();
     LIB::BaseSCC scc(buildSCCFromMatching(match), d);
     LIB::BasePWMap scc_res = scc.calculate();
     LIB::BaseTopSort ts(buildSortFromSCC(scc, scc_res), d);
-    return InfoBaseType(ts.calculate());
+    LIB::BaseVO ts_res = ts.calculate(); 
+    buildJson(match_res, scc.transformResult(scc_res), ts_res);
+    return InfoBaseType(ts_res);
   },
   [](LIB::CanonSBG a, Util::MD_NAT b, Util::MD_NAT c, bool d) {
     LIB::CanonMatch match(a.copy(b[0]), d);
-    match.calculate(c[0]);
+    LIB::OrdSet match_res = match.calculate(c[0]).matched_edges();
     LIB::CanonSCC scc(buildSCCFromMatching(match), d);
     LIB::CanonPWMap scc_res = scc.calculate();
     LIB::CanonTopSort ts(buildSortFromSCC(scc, scc_res), d);
-    return InfoBaseType(ts.calculate());
+    LIB::CanonVO ts_res = ts.calculate();
+    buildJson(match_res, scc.transformResult(scc_res), ts_res);
+    return InfoBaseType(ts_res);
   },
   [](auto a, auto b, auto c, auto d) {
     Util::ERROR("Wrong arguments for matching+scc+ts");

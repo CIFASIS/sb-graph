@@ -805,6 +805,23 @@ PWMap<Set> SBGSCC<Set>::calculate()
   return rmap;
 }
 
+template<typename Set>
+std::set<Set> SBGSCC<Set>::transformResult(PWMap<Set> scc)
+{
+  Components res;
+
+  Set reps = scc.filterMap([](const SBGMap<Set> &sbgmap) {
+    return eqId(sbgmap);
+  }).image();
+
+  for (const SetPiece &mdi : reps) {
+    Set represented = scc.preImage(Set(mdi));
+    res.emplace(represented);
+  }
+
+  return res;
+}
+
 // -----------------------------------------------------------------------------
 // Topological sort ------------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -1104,6 +1121,54 @@ DSBGraph<Set> buildSortFromSCC(
 
 template BaseDSBG buildSortFromSCC(const BaseSCC &scc, const BasePWMap &rmap);
 template CanonDSBG buildSortFromSCC(const CanonSCC &scc, const CanonPWMap &rmap);
+
+template<typename Set>
+void buildJson(
+  const Set &matching, std::set<Set> scc, const VertexOrder<Set> &order
+)
+{
+  // 1. Parse a JSON string into DOM.
+  const char* json = "{\"matching\":\"\",\"scc\":\"\",\"order\":\"\"}";
+  rapidjson::Document d;
+  d.Parse(json);
+
+  // 2. Modify it by DOM.
+  rapidjson::Value &m = d["matching"];
+  std::stringstream ss1;
+  ss1 << matching;
+  m.SetString(ss1.str().c_str(), strlen(ss1.str().c_str()), d.GetAllocator());
+
+  rapidjson::Value &s = d["scc"];
+  std::stringstream ss2;
+  for (const Set &s : scc)
+    ss2 << s;
+  s.SetString(ss2.str().c_str(), strlen(ss2.str().c_str()), d.GetAllocator());
+
+  rapidjson::Value &o = d["order"];
+  std::stringstream ss3;
+  ss3 << order;
+  o.SetString(ss3.str().c_str(), strlen(ss3.str().c_str()), d.GetAllocator());
+
+  // 3. Stringify the DOM
+  FILE *fp = fopen("output.json", "w");
+  char write_buffer[65536];
+  rapidjson::FileWriteStream os(fp, write_buffer, sizeof(write_buffer));
+  rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(os);
+  d.Accept(writer);
+
+  fclose(fp);
+
+  return;
+}
+
+template void buildJson
+(
+  const UnordSet &match, std::set<UnordSet> scc, const BaseVO &order
+);
+template void buildJson
+(
+  const OrdSet &match, std::set<OrdSet> scc, const CanonVO &order
+);
 
 } // namespace LIB
 

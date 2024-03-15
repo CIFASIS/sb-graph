@@ -28,7 +28,11 @@
 #include <list>
 #include <set>
 #include <iostream>
+#include <unordered_set>
 
+#include "include/rapidjson/document.h"
+#include "include/rapidjson/filewritestream.h"
+#include "include/rapidjson/prettywriter.h"
 #include "sbg/sbg.hpp"
 #include "util/logger.hpp"
 
@@ -170,6 +174,7 @@ template<typename Set>
 struct SBGSCC {
   using Map = SBGMap<Set>;
   using PW = PWMap<Set>;
+  using Components = std::set<Set>;
 
   //*** SBG info, constant
   member_class(DSBGraph<Set>, dsbg);
@@ -194,6 +199,7 @@ struct SBGSCC {
   SBGSCC(DSBGraph<Set> dsbg, bool debug);
 
   PW calculate();
+  Components transformResult(PW scc);
 
   private:
   PW sccStep();
@@ -282,6 +288,11 @@ DSBGraph<Set> buildSCCFromMatching(const SBGMatching<Set> &match);
 
 template<typename Set>
 DSBGraph<Set> buildSortFromSCC(const SBGSCC<Set> &scc, const PWMap<Set> &rmap);
+
+template<typename Set>
+void buildJson(
+  const Set &matching, std::set<Set> scc, const VertexOrder<Set> &order
+);
 
 } // namespace LIB
 

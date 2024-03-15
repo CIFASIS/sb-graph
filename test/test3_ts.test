@@ -44,7 +44,7 @@ equation
 end Test3;
 */
 
-N = 10
+N = 100000
 
 F1 = N-2
 F2 = N-2+F1

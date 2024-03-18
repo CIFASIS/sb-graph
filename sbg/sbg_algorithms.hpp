@@ -30,9 +30,9 @@
 #include <iostream>
 #include <unordered_set>
 
-#include "include/rapidjson/document.h"
-#include "include/rapidjson/filewritestream.h"
-#include "include/rapidjson/prettywriter.h"
+#include <rapidjson/document.h>
+#include <rapidjson/filewritestream.h>
+#include <rapidjson/prettywriter.h>
 #include "sbg/sbg.hpp"
 #include "util/logger.hpp"
 

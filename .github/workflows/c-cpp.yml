@@ -20,6 +20,7 @@ jobs:
         sudo apt-get install libboost1.81-dev
         sudo apt-get install cmake 
         sudo apt-get install g++
+        sudo apt-get install rapidjson-dev
 
     - name: Build
       working-directory: ./

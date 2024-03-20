@@ -101,12 +101,10 @@ std::ostream &operator<<(std::ostream &out, const MD_NAT &md)
   MD_NAT aux = md;
   unsigned int sz = aux.size();
 
-  if (sz == 1) { 
+  if (sz == 1)  
     out << aux[0];
-    return out;
-  }
 
-  if (sz > 0) {
+  if (sz > 1) {
     out << "(";
     for (unsigned int j = 0; j < sz - 1; j++)
       out << aux[j] << ", ";

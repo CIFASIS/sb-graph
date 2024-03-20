@@ -307,6 +307,13 @@ OrdPWMDInter OrdPWMDInter::difference(const OrdPWMDInter &other) const
 
 // Extra operations ------------------------------------------------------------
 
+Util::MD_NAT OrdPWMDInter::midElem() const
+{
+  Util::ERROR_UNLESS(!isEmpty(), "LIB::Ord::midElem: shouldn't be empty");
+
+  return begin()->midElem();
+}
+
 OrdPWMDInter OrdPWMDInter::concatenation(const OrdPWMDInter &other) const
 {
   OrdPWMDInter res;

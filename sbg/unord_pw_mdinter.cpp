@@ -317,6 +317,13 @@ UnordPWMDInter UnordPWMDInter::difference(const UnordPWMDInter &other) const
 
 // Extra operations ------------------------------------------------------------
 
+Util::MD_NAT UnordPWMDInter::midElem() const
+{
+  Util::ERROR_UNLESS(!isEmpty(), "LIB::Unord::midElem: shouldn't be empty");
+
+  return begin()->midElem();
+}
+
 UnordPWMDInter UnordPWMDInter::concatenation(const UnordPWMDInter &other) const
 {
   UnordPWMDInter res;

@@ -78,6 +78,7 @@ struct MultiDimInter {
   MultiDimInter offset(const MD_NAT &off) const;
   MultiDimInter least(const MultiDimInter &other) const;
   bool isUnidim() const;
+  Util::MD_NAT midElem() const;
   MaybeMDI compact(const MultiDimInter &other) const;
 };
 std::ostream &operator<<(std::ostream &out, const MultiDimInter &mi);

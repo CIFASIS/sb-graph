@@ -17,6 +17,7 @@
 
  ******************************************************************************/
 
+#include <iostream>
 #include "sbg/multidim_inter.hpp"
 
 namespace SBG {
@@ -223,6 +224,16 @@ MultiDimInter MultiDimInter::least(const MultiDimInter &other) const
 }
 
 bool MultiDimInter::isUnidim() const { return size() <= 1; }
+
+Util::MD_NAT MultiDimInter::midElem() const
+{
+  Util::MD_NAT res;
+
+  for (unsigned int j = 0; j < size(); ++j)
+    res.emplaceBack(operator[](j).midElem());
+
+  return res;
+}
 
 MultiDimInter::MaybeMDI MultiDimInter::compact(const MultiDimInter &other) const
 {

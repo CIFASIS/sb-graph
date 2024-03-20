@@ -1,6 +1,6 @@
 // Topological sort test, with a simple recursion, and a self recursion on the right
 
-N = 100000
+N = 10
 
 V1 = 1
 V2 = N-1+V1
@@ -35,4 +35,5 @@ mapB %= <<{[1:1:E1]} -> 1*x+0, {[E1+1:1:E2]} -> 1*x+off2d, {[E2+1:1:E3]} -> 1*x-
 mapD %= <<{[1:1:E1]} -> 1*x+off1d, {[E1+1:1:E2]} -> 1*x+0, {[E2+1:1:E3]} -> 1*x+off3d
           , {[E3+1:1:E4]} -> 1*x+off4d>>;
 Emap %= <<{[1:1:E1]} -> 0*x+1, {[E1+1:1:E2], [E2+1:1:E3]} -> 0*x+2, {[E3+1:1:E4]} -> 0*x+3>>;
+, <<{[1:1:V1]} -> 0*x+1, {[V1+1:1:V2]} -> 0*x+2, {[V2+1:1:V3]} -> 0*x+3>>
 )

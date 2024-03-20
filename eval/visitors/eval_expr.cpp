@@ -276,15 +276,21 @@ auto scc_visitor_ = Util::Overload {
 };
 
 auto ts_visitor_ = Util::Overload {
-  [](LIB::BaseDSBG a, bool b) { 
-    LIB::BaseTopSort ts(a, b);
-    return InfoBaseType(ts.calculate()); 
+  [](LIB::BaseDSBG a, LIB::BasePWMap b, bool c) { 
+    LIB::BaseTopSort ts(a, c);
+    LIB::BaseVO ts_res = ts.calculate();
+    LIB::RecInfo rec_info = buildRecursionInfo(ts.dsbg(), ts.rec_map(), b);
+    std::cout << rec_info << "\n\n";
+    return InfoBaseType(ts_res); 
   },
-  [](LIB::CanonDSBG a, bool b) {
-    LIB::CanonTopSort ts(a, b);
-    return InfoBaseType(ts.calculate());
+  [](LIB::CanonDSBG a, LIB::CanonPWMap b, bool c) {
+    LIB::CanonTopSort ts(a, c);
+    LIB::CanonVO ts_res = ts.calculate();
+    LIB::RecInfo rec_info = buildRecursionInfo(ts.dsbg(), ts.rec_map(), b);
+    std::cout << rec_info << "\n\n";
+    return InfoBaseType(ts_res);
   },
-  [](auto a, auto b) {
+  [](auto a, auto b, auto c) {
     Util::ERROR("Wrong arguments for ts");
     return InfoBaseType();
   }
@@ -330,6 +336,8 @@ auto match_scc_ts_visitor_ = Util::Overload {
     LIB::BasePWMap scc_res = scc.calculate();
     LIB::BaseTopSort ts(buildSortFromSCC(scc, scc_res), d);
     LIB::BaseVO ts_res = ts.calculate(); 
+    LIB::RecInfo rec_info = buildRecursionInfo(ts.dsbg(), ts.rec_map(), a.subE_map());
+    std::cout << rec_info << "\n";
     buildJson(match_res, scc.transformResult(scc_res), ts_res);
     return InfoBaseType(ts_res);
   },
@@ -340,6 +348,8 @@ auto match_scc_ts_visitor_ = Util::Overload {
     LIB::CanonPWMap scc_res = scc.calculate();
     LIB::CanonTopSort ts(buildSortFromSCC(scc, scc_res), d);
     LIB::CanonVO ts_res = ts.calculate();
+    LIB::RecInfo rec_info = buildRecursionInfo(ts.dsbg(), ts.rec_map(), a.subE_map());
+    std::cout << rec_info << "\n";
     buildJson(match_res, scc.transformResult(scc_res), ts_res);
     return InfoBaseType(ts_res);
   },
@@ -702,12 +712,13 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
 
 
       case Eval::Func::ts:
-        if (eval_args.size() == 1) {
+        if (eval_args.size() == 2) {
           arity_ok = true;
 
           SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
+          MapBaseType pw = std::visit(EvalMap(), eval_args[1]);
           InfoBaseType result = std::visit(
-            ts_visitor_, g, std::variant<bool>(debug_)
+            ts_visitor_, g, pw, std::variant<bool>(debug_)
           );
           return result;
         }

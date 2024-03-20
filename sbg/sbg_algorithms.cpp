@@ -887,51 +887,59 @@ void SBGTopSort<Set>::findRecursions()
   DSBGraph<Set> aux_dsbg = dsbg();
   PW subE_map = aux_dsbg.subE_map();
 
-  Set unvisited = subE_map.dom(); 
+  Set visited; 
   Util::NAT dims = subE_map.nmbrDims();
   unsigned int k = 1;
+  RecInfo rec_info;
   for (const SBGMap<Set> &map : subE_map) {
-    Set first = map.dom().intersection(unvisited), last = first;
+    Set visited_ith = map.dom().intersection(visited);
 
-    if (!first.isEmpty()) {
+    if (visited_ith.isEmpty()) {
+      Util::MD_NAT x = map.dom().midElem();
+      Set first{SetPiece(x)}, last;
+
       Set v_start = aux_dsbg.mapD().image(first); // Ending vertex of start
       Set start_ith = aux_dsbg.mapB().preImage(v_start); // Following edge from the start
-      Set v_end = aux_dsbg.mapB().image(last); // Starting vertex of end
-      Set end_ith = aux_dsbg.mapD().preImage(v_end); // Following edge from the end
-      Set start_path = first, end_path = last, rec_path; 
+      Set start_path = first, end_path, rec_path; 
 
-      if (!start_ith.intersection(first).isEmpty()) {
-        rec_path = start_path.intersection(end_path);
-        rec_path = subE_map.preImage(subE_map.image(rec_path));
-
-        unvisited = unvisited.difference(rec_path);
-        Util::MD_NAT id(dims, k);
-        rec_map_ref().emplaceBack(SBGMap<Set>(rec_path, Exp(id)));
-        ++k;
-      }
-
-      else {
-        for (unsigned int j = 0; j < aux_dsbg.Vmap().size(); ++j) {
+      if (start_ith.intersection(map.dom()).isEmpty()) {
+        unsigned j = 0;
+        for (; j < aux_dsbg.Vmap().size(); ++j) {
           start_path = start_path.cup(start_ith);
-          end_path = end_path.cup(end_ith);
-          if (!start_ith.intersection(first).isEmpty())
+          if (!start_ith.intersection(map.dom()).isEmpty()) {
+            last = start_ith.intersection(map.dom());
+            end_path = last;
             break;
+          }
 
           v_start = aux_dsbg.mapD().image(start_ith); // Ending vertex of start_ith
           start_ith = aux_dsbg.mapB().preImage(v_start); // Following edge from the start_ith
-          v_end = aux_dsbg.mapB().image(end_ith); // Starting vertex of end_ith
-          end_ith = aux_dsbg.mapD().preImage(v_end); // Following edge from end_ith
+        }
+
+        if (!last.isEmpty()) {
+          Set v_end = aux_dsbg.mapB().image(last); // Starting vertex of end
+          Set end_ith = aux_dsbg.mapD().preImage(v_end); // Following edge from the end
+
+          for (unsigned int l = 0; l < j; l++) {
+            end_path = end_path.concatenation(end_ith);
+
+            v_end = aux_dsbg.mapB().image(end_ith); // Starting vertex of end_ith
+            end_ith = aux_dsbg.mapD().preImage(v_end); // Following edge from end_ith
+          }
         }
 
         rec_path = start_path.intersection(end_path);
         rec_path = subE_map.preImage(subE_map.image(rec_path));
+      }
 
-        if (first != rec_path) {
-          unvisited = unvisited.difference(rec_path);
-          Util::MD_NAT id(dims, k);
-          rec_map_ref().emplaceBack(SBGMap<Set>(rec_path, Exp(id)));
-          ++k;
-        }
+      else
+        rec_path = subE_map.preImage(subE_map.image(first)); 
+
+      if (!rec_path.isEmpty()) {
+        visited = visited.cup(rec_path);
+        Util::MD_NAT id(dims, k);
+        rec_map_ref().emplaceBack(SBGMap<Set>(rec_path, Exp(id)));
+        ++k;
       }
     }
   }
@@ -945,7 +953,10 @@ Set SBGTopSort<Set>::topSortStep()
 
   // Ingoing edges to nth
   Set ingoing = mapD().preImage(nth);
-  Set ingoing_plus = ingoing.cup(rec_map().preImage(rec_map().image(ingoing)));
+
+  // Recursive edges in paths where ingoing participate
+  Set rec_es = rec_map().image(ingoing);
+  Set ingoing_plus = ingoing.cup(rec_map().preImage(rec_es));
 
   Set domB_minus = mapB().dom().difference(ingoing_plus);
   Set domD_minus = mapD().dom().difference(ingoing_plus);
@@ -1121,6 +1132,193 @@ DSBGraph<Set> buildSortFromSCC(
 
 template BaseDSBG buildSortFromSCC(const BaseSCC &scc, const BasePWMap &rmap);
 template CanonDSBG buildSortFromSCC(const CanonSCC &scc, const CanonPWMap &rmap);
+
+SVOrder::SVOrder() : order_() {}
+SVOrder::SVOrder(SVOrder::SVVector order) : order_(order) {}
+
+member_imp(SVOrder, SVOrder::SVVector, order);
+
+bool SVOrder::operator==(const SVOrder &other) const
+{
+  return order_ == other.order_;
+}
+bool SVOrder::operator!=(const SVOrder &other) const
+{
+  return order_ != other.order_;
+}
+
+std::ostream &operator<<(std::ostream &out, const SVOrder &svo)
+{
+  unsigned int j = 0;
+  for (; j < svo.order_.size() - 1; ++j)
+    out << svo.order_[j] << " - ";
+  out << svo.order_[j];
+
+  return out;
+}
+
+std::ostream &operator<<(std::ostream &out, const MD_INT &x)
+{
+  unsigned int sz = x.size();
+
+  if (sz == 1) 
+    out << x[0];
+
+  if (sz > 1) {
+    out << "(";
+    for (unsigned int j = 0; j < x.size()-1; ++j)
+      out << x[j] << ", ";
+    out << x[sz-1];
+    out << ")";
+  }
+
+  return out;
+}
+
+BoundsElement::BoundsElement() : first_(), step_(), last_() {}
+BoundsElement::BoundsElement(
+  Util::MD_NAT first, MD_INT step, Util::MD_NAT last
+)
+  : first_(first), step_(step), last_(last) {} 
+
+member_imp(BoundsElement, Util::MD_NAT, first);
+member_imp(BoundsElement, MD_INT, step);
+member_imp(BoundsElement, Util::MD_NAT, last);
+
+bool BoundsElement::operator==(const BoundsElement &other) const 
+{
+  return first_ == other.first_ && step_ == other.step_ && last_ == other.last_;
+}
+
+bool BoundsElement::operator!=(const BoundsElement &other) const
+{
+  return !(*this == other);
+}
+
+std::ostream &operator<<(std::ostream &out, const BoundsElement &be)
+{
+  out << "#" << be.first_ << ":" << be.step_ << ":" << be.last_ << "#";
+
+  return out;
+}
+
+std::ostream &operator<<(std::ostream &out, const BoundsInfo &bi)
+{
+  for (const auto &be : bi) 
+    out << "bounds_info[" << be.first << "] = " << be.second << "\n"; 
+
+  return out;
+}
+
+RecElement::RecElement() : sv_order_(), bounds_() {}
+RecElement::RecElement(SVOrder sv_order, BoundsInfo bounds)
+  : sv_order_(sv_order), bounds_(bounds) {}
+
+member_imp(RecElement, SVOrder, sv_order);
+member_imp(RecElement, BoundsInfo, bounds);
+
+bool RecElement::operator==(const RecElement &other) const
+{
+  return sv_order_ == other.sv_order_ && bounds_ == other.bounds_;
+}
+
+bool RecElement::operator!=(const RecElement &other) const
+{
+  return !(*this == other);
+}
+
+std::ostream &operator<<(std::ostream &out, const RecElement &re)
+{
+  out << re.sv_order_ << "\n" << re.bounds_;
+
+  return out;
+}
+
+std::ostream &operator<<(std::ostream &out, const RecInfo &ri)
+{
+  for (const auto &re : ri) {
+    out << "Recursion id: " << re.first;
+    out << "\n=========================\n" << re.second << "\n"; 
+  }
+
+  return out;
+}
+
+template<typename Set>
+RecElement getRecElem(
+  const DSBGraph<Set> &dsbg, Set rec_path, PWMap<Set> og_map
+)
+{
+  PWMap<Set> auxB = dsbg.mapB(), auxD = dsbg.mapD();
+  Set recB = auxB.image(rec_path), recD = auxD.image(rec_path);
+  // Vertices without outgoing edges
+  Set take_out = recD.difference(recB);
+
+  BoundsInfo bounds_info;
+  Set rec_vs = recB.cup(recD);
+
+  SVOrder::SVVector order;
+  Util::MD_NAT id = dsbg.Vmap().image(take_out).minElem();
+  do {
+    Set rec_take_out = rec_vs.intersection(dsbg.Vmap().preImage(Set(SetPiece(id))));
+    Set og_subset = og_map.preImage(og_map.image(take_out));
+    Util::MD_NAT x = take_out.minElem(), og_min = og_subset.minElem(); 
+    bool cond = x == rec_take_out.minElem();
+
+    Util::MD_NAT first(x.size(), 0), last(x.size(), 0);
+    MD_INT step(x.size(), 0);
+
+    Set rec_other = rec_take_out.difference(take_out);
+    Util::MD_NAT other_min = rec_other.minElem();
+    Util::MD_NAT other_max = rec_other.maxElem();
+    for (unsigned int j = 0; j < x.size(); ++j) {
+      first[j] = x[j] - og_min[j] + 1;
+      step[j] = cond ? other_min[j] - x[j] : other_max[j] - x[j];
+      last[j] = cond ? rec_take_out.maxElem()[j] : rec_take_out.minElem()[j];
+      last[j] = Util::NAT(last[j] - og_min[j] + 1);
+    }
+    BoundsElement b_elem(first, step, last);
+    bounds_info[id] = b_elem;
+
+    order.emplace_back(id);
+    Set ingoing = auxD.preImage(take_out).intersection(rec_path);
+    take_out = auxB.image(ingoing);
+    id = dsbg.Vmap().image(take_out).minElem();
+  } while (id != order[0]);
+
+  return RecElement(SVOrder(order), bounds_info);
+}
+
+template RecElement getRecElem
+(
+  const BaseDSBG &dsbg, UnordSet rec_path, BasePWMap og_map
+);
+template RecElement getRecElem
+(
+  const CanonDSBG &dsbg, OrdSet rec_path, CanonPWMap og_map
+);
+
+template<typename Set>
+RecInfo buildRecursionInfo(
+  const DSBGraph<Set> &dsbg, PWMap<Set> rec_map, PWMap<Set> og_map
+)
+{
+  RecInfo res;
+
+  for (const SBGMap<Set> &map : rec_map) {
+    Util::MD_NAT id = map.image().minElem();
+    res[id] = getRecElem(dsbg, map.dom(), og_map);
+  }
+
+  return res;
+}
+
+template RecInfo buildRecursionInfo(
+  const BaseDSBG &dsbg, BasePWMap rec_path, BasePWMap og_map
+);
+template RecInfo buildRecursionInfo(
+  const CanonDSBG &dsbg, CanonPWMap rec_path, CanonPWMap og_map
+);
 
 template<typename Set>
 void buildJson(

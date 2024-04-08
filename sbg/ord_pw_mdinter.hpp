@@ -68,6 +68,7 @@ struct OrdPWMDInter {
    * @brief Constructors don't check if intervals are disjoint (performance).
    */
   OrdPWMDInter();
+  OrdPWMDInter(Util::MD_NAT x);
   OrdPWMDInter(Interval i);
   OrdPWMDInter(SetPiece mdi);
   OrdPWMDInter(MDInterOrdSet container);

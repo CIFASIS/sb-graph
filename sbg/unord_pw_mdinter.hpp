@@ -50,6 +50,7 @@ struct UnordPWMDInter {
   member_class(MDInterUnordSet, pieces);
 
   UnordPWMDInter();
+  UnordPWMDInter(Util::MD_NAT x);
   UnordPWMDInter(Interval i);
   UnordPWMDInter(SetPiece mdi);
   UnordPWMDInter(MDInterUnordSet c);

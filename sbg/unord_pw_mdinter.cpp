@@ -49,12 +49,14 @@ std::ostream &operator<<(std::ostream &out, const MDInterUnordSet &ii)
 ////////////////////////////////////////////////////////////////////////////////
 
 UnordPWMDInter::UnordPWMDInter() : pieces_() {}
+UnordPWMDInter::UnordPWMDInter(Util::MD_NAT x) : pieces_() {
+  pieces_.insert(SetPiece(x));
+}
 UnordPWMDInter::UnordPWMDInter(Interval i) : pieces_() {
   if (!i.isEmpty())
    pieces_.insert(SetPiece(i));
 }
-UnordPWMDInter::UnordPWMDInter(SetPiece mdi) : pieces_()
-{
+UnordPWMDInter::UnordPWMDInter(SetPiece mdi) : pieces_(){
   if (!mdi.isEmpty())
     pieces_.emplace_hint(pieces_.end(), mdi);
 }

@@ -236,25 +236,33 @@ struct SBGTopSort {
   member_class(DSBGraph<Set>, dsbg);
 
   //-----------------------------
+  member_class(PW, smap);
+
+  member_class(Set, E);
   member_class(PW, mapB);
   member_class(PW, mapD);
 
-  member_class(Set, disordered);
+  member_class(Set, unordered);
+  member_class(Set, not_dependant);
+  member_class(Set, visitedE);
 
-  // Auxiliary map where recursive paths are grouped as pertaining to the same
-  // subset-edge
-  member_class(PW, rec_map);
+  member_class(Util::MD_NAT, end);
+  member_class(Util::MD_NAT, new_end);
+
+  member_class(Set, dom);
+  member_class(Exp, exp);
 
   member_class(bool, debug);
 
   SBGTopSort();
   SBGTopSort(DSBGraph<Set> dsbg, bool debug);
 
-  VertexOrder<Set> calculate(); 
+  PW calculate(); 
 
   private:
-  void findRecursions(); // Find all possible recursions
-  Set topSortStep();
+  void calculateExp();
+  void topSortStep();
+  void updateStatus();
 };
 
 typedef SBGTopSort<UnordSet> BaseTopSort;
@@ -268,69 +276,9 @@ DSBGraph<Set> buildSCCFromMatching(const SBGMatching<Set> &match);
 template<typename Set>
 DSBGraph<Set> buildSortFromSCC(const SBGSCC<Set> &scc, const PWMap<Set> &rmap);
 
-// Save the order in which the set-vertices appear in a recursion
-struct SVOrder {
-  using SVVector = std::vector<Util::MD_NAT>;
-
-  member_class(SVVector, order);
-
-  SVOrder();
-  SVOrder(SVVector order);
-
-  bool operator==(const SVOrder &other) const;
-  bool operator!=(const SVOrder &other) const;
-};
-std::ostream &operator<<(std::ostream &out, const SVOrder &svo);
-
-typedef std::vector<int> MD_INT;
-
-// Save the order in which vertices are taken out in a recursion 
-struct BoundsElement {
-  member_class(Util::MD_NAT, first);
-  member_class(MD_INT, step);
-  member_class(Util::MD_NAT, last);
-
-  BoundsElement();
-  BoundsElement(
-    Util::MD_NAT first, MD_INT step, Util::MD_NAT last
-  );
-  
-  bool operator==(const BoundsElement &other) const; 
-  bool operator!=(const BoundsElement &other) const; 
-};
-std::ostream &operator<<(std::ostream &out, const BoundsElement &be);
-
-typedef std::map<Util::MD_NAT, BoundsElement> BoundsInfo;
-std::ostream &operator<<(std::ostream &out, const BoundsInfo &bi);
-
-struct RecElement {
-  member_class(SVOrder, sv_order); 
-  member_class(BoundsInfo, bounds);
-
-  RecElement();
-  RecElement(SVOrder sv_order, BoundsInfo bi);
-
-  bool operator==(const RecElement &other) const;
-  bool operator!=(const RecElement &other) const;
-};
-std::ostream &operator<<(std::ostream &out, const RecElement &re);
-
-typedef std::map<Util::MD_NAT, RecElement> RecInfo;
-std::ostream &operator<<(std::ostream &out, const RecInfo &ri);
-
-template<typename Set>
-RecElement getRecElem(
-  const DSBGraph<Set> &dsbg, Set rec_path, PWMap<Set> og_map
-);
-
-template<typename Set>
-RecInfo buildRecursionInfo(
-  const DSBGraph<Set> &dsbg, PWMap<Set> rec_map, PWMap<Set> og_map
-);
-
 template<typename Set>
 void buildJson(
-  const Set &matching, std::set<Set> scc, const VertexOrder<Set> &order
+  const Set &matching, std::set<Set> scc
 );
 
 } // namespace LIB

@@ -47,6 +47,7 @@ struct SBGMap {
   member_class(Exp, exp);
 
   SBGMap();
+  SBGMap(Util::MD_NAT x, Exp exp);
   SBGMap(Interval i, LExp le);
   SBGMap(SetPiece mdi, Exp exp);
   SBGMap(Set dom, Exp exp);

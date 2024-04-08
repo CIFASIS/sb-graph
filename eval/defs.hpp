@@ -68,9 +68,7 @@ typedef std::variant<LIB::BaseSBG
   , LIB::CanonDSBG> SBGBaseType;
 
 typedef std::variant<LIB::MatchInfo<LIB::UnordSet>
-  , LIB::MatchInfo<LIB::OrdSet>
-  , LIB::VertexOrder<LIB::UnordSet>
-  , LIB::VertexOrder<LIB::OrdSet>> InfoBaseType;
+  , LIB::MatchInfo<LIB::OrdSet>> InfoBaseType;
 
 typedef std::variant<Util::MD_NAT
   , Util::RATIONAL

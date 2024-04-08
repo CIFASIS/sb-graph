@@ -50,8 +50,10 @@ std::ostream &operator<<(std::ostream &out, const MDInterOrdSet &ii)
 // OrdPWMDInter ------------------------------------------------------------------
 
 OrdPWMDInter::OrdPWMDInter() : pieces_() {}
-OrdPWMDInter::OrdPWMDInter(Interval i) : pieces_()
-{
+OrdPWMDInter::OrdPWMDInter(Util::MD_NAT x) : pieces_() {
+  pieces_.insert(SetPiece(x));
+}
+OrdPWMDInter::OrdPWMDInter(Interval i) : pieces_() {
   if (!i.isEmpty())
     pieces_.insert(SetPiece(i));
 }

@@ -107,6 +107,13 @@ SetPiece image(SetPiece mdi, Exp mdle)
 template<typename Set>
 SBGMap<Set>::SBGMap() : dom_(Set()), exp_(Exp()) {}
 template<typename Set>
+SBGMap<Set>::SBGMap(Util::MD_NAT x, Exp exp) : dom_(), exp_() {
+  SetPiece mdi(x);
+  compatible(mdi, exp);
+  dom_ = Set(mdi);
+  exp_ = exp;
+}
+template<typename Set>
 SBGMap<Set>::SBGMap(Interval i, LExp le) : dom_(), exp_() {
   compatible(i, le);
   dom_ = Set(SetPiece(i));

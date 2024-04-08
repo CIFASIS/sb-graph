@@ -31,9 +31,9 @@
 #include <iostream>
 #include <unordered_set>
 
-#include <rapidjson/document.h>
-#include <rapidjson/filewritestream.h>
-#include <rapidjson/prettywriter.h>
+#include "rapidjson/document.h"
+#include "rapidjson/filewritestream.h"
+#include "rapidjson/prettywriter.h"
 #include "sbg/sbg.hpp"
 #include "util/logger.hpp"
 
@@ -278,7 +278,7 @@ DSBGraph<Set> buildSortFromSCC(const SBGSCC<Set> &scc, const PWMap<Set> &rmap);
 
 template<typename Set>
 void buildJson(
-  const Set &matching, std::set<Set> scc
+  const Set &matching, const PWMap<Set> &scc, const PWMap<Set> &order
 );
 
 } // namespace LIB

@@ -929,6 +929,14 @@ void SBGTopSort<Set>::updateStatus()
   set_unordered(unordered().difference(dom()));
   set_not_dependant(unordered().difference(mapB().image()));
 
+  if (debug()) {
+    Util::SBG_LOG << "smap: " << smap() << "\n";
+    Util::SBG_LOG << "mapB: " << mapB() << "\n";
+    Util::SBG_LOG << "mapD: " << mapD() << "\n";
+    Util::SBG_LOG << "end: " << end() << "\n";
+    Util::SBG_LOG << "new_end: " << new_end() << "\n\n";
+  }
+
   return;
 }
 
@@ -1084,7 +1092,7 @@ template CanonDSBG buildSortFromSCC(const CanonSCC &scc, const CanonPWMap &rmap)
 
 template<typename Set>
 void buildJson(
-  const Set &matching, std::set<Set> scc
+  const Set &matching, const PWMap<Set> &scc, const PWMap<Set> &order
 )
 {
   // 1. Parse a JSON string into DOM.
@@ -1100,14 +1108,13 @@ void buildJson(
 
   rapidjson::Value &s = d["scc"];
   std::stringstream ss2;
-  for (const Set &s : scc)
-    ss2 << s;
+  ss2 << scc;
   s.SetString(ss2.str().c_str(), strlen(ss2.str().c_str()), d.GetAllocator());
 
-  //rapidjson::Value &o = d["order"];
-  //std::stringstream ss3;
-  //ss3 << order;
-  //o.SetString(ss3.str().c_str(), strlen(ss3.str().c_str()), d.GetAllocator());
+  rapidjson::Value &o = d["order"];
+  std::stringstream ss3;
+  ss3 << order;
+  o.SetString(ss3.str().c_str(), strlen(ss3.str().c_str()), d.GetAllocator());
 
   // 3. Stringify the DOM
   FILE *fp = fopen("output.json", "w");
@@ -1123,11 +1130,11 @@ void buildJson(
 
 template void buildJson
 (
-  const UnordSet &match, std::set<UnordSet> scc
+  const UnordSet &match, const BasePWMap &scc, const BasePWMap &order
 );
 template void buildJson
 (
-  const OrdSet &match, std::set<OrdSet> scc
+  const OrdSet &match, const CanonPWMap &scc, const CanonPWMap &order
 );
 
 } // namespace LIB

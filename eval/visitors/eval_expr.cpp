@@ -330,7 +330,7 @@ auto match_scc_ts_visitor_ = Util::Overload {
     LIB::BasePWMap scc_res = scc.calculate();
     LIB::BaseTopSort ts(buildSortFromSCC(scc, scc_res), d);
     LIB::BasePWMap ts_res = ts.calculate(); 
-    buildJson(match_res, scc.transformResult(scc_res));
+    buildJson(match_res, scc_res, ts_res);
     return MapBaseType(ts_res);
   },
   [](LIB::CanonSBG a, Util::MD_NAT b, Util::MD_NAT c, bool d) {
@@ -340,7 +340,7 @@ auto match_scc_ts_visitor_ = Util::Overload {
     LIB::CanonPWMap scc_res = scc.calculate();
     LIB::CanonTopSort ts(buildSortFromSCC(scc, scc_res), d);
     LIB::CanonPWMap ts_res = ts.calculate();
-    buildJson(match_res, scc.transformResult(scc_res));
+    buildJson(match_res, scc_res, ts_res);
     return MapBaseType(ts_res);
   },
   [](auto a, auto b, auto c, auto d) {
@@ -702,7 +702,7 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
 
 
       case Eval::Func::ts:
-        if (eval_args.size() == 2) {
+        if (eval_args.size() == 1) {
           arity_ok = true;
 
           SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);

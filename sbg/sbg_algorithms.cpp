@@ -155,15 +155,16 @@ PathInfo<Set> MinReach<Set>::recursion(
      , Vmap = dsbg().Vmap(), Emap = dsbg().Emap(), subE_map = dsbg().subE_map();
   PW ERB = mapB.restrict(ER), ERD = mapD.restrict(ER);
 
-  Set start = ERB.image(), end = ERD.image(), aux_start = start;
-  start = start.difference(end), end = end.difference(aux_start);
+  Set start = ERB.image();
+  start = start.difference(ERD.image());
+  Set first = Vmap.image(start);
 
   Set ER_plus = Emap.preImage(Emap.image(ER));
   Set VR_plus = mapB.image(ER_plus).cup(mapD.image(ER_plus));
 
   PW new_smap;
-  Set repeated = start.intersection(end);
-  while (repeated.isEmpty()) {
+  Set repeated = start.intersection(first);
+  for (unsigned int j = 0; j < n+1; ++j) {
     // Vertices in the same set vertex as start
     Set side = VR_plus.intersection(Vmap.preImage(Vmap.image(start)));
     // Get edges orientated in the correct direction that are part of the
@@ -181,17 +182,17 @@ PathInfo<Set> MinReach<Set>::recursion(
  
     start = smap.image(start);
     // Check if an already visited set-vertex is visited again
-    repeated = Vmap.image(start).intersection(Vmap.image(end));
+    repeated = Vmap.image(start).intersection(first);
   }
 
   // Solve recursion
   Set endings = mapD.image(ER_plus).difference(mapB.image(ER_plus));
   PW smap_endings(endings);
   new_smap = smap_endings.combine(new_smap);
+  new_smap = new_smap.restrict(VR_plus);
   PW rmap_plus = rmap.composition(new_smap.mapInf(n-1));
   PW new_rmap = rmap.minMap(rmap_plus);
   new_rmap = new_rmap.combine(rmap);
-  //new_smap = new_smap.combine(smap);
 
   return PathInfo<Set>(new_smap, new_rmap);
 }
@@ -227,8 +228,6 @@ PathInfo<Set> MinReach<Set>::calculate(
       old_rmap = new_rmap;
       // Find adjacent vertex that reaches a minor vertex than the current one
       new_smap = minReach1(reach_edges, new_smap, new_rmap); 
-      if (debug())
-        Util::SBG_LOG << "new_smap: " << new_smap << "\n\n";
       new_rmap = new_rmap.minMap(new_rmap.composition(new_rmap.composition(new_smap)));
       Vc = V.difference(old_rmap.equalImage(new_rmap));
       if (debug())
@@ -280,7 +279,6 @@ PathInfo<Set> MinReach<Set>::calculate(
               res = recursion(
                 j, ER, reach_vertices, new_smap, new_rmap
               );
-              //new_smap = res.succs();
               new_rmap = res.reps();
               if (debug())
                 Util::SBG_LOG << "recursion new_rmap: " << new_rmap << "\n\n";
@@ -429,7 +427,7 @@ void SBGMatching<Set>::directedMinReach(const PW &dir_map)
   if (debug())
     Util::SBG_LOG << "dir_omap: " << dir_omap << "\n";
   DSBGraph<Set> dsbg = offsetGraph(dir_omap);
-  dsbg.set_subE_map(sbg().subE_map());
+  dsbg.set_subE_map(sbg().subE_map().restrict(paths_edges()));
   MinReach min_reach(dsbg, debug());
   Set unmatched_B = mapB().image().intersection(unmatched_V());
   Set unmatched_D = mapD().image().intersection(unmatched_V());

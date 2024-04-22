@@ -4,7 +4,7 @@
 
  This file is meant to test the three examples presented in the paper
  "Efficient Matching of Large Systems ...". When executed it will ten times
- the Boost Edmonds matching algorithm and report the average execiton time
+ the Boost Edmonds matching algorithm and report the average execution time
  for each of them.
 
  <hr>
@@ -33,23 +33,19 @@
 
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/max_cardinality_matching.hpp>
+#include <boost/graph/strong_components.hpp>
 #include <gtest/gtest.h>
 
 #include <eval/visitors/program_visitor.hpp>
 #include <parser/sbg_program.hpp>
 #include <test/performance/boost/ordinary_graph_builder.hpp>
+#include <util/defs.hpp>
 
-template<typename Set>
-void computeMaxCardinalityMatching(SBG::LIB::SBGraph<Set> sb_graph)
+void computeMaxCardinalityMatching(OG::Graph graph)
 {
-  OG::OrdinaryGraphBuilder ordinary_graph_builder(sb_graph);
-
-  OG::Graph graph = ordinary_graph_builder.build();
-
   int n_vertices = num_vertices(graph);
 
-  std::vector<boost::graph_traits<OG::Graph>::vertex_descriptor>
-    mate(n_vertices);
+  std::vector<OG::VertexDesc>mate(n_vertices);
   auto begin = std::chrono::high_resolution_clock::now();
   checked_edmonds_maximum_cardinality_matching(graph, &mate[0]);
   auto end = std::chrono::high_resolution_clock::now();
@@ -59,17 +55,70 @@ void computeMaxCardinalityMatching(SBG::LIB::SBGraph<Set> sb_graph)
 
   SBG::Util::SBG_LOG << "Boost Edmonds Maximum cardinality matching time: " 
     << total.count() << " [μs]" << std::endl;
-  SBG::Util::SBG_LOG << "Mathcing sz: " << matching_size(graph, &mate[0]) << "\n";
+  SBG::Util::SBG_LOG << "Matching sz: " << matching_size(graph, &mate[0]) << "\n";
 }
 
-template void computeMaxCardinalityMatching<SBG::LIB::UnordSet>(
-  SBG::LIB::BaseSBG sbg
-);
-template void computeMaxCardinalityMatching<SBG::LIB::OrdSet>(
-  SBG::LIB::CanonSBG sbg
-);
+void computeSCC(OG::DGraph graph)
+{
+  int n_vertices = num_vertices(graph);
 
-void parseEvalProgramFromFile(std::string fname, int copies)
+  std::vector<int> component(n_vertices);
+  auto begin = std::chrono::high_resolution_clock::now();
+  int num = strong_components(graph, &component[0]);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto total = std::chrono::duration_cast<std::chrono::microseconds>(
+    end - begin
+  );
+
+  SBG::Util::SBG_LOG << "Tarjan SCC time: " 
+    << total.count() << " [μs]" << std::endl;
+ SBG::Util::SBG_LOG << "SCC sz: " << num << "\n";
+}
+
+auto graph_visitor_ = SBG::Util::Overload {
+  [](int a, SBG::LIB::BaseSBG b) {
+    SBG::LIB::BaseMatch match(b, false);
+    match.calculate(6).matched_edges();
+
+    if (a == 0) {
+      OG::OrdinaryGraphBuilder ordinary_graph_builder(b);
+      OG::Graph graph = ordinary_graph_builder.build();
+      computeMaxCardinalityMatching(graph);
+    }
+
+    SBG::LIB::BaseSCC scc(buildSCCFromMatching(match), false);
+ 
+    if (a == 1) {
+      OG::OrdinaryDGraphBuilder ordinary_dgraph_builder(scc.dsbg());
+      OG::DGraph dgraph = ordinary_dgraph_builder.build();
+      computeSCC(dgraph);
+    }
+  },
+  [](int a, SBG::LIB::CanonSBG b) {
+    SBG::LIB::CanonMatch match(b, false);
+    match.calculate(6).matched_edges();
+
+    if (a == 0) {
+      OG::OrdinaryGraphBuilder ordinary_graph_builder(b);
+      OG::Graph graph = ordinary_graph_builder.build();
+      computeMaxCardinalityMatching(graph);
+    }
+
+    SBG::LIB::CanonSCC scc(buildSCCFromMatching(match), false);
+ 
+    if (a == 1) {
+      OG::OrdinaryDGraphBuilder ordinary_dgraph_builder(scc.dsbg());
+      OG::DGraph dgraph = ordinary_dgraph_builder.build();
+      computeSCC(dgraph);
+    }
+  },
+  [](auto a, auto b) {
+    SBG::Util::ERROR("Wrong arguments for algorithm");
+    return;
+  }
+};
+
+void parseEvalProgramFromFile(int alg, std::string fname, int copies)
 {
   std::ifstream in(fname.c_str());
   if (in.fail()) 
@@ -98,10 +147,7 @@ void parseEvalProgramFromFile(std::string fname, int copies)
       auto e = std::get<1>(ev);
       if (std::holds_alternative<SBG::Eval::SBGBaseType>(e)) {
         auto g_variant = std::get<SBG::Eval::SBGBaseType>(e);
-        if (std::holds_alternative<SBG::LIB::CanonSBG>(g_variant)) {
-          auto g = std::get<SBG::LIB::CanonSBG>(g_variant);
-          computeMaxCardinalityMatching(g.copy(copies));
-        }
+        std::visit(graph_visitor_, std::variant<int>(alg), g_variant);
       }
     }
   }
@@ -120,6 +166,7 @@ void usage()
   std::cout << "Usage parser [options] file" << std::endl;
   std::cout << "Parses a SBG program." << std::endl;
   std::cout << std::endl;
+  std::cout << "-a, --file      Algorithm selection: [0] matching, [1] scc, [2] topological sort" << std::endl;
   std::cout << "-f, --file      SBG program file used as input " << std::endl;
   std::cout << "-h, --help      Display this information and exit" << std::endl;
   std::cout << "-v, --version   Display version information and exit"
@@ -143,19 +190,24 @@ void version()
 int main(int argc, char**argv)
 {
   std::string filename;
-  int opt, copies = 1;
+  int opt, copies = 1, alg = 0;
   extern char* optarg;
 
   while (true) {
-    static struct option long_options[] = {{"file", required_argument, 0, 'f'}
-                                           , {"help", no_argument, 0, 'h'}
-                                           , {"version", no_argument, 0, 'v'}
-                                           , {"copies", required_argument, 0, 'c'}
-                                           , {0, 0, 0, 0}};
-    opt = getopt_long(argc, argv, "f:hvc:", long_options, nullptr);
+    static struct option long_options[] = {
+      {"algorithm", required_argument, 0, 'a'}
+      , {"file", required_argument, 0, 'f'}
+      , {"help", no_argument, 0, 'h'}
+      , {"version", no_argument, 0, 'v'}
+      , {"copies", required_argument, 0, 'c'}
+      , {0, 0, 0, 0}};
+    opt = getopt_long(argc, argv, "a:f:hvc:", long_options, nullptr);
     if (opt == EOF) 
       break;
     switch (opt) {
+      case 'a':
+        alg = atoi(optarg);
+        break;
       case 'f':
         filename = optarg;
         break;
@@ -178,7 +230,7 @@ int main(int argc, char**argv)
   }
 
   if (!filename.empty())
-    parseEvalProgramFromFile(filename, copies);
+    parseEvalProgramFromFile(alg, filename, copies);
   else
     SBG::Util::ERROR("A filename should be provided");
 

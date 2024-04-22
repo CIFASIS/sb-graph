@@ -104,4 +104,70 @@ template class OrdinaryGraphBuilder<SBG::LIB::UnordSet>;
 
 template class OrdinaryGraphBuilder<SBG::LIB::OrdSet>;
 
+// Directed graph builder ------------------------------------------------------
+
+template<typename Set>
+OrdinaryDGraphBuilder<Set>::OrdinaryDGraphBuilder(
+  OrdinaryDGraphBuilder::DSBGraph sb_graph
+)
+  : _sb_graph(sb_graph), _vertex_map() {}
+
+template<typename Set>
+OG::DGraph OrdinaryDGraphBuilder<Set>::build()
+{
+  OG::DGraph graph;
+
+  for (const SBG::LIB::SetPiece &v : _sb_graph.V()) { 
+    assert(!v.isEmpty());
+    SBG::Util::MD_NAT beg = v.minElem(), end = v.maxElem();
+    for (auto it = beg; it != end; it = nextElem(it, v)) 
+      addVertex(it, graph);
+    addVertex(end, graph);
+  }
+
+  for (const SBG::LIB::SetPiece &e : _sb_graph.E()) {
+    assert(!e.isEmpty());
+    SBG::Util::MD_NAT beg = e.minElem(), end = e.maxElem();
+    for (auto it = beg; it != end; it = nextElem(it, e)) 
+      addEdge(it, graph);
+    addEdge(end, graph);
+  }
+
+  return graph;
+}
+
+template<typename Set>
+OG::DVertexDesc OrdinaryDGraphBuilder<Set>::addVertex(
+  SBG::Util::MD_NAT id, OG::DGraph &g
+)
+{
+  Vertex V(id);
+  OG::DVertexDesc v = boost::add_vertex(g);
+  _vertex_map[id] = v;
+  g[v] = V;
+  return v;
+}
+
+template<typename Set>
+OG::DEdgeDesc OrdinaryDGraphBuilder<Set>::addEdge(
+  SBG::Util::MD_NAT id, OG::DGraph &g
+)
+{
+  SBG::LIB::SetPiece mdi(id);
+  PW mapb = _sb_graph.mapB(), mapd = _sb_graph.mapD();
+  SBG::Util::MD_NAT v1 = mapb.image(Set(mdi)).minElem();
+  SBG::Util::MD_NAT v2 = mapd.image(Set(mdi)).minElem();
+
+  Edge E(id);
+  OG::DEdgeDesc e;
+  bool b;
+  boost::tie(e, b) = boost::add_edge(_vertex_map[v1], _vertex_map[v2], g);
+  g[e] = E;
+  return e;
+}
+
+template class OrdinaryDGraphBuilder<SBG::LIB::UnordSet>;
+
+template class OrdinaryDGraphBuilder<SBG::LIB::OrdSet>;
+
 }  // namespace OG

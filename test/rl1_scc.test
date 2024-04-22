@@ -19,7 +19,7 @@ equation
 end testRL1;
 */
  
-N = 10
+N = 1000000
 
 F1 = N
 F2 = N-1+F1

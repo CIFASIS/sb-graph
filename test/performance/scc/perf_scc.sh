@@ -15,14 +15,13 @@ while read line; do
     fi
 done < $file
 
-
 for i in $(seq "$iterations"); do
 	echo $i
-	../../bin/sbg-eval -f test_file
+	../../../bin/sbg-eval -f test_file
 	mv SBG.log SBG_${i}.log
 	echo
     while read line; do
-        if  echo "$line" | grep -q "Total"; then echo $line > eval; awk '{print $4}' eval >> test_values; fi        
+        if  echo "$line" | grep -q "Total SCC"; then echo $line > eval; awk '{print $5}' eval >> test_values; fi        
     done < "SBG_${i}.log"
 done
 

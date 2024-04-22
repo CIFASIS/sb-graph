@@ -64,6 +64,17 @@ typedef Graph::edge_descriptor EdgeDesc;
 typedef boost::graph_traits<Graph>::edge_iterator EdgeIt;
 typedef boost::graph_traits<Graph>::out_edge_iterator OutEdgeIt;
 
+// Ordinary directed Graph definition ------------------------------------------
+
+typedef boost::adjacency_list<
+  boost::vecS, boost::vecS, boost::bidirectionalS, Vertex, Edge
+> DGraph;
+typedef DGraph::vertex_descriptor DVertexDesc;
+typedef boost::graph_traits<DGraph>::vertex_iterator DVertexIt;
+typedef DGraph::edge_descriptor DEdgeDesc;
+typedef boost::graph_traits<DGraph>::edge_iterator DEdgeIt;
+typedef boost::graph_traits<DGraph>::out_edge_iterator OutDEdgeIt;
+
 }  // namespace OG
 
 #endif

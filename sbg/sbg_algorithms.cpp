@@ -707,10 +707,10 @@ MatchInfo<Set> SBGMatching<Set>::calculate(unsigned int k)
     auto total = std::chrono::duration_cast<std::chrono::microseconds>(
       duration1 + duration2
     );
-    Util::SBG_LOG << "Total exec time: " << total.count() << " [μs]\n\n"; 
+    Util::SBG_LOG << "Total match exec time: " << total.count() << " [μs]\n\n"; 
   }
   else
-    Util::SBG_LOG << "Total exec time: " << duration1.count() << " [μs]\n\n"; 
+    Util::SBG_LOG << "Total match exec time: " << duration1.count() << " [μs]\n\n"; 
 
   return MatchInfo(matched_E(), fullyMatchedU());
 }
@@ -790,34 +790,24 @@ PWMap<Set> SBGSCC<Set>::calculate()
   if (debug())
     Util::SBG_LOG << "SCC dsbg: \n" << dsbg() << "\n\n";
 
+  auto begin = std::chrono::high_resolution_clock::now();
   do {
     sccStep();
     sccStep();
   } while (Ediff() != Set());
   PW rmap = sccStep(); 
   set_rmap(rmap);
+  auto end = std::chrono::high_resolution_clock::now();
+
+  auto total = std::chrono::duration_cast<std::chrono::microseconds>(
+    end - begin
+  );
+  Util::SBG_LOG << "Total SCC exec time: " << total.count() << " [μs]\n\n"; 
 
   if (debug())
     Util::SBG_LOG << "SCC result: " << rmap << "\n\n";
 
   return rmap;
-}
-
-template<typename Set>
-std::set<Set> SBGSCC<Set>::transformResult(PWMap<Set> scc)
-{
-  Components res;
-
-  Set reps = scc.filterMap([](const SBGMap<Set> &sbgmap) {
-    return eqId(sbgmap);
-  }).image();
-
-  for (const SetPiece &mdi : reps) {
-    Set represented = scc.preImage(Set(mdi));
-    res.emplace(represented);
-  }
-
-  return res;
 }
 
 // -----------------------------------------------------------------------------

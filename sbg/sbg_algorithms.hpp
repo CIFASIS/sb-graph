@@ -175,7 +175,6 @@ template<typename Set>
 struct SBGSCC {
   using Map = SBGMap<Set>;
   using PW = PWMap<Set>;
-  using Components = std::set<Set>;
 
   //*** SBG info, constant
   member_class(DSBGraph<Set>, dsbg);
@@ -200,7 +199,6 @@ struct SBGSCC {
   SBGSCC(DSBGraph<Set> dsbg, bool debug);
 
   PW calculate();
-  Components transformResult(PW scc);
 
   private:
   PW sccStep();

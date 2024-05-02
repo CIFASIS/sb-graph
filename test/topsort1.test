@@ -1,33 +1,27 @@
-// Topological sort test, with a simple recursion, and a self recursion on the right
+// Topological sort test, with two set vertices, with a bijective
+// map from one to the other asa set-edge
 
-N = 10000
+N = 10
 
-V1 = 1
-V2 = N-1+V1
-V3 = N+V2
+V1 = N
+V2 = N+V1
 
-E1 = 1
-E2 = N-1+E1
-E3 = N-1+E2
+E1 = N
 
-off3b = N-1
+off1b = r(V2, 1)-E1
 
-off1d = N
-off2d = N-1
-off3d = 1
+off1d = r(V1, 1)-E1
 
-V %= {[1:1:V1], [V1+1:1:V2], [V2+1:1:V3]};
-Vmap %= <<{[1:1:V1]} -> 0*x+1, {[V1+1:1:V2]} -> 0*x+2, {[V2+1:1:V3-1]} -> 0*x+3
-          , {[V3:1:V3]} -> 0*x+4>>; 
-mapB %= <<{[1:1:E1]} -> 1*x+0, {[E1+1:1:E2]} -> 1*x+off2d, {[E2+1:1:E3]} -> 1*x-off3b>>;
-mapD %= <<{[1:1:E1]} -> 1*x+off1d, {[E1+1:1:E2]} -> 1*x+0, {[E2+1:1:E3]} -> 1*x+off3d>>;
-Emap %= <<{[1:1:E1]} -> 0*x+1, {[E1+1:1:E2], [E2+1:1:E3]} -> 0*x+2>>;
+V %= {[1:1:V1], [V1+1:1:V2]};
+Vmap %= <<{[1:1:V1]} -> 0*x+1, {[V1+1:1:V2]} -> 0*x+2>>; 
+mapB %= <<{[1:1:E1]} -> 1*x+off1b>>;
+mapD %= <<{[1:1:E1]} -> 1*x+off1d>>;
+Emap %= <<{[1:1:E1]} -> 0*x+1>>;
 
 sort(
-  V %= {[1:1:V1], [V1+1:1:V2], [V2+1:1:V3]};
-  Vmap %= <<{[1:1:V1]} -> 0*x+1, {[V1+1:1:V2]} -> 0*x+2, {[V2+1:1:V3-1]} -> 0*x+3
-            , {[V3:1:V3]} -> 0*x+4>>; 
-  mapB %= <<{[1:1:E1]} -> 1*x+0, {[E1+1:1:E2]} -> 1*x+off2d, {[E2+1:1:E3]} -> 1*x-off3b>>;
-  mapD %= <<{[1:1:E1]} -> 1*x+off1d, {[E1+1:1:E2]} -> 1*x+0, {[E2+1:1:E3]} -> 1*x+off3d>>;
-  Emap %= <<{[1:1:E1]} -> 0*x+1, {[E1+1:1:E2], [E2+1:1:E3]} -> 0*x+2>>;
+  V %= {[1:1:V1], [V1+1:1:V2]};
+  Vmap %= <<{[1:1:V1]} -> 0*x+1, {[V1+1:1:V2]} -> 0*x+2>>; 
+  mapB %= <<{[1:1:E1]} -> 1*x+off1b>>;
+  mapD %= <<{[1:1:E1]} -> 1*x+off1d>>;
+  Emap %= <<{[1:1:E1]} -> 0*x+1>>;
 )

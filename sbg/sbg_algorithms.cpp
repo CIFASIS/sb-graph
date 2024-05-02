@@ -816,16 +816,15 @@ PWMap<Set> SBGSCC<Set>::calculate()
 
 template<typename Set>
 SBGTopSort<Set>::SBGTopSort()
-  : dsbg_(), smap_(), E_(), mapB_(), mapD_(), unordered_(), not_dependant_()
-    , visitedE_(), end_(), new_end_(), dom_(), exp_(), debug_(false) {}
+  : dsbg_(), smap_(), E_(), mapB_(), mapD_(), unordered_(), not_dependent_()
+    , visitedV_(), curr_(), debug_(false) {}
 template<typename Set>
 SBGTopSort<Set>::SBGTopSort(DSBGraph<Set> dsbg, bool debug)
   : dsbg_(dsbg), smap_(), E_(dsbg.E()), mapB_(dsbg.mapB()), mapD_(dsbg.mapD())
-    , unordered_(dsbg.V()), not_dependant_(), visitedE_(), end_(), new_end_()
-    , dom_(), exp_(), debug_(debug) {
-  not_dependant_ = dsbg.V().difference(mapB().image());
-  end_ = not_dependant_.minElem();
-  new_end_ = end_;
+    , unordered_(dsbg.V()), not_dependent_(), visitedV_(), curr_()
+    , debug_(debug) {
+  not_dependent_ = dsbg.V().difference(mapB().image());
+  curr_ = not_dependent_.minElem();
 }
 
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, DSBGraph<Set>, dsbg);
@@ -834,97 +833,92 @@ member_imp_temp(template<typename Set>, SBGTopSort<Set>, Set, E);
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, PWMap<Set>, mapB);
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, PWMap<Set>, mapD);
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, Set, unordered);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, Set, not_dependant);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, Set, visitedE);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, Util::MD_NAT, end);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, Util::MD_NAT, new_end);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, Set, dom);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, Exp, exp);
+member_imp_temp(template<typename Set>, SBGTopSort<Set>, Set, not_dependent);
+member_imp_temp(template<typename Set>, SBGTopSort<Set>, Set, visitedV);
+member_imp_temp(template<typename Set>, SBGTopSort<Set>, Util::MD_NAT, curr);
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, bool, debug);
 
 template<typename Set>
-void SBGTopSort<Set>::calculateExp()
+Exp SBGTopSort<Set>::calculateExp(Util::MD_NAT n1, Util::MD_NAT n2)
 {
   Exp res;
 
-  Util::MD_NAT aux_end = end(), aux_ne = new_end();
   Util::RATIONAL one(1, 1);
-  for (unsigned int j = 0; j < end().size(); ++j) { 
-    Util::RATIONAL x1(aux_end[j]), x2(aux_ne[j]);
+  for (unsigned int j = 0; j < n1.size(); ++j) { 
+    Util::RATIONAL x1(n1[j]), x2(n2[j]);
     res.emplaceBack(LExp(1, x1 - x2));
   }
 
-  set_exp(res);
-
-  return;
+  return res;
 }
 
 template<typename Set>
 void SBGTopSort<Set>::topSortStep()
 {
-  Set end_set(end());
-  set_dom(end_set);
+  Set nd = not_dependent();
+  Util::MD_NAT next = nd.minElem();
+  Set next_set(next), dom = next_set; 
+  Exp exp = calculateExp(curr(), next);
+  set_curr(next);
 
-  Set nd = not_dependant();
-  PW Vmap = dsbg().Vmap();
-  Set vend = Vmap.preImage(Vmap.image(end_set));
-  vend = nd.intersection(vend).difference(end_set);
-  if (vend.isEmpty()) {
-    Set ne_set(nd.minElem());
-    set_dom(ne_set);
-    set_new_end(nd.minElem());
-    Set vnew_end = Vmap.preImage(Vmap.image(ne_set));
-    vnew_end = unordered().intersection(vnew_end);
-    if (!vnew_end.difference(nd).isEmpty())
-      set_dom(vnew_end);
-    set_E(E().difference(mapD().preImage(ne_set))); 
-    calculateExp();
-    set_end(new_end());
-  } 
-  else {
-    set_dom(vend);
-    set_new_end(vend.minElem());
-    calculateExp();
-    set_end(vend.maxElem());
+  if (debug()) {
+    Util::SBG_LOG << "curr: " << curr() << "\n";
+    Util::SBG_LOG << "dom: " << dom << "\n";
+    Util::SBG_LOG << "exp: " << exp << "\n\n";
   }
- 
-  smap_ref().emplaceBack(SBGMap<Set>(dom(), exp()));
 
+  Set ingoing = mapD().preImage(dom);
+  updateStatus(dom, exp, ingoing);
+ 
   return;
 }
 
 template<typename Set>
-void SBGTopSort<Set>::updateStatus()
+void SBGTopSort<Set>::updateStatus(Set dom, Exp exp, Set ingoing)
 {
-  Set ordv = smap().dom();
-  Set ordB = mapB().preImage(ordv), ordD = mapD().preImage(ordv);
-  Set orde = ordB.intersection(ordD);
+  PW Vmap = dsbg().Vmap();
 
-  ordv = mapB().image(orde).cup(mapD().image(orde));
-  Set ingoing = mapD().preImage(ordv);
-  Set newE = E().difference(orde);
-  newE = newE.difference(ingoing);
+  Set newE = E();
+  Set ith_dom = dom, new_unord = unordered(); 
+  if (!dom.intersection(visitedV()).isEmpty()) {
+    Set dom_sv = Vmap.preImage(Vmap.image(dom));
+    ith_dom = dom_sv.difference(smap().dom());
+
+    smap_ref().emplaceBack(SBGMap<Set>(ith_dom, exp));
+
+    Set ordv = smap().dom(), ith_dom_succs = smap().image(ith_dom);
+    if (ith_dom_succs.difference(ordv).isEmpty()) { 
+      new_unord = new_unord.difference(ith_dom);
+      newE = newE.difference(mapD().preImage(ith_dom));
+    }
+  }
+  else {
+    smap_ref().emplaceBack(SBGMap<Set>(dom, exp));
+  }
+  new_unord = new_unord.difference(dom);
+  newE = newE.difference(mapD().preImage(dom));
+
+  Set SV = Vmap.preImage(Vmap.image(ith_dom));
+  set_visitedV(visitedV().cup(SV));
+
   set_E(newE);
-
-  if (!orde.intersection(visitedE()).isEmpty())
-    set_end(smap().dom().difference(smap().image()).minElem());
-
-  PW subE = dsbg().subE_map();
-  Set SE = subE.preImage(subE.image(newE));
-  set_visitedE(visitedE().cup(SE));
-  
-  set_mapB(mapB().restrict(newE));
-  set_mapD(mapD().restrict(newE));
+  set_mapB(mapB().restrict(E()));
+  set_mapD(mapD().restrict(E()));
  
-  set_unordered(unordered().difference(dom()));
-  set_not_dependant(unordered().difference(mapB().image()));
+  set_unordered(new_unord);
+  set_not_dependent(unordered().difference(mapB().image()));
+
+  Set start = smap().dom().difference(smap().image());
+  if (start.cardinal() == 1)
+    set_curr(start.minElem());
 
   if (debug()) {
+    Util::SBG_LOG << "curr: " << curr() << "\n";
     Util::SBG_LOG << "smap: " << smap() << "\n";
-    Util::SBG_LOG << "mapB: " << mapB() << "\n";
-    Util::SBG_LOG << "mapD: " << mapD() << "\n";
-    Util::SBG_LOG << "end: " << end() << "\n";
-    Util::SBG_LOG << "new_end: " << new_end() << "\n\n";
+    Util::SBG_LOG << "E: " << E() << "\n";
+    Util::SBG_LOG << "unord: " << unordered() << "\n";
+    Util::SBG_LOG << "nd: " << not_dependent() << "\n";
+    Util::SBG_LOG << "visitedV: " << visitedV() << "\n\n";
   }
 
   return;
@@ -936,15 +930,18 @@ PWMap<Set> SBGTopSort<Set>::calculate()
   if (debug())
     Util::SBG_LOG << "Topological sort dsbg:\n" << dsbg() << "\n\n";
 
-  while (!unordered().isEmpty()) {
+  Util::MD_NAT aux_curr = curr();
+  Set curr_set(curr());
+  Exp exp = calculateExp(curr(), curr());
+  updateStatus(curr_set, exp, mapD().preImage(curr_set));
+  set_curr(aux_curr);
+  while (!unordered().isEmpty())
     topSortStep();
-    updateStatus();
-  }
 
   if (debug())
-    Util::SBG_LOG << "Topological sort result:\n" << smap() << "\n\n";
+    Util::SBG_LOG << "Topological sort result:\n" << smap().compact() << "\n\n";
 
-  return smap();
+  return smap().compact();
 }
 
 // Template instantiations -----------------------------------------------------
@@ -1035,11 +1032,30 @@ DSBGraph<Set> buildSortFromSCC(
   const SBGSCC<Set> &scc, const PWMap<Set> &rmap
 )
 {
+  DSBGraph dsbg = scc.dsbg();
+  Set Ediff = dsbg.E().difference(scc.E());
+  PWMap<Set> subE_map = dsbg.subE_map().restrict(Ediff); 
+  PWMap<Set> mapB = rmap.composition(dsbg.mapB().restrict(Ediff));
+  mapB = mapB.compact();
+  PWMap<Set> mapD = rmap.composition(dsbg.mapD().restrict(Ediff));
+  mapD = mapD.compact();
+
   PWMap<Set> aux_rmap = rmap.compact();
   PWMap<Set> reps_rmap = aux_rmap.filterMap([](const SBGMap<Set> &sbgmap) {
     return eqId(sbgmap);
   });
   Set V = reps_rmap.dom();
+
+  for (const SBGMap<Set> &map : subE_map) {
+    Set ith_dom = mapB.image(map.dom()).intersection(V);
+    V = V.difference(ith_dom);
+    V = V.concatenation(ith_dom);
+  }
+  for (const SBGMap<Set> &map : subE_map) {
+    Set ith_dom = mapD.image(map.dom()).intersection(V);
+    V = V.difference(ith_dom);
+    V = V.concatenation(ith_dom);
+  }
 
   PWMap<Set> Vmap;
   unsigned int j = 1, dims = rmap.nmbrDims();
@@ -1048,13 +1064,6 @@ DSBGraph<Set> buildSortFromSCC(
     Vmap.emplaceBack(SBGMap<Set>(mdi, Exp(v)));
     ++j;
   }
-
-  DSBGraph dsbg = scc.dsbg();
-  Set Ediff = dsbg.E().difference(scc.E());
-  PWMap<Set> mapB = rmap.composition(dsbg.mapB().restrict(Ediff));
-  mapB = mapB.compact();
-  PWMap<Set> mapD = rmap.composition(dsbg.mapD().restrict(Ediff));
-  mapD = mapD.compact();
 
   j = 1;
   PWMap<Set> Emap;
@@ -1069,8 +1078,6 @@ DSBGraph<Set> buildSortFromSCC(
       ++j;
     }
   }
-  // TODO: partition subset-edge
-  PWMap<Set> subE_map = dsbg.subE_map().restrict(Ediff); 
 
   DSBGraph<Set> res(V, Vmap, mapB, mapD, Emap);
   res.set_subE_map(subE_map);

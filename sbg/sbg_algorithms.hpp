@@ -241,14 +241,10 @@ struct SBGTopSort {
   member_class(PW, mapD);
 
   member_class(Set, unordered);
-  member_class(Set, not_dependant);
-  member_class(Set, visitedE);
+  member_class(Set, not_dependent);
+  member_class(Set, visitedV);
 
-  member_class(Util::MD_NAT, end);
-  member_class(Util::MD_NAT, new_end);
-
-  member_class(Set, dom);
-  member_class(Exp, exp);
+  member_class(Util::MD_NAT, curr);
 
   member_class(bool, debug);
 
@@ -258,9 +254,9 @@ struct SBGTopSort {
   PW calculate(); 
 
   private:
-  void calculateExp();
+  Exp calculateExp(Util::MD_NAT x1, Util::MD_NAT x2);
   void topSortStep();
-  void updateStatus();
+  void updateStatus(Set dom, Exp exp, Set ingoing);
 };
 
 typedef SBGTopSort<UnordSet> BaseTopSort;

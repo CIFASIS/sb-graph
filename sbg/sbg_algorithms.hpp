@@ -210,23 +210,6 @@ typedef SBGSCC<OrdSet> CanonSCC;
 // Topological sort ------------------------------------------------------------
 
 template<typename Set>
-struct VertexOrder {
-  member_class(std::vector<Set>, container); 
-
-  VertexOrder();
-
-  void emplaceBack(const Set &s);
-
-  bool operator==(const VertexOrder &other) const;
-  bool operator!=(const VertexOrder &other) const;
-};
-template<typename Set>
-std::ostream &operator<<(std::ostream &out, const VertexOrder<Set> &vo);
-
-typedef VertexOrder<UnordSet> BaseVO;
-typedef VertexOrder<OrdSet> CanonVO;
-
-template<typename Set>
 struct SBGTopSort {
   using PW = PWMap<Set>;
 

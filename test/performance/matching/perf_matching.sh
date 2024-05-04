@@ -4,6 +4,10 @@ file=$1
 iterations=$2
 size=$3
 
+# Ignore multi-line comments
+echo > aux_file
+sed -r ':a;$!{N;ba};s|/\*[^*]*\*+([^/*][^*]*\*+)*/\n||' $file > aux_file
+
 echo > test_values
 echo > test_file
 
@@ -13,7 +17,7 @@ while read line; do
     else
         echo $line >> test_file
     fi
-done < $file
+done < aux_file
 
 
 for i in $(seq "$iterations"); do

@@ -2,10 +2,8 @@
 
  @brief <b>Boost matching profiling</b>
 
- This file is meant to test the three examples presented in the paper
- "Efficient Matching of Large Systems ...". When executed it will ten times
- the Boost Edmonds matching algorithm and report the average execution time
- for each of them.
+ This file is meant to test the execution time of scalar algorithms for graphs
+ from the BGL library.
 
  <hr>
 
@@ -34,6 +32,7 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/max_cardinality_matching.hpp>
 #include <boost/graph/strong_components.hpp>
+#include <boost/graph/topological_sort.hpp>
 #include <gtest/gtest.h>
 
 #include <eval/visitors/program_visitor.hpp>
@@ -70,9 +69,23 @@ void computeSCC(OG::DGraph graph)
     end - begin
   );
 
-  SBG::Util::SBG_LOG << "Tarjan SCC time: " 
+  SBG::Util::SBG_LOG << "Boost Tarjan SCC time: " 
     << total.count() << " [μs]" << std::endl;
- SBG::Util::SBG_LOG << "SCC sz: " << num << "\n";
+  SBG::Util::SBG_LOG << "SCC sz: " << num << "\n";
+}
+
+void computeTS(OG::DGraph graph)
+{
+  std::vector<int> order;
+  auto begin = std::chrono::high_resolution_clock::now();
+  topological_sort(graph, std::back_inserter(order));
+  auto end = std::chrono::high_resolution_clock::now();
+  auto total = std::chrono::duration_cast<std::chrono::microseconds>(
+    end - begin
+  );
+
+  SBG::Util::SBG_LOG << "Boost Topological Sort time: " 
+    << total.count() << " [μs]" << std::endl;
 }
 
 auto graph_visitor_ = SBG::Util::Overload {
@@ -87,11 +100,20 @@ auto graph_visitor_ = SBG::Util::Overload {
     }
 
     SBG::LIB::BaseSCC scc(buildSCCFromMatching(match), false);
+    SBG::LIB::BasePWMap scc_res = scc.calculate();
  
     if (a == 1) {
       OG::OrdinaryDGraphBuilder ordinary_dgraph_builder(scc.dsbg());
       OG::DGraph dgraph = ordinary_dgraph_builder.build();
       computeSCC(dgraph);
+    }
+
+    SBG::LIB::BaseTopSort ts(buildSortFromSCC(scc, scc_res), false);
+
+    if (a == 2) {
+      OG::OrdinaryDGraphBuilder ordinary_dgraph_builder(ts.dsbg());
+      OG::DGraph dgraph = ordinary_dgraph_builder.build();
+      computeTS(dgraph);
     }
   },
   [](int a, SBG::LIB::CanonSBG b) {
@@ -105,11 +127,20 @@ auto graph_visitor_ = SBG::Util::Overload {
     }
 
     SBG::LIB::CanonSCC scc(buildSCCFromMatching(match), false);
+    SBG::LIB::CanonPWMap scc_res = scc.calculate();
  
     if (a == 1) {
       OG::OrdinaryDGraphBuilder ordinary_dgraph_builder(scc.dsbg());
       OG::DGraph dgraph = ordinary_dgraph_builder.build();
       computeSCC(dgraph);
+    }
+
+    SBG::LIB::CanonTopSort ts(buildSortFromSCC(scc, scc_res), false);
+
+    if (a == 2) {
+      OG::OrdinaryDGraphBuilder ordinary_dgraph_builder(ts.dsbg());
+      OG::DGraph dgraph = ordinary_dgraph_builder.build();
+      computeTS(dgraph);
     }
   },
   [](auto a, auto b) {
@@ -166,15 +197,22 @@ void usage()
   std::cout << "Usage parser [options] file" << std::endl;
   std::cout << "Parses a SBG program." << std::endl;
   std::cout << std::endl;
-  std::cout << "-a, --file      Algorithm selection: [0] matching, [1] scc, [2] topological sort" << std::endl;
-  std::cout << "-f, --file      SBG program file used as input " << std::endl;
-  std::cout << "-h, --help      Display this information and exit" << std::endl;
-  std::cout << "-v, --version   Display version information and exit"
-    << std::endl;
-  std::cout << "-c, --copies    Number of SBG copies" << std::endl;
+  std::cout << "-h, --help      Display this information and exit." << std::endl;
+  std::cout << "-v, --version   Display version information and exit."
+            << std::endl;
+  std::cout << "-a, --algo      Algorithm selection: [0] matching, [1] scc" 
+            << ", [2] topological sort." << std::endl;
+  std::cout << "-f, --file      SBG program file used as input. It must be"
+            << " an undirected SBG." << std::endl
+            << "                The program will causalize the system up to the"
+            << " desired stage with\n"
+            << "                the SBG approach, scalarize it and execute" 
+            << " the selected\n"
+            << "                algorithm instead of the SBG one." << std::endl;
+  std::cout << "-c, --copies    Number of SBG copies." << std::endl;
   std::cout << std::endl;
   std::cout << "SBG library home page: https://github.com/CIFASIS/sb-graph"
-    << std::endl;
+            << std::endl;
 }
 
 void version()
@@ -195,7 +233,7 @@ int main(int argc, char**argv)
 
   while (true) {
     static struct option long_options[] = {
-      {"algorithm", required_argument, 0, 'a'}
+      {"algo", required_argument, 0, 'a'}
       , {"file", required_argument, 0, 'f'}
       , {"help", no_argument, 0, 'h'}
       , {"version", no_argument, 0, 'v'}

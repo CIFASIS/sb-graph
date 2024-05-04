@@ -21,10 +21,12 @@
 #define PERF_ORD_BUILDER_HPP
 
 #include <cassert>
+#include <chrono>
 #include <map>
 
 #include <test/performance/boost/ordinary_graph.hpp>
 #include <sbg/sbg.hpp>
+#include <util/logger.hpp>
 
 namespace OG {
 
@@ -63,7 +65,8 @@ class OrdinaryDGraphBuilder {
 
   protected:
   OG::DVertexDesc addVertex(SBG::Util::MD_NAT id, OG::DGraph &g);
-  OG::DEdgeDesc addEdge(SBG::Util::MD_NAT id, OG::DGraph &g);
+  OG::DEdgeDesc addEdge(SBG::Util::MD_NAT id, SBG::Util::MD_NAT v1
+    , SBG::Util::MD_NAT v2, OG::DGraph &g);
 
   DSBGraph _sb_graph;
   std::map<SBG::Util::MD_NAT, OG::DVertexDesc> _vertex_map;

@@ -886,11 +886,11 @@ void SBGTopSort<Set>::updateStatus(Set dom, Exp exp, Set ingoing)
 
     smap_ref().emplaceBack(SBGMap<Set>(ith_dom, exp));
 
-    Set ordv = smap().dom(), ith_dom_succs = smap().image(ith_dom);
-    if (ith_dom_succs.difference(ordv).isEmpty()) { 
-      new_unord = new_unord.difference(ith_dom);
-      newE = newE.difference(mapD().preImage(ith_dom));
-    }
+    // Take out vertices whose succ now also has a succ
+    Set no_succ = unordered().difference(smap().dom()); 
+    Set whole_ord = smap().dom().difference(smap().preImage(no_succ));
+    new_unord = new_unord.difference(whole_ord);
+    newE = newE.difference(mapD().preImage(whole_ord));
   }
   else {
     smap_ref().emplaceBack(SBGMap<Set>(dom, exp));
@@ -930,6 +930,7 @@ PWMap<Set> SBGTopSort<Set>::calculate()
   if (debug())
     Util::SBG_LOG << "Topological sort dsbg:\n" << dsbg() << "\n\n";
 
+  auto begin = std::chrono::high_resolution_clock::now();
   Util::MD_NAT aux_curr = curr();
   Set curr_set(curr());
   Exp exp = calculateExp(curr(), curr());
@@ -937,6 +938,12 @@ PWMap<Set> SBGTopSort<Set>::calculate()
   set_curr(aux_curr);
   while (!unordered().isEmpty())
     topSortStep();
+  auto end = std::chrono::high_resolution_clock::now();
+
+  auto total = std::chrono::duration_cast<std::chrono::microseconds>(
+    end - begin
+  );
+  Util::SBG_LOG << "Total topological sort exec time: " << total.count() << " [μs]\n\n"; 
 
   if (debug())
     Util::SBG_LOG << "Topological sort result:\n" << smap().compact() << "\n\n";
@@ -978,6 +985,7 @@ template struct SBGTopSort<OrdSet>;
 template<typename Set>
 DSBGraph<Set> buildSCCFromMatching(const SBGMatching<Set> &match)
 {
+  auto start = std::chrono::high_resolution_clock::now();
   Set matched_edges = match.matched_E(), unmatched_edges = match.unmatched_E();
 
   Set V = matched_edges;
@@ -1021,6 +1029,12 @@ DSBGraph<Set> buildSCCFromMatching(const SBGMatching<Set> &match)
 
   DSBGraph<Set> res(V, Vmap, mapB, mapD, Emap);
   res.set_subE_map(subE_map);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto total = std::chrono::duration_cast<std::chrono::microseconds>(
+    end - start 
+  );
+  Util::SBG_LOG << "SBG SCC builder: " << total.count() << " [μs]\n\n"; 
+
   return res;
 }
 

@@ -54,7 +54,7 @@ OG::Graph OrdinaryGraphBuilder<Set>::build()
   for (const SBG::LIB::SetPiece &v : _sb_graph.V()) { 
     assert(!v.isEmpty());
     SBG::Util::MD_NAT beg = v.minElem(), end = v.maxElem();
-    for (auto it = beg; it != end; it = nextElem(it, v)) 
+    for (auto it = beg; it != end; it = nextElem(it, v))
       addVertex(it, graph);
     addVertex(end, graph);
   }
@@ -117,21 +117,43 @@ OG::DGraph OrdinaryDGraphBuilder<Set>::build()
 {
   OG::DGraph graph;
 
+  std::chrono::microseconds total(0);
   for (const SBG::LIB::SetPiece &v : _sb_graph.V()) { 
     assert(!v.isEmpty());
     SBG::Util::MD_NAT beg = v.minElem(), end = v.maxElem();
-    for (auto it = beg; it != end; it = nextElem(it, v)) 
+    for (auto it = beg; it != end; it = nextElem(it, v)) { 
+      auto tbegin = std::chrono::high_resolution_clock::now();
       addVertex(it, graph);
+      auto tend = std::chrono::high_resolution_clock::now();
+      total += std::chrono::duration_cast<std::chrono::microseconds>(
+        tend - tbegin
+      );
+    }
     addVertex(end, graph);
   }
 
+  PW mapb = _sb_graph.mapB(), mapd = _sb_graph.mapD();
   for (const SBG::LIB::SetPiece &e : _sb_graph.E()) {
     assert(!e.isEmpty());
     SBG::Util::MD_NAT beg = e.minElem(), end = e.maxElem();
-    for (auto it = beg; it != end; it = nextElem(it, e)) 
-      addEdge(it, graph);
-    addEdge(end, graph);
+    for (auto it = beg; it != end; it = nextElem(it, e)) {
+      SBG::LIB::SetPiece mdi(it);
+      SBG::Util::MD_NAT v1 = mapb.image(Set(mdi)).minElem();
+      SBG::Util::MD_NAT v2 = mapd.image(Set(mdi)).minElem();
+      auto tbegin = std::chrono::high_resolution_clock::now();
+      addEdge(it, v1, v2, graph);
+      auto tend = std::chrono::high_resolution_clock::now();
+      total += std::chrono::duration_cast<std::chrono::microseconds>(
+        tend - tbegin
+      );
+    }
+    SBG::LIB::SetPiece mdi(end);
+    SBG::Util::MD_NAT v1 = mapb.image(Set(mdi)).minElem();
+    SBG::Util::MD_NAT v2 = mapd.image(Set(mdi)).minElem();
+    addEdge(end, v1, v2, graph);
   }
+  SBG::Util::SBG_LOG << "Scalar directed graph builder time: " 
+    << total.count() << " [μs]\n";
 
   return graph;
 }
@@ -150,14 +172,9 @@ OG::DVertexDesc OrdinaryDGraphBuilder<Set>::addVertex(
 
 template<typename Set>
 OG::DEdgeDesc OrdinaryDGraphBuilder<Set>::addEdge(
-  SBG::Util::MD_NAT id, OG::DGraph &g
+  SBG::Util::MD_NAT id, SBG::Util::MD_NAT v1, SBG::Util::MD_NAT v2, OG::DGraph &g
 )
 {
-  SBG::LIB::SetPiece mdi(id);
-  PW mapb = _sb_graph.mapB(), mapd = _sb_graph.mapD();
-  SBG::Util::MD_NAT v1 = mapb.image(Set(mdi)).minElem();
-  SBG::Util::MD_NAT v2 = mapd.image(Set(mdi)).minElem();
-
   Edge E(id);
   OG::DEdgeDesc e;
   bool b;

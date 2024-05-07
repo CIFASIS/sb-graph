@@ -162,7 +162,7 @@ PathInfo<Set> MinReach<Set>::recursion(
   Set ER_plus = Emap.preImage(Emap.image(ER));
   Set VR_plus = mapB.image(ER_plus).cup(mapD.image(ER_plus));
 
-  PW new_smap;
+  PW new_smap, Dmap;
   Set repeated = start.intersection(first);
   for (unsigned int j = 0; j < n+1; ++j) {
     // Vertices in the same set vertex as start
@@ -222,70 +222,6 @@ PathInfo<Set> MinReach<Set>::calculate(
     // an augmenting one, a new matching can be obtained. That is why the loop
     // iterates until Vc is empty.
     do {
-      reach_vertices = reach_vertices.cup(new_rmap.preImage(endings));
-      reach_edges = mapD.preImage(reach_vertices);
-
-      old_rmap = new_rmap;
-      // Find adjacent vertex that reaches a minor vertex than the current one
-      new_smap = minReach1(reach_edges, new_smap, new_rmap); 
-      new_rmap = new_rmap.minMap(new_rmap.composition(new_rmap.composition(new_smap)));
-      Vc = V.difference(old_rmap.equalImage(new_rmap));
-      if (debug())
-        Util::SBG_LOG << "minReach new_rmap: " << new_rmap << "\n\n";
-
-      // If the condition is met, unmatched "backward" vertices reach unmatched
-      // "forward" vertices
-      if (!new_rmap.image(starts).intersection(endings).isEmpty())
-        return PathInfo<Set>(new_smap, new_rmap);
-
-      if (!Vc.isEmpty()) {
-
-        // Edges used in paths to reach a minimum
-        Set E_succ = mapD.equalImage(new_smap.composition(mapB));
-        if (!E_succ.isEmpty()) { // A new path was chosen
-          old_semap = new_semap;
-          PW mapB_succ = mapB.restrict(E_succ)
-                     , mapD_succ = mapD.restrict(E_succ);
-          new_semap = mapB_succ.inverse().composition(mapD_succ);
-          new_semap = new_semap.combine(old_semap);
-
-          Set not_changed = new_semap.equalImage(old_semap);
-          Ec = E.difference(not_changed);
-
-          if (!Ec.isEmpty()) {
-            Set ER;  // Recursive edges that changed its successor
-            PW old_semap_nth, semap_nth = new_semap; //.composition(new_semap);
-            unsigned int j = 0;
-            // Look for recursions. The maximum depth is the number of SVs.
-            do {
-              // Take out edges that are self-successors 
-              PW other = semap_nth.filterMap([](const SBGMap<Set> &sbgmap) {
-                return notEqId(sbgmap);
-              });
-              // Edges that belong to the same set-edge
-              ER = Emap.equalImage(Emap.composition(other));
-              old_semap_nth = semap_nth;
-              semap_nth = new_semap.composition(semap_nth);
-
-              ++j;
-            } while (ER.isEmpty() && j < dg.nmbrSV()
-                     && !(old_semap_nth == semap_nth));
-            // Get new recursions
-            ER = ER.intersection(Ec);
-            ER = ER.cup(new_semap.image(ER));
-
-            if (!ER.isEmpty()) { // There are recursions, lets handle one of them
-              PathInfo<Set> res;
-              res = recursion(
-                j, ER, reach_vertices, new_smap, new_rmap
-              );
-              new_rmap = res.reps();
-              if (debug())
-                Util::SBG_LOG << "recursion new_rmap: " << new_rmap << "\n\n";
-            }
-          }
-        }
-      }
     } while (!Vc.isEmpty());
 
     return PathInfo<Set>(new_smap, new_rmap);

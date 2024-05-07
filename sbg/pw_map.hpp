@@ -142,7 +142,8 @@ struct PWMap {
   ) const;
   PWMap minMap(const PWMap &other) const;
 
-  PWMap minAdjMap(const PWMap &other1, const PWMap &other2) const;
+  PWMap minAdjMap(const PWMap &other2, const PWMap &other3, const PWMap &other4) const;
+  PWMap minAdjMap(const PWMap &other2, const PWMap &other3) const;
   PWMap minAdjMap(const PWMap &other) const;
 
   /** @function firstInv

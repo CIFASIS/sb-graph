@@ -667,14 +667,13 @@ PWMap<Set> PWMap<Set>::minMap(const PWMap &other) const
 }
 
 template<typename Set>
-PWMap<Set> PWMap<Set>::minAdjMap(const PWMap &other2, const PWMap &other3) const
+PWMap<Set> PWMap<Set>::minAdjMap(
+  const PWMap &other2, const PWMap &other3, const PWMap &other4
+) const
 {
   PWMap res;
 
-  Set partitioned_dom3 = other3.preImage(other3.image());
-  Set partitioned_dom = other2.preImage(partitioned_dom3);
-  partitioned_dom = dom().intersection(partitioned_dom);
-  partitioned_dom = other2.dom().intersection(partitioned_dom);
+  Set partitioned_dom = dom().intersection(other2.dom());
 
   Set visited;
   for (const SetPiece &mdi : partitioned_dom) {
@@ -699,18 +698,11 @@ PWMap<Set> PWMap<Set>::minAdjMap(const PWMap &other2, const PWMap &other3) const
           e_res = map2.exp().composition(e1.inverse());
 
         else {
-          for (const Map &map3 : other3) {
-            Set dom3 = map3.dom(), s3 = dom3.intersection(im2);
-            if (!s3.isEmpty()) {
-              if (!map3.exp().isConstant()) {
-                Set min3(map3.image(s3).minElem());
-                MD_NAT min2 = map3.preImage(min3).minElem();
-                e_res = MDLExp(min2);
-              }
-
-              else e_res = MDLExp(im2.minElem());
-            }
-          }
+          Set min3(other3.image(im2).minElem());
+          Set mins2 = other3.preImage(min3);
+          MD_NAT min4 = other4.image(mins2).minElem();
+          MD_NAT min2 = other4.preImage(min4).minElem();
+          e_res = MDLExp(min2);
         }
       }
     }
@@ -732,6 +724,20 @@ PWMap<Set> PWMap<Set>::minAdjMap(const PWMap &other2, const PWMap &other3) const
   }
 
   return res;
+}
+
+template<typename Set>
+PWMap<Set> PWMap<Set>::minAdjMap(const PWMap &other2, const PWMap &other3) const
+{
+  if (!other2.isEmpty()) {
+    Exp id(other2.nmbrDims(), LExp());
+    Map aux4(other2.image(), id);
+    PWMap id_map4(aux4);
+
+    return minAdjMap(other2, other3, id_map4);
+  }
+
+  return PWMap();
 }
 
 template<typename Set>

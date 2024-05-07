@@ -69,11 +69,6 @@ struct MinReach {
   MinReach(DSBGraph<Set> dsbg, bool debug);
 
   PI calculate(const Set &starts, const Set &endings) const;
-
-  private:
-  PW minReach1(const Set &reach, const PW &smap, const PW &rmap) const;
-  PI recursion(unsigned int n, const Set &ER, const Set &not_rv
-               , const PW &smap, const PW &rmap) const;
 };
 
 typedef MinReach<UnordSet> BaseMR;

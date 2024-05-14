@@ -69,6 +69,9 @@ struct MinReach {
   MinReach(DSBGraph<Set> dsbg, bool debug);
 
   PI calculate(const Set &starts, const Set &endings) const;
+
+  private:
+  Exp calcDistanceExp(Util::MD_NAT n1, Util::MD_NAT n2, Util::MD_NAT dist) const; 
 };
 
 typedef MinReach<UnordSet> BaseMR;

@@ -83,27 +83,6 @@ bool eqId(const SBGMap<Set> &sbgmap) { return sbgmap.isId(); }
 template<typename Set>
 bool notEqId(const SBGMap<Set> &sbgmap) { return !(sbgmap.isId()); }
 
-// Update rep iff new is less than current. Without this function, if there are
-// vertices v1, v2, v3 and edges v1->v2, v1->v3 where rmap(v2) = rmap(v3) the
-// algorithm could switch infinitely between those two reps.
-template<typename Set>
-PWMap<Set> updateMap(const Set &V, const PWMap<Set> &smap
-                     , const PWMap<Set> &new_smap, const PWMap<Set> &rmap)
-{
-  PWMap<Set> res;
-
-  if (!V.isEmpty()) {
-    PWMap<Set> vto_rep = rmap.composition(smap);
-    PWMap<Set> new_vto_rep = rmap.composition(new_smap);
-    Set not_updated = vto_rep.equalImage(new_vto_rep);
-
-    res = smap.restrict(not_updated);
-    res = res.combine(new_smap);
-  }
-
-  return res;
-}
-
 template<typename Set>
 MinReach<Set>::MinReach() : dsbg_(), debug_(false) {}
 template<typename Set>
@@ -114,30 +93,103 @@ member_imp_temp(template<typename Set>, MinReach<Set>, DSBGraph<Set>, dsbg);
 member_imp_temp(template<typename Set>, MinReach<Set>, bool, debug);
 
 template<typename Set>
+Exp MinReach<Set>::calcDistanceExp(
+  Util::MD_NAT n1, Util::MD_NAT n2, Util::MD_NAT dist
+) const
+{
+  Exp res;
+
+  for (unsigned int j = 0; j < dist.size(); ++j) {
+    Util::RATIONAL m(dist[j], n2[j] - n1[j]);
+    if (n2[j] < n1[j])
+      m = -m;
+    Util::RATIONAL h(Util::RATIONAL(dist[j]) - m * n2[j]); 
+    res.emplaceBack(LExp(m, h));
+  }
+
+  return res;
+}
+
+template<typename Set>
 PathInfo<Set> MinReach<Set>::calculate(
   const Set &starts, const Set &endings
 ) const
 {
   DSBGraph dg = dsbg();
 
-  if (!dg.V().isEmpty()) {
-    Set V = dg.V(), E = dg.E();
-    PW mapB = dg.mapB(), mapD = dg.mapD(), Emap = dg.Emap();
+  Set V = dg.V();
+  if (!V.isEmpty()) {
+    PW mapB = dg.mapB(), mapD = dg.mapD(), Vmap = dg.Vmap();
 
-    PW old_semap, old_rmap; // Old vertex and edge successors maps
-    PW new_smap(V), new_semap(E); // New vertex and edge successors maps
-    PW new_rmap(V); // New vertex reps map
+    unsigned int ndims = Vmap.nmbrDims();
+    Exp zero(ndims, LExp(0, 0));
+    PW dmap;
+    dmap.emplaceBack(SBGMap<Set>(V, zero));
+    PW old_rmap(V), new_rmap(V); // Old and new vertex reps map
+    PW old_smap(V), new_smap(V);
 
-    Set Vc; // Vertices that changed sucessor
-    Set Ec; // Edges that changed successor
-
-    // Vertices and edges that reach unmatched vertices
-    Set reach_vertices = endings, reach_edges;
+    Set Vc; // Vertices that changed representative
 
     // If a vertex changes its successor, then a new path was found. If it is
     // an augmenting one, a new matching can be obtained. That is why the loop
     // iterates until Vc is empty.
+    if (debug())
+      Util::SBG_LOG << "\n";
     do {
+      PW rmapB = new_rmap.composition(mapB), rmapD = new_rmap.composition(mapD);
+
+
+      // Update rmap
+      old_rmap = new_rmap;
+      new_rmap = rmapB.minAdjMap(rmapD, new_rmap);
+      new_rmap = new_rmap.combine(old_rmap);
+      new_rmap = new_rmap.composition(new_rmap);
+
+      // Update smap
+      old_smap = new_smap;
+      new_smap = mapB.minAdjMap(mapD, new_rmap, dmap);
+      new_smap = new_smap.combine(old_smap);
+
+      // Update dmap for vertices with new rep (Vc)
+      Vc = V.difference(old_rmap.equalImage(new_rmap));
+      PW Vc_dmap = dmap.composition(new_smap.restrict(Vc));
+      Vc_dmap = Vc_dmap.offsetImage(Util::MD_NAT(ndims, 1));
+      dmap = Vc_dmap.combine(dmap);
+
+
+      PW not_id = new_rmap.filterMap([](const SBGMap<Set> &sbgmap) {
+        return notEqId(sbgmap);
+      });
+      Set rec = Vmap.equalImage(Vmap.composition(not_id));
+      if (debug()) {
+        Util::SBG_LOG << "new_smap: " << new_smap << "\n";
+        Util::SBG_LOG << "new_rmap: " << new_rmap << "\n";
+        Util::SBG_LOG << "Vc: " << Vc << "\n";
+        Util::SBG_LOG << "dmap: " << dmap << "\n\n";
+        Util::SBG_LOG << "rec: " << rec << "\n\n";
+      }
+      if (!rec.isEmpty()) {
+        for (const SBGMap<Set> &map : Vmap) {
+          Set ith_dom = map.dom();
+          Set ith_rec = ith_dom.intersection(rec);
+          if (!ith_rec.isEmpty()) {
+            Util::MD_NAT min_rep = new_rmap.image(ith_rec).minElem();
+
+            Set min_repd = new_rmap.preImage(Set(min_rep));
+            Set other_dom = ith_dom.difference(min_repd);
+            Util::MD_NAT min_dist = dmap.image(min_repd).minElem();
+            Set pred = new_rmap.preImage(min_repd).intersection(ith_rec);
+            Exp dist_exp = calcDistanceExp(
+              pred.minElem(), min_repd.minElem(), min_dist
+            );
+
+            PW ith_rmap(SBGMap<Set>(ith_dom, Exp(min_rep)));
+            new_rmap = ith_rmap.combine(new_rmap);
+            PW ith_dmap(SBGMap<Set>(other_dom, dist_exp));
+            dmap = ith_dmap.combine(dmap);
+          }
+        }
+      }
     } while (!Vc.isEmpty());
 
     return PathInfo<Set>(new_smap, new_rmap);

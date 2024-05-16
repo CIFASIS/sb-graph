@@ -27,6 +27,9 @@ namespace LIB {
 
 void compatible(Interval i, LExp le)
 {
+  if (i.begin() == i.end())
+    return;
+
   Util::RATIONAL rat_inf(Util::INT_Inf, 1);
   if (le.slope() == rat_inf || le.slope() > rat_inf)
     return;
@@ -69,6 +72,11 @@ Interval image(Interval i, LExp le) {
   Util::RATIONAL rat_inf(Util::INT_Inf, 1);
   if (m == rat_inf || m > rat_inf)
     return Interval(0, 1, Util::Inf);
+
+  if (i.begin() == i.end()) {
+    Util::NAT x = (m * i.begin() + h).toNat();
+    return Interval(x, 1, x);
+  }
 
   // Increasing expression
   if (m > 0) {

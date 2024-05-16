@@ -18,6 +18,7 @@
  ******************************************************************************/
 
 #include "sbg/pw_map.hpp"
+#include <iostream>
 
 namespace SBG {
 
@@ -713,7 +714,7 @@ PWMap<Set> PWMap<Set>::minAdjMap(
       Set again = dom_res.intersection(visited);
       if (!again.isEmpty()) {
         PWMap r_res = res.restrict(again), r_map = ith_pw.restrict(again);
-        res = res.minMap(ith_pw).combine(res);
+        res = other3.minMap(res, ith_pw, other3).combine(res);
         res = res.combine(ith_pw);
       }
       else

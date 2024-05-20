@@ -18,7 +18,6 @@
  ******************************************************************************/
 
 #include "sbg/pw_map.hpp"
-#include <iostream>
 
 namespace SBG {
 
@@ -610,7 +609,7 @@ PWMap<Set> PWMap<Set>::minMap(
       if (!s2.isEmpty()) {
         e2 = map2.exp();
         flag2 = true;
-        im2 = map2.image();
+        im2 = map2.image(mdi_set);
         break;
       }
     }
@@ -630,7 +629,7 @@ PWMap<Set> PWMap<Set>::minMap(
       if (!s3.isEmpty()) {
         e3 = map3.exp();
         flag3 = true;
-        im3 = map3.image();
+        im3 = map3.image(mdi_set);
         break;
       }
     }

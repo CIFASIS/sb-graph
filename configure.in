@@ -19,7 +19,7 @@ AX_CXX_COMPILE_STDCXX(17,noext,mandatory)
 AC_LANG([C++])
 
 # Checks for header files.
-AX_BOOST_BASE(["1.71"],[], AC_MSG_ERROR([SBGraph needs boost library.]))
+# AX_BOOST_BASE(["1.71"],[], AC_MSG_ERROR([SBGraph needs boost library.]))
 AC_FUNC_ALLOCA
 AC_CHECK_HEADERS([malloc.h stdlib.h string.h unistd.h])
 

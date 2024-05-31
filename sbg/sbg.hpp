@@ -50,14 +50,18 @@ struct SBGraph {
 template<typename Set>
 std::ostream &operator<<(std::ostream &out, const SBGraph<Set> &pw);
 
-template<typename Set>
-void addSV(Set vertices, SBGraph<Set> &g);
 
 template<typename Set>
 unsigned int nmbrSV(SBGraph<Set> g);
 
 template<typename Set>
 void addSE(Set edges, SBGraph<Set> &g);
+
+template<typename Set>
+SBGraph<Set> addSE(PWMap<Set> pw1, PWMap<Set> pw2, SBGraph<Set> g);
+
+template<typename Set>
+SBGraph<Set> addSV(Set vertices, SBGraph<Set> g);
 
 template<typename Set>
 SBGraph<Set> copy(unsigned int times, SBGraph<Set> g);

@@ -609,7 +609,7 @@ PWMap<Set> PWMap<Set>::minMap(
       if (!s2.isEmpty()) {
         e2 = map2.exp();
         flag2 = true;
-        im2 = map2.image();
+        im2 = map2.image(mdi_set);
         break;
       }
     }
@@ -629,7 +629,7 @@ PWMap<Set> PWMap<Set>::minMap(
       if (!s3.isEmpty()) {
         e3 = map3.exp();
         flag3 = true;
-        im3 = map3.image();
+        im3 = map3.image(mdi_set);
         break;
       }
     }
@@ -645,7 +645,7 @@ PWMap<Set> PWMap<Set>::minMap(
 
     if (flag1 && flag2 && flag3 && flag4) {
       PWMap ith = minMap(mdi_set, e1, e2, e3, e4);
-      res = ith.combine(res);
+      res = ith.concatenation(res);
     }
   }
 
@@ -671,10 +671,7 @@ PWMap<Set> PWMap<Set>::minAdjMap(const PWMap &other2, const PWMap &other3) const
 {
   PWMap res;
 
-  Set partitioned_dom3 = other3.preImage(other3.image());
-  Set partitioned_dom = other2.preImage(partitioned_dom3);
-  partitioned_dom = dom().intersection(partitioned_dom);
-  partitioned_dom = other2.dom().intersection(partitioned_dom);
+  Set partitioned_dom = dom().intersection(other2.dom());
 
   Set visited;
   for (const SetPiece &mdi : partitioned_dom) {
@@ -720,14 +717,14 @@ PWMap<Set> PWMap<Set>::minAdjMap(const PWMap &other2, const PWMap &other3) const
       PWMap ith_pw(ith);
       Set again = dom_res.intersection(visited);
       if (!again.isEmpty()) {
-        PWMap r_res = res.restrict(again), r_map = ith_pw.restrict(again);
-        res = res.minMap(ith_pw).combine(res);
-        res = res.combine(ith_pw);
+        PWMap<Set> min_map = other3.minMap(res, ith_pw, other3);
+        res = min_map.combine(ith_pw).combine(res);
+        visited = visited.cup(min_map.dom());
       }
-      else
+      else {
         res.emplaceBack(ith);
-
-      visited = visited.cup(dom_res);
+        visited = visited.concatenation(dom_res);
+      }
     }
   }
 
@@ -892,6 +889,15 @@ PWMap<Set> PWMap<Set>::compact() const
       res.emplaceBack(new_ith);
     }
   }
+
+  return res;
+}
+
+template<typename Set>
+Set PWMap<Set>::sharedImage()
+{
+  Set not_present = dom().difference(firstInv().image());
+  Set res = preImage(image(not_present));
 
   return res;
 }

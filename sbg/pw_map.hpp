@@ -172,6 +172,12 @@ struct PWMap {
   unsigned int nmbrDims() const;
 
   PWMap compact() const;
+
+  /** @function sharedImage
+   *
+   * @brief Given a map, return elements that have the same image.
+   */
+  Set sharedImage();
 };
 template<typename Set>
 std::ostream &operator<<(std::ostream &out, const PWMap<Set> &pw);

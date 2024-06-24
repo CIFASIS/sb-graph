@@ -227,7 +227,7 @@ PathInfo<Set> MinReach<Set>::calculate(
 
       old_rmap = new_rmap;
       // Find adjacent vertex that reaches a minor vertex than the current one
-      new_smap = minReach1(reach_edges, new_smap, new_rmap); 
+      new_smap = minReach1(reach_edges, new_smap.compact(), new_rmap.compact()); 
       new_rmap = new_rmap.minMap(new_rmap.composition(new_rmap.composition(new_smap)));
       Vc = V.difference(old_rmap.equalImage(new_rmap));
       if (debug())
@@ -403,7 +403,7 @@ PWMap<Set> SBGMatching<Set>::directedOffset(const PW &dir_map) const
   PW res = omap().restrict(unmatched_side);
   res = res.offsetImage(max_V());
 
-  return res.combine(omap());
+  return res.combine(omap()).compact();
 }
 
 template<typename Set>
@@ -417,7 +417,83 @@ DSBGraph<Set> SBGMatching<Set>::offsetGraph(const PW &dir_omap) const
   _mapB = _mapB.restrict(paths_edges());
   _mapD = _mapD.restrict(paths_edges());
 
-  return DSBGraph<Set>(_V, _Vmap, _mapB, _mapD, Emap().restrict(paths_edges()));
+  return DSBGraph<Set>(
+    _V.compact()
+   , _Vmap.compact() 
+   , _mapB.compact()
+   , _mapD.compact()
+   , Emap().restrict(paths_edges()).compact());
+}
+
+template<typename Set>
+void SBGMatching<Set>::selectSucc(DSBGraph<Set> dsbg)
+{
+  Set dsbgV = dsbg.V();
+  PW dsbgB = dsbg.mapB(), dsbgD = dsbg.mapD(), dsbg_Vmap = dsbg.Vmap();
+  if (debug())
+    Util::SBG_LOG << dsbg << "\n\n";
+
+  // Unmatched vertices in forward direction
+  Set unmatched_D = dsbgD.image().intersection(unmatched_V());
+  PW res(unmatched_D);
+
+  // A record of allowed edges to keep out cycle edges
+  Set allowed_edges = dsbg.E();
+  Set ith_end = unmatched_D; // Ends of paths to mininmum reachable
+  Set ingoing = dsbgD.preImage(ith_end); // Ingoing edges to ith_end
+  // A record of visited set-vertices
+  Set visitedV = dsbg_Vmap.preImage(dsbg_Vmap.image(ith_end));
+  do {
+    // Adjacent vertices that reach ith_end
+    Set ith_start = dsbgB.image(ingoing);
+    if (debug()) {
+     Util::SBG_LOG << "ith_start: " << ith_start << "\n";
+     Util::SBG_LOG << "ith_end: " << ith_end << "\n";
+    }
+
+    // Calculate successor for ith vertices
+    PW ingB = dsbgB.restrict(ingoing), ingD = dsbgD.restrict(ingoing);
+    PW ith_smap = ingB.minAdjMap(ingD);
+    if (debug())
+      Util::SBG_LOG << "ith_smap: " << ith_smap << "\n";
+
+    // Vertices in a recursion
+    Set rec = visitedV.intersection(ith_start); 
+    // Handle recursion
+    if (!rec.isEmpty()) {
+      for (const Map &ith : dsbg_Vmap) {
+        PW rule = ith_smap.restrict(ith.dom());
+        if (!rule.isEmpty()) {
+          Exp exp = rule.begin()->exp();
+          PW aux_res (Map(ith.dom().difference(res.dom()), exp));
+          res = aux_res.combine(res);
+        }
+      }
+    }
+    res = ith_smap.restrict(ith_start.difference(rec)).combine(res);
+ 
+    // Take out other outgoing edges to avoid cycles
+    allowed_edges = allowed_edges.difference(dsbgB.preImage(ith_start));
+    dsbgD = dsbgD.restrict(allowed_edges);
+    dsbgB = dsbgB.restrict(allowed_edges);
+
+    // Find predecessors for ith_start
+    Set no_succ = dsbgV.difference(res.dom());
+    Set with_succ = res.dom().difference(res.preImage(no_succ));
+    // Vertices without a predecessor
+    //ith_end = with_succ.difference(res.image());
+    ith_end = res.dom();
+    ingoing = dsbgD.preImage(ith_end).intersection(allowed_edges);
+
+    visitedV = visitedV.cup(dsbg_Vmap.preImage(dsbg_Vmap.image(ith_start)));
+    if (debug()) {
+      Util::SBG_LOG << "ith_end 2: " << ith_end << "\n";
+      Util::SBG_LOG << "res: " << res << "\n\n";
+    }
+  } while (!ingoing.isEmpty());
+
+  set_smap(res);
+  set_rmap(res.mapInf());
 }
 
 template<typename Set>
@@ -428,18 +504,42 @@ void SBGMatching<Set>::directedMinReach(const PW &dir_map)
     Util::SBG_LOG << "dir_omap: " << dir_omap << "\n";
   DSBGraph<Set> dsbg = offsetGraph(dir_omap);
   dsbg.set_subE_map(sbg().subE_map().restrict(paths_edges()));
-  MinReach min_reach(dsbg, debug());
-  Set unmatched_B = mapB().image().intersection(unmatched_V());
-  Set unmatched_D = mapD().image().intersection(unmatched_V());
-  PathInfo<Set> res = min_reach.calculate(
-    dir_omap.image(unmatched_B), dir_omap.image(unmatched_D)
-  );
+  Set V = dsbg.V();
+  PW subE_map = sbg().subE_map().restrict(paths_edges());
+  PW auxB = dsbg.mapB(), auxD = dsbg.mapD();
+  for (const SBGMap<Set> &map : subE_map) {
+    Set ith_dom = auxB.image(map.dom()).intersection(V);
+    V = V.difference(ith_dom);
+    V = V.concatenation(ith_dom);
+  }
+  for (const SBGMap<Set> &map : subE_map) {
+    Set ith_dom = auxD.image(map.dom()).intersection(V);
+    V = V.difference(ith_dom);
+    V = V.concatenation(ith_dom);
+  }
+  dsbg.set_subE_map(subE_map);
+
+  PWMap<Set> Vmap;
+  unsigned int j = 1, dims = dir_omap.nmbrDims();
+  for (SetPiece mdi : V) {
+    Util::MD_NAT v(dims, j);
+    Vmap.emplaceBack(SBGMap<Set>(mdi, Exp(v)));
+    ++j;
+  }
+  dsbg.set_Vmap(Vmap);
+
+  selectSucc(dsbg);
 
   PW aux_omap = dir_omap.combine(omap()), to_normal = aux_omap.inverse();
-  PW aux_succs = res.succs().composition(aux_omap);
-  set_smap(to_normal.composition(aux_succs));
-  PW aux_reps = res.reps().composition(aux_omap);
-  set_rmap(to_normal.composition(aux_reps));
+  PW succs = smap().composition(aux_omap);
+  set_smap(to_normal.composition(succs));
+  PW reps = rmap().composition(aux_omap);
+  set_rmap(to_normal.composition(reps));
+
+  if (debug()) {
+    Util::SBG_LOG << "minReach smap: " << smap() << "\n";
+    Util::SBG_LOG << "minReach rmap: " << rmap() << "\n\n";
+  }
 }
 
 template<typename Set>
@@ -755,19 +855,89 @@ member_imp_temp(template<typename Set>, SBGSCC<Set>, PWMap<Set>, rmap);
 member_imp_temp(template<typename Set>, SBGSCC<Set>, bool, debug);
 
 template<typename Set>
+PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
+{
+  if (debug())
+    Util::SBG_LOG << "Min reach graph:\n" << dg << "\n\n";
+
+  Set V = dg.V(), E = dg.E();
+  PWMap<Set> mapB = dg.mapB(), mapD = dg.mapD();
+  if (!V.isEmpty()) {
+    PWMap<Set> rmap(V), old_rmap;
+
+    if (E.isEmpty())
+      return rmap;
+
+    do {
+      old_rmap = rmap;
+
+      PWMap<Set> ermapB = rmap.composition(mapB);
+      PWMap<Set> ermapD = rmap.composition(mapD);
+
+      PWMap<Set> new_rmap = mapB.minAdjMap(ermapD);
+      rmap = rmap.minMap(new_rmap).combine(rmap);
+
+      if (debug())
+        Util::SBG_LOG << "match rmap before rec: " << rmap << "\n";
+      for (const Map &subv : dg.Vmap()) {
+        Set vs = subv.dom();
+        if (!vs.isEmpty()) {
+          Util::MD_NAT min_reach = rmap.image(vs).minElem();
+          Set get_to_min = rmap.preImage(Set(min_reach)).intersection(vs);
+          if (get_to_min.cardinal() > 1) {
+            Map extended(vs, Exp(min_reach));
+            rmap = PW(extended).combine(rmap); 
+          }
+        }
+      }
+      if (debug())
+        Util::SBG_LOG << "rmap rec: " << rmap << "\n\n";
+
+      if (!(rmap == old_rmap))
+        rmap = rmap.mapInf();
+    } while (rmap != old_rmap); 
+
+    return rmap;
+  }
+
+  return PWMap<Set>();
+}
+
+template<typename Set>
 PWMap<Set> SBGSCC<Set>::sccStep()
 {
   PW id_V(V());
+
+  Set auxV = V();
+  for (const SBGMap<Set> &map : dsbg().subE_map()) {
+    Set ith_dom = mapB().image(map.dom()).intersection(auxV);
+    auxV = auxV.difference(ith_dom);
+    auxV = auxV.concatenation(ith_dom);
+  }
+  for (const SBGMap<Set> &map : dsbg().subE_map()) {
+    Set ith_dom = mapD().image(map.dom()).intersection(auxV);
+    auxV = auxV.difference(ith_dom);
+    auxV = auxV.concatenation(ith_dom);
+  }
+
+  PWMap<Set> auxVmap;
+  unsigned int j = 1, dims = id_V.nmbrDims();
+  for (SetPiece mdi : auxV) {
+    Util::MD_NAT v(dims, j);
+    auxVmap.emplaceBack(SBGMap<Set>(mdi, Exp(v)));
+    ++j;
+  }
  
   DSBGraph<Set> aux_dsbg(
-    V(), Vmap()
+    V(), auxVmap
     , mapB().restrict(E()), mapD().restrict(E()), Emap().restrict(E())
   );
   aux_dsbg.set_subE_map(dsbg().subE_map());
-  MinReach min_reach(aux_dsbg, debug());
-  PW new_rmap = min_reach.calculate(Set(), V()).reps();
+
+  PW new_rmap = sccMinReach(aux_dsbg);
   if (debug())
     Util::SBG_LOG << "SCC new_rmap: " << new_rmap << "\n\n";
+
   PW rmap_B = new_rmap.composition(mapB());
   PW rmap_D = new_rmap.composition(mapD());
   Set Esame = rmap_B.equalImage(rmap_D); // Edges in the same SCC
@@ -988,7 +1158,7 @@ DSBGraph<Set> buildSCCFromMatching(const SBGMatching<Set> &match)
   auto start = std::chrono::high_resolution_clock::now();
   Set matched_edges = match.matched_E(), unmatched_edges = match.unmatched_E();
 
-  Set V = matched_edges;
+  Set V = matched_edges.compact();
   PWMap<Set> auxVmap = match.sbg().subE_map().restrict(matched_edges), Vmap;
   for (const SBGMap<Set> &map : auxVmap) 
     Vmap.emplaceBack(SBGMap<Set>(map.dom().compact(), map.exp()));

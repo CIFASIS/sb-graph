@@ -134,6 +134,7 @@ struct SBGMatching {
   member_class(Set, unmatched_U); // Right unmatched vertices, mutable
 
   member_class(unsigned int, k); // Depth of shortPath
+  member_class(Set, cycle_edges);
 
   member_class(bool, debug);
 
@@ -143,10 +144,11 @@ struct SBGMatching {
   MatchInfo<Set> calculate(unsigned int k);
 
   private:
-  Set getManyToOne() const; // Find N:1 connections
   void shortPathDirection(const Set &endings, Direction dir);
   void shortPathStep();
   void shortPath();
+
+  void selectSucc(DSBGraph<Set> dsbg);
 
   PW directedOffset(const PW &dir_map) const;
   DSBGraph<Set> offsetGraph(const PW &dir_omap) const;
@@ -201,6 +203,7 @@ struct SBGSCC {
   PW calculate();
 
   private:
+  PW sccMinReach(DSBGraph<Set> dg) const;
   PW sccStep();
 };
 

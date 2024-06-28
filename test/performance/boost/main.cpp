@@ -91,7 +91,7 @@ void computeTS(OG::DGraph graph)
 auto graph_visitor_ = SBG::Util::Overload {
   [](int a, SBG::LIB::BaseSBG b) {
     SBG::LIB::BaseMatch match(b, false);
-    match.calculate(6).matched_edges();
+    match.calculate().matched_edges();
 
     if (a == 0) {
       OG::OrdinaryGraphBuilder ordinary_graph_builder(b);
@@ -118,7 +118,7 @@ auto graph_visitor_ = SBG::Util::Overload {
   },
   [](int a, SBG::LIB::CanonSBG b) {
     SBG::LIB::CanonMatch match(b, false);
-    match.calculate(6).matched_edges();
+    match.calculate().matched_edges();
 
     if (a == 0) {
       OG::OrdinaryGraphBuilder ordinary_graph_builder(b);

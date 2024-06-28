@@ -65,331 +65,8 @@ PWMap<Set> connectedComponents(SBGraph<Set> g)
 }
 
 // -----------------------------------------------------------------------------
-// Minimum reachable -----------------------------------------------------------
-// -----------------------------------------------------------------------------
-
-template<typename Set>
-PathInfo<Set>::PathInfo() : succs_(), reps_() {}
-template<typename Set>
-PathInfo<Set>::PathInfo(PWMap<Set> succs, PWMap<Set> reps)
-  : succs_(succs), reps_(reps) {}
-
-member_imp_temp(template<typename Set>, PathInfo<Set>, PWMap<Set>, succs);
-member_imp_temp(template<typename Set>, PathInfo<Set>, PWMap<Set>, reps);
-
-template<typename Set>
-bool eqId(const SBGMap<Set> &sbgmap) { return sbgmap.isId(); }
-
-template<typename Set>
-bool notEqId(const SBGMap<Set> &sbgmap) { return !(sbgmap.isId()); }
-
-// Update rep iff new is less than current. Without this function, if there are
-// vertices v1, v2, v3 and edges v1->v2, v1->v3 where rmap(v2) = rmap(v3) the
-// algorithm could switch infinitely between those two reps.
-template<typename Set>
-PWMap<Set> updateMap(const Set &V, const PWMap<Set> &smap
-                     , const PWMap<Set> &new_smap, const PWMap<Set> &rmap)
-{
-  PWMap<Set> res;
-
-  if (!V.isEmpty()) {
-    PWMap<Set> vto_rep = rmap.composition(smap);
-    PWMap<Set> new_vto_rep = rmap.composition(new_smap);
-    Set not_updated = vto_rep.equalImage(new_vto_rep);
-
-    res = smap.restrict(not_updated);
-    res = res.combine(new_smap);
-  }
-
-  return res;
-}
-
-template<typename Set>
-MinReach<Set>::MinReach() : dsbg_(), debug_(false) {}
-template<typename Set>
-MinReach<Set>::MinReach(DSBGraph<Set> sbg, bool debug)
-  : dsbg_(sbg), debug_(debug) {}
-
-member_imp_temp(template<typename Set>, MinReach<Set>, DSBGraph<Set>, dsbg);
-member_imp_temp(template<typename Set>, MinReach<Set>, bool, debug);
-
-template<typename Set>
-PWMap<Set> MinReach<Set>::minReach1(
-  const Set &reach, const PW &smap, const PW &rmap
-) const
-{
-  DSBGraph<Set> dg = dsbg_;
-  Set V = dg.V();
-  PW mapB = dg.mapB(), mapD = dg.mapD();
-
-  PW auto_succs = smap.filterMap([](const SBGMap<Set> &sbgmap) {
-    return eqId(sbgmap);
-  });
-  Set auto_reps = auto_succs.equalImage(rmap);
-  Set not_auto_succs = smap.filterMap([](const SBGMap<Set> &sbgmap) {
-    return notEqId(sbgmap);
-  }).dom();
-  Set usable_verts = auto_reps.cup(not_auto_succs);
-
-  PWMap auxB = mapB.restrict(reach), auxD = mapD.restrict(reach);
-  // Get minimum adjacent vertex with minimum representative
-  PWMap adj_smap = auxB.minAdjMap(auxD, rmap);
-  // Get minimum between current rep and adjacent reps
-  PWMap new_smap = rmap.minMap(adj_smap, smap.restrict(usable_verts), rmap);
-  // Update rep iff new is less than current
-  new_smap = updateMap(V, smap, new_smap, rmap);
-  new_smap = new_smap.combine(adj_smap);
-  new_smap = new_smap.combine(smap);
-
-  return new_smap;
-}
-
-// Handle recursion
-template<typename Set>
-PathInfo<Set> MinReach<Set>::recursion(
-  unsigned int n, const Set &ER, const Set &rv
-  , const PW &smap, const PW &rmap
-) const
-{
-  PW mapB = dsbg().mapB(), mapD = dsbg().mapD()
-     , Vmap = dsbg().Vmap(), Emap = dsbg().Emap(), subE_map = dsbg().subE_map();
-  PW ERB = mapB.restrict(ER), ERD = mapD.restrict(ER);
-
-  Set start = ERB.image();
-  start = start.difference(ERD.image());
-  Set first = Vmap.image(start);
-
-  Set ER_plus = Emap.preImage(Emap.image(ER));
-  Set VR_plus = mapB.image(ER_plus).cup(mapD.image(ER_plus));
-
-  PW new_smap;
-  Set repeated = start.intersection(first);
-  for (unsigned int j = 0; j < n+1; ++j) {
-    // Vertices in the same set vertex as start
-    Set side = VR_plus.intersection(Vmap.preImage(Vmap.image(start)));
-    // Get edges orientated in the correct direction that are part of the
-    // recursion
-    Set ER_start = mapB.preImage(start).intersection(ER);
-    // Get edges in the same sub-set edge
-    Set ER_plus_start = subE_map.preImage(subE_map.image(ER_start));
-    ER_plus_start = ER_plus_start.intersection(mapB.preImage(side));
-
-    PW sideB  = mapB.restrict(ER_plus_start)
-      , sideD = mapD.restrict(ER_plus_start);
-    // Get successor in recursion
-    PW ith = sideD.composition(sideB.inverse());
-    new_smap = ith.combine(new_smap);
- 
-    start = smap.image(start);
-    // Check if an already visited set-vertex is visited again
-    repeated = Vmap.image(start).intersection(first);
-  }
-
-  // Solve recursion
-  Set endings = mapD.image(ER_plus).difference(mapB.image(ER_plus));
-  PW smap_endings(endings);
-  new_smap = smap_endings.combine(new_smap);
-  new_smap = new_smap.restrict(VR_plus);
-  PW rmap_plus = rmap.composition(new_smap.mapInf(n-1));
-  PW new_rmap = rmap.minMap(rmap_plus);
-  new_rmap = new_rmap.combine(rmap);
-
-  return PathInfo<Set>(new_smap, new_rmap);
-}
-
-template<typename Set>
-PathInfo<Set> MinReach<Set>::calculate(
-  const Set &starts, const Set &endings
-) const
-{
-  DSBGraph dg = dsbg();
-
-  if (!dg.V().isEmpty()) {
-    Set V = dg.V(), E = dg.E();
-    PW mapB = dg.mapB(), mapD = dg.mapD(), Emap = dg.Emap();
-
-    PW old_semap, old_rmap; // Old vertex and edge successors maps
-    PW new_smap(V), new_semap(E); // New vertex and edge successors maps
-    PW new_rmap(V); // New vertex reps map
-
-    Set Vc; // Vertices that changed sucessor
-    Set Ec; // Edges that changed successor
-
-    // Vertices and edges that reach unmatched vertices
-    Set reach_vertices = endings, reach_edges;
-
-    // If a vertex changes its successor, then a new path was found. If it is
-    // an augmenting one, a new matching can be obtained. That is why the loop
-    // iterates until Vc is empty.
-    do {
-      reach_vertices = reach_vertices.cup(new_rmap.preImage(endings));
-      reach_edges = mapD.preImage(reach_vertices);
-
-      old_rmap = new_rmap;
-      // Find adjacent vertex that reaches a minor vertex than the current one
-      new_smap = minReach1(reach_edges, new_smap.compact(), new_rmap.compact()); 
-      new_rmap = new_rmap.minMap(new_rmap.composition(new_rmap.composition(new_smap)));
-      Vc = V.difference(old_rmap.equalImage(new_rmap));
-      if (debug())
-        Util::SBG_LOG << "minReach new_rmap: " << new_rmap << "\n\n";
-
-      // If the condition is met, unmatched "backward" vertices reach unmatched
-      // "forward" vertices
-      if (!new_rmap.image(starts).intersection(endings).isEmpty())
-        return PathInfo<Set>(new_smap, new_rmap);
-
-      if (!Vc.isEmpty()) {
-
-        // Edges used in paths to reach a minimum
-        Set E_succ = mapD.equalImage(new_smap.composition(mapB));
-        if (!E_succ.isEmpty()) { // A new path was chosen
-          old_semap = new_semap;
-          PW mapB_succ = mapB.restrict(E_succ)
-                     , mapD_succ = mapD.restrict(E_succ);
-          new_semap = mapB_succ.inverse().composition(mapD_succ);
-          new_semap = new_semap.combine(old_semap);
-
-          Set not_changed = new_semap.equalImage(old_semap);
-          Ec = E.difference(not_changed);
-
-          if (!Ec.isEmpty()) {
-            Set ER;  // Recursive edges that changed its successor
-            PW old_semap_nth, semap_nth = new_semap; //.composition(new_semap);
-            unsigned int j = 0;
-            // Look for recursions. The maximum depth is the number of SVs.
-            do {
-              // Take out edges that are self-successors 
-              PW other = semap_nth.filterMap([](const SBGMap<Set> &sbgmap) {
-                return notEqId(sbgmap);
-              });
-              // Edges that belong to the same set-edge
-              ER = Emap.equalImage(Emap.composition(other));
-              old_semap_nth = semap_nth;
-              semap_nth = new_semap.composition(semap_nth);
-
-              ++j;
-            } while (ER.isEmpty() && j < dg.nmbrSV()
-                     && !(old_semap_nth == semap_nth));
-            // Get new recursions
-            ER = ER.intersection(Ec);
-            ER = ER.cup(new_semap.image(ER));
-
-            if (!ER.isEmpty()) { // There are recursions, lets handle one of them
-              PathInfo<Set> res;
-              res = recursion(
-                j, ER, reach_vertices, new_smap, new_rmap
-              );
-              new_rmap = res.reps();
-              if (debug())
-                Util::SBG_LOG << "recursion new_rmap: " << new_rmap << "\n\n";
-            }
-          }
-        }
-      }
-    } while (!Vc.isEmpty());
-
-    return PathInfo<Set>(new_smap, new_rmap);
-  }
-
-  return PathInfo<Set>();
-}
-
-// -----------------------------------------------------------------------------
 // Matching --------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-
-// Short path ------------------------------------------------------------------
-
-template<typename Set>
-void SBGMatching<Set>::shortPathDirection(const Set &endings, Direction dir)
-{
-  PW auxB = mapB().restrict(paths_edges())
-    , auxD = mapD().restrict(paths_edges());
-  
-  Set unmatched;
-  if (dir == forward)
-    unmatched = unmatched_U();
-  else
-    unmatched = unmatched_F();
-
-  set_smap(PW(V_));
-  set_rmap(PW(V_));
-
-  Set reach_end = endings; // Vertices that reach endings
-  Set P; // Vertices adjacent to reach_end
-
-  unsigned int j = 0; // Current length of path
-  do {
-    // Start of edges entering reach_end
-    P = auxB.image(auxD.preImage(reach_end));
-    P = P.difference(reach_end); // Take out vertices that are self-reps
-    // Edges that reach reach_end
-    Set reach_edges = auxB.preImage(P).intersection(auxD.preImage(reach_end));
-    // Map from starts to the edges that take them to reach_end
-    PW starts = auxB.firstInv(reach_edges);
-    PW smap_reach = auxD.composition(starts);
-    set_smap(smap_reach.combine(smap()));
-    PW rmap_reach = rmap().composition(smap_reach);
-    set_rmap(rmap_reach.combine(rmap()));
-
-    reach_end = reach_end.cup(P);
-    j++;
-  } while (!P.isEmpty() && P.intersection(unmatched).isEmpty() 
-           && j < k());
-
-  return;
-}
-
-template<typename Set>
-void SBGMatching<Set>::shortPathStep()
-{
-  // *** Forward direction
-  shortPathDirection(unmatched_F(), forward);
-  PW rmapd = rmap();
-  Set pe = edgesInPaths();
-  set_paths_edges(pe);
-
-  // *** Backward direction
-  PWMap<Set> auxB = mapB();
-  set_mapB(mapD());
-  set_mapD(auxB);
-
-  shortPathDirection(unmatched_U(), backward);
-  const PW &rmaprmapd = rmap().composition(rmapd);
-  Set edgesb = edgesSameRepLR(rmaprmapd);
-  pe = pe.intersection(edgesInPaths().intersection(edgesb));
-  set_paths_edges(pe);
-
-  // *** Initial direction
-  set_mapD(mapB());
-  set_mapB(auxB);
-
-  // *** Update structures to reflect new matched edges
-  updatePaths(); 
- 
-  return;
-}
-
-template<typename Set>
-void SBGMatching<Set>::shortPath()
-{
-  // Finish if all unknowns are matched or there aren't available edges
-  do {
-    set_paths_edges(E());
-    shortPathStep();
-    if (debug()) {
-      Util::SBG_LOG << "short step smap: " << smap() << "\n";
-      Util::SBG_LOG << "short step matched edges: " << matched_E() << "\n";
-      Util::SBG_LOG << "short step unmatched V: " << unmatched_V() << "\n\n";
-    }
-  } while(!fullyMatchedU() && !paths_edges().isEmpty());
-
-  // In this case we only offset vertices here because shortPath isn't looking
-  // for any minimum reachable vertex
-  updateOffset();
-
-  return;
-}
 
 // Minimum reachable -----------------------------------------------------------
 
@@ -599,6 +276,12 @@ void SBGMatching<Set>::minReachable()
 // Matching --------------------------------------------------------------------
 
 template<typename Set>
+bool eqId(const SBGMap<Set> &sbgmap) { return sbgmap.isId(); }
+
+template<typename Set>
+bool notEqId(const SBGMap<Set> &sbgmap) { return !(sbgmap.isId()); }
+
+template<typename Set>
 MatchInfo<Set>::MatchInfo() : matched_edges_(), fully_matchedU_() {}
 template<typename Set>
 MatchInfo<Set>::MatchInfo(Set matched_edges, bool fully_matchedU) 
@@ -625,10 +308,10 @@ SBGMatching<Set>::SBGMatching()
   : sbg_(), V_(), Vmap_(), E_(), Emap_(), smap_(), rmap_(), omap_()
     , max_V_(), F_(), U_(), mapF_(), mapU_(), mapB_(), mapD_(), paths_edges_()
     , matched_E_(), unmatched_E_(), matched_V_(), unmatched_V_(), unmatched_F_()
-    , matched_U_(), unmatched_U_(), k_(6), debug_(false) {}
+    , matched_U_(), unmatched_U_(), debug_(false) {}
 template<typename Set>
 SBGMatching<Set>::SBGMatching(SBGraph<Set> sbg, bool debug)
-  : sbg_(sbg), V_(sbg.V()), Vmap_(sbg.Vmap()), Emap_(sbg.Emap()), k_(6)
+  : sbg_(sbg), V_(sbg.V()), Vmap_(sbg.Vmap()), Emap_(sbg.Emap())
     , debug_(debug) {
   set_E(Emap_.dom());
 
@@ -687,8 +370,6 @@ member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, unmatched_V);
 member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, unmatched_F);
 member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, matched_U);
 member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, unmatched_U);
-
-member_imp_temp(template<typename Set>, SBGMatching<Set>, unsigned int, k);
 
 member_imp_temp(template<typename Set>, SBGMatching<Set>, bool, debug);
 
@@ -768,49 +449,24 @@ void SBGMatching<Set>::updateOffset()
 }
 
 template<typename Set>
-MatchInfo<Set> SBGMatching<Set>::calculate(unsigned int k)
+MatchInfo<Set> SBGMatching<Set>::calculate()
 {
   if (debug())
     Util::SBG_LOG << "Matching sbg: \n" << sbg() << "\n\n";
-  set_k(k);
 
   auto begin = std::chrono::high_resolution_clock::now();
-  shortPath();
+  minReachable();
   auto end = std::chrono::high_resolution_clock::now();
-  auto duration1 = std::chrono::duration_cast<std::chrono::microseconds>(
-    end - begin
-  );
 
   if (debug())
-    Util::SBG_LOG << "shortPath: " << matched_E() << "\n\n";
-
-  bool mr_used = false;
-  if (!fullyMatchedU()) {
-    begin = std::chrono::high_resolution_clock::now();
-    minReachable();
-    end = std::chrono::high_resolution_clock::now();
-
-    if (debug())
-      Util::SBG_LOG << "minReachable: " << matched_E() << "\n\n";
-    mr_used = true;
-  }
+    Util::SBG_LOG << "minReachable: " << matched_E() << "\n\n";
 
   Util::SBG_LOG << MatchInfo(matched_E(), fullyMatchedU()) << "\n\n";
 
-  Util::SBG_LOG << "ShortPath exec time: " << duration1.count() << " [μs]\n";
-  if (mr_used) {
-    auto duration2 = std::chrono::duration_cast<std::chrono::microseconds>(
-      end - begin
-    );
-    Util::SBG_LOG << "MinReach exec time: " << duration2.count() << " [μs]\n";
-
-    auto total = std::chrono::duration_cast<std::chrono::microseconds>(
-      duration1 + duration2
-    );
-    Util::SBG_LOG << "Total match exec time: " << total.count() << " [μs]\n\n"; 
-  }
-  else
-    Util::SBG_LOG << "Total match exec time: " << duration1.count() << " [μs]\n\n"; 
+  auto total = std::chrono::duration_cast<std::chrono::microseconds>(
+    end - begin
+  );
+  Util::SBG_LOG << "Total match exec time: " << total.count() << " [μs]\n";
 
   return MatchInfo(matched_E(), fullyMatchedU());
 }
@@ -1125,12 +781,6 @@ PWMap<Set> SBGTopSort<Set>::calculate()
 
 template BasePWMap connectedComponents<UnordSet>(BaseSBG g);
 template CanonPWMap connectedComponents<OrdSet>(CanonSBG g);
-
-template struct PathInfo<UnordSet>;
-template struct PathInfo<OrdSet>;
-
-template struct MinReach<UnordSet>;
-template struct MinReach<OrdSet>;
 
 template struct MatchInfo<UnordSet>;
 template std::ostream &operator<<(

@@ -717,9 +717,10 @@ PWMap<Set> PWMap<Set>::minAdjMap(const PWMap &other2, const PWMap &other3) const
       PWMap ith_pw(ith);
       Set again = dom_res.intersection(visited);
       if (!again.isEmpty()) {
-        PWMap<Set> min_map = other3.minMap(res, ith_pw, other3);
+        PWMap aux_res = res.restrict(dom_res);
+        PWMap min_map = other3.minMap(aux_res, ith_pw, other3);
         res = min_map.combine(ith_pw).combine(res);
-        visited = visited.cup(min_map.dom());
+        visited = visited.cup(ith_pw.dom());
       }
       else {
         res.emplaceBack(ith);

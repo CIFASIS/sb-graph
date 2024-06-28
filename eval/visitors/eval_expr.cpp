@@ -246,15 +246,15 @@ auto connected_visitor_ = Util::Overload {
 };
 
 auto matching_visitor_ = Util::Overload {
-  [](LIB::BaseSBG a, Util::MD_NAT b, Util::MD_NAT c, bool d) { 
-    LIB::BaseMatch match(a.copy(b[0]), d);
-    return InfoBaseType(match.calculate(c[0]));
+  [](LIB::BaseSBG a, Util::MD_NAT b, bool c) { 
+    LIB::BaseMatch match(a.copy(b[0]), c);
+    return InfoBaseType(match.calculate());
   },
-  [](LIB::CanonSBG a, Util::MD_NAT b, Util::MD_NAT c, bool d) {
-    LIB::CanonMatch match(a.copy(b[0]), d);
-    return InfoBaseType(match.calculate(c[0]));
+  [](LIB::CanonSBG a, Util::MD_NAT b, bool c) {
+    LIB::CanonMatch match(a.copy(b[0]), c);
+    return InfoBaseType(match.calculate());
   },
-  [](auto a, auto b, auto c, auto d) {
+  [](auto a, auto b, auto c) {
     Util::ERROR("Wrong arguments for matching");
     return InfoBaseType();
   }
@@ -304,46 +304,46 @@ auto first_inv_visitor_ = Util::Overload {
 };
 
 auto match_scc_visitor_ = Util::Overload {
-  [](LIB::BaseSBG a, Util::MD_NAT b, Util::MD_NAT c, bool d) { 
-    LIB::BaseMatch match(a.copy(b[0]), d);
-    match.calculate(c[0]);
-    LIB::BaseSCC scc(buildSCCFromMatching(match), d);
+  [](LIB::BaseSBG a, Util::MD_NAT b, bool c) { 
+    LIB::BaseMatch match(a.copy(b[0]), c);
+    match.calculate();
+    LIB::BaseSCC scc(buildSCCFromMatching(match), c);
     return MapBaseType(scc.calculate());
   },
-  [](LIB::CanonSBG a, Util::MD_NAT b, Util::MD_NAT c, bool d) {
-    LIB::CanonMatch match(a.copy(b[0]), d);
-    match.calculate(c[0]);
-    LIB::CanonSCC scc(buildSCCFromMatching(match), d);
+  [](LIB::CanonSBG a, Util::MD_NAT b, bool c) {
+    LIB::CanonMatch match(a.copy(b[0]), c);
+    match.calculate();
+    LIB::CanonSCC scc(buildSCCFromMatching(match), c);
     return MapBaseType(scc.calculate());
   },
-  [](auto a, auto b, auto c, auto d) {
+  [](auto a, auto b, auto c) {
     Util::ERROR("Wrong arguments for matching+scc");
     return MapBaseType();
   }
 };
 
 auto match_scc_ts_visitor_ = Util::Overload {
-  [](LIB::BaseSBG a, Util::MD_NAT b, Util::MD_NAT c, bool d) { 
-    LIB::BaseMatch match(a.copy(b[0]), d);
-    LIB::UnordSet match_res = match.calculate(c[0]).matched_edges();
-    LIB::BaseSCC scc(buildSCCFromMatching(match), d);
+  [](LIB::BaseSBG a, Util::MD_NAT b, bool c) { 
+    LIB::BaseMatch match(a.copy(b[0]), c);
+    LIB::UnordSet match_res = match.calculate().matched_edges();
+    LIB::BaseSCC scc(buildSCCFromMatching(match), c);
     LIB::BasePWMap scc_res = scc.calculate();
-    LIB::BaseTopSort ts(buildSortFromSCC(scc, scc_res), d);
+    LIB::BaseTopSort ts(buildSortFromSCC(scc, scc_res), c);
     LIB::BasePWMap ts_res = ts.calculate(); 
     buildJson(match_res, scc_res, ts_res);
     return MapBaseType(ts_res);
   },
-  [](LIB::CanonSBG a, Util::MD_NAT b, Util::MD_NAT c, bool d) {
-    LIB::CanonMatch match(a.copy(b[0]), d);
-    LIB::OrdSet match_res = match.calculate(c[0]).matched_edges();
-    LIB::CanonSCC scc(buildSCCFromMatching(match), d);
+  [](LIB::CanonSBG a, Util::MD_NAT b, bool c) {
+    LIB::CanonMatch match(a.copy(b[0]), c);
+    LIB::OrdSet match_res = match.calculate().matched_edges();
+    LIB::CanonSCC scc(buildSCCFromMatching(match), c);
     LIB::CanonPWMap scc_res = scc.calculate();
-    LIB::CanonTopSort ts(buildSortFromSCC(scc, scc_res), d);
+    LIB::CanonTopSort ts(buildSortFromSCC(scc, scc_res), c);
     LIB::CanonPWMap ts_res = ts.calculate();
     buildJson(match_res, scc_res, ts_res);
     return MapBaseType(ts_res);
   },
-  [](auto a, auto b, auto c, auto d) {
+  [](auto a, auto b, auto c) {
     Util::ERROR("Wrong arguments for matching+scc+ts");
     return MapBaseType();
   }
@@ -675,14 +675,13 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
         break;
 
       case Eval::Func::matching:
-        if (eval_args.size() == 3) {
+        if (eval_args.size() == 2) {
           arity_ok = true;
 
           SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
           NatBaseType copies = std::visit(EvalNatBT{}, eval_args[1]);
-          NatBaseType k = std::visit(EvalNatBT{}, eval_args[2]);
           InfoBaseType result = std::visit(
-            matching_visitor_, g, copies, k, std::variant<bool>(debug_)
+            matching_visitor_, g, copies, std::variant<bool>(debug_)
           );
           return result;
         }
@@ -723,28 +722,26 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
         }
 
       case Eval::Func::match_scc:
-        if (eval_args.size() == 3) {
+        if (eval_args.size() == 2) {
           arity_ok = true;
 
           SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
           NatBaseType copies = std::visit(EvalNatBT{}, eval_args[1]);
-          NatBaseType k = std::visit(EvalNatBT{}, eval_args[2]);
           MapBaseType result = std::visit(
-            match_scc_visitor_, g, copies, k, std::variant<bool>(debug_)
+            match_scc_visitor_, g, copies, std::variant<bool>(debug_)
           );
           return result;
         }
         break;
 
       case Eval::Func::match_scc_ts:
-        if (eval_args.size() == 3) {
+        if (eval_args.size() == 2) {
           arity_ok = true;
 
           SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
           NatBaseType copies = std::visit(EvalNatBT{}, eval_args[1]);
-          NatBaseType k = std::visit(EvalNatBT{}, eval_args[2]);
           MapBaseType result = std::visit(
-            match_scc_ts_visitor_, g, copies, k, std::variant<bool>(debug_)
+            match_scc_ts_visitor_, g, copies, std::variant<bool>(debug_)
           );
           return result;
         }

@@ -46,39 +46,6 @@ namespace LIB {
 template<typename Set>
 PWMap<Set> connectedComponents(SBGraph<Set> g);
 
-// Minimum reachable -----------------------------------------------------------
-
-template<typename Set>
-struct PathInfo {
-  member_class(PWMap<Set>, succs);
-  member_class(PWMap<Set>, reps);
-
-  PathInfo();
-  PathInfo(PWMap<Set> succs, PWMap<Set> reps);
-};
-
-template<typename Set>
-struct MinReach {
-  using PW = PWMap<Set>;
-  using PI = PathInfo<Set>;
-
-  member_class(DSBGraph<Set>, dsbg);
-  member_class(bool, debug);
-
-  MinReach();
-  MinReach(DSBGraph<Set> dsbg, bool debug);
-
-  PI calculate(const Set &starts, const Set &endings) const;
-
-  private:
-  PW minReach1(const Set &reach, const PW &smap, const PW &rmap) const;
-  PI recursion(unsigned int n, const Set &ER, const Set &not_rv
-               , const PW &smap, const PW &rmap) const;
-};
-
-typedef MinReach<UnordSet> BaseMR;
-typedef MinReach<OrdSet> CanonMR;
-
 // Matching --------------------------------------------------------------------
 
 enum Direction { forward, backward };
@@ -133,7 +100,6 @@ struct SBGMatching {
   member_class(Set, matched_U); // Right matched vertices, mutable
   member_class(Set, unmatched_U); // Right unmatched vertices, mutable
 
-  member_class(unsigned int, k); // Depth of shortPath
   member_class(Set, cycle_edges);
 
   member_class(bool, debug);
@@ -141,13 +107,9 @@ struct SBGMatching {
   SBGMatching();
   SBGMatching(SBGraph<Set> sbg, bool debug);
 
-  MatchInfo<Set> calculate(unsigned int k);
+  MatchInfo<Set> calculate();
 
   private:
-  void shortPathDirection(const Set &endings, Direction dir);
-  void shortPathStep();
-  void shortPath();
-
   void selectSucc(DSBGraph<Set> dsbg);
 
   PW directedOffset(const PW &dir_map) const;

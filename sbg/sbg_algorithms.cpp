@@ -538,11 +538,45 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
       for (const Map &subv : dg.Vmap()) {
         Set vs = subv.dom();
         if (!vs.isEmpty()) {
+          // Minimum reachable vertex from the set-vertex vs
           Util::MD_NAT min_reach = rmap.image(vs).minElem();
+          // Vertices in vs that reach min_reach
           Set get_to_min = rmap.preImage(Set(min_reach)).intersection(vs);
           if (get_to_min.cardinal() > 1) {
-            Map extended(vs, Exp(min_reach));
-            rmap = PW(extended).combine(rmap); 
+            // Vertices that reached min_reach with old_rmap
+            Set old_get = old_rmap.preImage(Set(min_reach));
+            // Vertices that reach min_reach in rmap, but not in old_rmap
+            Set new_rec = get_to_min.difference(old_get);
+            // Current recursive vertices that need to find a successor
+            Set beg = new_rec;
+            // Tentative successor map for recursion
+            PW smap;
+            if (!beg.isEmpty()) {
+              do {
+                // Outgoing edges from beg
+                Set outgoing = mapB.preImage(beg);
+                // Outgoing edges from beg whose endings also reach min_reach
+                outgoing = outgoing.intersection(mapD.preImage(get_to_min));
+                // Take out cycle edges from outgoing
+                outgoing = outgoing.difference(mapD.preImage(smap.dom()));
+                PW auxB = mapB.restrict(outgoing), auxD = mapD.restrict(outgoing);
+                // Choose a successor
+                smap = auxB.minAdjMap(auxD);
+                Exp exp = smap.begin()->exp();
+                // Extend expression to whole set-vertex
+                smap.emplaceBack(Map(vs, exp));
+
+                // Update beg
+                beg = smap.image(beg);
+              } while (beg.intersection(vs).isEmpty());
+
+              // Leave min_reach as successor of vertices that originally
+              // reached min_reach in rmap
+              smap = rmap.restrict(get_to_min).combine(smap);
+            }
+
+            // Update rmap for recursion, and leave the rest unchanged
+            rmap = smap.mapInf().combine(rmap).compact();
           }
         }
       }

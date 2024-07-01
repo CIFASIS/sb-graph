@@ -1,9 +1,9 @@
 // SCC test, where the matching is a simple recursion with two
 // border conditions in the middle of the long path
 
-N = 9
-N2 = 3
-N3 = 6
+N = 900
+N2 = 300
+N3 = 600
 
 V1 = 1
 V2 = 1+V1

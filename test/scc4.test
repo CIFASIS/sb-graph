@@ -1,4 +1,5 @@
-// SCC test, with a simple long cycle
+// SCC test, with a long path, and a branch in the middle
+// that goes to a minimum value
 
 N = 100
 N2 = 50

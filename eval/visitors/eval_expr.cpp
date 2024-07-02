@@ -130,6 +130,19 @@ auto combine_visitor_ = Util::Overload {
   }
 };
 
+auto first_inv_visitor_ = Util::Overload {
+  [](LIB::BasePWMap a) { 
+    return MapBaseType(a.firstInv()); 
+  },
+  [](LIB::CanonPWMap a) {
+    return MapBaseType(a.firstInv());
+  },
+  [](auto a) {
+    Util::ERROR("Wrong arguments for firstInv");
+    return MapBaseType();
+  }
+};
+
 auto min_map_visitor2_ = Util::Overload {
   [](LIB::BasePWMap a, LIB::BasePWMap b) { return MapBaseType(a.minMap(b)); },
   [](LIB::CanonPWMap a, LIB::CanonPWMap b) { return MapBaseType(a.minMap(b)); },
@@ -236,6 +249,15 @@ auto min_adj_visitor2_ = Util::Overload {
   }
 };
 
+auto inf_visitor_ = Util::Overload {
+  [](LIB::BasePWMap a) { return MapBaseType(a.mapInf()); },
+  [](LIB::CanonPWMap a) { return MapBaseType(a.mapInf()); },
+  [](auto a, auto b) { 
+    Util::ERROR("Wrong arguments for mapInf");
+    return MapBaseType(); 
+  }
+};
+
 auto connected_visitor_ = Util::Overload {
   [](LIB::BaseSBG a) { return MapBaseType(connectedComponents(a)); },
   [](LIB::CanonSBG a) { return MapBaseType(connectedComponents(a)); },
@@ -286,19 +308,6 @@ auto ts_visitor_ = Util::Overload {
   },
   [](auto a, auto b) {
     Util::ERROR("Wrong arguments for ts");
-    return MapBaseType();
-  }
-};
-
-auto first_inv_visitor_ = Util::Overload {
-  [](LIB::BasePWMap a) { 
-    return MapBaseType(a.firstInv()); 
-  },
-  [](LIB::CanonPWMap a) {
-    return MapBaseType(a.firstInv());
-  },
-  [](auto a) {
-    Util::ERROR("Wrong arguments for firstInv");
     return MapBaseType();
   }
 };
@@ -580,6 +589,15 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
         }
         break;
 
+      case Eval::Func::first_inv:
+        if (eval_args.size() == 1) {
+          arity_ok = true;
+
+          MapBaseType pw = std::visit(EvalMap(), eval_args[0]); 
+          MapBaseType result = std::visit(first_inv_visitor_, pw);
+          return result;
+        }
+
       case Eval::Func::min_map:
         if (eval_args.size() == 2) {
           arity_ok = true;
@@ -664,6 +682,16 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
         }
         break;
 
+      case Eval::Func::inf:
+        if (eval_args.size() == 1) {
+          arity_ok = true;
+
+          MapBaseType map = std::visit(EvalMap{}, eval_args[0]);
+          MapBaseType result = std::visit(inf_visitor_, map);
+          return result;
+        }
+        break;
+
       case Eval::Func::connected:
         if (eval_args.size() == 1) {
           arity_ok = true;
@@ -711,15 +739,6 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
           return result;
         }
         break;
-
-      case Eval::Func::first_inv:
-        if (eval_args.size() == 1) {
-          arity_ok = true;
-
-          MapBaseType pw = std::visit(EvalMap(), eval_args[0]); 
-          MapBaseType result = std::visit(first_inv_visitor_, pw);
-          return result;
-        }
 
       case Eval::Func::match_scc:
         if (eval_args.size() == 2) {

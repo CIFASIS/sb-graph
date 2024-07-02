@@ -539,12 +539,12 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
         Set vs = subv.dom();
         if (!vs.isEmpty()) {
           // Minimum reachable vertex from the set-vertex vs
-          Util::MD_NAT min_reach = rmap.image(vs).minElem();
+          Set min_reach(rmap.image(vs).minElem());
           // Vertices in vs that reach min_reach
-          Set get_to_min = rmap.preImage(Set(min_reach)).intersection(vs);
+          Set get_to_min = rmap.preImage(min_reach).intersection(vs);
           if (get_to_min.cardinal() > 1) {
             // Vertices that reached min_reach with old_rmap
-            Set old_get = old_rmap.preImage(Set(min_reach));
+            Set old_get = old_rmap.preImage(min_reach);
             // Vertices that reach min_reach in rmap, but not in old_rmap
             Set new_rec = get_to_min.difference(old_get);
             // Current recursive vertices that need to find a successor
@@ -572,8 +572,10 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
 
               // Leave min_reach as successor of vertices that originally
               // reached min_reach in rmap
-              smap = rmap.restrict(get_to_min).combine(smap);
+              smap = rmap.restrict(rmap.preImage(min_reach)).combine(smap);
             }
+            if (debug())
+              Util::SBG_LOG << "smap rec: " << smap << "\n";
 
             // Update rmap for recursion, and leave the rest unchanged
             rmap = smap.mapInf().combine(rmap).compact();

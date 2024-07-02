@@ -83,7 +83,6 @@ struct UnordPWMDInter {
   /**
    * @brief Extra operations.
    */
-  Util::MD_NAT midElem() const;
 
   /** @function concatenation
    *

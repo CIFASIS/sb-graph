@@ -74,7 +74,6 @@ struct Interval {
    */
   Interval offset(Util::NAT off) const;
   Interval least(const Interval &i2) const;
-  Util::NAT midElem() const;
   MaybeInterval compact(const Interval &i2) const;
 };
 std::ostream &operator<<(std::ostream &out, const Interval &i);

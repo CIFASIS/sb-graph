@@ -155,19 +155,6 @@ Interval Interval::least(const Interval &other) const
   return std::min(*this, other);
 }
 
-Util::NAT Interval::midElem() const
-{
-  Util::NAT res;
-
-  if ((end_ - begin_) % 2 == 0)
-    res = (end_ - begin_) / 2 + begin_;
-
-  else
-    res = (end_ - begin_ + 1) / 2 + begin_;
-
-  return res;
-}
-
 Interval::MaybeInterval Interval::compact(const Interval &other) const
 {
   if (step_ == other.step_) {

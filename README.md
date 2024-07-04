@@ -34,6 +34,7 @@ the following  dependencies must be installed:
   * cmake
   * g++
   * make
+  * rapidjson-dev
   * doxygen (optional)     
 
 ## Basic Installation

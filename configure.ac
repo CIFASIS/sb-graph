@@ -3,23 +3,16 @@
 
 AC_PREREQ([2.68])
 AC_LANG([C++])
-AC_INIT([SBGraph], [1.0], [fernandez@cifasis-conicet.gov.ar])
-#AC_CONFIG_MACRO_DIR([macros])
-m4_include([macros/ax_boost_base.m4])
-m4_include([macros/ax_cxx_compile_stdcxx.m4])
+AC_INIT([SBGraph], [2.0], [fernandez@cifasis-conicet.gov.ar])
 
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
-AX_CXX_COMPILE_STDCXX(11,noext,mandatory)
-AX_CXX_COMPILE_STDCXX(14,noext,mandatory)
-AX_CXX_COMPILE_STDCXX(17,noext,mandatory)
 
 # Checks for libraries.
 AC_LANG([C++])
 
 # Checks for header files.
-AX_BOOST_BASE(["1.71"],[], AC_MSG_ERROR([SBGraph needs boost library.]))
 AC_FUNC_ALLOCA
 AC_CHECK_HEADERS([malloc.h stdlib.h string.h unistd.h])
 

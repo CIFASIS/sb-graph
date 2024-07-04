@@ -9,6 +9,7 @@
 
 # 3rd-party libraries.
 /3rd-party/gtest/usr/
+/3rd-party/boost/*
 
 # Test files. 
 /test/parser/test_data/*

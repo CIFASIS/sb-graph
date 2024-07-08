@@ -535,7 +535,7 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
       if (debug())
         Util::SBG_LOG << "scc rmap before rec: " << rmap << "\n";
 
-      PW aux_rmap;
+      PW rec_rmap;
       Set Vc = V.difference(old_rmap.equalImage(rmap));
       for (const Map &subv : dg.Vmap()) {
         Set vs = subv.dom();
@@ -553,23 +553,24 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
             Set esB = mapB.preImage(same_rep), esD = mapD.preImage(same_rep);
             Set es = esB.intersection(esD);
 
-            // Get cycle edges
+            // Distance map
             PW dmap;
             Set reps = rmap.image(), ith = reps.intersection(same_rep), visited;
             unsigned int copies = mapB.nmbrDims();
             Util::NAT dist = 0;
-            for (Set ith; ith.intersection(same_rep).isEmpty();) {
+            // Calculate distance for vertices in same_rep that reach reps
+            for (Set ith; !ith.intersection(same_rep).isEmpty();) {
               Exp exp(Util::MD_NAT(copies, dist));
               dmap.emplaceBack(Map(ith.difference(visited), exp));
-              ith = mapB.image(mapD.preImage(same_rep)).intersection(same_rep);
+              // Update ith to vertices that have outgoing edges entering ith
+              ith = mapB.image(mapD.preImage(ith)).intersection(same_rep);
               visited = visited.cup(ith);
               ++dist;
             }
-            Util::MD_NAT inf(copies, Util::Inf);
-            dmap = dmap.combine(Map(same_SV, Exp(copies, inf)));
             PW dmapB = dmap.composition(mapB), dmapD = dmap.composition(mapD);
-            Set cycle_edges = dmapB.ltImage(dmapD);
-            es = es.difference(cycle_edges);
+            // Get edges where the end is closer to the rep that the beginning
+            Set not_cycle_edges = dmapB.gtImage(dmapD);
+            es = es.intersection(not_cycle_edges);
 
             // Extend to subset-edge
             Set es_plus = subE_map.preImage(subE_map.image(es));
@@ -580,19 +581,19 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
             // Leave original reps for same_rep and update reps for recursion
             rmap_plus = rmap.restrict(same_rep).combine(rmap_plus);
             // Update rmap for recursion, and leave the rest unchanged
-            aux_rmap = rmap_plus.combine(aux_rmap).compact();
+            rec_rmap = rmap_plus.combine(rec_rmap).compact();
 
             if (debug()) {
               Util::SBG_LOG << "same_rep: " << same_rep << "\n";
               Util::SBG_LOG << "es: " << es << "\n";
-              Util::SBG_LOG << "cycle_edges: " << cycle_edges << "\n";
+              Util::SBG_LOG << "not_cycle_edges: " << not_cycle_edges << "\n";
               Util::SBG_LOG << "es_plus: " << es_plus << "\n";
               Util::SBG_LOG << "rmap_plus: " << rmap_plus << "\n";
             }
           }
         }
       }
-      rmap = aux_rmap.combine(rmap).compact();
+      rmap = rec_rmap.combine(rmap).compact();
       if (debug())
         Util::SBG_LOG << "rmap rec: " << rmap << "\n\n";
 

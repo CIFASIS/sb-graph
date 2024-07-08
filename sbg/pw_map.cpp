@@ -800,7 +800,7 @@ Set PWMap<Set>::equalImage(const PWMap &other) const
 }
 
 template<typename Set>
-Set PWMap<Set>::ltImage(const PWMap &other) const
+Set PWMap<Set>::gtImage(const PWMap &other) const
 {
   Set res;
 
@@ -810,7 +810,7 @@ Set PWMap<Set>::ltImage(const PWMap &other) const
       if (!cap_dom.isEmpty()) {
         Exp e1 = map1.exp(), e2 = map2.exp();
         SBGMap<Set> m1(cap_dom, e1), m2(cap_dom, e2);
-        if (e1 < e2)
+        if (!(e1 < e2))
           res = res.cup(cap_dom);
       }
     }

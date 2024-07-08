@@ -1,8 +1,8 @@
 // SCC test, with a long path, and a branch in the middle
 // that goes to a minimum value
 
-N = 100
-N2 = 50
+N = 100000
+N2 = 50000
 
 V1 = 1
 V2 = N+V1

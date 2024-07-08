@@ -524,6 +524,7 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
     if (E.isEmpty())
       return rmap;
 
+    Util::MD_NAT maxv = V.maxElem();
     do {
       old_rmap = rmap;
 
@@ -565,8 +566,6 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
               visited = visited.cup(ith);
               ++dist;
             }
-            Util::MD_NAT inf(copies, Util::Inf);
-            dmap = dmap.combine(Map(same_SV, Exp(copies, inf)));
             PW dmapB = dmap.composition(mapB), dmapD = dmap.composition(mapD);
             Set cycle_edges = dmapB.ltImage(dmapD);
             es = es.difference(cycle_edges);

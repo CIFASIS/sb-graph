@@ -163,6 +163,7 @@ struct PWMap {
    * @brief Return elements in both doms, that have the same image in both maps
    */
   Set equalImage(const PWMap &other) const;
+  Set ltImage(const PWMap &other) const;
 
   PWMap offsetDom(const Util::MD_NAT &off) const;
   PWMap offsetDom(const PWMap &off) const;

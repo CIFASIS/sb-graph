@@ -1,6 +1,6 @@
 // SCC test, with a simple long cycle
 
-N = 10
+N = 100000
 
 V1 = N
 V2 = 1+V1

@@ -517,7 +517,7 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
     Util::SBG_LOG << "Min reach graph:\n" << dg << "\n\n";
 
   Set V = dg.V(), E = dg.E();
-  PWMap<Set> mapB = dg.mapB(), mapD = dg.mapD();
+  PWMap<Set> mapB = dg.mapB(), mapD = dg.mapD(), subE_map = dg.subE_map();
   if (!V.isEmpty()) {
     PWMap<Set> rmap(V), old_rmap;
 
@@ -527,61 +527,72 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
     do {
       old_rmap = rmap;
 
-      PWMap<Set> ermapB = rmap.composition(mapB);
       PWMap<Set> ermapD = rmap.composition(mapD);
 
       PWMap<Set> new_rmap = mapB.minAdjMap(ermapD);
       rmap = rmap.minMap(new_rmap).combine(rmap);
 
       if (debug())
-        Util::SBG_LOG << "match rmap before rec: " << rmap << "\n";
+        Util::SBG_LOG << "scc rmap before rec: " << rmap << "\n";
+
+      PW aux_rmap;
+      Set Vc = V.difference(old_rmap.equalImage(rmap));
       for (const Map &subv : dg.Vmap()) {
         Set vs = subv.dom();
         if (!vs.isEmpty()) {
-          // Minimum reachable vertex from the set-vertex vs
-          Set min_reach(rmap.image(vs).minElem());
-          // Vertices in vs that reach min_reach
-          Set get_to_min = rmap.preImage(min_reach).intersection(vs);
-          if (get_to_min.cardinal() > 1) {
-            // Vertices that reached min_reach with old_rmap
-            Set old_get = old_rmap.preImage(min_reach);
-            // Vertices that reach min_reach in rmap, but not in old_rmap
-            Set new_rec = get_to_min.difference(old_get);
-            // Current recursive vertices that need to find a successor
-            Set beg = new_rec;
-            // Tentative successor map for recursion
-            PW smap;
-            if (!beg.isEmpty()) {
-              do {
-                // Outgoing edges from beg
-                Set outgoing = mapB.preImage(beg);
-                // Outgoing edges from beg whose endings also reach min_reach
-                outgoing = outgoing.intersection(mapD.preImage(get_to_min));
-                // Take out cycle edges from outgoing
-                outgoing = outgoing.difference(mapD.preImage(smap.dom()));
-                PW auxB = mapB.restrict(outgoing), auxD = mapD.restrict(outgoing);
-                // Choose a successor
-                smap = auxB.minAdjMap(auxD);
-                Exp exp = smap.begin()->exp();
-                // Extend expression to whole set-vertex
-                smap.emplaceBack(Map(vs, exp));
+          // Vertices in the set-vertex that share its rep with other vertex
+          // in the set-vertex
+          Set rec_vs = rmap.restrict(vs).sharedImage();
+          // There is a recursive vertex that changed its rep in the last step
+          // (to avoid computing again an already found recursion)
+          if (!rec_vs.intersection(Vc).isEmpty()) {
+            // Vertices that reach the same rep as rec_vs
+            Set same_rep = rmap.preImage(rmap.image(rec_vs));
+            Set same_SV = dg.Vmap().preImage(dg.Vmap().image(same_rep));
+            // Edges with both endings in same_rep (path to a minimum rep)
+            Set esB = mapB.preImage(same_rep), esD = mapD.preImage(same_rep);
+            Set es = esB.intersection(esD);
 
-                // Update beg
-                beg = smap.image(beg);
-              } while (beg.intersection(vs).isEmpty());
-
-              // Leave min_reach as successor of vertices that originally
-              // reached min_reach in rmap
-              smap = rmap.restrict(rmap.preImage(min_reach)).combine(smap);
+            // Get cycle edges
+            PW dmap;
+            Set reps = rmap.image(), ith = reps.intersection(same_rep), visited;
+            unsigned int copies = mapB.nmbrDims();
+            Util::NAT dist = 0;
+            for (Set ith; ith.intersection(same_rep).isEmpty();) {
+              Exp exp(Util::MD_NAT(copies, dist));
+              dmap.emplaceBack(Map(ith.difference(visited), exp));
+              ith = mapB.image(mapD.preImage(same_rep)).intersection(same_rep);
+              visited = visited.cup(ith);
+              ++dist;
             }
-            if (debug())
-              Util::SBG_LOG << "smap rec: " << smap << "\n";
+            Util::MD_NAT inf(copies, Util::Inf);
+            dmap = dmap.combine(Map(same_SV, Exp(copies, inf)));
+            PW dmapB = dmap.composition(mapB), dmapD = dmap.composition(mapD);
+            Set cycle_edges = dmapB.ltImage(dmapD);
+            es = es.difference(cycle_edges);
 
+            // Extend to subset-edge
+            Set es_plus = subE_map.preImage(subE_map.image(es));
+            PW auxB = mapB.restrict(es_plus), auxD = mapD.restrict(es_plus);
+            // Calculate a succesor
+            PW rmap_plus = auxB.minAdjMap(auxD).restrict(same_SV);
+
+            // Leave original reps for same_rep and update reps for recursion
+            rmap_plus = rmap.restrict(same_rep).combine(rmap_plus);
             // Update rmap for recursion, and leave the rest unchanged
-            rmap = smap.mapInf().combine(rmap).compact();
+            aux_rmap = rmap_plus.combine(aux_rmap).compact();
+
+            if (debug()) {
+              Util::SBG_LOG << "same_rep: " << same_rep << "\n";
+              Util::SBG_LOG << "es: " << es << "\n";
+              Util::SBG_LOG << "cycle_edges: " << cycle_edges << "\n";
+              Util::SBG_LOG << "es_plus: " << es_plus << "\n";
+              Util::SBG_LOG << "rmap_plus: " << rmap_plus << "\n";
+            }
           }
         }
       }
+      rmap = aux_rmap.combine(rmap).compact();
       if (debug())
         Util::SBG_LOG << "rmap rec: " << rmap << "\n\n";
 
@@ -657,7 +668,7 @@ PWMap<Set> SBGSCC<Set>::calculate()
     sccStep();
     sccStep();
   } while (Ediff() != Set());
-  PW rmap = sccStep(); 
+  PW rmap = sccStep().compact(); 
   set_rmap(rmap);
   auto end = std::chrono::high_resolution_clock::now();
 

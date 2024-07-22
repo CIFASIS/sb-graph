@@ -176,24 +176,13 @@ typedef SBGSCC<OrdSet> CanonSCC;
 
 template<typename Set>
 struct SBGTopSort {
+  using Map = SBGMap<Set>;
   using PW = PWMap<Set>;
 
   //*** SBG info, constant
   member_class(DSBGraph<Set>, dsbg);
 
   //-----------------------------
-  member_class(PW, smap);
-
-  member_class(Set, E);
-  member_class(PW, mapB);
-  member_class(PW, mapD);
-
-  member_class(Set, unordered);
-  member_class(Set, not_dependent);
-  member_class(Set, visitedV);
-
-  member_class(Util::MD_NAT, curr);
-
   member_class(bool, debug);
 
   SBGTopSort();
@@ -202,9 +191,7 @@ struct SBGTopSort {
   PW calculate(); 
 
   private:
-  Exp calculateExp(Util::MD_NAT x1, Util::MD_NAT x2);
-  void topSortStep();
-  void updateStatus(Set dom, Exp exp, Set ingoing);
+  Exp calculateExp(Util::MD_NAT from, Util::MD_NAT to);
 };
 
 typedef SBGTopSort<UnordSet> BaseTopSort;

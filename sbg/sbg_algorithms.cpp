@@ -461,14 +461,14 @@ MatchInfo<Set> SBGMatching<Set>::calculate()
   if (debug())
     Util::SBG_LOG << "minReachable: " << matched_E() << "\n\n";
 
-  Util::SBG_LOG << MatchInfo(matched_E(), fullyMatchedU()) << "\n\n";
+  Util::SBG_LOG << MatchInfo(matched_E().compact(), fullyMatchedU()) << "\n\n";
 
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(
     end - begin
   );
   Util::SBG_LOG << "Total match exec time: " << total.count() << " [μs]\n";
 
-  return MatchInfo(matched_E(), fullyMatchedU());
+  return MatchInfo(matched_E().compact(), fullyMatchedU());
 }
 
 // -----------------------------------------------------------------------------
@@ -524,7 +524,6 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
     if (E.isEmpty())
       return rmap;
 
-    Util::MD_NAT maxv = V.maxElem();
     do {
       old_rmap = rmap;
 
@@ -690,113 +689,26 @@ PWMap<Set> SBGSCC<Set>::calculate()
 // -----------------------------------------------------------------------------
 
 template<typename Set>
-SBGTopSort<Set>::SBGTopSort()
-  : dsbg_(), smap_(), E_(), mapB_(), mapD_(), unordered_(), not_dependent_()
-    , visitedV_(), curr_(), debug_(false) {}
+SBGTopSort<Set>::SBGTopSort() : dsbg_(), debug_(false) {}
 template<typename Set>
-SBGTopSort<Set>::SBGTopSort(DSBGraph<Set> dsbg, bool debug)
-  : dsbg_(dsbg), smap_(), E_(dsbg.E()), mapB_(dsbg.mapB()), mapD_(dsbg.mapD())
-    , unordered_(dsbg.V()), not_dependent_(), visitedV_(), curr_()
-    , debug_(debug) {
-  not_dependent_ = dsbg.V().difference(mapB().image());
-  curr_ = not_dependent_.minElem();
-}
+SBGTopSort<Set>::SBGTopSort(DSBGraph<Set> dsbg, bool debug) 
+  : dsbg_(dsbg), debug_(debug) {}
 
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, DSBGraph<Set>, dsbg);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, PWMap<Set>, smap);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, Set, E);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, PWMap<Set>, mapB);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, PWMap<Set>, mapD);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, Set, unordered);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, Set, not_dependent);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, Set, visitedV);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, Util::MD_NAT, curr);
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, bool, debug);
 
 template<typename Set>
-Exp SBGTopSort<Set>::calculateExp(Util::MD_NAT n1, Util::MD_NAT n2)
+Exp SBGTopSort<Set>::calculateExp(Util::MD_NAT from, Util::MD_NAT to)
 {
   Exp res;
 
   Util::RATIONAL one(1, 1);
-  for (unsigned int j = 0; j < n1.size(); ++j) { 
-    Util::RATIONAL x1(n1[j]), x2(n2[j]);
-    res.emplaceBack(LExp(1, x1 - x2));
+  for (unsigned int j = 0; j < from.size(); ++j) { 
+    Util::RATIONAL r_from(from[j]), r_to(to[j]);
+    res.emplaceBack(LExp(1, r_to - r_from));
   }
 
   return res;
-}
-
-template<typename Set>
-void SBGTopSort<Set>::topSortStep()
-{
-  Set nd = not_dependent();
-  Util::MD_NAT next = nd.minElem();
-  Set next_set(next), dom = next_set; 
-  Exp exp = calculateExp(curr(), next);
-  set_curr(next);
-
-  if (debug()) {
-    Util::SBG_LOG << "curr: " << curr() << "\n";
-    Util::SBG_LOG << "dom: " << dom << "\n";
-    Util::SBG_LOG << "exp: " << exp << "\n\n";
-  }
-
-  Set ingoing = mapD().preImage(dom);
-  updateStatus(dom, exp, ingoing);
- 
-  return;
-}
-
-template<typename Set>
-void SBGTopSort<Set>::updateStatus(Set dom, Exp exp, Set ingoing)
-{
-  PW Vmap = dsbg().Vmap();
-
-  Set newE = E();
-  Set ith_dom = dom, new_unord = unordered(); 
-  if (!dom.intersection(visitedV()).isEmpty()) {
-    Set dom_sv = Vmap.preImage(Vmap.image(dom));
-    ith_dom = dom_sv.difference(smap().dom());
-
-    smap_ref().emplaceBack(SBGMap<Set>(ith_dom, exp));
-
-    // Take out vertices whose succ now also has a succ
-    Set no_succ = unordered().difference(smap().dom()); 
-    Set whole_ord = smap().dom().difference(smap().preImage(no_succ));
-    new_unord = new_unord.difference(whole_ord);
-    newE = newE.difference(mapD().preImage(whole_ord));
-  }
-  else {
-    smap_ref().emplaceBack(SBGMap<Set>(dom, exp));
-  }
-  new_unord = new_unord.difference(dom);
-  newE = newE.difference(mapD().preImage(dom));
-
-  Set SV = Vmap.preImage(Vmap.image(ith_dom));
-  set_visitedV(visitedV().cup(SV));
-
-  set_E(newE);
-  set_mapB(mapB().restrict(E()));
-  set_mapD(mapD().restrict(E()));
- 
-  set_unordered(new_unord);
-  set_not_dependent(unordered().difference(mapB().image()));
-
-  Set start = smap().dom().difference(smap().image());
-  if (start.cardinal() == 1)
-    set_curr(start.minElem());
-
-  if (debug()) {
-    Util::SBG_LOG << "curr: " << curr() << "\n";
-    Util::SBG_LOG << "smap: " << smap() << "\n";
-    Util::SBG_LOG << "E: " << E() << "\n";
-    Util::SBG_LOG << "unord: " << unordered() << "\n";
-    Util::SBG_LOG << "nd: " << not_dependent() << "\n";
-    Util::SBG_LOG << "visitedV: " << visitedV() << "\n\n";
-  }
-
-  return;
 }
 
 template<typename Set>
@@ -806,13 +718,56 @@ PWMap<Set> SBGTopSort<Set>::calculate()
     Util::SBG_LOG << "Topological sort dsbg:\n" << dsbg() << "\n\n";
 
   auto begin = std::chrono::high_resolution_clock::now();
-  Util::MD_NAT aux_curr = curr();
-  Set curr_set(curr());
-  Exp exp = calculateExp(curr(), curr());
-  updateStatus(curr_set, exp, mapD().preImage(curr_set));
-  set_curr(aux_curr);
-  while (!unordered().isEmpty())
-    topSortStep();
+  PW mapB = dsbg().mapB(), mapD = dsbg().mapD(), Vmap = dsbg().Vmap(), smap;
+  Set U = dsbg().V(), Nd = U.difference(mapB.image());
+  Util::MD_NAT vsucc = Nd.minElem();
+  Set SV, E = dsbg().E();
+  do {
+    Set Nd_vsucc = Nd.intersection(Vmap.preImage(Vmap.image(vsucc)));
+    Util::MD_NAT v = Nd.minElem();
+    if (!Nd_vsucc.isEmpty())
+      v = Nd_vsucc.minElem();
+    Set d(v);
+    Exp e = calculateExp(v, vsucc);
+    vsucc = v;
+
+    Set SVd = Vmap.image(d);
+    bool cond = SVd.intersection(SV).isEmpty();
+    if (!cond) {
+      Set dvs = Vmap.preImage(SVd);
+      for (const Map &map : smap.restrict(dvs)) {
+        if (e == map.exp()) {
+          d = dvs.difference(smap.dom());
+          break;
+        }
+      }
+    }
+    smap.emplaceBack(Map(d, e));
+    
+    Set Nsucc = U.difference(smap.dom());
+    Set S = smap.dom().difference(smap.preImage(Nsucc));
+
+    E = E.difference(mapD.preImage(S));
+    mapB = mapB.restrict(E);
+    mapD = mapD.restrict(E);
+
+    U = U.difference(S);
+    Nd = U.difference(mapB.image());
+    SV = SV.cup(Vmap.image(d));
+    if (S == smap.dom()) {
+      Set start = smap.dom().difference(smap.image());
+      if (!start.isEmpty())
+        vsucc = start.minElem(); 
+    }
+
+    if (debug()) {
+      Util::SBG_LOG << "S: " << S << "\n";
+      Util::SBG_LOG << "U: " << U << "\n";
+      Util::SBG_LOG << "E: " << E << "\n";
+      Util::SBG_LOG << "Nd: " << Nd << "\n";
+      Util::SBG_LOG << "smap: " << smap << "\n\n";
+    }
+  } while (!U.isEmpty());
   auto end = std::chrono::high_resolution_clock::now();
 
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(
@@ -821,9 +776,9 @@ PWMap<Set> SBGTopSort<Set>::calculate()
   Util::SBG_LOG << "Total topological sort exec time: " << total.count() << " [μs]\n\n"; 
 
   if (debug())
-    Util::SBG_LOG << "Topological sort result:\n" << smap().compact() << "\n\n";
+    Util::SBG_LOG << "Topological sort result:\n" << smap.compact() << "\n\n";
 
-  return smap().compact();
+  return smap.compact();
 }
 
 // Template instantiations -----------------------------------------------------

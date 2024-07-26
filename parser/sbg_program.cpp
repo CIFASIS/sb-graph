@@ -21,7 +21,12 @@
 
 // Adapt structures ------------------------------------------------------------
 
-  BOOST_FUSION_ADAPT_STRUCT(SBG::AST::Program, (SBG::Util::NAT, nmbr_dims_)(SBG::AST::StatementList, stms_)(SBG::AST::ExprList, exprs_))
+BOOST_FUSION_ADAPT_STRUCT(
+  SBG::AST::Program
+  , (SBG::Util::NAT, nmbr_dims_)
+    (SBG::AST::StatementList, stms_)
+    (SBG::AST::ExprList, exprs_)
+)
 
 // SBG program parser ----------------------------------------------------------
 
@@ -37,8 +42,11 @@ SBGProgramRule<Iterator>::SBGProgramRule(Iterator &it) :
   stm(it)
 {
   program_comments = (stm.stms_comments 
-    >> expr.exprs_comments)[qi::_val = phx::construct<AST::Program>(phx::construct<AST::StatementList>(qi::_1), 
-                                                                    phx::construct<AST::ExprList>(qi::_2))];
+    >> expr.exprs_comments)
+      [qi::_val = phx::construct<AST::Program>(
+        phx::construct<AST::StatementList>(qi::_1)
+        , phx::construct<AST::ExprList>(qi::_2)
+      )];
 };
 
 template struct SBGProgramRule<StrIt>;

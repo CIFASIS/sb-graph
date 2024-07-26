@@ -31,9 +31,7 @@ template<typename Set>
 PWMap<Set> connectedComponents(SBGraph<Set> g)
 {
   if (!g.V().isEmpty()) {
-    unsigned int dims = g.V().begin()->size();
-    SBGMap<Set> id(g.V(), Exp(dims));
-    PWMap<Set> rmap(id), old_rmap;
+    PWMap<Set> rmap(g.V()), old_rmap;
 
     if (g.E().isEmpty())
       return rmap;
@@ -197,7 +195,7 @@ void SBGMatching<Set>::directedMinReach(const PW &dir_map)
   dsbg.set_subE_map(subE_map);
 
   PWMap<Set> Vmap;
-  unsigned int j = 1, dims = dir_omap.nmbrDims();
+  unsigned int j = 1, dims = dir_omap.arity();
   for (SetPiece mdi : V) {
     Util::MD_NAT v(dims, j);
     Vmap.emplaceBack(SBGMap<Set>(mdi, Exp(v)));
@@ -461,14 +459,14 @@ MatchInfo<Set> SBGMatching<Set>::calculate()
   if (debug())
     Util::SBG_LOG << "minReachable: " << matched_E() << "\n\n";
 
-  Util::SBG_LOG << MatchInfo(matched_E(), fullyMatchedU()) << "\n\n";
+  Util::SBG_LOG << MatchInfo(matched_E().compact(), fullyMatchedU()) << "\n\n";
 
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(
     end - begin
   );
   Util::SBG_LOG << "Total match exec time: " << total.count() << " [μs]\n";
 
-  return MatchInfo(matched_E(), fullyMatchedU());
+  return MatchInfo(matched_E().compact(), fullyMatchedU());
 }
 
 // -----------------------------------------------------------------------------
@@ -518,6 +516,7 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
 
   Set V = dg.V(), E = dg.E();
   PWMap<Set> mapB = dg.mapB(), mapD = dg.mapD(), subE_map = dg.subE_map();
+  unsigned int copies = mapB.arity();
   if (!V.isEmpty()) {
     PWMap<Set> rmap(V), old_rmap;
 
@@ -535,6 +534,7 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
       if (debug())
         Util::SBG_LOG << "scc rmap before rec: " << rmap << "\n";
 
+      Set positive(SetPiece(copies, Interval(1, 1, Util::Inf)));
       PW rec_rmap;
       Set Vc = V.difference(old_rmap.equalImage(rmap));
       for (const Map &subv : dg.Vmap()) {
@@ -554,7 +554,6 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
             PW dmap;
             Set ith = rmap.image(VR), dom_VR;
             //Set visited, dom_vs;
-            unsigned int copies = mapB.nmbrDims();
             Util::NAT dist = 0;
             // Calculate distance for vertices in same_rep that reach reps
             for (; dg.Vmap().restrict(dom_VR).sharedImage().isEmpty();) {
@@ -569,7 +568,8 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
             dmap = dmap.restrict(VR);
             PW dmapB = dmap.composition(mapB), dmapD = dmap.composition(mapD);
             // Get edges where the end is closer to the rep that the beginning
-            Set not_cycle_edges = dmapB.gtImage(dmapD);
+            //Set not_cycle_edges = dmapB.gtImage(dmapD);
+            Set not_cycle_edges = (dmapB - dmapD).preImage(positive);
             ER = ER.intersection(not_cycle_edges);
 
             // Extend to subset-edge
@@ -625,7 +625,7 @@ PWMap<Set> SBGSCC<Set>::sccStep()
   }
 
   PWMap<Set> auxVmap;
-  unsigned int j = 1, dims = id_V.nmbrDims();
+  unsigned int j = 1, dims = id_V.arity();
   for (SetPiece mdi : auxV) {
     Util::MD_NAT v(dims, j);
     auxVmap.emplaceBack(SBGMap<Set>(mdi, Exp(v)));
@@ -689,113 +689,26 @@ PWMap<Set> SBGSCC<Set>::calculate()
 // -----------------------------------------------------------------------------
 
 template<typename Set>
-SBGTopSort<Set>::SBGTopSort()
-  : dsbg_(), smap_(), E_(), mapB_(), mapD_(), unordered_(), not_dependent_()
-    , visitedV_(), curr_(), debug_(false) {}
+SBGTopSort<Set>::SBGTopSort() : dsbg_(), debug_(false) {}
 template<typename Set>
-SBGTopSort<Set>::SBGTopSort(DSBGraph<Set> dsbg, bool debug)
-  : dsbg_(dsbg), smap_(), E_(dsbg.E()), mapB_(dsbg.mapB()), mapD_(dsbg.mapD())
-    , unordered_(dsbg.V()), not_dependent_(), visitedV_(), curr_()
-    , debug_(debug) {
-  not_dependent_ = dsbg.V().difference(mapB().image());
-  curr_ = not_dependent_.minElem();
-}
+SBGTopSort<Set>::SBGTopSort(DSBGraph<Set> dsbg, bool debug) 
+  : dsbg_(dsbg), debug_(debug) {}
 
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, DSBGraph<Set>, dsbg);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, PWMap<Set>, smap);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, Set, E);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, PWMap<Set>, mapB);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, PWMap<Set>, mapD);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, Set, unordered);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, Set, not_dependent);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, Set, visitedV);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, Util::MD_NAT, curr);
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, bool, debug);
 
 template<typename Set>
-Exp SBGTopSort<Set>::calculateExp(Util::MD_NAT n1, Util::MD_NAT n2)
+Exp SBGTopSort<Set>::calculateExp(Util::MD_NAT from, Util::MD_NAT to)
 {
   Exp res;
 
   Util::RATIONAL one(1, 1);
-  for (unsigned int j = 0; j < n1.size(); ++j) { 
-    Util::RATIONAL x1(n1[j]), x2(n2[j]);
-    res.emplaceBack(LExp(1, x1 - x2));
+  for (unsigned int j = 0; j < from.arity(); ++j) { 
+    Util::RATIONAL r_from(from[j]), r_to(to[j]);
+    res.emplaceBack(LExp(1, r_to - r_from));
   }
 
   return res;
-}
-
-template<typename Set>
-void SBGTopSort<Set>::topSortStep()
-{
-  Set nd = not_dependent();
-  Util::MD_NAT next = nd.minElem();
-  Set next_set(next), dom = next_set; 
-  Exp exp = calculateExp(curr(), next);
-  set_curr(next);
-
-  if (debug()) {
-    Util::SBG_LOG << "curr: " << curr() << "\n";
-    Util::SBG_LOG << "dom: " << dom << "\n";
-    Util::SBG_LOG << "exp: " << exp << "\n\n";
-  }
-
-  Set ingoing = mapD().preImage(dom);
-  updateStatus(dom, exp, ingoing);
- 
-  return;
-}
-
-template<typename Set>
-void SBGTopSort<Set>::updateStatus(Set dom, Exp exp, Set ingoing)
-{
-  PW Vmap = dsbg().Vmap();
-
-  Set newE = E();
-  Set ith_dom = dom, new_unord = unordered(); 
-  if (!dom.intersection(visitedV()).isEmpty()) {
-    Set dom_sv = Vmap.preImage(Vmap.image(dom));
-    ith_dom = dom_sv.difference(smap().dom());
-
-    smap_ref().emplaceBack(SBGMap<Set>(ith_dom, exp));
-
-    // Take out vertices whose succ now also has a succ
-    Set no_succ = unordered().difference(smap().dom()); 
-    Set whole_ord = smap().dom().difference(smap().preImage(no_succ));
-    new_unord = new_unord.difference(whole_ord);
-    newE = newE.difference(mapD().preImage(whole_ord));
-  }
-  else {
-    smap_ref().emplaceBack(SBGMap<Set>(dom, exp));
-  }
-  new_unord = new_unord.difference(dom);
-  newE = newE.difference(mapD().preImage(dom));
-
-  Set SV = Vmap.preImage(Vmap.image(ith_dom));
-  set_visitedV(visitedV().cup(SV));
-
-  set_E(newE);
-  set_mapB(mapB().restrict(E()));
-  set_mapD(mapD().restrict(E()));
- 
-  set_unordered(new_unord);
-  set_not_dependent(unordered().difference(mapB().image()));
-
-  Set start = smap().dom().difference(smap().image());
-  if (start.cardinal() == 1)
-    set_curr(start.minElem());
-
-  if (debug()) {
-    Util::SBG_LOG << "curr: " << curr() << "\n";
-    Util::SBG_LOG << "smap: " << smap() << "\n";
-    Util::SBG_LOG << "E: " << E() << "\n";
-    Util::SBG_LOG << "unord: " << unordered() << "\n";
-    Util::SBG_LOG << "nd: " << not_dependent() << "\n";
-    Util::SBG_LOG << "visitedV: " << visitedV() << "\n\n";
-  }
-
-  return;
 }
 
 template<typename Set>
@@ -805,13 +718,56 @@ PWMap<Set> SBGTopSort<Set>::calculate()
     Util::SBG_LOG << "Topological sort dsbg:\n" << dsbg() << "\n\n";
 
   auto begin = std::chrono::high_resolution_clock::now();
-  Util::MD_NAT aux_curr = curr();
-  Set curr_set(curr());
-  Exp exp = calculateExp(curr(), curr());
-  updateStatus(curr_set, exp, mapD().preImage(curr_set));
-  set_curr(aux_curr);
-  while (!unordered().isEmpty())
-    topSortStep();
+  PW mapB = dsbg().mapB(), mapD = dsbg().mapD(), Vmap = dsbg().Vmap(), smap;
+  Set U = dsbg().V(), Nd = U.difference(mapB.image());
+  Util::MD_NAT vsucc = Nd.minElem();
+  Set SV, E = dsbg().E();
+  do {
+    Set Nd_vsucc = Nd.intersection(Vmap.preImage(Vmap.image(vsucc)));
+    Util::MD_NAT v = Nd.minElem();
+    if (!Nd_vsucc.isEmpty())
+      v = Nd_vsucc.minElem();
+    Set d(v);
+    Exp e = calculateExp(v, vsucc);
+    vsucc = v;
+
+    Set SVd = Vmap.image(d);
+    bool cond = SVd.intersection(SV).isEmpty();
+    if (!cond) {
+      Set dvs = Vmap.preImage(SVd);
+      for (const Map &map : smap.restrict(dvs)) {
+        if (e == map.exp()) {
+          d = dvs.difference(smap.dom());
+          break;
+        }
+      }
+    }
+    smap.emplaceBack(Map(d, e));
+    
+    Set Nsucc = U.difference(smap.dom());
+    Set S = smap.dom().difference(smap.preImage(Nsucc));
+
+    E = E.difference(mapD.preImage(S));
+    mapB = mapB.restrict(E);
+    mapD = mapD.restrict(E);
+
+    U = U.difference(S);
+    Nd = U.difference(mapB.image());
+    SV = SV.cup(Vmap.image(d));
+    if (S == smap.dom()) {
+      Set start = smap.dom().difference(smap.image());
+      if (!start.isEmpty())
+        vsucc = start.minElem(); 
+    }
+
+    if (debug()) {
+      Util::SBG_LOG << "S: " << S << "\n";
+      Util::SBG_LOG << "U: " << U << "\n";
+      Util::SBG_LOG << "E: " << E << "\n";
+      Util::SBG_LOG << "Nd: " << Nd << "\n";
+      Util::SBG_LOG << "smap: " << smap << "\n\n";
+    }
+  } while (!U.isEmpty());
   auto end = std::chrono::high_resolution_clock::now();
 
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(
@@ -820,9 +776,9 @@ PWMap<Set> SBGTopSort<Set>::calculate()
   Util::SBG_LOG << "Total topological sort exec time: " << total.count() << " [μs]\n\n"; 
 
   if (debug())
-    Util::SBG_LOG << "Topological sort result:\n" << smap().compact() << "\n\n";
+    Util::SBG_LOG << "Topological sort result:\n" << smap.compact() << "\n\n";
 
-  return smap().compact();
+  return smap.compact();
 }
 
 // Template instantiations -----------------------------------------------------
@@ -870,7 +826,7 @@ DSBGraph<Set> buildSCCFromMatching(const SBGMatching<Set> &match)
   PWMap<Set> mapD = matchedU_inv.composition(unmatchedU);
   mapD = mapD.compact();
 
-  unsigned int j = 1, dims = Vmap.nmbrDims();
+  unsigned int j = 1, dims = Vmap.arity();
   PWMap<Set> Emap;
   for (const SBGMap<Set> &map1 : Vmap) {
     Set edges1 = mapB.preImage(map1.dom());
@@ -940,7 +896,7 @@ DSBGraph<Set> buildSortFromSCC(
   }
 
   PWMap<Set> Vmap;
-  unsigned int j = 1, dims = rmap.nmbrDims();
+  unsigned int j = 1, dims = rmap.arity();
   for (SetPiece mdi : V) {
     Util::MD_NAT v(dims, j);
     Vmap.emplaceBack(SBGMap<Set>(mdi, Exp(v)));
@@ -970,36 +926,107 @@ template BaseDSBG buildSortFromSCC(const BaseSCC &scc, const BasePWMap &rmap);
 template CanonDSBG buildSortFromSCC(const CanonSCC &scc, const CanonPWMap &rmap);
 
 template<typename Set>
+rapidjson::Value setJson(const Set &s, rapidjson::Document::AllocatorType &alloc)
+{
+  rapidjson::Value res(rapidjson::kArrayType);
+
+  for (const SetPiece &mdi : s) {
+    rapidjson::Value inter_array(rapidjson::kArrayType);
+    for (const Interval &i : mdi) {
+      rapidjson::Value inter(rapidjson::kArrayType);
+
+      rapidjson::Value beg;
+      beg.SetInt(i.begin());
+      inter.PushBack(beg, alloc);
+      rapidjson::Value st;
+      st.SetInt(i.step());
+      inter.PushBack(st, alloc);
+      rapidjson::Value end;
+      end.SetInt(i.end());
+      inter.PushBack(end, alloc);
+
+      inter_array.PushBack(inter, alloc);
+    }
+    rapidjson::Value mdi_obj(rapidjson::kObjectType);
+    mdi_obj.AddMember("interval", inter_array, alloc);
+    res.PushBack(mdi_obj, alloc);
+  }
+
+  return res;
+}
+
+rapidjson::Value expJson(Exp exp, rapidjson::Document::AllocatorType &alloc)
+{
+  rapidjson::Value res(rapidjson::kArrayType);
+
+  for (const LExp &le : exp) {
+    rapidjson::Value le_array(rapidjson::kArrayType);
+
+    std::stringstream ssm;
+    ssm << le.slope();
+    rapidjson::Value m;
+    m.SetString(ssm.str().c_str(), strlen(ssm.str().c_str()), alloc);
+    le_array.PushBack(m, alloc);
+
+    std::stringstream ssh;
+    ssh << le.offset();
+    rapidjson::Value h;
+    h.SetString(ssh.str().c_str(), strlen(ssh.str().c_str()), alloc);
+    le_array.PushBack(h, alloc);
+
+    res.PushBack(le_array, alloc);
+  }
+
+  return res;
+}
+
+template<typename Set>
+rapidjson::Value mapJson(
+  const PWMap<Set> &pw, rapidjson::Document::AllocatorType &alloc
+)
+{
+  rapidjson::Value res(rapidjson::kArrayType);
+
+  for (const SBGMap<Set> &map : pw) {
+    rapidjson::Value ith(rapidjson::kObjectType);
+
+    ith.AddMember("dom", setJson(map.dom(), alloc), alloc);
+    ith.AddMember("exp", expJson(map.exp(), alloc), alloc);
+
+    res.PushBack(ith, alloc);
+  }
+
+  return res;
+}
+
+template<typename Set>
 void buildJson(
   const Set &matching, const PWMap<Set> &scc, const PWMap<Set> &order
 )
 {
-  // 1. Parse a JSON string into DOM.
-  const char* json = "{\"matching\":\"\",\"scc\":\"\",\"order\":\"\"}";
+  //const char* json = "{\"matching\":\"\",\"scc\":\"\",\"order\":\"\"}";
   rapidjson::Document d;
-  d.Parse(json);
+  d.SetObject();
+  rapidjson::Document::AllocatorType& alloc = d.GetAllocator();
 
-  // 2. Modify it by DOM.
-  rapidjson::Value &m = d["matching"];
-  std::stringstream ss1;
-  ss1 << matching;
-  m.SetString(ss1.str().c_str(), strlen(ss1.str().c_str()), d.GetAllocator());
+  // Create matching information
+  rapidjson::Value edges = setJson(matching, alloc);
+  d.AddMember("matching", edges, alloc);
 
-  rapidjson::Value &s = d["scc"];
-  std::stringstream ss2;
-  ss2 << scc;
-  s.SetString(ss2.str().c_str(), strlen(ss2.str().c_str()), d.GetAllocator());
+  // Create SCC information
+  rapidjson::Value scc_rmap = mapJson(scc, alloc);
+  d.AddMember("scc", scc_rmap, alloc);
 
-  rapidjson::Value &o = d["order"];
-  std::stringstream ss3;
-  ss3 << order;
-  o.SetString(ss3.str().c_str(), strlen(ss3.str().c_str()), d.GetAllocator());
+  // Create sort information
+  rapidjson::Value order_rmap = mapJson(order, alloc);
+  d.AddMember("sort", order_rmap, alloc);
 
-  // 3. Stringify the DOM
   FILE *fp = fopen("output.json", "w");
   char write_buffer[65536];
   rapidjson::FileWriteStream os(fp, write_buffer, sizeof(write_buffer));
   rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(os);
+  rapidjson::PrettyFormatOptions opt = rapidjson::kFormatSingleLineArray;
+  writer.SetFormatOptions(opt);
   d.Accept(writer);
 
   fclose(fp);

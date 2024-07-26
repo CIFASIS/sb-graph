@@ -703,7 +703,7 @@ Exp SBGTopSort<Set>::calculateExp(Util::MD_NAT from, Util::MD_NAT to)
   Exp res;
 
   Util::RATIONAL one(1, 1);
-  for (unsigned int j = 0; j < from.arity(); ++j) { 
+  for (unsigned int j = 0; j < from.size(); ++j) { 
     Util::RATIONAL r_from(from[j]), r_to(to[j]);
     res.emplaceBack(LExp(1, r_to - r_from));
   }

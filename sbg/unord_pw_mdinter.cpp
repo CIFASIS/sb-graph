@@ -413,11 +413,6 @@ UnordPWMDInter UnordPWMDInter::compact() const
   return res;
 }
 
-std::size_t hash_value(const UnordPWMDInter &pwi)
-{
-  return boost::hash_range(pwi.begin(), pwi.end());
-}
-
 } // namespace LIB
 
 } // namespace SBG

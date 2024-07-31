@@ -25,13 +25,13 @@ SBG::Util::MD_NAT nextElem(SBG::Util::MD_NAT curr, SBG::LIB::SetPiece mdi)
 {
   assert(!mdi.isEmpty());
   SBG::Util::MD_NAT min = mdi.minElem(), max = mdi.maxElem(), res;
-  for (unsigned int j = 0; j < mdi.size(); ++j) {
+  for (unsigned int j = 0; j < mdi.arity(); ++j) {
     if (curr[j] == max[j]) 
       res.emplaceBack(min[j]);
 
     else {
       res.emplaceBack(curr[j] + 1);
-      for (unsigned int k = 1; k < mdi.size() - j; ++k)
+      for (unsigned int k = 1; k < mdi.arity() - j; ++k)
         res.emplaceBack(curr[j]);
       break;
     } 

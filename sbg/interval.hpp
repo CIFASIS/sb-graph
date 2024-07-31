@@ -76,8 +76,6 @@ struct Interval {
 };
 std::ostream &operator<<(std::ostream &out, const Interval &i);
 
-std::size_t hash_value(const Interval &i);
-
 } // namespace LIB
 
 }  // namespace SBG

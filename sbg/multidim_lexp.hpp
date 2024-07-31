@@ -79,8 +79,6 @@ struct MDLExp {
 };
 std::ostream &operator<<(std::ostream &out, const MDLExp &mdle);
 
-std::size_t hash_value(const MDLExp &mdle);
-
 typedef MDLExp Exp;
 
 } // namespace LIB

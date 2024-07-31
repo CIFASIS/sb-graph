@@ -282,25 +282,13 @@ std::optional<SBGMap<Set>> SBGMap<Set>::compact(const SBGMap<Set> &other) const
   return {};
 }
 
-template<typename Set>
-std::size_t hash_value(const SBGMap<Set> &sbgmap)
-{
-  std::size_t seed = 0;
-  boost::hash_combine(seed, sbgmap.dom());
-  boost::hash_combine(seed, sbgmap.exp());
-
-  return seed;
-}
-
 // Templates -------------------------------------------------------------------
 
 template struct SBGMap<UnordSet>;
 template std::ostream &operator<<(std::ostream &out, const BaseMap &sbgmap);
-template std::size_t hash_value<UnordSet>(const BaseMap &sbgmap);
 
 template struct SBGMap<OrdSet>;
 template std::ostream &operator<<(std::ostream &out, const CanonMap &sbgmap);
-template std::size_t hash_value<OrdSet>(const CanonMap &sbgmap);
 
 } // namespace LIB
 

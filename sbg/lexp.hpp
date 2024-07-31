@@ -70,8 +70,6 @@ struct LExp {
 };
 std::ostream &operator<<(std::ostream &out, const LExp &le);
 
-std::size_t hash_value(const LExp &le);
-
 } // namespace LIB
 
 } // namespace SBG

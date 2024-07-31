@@ -130,8 +130,6 @@ struct OrdPWMDInter {
 };
 std::ostream &operator<<(std::ostream &out, const OrdPWMDInter &i);
 
-std::size_t hash_value(const OrdPWMDInter &pwi);
-
 typedef OrdPWMDInter OrdSet;
 
 } // namespace LIB

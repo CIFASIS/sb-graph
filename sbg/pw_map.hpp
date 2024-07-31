@@ -183,10 +183,6 @@ struct PWMap {
 template<typename Set>
 std::ostream &operator<<(std::ostream &out, const PWMap<Set> &pw);
 
-
-template<typename Set>
-std::size_t hash_value(const PWMap<Set> &pw);
-
 typedef PWMap<UnordSet> BasePWMap;
 typedef PWMap<OrdSet> CanonPWMap;
 

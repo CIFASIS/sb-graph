@@ -82,8 +82,6 @@ struct MultiDimInter {
 };
 std::ostream &operator<<(std::ostream &out, const MultiDimInter &mi);
 
-std::size_t hash_value(const MultiDimInter &mdi);
-
 typedef MultiDimInter SetPiece;
 
 } // namespace LIB

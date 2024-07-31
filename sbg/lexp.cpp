@@ -94,10 +94,9 @@ LExp LExp::inverse() const
   RAT new_slope(0, 1), new_offset(0, 1);
 
   // Non constant map
-  RAT slo = slope_;
-  if (slo != 0) {
-    new_slope = RAT(slo.denominator(), slo.numerator());
-    new_offset = (-offset_)/slo;
+  if (slope_ != 0) {
+    new_slope = RAT(slope_.denominator(), slope_.numerator());
+    new_offset = (-offset_)/slope_;
   }
 
   // Constant map
@@ -112,17 +111,6 @@ LExp LExp::inverse() const
 bool LExp::isId() const { return slope_ == 1 && offset_ == 0; }
 
 bool LExp::isConstant() const { return slope_ == 0; }
-
-std::size_t hash_value(const LExp &le)
-{
-  std::size_t seed = 0;
-  boost::hash_combine(seed, le.slope().numerator());
-  boost::hash_combine(seed, le.slope().denominator());
-  boost::hash_combine(seed, le.offset().numerator());
-  boost::hash_combine(seed, le.offset().denominator());
-
-  return seed;
-}
 
 } // namespace LIB
 

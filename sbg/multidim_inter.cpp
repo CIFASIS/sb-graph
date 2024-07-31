@@ -248,11 +248,6 @@ MultiDimInter::MaybeMDI MultiDimInter::compact(const MultiDimInter &other) const
   return res;
 }
 
-std::size_t hash_value(const MultiDimInter &mdi)
-{
-  return boost::hash_range(mdi.begin(), mdi.end());
-}
-
 } // namespace LIB
 
 } // namespace SBG

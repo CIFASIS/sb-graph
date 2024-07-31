@@ -229,7 +229,9 @@ NAT RATIONAL::toNat() const
   if (denominator() == 1 && 0 <= value_)
     return numerator();
 
-  ERROR("toNat: RATIONAL is not NAT");
+  std::stringstream ss;
+  ss << *this;
+  ERROR("toNat: RATIONAL %s is not NAT", ss.str().c_str());
   return 0;
 }
 

@@ -29,7 +29,7 @@ std::ostream &operator<<(std::ostream &out, const MDInterOrdSet &ii)
 {
   std::size_t sz = ii.size();
 
-  out << "{{";
+  out << "{";
   if (sz > 0) {
     unsigned int j = 0;
     for (const SetPiece &mdi : ii) { 
@@ -41,7 +41,7 @@ std::ostream &operator<<(std::ostream &out, const MDInterOrdSet &ii)
       ++j;
     }
   }
-  out << "}}";
+  out << "}";
 
   return out;
 }
@@ -434,11 +434,6 @@ MDInterOrdSet OrdPWMDInter::traverse(
   }
 
   return res;
-}
-
-std::size_t hash_value(const OrdPWMDInter &pwi)
-{
-  return boost::hash_range(pwi.begin(), pwi.end());
 }
 
 } // namespace LIB

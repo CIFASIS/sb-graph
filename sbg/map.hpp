@@ -77,9 +77,6 @@ template<typename Set>
 std::ostream &operator<<(std::ostream &out, const SBGMap<Set> &sbgmap);
 
 template<typename Set>
-std::size_t hash_value(const SBGMap<Set> &sbgmap);
-
-template<typename Set>
 using SBGMap = SBGMap<Set>;
 
 typedef SBGMap<UnordSet> BaseMap;

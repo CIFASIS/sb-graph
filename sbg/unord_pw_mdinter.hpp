@@ -137,8 +137,6 @@ struct UnordPWMDInter {
 };
 std::ostream &operator<<(std::ostream &out, const UnordPWMDInter &pwi);
 
-std::size_t hash_value(const UnordPWMDInter &pwi);
-
 typedef UnordPWMDInter UnordSet;
 
 } // namespace LIB

@@ -947,23 +947,15 @@ Set PWMap<Set>::sharedImage()
   return res;
 }
 
-template<typename Set>
-std::size_t hash_value(const PWMap<Set> &pw)
-{
-  return boost::hash_range(pw.begin(), pw.end());
-}
-
 // Templates -------------------------------------------------------------------
 
 template std::ostream &operator<<(std::ostream &out, const MapSet<UnordSet> &ms);
 template struct PWMap<UnordSet>;
 template std::ostream &operator<<(std::ostream &out, const BasePWMap &pw);
-template std::size_t hash_value(const PWMap<UnordSet> &pw);
 
 template std::ostream &operator<<(std::ostream &out, const MapSet<OrdSet> &ms);
 template struct PWMap<OrdSet>;
 template std::ostream &operator<<(std::ostream &out, const CanonPWMap &pw);
-template std::size_t hash_value(const PWMap<OrdSet> &pw);
 
 } // namespace LIB
 

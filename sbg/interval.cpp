@@ -159,16 +159,6 @@ Interval::MaybeInterval Interval::compact(const Interval &other) const
   return {};
 }
 
-std::size_t hash_value(const Interval &i)
-{
-  std::size_t seed = 0;
-  boost::hash_combine(seed, i.begin());
-  boost::hash_combine(seed, i.step());
-  boost::hash_combine(seed, i.end());
-
-  return seed;
-}
-
 } // namespace LIB
 
 } // namespace SBG

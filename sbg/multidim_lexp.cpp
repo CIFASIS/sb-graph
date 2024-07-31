@@ -139,11 +139,6 @@ bool MDLExp::isConstant() const
   return true;
 }
 
-std::size_t hash_value(const MDLExp &mdle)
-{
-  return boost::hash_range(mdle.begin(), mdle.end());
-}
-
 } // namespace LIB
 
 } // namespace SBG

@@ -91,7 +91,7 @@ doc:
 
 test: lib-gtest $(SBG_TEST)
 
-TEST_DIRS         := test/parser test/performance test/eval
+TEST_DIRS         := test/parser test/performance test/performance/boost test/eval
  
 clean:
 	$(RM) -rf $(BIN_DIR) $(OBJ_DIR) $(LIB_SBGRAPH) $(ROOT)/lib $(ROOT)/include $(3RD_PARTY_DIR)/gtest/usr

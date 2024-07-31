@@ -38,7 +38,8 @@ std::ostream &operator<<(std::ostream &out, const Assign &asgn)
 
 ConfigDims::ConfigDims() : nmbr_dims_() {}
 ConfigDims::ConfigDims(Util::NAT nmbr_dims) : nmbr_dims_() {
-  if (nmbr_dims > 0) set_nmbr_dims(nmbr_dims);
+  if (nmbr_dims > 0)
+    set_nmbr_dims(nmbr_dims);
 
   else Util::ERROR("AST::ConfigDims: Should have ate least one dimension");
 }

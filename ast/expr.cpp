@@ -111,7 +111,8 @@ std::ostream &operator<<(std::ostream &out, const UnaryOp &uop)
 }
 
 BinOp::BinOp() : left_(), op_(), right_() {}
-BinOp::BinOp(Expr left, Op op, Expr right) : left_(left), op_(op), right_(right) {}
+BinOp::BinOp(Expr left, Op op, Expr right) : left_(left), op_(op)
+  , right_(right) {}
 
 member_imp(BinOp, Expr, left);
 member_imp(BinOp, Op, op);
@@ -119,7 +120,8 @@ member_imp(BinOp, Expr, right);
 
 bool BinOp::operator==(const BinOp &other) const
 {
-  return left() == other.left() && op() == other.op() && right() == other.right();
+  return left() == other.left() && op() == other.op() 
+    && right() == other.right();
 }
 
 std::ostream &operator<<(std::ostream &out, const BinOp &bop)
@@ -133,7 +135,8 @@ std::ostream &operator<<(std::ostream &out, const BinOp &bop)
 
 Call::Call() : name_(), args_() {}
 Call::Call(Name name, ExprList args) : name_(name), args_(args) {}
-Call::Call(Name name, Expr args) : name_(name), args_() { args_ref().push_back(args); }
+Call::Call(Name name, Expr args) : name_(name), args_()
+  { args_ref().push_back(args); }
 
 member_imp(Call, Name, name);
 member_imp(Call, ExprList, args);
@@ -211,7 +214,8 @@ std::ostream &operator<<(std::ostream &out, const ContainerOp &op)
 // Interval --------------------------------------------------------------------
 
 Interval::Interval() : begin_(), step_(), end_() {}
-Interval::Interval(Expr begin, Expr step, Expr end) : begin_(begin), step_(step), end_(end) {}
+Interval::Interval(Expr begin, Expr step, Expr end) : begin_(begin), step_(step)
+  , end_(end) {}
 
 member_imp(Interval, Expr, begin);
 member_imp(Interval, Expr, step);
@@ -219,7 +223,8 @@ member_imp(Interval, Expr, end);
 
 bool Interval::operator==(const Interval &other) const
 {
-  return begin() == other.begin() && step() == other.step() && step() == other.step();
+  return begin() == other.begin() && step() == other.step()
+    && step() == other.step();
 }
 
 std::ostream &operator<<(std::ostream &out, const Interval &i)
@@ -253,7 +258,8 @@ std::ostream &operator<<(std::ostream &out, const InterUnaryOp &i)
 }
 
 InterBinOp::InterBinOp() : left_(), op_(), right_() {}
-InterBinOp::InterBinOp(Expr left, ContainerOp op, Expr right) : left_(left), op_(op), right_(right) {}
+InterBinOp::InterBinOp(Expr left, ContainerOp op, Expr right) : left_(left)
+  , op_(op), right_(right) {}
 
 member_imp(InterBinOp, Expr, left);
 member_imp(InterBinOp, ContainerOp, op);
@@ -261,7 +267,8 @@ member_imp(InterBinOp, Expr, right);
 
 bool InterBinOp::operator==(const InterBinOp &other) const
 {
-  return left() == other.left() && op() == other.op() && right() == other.right();
+  return left() == other.left() && op() == other.op()
+    && right() == other.right();
 }
 
 std::ostream &operator<<(std::ostream &out, const InterBinOp &i)
@@ -278,7 +285,10 @@ MultiDimInter::MultiDimInter(ExprList intervals) : intervals_(intervals) {}
 
 member_imp(MultiDimInter, ExprList, intervals);
 
-bool MultiDimInter::operator==(const MultiDimInter &other) const { return intervals() == other.intervals(); }
+bool MultiDimInter::operator==(const MultiDimInter &other) const
+{
+  return intervals() == other.intervals();
+}
 
 std::ostream &operator<<(std::ostream &out, const MultiDimInter &mdi)
 {
@@ -303,7 +313,10 @@ MDInterUnaryOp::MDInterUnaryOp(ContainerUOp op, Expr e) : op_(op), e_(e) {}
 member_imp(MDInterUnaryOp, ContainerUOp, op);
 member_imp(MDInterUnaryOp, Expr, e);
 
-bool MDInterUnaryOp::operator==(const MDInterUnaryOp &other) const { return op() == other.op() && e() == other.e(); }
+bool MDInterUnaryOp::operator==(const MDInterUnaryOp &other) const
+{
+  return op() == other.op() && e() == other.e();
+}
 
 std::ostream &operator<<(std::ostream &out, const MDInterUnaryOp &mdi)
 {
@@ -323,7 +336,8 @@ std::ostream &operator<<(std::ostream &out, const MDInterUnaryOp &mdi)
 }
 
 MDInterBinOp::MDInterBinOp() : left_(), op_(), right_() {}
-MDInterBinOp::MDInterBinOp(Expr left, ContainerOp op, Expr right) : left_(left), op_(op), right_(right) {}
+MDInterBinOp::MDInterBinOp(Expr left, ContainerOp op, Expr right) : left_(left)
+  , op_(op), right_(right) {}
 
 member_imp(MDInterBinOp, Expr, left);
 member_imp(MDInterBinOp, ContainerOp, op);
@@ -331,7 +345,8 @@ member_imp(MDInterBinOp, Expr, right);
 
 bool MDInterBinOp::operator==(const MDInterBinOp &other) const
 {
-  return left() == other.left() && op() == other.op() && right() == other.right();
+  return left() == other.left() && op() == other.op()
+    && right() == other.right();
 }
 
 std::ostream &operator<<(std::ostream &out, const MDInterBinOp &mdi)
@@ -348,7 +363,10 @@ Set::Set(ExprList pieces) : pieces_(pieces) {}
 
 member_imp(Set, ExprList, pieces);
 
-bool Set::operator==(const Set &other) const { return pieces() == other.pieces(); }
+bool Set::operator==(const Set &other) const
+{
+  return pieces() == other.pieces();
+}
 
 std::ostream &operator<<(std::ostream &out, const Set &s)
 {
@@ -375,7 +393,10 @@ SetUnaryOp::SetUnaryOp(ContainerUOp op, Expr e) : op_(op), e_(e) {}
 member_imp(SetUnaryOp, ContainerUOp, op);
 member_imp(SetUnaryOp, Expr, e);
 
-bool SetUnaryOp::operator==(const SetUnaryOp &other) const { return e() == other.e() && op() == other.op(); }
+bool SetUnaryOp::operator==(const SetUnaryOp &other) const
+{
+  return e() == other.e() && op() == other.op();
+}
 
 std::ostream &operator<<(std::ostream &out, const SetUnaryOp &s)
 {
@@ -395,7 +416,8 @@ std::ostream &operator<<(std::ostream &out, const SetUnaryOp &s)
 }
 
 SetBinOp::SetBinOp() : left_(), op_(), right_() {}
-SetBinOp::SetBinOp(Expr left, ContainerOp op, Expr right) : left_(left), op_(op), right_(right) {}
+SetBinOp::SetBinOp(Expr left, ContainerOp op, Expr right) : left_(left), op_(op)
+  , right_(right) {}
 
 member_imp(SetBinOp, Expr, left);
 member_imp(SetBinOp, ContainerOp, op);
@@ -403,7 +425,8 @@ member_imp(SetBinOp, Expr, right);
 
 bool SetBinOp::operator==(const SetBinOp &other) const
 {
-  return left() == other.left() && op() == other.op() && right() == other.right();
+  return left() == other.left() && op() == other.op()
+    && right() == other.right();
 }
 
 std::ostream &operator<<(std::ostream &out, const SetBinOp &s)
@@ -416,12 +439,16 @@ std::ostream &operator<<(std::ostream &out, const SetBinOp &s)
 // Linear expression -----------------------------------------------------------
 
 LinearExp::LinearExp() : slope_(), offset_() {}
-LinearExp::LinearExp(Expr slope, Expr offset) : slope_(slope), offset_(offset) {}
+LinearExp::LinearExp(Expr slope, Expr offset) : slope_(slope), offset_(offset)
+  {}
 
 member_imp(LinearExp, Expr, slope);
 member_imp(LinearExp, Expr, offset);
 
-bool LinearExp::operator==(const LinearExp &other) const { return slope() == other.slope() && offset() == other.offset(); }
+bool LinearExp::operator==(const LinearExp &other) const
+{
+  return slope() == other.slope() && offset() == other.offset();
+}
 
 std::ostream &operator<<(std::ostream &out, const LinearExp &le)
 {
@@ -453,7 +480,8 @@ std::ostream &operator<<(std::ostream &out, const ExpOp &op)
 }
 
 LExpBinOp::LExpBinOp() : left_(), op_(), right_() {}
-LExpBinOp::LExpBinOp(Expr left, ExpOp op, Expr right) : left_(left), op_(op), right_(right) {}
+LExpBinOp::LExpBinOp(Expr left, ExpOp op, Expr right) : left_(left), op_(op)
+  , right_(right) {}
 
 member_imp(LExpBinOp, Expr, left);
 member_imp(LExpBinOp, ExpOp, op);
@@ -461,7 +489,8 @@ member_imp(LExpBinOp, Expr, right);
 
 bool LExpBinOp::operator==(const LExpBinOp &other) const
 {
-  return left() == other.left() && op() == other.op() && right() == other.right();
+  return left() == other.left() && op() == other.op()
+    && right() == other.right();
 }
 
 std::ostream &operator<<(std::ostream &out, const LExpBinOp &lbop)
@@ -478,7 +507,10 @@ MDLExp::MDLExp(ExprList exps) : exps_(exps) {}
 
 member_imp(MDLExp, ExprList, exps);
 
-bool MDLExp::operator==(const MDLExp &other) const { return exps() == other.exps(); }
+bool MDLExp::operator==(const MDLExp &other) const
+{
+  return exps() == other.exps();
+}
 
 std::ostream &operator<<(std::ostream &out, const MDLExp &le)
 {
@@ -498,7 +530,8 @@ std::ostream &operator<<(std::ostream &out, const MDLExp &le)
 }
 
 MDLExpBinOp::MDLExpBinOp() : left_(), op_(), right_() {}
-MDLExpBinOp::MDLExpBinOp(Expr left, ExpOp op, Expr right) : left_(left), op_(op), right_(right) {}
+MDLExpBinOp::MDLExpBinOp(Expr left, ExpOp op, Expr right) : left_(left), op_(op)
+  , right_(right) {}
 
 member_imp(MDLExpBinOp, Expr, left);
 member_imp(MDLExpBinOp, ExpOp, op);
@@ -506,7 +539,8 @@ member_imp(MDLExpBinOp, Expr, right);
 
 bool MDLExpBinOp::operator==(const MDLExpBinOp &other) const
 {
-  return left() == other.left() && op() == other.op() && right() == other.right();
+  return left() == other.left() && op() == other.op()
+    && right() == other.right();
 }
 
 std::ostream &operator<<(std::ostream &out, const MDLExpBinOp &lbop)
@@ -543,7 +577,10 @@ PWLMap::PWLMap(ExprList maps) : maps_(maps) {}
 
 member_imp(PWLMap, ExprList, maps);
 
-bool PWLMap::operator==(const PWLMap &other) const { return maps() == other.maps(); }
+bool PWLMap::operator==(const PWLMap &other) const
+{
+  return maps() == other.maps();
+}
 
 std::ostream &operator<<(std::ostream &out, const PWLMap &pwl)
 {
@@ -569,7 +606,8 @@ std::ostream &operator<<(std::ostream &out, const PWLMap &pwl)
 // -----------------------------------------------------------------------------
 
 SBG::SBG() : V_(), Vmap_(), map1_(), map2_(), Emap_() {}
-SBG::SBG(Expr V, Expr Vmap, Expr map1, Expr map2, Expr Emap) : V_(V), Vmap_(Vmap), map1_(map1), map2_(map2), Emap_(Emap) {}
+SBG::SBG(Expr V, Expr Vmap, Expr map1, Expr map2, Expr Emap) : V_(V)
+  , Vmap_(Vmap), map1_(map1), map2_(map2), Emap_(Emap) {}
 
 member_imp(SBG, Expr, V);
 member_imp(SBG, Expr, Vmap);
@@ -579,7 +617,8 @@ member_imp(SBG, Expr, Emap);
 
 bool SBG::operator==(const SBG &other) const 
 { 
-  return V() == other.V() && Vmap() == other.Vmap() && map1() == other.map1() && map2() == other.map2() && Emap() == other.Emap();
+  return V() == other.V() && Vmap() == other.Vmap() && map1() == other.map1()
+    && map2() == other.map2() && Emap() == other.Emap();
 }
 
 std::ostream &operator<<(std::ostream &out, const SBG &g)
@@ -596,7 +635,8 @@ std::ostream &operator<<(std::ostream &out, const SBG &g)
 // DSBG ------------------------------------------------------------------------
 
 DSBG::DSBG() : V_(), Vmap_(), mapB_(), mapD_(), Emap_() {}
-DSBG::DSBG(Expr V, Expr Vmap, Expr mapB, Expr mapD, Expr Emap) : V_(V), Vmap_(Vmap), mapB_(mapB), mapD_(mapD), Emap_(Emap) {}
+DSBG::DSBG(Expr V, Expr Vmap, Expr mapB, Expr mapD, Expr Emap) : V_(V)
+  , Vmap_(Vmap), mapB_(mapB), mapD_(mapD), Emap_(Emap) {}
 
 member_imp(DSBG, Expr, V);
 member_imp(DSBG, Expr, Vmap);
@@ -606,7 +646,8 @@ member_imp(DSBG, Expr, Emap);
 
 bool DSBG::operator==(const DSBG &other) const 
 { 
-  return V() == other.V() && Vmap() == other.Vmap() && mapB() == other.mapB() && mapD() == other.mapD() && Emap() == other.Emap();
+  return V() == other.V() && Vmap() == other.Vmap() && mapB() == other.mapB()
+    && mapD() == other.mapD() && Emap() == other.Emap();
 }
 
 std::ostream &operator<<(std::ostream &out, const DSBG &g)

@@ -49,14 +49,12 @@ struct MDLExp {
   iterator end();
   const_iterator begin() const;
   const_iterator end() const;
-  std::size_t size() const;
   void emplaceBack(LExp le);
   LExp &operator[](std::size_t n);
   const LExp &operator[](std::size_t n) const;
 
   bool operator==(const MDLExp &other) const;
   bool operator!=(const MDLExp &other) const;
-  bool operator<(const MDLExp &other) const;
 
   MDLExp operator+(const MDLExp &other) const;
   MDLExp operator-(const MDLExp &other) const;
@@ -65,6 +63,7 @@ struct MDLExp {
    * @brief Traditional expression operations.
    */
 
+  std::size_t arity() const;
   /* @function composition
    *
    * @brief Calculate the composition of le1 with le2, i.e. le1(le2)

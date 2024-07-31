@@ -2,9 +2,9 @@
 
  @brief <b>Piecewise uni-dimensional interval implementation</b>
 
- A piecewise unidim interval is a collection of non-empty disjoint intervals, and its 
- corresponding set is the union of all composing intervals. The constructors 
- aren't safe as they don't check if intervals are disjoint and non-empty.
+ A piecewise unidim interval is a collection of non-empty disjoint dense 
+ (e.g. step = 1) intervals. The constructors aren't safe as they don't check if
+ intervals are disjoint and non-empty.
 
  <hr>
 
@@ -42,21 +42,7 @@ namespace LIB {
  * @brief Ordered collection of multi-dimensional intervals.
  */
 
-/* @struct LTMDInter
- *
- * @brief This function is defined to be used by the MDMDInterOrdSet definition.
- * The two inputs are disjoint (that's why the operator<, that compares any sort
- * of SetPieces, is not used).
- */
-struct LTMDInter {
-  LTMDInter();
-   
-  bool operator()(const SetPiece &x, const SetPiece &y) const; 
-};
-
-typedef boost::container::flat_set<
-  SetPiece, LTMDInter, boost::container::new_allocator<SetPiece>
-> MDInterOrdSet;
+typedef boost::container::flat_set<SetPiece> MDInterOrdSet;
 typedef MDInterOrdSet::iterator MDInterOrdSetIt;
 typedef MDInterOrdSet::const_iterator MDInterOrdSetConstIt;
 std::ostream &operator<<(std::ostream &out, const MDInterOrdSet &ii);
@@ -102,6 +88,7 @@ struct OrdPWMDInter {
    * @brief Extra operations.
    */
 
+  std::size_t arity() const;
   /** @function concatenation
    *
    * @brief Function useful to unite two pwis in the case these are known to be
@@ -124,20 +111,6 @@ struct OrdPWMDInter {
    */
   OrdPWMDInter complementAtom() const;
   OrdPWMDInter complement() const;
-
-  /** @function isDense
-   *
-   * @brief This function determines if a pwi is compact (composed only by compact
-   * intervals).
-   */
-  bool isDense() const;
-
-  /** @function optCond
-   *
-   * @brief Check if the MDInterOrdSet satisfies the conditions to use
-   * optimizations.
-   */
-  bool optConds() const;
 
   /** @function boundedTraverse
    *

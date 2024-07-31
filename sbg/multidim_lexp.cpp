@@ -26,7 +26,7 @@ namespace LIB {
 MDLExp::MDLExp() : exps_() {}
 MDLExp::MDLExp(Util::MD_NAT x)
 {
-  Util::ERROR_UNLESS(x.size() > 0, "LIB::MDLE1: empty not allowed");
+  Util::ERROR_UNLESS(x.arity() > 0, "LIB::MDLE1: empty not allowed");
 
   for (Util::NAT xi : x)
     exps_.emplace_back(LExp(0, Util::RATIONAL(xi)));
@@ -48,8 +48,6 @@ MDLExp::iterator MDLExp::end() { return exps_.end(); }
 MDLExp::const_iterator MDLExp::begin() const { return exps_.begin(); }
 MDLExp::const_iterator MDLExp::end() const { return exps_.end(); }
 
-std::size_t MDLExp::size() const { return exps_.size(); }
-
 void MDLExp::emplaceBack(LExp le) { exps_.emplace_back(le); }
 
 LExp &MDLExp::operator[](std::size_t n) { return exps_[n]; }
@@ -65,22 +63,10 @@ bool MDLExp::operator!=(const MDLExp &other) const
   return !(*this == other);
 }
 
-bool MDLExp::operator<(const MDLExp &other) const 
-{
-  Util::ERROR_UNLESS(size() == other.size()
-                     , "LIB::MDLE::operator<: dimensions don't match");
-
-  for (unsigned j = 0; j < size(); ++j)
-    if (operator[](j) < other[j])
-      return true;
-
-  return false;
-}
-
 MDLExp MDLExp::operator+(const MDLExp &other) const
 {
   MDLExp res;
-  for (unsigned int j = 0; j < size(); ++j)
+  for (unsigned int j = 0; j < arity(); ++j)
     res.emplaceBack(operator[](j) + other[j]);
 
   return res;
@@ -89,7 +75,7 @@ MDLExp MDLExp::operator+(const MDLExp &other) const
 MDLExp MDLExp::operator-(const MDLExp &other) const
 {
   MDLExp res;
-  for (unsigned int j = 0; j < size(); ++j)
+  for (unsigned int j = 0; j < arity(); ++j)
     res.emplaceBack(operator[](j) - other[j]);
 
   return res;
@@ -97,7 +83,7 @@ MDLExp MDLExp::operator-(const MDLExp &other) const
 
 std::ostream &operator<<(std::ostream &out, const MDLExp &mdle)
 {
-  unsigned int sz = mdle.size();
+  unsigned int sz = mdle.arity();
 
   if (sz > 0) {
     for (unsigned int j = 0; j < sz-1; ++j) 
@@ -110,14 +96,16 @@ std::ostream &operator<<(std::ostream &out, const MDLExp &mdle)
 
 // Linear expression functions -------------------------------------------------
 
+std::size_t MDLExp::arity() const { return exps_.size(); }
+
 MDLExp MDLExp::composition(const MDLExp &other) const
 {
-  Util::ERROR_UNLESS(size() == other.size()
+  Util::ERROR_UNLESS(arity() == other.arity()
                      , "LIB::MDLE::composition: dimensions don't match");
 
   MDLExp res;
 
-  for (unsigned int j = 0; j < size(); ++j)
+  for (unsigned int j = 0; j < arity(); ++j)
     res.emplaceBack(operator[](j).composition(other[j]));
 
   return res;

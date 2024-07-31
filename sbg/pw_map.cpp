@@ -54,7 +54,7 @@ PWMap<Set>::PWMap() : maps_() {}
 template<typename Set>
 PWMap<Set>::PWMap(Set s) : maps_() {
   if (!s.isEmpty()) {
-    SBGMap<Set> map(s, Exp(s.begin()->size(), LExp()));
+    SBGMap<Set> map(s, Exp(s.begin()->arity(), LExp()));
     maps_.push_back(map);
   }
 }
@@ -159,6 +159,58 @@ PWMap<Set> PWMap<Set>::operator+(const PWMap &other) const
 }
 
 template<typename Set>
+PWMap<Set> PWMap<Set>::operator-(const PWMap &other) const
+{
+  PWMap res;
+
+  Exp zero(Util::MD_NAT(arity(), 0));
+  for (const Map &map1 : maps_) {
+    for (const Map &map2 : other.maps_) {
+      Set ith_dom = map1.dom().intersection(map2.dom());
+      Exp ith_exp = map1.exp() - map2.exp();
+      // Whole domain where ith_exp is positive
+      SetPiece exp_positive;
+      for (const LExp &lexp : ith_exp) {
+        Util::RATIONAL sl = lexp.slope(), off = lexp.offset();
+        Util::NAT begin = 0, end = Util::Inf;
+        // Constant expression
+        if (sl == 0) {
+          if (off < 0) {
+            begin = 1;
+            end = 0;
+          }
+        }
+        else if (sl > 0) {
+          Util::RATIONAL cross = -lexp.offset() / lexp.slope();
+          if (cross > 0)
+            begin = boost::rational_cast<Util::NAT>(cross.value());
+        }
+        else { 
+          Util::RATIONAL cross = -lexp.offset() / lexp.slope();
+          if (cross > 0)
+            end = boost::rational_cast<Util::NAT>(cross.value());
+          else {
+            begin = 1;
+            end = 0;
+          }
+        }
+
+        Interval i(begin, 1, end);
+        exp_positive.emplaceBack(i);
+      }
+
+      Set ith_positive = ith_dom.intersection(Set(exp_positive));
+      res.emplaceBack(SBGMap(ith_positive, ith_exp));
+
+      Set ith_negative = ith_dom.difference(Set(exp_positive));
+      res.emplaceBack(SBGMap(ith_negative, zero));
+    }
+  }
+
+  return res;
+}
+
+template<typename Set>
 std::ostream &operator<<(std::ostream &out, const PWMap<Set> &pw)
 {
   out << pw.maps();
@@ -167,6 +219,15 @@ std::ostream &operator<<(std::ostream &out, const PWMap<Set> &pw)
 }
 
 // PWMap functions -------------------------------------------------------------
+
+// Function should be called on a non-empty pw
+template<typename Set>
+std::size_t PWMap<Set>::arity() const
+{
+  Util::ERROR_UNLESS(!isEmpty(), "LIB::PWMap::nmbrDims: empty not allowed");
+
+  return begin()->dom().begin()->arity();
+}
 
 template<typename Set>
 bool PWMap<Set>::isEmpty() const { return maps_.empty(); }
@@ -390,7 +451,7 @@ PWMap<Set> PWMap<Set>::reduce(const Map &map) const
     SetPiece aux_piece = dom_piece;
     Exp aux_exp = e;
     bool was_reduced = false;
-    for (unsigned int j = 0; j < dom_piece.size(); ++j) {
+    for (unsigned int j = 0; j < dom_piece.arity(); ++j) {
       for (const Map &ith_reduced : reduce(dom_piece[j], e[j])) {
         aux_piece[j] = ith_reduced.dom().begin()->operator[](0);
         aux_exp[j] = ith_reduced.exp()[0];
@@ -504,16 +565,16 @@ PWMap<Set> PWMap<Set>::minMap(
   if (!dom_piece.isEmpty()) {
     SetPiece aux_dom = dom_piece;
 
-    bool cond1 = dom_piece.size() == e1.size();
-    bool cond2 = e1.size() == e2.size(); 
-    bool cond3 = e2.size() == e3.size(); 
-    bool cond4 = e3.size() == e4.size(); 
+    bool cond1 = dom_piece.arity() == e1.arity();
+    bool cond2 = e1.arity() == e2.arity(); 
+    bool cond3 = e2.arity() == e3.arity(); 
+    bool cond4 = e3.arity() == e4.arity(); 
 
     Util::ERROR_UNLESS(cond1 && cond2 && cond3 && cond4
                        , "LIB::PWMap::minMap: dimensions don't match");
 
     unsigned int j = 0;
-    for (; j < dom_piece.size(); ++j) {
+    for (; j < dom_piece.arity(); ++j) {
       if (e2[j] != e3[j]) {
         PWMap ith = minMap(dom_piece[j], e1[j], e2[j], e3[j], e4[j]);
 
@@ -537,7 +598,7 @@ PWMap<Set> PWMap<Set>::minMap(
       }
     }
 
-    if (j == dom_piece.size())
+    if (j == dom_piece.arity())
       res.emplaceBack(Map(dom_piece, e2));
   }
 
@@ -549,7 +610,7 @@ PWMap<Set> PWMap<Set>::minMap(
   const SetPiece &dom_piece, const Exp &e1, const Exp &e2
 ) const
 {
-  Exp id(e1.size(), LExp());
+  Exp id(e1.arity(), LExp());
   return minMap(dom_piece, id, e1, e2, id);
 }
 
@@ -581,7 +642,7 @@ PWMap<Set> PWMap<Set>::minMap(
 template<typename Set>
 PWMap<Set> PWMap<Set>::minMap(const Set &dom, const Exp &e1, const Exp &e2) const
 {
-  Exp id(e1.size(), LExp());
+  Exp id(e1.arity(), LExp());
   return minMap(dom, id, e1, e2, id);
 }
 
@@ -658,12 +719,9 @@ PWMap<Set> PWMap<Set>::minMap(const PWMap &other) const
   if (isEmpty() || other.isEmpty())
     return PWMap();
 
-  unsigned int nmbr_dims = nmbrDims();
-  Exp id(nmbr_dims, LExp());
-  Map aux1(image(), id), aux2(other.image(), id);
-  PWMap id_map1(aux1), id_map2(aux2);
+  PWMap id1(image()), id2(other.image());
 
-  return id_map1.minMap(*this, other, id_map2);
+  return id1.minMap(*this, other, id2);
 }
 
 template<typename Set>
@@ -735,13 +793,8 @@ PWMap<Set> PWMap<Set>::minAdjMap(const PWMap &other2, const PWMap &other3) const
 template<typename Set>
 PWMap<Set> PWMap<Set>::minAdjMap(const PWMap &other) const
 {
-  if (!other.isEmpty()) {
-    Exp id(other.nmbrDims(), LExp());
-    Map aux2(other.image(), id);
-    PWMap id_map2(aux2);
-
-    return minAdjMap(other, id_map2);
-  }
+  if (!other.isEmpty())
+    return minAdjMap(other, PWMap(other.image()));
 
   return PWMap();
 }
@@ -800,26 +853,6 @@ Set PWMap<Set>::equalImage(const PWMap &other) const
 }
 
 template<typename Set>
-Set PWMap<Set>::gtImage(const PWMap &other) const
-{
-  Set res;
-
-  for (const Map &map1 : maps_) {
-    for (const Map &map2 : other) {
-      Set cap_dom = map1.dom().intersection(map2.dom());
-      if (!cap_dom.isEmpty()) {
-        Exp e1 = map1.exp(), e2 = map2.exp();
-        SBGMap<Set> m1(cap_dom, e1), m2(cap_dom, e2);
-        if (!(e1 < e2))
-          res = res.cup(cap_dom);
-      }
-    }
-  }
-
-  return res; 
-}
-
-template<typename Set>
 PWMap<Set> PWMap<Set>::offsetDom(const Util::MD_NAT &off) const
 {
   PWMap res;
@@ -850,7 +883,7 @@ PWMap<Set> PWMap<Set>::offsetImage(const Util::MD_NAT &off) const
 
   for (const Map &map : maps_) {
     Exp e = map.exp(), res_e;
-    for (unsigned int j = 0; j < e.size(); ++j) {
+    for (unsigned int j = 0; j < e.arity(); ++j) {
       LExp res_lexp(e[j].slope(), e[j].offset() + (Util::RATIONAL) off[j]);
       res_e.emplaceBack(res_lexp);
     }
@@ -870,15 +903,6 @@ PWMap<Set> PWMap<Set>::offsetImage(const Exp &off) const
     res.emplaceBack(Map(map.dom(), off + map.exp()));
 
   return res;
-}
-
-// Function should be called on a non-empty pw
-template<typename Set>
-unsigned int PWMap<Set>::nmbrDims() const
-{
-  Util::ERROR_UNLESS(!isEmpty(), "LIB::PWMap::nmbrDims: empty not allowed");
-
-  return begin()->dom().begin()->size();
 }
 
 template<typename Set>

@@ -29,9 +29,36 @@
 #ifndef SBG_UNORD_PW_MDINTERVAL_HPP
 #define SBG_UNORD_PW_MDINTERVAL_HPP
 
-#include <boost/unordered/unordered_flat_set.hpp>
+#include <functional>
+#include <unordered_set>
 
 #include "sbg/multidim_inter.hpp"
+
+namespace std {
+  template <> struct hash<SBG::LIB::Interval>
+  {
+    size_t operator()(const SBG::LIB::Interval &i) const
+    {
+      return std::hash<SBG::Util::NAT>()(i.begin())
+        ^ std::hash<SBG::Util::NAT>()(i.step())
+        ^ std::hash<SBG::Util::NAT>()(i.end());
+    }
+
+  };
+
+  template <> struct hash<SBG::LIB::SetPiece>
+  {
+    size_t operator()(const SBG::LIB::SetPiece &mdi) const
+    {
+      size_t res = 0;
+
+      for (const SBG::LIB::Interval &i : mdi)
+        res = res ^ std::hash<SBG::LIB::Interval>()(i);
+
+      return res;
+    }
+  };
+}
 
 namespace SBG {
 
@@ -39,7 +66,7 @@ namespace LIB {
 
 // Container -------------------------------------------------------------------
 
-typedef boost::unordered::unordered_flat_set<SetPiece> MDInterUnordSet;
+typedef std::unordered_set<SetPiece> MDInterUnordSet;
 typedef MDInterUnordSet::iterator MDInterUnordSetIt;
 typedef MDInterUnordSet::const_iterator MDInterUnordSetConstIt;
 std::ostream &operator<<(std::ostream &out, const MDInterUnordSet &ii);
@@ -84,6 +111,7 @@ struct UnordPWMDInter {
    * @brief Extra operations.
    */
 
+  std::size_t arity() const;
   /** @function concatenation
    *
    * @brief Function useful to unite two pwis in the case these are known to be

@@ -42,8 +42,6 @@ MD_NAT::iterator MD_NAT::end() { return value_.end(); }
 MD_NAT::const_iterator MD_NAT::begin() const { return value_.begin(); }
 MD_NAT::const_iterator MD_NAT::end() const { return value_.end(); }
 
-std::size_t MD_NAT::size() const { return value_.size(); }
-
 void MD_NAT::emplace(MD_NAT::iterator it, NAT x) { value_.emplace(it, x); }
 void MD_NAT::emplaceBack(NAT x) { value_.emplace_back(x); }
 void MD_NAT::push_back(NAT x) { emplaceBack(x); }
@@ -54,7 +52,7 @@ const NAT &MD_NAT::operator[](std::size_t n) const { return value_[n]; }
 bool MD_NAT::operator==(const MD_NAT &other) const
 {
   ERROR_UNLESS(
-      size() == other.size()
+      arity() == other.arity()
       , "Util::MD_NAT::operator==: dimensions don't match"
   );
 
@@ -66,11 +64,11 @@ bool MD_NAT::operator!=(const MD_NAT &other) const { return !(*this == other); }
 bool MD_NAT::operator<(const MD_NAT &other) const
 {
   ERROR_UNLESS(
-      size() == other.size()
+      arity() == other.arity()
       , "Util::MD_NAT::operator<: dimensions don't match"
   );
 
-  for (unsigned int j = 0; j < size(); ++j)
+  for (unsigned int j = 0; j < arity(); ++j)
     if (operator[](j) < other[j])
       return true;
 
@@ -85,7 +83,7 @@ bool MD_NAT::operator<=(const MD_NAT &other) const
 MD_NAT MD_NAT::operator+=(const MD_NAT &other) const
 {
   MD_NAT res = *this;
-  for (unsigned int j = 0; j < size(); ++j)
+  for (unsigned int j = 0; j < arity(); ++j)
     res[j] += other[j];
 
   return res;
@@ -96,10 +94,12 @@ MD_NAT MD_NAT::operator+(const MD_NAT &other) const
   return *this += other;
 }
 
+std::size_t MD_NAT::arity() const { return value_.size(); }
+
 std::ostream &operator<<(std::ostream &out, const MD_NAT &md)
 {
   MD_NAT aux = md;
-  unsigned int sz = aux.size();
+  unsigned int sz = aux.arity();
 
   if (sz == 1)  
     out << aux[0];

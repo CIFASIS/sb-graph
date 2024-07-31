@@ -46,11 +46,9 @@ struct LExp {
 
   bool operator==(const LExp &other) const;
   bool operator!=(const LExp &other) const;
-  bool operator<(const LExp &other) const;
 
   LExp operator+(const LExp &other) const;
   LExp operator-(const LExp &other) const;
-  LExp operator*(const LExp &other) const;
 
   /**
    * @brief Traditional expression operations.
@@ -62,9 +60,6 @@ struct LExp {
    */
   LExp composition(const LExp &other) const;
   LExp inverse() const;
-  LExp mod(const LExp &other) const;
-  LExp floorDiv(const LExp &other) const;
-  LExp ceilDiv(const LExp &other) const;
 
   /**
    * @brief Extra operations.

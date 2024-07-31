@@ -104,7 +104,13 @@ bool UnordPWMDInter::operator!=(const UnordPWMDInter &other) const
 
 bool UnordPWMDInter::operator<(const UnordPWMDInter &other) const
 {
-  return this->minElem() < other.minElem();
+  if (other.isEmpty())
+    return false;
+
+  if (isEmpty())
+    return true;
+
+  return minElem() < other.minElem();
 }
 
 std::ostream &operator<<(std::ostream &out, const UnordPWMDInter &pwi)
@@ -164,7 +170,7 @@ UnordPWMDInter UnordPWMDInter::intersection(const UnordPWMDInter &other) const
   if (isEmpty() || other.isEmpty())
     return UnordPWMDInter();
 
-  Util::ERROR_UNLESS(begin()->size() == other.begin()->size()
+  Util::ERROR_UNLESS(arity() == other.arity()
       , "LIB::Unord::intersection: dimensions don't match");
 
   if (pieces_ == other.pieces_)
@@ -193,7 +199,7 @@ UnordPWMDInter UnordPWMDInter::cup(const UnordPWMDInter &other) const
   if (other.isEmpty())
     return *this;
 
-  Util::ERROR_UNLESS(begin()->size() == other.begin()->size()
+  Util::ERROR_UNLESS(arity() == other.arity()
       , "LIB::Unord::cup: dimensions don't match");
 
   if (pieces_ == other.pieces_)
@@ -234,7 +240,7 @@ UnordPWMDInter UnordPWMDInter::complementAtom() const
   SetPiece mdi = *begin();
 
   Interval univ(0, 1, Util::Inf);
-  SetPiece all(mdi.size(), univ);
+  SetPiece all(mdi.arity(), univ);
 
   unsigned int dim = 0;
   for (const Interval &i : mdi) {
@@ -263,8 +269,8 @@ UnordPWMDInter UnordPWMDInter::complementAtom() const
     }
 
     // After interval
-    if (i.maxElem() < Util::Inf)
-      all[dim] = Interval(i.maxElem() + 1, 1, Util::Inf);
+    if (i.end() < Util::Inf)
+      all[dim] = Interval(i.end() + 1, 1, Util::Inf);
     else
       all[dim] = Interval(Util::Inf);
 
@@ -311,13 +317,20 @@ UnordPWMDInter UnordPWMDInter::difference(const UnordPWMDInter &other) const
   if (other.isEmpty())
     return *this;
 
-  Util::ERROR_UNLESS(begin()->size() == other.begin()->size()
+  Util::ERROR_UNLESS(arity() == other.arity()
       , "LIB::Unord::difference: dimensions don't match");
 
   return intersection(other.complement());
 }
 
 // Extra operations ------------------------------------------------------------
+
+std::size_t UnordPWMDInter::arity() const
+{
+  Util::ERROR_UNLESS(!isEmpty(), "LIB::Unord::arity: set is empty");
+
+  return begin()->arity();
+}
 
 UnordPWMDInter UnordPWMDInter::concatenation(const UnordPWMDInter &other) const
 {
@@ -329,7 +342,7 @@ UnordPWMDInter UnordPWMDInter::concatenation(const UnordPWMDInter &other) const
   if (other.isEmpty())
     return *this;
 
-  Util::ERROR_UNLESS(begin()->size() == other.begin()->size()
+  Util::ERROR_UNLESS(arity() == other.arity()
       , "LIB::Unord::concatenation: dimensions don't match");
 
   for (const SetPiece &mdi : pieces_)
@@ -358,7 +371,7 @@ UnordPWMDInter UnordPWMDInter::offset(const Util::MD_NAT &off) const
   if (isEmpty())
     return res;
 
-  Util::ERROR_UNLESS(off.size() == begin()->size()
+  Util::ERROR_UNLESS(off.arity() == arity()
       , "LIB::Unord::offset: dimensions don't match");
 
   for (const SetPiece &mdi : pieces_)

@@ -25,7 +25,7 @@ namespace LIB {
 
 MultiDimInter::MultiDimInter() : intervals_() {}
 MultiDimInter::MultiDimInter(MD_NAT x) : intervals_() {
-  Util::ERROR_UNLESS(x.size() > 0, "LIB::MDI1: empty not allowed");
+  Util::ERROR_UNLESS(x.arity() > 0, "LIB::MDI1: empty not allowed");
   for (NAT xi : x)
     intervals_.emplace_back(Interval(xi, 1, xi));
 }
@@ -55,8 +55,6 @@ MultiDimInter::const_iterator MultiDimInter::end() const
   return intervals_.end();
 }
 
-std::size_t MultiDimInter::size() const { return intervals_.size(); }
-
 void MultiDimInter::emplaceBack(Interval i) 
 {
   if (i.isEmpty())
@@ -82,42 +80,35 @@ const Interval &MultiDimInter::operator[](std::size_t n) const
 
 bool MultiDimInter::operator==(const MultiDimInter &other) const
 {
-  Util::ERROR_UNLESS(size() == other.size()
+  Util::ERROR_UNLESS(arity() == other.arity()
       , "LIB::MDI::operator==: dimensions don't match");
   return intervals_ == other.intervals_;
 }
 
 bool MultiDimInter::operator!=(const MultiDimInter &other) const
 {
-  Util::ERROR_UNLESS(size() == other.size()
+  Util::ERROR_UNLESS(arity() == other.arity()
       , "LIB::MDI::operator!=: dimensions don't match");
   return !(*this == other);
 }
 
 bool MultiDimInter::operator<(const MultiDimInter &other) const
 {
-  Util::ERROR_UNLESS(size() == other.size()
+  Util::ERROR_UNLESS(arity() == other.arity()
       , "LIB::MDI::operator<: dimensions don't match");
-
-  if (isEmpty())
-    return true;
 
   if (other.isEmpty())
     return false;
 
-  for (unsigned int j = 0; j < size(); ++j) {
-    if (operator[](j) < other[j])
-      return true;
-    else if (other[j] < operator[](j))
-      return false;
-  }
+  if (isEmpty())
+    return true;
 
-  return false;
+  return minElem() < other.minElem();
 }
 
 std::ostream &operator<<(std::ostream &out, const MultiDimInter &mdi)
 {
-  std::size_t sz = mdi.size();
+  std::size_t sz = mdi.arity();
 
   if (sz > 0) {
     for (std::size_t j = 0; j < sz - 1; ++j)
@@ -129,6 +120,8 @@ std::ostream &operator<<(std::ostream &out, const MultiDimInter &mdi)
 }
 
 // Set functions ---------------------------------------------------------------
+
+std::size_t MultiDimInter::arity() const { return intervals_.size(); }
 
 unsigned int MultiDimInter::cardinal() const
 {
@@ -144,13 +137,13 @@ bool MultiDimInter::isEmpty() const { return intervals_.empty(); }
 
 bool MultiDimInter::isMember(const MD_NAT &x) const
 {
-  Util::ERROR_UNLESS(x.size() == size()
+  Util::ERROR_UNLESS(x.arity() == arity()
       , "LIB::MDI::isMember: dimensions don't match");
 
   if (isEmpty())
     return false;
 
-  for (unsigned int j = 0; j < size(); ++j)
+  for (unsigned int j = 0; j < arity(); ++j)
     if (!operator[](j).isMember(x[j]))
       return false;
 
@@ -163,7 +156,7 @@ Util::MD_NAT MultiDimInter::minElem() const
   MD_NAT res;
 
   for (const Interval &i : intervals_)
-    res.emplaceBack(i.minElem());
+    res.emplaceBack(i.begin());
 
   return res;
 }
@@ -175,14 +168,14 @@ Util::MD_NAT MultiDimInter::maxElem() const
   MD_NAT res;
 
   for (const Interval &i : intervals_)
-    res.emplaceBack(i.maxElem());
+    res.emplaceBack(i.end());
 
   return res;
 }
 
 MultiDimInter MultiDimInter::intersection(const MultiDimInter &other) const
 {
-  Util::ERROR_UNLESS(size() == other.size()
+  Util::ERROR_UNLESS(arity() == other.arity()
     , "LIB::MDI::intersection: dimensions don't match");
 
   if (isEmpty() || other.isEmpty())
@@ -190,7 +183,7 @@ MultiDimInter MultiDimInter::intersection(const MultiDimInter &other) const
 
   MultiDimInter res;
 
-  for (unsigned int j = 0; j < size(); ++j) {
+  for (unsigned int j = 0; j < arity(); ++j) {
     Interval ith = operator[](j).intersection(other[j]);
     if (!ith.isEmpty())
       res.emplaceBack(ith);
@@ -206,12 +199,12 @@ MultiDimInter MultiDimInter::intersection(const MultiDimInter &other) const
 
 MultiDimInter MultiDimInter::offset(const MD_NAT &off) const
 {
-  Util::ERROR_UNLESS(off.size() == size()
+  Util::ERROR_UNLESS(off.arity() == arity()
       , "LIB::MDI::offset: dimensions don't match");
 
   MultiDimInter res;
 
-  for (unsigned int j = 0; j < size(); ++j)
+  for (unsigned int j = 0; j < arity(); ++j)
     res.emplaceBack(operator[](j).offset(off[j]));
 
   return res;
@@ -222,14 +215,14 @@ MultiDimInter MultiDimInter::least(const MultiDimInter &other) const
   return std::min(*this, other);
 }
 
-bool MultiDimInter::isUnidim() const { return size() <= 1; }
+bool MultiDimInter::isUnidim() const { return arity() <= 1; }
 
 MultiDimInter::MaybeMDI MultiDimInter::compact(const MultiDimInter &other) const
 {
   MultiDimInter res;
 
   unsigned int j = 0;
-  for (; j < size(); ++j) {
+  for (; j < arity(); ++j) {
     auto ith = operator[](j).compact(other[j]);
     if (ith) {
       res.emplaceBack(ith.value());
@@ -244,7 +237,7 @@ MultiDimInter::MaybeMDI MultiDimInter::compact(const MultiDimInter &other) const
       res.emplaceBack(operator[](j));
   }
 
-  for (; j < size(); ++j) {
+  for (; j < arity(); ++j) {
     if (operator[](j) != other[j])
       return {};
 

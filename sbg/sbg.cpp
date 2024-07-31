@@ -36,7 +36,7 @@ SBGraph<Set>::SBGraph(Set V, PW Vmap, PW map1, PW map2, PW Emap)
   for (const SBGMap<Set> &sbgmap : Emap) {
     Set dom = sbgmap.dom();
     for (const SetPiece &mdi : dom) {
-      Exp off(Util::MD_NAT(mdi.size(), j));
+      Exp off(Util::MD_NAT(mdi.arity(), j));
       subE_map_.emplaceBack(SBGMap(Set(mdi), off)); 
       ++j;
     }
@@ -74,7 +74,7 @@ SBGraph<Set> SBGraph<Set>::addSV(const Set &vertices) const
     res.set_V(V_.cup(vertices));
 
     Set SV = Vmap_.image(); // Identifiers of SV
-    std::size_t dims = vertices.begin()->size();
+    std::size_t dims = vertices.arity();
     Util::MD_NAT max = SV.isEmpty() ? Util::MD_NAT(dims, 0) : SV.maxElem();
     for (unsigned int j = 0; j < dims; ++j)
       max[j] = max[j] + 1;
@@ -105,7 +105,7 @@ SBGraph<Set> SBGraph<Set>::addSE(const PW &pw1, const PW &pw2) const
       res.set_E(E_.cup(edges));
 
       Set SE = Emap_.image(); // Identifiers of SV
-      std::size_t dims = edges.begin()->size();
+      std::size_t dims = edges.arity();
       Util::MD_NAT max = SE.isEmpty() ? Util::MD_NAT(dims, 0) : SE.maxElem();
       for (unsigned int j = 0; j < dims; ++j)
         max[j] = max[j] + 1;
@@ -141,7 +141,7 @@ SBGraph<Set> SBGraph<Set>::copy(unsigned int times) const
   Util::MD_NAT maxE = Emap_ith.image().maxElem();
 
   Exp off;
-  for (unsigned int j = 0; j < maxv.size(); ++j) {
+  for (unsigned int j = 0; j < maxv.arity(); ++j) {
     Util::RATIONAL o = Util::RATIONAL(maxv[j]) - Util::RATIONAL(maxe[j]);
     off.emplaceBack(LExp(0, o));
   }
@@ -184,7 +184,7 @@ DSBGraph<Set>::DSBGraph(Set V, PW Vmap, PW mapB, PW mapD, PW Emap)
   for (const SBGMap<Set> &sbgmap : Emap) {
     Set dom = sbgmap.dom();
     for (const SetPiece &mdi : dom) {
-      Exp off(Util::MD_NAT(mdi.size(), j));
+      Exp off(Util::MD_NAT(mdi.arity(), j));
       subE_map_.emplaceBack(SBGMap(Set(mdi), off)); 
       ++j;
     }
@@ -222,7 +222,7 @@ DSBGraph<Set> DSBGraph<Set>::addSV(const Set &vertices) const
     res.set_V(V_.cup(vertices));
 
     Set SV = Vmap_.image(); // Identifiers of SV
-    std::size_t dims = vertices.begin()->size();
+    std::size_t dims = vertices.arity();
     Util::MD_NAT max = SV.isEmpty() ? Util::MD_NAT(dims, 0) : SV.maxElem();
     for (unsigned int j = 0; j < dims; ++j)
       max[j] = max[j] + 1;
@@ -252,7 +252,7 @@ DSBGraph<Set> DSBGraph<Set>::addSE(const PW &pw1, const PW &pw2) const
       res.set_E(E_.cup(edges));
 
       Set SE = Emap_.image(); // Identifiers of SV
-      std::size_t dims = edges.begin()->size();
+      std::size_t dims = edges.arity();
       Util::MD_NAT max = SE.isEmpty() ? Util::MD_NAT(dims, 0) : SE.maxElem();
       for (unsigned int j = 0; j < dims; ++j)
         max[j] = max[j] + 1;

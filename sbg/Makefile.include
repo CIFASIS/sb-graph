@@ -15,7 +15,6 @@ SBG_ROOT := sbg
     $(SBG_ROOT)/pw_map.cpp \
     $(SBG_ROOT)/sbg.cpp \
     $(SBG_ROOT)/sbg_algorithms.cpp
-    #$(SBG_ROOT)/info.cpp
 
 include util/Makefile.include
 

@@ -32,7 +32,7 @@ Interval::Interval(NAT begin, NAT step, NAT end)
     int rem = fmod(end - begin, step);
     end_ = end - rem;
 
-    if (cardinal() == 1)
+    if (begin_ == end_)
       step_ = 1;
   }
 
@@ -63,18 +63,7 @@ bool Interval::operator!=(const Interval &other) const
 
 bool Interval::operator<(const Interval &other) const
 {
-  if (begin_ < other.begin_)
-    return true;
-
-  if (begin_ == other.begin_ && step_ < other.step_)
-    return true;
-
-  if (begin_ == other.begin_
-      && step_ == other.step_
-      && end_ < other.end_)
-    return true;
-
-  return false;
+  return begin_ < other.begin_;
 }
 
 std::ostream &operator<<(std::ostream &out, const Interval &i) 
@@ -105,10 +94,6 @@ bool Interval::isMember(NAT x) const
 
   return rem == 0;
 }
-
-Util::NAT Interval::minElem() const { return begin_; }
-
-Util::NAT Interval::maxElem() const { return end_; }
 
 Interval Interval::intersection(const Interval &other)const
 {

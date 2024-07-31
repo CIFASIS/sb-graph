@@ -21,6 +21,7 @@
 #include <gtest/gtest.h>
 
 #include "sbg/ord_pw_mdinter.hpp"
+#include "sbg/unord_pw_mdinter.hpp"
 
 TEST(SetPerf, Intersection)
 {
@@ -75,6 +76,78 @@ TEST(SetPerf, Union)
   int N = 3;
 
   SBG::LIB::OrdSet s1, s2;
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
+    s1.emplaceBack(i);
+  }
+
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*95+1, 1, (j+1)*95);
+    s2.emplaceBack(i);
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  s1.cup(s2);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "UNION TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+TEST(SetPerf, UnordIntersection)
+{
+  int N = 3;
+
+  SBG::LIB::UnordSet s1, s2;
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
+    s1.emplaceBack(i);
+  }
+
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
+    s2.emplaceBack(i);
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  s1.intersection(s2);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "INTERSECTION TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+TEST(SetPerf, UnordDifference)
+{
+  int N = 3;
+
+  SBG::LIB::UnordSet s1, s2;
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
+    s1.emplaceBack(i);
+  }
+
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
+    s2.emplaceBack(i);
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  s1.difference(s2);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "DIFFERENCE TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+TEST(SetPerf, UnordUnion)
+{
+  int N = 3;
+
+  SBG::LIB::UnordSet s1, s2;
   for (int j = 0; j < N; j++) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
     s1.emplaceBack(i);

@@ -53,7 +53,6 @@ struct MultiDimInter {
   iterator end();
   const_iterator begin() const;
   const_iterator end() const;
-  std::size_t size() const;
   void emplaceBack(Interval i);
   Interval &operator[](std::size_t n);
   const Interval &operator[](std::size_t n) const;
@@ -65,6 +64,7 @@ struct MultiDimInter {
   /**
    * @brief Traditional set operations.
    */
+  std::size_t arity() const;
   unsigned int cardinal() const;
   bool isEmpty() const;
   bool isMember(const MD_NAT &x) const; // Useful?

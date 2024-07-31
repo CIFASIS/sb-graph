@@ -65,8 +65,6 @@ struct Interval {
   unsigned int cardinal() const;
   bool isEmpty() const;
   bool isMember(NAT x) const;
-  Util::NAT minElem() const;
-  Util::NAT maxElem() const;
   Interval intersection(const Interval &i2) const;
 
   /**

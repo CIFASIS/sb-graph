@@ -59,7 +59,6 @@ typedef boost::variant<Assign, ConfigDims> Statement;
 typedef std::vector<Statement> StatementList;
 std::ostream &operator<<(std::ostream &out, const StatementList &stm);
 
-
 } // namespace AST
 
 } // namespace SBG

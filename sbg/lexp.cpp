@@ -36,14 +36,6 @@ bool LExp::operator==(const LExp &other) const
 
 bool LExp::operator!=(const LExp &other) const { return !(*this == other); }
 
-bool LExp::operator<(const LExp &other) const
-{
-  if (slope_ < other.slope_)
-    return true;
-
-  return offset_ < other.offset_;
-}
-
 LExp LExp::operator+(const LExp &other) const
 {
   return LExp(slope_ + other.slope_, offset_ + other.offset_);
@@ -52,14 +44,6 @@ LExp LExp::operator+(const LExp &other) const
 LExp LExp::operator-(const LExp &other) const
 {
   return LExp(slope_ - other.slope_, offset_ - other.offset_);
-}
-
-LExp LExp::operator*(const LExp &other) const
-{
-  Util::ERROR_UNLESS(other.slope_ == 0
-                     , "LIB::LExp::operator*: result is not a LExp");
-
-  return LExp(slope_ * other.offset_, offset_);
 }
 
 std::ostream &operator<<(std::ostream &out, const LExp &le)
@@ -123,33 +107,6 @@ LExp LExp::inverse() const
   }
 
   return LExp(new_slope, new_offset);
-}
-
-
-LExp LExp::mod(const LExp &other) const
-{
-  Util::ERROR_UNLESS(other.slope_ == 0
-                     , "LIB::LExp::mod: not supported currently");
- 
-  return LExp();
-}
-
-LExp LExp::floorDiv(const LExp &other) const
-{
-  Util::ERROR_UNLESS(other.slope_ == 0
-                     , "LIB::LExp::floorDiv: result is not a LExp");
-
-  Util::RATIONAL div = other.offset_;
-  return LExp(slope_ / div, offset_ / div);
-}
-
-LExp LExp::ceilDiv(const LExp &other) const
-{
-  Util::ERROR_UNLESS(other.slope_ == 0
-                     , "LIB::LExp::ceilDiv: result is not a LExp");
-
-  Util::RATIONAL div = other.offset_;
-  return LExp(slope_ / div, offset_ / div);
 }
 
 bool LExp::isId() const { return slope_ == 1 && offset_ == 0; }

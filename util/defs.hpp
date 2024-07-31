@@ -91,7 +91,6 @@ struct MD_NAT {
   iterator end();
   const_iterator begin() const;
   const_iterator end() const;
-  std::size_t size() const;
   void emplace(iterator it, NAT x);
   void emplaceBack(NAT x);
   void push_back(NAT x);
@@ -105,6 +104,8 @@ struct MD_NAT {
 
   MD_NAT operator+=(const MD_NAT &other) const;
   MD_NAT operator+(const MD_NAT &other) const;
+
+  std::size_t arity() const;
 };
 std::ostream &operator<<(std::ostream &out, const MD_NAT &md);
 

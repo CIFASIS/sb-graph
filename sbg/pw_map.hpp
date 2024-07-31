@@ -66,10 +66,12 @@ struct PWMap {
   bool operator!=(const PWMap &other) const;
 
   PWMap operator+(const PWMap &pw) const;
+  PWMap operator-(const PWMap &pw) const;
 
   /**
    * @brief Traditional map operations.
    */
+  std::size_t arity() const;
   bool isEmpty() const;
   Set dom() const;
   PWMap restrict(const Set &subdom) const;
@@ -169,8 +171,6 @@ struct PWMap {
   PWMap offsetDom(const PWMap &off) const;
   PWMap offsetImage(const Util::MD_NAT &off) const;
   PWMap offsetImage(const Exp &off) const;
-
-  unsigned int nmbrDims() const;
 
   PWMap compact() const;
 

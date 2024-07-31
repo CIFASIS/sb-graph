@@ -25,24 +25,23 @@ namespace LIB {
 
 // Type definitions ------------------------------------------------------------
 
-LTMDInter::LTMDInter() {}
-
-bool LTMDInter::operator()(const SetPiece &x, const SetPiece &y) const
-{
-  return x < y;
-}
-
 std::ostream &operator<<(std::ostream &out, const MDInterOrdSet &ii) 
 {
   std::size_t sz = ii.size();
 
-  out << "{";
+  out << "{{";
   if (sz > 0) {
-    for (std::size_t j = 0; j < sz - 1; ++j) 
-      out << *ii.nth(j) << ", "; 
-    out << *ii.nth(sz-1);
+    unsigned int j = 0;
+    for (const SetPiece &mdi : ii) { 
+      if (j < sz - 1)
+        out << mdi << ", "; 
+      else
+        out << mdi;
+
+      ++j;
+    }
   }
-  out << "}";
+  out << "}}";
 
   return out;
 }
@@ -96,14 +95,7 @@ void OrdPWMDInter::emplaceBack(SetPiece mdi)
 
 bool OrdPWMDInter::operator==(const OrdPWMDInter &other) const
 {
-  MDInterOrdSet aux1 = this->pieces_, aux2 = other.pieces_;
-  if (optConds() && other.optConds())
-    return compact().pieces_ == other.compact().pieces_;
-
-  if (aux1 == aux2)
-    return true;
-
-  return difference(other).isEmpty() && other.difference(*this).isEmpty();
+  return compact().pieces_ == other.compact().pieces_;
 }
 
 bool OrdPWMDInter::operator!=(const OrdPWMDInter &other) const
@@ -113,7 +105,13 @@ bool OrdPWMDInter::operator!=(const OrdPWMDInter &other) const
 
 bool OrdPWMDInter::operator<(const OrdPWMDInter &other) const
 {
-  return this->minElem() < other.minElem();
+  if (other.isEmpty())
+    return false;
+
+  if (isEmpty())
+    return true;
+
+  return minElem() < other.minElem();
 }
 
 std::ostream &operator<<(std::ostream &out, const OrdPWMDInter &pwi)
@@ -236,18 +234,8 @@ OrdPWMDInter OrdPWMDInter::cup(const OrdPWMDInter &other) const
   }
 
   OrdPWMDInter diff = gt_pieces.difference(lt_pieces);
-  if (lt_pieces.optConds() && gt_pieces.optConds())
-    return lt_pieces.concatenation(diff);
 
-  else {
-    for (const SetPiece &mdi : lt_pieces)
-      un.emplace(mdi);
-
-    for (const SetPiece &mdi : diff)
-      un.emplace(mdi);
-  }
-
-  return un;
+  return lt_pieces.concatenation(diff);
 }
 
 OrdPWMDInter OrdPWMDInter::complementAtom() const
@@ -273,8 +261,8 @@ OrdPWMDInter OrdPWMDInter::complementAtom() const
   }
 
   // After interval
-  if (i.maxElem() < Util::Inf)
-    res.emplaceBack(SetPiece(Interval(i.maxElem() + 1, 1, Util::Inf)));
+  if (i.end() < Util::Inf)
+    res.emplaceBack(SetPiece(Interval(i.end() + 1, 1, Util::Inf)));
   else 
     res.emplaceBack(SetPiece(Interval(Util::Inf)));
 
@@ -309,22 +297,16 @@ OrdPWMDInter OrdPWMDInter::difference(const OrdPWMDInter &other) const
 
 // Extra operations ------------------------------------------------------------
 
+std::size_t OrdPWMDInter::arity() const
+{
+  Util::ERROR_UNLESS(!isEmpty(), "LIB::Ord::arity: set is empty");
+
+  return begin()->arity();
+}
+
 OrdPWMDInter OrdPWMDInter::concatenation(const OrdPWMDInter &other) const
 {
-  OrdPWMDInter res;
-
-  if (optConds() && other.optConds())
-     res = traverse(&SetPiece::least, other);
-
-  else {
-    for (const SetPiece &mdi1 : pieces_)
-      res.emplace(mdi1);
-
-    for (const SetPiece &mdi2 : other.pieces_)
-      res.emplace(mdi2);
-  }
-
-  return res;
+  return traverse(&SetPiece::least, other);
 }
 
 OrdPWMDInter OrdPWMDInter::filterSet(bool (*f)(const SetPiece &mdi)) const
@@ -381,20 +363,6 @@ OrdPWMDInter OrdPWMDInter::compact() const
   return res;
 }
 
-bool OrdPWMDInter::isDense() const
-{
-  if (isEmpty())
-    return true;
-
-  for (const SetPiece &mdi : pieces_)
-    if (mdi[0].step() != 1)
-      return false;
-
-  return true;
-}
-
-bool OrdPWMDInter::optConds() const { return isDense(); }
-
 MDInterOrdSet OrdPWMDInter::boundedTraverse(
     SetPiece (SetPiece::*f)(const SetPiece &) const, const OrdPWMDInter &other
 ) const
@@ -404,33 +372,22 @@ MDInterOrdSet OrdPWMDInter::boundedTraverse(
   if (isEmpty() || other.isEmpty())
     return res;
 
-  if (optConds() && other.optConds()) {
-    auto it1 = begin(), it2 = other.begin();
-    auto end1 = end(), end2 = other.end();
+  auto it1 = begin(), it2 = other.begin();
+  auto end1 = end(), end2 = other.end();
 
-    SetPiece mdi1, mdi2;
-    for (int j = 0; it1 != end1 && it2 != end2; ++j) {
-      mdi1 = *it1;
-      mdi2 = *it2;
+  SetPiece mdi1, mdi2;
+  for (int j = 0; it1 != end1 && it2 != end2; ++j) {
+    mdi1 = *it1;
+    mdi2 = *it2;
 
-      SetPiece funci = (mdi1.*f)(mdi2);
-      if (!funci.isEmpty())
-        res.emplace_hint(res.cend(), funci);
+    SetPiece funci = (mdi1.*f)(mdi2);
+    if (!funci.isEmpty())
+      res.emplace_hint(res.cend(), funci);
 
-      if (mdi1.maxElem() < mdi2.maxElem())
-        ++it1;
-      else 
-        ++it2;
-    }
-  }
-
-  else {
-    for (const SetPiece &mdi1 : pieces_)
-      for (const SetPiece &mdi2 : other.pieces_) {
-        SetPiece funci = (mdi1.*f)(mdi2);
-        if (!funci.isEmpty())
-          res.emplace_hint(res.cend(), funci);
-      }
+    if (mdi1.maxElem() < mdi2.maxElem())
+      ++it1;
+    else 
+      ++it2;
   }
 
   return res;
@@ -448,43 +405,32 @@ MDInterOrdSet OrdPWMDInter::traverse(
   if (other.isEmpty())
     return pieces_;
   
-  if (optConds() && other.optConds()) {
-    auto it1 = begin(), it2 = other.begin();
-    auto end1 = end(), end2 = other.end();
+  auto it1 = begin(), it2 = other.begin();
+  auto end1 = end(), end2 = other.end();
 
-    SetPiece mdi1, mdi2;
-    for (; it1 != end1 && it2 != end2;) {
-      mdi1 = *it1;
-      mdi2 = *it2;
+  SetPiece mdi1, mdi2;
+  for (; it1 != end1 && it2 != end2;) {
+    mdi1 = *it1;
+    mdi2 = *it2;
 
-      SetPiece funci = (mdi1.*f)(mdi2);
-      if (!funci.isEmpty())
-        res.emplace_hint(res.cend(), funci);
+    SetPiece funci = (mdi1.*f)(mdi2);
+    if (!funci.isEmpty())
+      res.emplace_hint(res.cend(), funci);
 
-      if (mdi1.maxElem() < mdi2.maxElem())
-        ++it1;
-      else
-        ++it2;
-    }
-
-    for (; it1 != end1; ++it1) {
-      mdi1 = *it1;
-      res.emplace_hint(res.cend(), mdi1);
-    }
-
-    for (; it2 != end2; ++it2) {
-      mdi2 = *it2;
-      res.emplace_hint(res.cend(), mdi2);
-    }
+    if (mdi1.maxElem() < mdi2.maxElem())
+      ++it1;
+    else
+      ++it2;
   }
 
-  else {
-    for (const SetPiece &mdi1 : pieces_)
-      for (const SetPiece &mdi2 : other.pieces_) {
-        SetPiece funci = (mdi1.*f)(mdi2);
-        if (!funci.isEmpty())
-          res.emplace_hint(res.cend(), funci);
-      }
+  for (; it1 != end1; ++it1) {
+    mdi1 = *it1;
+    res.emplace_hint(res.cend(), mdi1);
+  }
+
+  for (; it2 != end2; ++it2) {
+    mdi2 = *it2;
+    res.emplace_hint(res.cend(), mdi2);
   }
 
   return res;

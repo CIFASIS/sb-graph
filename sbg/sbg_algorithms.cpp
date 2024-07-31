@@ -31,9 +31,7 @@ template<typename Set>
 PWMap<Set> connectedComponents(SBGraph<Set> g)
 {
   if (!g.V().isEmpty()) {
-    unsigned int dims = g.V().begin()->size();
-    SBGMap<Set> id(g.V(), Exp(dims));
-    PWMap<Set> rmap(id), old_rmap;
+    PWMap<Set> rmap(g.V()), old_rmap;
 
     if (g.E().isEmpty())
       return rmap;
@@ -197,7 +195,7 @@ void SBGMatching<Set>::directedMinReach(const PW &dir_map)
   dsbg.set_subE_map(subE_map);
 
   PWMap<Set> Vmap;
-  unsigned int j = 1, dims = dir_omap.nmbrDims();
+  unsigned int j = 1, dims = dir_omap.arity();
   for (SetPiece mdi : V) {
     Util::MD_NAT v(dims, j);
     Vmap.emplaceBack(SBGMap<Set>(mdi, Exp(v)));
@@ -518,6 +516,7 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
 
   Set V = dg.V(), E = dg.E();
   PWMap<Set> mapB = dg.mapB(), mapD = dg.mapD(), subE_map = dg.subE_map();
+  unsigned int copies = mapB.arity();
   if (!V.isEmpty()) {
     PWMap<Set> rmap(V), old_rmap;
 
@@ -535,6 +534,7 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
       if (debug())
         Util::SBG_LOG << "scc rmap before rec: " << rmap << "\n";
 
+      Set positive(SetPiece(copies, Interval(1, 1, Util::Inf)));
       PW rec_rmap;
       Set Vc = V.difference(old_rmap.equalImage(rmap));
       for (const Map &subv : dg.Vmap()) {
@@ -554,7 +554,6 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
             PW dmap;
             Set ith = rmap.image(VR), dom_VR;
             //Set visited, dom_vs;
-            unsigned int copies = mapB.nmbrDims();
             Util::NAT dist = 0;
             // Calculate distance for vertices in same_rep that reach reps
             for (; dg.Vmap().restrict(dom_VR).sharedImage().isEmpty();) {
@@ -569,7 +568,8 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
             dmap = dmap.restrict(VR);
             PW dmapB = dmap.composition(mapB), dmapD = dmap.composition(mapD);
             // Get edges where the end is closer to the rep that the beginning
-            Set not_cycle_edges = dmapB.gtImage(dmapD);
+            //Set not_cycle_edges = dmapB.gtImage(dmapD);
+            Set not_cycle_edges = (dmapB - dmapD).preImage(positive);
             ER = ER.intersection(not_cycle_edges);
 
             // Extend to subset-edge
@@ -625,7 +625,7 @@ PWMap<Set> SBGSCC<Set>::sccStep()
   }
 
   PWMap<Set> auxVmap;
-  unsigned int j = 1, dims = id_V.nmbrDims();
+  unsigned int j = 1, dims = id_V.arity();
   for (SetPiece mdi : auxV) {
     Util::MD_NAT v(dims, j);
     auxVmap.emplaceBack(SBGMap<Set>(mdi, Exp(v)));
@@ -703,7 +703,7 @@ Exp SBGTopSort<Set>::calculateExp(Util::MD_NAT from, Util::MD_NAT to)
   Exp res;
 
   Util::RATIONAL one(1, 1);
-  for (unsigned int j = 0; j < from.size(); ++j) { 
+  for (unsigned int j = 0; j < from.arity(); ++j) { 
     Util::RATIONAL r_from(from[j]), r_to(to[j]);
     res.emplaceBack(LExp(1, r_to - r_from));
   }
@@ -826,7 +826,7 @@ DSBGraph<Set> buildSCCFromMatching(const SBGMatching<Set> &match)
   PWMap<Set> mapD = matchedU_inv.composition(unmatchedU);
   mapD = mapD.compact();
 
-  unsigned int j = 1, dims = Vmap.nmbrDims();
+  unsigned int j = 1, dims = Vmap.arity();
   PWMap<Set> Emap;
   for (const SBGMap<Set> &map1 : Vmap) {
     Set edges1 = mapB.preImage(map1.dom());
@@ -896,7 +896,7 @@ DSBGraph<Set> buildSortFromSCC(
   }
 
   PWMap<Set> Vmap;
-  unsigned int j = 1, dims = rmap.nmbrDims();
+  unsigned int j = 1, dims = rmap.arity();
   for (SetPiece mdi : V) {
     Util::MD_NAT v(dims, j);
     Vmap.emplaceBack(SBGMap<Set>(mdi, Exp(v)));
@@ -926,36 +926,107 @@ template BaseDSBG buildSortFromSCC(const BaseSCC &scc, const BasePWMap &rmap);
 template CanonDSBG buildSortFromSCC(const CanonSCC &scc, const CanonPWMap &rmap);
 
 template<typename Set>
+rapidjson::Value setJson(const Set &s, rapidjson::Document::AllocatorType &alloc)
+{
+  rapidjson::Value res(rapidjson::kArrayType);
+
+  for (const SetPiece &mdi : s) {
+    rapidjson::Value inter_array(rapidjson::kArrayType);
+    for (const Interval &i : mdi) {
+      rapidjson::Value inter(rapidjson::kArrayType);
+
+      rapidjson::Value beg;
+      beg.SetInt(i.begin());
+      inter.PushBack(beg, alloc);
+      rapidjson::Value st;
+      st.SetInt(i.step());
+      inter.PushBack(st, alloc);
+      rapidjson::Value end;
+      end.SetInt(i.end());
+      inter.PushBack(end, alloc);
+
+      inter_array.PushBack(inter, alloc);
+    }
+    rapidjson::Value mdi_obj(rapidjson::kObjectType);
+    mdi_obj.AddMember("interval", inter_array, alloc);
+    res.PushBack(mdi_obj, alloc);
+  }
+
+  return res;
+}
+
+rapidjson::Value expJson(Exp exp, rapidjson::Document::AllocatorType &alloc)
+{
+  rapidjson::Value res(rapidjson::kArrayType);
+
+  for (const LExp &le : exp) {
+    rapidjson::Value le_array(rapidjson::kArrayType);
+
+    std::stringstream ssm;
+    ssm << le.slope();
+    rapidjson::Value m;
+    m.SetString(ssm.str().c_str(), strlen(ssm.str().c_str()), alloc);
+    le_array.PushBack(m, alloc);
+
+    std::stringstream ssh;
+    ssh << le.offset();
+    rapidjson::Value h;
+    h.SetString(ssh.str().c_str(), strlen(ssh.str().c_str()), alloc);
+    le_array.PushBack(h, alloc);
+
+    res.PushBack(le_array, alloc);
+  }
+
+  return res;
+}
+
+template<typename Set>
+rapidjson::Value mapJson(
+  const PWMap<Set> &pw, rapidjson::Document::AllocatorType &alloc
+)
+{
+  rapidjson::Value res(rapidjson::kArrayType);
+
+  for (const SBGMap<Set> &map : pw) {
+    rapidjson::Value ith(rapidjson::kObjectType);
+
+    ith.AddMember("dom", setJson(map.dom(), alloc), alloc);
+    ith.AddMember("exp", expJson(map.exp(), alloc), alloc);
+
+    res.PushBack(ith, alloc);
+  }
+
+  return res;
+}
+
+template<typename Set>
 void buildJson(
   const Set &matching, const PWMap<Set> &scc, const PWMap<Set> &order
 )
 {
-  // 1. Parse a JSON string into DOM.
-  const char* json = "{\"matching\":\"\",\"scc\":\"\",\"order\":\"\"}";
+  //const char* json = "{\"matching\":\"\",\"scc\":\"\",\"order\":\"\"}";
   rapidjson::Document d;
-  d.Parse(json);
+  d.SetObject();
+  rapidjson::Document::AllocatorType& alloc = d.GetAllocator();
 
-  // 2. Modify it by DOM.
-  rapidjson::Value &m = d["matching"];
-  std::stringstream ss1;
-  ss1 << matching;
-  m.SetString(ss1.str().c_str(), strlen(ss1.str().c_str()), d.GetAllocator());
+  // Create matching information
+  rapidjson::Value edges = setJson(matching, alloc);
+  d.AddMember("matching", edges, alloc);
 
-  rapidjson::Value &s = d["scc"];
-  std::stringstream ss2;
-  ss2 << scc;
-  s.SetString(ss2.str().c_str(), strlen(ss2.str().c_str()), d.GetAllocator());
+  // Create SCC information
+  rapidjson::Value scc_rmap = mapJson(scc, alloc);
+  d.AddMember("scc", scc_rmap, alloc);
 
-  rapidjson::Value &o = d["order"];
-  std::stringstream ss3;
-  ss3 << order;
-  o.SetString(ss3.str().c_str(), strlen(ss3.str().c_str()), d.GetAllocator());
+  // Create sort information
+  rapidjson::Value order_rmap = mapJson(order, alloc);
+  d.AddMember("sort", order_rmap, alloc);
 
-  // 3. Stringify the DOM
   FILE *fp = fopen("output.json", "w");
   char write_buffer[65536];
   rapidjson::FileWriteStream os(fp, write_buffer, sizeof(write_buffer));
   rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(os);
+  rapidjson::PrettyFormatOptions opt = rapidjson::kFormatSingleLineArray;
+  writer.SetFormatOptions(opt);
   d.Accept(writer);
 
   fclose(fp);

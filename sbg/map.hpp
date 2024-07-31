@@ -58,6 +58,7 @@ struct SBGMap {
   /**
    * @brief Traditional map operations.
    */
+  std::size_t arity() const;
   SBGMap restrict(const Set &subdom) const;
   Set image() const;
   Set image(const Set &subdom) const;
@@ -68,10 +69,8 @@ struct SBGMap {
   /**
    * @brief Extra operations.
    */
-  SBGMap minInv(const Set &allowed) const;
   SBGMap minInv() const;
   bool isId() const;
-  unsigned int nmbrDims() const;
   MaybeMap compact(const SBGMap<Set> &other) const; 
 };
 template<typename Set>

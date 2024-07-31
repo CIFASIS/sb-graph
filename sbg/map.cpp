@@ -27,18 +27,20 @@ namespace LIB {
 
 void compatible(Interval i, LExp le)
 {
-  //if (i.begin() == i.end()) {
-  //  ((Util::RATIONAL) i.begin() * le.slope() + le.offset()).toNat();
-  //  return;
-  //}
-
-  Util::RATIONAL rat_inf(Util::INT_Inf, 1);
-  if (le.slope() == rat_inf || le.slope() > rat_inf)
+  Util::RATIONAL m = le.slope(), h = le.offset(), rat_inf(Util::INT_Inf, 1);
+  if (m == rat_inf && h == -rat_inf)
+    return;
+  if (h == rat_inf || m > rat_inf)
     return;
 
-  Util::RATIONAL st_rat(i.step()), min_rat(i.minElem());
-  Util::RATIONAL im_step = st_rat * le.slope()
-                 , im_begin = min_rat * le.slope() + le.offset();
+  if (i.begin() == i.end()) {
+    ((Util::RATIONAL) i.begin() * le.slope() + le.offset()).toNat();
+    return;
+  }
+
+  Util::RATIONAL st_rat(i.step()), min_rat(i.begin());
+  Util::RATIONAL im_step = st_rat * m
+                 , im_begin = min_rat * m + h;
   if (im_step.denominator() != 1 || im_begin.denominator() != 1) 
     if (im_step.numerator() != 0 || im_begin.numerator() != 0) {
       Util::ERROR("LIB::SBGMap::compatible: incompatible i/le");
@@ -50,10 +52,10 @@ void compatible(Interval i, LExp le)
 
 void compatible(SetPiece mdi, Exp mdle)
 {
-  Util::ERROR_UNLESS(mdi.size() == mdle.size()
+  Util::ERROR_UNLESS(mdi.arity() == mdle.arity()
                , "LIB::SBGMap::compatible: dimensions don't match");
 
-  for (unsigned int j = 0; j < mdi.size(); ++j)
+  for (unsigned int j = 0; j < mdi.arity(); ++j)
     compatible(mdi[j], mdle[j]);
 
   return;
@@ -63,6 +65,10 @@ Interval image(Interval i, LExp le) {
   Util::RATIONAL m = le.slope(), h = le.offset();
   Util::NAT new_begin = 0, new_step = 0, new_end = 0;
 
+  Util::RATIONAL rat_inf(Util::INT_Inf, 1);
+  if (m == rat_inf || m > rat_inf)
+    return Interval(0, 1, Util::Inf);
+
   if (le.isId())
     return i;
 
@@ -71,10 +77,6 @@ Interval image(Interval i, LExp le) {
     return Interval(off, 1, off);
   }
 
-  Util::RATIONAL rat_inf(Util::INT_Inf, 1);
-  if (m == rat_inf || m > rat_inf)
-    return Interval(0, 1, Util::Inf);
-
   if (i.begin() == i.end()) {
     Util::NAT x = (m * i.begin() + h).toNat();
     return Interval(x, 1, x);
@@ -82,16 +84,16 @@ Interval image(Interval i, LExp le) {
 
   // Increasing expression
   if (m > 0) {
-    new_begin = (m * i.minElem() + h).toNat();
+    new_begin = (m * i.begin() + h).toNat();
     new_step = (m * i.step()).toNat();
-    new_end = (m * i.maxElem() + h).toNat();
+    new_end = (m * i.end() + h).toNat();
   }
 
     // Decreasing expression
   else if (m < 0) {
-    new_begin = (m * i.minElem() + h).toNat();
+    new_begin = (m * i.begin() + h).toNat();
     new_step = (m * i.step()).toNat();
-    new_end = (m * i.maxElem() + h).toNat();
+    new_end = (m * i.end() + h).toNat();
   }
 
   return Interval(new_begin, new_step, new_end);
@@ -102,11 +104,11 @@ SetPiece image(SetPiece mdi, Exp mdle)
   if (mdi.isEmpty())
     return mdi;
 
-  Util::ERROR_UNLESS(mdi.size() == mdle.size()
+  Util::ERROR_UNLESS(mdi.arity() == mdle.arity()
       , "LIB::SBGMap::image: dimensions don't match");
 
   SetPiece res;
-  for (unsigned int j = 0; j < mdi.size(); ++j)
+  for (unsigned int j = 0; j < mdi.arity(); ++j)
     res.emplaceBack(image(mdi[j], mdle[j]));
 
   return res;
@@ -178,6 +180,10 @@ std::ostream &operator<<(std::ostream &out, const SBGMap<Set> &sbgmap)
 
 // SBGMap functions ------------------------------------------------------------
 
+// Function should be called on a non-empty sbgmap
+template<typename Set>
+std::size_t SBGMap<Set>::arity() const { return dom_.begin()->arity(); }
+
 template<typename Set>
 SBGMap<Set> SBGMap<Set>::restrict(const Set &subdom) const
 {
@@ -218,13 +224,15 @@ Set SBGMap<Set>::preImage(const Set &subcodom) const
   if (cap_subcodom.isEmpty()) 
     return Set();
 
-  Util::MD_NAT min = cap_subcodom.minElem();
+  Util::RATIONAL rat_inf(Util::INT_Inf, 1);
+  Set inv_dom = cap_subcodom;
   Exp inv_exp = exp_.inverse();
-  for (unsigned int j = 0; j < inv_exp.size(); ++j) {
+  for (unsigned int j = 0; j < inv_exp.arity(); ++j) {
     Util::RATIONAL m = exp_[j].slope(), h = exp_[j].offset();
-    Util::RATIONAL rat_inf(Util::INT_Inf, 1);
     if (m == rat_inf && h == -rat_inf) {
-      inv_exp[j] = LExp(0, min[j]);
+      for (SetPiece mdi : cap_subcodom)
+        mdi[j] = Interval(0, 1, Util::Inf);
+      inv_exp[j] = LExp(1, 0);
     }
   }
   SBGMap inv(cap_subcodom, inv_exp);
@@ -246,18 +254,15 @@ SBGMap<Set> SBGMap<Set>::composition(const SBGMap &other) const
 // Extra functions -------------------------------------------------------------
 
 template<typename Set>
-SBGMap<Set> SBGMap<Set>::minInv(const Set &allowed) const
+SBGMap<Set> SBGMap<Set>::minInv() const
 {
-  Set res_dom = restrict(allowed).image();
+  Set res_dom = image();
 
   if (dom_.cardinal() == 1 || exp_.isConstant())
-    return SBGMap<Set>(res_dom, Exp(dom_.minElem()));
+    return SBGMap(res_dom, Exp(dom_.minElem()));
 
-  return SBGMap<Set>(res_dom, exp_.inverse());
+  return SBGMap(res_dom, exp_.inverse());
 }
-
-template<typename Set>
-SBGMap<Set> SBGMap<Set>::minInv() const { return minInv(dom_); }
 
 template<typename Set>
 bool SBGMap<Set>::isId() const
@@ -267,10 +272,6 @@ bool SBGMap<Set>::isId() const
 
   return exp_.isId();
 }
-
-// Function should be called on a non-empty sbgmap
-template<typename Set>
-unsigned int SBGMap<Set>::nmbrDims() const { return dom_.begin()->size(); }
 
 template<typename Set>
 std::optional<SBGMap<Set>> SBGMap<Set>::compact(const SBGMap<Set> &other) const

@@ -34,7 +34,8 @@ namespace SBG {
 namespace Parser {
 
 template <typename Iterator>
-struct SBGProgramRule : qi::grammar<Iterator, Skipper<Iterator>, AST::SBGProgram()> {
+struct SBGProgramRule : qi::grammar<Iterator, Skipper<Iterator>
+  , AST::SBGProgram()> {
   SBGProgramRule(Iterator &it);
 
   // Other rules

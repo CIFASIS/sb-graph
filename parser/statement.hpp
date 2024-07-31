@@ -34,7 +34,8 @@ namespace SBG {
 namespace Parser {
 
 template <typename Iterator>
-struct StmRule : qi::grammar<Iterator, Skipper<Iterator>, AST::StatementList()> {
+struct StmRule : qi::grammar<Iterator, Skipper<Iterator>
+  , AST::StatementList()> {
   StmRule(Iterator &it);
 
   // Rules with no skip

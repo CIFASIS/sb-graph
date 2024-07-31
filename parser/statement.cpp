@@ -21,7 +21,9 @@
 
 // Adapt structures ------------------------------------------------------------
 
-BOOST_FUSION_ADAPT_STRUCT(SBG::AST::Assign, (SBG::Util::VariableName, l_)(SBG::AST::Expr, r_))
+BOOST_FUSION_ADAPT_STRUCT(
+  SBG::AST::Assign, (SBG::Util::VariableName, l_)(SBG::AST::Expr, r_)
+)
 
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::ConfigDims, (SBG::Util::NAT, nmbr_dims_))
 
@@ -39,12 +41,11 @@ StmRule<Iterator>::StmRule(Iterator &it) :
   ASSIGN("="),
   NMBR_DIMS("dims =") 
 {
-  ident = qi::lexeme[(qi::char_('_') | qi::alpha) >> *(qi::alnum | qi::char_('_'))] 
-    | qi::lexeme[qi::char_('\'') >> *(qi::alnum | qi::char_('_')) > qi::char_('\'')];
+  cfg_dims = (NMBR_DIMS >> qi::uint_)
+    [qi::_val = phx::construct<AST::ConfigDims>(qi::_1)];
 
-  cfg_dims = (NMBR_DIMS >> qi::uint_)[qi::_val = phx::construct<AST::ConfigDims>(qi::_1)];
-
-  assign = (expr.ident >> ASSIGN >> expr.expr)[qi::_val = phx::construct<AST::Assign>(qi::_1, qi::_2)];
+  assign = (expr.ident >> ASSIGN >> expr.expr)
+    [qi::_val = phx::construct<AST::Assign>(qi::_1, qi::_2)];
 
   stm = cfg_dims | assign;
 

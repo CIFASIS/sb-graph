@@ -44,6 +44,7 @@ EVAL_SRC := \
     $(VISIT_DIR)/eval_map.cpp \
     $(VISIT_DIR)/eval_graph.cpp \
     $(VISIT_DIR)/eval_expr.cpp \
+    $(VISIT_DIR)/check_opt_conds.cpp \
     $(VISIT_DIR)/stm_visitor.cpp \
     $(VISIT_DIR)/program_visitor.cpp \
     $(SBG_DIR)/interval.cpp \
@@ -55,8 +56,7 @@ EVAL_SRC := \
     $(SBG_DIR)/map.cpp \
     $(SBG_DIR)/pw_map.cpp \
     $(SBG_DIR)/sbg.cpp \
-    $(SBG_DIR)/sbg_algorithms.cpp \
-    $(SBG_DIR)/info.cpp 
+    $(SBG_DIR)/sbg_algorithms.cpp
 
 # Objects
 EVAL_OBJ=$(addprefix $(BUILD_DIR)/, $(EVAL_SRC:.cpp=.o))

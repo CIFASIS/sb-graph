@@ -43,7 +43,12 @@ ProgramIO ProgramVisitor::operator()(AST::Program p) const
     }
   }
 
-  EvalExpression eval_expr(result.nmbr_dims(), stm_visit.env(), debug_);
+  bool check = true;
+  OptConds opt_conds(stm_visit.env());
+  for (AST::Expr e : p.exprs())
+    check = check && boost::apply_visitor(opt_conds, e);
+
+  EvalExpression eval_expr(result.nmbr_dims(), check, stm_visit.env(), debug_);
   for (AST::Expr e : p.exprs()) {
     ExprBaseType expr_res = boost::apply_visitor(eval_expr, e);
     result.exprs_ref().push_back(ExprEval(e, expr_res));

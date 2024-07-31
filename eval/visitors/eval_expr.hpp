@@ -43,7 +43,8 @@ struct EvalExpression : public boost::static_visitor<ExprBaseType> {
   public:
   EvalExpression();
   EvalExpression(VarEnv env);
-  EvalExpression(unsigned int nmbr_dims, VarEnv env, bool debug);
+  EvalExpression(unsigned int nmbr_dims, bool opt_conds, VarEnv env
+    , bool debug);
 
   ExprBaseType operator()(AST::Natural v) const;
   ExprBaseType operator()(AST::MDNatural v) const;
@@ -73,6 +74,7 @@ struct EvalExpression : public boost::static_visitor<ExprBaseType> {
 
   private:
   unsigned int nmbr_dims_;
+  bool opt_conds_;
   mutable VarEnv env_;
   const FuncEnv fenv_;
   mutable bool debug_;

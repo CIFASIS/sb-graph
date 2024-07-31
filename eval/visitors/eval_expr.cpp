@@ -38,7 +38,7 @@ auto member_visitor_ = Util::Overload {
 };
 
 auto min_visitor_ = Util::Overload {
-  [](LIB::Interval a) { return Util::MD_NAT(a.minElem()); },
+  [](LIB::Interval a) { return Util::MD_NAT(a.begin()); },
   [](LIB::MultiDimInter a) { return a.minElem(); },
   [](LIB::UnordSet a) { return a.minElem(); },
   [](LIB::OrdSet a) { return a.minElem(); },
@@ -49,7 +49,7 @@ auto min_visitor_ = Util::Overload {
 };
 
 auto max_visitor_ = Util::Overload {
-  [](LIB::Interval a) { return Util::MD_NAT(a.maxElem()); },
+  [](LIB::Interval a) { return Util::MD_NAT(a.end()); },
   [](LIB::MultiDimInter a) { return a.maxElem(); },
   [](LIB::UnordSet a) { return a.maxElem(); },
   [](LIB::OrdSet a) { return a.maxElem(); },
@@ -362,11 +362,13 @@ auto match_scc_ts_visitor_ = Util::Overload {
 // Expression evaluator --------------------------------------------------------
 // -----------------------------------------------------------------------------
 
-EvalExpression::EvalExpression() : nmbr_dims_(1), env_(), debug_(false) {}
+EvalExpression::EvalExpression() : nmbr_dims_(1), opt_conds_(true), env_()
+  , debug_(false) {}
 EvalExpression::EvalExpression(VarEnv env)
-  : nmbr_dims_(1), env_(env), debug_(false) {}
-EvalExpression::EvalExpression(unsigned int nmbr_dims, VarEnv env, bool debug)
-  : nmbr_dims_(nmbr_dims), env_(env), debug_(debug) {}
+  : nmbr_dims_(1), opt_conds_(true), env_(env), debug_(false) {}
+EvalExpression::EvalExpression(unsigned int nmbr_dims, bool opt_conds
+  , VarEnv env, bool debug)
+  : nmbr_dims_(nmbr_dims), opt_conds_(opt_conds), env_(env), debug_(debug) {}
 
 ExprBaseType EvalExpression::operator()(AST::Natural v) const
 {
@@ -401,7 +403,7 @@ ExprBaseType EvalExpression::operator()(AST::UnaryOp v) const
 
   if (std::holds_alternative<Util::MD_NAT>(x)) {
     auto x_value = std::get<Util::MD_NAT>(x); 
-    if (x_value.size() == 1)
+    if (x_value.arity() == 1)
       return Util::MD_NAT(boost::apply_visitor(EvalNat(env_), AST::Expr(v)));
   }
 
@@ -619,7 +621,7 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
           LinearBaseType e2 = std::visit(visit_linear, eval_args[2]);
 
           MapBaseType result;
-          if (nmbr_dims_ == 1)
+          if (nmbr_dims_ == 1 && opt_conds_)
             result = std::visit(min_map_ord_visitor3_, container, e1, e2);
           else
             result = std::visit(min_map_unord_visitor3_, container, e1, e2);
@@ -652,7 +654,7 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
           LinearBaseType e4 = std::visit(visit_linear, eval_args[4]);
 
           MapBaseType result;
-          if (nmbr_dims_ == 1)
+          if (nmbr_dims_ == 1 && opt_conds_)
             result = std::visit(min_map_ord_visitor5_, container, e1, e2, e3, e4);
           else
             result = std::visit(min_map_unord_visitor5_, container, e1, e2, e3, e4);
@@ -876,7 +878,7 @@ ExprBaseType EvalExpression::operator()(AST::MDInterBinOp v) const
 ExprBaseType EvalExpression::operator()(AST::Set v) const
 {
   ContainerBaseType c;
-  if (nmbr_dims_ == 1)
+  if (nmbr_dims_ == 1 && opt_conds_)
     c = boost::apply_visitor(EvalOrdSet(env_), AST::Expr(v));
   else
     c = boost::apply_visitor(EvalUnordSet(env_), AST::Expr(v));
@@ -921,18 +923,16 @@ ExprBaseType VisitSetUnOp(AST::SetUnaryOp v, LIB::UnordSet s)
 ExprBaseType EvalExpression::operator()(AST::SetUnaryOp v) const
 {
   AST::Expr exp = v.e();
-  switch (nmbr_dims_) {
-    case 1: {
-      EvalOrdSet visit_ord_set(env_);
-      LIB::OrdSet s = boost::apply_visitor(visit_ord_set, exp);
-      return VisitSetUnOp(v, s);
-    }
+  if (nmbr_dims_ == 1 && opt_conds_) {
+    EvalOrdSet visit_ord_set(env_);
+    LIB::OrdSet s = boost::apply_visitor(visit_ord_set, exp);
+    return VisitSetUnOp(v, s);
+  }
  
-    default: {
-      EvalUnordSet visit_unord_set(env_);
-      LIB::UnordSet s = boost::apply_visitor(visit_unord_set, exp);
-      return VisitSetUnOp(v, s);
-    }
+  else {
+    EvalUnordSet visit_unord_set(env_);
+    LIB::UnordSet s = boost::apply_visitor(visit_unord_set, exp);
+    return VisitSetUnOp(v, s);
   }
 
   return Util::MD_NAT(0);
@@ -993,20 +993,18 @@ ExprBaseType VisitSetBinOp(AST::SetBinOp v, LIB::UnordSet sl, LIB::UnordSet sr)
 ExprBaseType EvalExpression::operator()(AST::SetBinOp v) const
 {
   AST::Expr l = v.left(), r = v.right();
-  switch (nmbr_dims_) {
-    case 1: {
-      EvalOrdSet visit_ord_set(env_);
-      LIB::OrdSet sl = boost::apply_visitor(visit_ord_set, l);
-      LIB::OrdSet sr = boost::apply_visitor(visit_ord_set, r);
-      return VisitSetBinOp(v, sl, sr);
-    }
+  if (nmbr_dims_ == 1 && opt_conds_) {
+    EvalOrdSet visit_ord_set(env_);
+    LIB::OrdSet sl = boost::apply_visitor(visit_ord_set, l);
+    LIB::OrdSet sr = boost::apply_visitor(visit_ord_set, r);
+    return VisitSetBinOp(v, sl, sr);
+  }
 
-    default: {
-      EvalUnordSet visit_unord_set(env_);
-      LIB::UnordSet sl = boost::apply_visitor(visit_unord_set, l);
-      LIB::UnordSet sr = boost::apply_visitor(visit_unord_set, r);
-      return VisitSetBinOp(v, sl, sr);
-    }
+  else {
+    EvalUnordSet visit_unord_set(env_);
+    LIB::UnordSet sl = boost::apply_visitor(visit_unord_set, l);
+    LIB::UnordSet sr = boost::apply_visitor(visit_unord_set, r);
+    return VisitSetBinOp(v, sl, sr);
   }
 
   return Util::MD_NAT(0);
@@ -1079,7 +1077,8 @@ ExprBaseType EvalExpression::operator()(AST::MDLExpBinOp v) const
 
 ExprBaseType EvalExpression::operator()(AST::LinearMap v) const
 {
-  if (nmbr_dims_ == 1) return boost::apply_visitor(EvalCanonMap(env_), AST::Expr(v));
+  if (nmbr_dims_ == 1 && opt_conds_)
+    return boost::apply_visitor(EvalCanonMap(env_), AST::Expr(v));
 
   return boost::apply_visitor(EvalBaseMap(env_), AST::Expr(v));
 }
@@ -1088,21 +1087,24 @@ ExprBaseType EvalExpression::operator()(AST::LinearMap v) const
 
 ExprBaseType EvalExpression::operator()(AST::PWLMap v) const
 {
-  if (nmbr_dims_ == 1) return boost::apply_visitor(EvalCanonPWMap(env_), AST::Expr(v));
+  if (nmbr_dims_ == 1 && opt_conds_)
+    return boost::apply_visitor(EvalCanonPWMap(env_), AST::Expr(v));
 
   return boost::apply_visitor(EvalBasePWMap(env_), AST::Expr(v));
 }
 
 ExprBaseType EvalExpression::operator()(AST::SBG v) const
 {
-  if (nmbr_dims_ == 1) return boost::apply_visitor(EvalCanonSBG(env_), AST::Expr(v));
+  if (nmbr_dims_ == 1 && opt_conds_)
+    return boost::apply_visitor(EvalCanonSBG(env_), AST::Expr(v));
 
   return boost::apply_visitor(EvalBaseSBG(env_), AST::Expr(v));
 }
 
 ExprBaseType EvalExpression::operator()(AST::DSBG v) const
 {
-  if (nmbr_dims_ == 1) return boost::apply_visitor(EvalCanonDSBG(env_), AST::Expr(v));
+  if (nmbr_dims_ == 1 && opt_conds_)
+    return boost::apply_visitor(EvalCanonDSBG(env_), AST::Expr(v));
 
   return boost::apply_visitor(EvalBaseDSBG(env_), AST::Expr(v));
 }

@@ -58,7 +58,7 @@ Util::NAT EvalNat::operator()(Util::VariableName v) const
     ExprBaseType value = *v_opt;
     if (std::holds_alternative<Util::MD_NAT>(value)) {
       Util::MD_NAT x = std::get<Util::MD_NAT>(value);
-      if (x.size() == 1)
+      if (x.arity() == 1)
         return x[0];
     }
 

@@ -89,11 +89,11 @@ Interval image(Interval i, LExp le) {
     new_end = (m * i.end() + h).toNat();
   }
 
-    // Decreasing expression
+  // Decreasing expression
   else if (m < 0) {
-    new_begin = (m * i.begin() + h).toNat();
-    new_step = (m * i.step()).toNat();
-    new_end = (m * i.end() + h).toNat();
+    new_begin = (m * i.end() + h).toNat();
+    new_step = (-m * i.step()).toNat();
+    new_end = (m * i.begin() + h).toNat();
   }
 
   return Interval(new_begin, new_step, new_end);
@@ -168,6 +168,15 @@ template<typename Set>
 bool SBGMap<Set>::operator!=(const SBGMap &other) const
 {
   return !(*this == other);
+}
+
+template<typename Set>
+SBGMap<Set> SBGMap<Set>::operator+(const SBGMap &other) const
+{
+  Set res_dom = dom_.intersection(other.dom_);
+  Exp res_exp = exp_ + other.exp_;
+
+  return SBGMap(res_dom, res_exp);
 }
 
 template<typename Set>

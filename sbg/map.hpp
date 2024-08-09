@@ -54,6 +54,8 @@ struct SBGMap {
 
   bool operator==(const SBGMap &other) const;
   bool operator!=(const SBGMap &other) const;
+ 
+  SBGMap operator+(const SBGMap &other) const;
 
   /**
    * @brief Traditional map operations.

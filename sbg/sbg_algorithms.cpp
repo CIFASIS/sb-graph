@@ -515,10 +515,10 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
     Util::SBG_LOG << "Min reach graph:\n" << dg << "\n\n";
 
   Set V = dg.V(), E = dg.E();
-  PWMap<Set> mapB = dg.mapB(), mapD = dg.mapD(), subE_map = dg.subE_map();
-  unsigned int copies = mapB.arity();
+  PW mapB = dg.mapB(), mapD = dg.mapD(), subE_map = dg.subE_map();
   if (!V.isEmpty()) {
-    PWMap<Set> rmap(V), old_rmap;
+    unsigned int copies = V.arity();
+    PW rmap(V), old_rmap;
 
     if (E.isEmpty())
       return rmap;
@@ -526,13 +526,10 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
     do {
       old_rmap = rmap;
 
-      PWMap<Set> ermapD = rmap.composition(mapD);
+      PW ermapD = rmap.composition(mapD);
 
-      PWMap<Set> new_rmap = mapB.minAdjMap(ermapD);
+      PW new_rmap = mapB.minAdjMap(ermapD);
       rmap = rmap.minMap(new_rmap).combine(rmap);
-
-      if (debug())
-        Util::SBG_LOG << "scc rmap before rec: " << rmap << "\n";
 
       Set positive(SetPiece(copies, Interval(1, 1, Util::Inf)));
       PW rec_rmap;
@@ -568,7 +565,6 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
             dmap = dmap.restrict(VR);
             PW dmapB = dmap.composition(mapB), dmapD = dmap.composition(mapD);
             // Get edges where the end is closer to the rep that the beginning
-            //Set not_cycle_edges = dmapB.gtImage(dmapD);
             Set not_cycle_edges = (dmapB - dmapD).preImage(positive);
             ER = ER.intersection(not_cycle_edges);
 
@@ -645,7 +641,7 @@ PWMap<Set> SBGSCC<Set>::sccStep()
   PW rmap_B = new_rmap.composition(mapB());
   PW rmap_D = new_rmap.composition(mapD());
   Set Esame = rmap_B.equalImage(rmap_D); // Edges in the same SCC
-
+  
   // Leave edges in the same SCC
   set_E(Esame);
   set_Ediff(E().difference(Esame));

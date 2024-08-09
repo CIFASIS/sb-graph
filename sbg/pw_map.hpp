@@ -81,8 +81,8 @@ struct PWMap {
   Set preImage(const Set &subcodom) const;
   /** @function inverse
    *
-   * @brief Calculate the inverse of a bijective pw_map. Throws error if it is
-   * not bijective.
+   * @brief Calculate the inverse of a bijective pw_map. Should be called
+   * with a bijective argument, it doesn't check the condition.
    */
   PWMap inverse() const;
   /** @function composition
@@ -125,26 +125,8 @@ struct PWMap {
   PWMap reduce(const Map &sbgmap) const;
   PWMap reduce() const;
 
-  PWMap minMap(
-    const Interval &i, const LExp &le1, const LExp &le2
-    , const LExp &le3, const LExp &le4
-  ) const;
-  PWMap minMap(const Interval &i, const LExp &le1, const LExp &le2) const;
-  PWMap minMap(
-    const SetPiece &dom_piece, const Exp &e1, const Exp &e2
-    , const Exp &e3, const Exp &e4
-  ) const;
-  PWMap minMap(const SetPiece &dom_piece, const Exp &e1, const Exp &e2) const;
-  PWMap minMap(
-    const Set &dom, const Exp &e1, const Exp &e2, const Exp &e3, const Exp &e4
-  ) const;
-  PWMap minMap(const Set &dom, const Exp &e1, const Exp &e2) const;
-  PWMap minMap(
-    const PWMap &other2, const PWMap &other3, const PWMap &other4
-  ) const;
   PWMap minMap(const PWMap &other) const;
 
-  PWMap minAdjMap(const PWMap &other1, const PWMap &other2) const;
   PWMap minAdjMap(const PWMap &other) const;
 
   /** @function firstInv
@@ -165,7 +147,6 @@ struct PWMap {
    * @brief Return elements in both doms, that have the same image in both maps
    */
   Set equalImage(const PWMap &other) const;
-  Set gtImage(const PWMap &other) const;
 
   PWMap offsetDom(const Util::MD_NAT &off) const;
   PWMap offsetDom(const PWMap &off) const;

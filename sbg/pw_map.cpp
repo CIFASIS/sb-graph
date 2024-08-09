@@ -55,13 +55,13 @@ template<typename Set>
 PWMap<Set>::PWMap(Set s) : maps_() {
   if (!s.isEmpty()) {
     SBGMap<Set> map(s, Exp(s.begin()->arity(), LExp()));
-    maps_.push_back(map);
+    maps_.emplace_back(std::move(map));
   }
 }
 template<typename Set>
 PWMap<Set>::PWMap(Map map) : maps_() {
   if (!map.dom().isEmpty())
-    maps_.push_back(map);
+    maps_.emplace_back(std::move(map));
 }
 template<typename Set>
 PWMap<Set>::PWMap(MS maps) : maps_(maps) {}
@@ -89,13 +89,13 @@ std::size_t PWMap<Set>::size() const { return maps_.size(); }
 template<typename Set>
 void PWMap<Set>::emplace(Map map) {
   if (!map.dom().isEmpty())
-    maps_.push_back(map);
+    maps_.emplace_back(std::move(map));
 }
 template<typename Set>
 void PWMap<Set>::emplaceBack(Map map)
 {
   if (!map.dom().isEmpty())
-    maps_.push_back(map);
+    maps_.emplace_back(std::move(map));
 }
 
 template<typename Set>
@@ -147,13 +147,9 @@ PWMap<Set> PWMap<Set>::operator+(const PWMap &other) const
 {
   PWMap res;
 
-  for (const Map &map1 : maps_) {
-    for (const Map &map2 : other.maps_) {
-      Set ith_dom = map1.dom().intersection(map2.dom());
-      Exp ith_exp = map1.exp() + map2.exp();
-      res.emplaceBack(SBGMap(ith_dom, ith_exp));
-    }
-  }
+  for (const Map &map1 : maps_) 
+    for (const Map &map2 : other.maps_) 
+      res.emplaceBack(map1 + map2);
 
   return res;
 }
@@ -163,47 +159,84 @@ PWMap<Set> PWMap<Set>::operator-(const PWMap &other) const
 {
   PWMap res;
 
-  Exp zero(Util::MD_NAT(arity(), 0));
+  if (isEmpty() || other.isEmpty())
+    return PWMap();
+
+  auto copies = arity();
+  Interval all(0, 1, Util::Inf);
+  Set univ(SetPiece(copies, all));
   for (const Map &map1 : maps_) {
     for (const Map &map2 : other.maps_) {
-      Set ith_dom = map1.dom().intersection(map2.dom());
-      Exp ith_exp = map1.exp() - map2.exp();
-      // Whole domain where ith_exp is positive
-      SetPiece exp_positive;
-      for (const LExp &lexp : ith_exp) {
-        Util::RATIONAL sl = lexp.slope(), off = lexp.offset();
-        Util::NAT begin = 0, end = Util::Inf;
-        // Constant expression
-        if (sl == 0) {
-          if (off < 0) {
-            begin = 1;
-            end = 0;
+      Set dom = map1.dom().intersection(map2.dom());
+      if (!dom.isEmpty()) {
+        Exp minus_exp = map1.exp() - map2.exp();
+        PWMap ith = univ;
+        for (unsigned int j = 0; j < copies; ++j) {
+          Util::RATIONAL m = minus_exp[j].slope(), h = minus_exp[j].offset();
+          // Positive values in the jth dimension
+          Util::NAT begin_neg = 0, end_neg = Util::Inf;
+          Util::NAT begin_pos = 0, end_pos = Util::Inf;
+          // Constant expression
+          if (m == 0) {
+            if (h < 0) {
+              begin_pos = 1;
+              end_pos = 0;
+            }
+            else {
+              begin_neg = 1;
+              end_neg = 0;
+            }
           }
-        }
-        else if (sl > 0) {
-          Util::RATIONAL cross = -lexp.offset() / lexp.slope();
-          if (cross > 0)
-            begin = boost::rational_cast<Util::NAT>(cross.value());
-        }
-        else { 
-          Util::RATIONAL cross = -lexp.offset() / lexp.slope();
-          if (cross > 0)
-            end = boost::rational_cast<Util::NAT>(cross.value());
-          else {
-            begin = 1;
-            end = 0;
+          else if (m > 0) {
+            Util::RATIONAL cross = -h / m;
+            if (cross > 0 || cross == 0) {
+              begin_pos = boost::rational_cast<Util::NAT>(cross.value());
+              if (begin_pos > 0)
+                end_neg = begin_pos - 1;
+              else {
+                begin_neg = 1;
+                begin_pos = 0;
+              }
+            }
           }
-        }
+          else { 
+            Util::RATIONAL cross = -h / m;
+            if (cross > 0 || cross == 0) {
+              end_pos = boost::rational_cast<Util::NAT>(cross.value());
+              if (end_pos > 0)
+                begin_neg = end_pos + 1;
+            }
+            else {
+              begin_pos = 1;
+              end_pos = 0;
+            }
+          }
 
-        Interval i(begin, 1, end);
-        exp_positive.emplaceBack(i);
+
+          PWMap jth;
+          Interval neg(begin_neg, 1, end_neg);
+          Interval pos(begin_pos, 1, end_pos);
+          for (const Map &map : ith) {
+            SetPiece mdi = *(map.dom().begin());
+            Exp e = map.exp(); 
+
+            if (!neg.isEmpty()) {
+              mdi[j] = neg;
+              e[j] = LExp(0, 0);
+              jth.emplaceBack(Map(mdi, e));
+            }
+
+            if (!pos.isEmpty()) {
+              mdi[j] = pos;
+              e[j] = minus_exp[j];
+              jth.emplaceBack(Map(mdi, e));
+            }
+          }
+
+          ith = std::move(jth);
+        }
+        res = res.concatenation(ith.restrict(dom));
       }
-
-      Set ith_positive = ith_dom.intersection(Set(exp_positive));
-      res.emplaceBack(SBGMap(ith_positive, ith_exp));
-
-      Set ith_negative = ith_dom.difference(Set(exp_positive));
-      res.emplaceBack(SBGMap(ith_negative, zero));
     }
   }
 
@@ -224,7 +257,7 @@ std::ostream &operator<<(std::ostream &out, const PWMap<Set> &pw)
 template<typename Set>
 std::size_t PWMap<Set>::arity() const
 {
-  Util::ERROR_UNLESS(!isEmpty(), "LIB::PWMap::nmbrDims: empty not allowed");
+  Util::ERROR_UNLESS(!isEmpty(), "LIB::PWMap::arity: empty not allowed");
 
   return begin()->dom().begin()->arity();
 }
@@ -279,7 +312,7 @@ Set PWMap<Set>::preImage(const Set &subcodom) const
   Set res;
 
   for (const Map &map : maps_)
-    res = res.cup(map.preImage(subcodom));
+    res = res.concatenation(map.preImage(subcodom));
 
   return res;
 }
@@ -289,21 +322,8 @@ PWMap<Set> PWMap<Set>::inverse() const
 {
   PWMap res;
 
-  for (const Map &map : maps_) {
-    if (!map.exp().isConstant()) {
-      Set new_dom = map.image();
-      Exp new_exp = map.exp().inverse();
-      res.emplaceBack(Map(new_dom, new_exp));
-    }
-    else if (map.dom().cardinal() == 1) {
-      Set new_dom = map.image();
-      Exp new_exp(map.dom().minElem());
-      res.emplaceBack(Map(new_dom, new_exp));
-    }
-    else {
-      Util::ERROR("LIB::PWMap::inverse: map is not bijective");
-    }
-  }
+  for (const Map &map : maps_)
+    res.emplaceBack(map.minInv());
 
   return res;
 }
@@ -313,10 +333,9 @@ PWMap<Set> PWMap<Set>::composition(const PWMap &other) const
 {
   PWMap<Set> res;
 
-  Set im = other.image(), new_dom = other.preImage(im);
+  Set im = other.image(), new_dom = other.preImage(im.intersection(dom()));
   PWMap map2 = other.restrict(new_dom);
 
-  // TODO PWMap<Set> aux1 = normalize(), aux2 = map2.normalize();
   for (const Map &map1 : maps_)
     for (const Map &map2 : map2.maps_)
       res.emplaceBack(map1.composition(map2));
@@ -490,313 +509,60 @@ PWMap<Set> PWMap<Set>::reduce() const
 }
 
 template<typename Set>
-PWMap<Set> PWMap<Set>::minMap(
-  const Interval &i, const LExp &le1
-  , const LExp &le2, const LExp &le3, const LExp &le4
-) const
-{
-  PWMap res;
-
-  LExp le21 = le1.composition(le2), le34 = le4.composition(le3);
-  Util::RATIONAL m21 = le21.slope(), h21 = le21.offset()
-                , m34 = le34.slope(), h34 = le34.offset();
-
-  // Parallel lines
-  if (m21 == m34) {
-    if (h21 < h34)
-      res.emplaceBack(Map(i, le2));
-    else
-      res.emplaceBack(Map(i, le3));
-
-    return res;
-  }
-
-  // Non parallel lines
-  Util::RATIONAL cap_point = (h34 - h21) / (m21 - m34);
-  Interval before, after;
-  if (cap_point < 0)
-    after = i;
-
-  else {
-    Util::NAT beg = i.begin(), st = i.step(), end = i.end();
-    double double_cap_point = cap_point.numerator() / cap_point.denominator();
-    before = Interval(beg, st, (Util::NAT) floor(double_cap_point));
-    before = before.intersection(i);
-    after = Interval(before.end() + st, st, end);
-    after = after.intersection(i);
-  }
-
-  // Before intersection
-  if (!before.isEmpty()) {
-    if (m34 > m21)
-      res.emplaceBack(Map(before, le3));
-    else
-      res.emplaceBack(Map(before, le2));
-  }
-
-  // After intersection
-  if (!after.isEmpty()) {
-    if (m21 > m34)
-      res.emplaceBack(Map(after, le3));
-    else
-      res.emplaceBack(Map(after, le2));
-  }
-
-  return res;
-}
-
-template<typename Set>
-PWMap<Set> PWMap<Set>::minMap(
-  const Interval &i, const LExp &le1, const LExp &le2
-) const
-{
-  LExp id;
-  return minMap(i, id, le1, le2, id);
-}
-
-template<typename Set>
-PWMap<Set> PWMap<Set>::minMap(
-  const SetPiece &dom_piece, const Exp &e1, const Exp &e2
-  , const Exp &e3, const Exp &e4
-) const
-{
-  PWMap res;
-
-  if (!dom_piece.isEmpty()) {
-    SetPiece aux_dom = dom_piece;
-
-    bool cond1 = dom_piece.arity() == e1.arity();
-    bool cond2 = e1.arity() == e2.arity(); 
-    bool cond3 = e2.arity() == e3.arity(); 
-    bool cond4 = e3.arity() == e4.arity(); 
-
-    Util::ERROR_UNLESS(cond1 && cond2 && cond3 && cond4
-                       , "LIB::PWMap::minMap: dimensions don't match");
-
-    unsigned int j = 0;
-    for (; j < dom_piece.arity(); ++j) {
-      if (e2[j] != e3[j]) {
-        PWMap ith = minMap(dom_piece[j], e1[j], e2[j], e3[j], e4[j]);
-
-        if (!ith.isEmpty()) {
-          for (const Map &map : ith) {
-            aux_dom[j] = map.dom().begin()->operator[](0);
-
-            Map new_ith;
-            if (map.exp() == e2[j])
-              new_ith = Map(aux_dom, e2);
-            else
-              new_ith = Map(aux_dom, e3);
-
-            res.emplaceBack(new_ith);
-          }
-
-          aux_dom = dom_piece;
-        }
-
-        break;
-      }
-    }
-
-    if (j == dom_piece.arity())
-      res.emplaceBack(Map(dom_piece, e2));
-  }
-
-  return res;
-}
-
-template<typename Set>
-PWMap<Set> PWMap<Set>::minMap(
-  const SetPiece &dom_piece, const Exp &e1, const Exp &e2
-) const
-{
-  Exp id(e1.arity(), LExp());
-  return minMap(dom_piece, id, e1, e2, id);
-}
-
-template<typename Set>
-PWMap<Set> PWMap<Set>::minMap(
-  const Set &dom, const Exp &e1, const Exp &e2, const Exp &e3, const Exp &e4
-) const
-{
-  PWMap res;
-  
-  Set d2, d3;
-
-  for (const SetPiece &dom_piece : dom) {
-    PWMap ith = minMap(dom_piece, e1, e2, e3, e4);
-    for (const Map &map : ith) {
-      if (map.exp() == e2)
-        d2 = d2.cup(map.dom());
-      else
-        d3 = d3.cup(map.dom());
-    }
-  }
-
-  res.emplaceBack(Map(d2, e2));
-  res.emplaceBack(Map(d3, e3));
-
-  return res;
-}
-
-template<typename Set>
-PWMap<Set> PWMap<Set>::minMap(const Set &dom, const Exp &e1, const Exp &e2) const
-{
-  Exp id(e1.arity(), LExp());
-  return minMap(dom, id, e1, e2, id);
-}
-
-template<typename Set>
-PWMap<Set> PWMap<Set>::minMap(
-  const PWMap &other2, const PWMap &other3, const PWMap &other4
-) const
-{
-  PWMap<Set> res;
-  Set dom1 = dom(), dom2 = other2.dom()
-    , dom3 = other3.dom(), dom4 = other4.dom();
-  Set dom21 = other2.preImage(dom1), dom34 = other3.preImage(dom4);
-  Set cap_dom23 = dom2.intersection(dom3)
-      , cap_dom14 = dom21.intersection(dom34);
-  Set cap_dom = cap_dom23.intersection(cap_dom14);
-
-  for (const SetPiece &mdi : cap_dom) {
-    Set mdi_set(mdi);
-    bool flag1 = false, flag2 = false, flag3 = false, flag4 = false;
-    Exp e1, e2, e3, e4;
-
-    Set im2;
-    for (const Map &map2 : other2) {
-      Set d2 = map2.dom(), s2 = d2.intersection(mdi_set);
-      if (!s2.isEmpty()) {
-        e2 = map2.exp();
-        flag2 = true;
-        im2 = map2.image(mdi_set);
-        break;
-      }
-    }
-
-    for (const Map &map1 : maps_) {
-      Set s1 = map1.dom().intersection(im2);
-      if (!s1.isEmpty()) {
-        e1 = map1.exp();
-        flag1 = true;
-        break;
-      }
-    }
-
-    Set im3;
-    for (const Map &map3 : other3) {
-      Set d3 = map3.dom(), s3 = d3.intersection(mdi_set);
-      if (!s3.isEmpty()) {
-        e3 = map3.exp();
-        flag3 = true;
-        im3 = map3.image(mdi_set);
-        break;
-      }
-    }
-
-    for (const Map &map4 : other4) {
-      Set s4 = map4.dom().intersection(im3);
-      if (!s4.isEmpty()) {
-        e4 = map4.exp();
-        flag4 = true;
-        break;
-      }
-    }
-
-    if (flag1 && flag2 && flag3 && flag4) {
-      PWMap ith = minMap(mdi_set, e1, e2, e3, e4);
-      res = ith.concatenation(res);
-    }
-  }
-
-  return res;
-}
-
-template<typename Set>
 PWMap<Set> PWMap<Set>::minMap(const PWMap &other) const
 {
   if (isEmpty() || other.isEmpty())
     return PWMap();
 
-  PWMap id1(image()), id2(other.image());
+  Set zero(SetPiece(arity(), Interval(0, 1, 0)));
+  Set to_zero = (*this-other).preImage(zero);
+  Set not_zero = other.dom().difference(to_zero);
+  PWMap aux1 = restrict(to_zero), aux2 = other.restrict(not_zero);
 
-  return id1.minMap(*this, other, id2);
-}
-
-template<typename Set>
-PWMap<Set> PWMap<Set>::minAdjMap(const PWMap &other2, const PWMap &other3) const
-{
-  PWMap res;
-
-  Set partitioned_dom = dom().intersection(other2.dom());
-
-  Set visited;
-  for (const SetPiece &mdi : partitioned_dom) {
-    Set dom_res, mdi_set(mdi);
-    Exp e_res, e1;
-
-    // Find mdi in pw1 dom
-    for (const Map &map1 : maps_) {
-      Set dom1 = map1.dom(), s1 = dom1.intersection(mdi_set);
-      if (!s1.isEmpty()) {
-        dom_res = map1.image(s1);
-        e1 = map1.exp();
-      }
-    }
-
-    // Find mdi in pw2 dom
-    for (const Map &map2 : other2) {
-      Set dom2 = map2.dom(), s2 = dom2.intersection(mdi_set);
-      if (!s2.isEmpty()) {
-        Set im2 = map2.image(s2);
-        if (!e1.isConstant())
-          e_res = map2.exp().composition(e1.inverse());
-
-        else {
-          for (const Map &map3 : other3) {
-            Set dom3 = map3.dom(), s3 = dom3.intersection(im2);
-            if (!s3.isEmpty()) {
-              if (!map3.exp().isConstant()) {
-                Set min3(map3.image(s3).minElem());
-                MD_NAT min2 = map3.preImage(min3).minElem();
-                e_res = MDLExp(min2);
-              }
-
-              else e_res = MDLExp(im2.minElem());
-            }
-          }
-        }
-      }
-    }
-
-    if (!dom_res.isEmpty()) {
-      Map ith(dom_res, e_res);
-      PWMap ith_pw(ith);
-      Set again = dom_res.intersection(visited);
-      if (!again.isEmpty()) {
-        PWMap aux_res = res.restrict(dom_res);
-        PWMap min_map = other3.minMap(aux_res, ith_pw, other3);
-        res = min_map.combine(ith_pw).combine(res);
-        visited = visited.cup(ith_pw.dom());
-      }
-      else {
-        res.emplaceBack(ith);
-        visited = visited.concatenation(dom_res);
-      }
-    }
-  }
-
-  return res;
+  return aux1.combine(aux2);
 }
 
 template<typename Set>
 PWMap<Set> PWMap<Set>::minAdjMap(const PWMap &other) const
 {
-  if (!other.isEmpty())
-    return minAdjMap(other, PWMap(other.image()));
+  PWMap res;
 
-  return PWMap();
+  Set visited;
+  for (const Map &map1 : maps_) {
+    for (const Map &map2 : other.maps_) {
+      Set dom_res, ith_dom = map1.dom().intersection(map2.dom());
+      if (!ith_dom.isEmpty()) {
+        Exp e_res, e1;
+
+        dom_res = map1.image(ith_dom);
+        e1 = map1.exp();
+
+        Set im2 = map2.image(ith_dom);
+        if (!e1.isConstant())
+          e_res = map2.exp().composition(e1.inverse());
+        else
+          e_res = MDLExp(im2.minElem());
+
+        if (!dom_res.isEmpty()) {
+          Map ith(dom_res, e_res);
+          PWMap ith_pw(ith);
+          Set again = dom_res.intersection(visited);
+          if (!again.isEmpty()) {
+            PWMap aux_res = res.restrict(dom_res);
+            PWMap min_map = aux_res.minMap(ith_pw);
+            res = min_map.combine(ith_pw).combine(res);
+            visited = visited.cup(ith_pw.dom());
+          }
+          else {
+            res.emplaceBack(ith);
+            visited = visited.concatenation(dom_res);
+          }
+        }
+      }
+    }
+  }
+
+  return res;
 }
 
 template<typename Set>
@@ -839,17 +605,17 @@ Set PWMap<Set>::equalImage(const PWMap &other) const
   Set res;
 
   for (const Map &map1 : maps_) {
-    for (const Map &map2 : other) {
+    for (const Map &map2 : other.maps_) {
       Set cap_dom = map1.dom().intersection(map2.dom());
       if (!cap_dom.isEmpty()) {
         SBGMap<Set> m1(cap_dom, map1.exp()), m2(cap_dom, map2.exp());
         if (m1 == m2)
-          res = res.cup(cap_dom);
+          res = res.concatenation(cap_dom);
       }
     }
   }
 
-  return res; 
+  return res;
 }
 
 template<typename Set>

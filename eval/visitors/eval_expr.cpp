@@ -281,6 +281,21 @@ auto match_scc_ts_visitor_ = Util::Overload {
   }
 };
 
+auto cut_visitor_ = Util::Overload {
+  [](LIB::BaseDSBG a, bool b) { 
+    LIB::BaseCutSet cut_set(a, b);
+    return ContainerBaseType(cut_set.calculate());
+  },
+  [](LIB::CanonDSBG a, bool b) {
+    LIB::CanonCutSet cut_set(a, b);
+    return ContainerBaseType(cut_set.calculate());
+  },
+  [](auto a, auto b) {
+    Util::ERROR("Wrong arguments for cut vertices set");
+    return ContainerBaseType();
+  }
+};
+
 // -----------------------------------------------------------------------------
 // Expression evaluator --------------------------------------------------------
 // -----------------------------------------------------------------------------
@@ -634,6 +649,18 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
           NatBaseType copies = std::visit(EvalNatBT{}, eval_args[1]);
           MapBaseType result = std::visit(
             match_scc_ts_visitor_, g, copies, std::variant<bool>(debug_)
+          );
+          return result;
+        }
+        break;
+
+      case Eval::Func::cut_set:
+        if (eval_args.size() == 1) {
+          arity_ok = true;
+
+          SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
+          ContainerBaseType result = std::visit(
+            cut_visitor_, g, std::variant<bool>(debug_)
           );
           return result;
         }

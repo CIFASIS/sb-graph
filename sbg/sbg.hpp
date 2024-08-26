@@ -84,6 +84,8 @@ struct DSBGraph {
   DSBGraph addSV(const Set &vertices) const;
   unsigned int nmbrSV() const;
   DSBGraph addSE(const PW &pw1, const PW &pw2) const;
+
+  DSBGraph eraseVertices(Set vs) const;
 };
 template<typename Set>
 std::ostream &operator<<(std::ostream &out, const DSBGraph<Set> &pw);

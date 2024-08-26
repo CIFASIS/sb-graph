@@ -273,6 +273,21 @@ DSBGraph<Set> DSBGraph<Set>::addSE(const PW &pw1, const PW &pw2) const
   return DSBGraph<Set>();
 }
 
+template<typename Set>
+DSBGraph<Set> DSBGraph<Set>::eraseVertices(Set vs) const
+{
+  Set newV = V_.difference(vs);
+  PW newVmap = Vmap_.restrict(V_);
+
+  Set eraseE = mapB_.preImage(newV).cup(mapD_.preImage(newV));
+  Set newE = E_.difference(eraseE);
+  PW new_mapB = mapB_.restrict(newE);
+  PW new_mapD = mapD_.restrict(newE);
+  PW newEmap = Emap_.restrict(newE);
+
+  return DSBGraph(newV, newVmap, new_mapB, new_mapD, newEmap);
+}
+
 // Template instantiations -----------------------------------------------------
 
 template struct SBGraph<UnordSet>;

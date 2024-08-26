@@ -196,6 +196,36 @@ struct SBGTopSort {
 typedef SBGTopSort<UnordSet> BaseTopSort;
 typedef SBGTopSort<OrdSet> CanonTopSort;
 
+// Cut-set algorithm ----------------------------------------------------------
+
+/** @struct SBGCutSet
+*
+* @brief Aims to calculate a minimum cut-set of vertices, that is, if those
+* vertices are taken out, the resulting graph has no SCC. Since this is a
+* NP-hard problem, heuristics are used, and thus is not guaranteed that the
+* set is actually minimum.
+*/
+
+template<typename Set>
+struct SBGCutSet {
+  using Map = SBGMap<Set>;
+  using PW = PWMap<Set>;
+
+  //*** SBG info, constant
+  member_class(DSBGraph<Set>, dsbg);
+
+  //-----------------------------
+  member_class(bool, debug);
+
+  SBGCutSet();
+  SBGCutSet(DSBGraph<Set> dsbg, bool debug);
+
+  Set calculate(); 
+};
+
+typedef SBGCutSet<UnordSet> BaseCutSet;
+typedef SBGCutSet<OrdSet> CanonCutSet;
+
 // Additional operations ------------------------------------------------------
 
 template<typename Set>

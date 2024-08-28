@@ -474,17 +474,18 @@ SBGSCC<Set>::SBGSCC() : dsbg_(), V_(), Vmap_(), E_(), Emap_(), Ediff_(), mapB_()
   , mapD_(), rmap_(), debug_(false) {}
 template<typename Set>
 SBGSCC<Set>::SBGSCC(DSBGraph<Set> dsbg, bool debug)
-  : dsbg_(dsbg), debug_(debug) {
-  V_ = dsbg.V();
-  Vmap_ = dsbg.Vmap();
+  : dsbg_(dsbg), debug_(debug), Ediff_() {
+  DSBGraph<Set> dg = partitionSE(dsbg);
+  dsbg_ = dg;
+
+  V_ = dg.V();
+  Vmap_ = dg.Vmap();
   
-  E_ = dsbg.E();
-  Emap_ = dsbg.Emap();
+  E_ = dg.E();
+  Emap_ = dg.Emap();
 
-  mapB_ = dsbg.mapB();
-  mapD_ = dsbg.mapD(); 
-
-  Ediff_ = Set();
+  mapB_ = dg.mapB();
+  mapD_ = dg.mapD(); 
 
   rmap_ = PW(V_);
 }
@@ -662,7 +663,7 @@ template<typename Set>
 SBGTopSort<Set>::SBGTopSort() : dsbg_(), debug_(false) {}
 template<typename Set>
 SBGTopSort<Set>::SBGTopSort(DSBGraph<Set> dsbg, bool debug) 
-  : dsbg_(dsbg), debug_(debug) {}
+  : dsbg_(partitionSE(dsbg)), debug_(debug) {}
 
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, DSBGraph<Set>, dsbg);
 member_imp_temp(template<typename Set>, SBGTopSort<Set>, bool, debug);
@@ -778,6 +779,8 @@ Set SBGCutSet<Set>::calculate()
     PW ith = dmap.restrict(vs).offsetImage(one);
     dmap = ith.combine(dmap);
   }
+  if (debug())
+    Util::SBG_LOG << "initial dmap: " << dmap << "\n\n";
 
   while (dg.V() != rmap.image()) {
     oldD = newD;
@@ -818,6 +821,12 @@ Set SBGCutSet<Set>::calculate()
 
     // Resulting SCC from induced graph
     rmap = SBGSCC(dg, debug()).calculate();
+
+    if (debug()) {
+      Util::SBG_LOG << "resulting graph:\n" << dg << "\n";
+      Util::SBG_LOG << "new degree map: " << dmap << "\n";
+      Util::SBG_LOG << "new rmap: " << rmap << "\n\n";
+    }
   }
 
   return newD;
@@ -850,6 +859,64 @@ template struct SBGCutSet<UnordSet>;
 template struct SBGCutSet<OrdSet>;
 
 // Additional operations -------------------------------------------------------
+
+template<typename Set>
+DSBGraph<Set> partitionSE(const DSBGraph<Set> &dg)
+{
+  Set V = dg.V();
+  unsigned int dims = V.arity(), j = 1;
+  PWMap mapB = dg.mapB(), mapD = dg.mapD(), Emap = dg.Emap();
+
+  std::vector<Set> vs;
+  for (const SBGMap<Set> &map : dg.Vmap())
+    vs.emplace_back(map.dom());
+
+  Set univ(SetPiece(dims, Interval(0, 1, Util::Inf)));
+  for (const SBGMap<Set> &map : dg.subE_map()) {
+    Set ith_edge = mapB.image(map.dom());
+    Set not_ith_edge = univ.difference(ith_edge);
+    std::vector<Set> aux_vs;
+    aux_vs.reserve(2*vs.size());
+    for (const Set &ith_vs : vs) {
+      Set s1 = ith_edge.intersection(ith_vs);
+      Set s2 = not_ith_edge.intersection(ith_vs);
+
+      if (!s1.isEmpty())
+        aux_vs.emplace_back(s1);
+
+      if (!s2.isEmpty())
+        aux_vs.emplace_back(s2);
+    }
+    vs = aux_vs;
+  }
+
+  for (const SBGMap<Set> &map : dg.subE_map()) {
+    Set ith_edge = mapD.image(map.dom());
+    Set not_ith_edge = univ.difference(ith_edge);
+    std::vector<Set> aux_vs;
+    aux_vs.reserve(2*vs.size());
+    for (const Set &ith_vs : vs) {
+      Set s1 = ith_edge.intersection(ith_vs);
+      Set s2 = not_ith_edge.intersection(ith_vs);
+
+      if (!s1.isEmpty())
+        aux_vs.emplace_back(s1);
+
+      if (!s2.isEmpty())
+        aux_vs.emplace_back(s2);
+    }
+    vs = aux_vs;
+  }
+
+  PWMap<Set> Vmap;
+  for (const Set &dom : vs) {
+    Util::MD_NAT v(dims, j);
+    Vmap.emplaceBack(SBGMap<Set>(dom, Exp(v)));
+    ++j;
+  }
+
+  return DSBGraph(V, Vmap, mapB, mapD, Emap);
+}
 
 template<typename Set>
 DSBGraph<Set> buildSCCFromMatching(const SBGMatching<Set> &match)
@@ -917,7 +984,6 @@ DSBGraph<Set> buildSortFromSCC(
 {
   DSBGraph dsbg = scc.dsbg();
   Set Ediff = dsbg.E().difference(scc.E());
-  PWMap<Set> subE_map = dsbg.subE_map().restrict(Ediff); 
   PWMap<Set> mapB = rmap.composition(dsbg.mapB().restrict(Ediff));
   mapB = mapB.compact();
   PWMap<Set> mapD = rmap.composition(dsbg.mapD().restrict(Ediff));
@@ -929,41 +995,11 @@ DSBGraph<Set> buildSortFromSCC(
   });
   Set V = reps_rmap.dom();
 
-  for (const SBGMap<Set> &map : subE_map) {
-    Set ith_dom = mapB.image(map.dom()).intersection(V);
-    V = V.difference(ith_dom);
-    V = V.concatenation(ith_dom);
-  }
-  for (const SBGMap<Set> &map : subE_map) {
-    Set ith_dom = mapD.image(map.dom()).intersection(V);
-    V = V.difference(ith_dom);
-    V = V.concatenation(ith_dom);
-  }
+  PWMap<Set> Vmap = dsbg.Vmap().restrict(V);
 
-  PWMap<Set> Vmap;
-  unsigned int j = 1, dims = rmap.arity();
-  for (SetPiece mdi : V) {
-    Util::MD_NAT v(dims, j);
-    Vmap.emplaceBack(SBGMap<Set>(mdi, Exp(v)));
-    ++j;
-  }
-
-  j = 1;
-  PWMap<Set> Emap;
-  for (const SBGMap<Set> &map1 : Vmap) {
-    Set edges1 = mapB.preImage(map1.dom());
-    for (const SBGMap<Set> &map2 : Vmap) {
-      Set edges2 = mapD.preImage(map2.dom());
-      Set dom = edges1.intersection(edges2);
-      Exp exp(Util::MD_NAT(dims, j));
-
-      Emap.emplaceBack(SBGMap<Set>(dom.compact(), exp));
-      ++j;
-    }
-  }
+  PWMap<Set> Emap = dsbg.Emap().restrict(Ediff);
 
   DSBGraph<Set> res(V, Vmap, mapB, mapD, Emap);
-  res.set_subE_map(subE_map);
   return res;
 }
 

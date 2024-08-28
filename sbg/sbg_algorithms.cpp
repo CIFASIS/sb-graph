@@ -766,14 +766,17 @@ member_imp_temp(template<typename Set>, SBGCutSet<Set>, bool, debug);
 template<typename Set>
 Set SBGCutSet<Set>::calculate()
 {
+  auto begin = std::chrono::high_resolution_clock::now();
   DSBGraph<Set> dg = dsbg();
   PW Vmap = dg.Vmap(), mapB = dg.mapB(), mapD = dg.mapD();
   PW rmap = SBGSCC(dg, debug()).calculate();
-  Set newD, oldD, visitedV;
+  Set newD, oldD, visitedV, V = dg.V();
+  if (debug())
+    Util::SBG_LOG << "initial dg vertex cut set:\n" << dg << "\n";
 
   // Degree map
   Util::MD_NAT zero(rmap.arity(), 0), one(rmap.arity(), 1);
-  PW dmap(Map(dg.V(), Exp(zero))); 
+  PW dmap(Map(V, Exp(zero))); 
   for (const Map &SE : dg.subE_map()) {
     Set vs = mapB.image(SE.dom()).cup(mapD.image(SE.dom()));
     PW ith = dmap.restrict(vs).offsetImage(one);
@@ -782,7 +785,7 @@ Set SBGCutSet<Set>::calculate()
   if (debug())
     Util::SBG_LOG << "initial dmap: " << dmap << "\n\n";
 
-  while (dg.V() != rmap.image()) {
+  while (rmap.dom() != rmap.image()) {
     oldD = newD;
  
     Util::MD_NAT aux = dmap.image().maxElem();
@@ -804,7 +807,12 @@ Set SBGCutSet<Set>::calculate()
         else
           mdi.emplaceBack(Interval(vmaxD[j], vmax[j] - vmaxD[j], Util::Inf));    
       }
-      newD = Set(mdi).intersection(Vmap.preImage(vmaxSV));
+      if (debug()) {
+        Util::SBG_LOG << "vmax: " << vmax << "\n"; 
+        Util::SBG_LOG << "vmaxD: " << vmaxD << "\n"; 
+        Util::SBG_LOG << "mdi: " << mdi << "\n\n";
+      }
+      newD = newD.cup(Set(mdi).intersection(Vmap.preImage(vmaxSV)));
     }
 
     // Update graph info erasing newD vertices
@@ -815,19 +823,32 @@ Set SBGCutSet<Set>::calculate()
     mapD = dg.mapD(); 
 
     // Update degree map
-    Set deltaD = newD.difference(oldD);
-    PW ith_dmap = dmap.restrict(deltaD).offsetImage(one);
-    dmap = ith_dmap.combine(dmap);
+    // TODO: make more efficient updating only degree for vertices adjacent
+    // to those in newD
+    dmap = PW(Map(dg.V(), Exp(zero))); 
+    for (const Map &SE : dg.subE_map()) {
+      Set vs = mapB.image(SE.dom()).cup(mapD.image(SE.dom()));
+      PW ith = dmap.restrict(vs).offsetImage(one);
+      dmap = ith.combine(dmap);
+    }
 
     // Resulting SCC from induced graph
     rmap = SBGSCC(dg, debug()).calculate();
 
     if (debug()) {
+      Util::SBG_LOG << "oldD: " << oldD << "\n";
+      Util::SBG_LOG << "newD: " << newD << "\n";
       Util::SBG_LOG << "resulting graph:\n" << dg << "\n";
       Util::SBG_LOG << "new degree map: " << dmap << "\n";
       Util::SBG_LOG << "new rmap: " << rmap << "\n\n";
     }
   }
+  auto end = std::chrono::high_resolution_clock::now();
+
+  auto total = std::chrono::duration_cast<std::chrono::microseconds>(
+    end - begin
+  );
+  Util::SBG_LOG << "Total vertex cut set exec time: " << total.count() << " [μs]\n\n"; 
 
   return newD;
 }

@@ -279,7 +279,7 @@ DSBGraph<Set> DSBGraph<Set>::eraseVertices(Set vs) const
   Set newV = V_.difference(vs);
   PW newVmap = Vmap_.restrict(V_);
 
-  Set eraseE = mapB_.preImage(newV).cup(mapD_.preImage(newV));
+  Set eraseE = mapB_.preImage(vs).cup(mapD_.preImage(vs));
   Set newE = E_.difference(eraseE);
   PW new_mapB = mapB_.restrict(newE);
   PW new_mapD = mapD_.restrict(newE);

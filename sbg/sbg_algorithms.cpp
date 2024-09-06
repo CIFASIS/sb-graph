@@ -18,6 +18,7 @@
  ******************************************************************************/
 
 #include "sbg/sbg_algorithms.hpp"
+#include <list>
 
 namespace SBG {
 
@@ -93,20 +94,38 @@ DSBGraph<Set> SBGMatching<Set>::offsetGraph(const PW &dir_omap) const
   _mapD = _mapD.restrict(paths_edges());
 
   return DSBGraph<Set>(
-    _V.compact()
-   , _Vmap.compact() 
-   , _mapB.compact()
-   , _mapD.compact()
-   , Emap().restrict(paths_edges()).compact());
+     _V.compact()
+    , _Vmap.compact() 
+    , _mapB.compact()
+    , _mapD.compact()
+    , Emap().restrict(paths_edges()).compact()
+  );
 }
 
 template<typename Set>
 void SBGMatching<Set>::selectSucc(DSBGraph<Set> dsbg)
 {
   Set dsbgV = dsbg.V();
-  PW dsbgB = dsbg.mapB(), dsbgD = dsbg.mapD(), dsbg_Vmap = dsbg.Vmap();
+  PW dsbgB = dsbg.mapB(), dsbgD = dsbg.mapD(), dsbg_subEmap = dsbg.subE_map();
   if (debug())
-    Util::SBG_LOG << dsbg << "\n\n";
+    Util::SBG_LOG << "\nsucc dsbg:\n" << dsbg << "\n\n";
+
+  Set M = matched_E(), NM = unmatched_E();
+  PW subEmap;
+  unsigned int j = 1, dims = dsbgV.arity();
+  for (const Map &SE : dsbg_subEmap) {
+    Exp expM(Util::MD_NAT(dims, j));
+    Map SEM(M.intersection(SE.dom()), expM);
+    ++j;
+    Exp expU(Util::MD_NAT(dims, j));
+    Map SEU(NM.intersection(SE.dom()), expU);
+    ++j;
+
+    subEmap.emplaceBack(SEM);
+    subEmap.emplaceBack(SEU);
+  }
+  if (debug())
+    Util::SBG_LOG << "subE_map:\n" << subEmap << "\n\n";
 
   // Unmatched vertices in forward direction
   Set unmatched_D = dsbgD.image().intersection(unmatched_V());
@@ -114,10 +133,10 @@ void SBGMatching<Set>::selectSucc(DSBGraph<Set> dsbg)
 
   // A record of allowed edges to keep out cycle edges
   Set allowed_edges = dsbg.E();
-  Set ith_end = unmatched_D; // Ends of paths to mininmum reachable
-  Set ingoing = dsbgD.preImage(ith_end); // Ingoing edges to ith_end
-  // A record of visited set-vertices
-  Set visitedV = dsbg_Vmap.preImage(dsbg_Vmap.image(ith_end));
+  // Ingoing edges to vertices that reach unmatched_D
+  Set ingoing = dsbgD.preImage(unmatched_D); 
+  // A record of visited set-edges
+  Set visitedE;
   do {
     // Calculate successor for ith vertices
     PW ingB = dsbgB.restrict(ingoing), ingD = dsbgD.restrict(ingoing);
@@ -125,40 +144,31 @@ void SBGMatching<Set>::selectSucc(DSBGraph<Set> dsbg)
     if (debug())
       Util::SBG_LOG << "ith_smap: " << ith_smap << "\n";
 
-    // Adjacent vertices that reach ith_end
-    Set ith_start = ith_smap.dom();
-    if (debug()) {
-     Util::SBG_LOG << "ith_start: " << ith_start << "\n";
-     Util::SBG_LOG << "ith_end: " << ith_end << "\n";
-    }
-
-    // Vertices in a recursion
-    Set rec = visitedV.intersection(ith_smap.dom()); 
+    // Edges that lead to a successor
+    Set Eith = dsbgD.equalImage(ith_smap.composition(dsbgB));
+    // Visited set-edges
+    Set Erec = visitedE.intersection(subEmap.image(Eith)); 
     // Handle recursion
-    if (!rec.isEmpty()) {
-      for (const Map &ith : dsbg_Vmap) {
-        PW rule = ith_smap.restrict(ith.dom());
-        if (!rule.isEmpty()) {
-          Exp exp = rule.begin()->exp();
-          PW aux_res (Map(ith.dom().difference(res.dom()), exp));
-          res = aux_res.combine(res);
-        }
-      }
+    if (!Erec.isEmpty()) {
+      Set Eplus = subEmap.preImage(Erec);
+      PW rec_smap = dsbgB.restrict(Eplus).minAdjMap(dsbgD.restrict(Eplus)); 
+      ith_smap = ith_smap.combine(rec_smap);
     }
-    res = ith_smap.restrict(ith_start.difference(rec)).combine(res);
+    res = ith_smap.combine(res);
  
     // Take out other outgoing edges to avoid cycles
     allowed_edges = allowed_edges.difference(dsbgB.preImage(res.dom()));
     dsbgD = dsbgD.restrict(allowed_edges);
     dsbgB = dsbgB.restrict(allowed_edges);
 
-    // Vertices without a predecessor
-    ith_end = res.dom();
-    ingoing = dsbgD.preImage(ith_end).intersection(allowed_edges);
+    // Edges that reach vertices with a successor
+    ingoing = dsbgD.preImage(res.dom()).intersection(allowed_edges);
 
-    visitedV = visitedV.cup(dsbg_Vmap.preImage(dsbg_Vmap.image(ith_start)));
+    visitedE = visitedE.cup(subEmap.image(Eith));
     if (debug()) {
-      Util::SBG_LOG << "ith_end 2: " << ith_end << "\n";
+      Util::SBG_LOG << "Eith: " << Eith << "\n";
+      Util::SBG_LOG << "Erec: " << Erec << "\n";
+      Util::SBG_LOG << "visitedE: " << visitedE << "\n";
       Util::SBG_LOG << "res: " << res << "\n\n";
     }
   } while (!ingoing.isEmpty());
@@ -175,29 +185,6 @@ void SBGMatching<Set>::directedMinReach(const PW &dir_map)
     Util::SBG_LOG << "dir_omap: " << dir_omap << "\n";
   DSBGraph<Set> dsbg = offsetGraph(dir_omap);
   dsbg.set_subE_map(sbg().subE_map().restrict(paths_edges()));
-  Set V = dsbg.V();
-  PW subE_map = sbg().subE_map().restrict(paths_edges());
-  PW auxB = dsbg.mapB(), auxD = dsbg.mapD();
-  for (const SBGMap<Set> &map : subE_map) {
-    Set ith_dom = auxB.image(map.dom()).intersection(V);
-    V = V.difference(ith_dom);
-    V = V.concatenation(ith_dom);
-  }
-  for (const SBGMap<Set> &map : subE_map) {
-    Set ith_dom = auxD.image(map.dom()).intersection(V);
-    V = V.difference(ith_dom);
-    V = V.concatenation(ith_dom);
-  }
-  dsbg.set_subE_map(subE_map);
-
-  PWMap<Set> Vmap;
-  unsigned int j = 1, dims = dir_omap.arity();
-  for (SetPiece mdi : V) {
-    Util::MD_NAT v(dims, j);
-    Vmap.emplaceBack(SBGMap<Set>(mdi, Exp(v)));
-    ++j;
-  }
-  dsbg.set_Vmap(Vmap);
 
   selectSucc(dsbg);
 
@@ -764,6 +751,41 @@ member_imp_temp(template<typename Set>, SBGCutSet<Set>, DSBGraph<Set>, dsbg);
 member_imp_temp(template<typename Set>, SBGCutSet<Set>, bool, debug);
 
 template<typename Set>
+PWMap<Set> SBGCutSet<Set>::getDegMap(DSBGraph<Set> dsbg)
+{
+  Set V = dsbg.V();
+  PW mapB = dsbg.mapB(), mapD = dsbg.mapD();
+
+  auto dims = V.arity();
+  Util::MD_NAT zero(dims, 0), one(dims, 1);
+  PW dmap(Map(V, Exp(zero))); 
+
+  for (const Map &SE : dsbg.subE_map()) {
+    Set dom = SE.dom();
+    Util::MD_NAT n(dims, dom.cardinal());
+    Set vsB = mapB.image(dom), vsD = mapD.image(dom);
+    if (vsB.cardinal() == 1) {
+      PW ith = dmap.restrict(vsD).offsetImage(n);
+      dmap = ith.combine(dmap);
+      ith = dmap.restrict(vsB).offsetImage(one);
+      dmap = ith.combine(dmap);
+    }
+    else if (vsD.cardinal() == 1) {
+      PW ith = dmap.restrict(vsB).offsetImage(n);
+      dmap = ith.combine(dmap);
+      ith = dmap.restrict(vsD).offsetImage(one);
+      dmap = ith.combine(dmap);
+    }
+    else {
+      PW ith = dmap.restrict(vsB.cup(vsD)).offsetImage(one);
+      dmap = ith.combine(dmap);
+    }
+  }
+
+  return dmap;
+}
+
+template<typename Set>
 Set SBGCutSet<Set>::calculate()
 {
   auto begin = std::chrono::high_resolution_clock::now();
@@ -774,14 +796,8 @@ Set SBGCutSet<Set>::calculate()
   if (debug())
     Util::SBG_LOG << "initial dg vertex cut set:\n" << dg << "\n";
 
+  PW dmap = getDegMap(dg);
   // Degree map
-  Util::MD_NAT zero(rmap.arity(), 0), one(rmap.arity(), 1);
-  PW dmap(Map(V, Exp(zero))); 
-  for (const Map &SE : dg.subE_map()) {
-    Set vs = mapB.image(SE.dom()).cup(mapD.image(SE.dom()));
-    PW ith = dmap.restrict(vs).offsetImage(one);
-    dmap = ith.combine(dmap);
-  }
   if (debug())
     Util::SBG_LOG << "initial dmap: " << dmap << "\n\n";
 
@@ -823,14 +839,7 @@ Set SBGCutSet<Set>::calculate()
     mapD = dg.mapD(); 
 
     // Update degree map
-    // TODO: make more efficient updating only degree for vertices adjacent
-    // to those in newD
-    dmap = PW(Map(dg.V(), Exp(zero))); 
-    for (const Map &SE : dg.subE_map()) {
-      Set vs = mapB.image(SE.dom()).cup(mapD.image(SE.dom()));
-      PW ith = dmap.restrict(vs).offsetImage(one);
-      dmap = ith.combine(dmap);
-    }
+    dmap = getDegMap(dg);
 
     // Resulting SCC from induced graph
     rmap = SBGSCC(dg, debug()).calculate();
@@ -1106,7 +1115,6 @@ void buildJson(
   const Set &matching, const PWMap<Set> &scc, const PWMap<Set> &order
 )
 {
-  //const char* json = "{\"matching\":\"\",\"scc\":\"\",\"order\":\"\"}";
   rapidjson::Document d;
   d.SetObject();
   rapidjson::Document::AllocatorType& alloc = d.GetAllocator();

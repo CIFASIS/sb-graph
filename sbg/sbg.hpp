@@ -51,7 +51,6 @@ struct SBGraph {
   SBGraph(Set V, PW Vmap, PW map1, PW map2, PW Emap);
 
   SBGraph addSV(const Set &vertices) const;
-  unsigned int nmbrSV() const;
   SBGraph addSE(const PW &pw1, const PW &pw2) const;
   SBGraph copy(unsigned int times) const;
 };
@@ -82,7 +81,6 @@ struct DSBGraph {
   DSBGraph(Set V, PW Vmap, PW mapB, PW mapD, PW Emap);
 
   DSBGraph addSV(const Set &vertices) const;
-  unsigned int nmbrSV() const;
   DSBGraph addSE(const PW &pw1, const PW &pw2) const;
 
   DSBGraph eraseVertices(Set vs) const;

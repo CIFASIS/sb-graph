@@ -43,7 +43,7 @@ void compatible(Interval i, LExp le)
                  , im_begin = min_rat * m + h;
   if (im_step.denominator() != 1 || im_begin.denominator() != 1) 
     if (im_step.numerator() != 0 || im_begin.numerator() != 0) {
-      Util::ERROR("LIB::SBGMap::compatible: incompatible i/le");
+      Util::ERROR("compatible: incompatible ", i, " with ", le, "\n");
       return;
     }
 
@@ -53,7 +53,7 @@ void compatible(Interval i, LExp le)
 void compatible(SetPiece mdi, Exp mdle)
 {
   Util::ERROR_UNLESS(mdi.arity() == mdle.arity()
-               , "LIB::SBGMap::compatible: dimensions don't match");
+    , "compatible: dimensions of ", mdi, " and ", mdle, " don't match\n");
 
   for (unsigned int j = 0; j < mdi.arity(); ++j)
     compatible(mdi[j], mdle[j]);
@@ -104,9 +104,6 @@ SetPiece image(SetPiece mdi, Exp mdle)
   if (mdi.isEmpty())
     return mdi;
 
-  Util::ERROR_UNLESS(mdi.arity() == mdle.arity()
-      , "LIB::SBGMap::image: dimensions don't match");
-
   SetPiece res;
   for (unsigned int j = 0; j < mdi.arity(); ++j)
     res.emplaceBack(image(mdi[j], mdle[j]));
@@ -121,27 +118,22 @@ SBGMap<Set>::SBGMap() : dom_(Set()), exp_(Exp()) {}
 template<typename Set>
 SBGMap<Set>::SBGMap(Util::MD_NAT x, Exp exp) : dom_(), exp_() {
   SetPiece mdi(x);
-  compatible(mdi, exp);
   dom_ = Set(mdi);
   exp_ = exp;
 }
 template<typename Set>
 SBGMap<Set>::SBGMap(Interval i, LExp le) : dom_(), exp_() {
-  compatible(i, le);
   dom_ = Set(SetPiece(i));
   exp_ = Exp(le);
 }
 template<typename Set>
 SBGMap<Set>::SBGMap(SetPiece mdi, Exp exp) : dom_(), exp_() {
-  compatible(mdi, exp);
   dom_ = Set(mdi);
   exp_ = exp;
 }
 template<typename Set>
 SBGMap<Set>::SBGMap(Set dom, Exp exp) : dom_(), exp_() {
   if (!dom.isEmpty()) {
-    for (const SetPiece &mdi : dom)
-      compatible(mdi, exp);
     dom_ = dom;
     exp_ = exp;
   }
@@ -189,9 +181,17 @@ std::ostream &operator<<(std::ostream &out, const SBGMap<Set> &sbgmap)
 
 // SBGMap functions ------------------------------------------------------------
 
-// Function should be called on a non-empty sbgmap
 template<typename Set>
-std::size_t SBGMap<Set>::arity() const { return dom_.begin()->arity(); }
+std::size_t SBGMap<Set>::arity() const
+{
+  if (dom_.isEmpty())
+    return 0;
+
+  return dom_.begin()->arity();
+}
+
+template<typename Set>
+bool SBGMap<Set>::isEmpty() const { return dom_.isEmpty(); }
 
 template<typename Set>
 SBGMap<Set> SBGMap<Set>::restrict(const Set &subdom) const

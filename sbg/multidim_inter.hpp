@@ -42,10 +42,10 @@ struct MultiDimInter {
   member_class(InterVector, intervals);
 
   MultiDimInter();
-  MultiDimInter(MD_NAT x);
-  MultiDimInter(Interval i);
-  MultiDimInter(unsigned int nmbr_copies, Interval i);
-  MultiDimInter(InterVector iv);
+  MultiDimInter(const MD_NAT &x);
+  MultiDimInter(const Interval &i);
+  MultiDimInter(const unsigned int &nmbr_copies, const Interval &i);
+  MultiDimInter(const InterVector &iv);
 
   typedef InterVectorIt iterator;
   typedef InterVectorConstIt const_iterator;
@@ -67,7 +67,6 @@ struct MultiDimInter {
   std::size_t arity() const;
   unsigned int cardinal() const;
   bool isEmpty() const;
-  bool isMember(const MD_NAT &x) const; // Useful?
   Util::MD_NAT minElem() const;
   Util::MD_NAT maxElem() const;
   MultiDimInter intersection(const MultiDimInter &other) const;

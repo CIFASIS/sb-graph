@@ -61,6 +61,7 @@ struct SBGMap {
    * @brief Traditional map operations.
    */
   std::size_t arity() const;
+  bool isEmpty() const;
   SBGMap restrict(const Set &subdom) const;
   Set image() const;
   Set image(const Set &subdom) const;

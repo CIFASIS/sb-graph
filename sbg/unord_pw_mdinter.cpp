@@ -136,9 +136,6 @@ bool UnordPWMDInter::isEmpty() const { return pieces_.empty(); }
 
 Util::MD_NAT UnordPWMDInter::minElem() const
 {
-  Util::ERROR_UNLESS(!isEmpty()
-      , "LIB::Unord::minElem: shouldn't be empty");
-
   MD_NAT res = begin()->minElem();
   for (const SetPiece &mdi : pieces_) {
     Util::MD_NAT ith = mdi.minElem();
@@ -151,9 +148,6 @@ Util::MD_NAT UnordPWMDInter::minElem() const
 
 Util::MD_NAT UnordPWMDInter::maxElem() const
 {
-  Util::ERROR_UNLESS(!isEmpty()
-      , "LIB::Unord::maxElem: shouldn't be empty");
-
   MD_NAT res = begin()->maxElem();
   for (const SetPiece &mdi : pieces_) {
     Util::MD_NAT ith = mdi.maxElem();
@@ -169,9 +163,6 @@ UnordPWMDInter UnordPWMDInter::intersection(const UnordPWMDInter &other) const
   // Special cases to enhance performance
   if (isEmpty() || other.isEmpty())
     return UnordPWMDInter();
-
-  Util::ERROR_UNLESS(arity() == other.arity()
-      , "LIB::Unord::intersection: dimensions don't match");
 
   if (pieces_ == other.pieces_)
     return *this;
@@ -198,9 +189,6 @@ UnordPWMDInter UnordPWMDInter::cup(const UnordPWMDInter &other) const
 
   if (other.isEmpty())
     return *this;
-
-  Util::ERROR_UNLESS(arity() == other.arity()
-      , "LIB::Unord::cup: dimensions don't match");
 
   if (pieces_ == other.pieces_)
     return *this;
@@ -317,9 +305,6 @@ UnordPWMDInter UnordPWMDInter::difference(const UnordPWMDInter &other) const
   if (other.isEmpty())
     return *this;
 
-  Util::ERROR_UNLESS(arity() == other.arity()
-      , "LIB::Unord::difference: dimensions don't match");
-
   return intersection(other.complement());
 }
 
@@ -327,7 +312,8 @@ UnordPWMDInter UnordPWMDInter::difference(const UnordPWMDInter &other) const
 
 std::size_t UnordPWMDInter::arity() const
 {
-  Util::ERROR_UNLESS(!isEmpty(), "LIB::Unord::arity: set is empty");
+  if (isEmpty())
+    return 0;
 
   return begin()->arity();
 }
@@ -341,9 +327,6 @@ UnordPWMDInter UnordPWMDInter::concatenation(const UnordPWMDInter &other) const
 
   if (other.isEmpty())
     return *this;
-
-  Util::ERROR_UNLESS(arity() == other.arity()
-      , "LIB::Unord::concatenation: dimensions don't match");
 
   for (const SetPiece &mdi : pieces_)
     res.emplaceBack(mdi);
@@ -370,9 +353,6 @@ UnordPWMDInter UnordPWMDInter::offset(const Util::MD_NAT &off) const
 
   if (isEmpty())
     return res;
-
-  Util::ERROR_UNLESS(off.arity() == arity()
-      , "LIB::Unord::offset: dimensions don't match");
 
   for (const SetPiece &mdi : pieces_)
     res.emplace(mdi.offset(off));

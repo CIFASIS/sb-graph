@@ -221,6 +221,9 @@ struct SBGCutSet {
   SBGCutSet(DSBGraph<Set> dsbg, bool debug);
 
   Set calculate(); 
+
+  private:
+  PW getDegMap(DSBGraph<Set> dsbg);
 };
 
 typedef SBGCutSet<UnordSet> BaseCutSet;

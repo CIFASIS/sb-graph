@@ -41,7 +41,8 @@ ConfigDims::ConfigDims(Util::NAT nmbr_dims) : nmbr_dims_() {
   if (nmbr_dims > 0)
     set_nmbr_dims(nmbr_dims);
 
-  else Util::ERROR("AST::ConfigDims: Should have ate least one dimension");
+  else
+    Util::ERROR("ConfigDims: dimension should be greater than 0\n");
 }
 
 member_imp(ConfigDims, Util::NAT, nmbr_dims);

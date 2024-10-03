@@ -7,7 +7,6 @@ PARSER      := bin/sbg-parser
 all: $(PARSER)
 
 PARSER_SRC := \
-    $(UTIL_DIR)/debug.cpp \
     $(UTIL_DIR)/defs.cpp \
 	  $(PARSER_DIR)/main.cpp \
     $(AST_DIR)/expr.cpp \

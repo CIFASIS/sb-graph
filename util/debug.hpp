@@ -36,46 +36,29 @@ namespace SBG {
 
 namespace Util {
 
-/**
- * Initialize so that only DEBUG messages with a flag in flagList
- * will be printed.
- *
- * If the flag is "+", we enable all DEBUG messages.
- *
- * "flagList" is a string of characters for whose DEBUG messages are to be
- * enabled.
- */
-void debugInit(const char *flags);
-
-/**
- * Print an INFO debug message, if flag is enabled.
- **/
-void DEBUG(char flag, const char *format, ...);
-
-bool isDebugParam(char *param);
-bool debugIsEnabled(char);
-
 /*
  * Print an ERROR message. Then exits with EXIT_FAILURE status.
- */
-void ERROR(const char *format, ...);
+*/
+template<class... Args>
+void ERROR(Args... args)
+{
+  (std::cerr << "ERROR>>" << ... << args);
+  exit(EXIT_FAILURE);
+}
+
 
 /**
  * Print an ERROR message if condition is false.
  * Then exits with EXIT_FAILURE status.
  */
-void ERROR_UNLESS(bool condition, const char *format, ...);
-
-/*
- * Print an Warning message.
- */
-void WARNING(const char *format, ...);
-
-/**
- * Print a WARNING message if condition is false.
- * Then continues with the execution.
- */
-void WARNING_UNLESS(bool condition, const char *format, ...);
+template<class... Args>
+void ERROR_UNLESS(bool cond, Args... args)
+{
+  if (!cond) {
+    (std::cerr << "ERROR>>" << ... << args);
+    exit(EXIT_FAILURE);
+  }
+}
 
 } // namespace Util
 

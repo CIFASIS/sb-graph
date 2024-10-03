@@ -28,8 +28,8 @@ namespace Util {
 std::string toStr(NAT x) { return std::to_string(x); }
 
 MD_NAT::MD_NAT() : value_() {}
-MD_NAT::MD_NAT(NAT x) : value_() { value_.emplace_back(x); }
-MD_NAT::MD_NAT(unsigned int nmbr_copies, NAT x) : value_() { 
+MD_NAT::MD_NAT(const NAT &x) : value_() { value_.emplace_back(x); }
+MD_NAT::MD_NAT(const unsigned int &nmbr_copies, const NAT &x) : value_() { 
   for (unsigned int j = 0; j < nmbr_copies; j++)
     value_.emplace_back(x); 
 }
@@ -51,11 +51,6 @@ const NAT &MD_NAT::operator[](std::size_t n) const { return value_[n]; }
 
 bool MD_NAT::operator==(const MD_NAT &other) const
 {
-  ERROR_UNLESS(
-      arity() == other.arity()
-      , "Util::MD_NAT::operator==: dimensions don't match"
-  );
-
   return value_ == other.value_;
 }
 
@@ -63,11 +58,6 @@ bool MD_NAT::operator!=(const MD_NAT &other) const { return !(*this == other); }
 
 bool MD_NAT::operator<(const MD_NAT &other) const
 {
-  ERROR_UNLESS(
-      arity() == other.arity()
-      , "Util::MD_NAT::operator<: dimensions don't match"
-  );
-
   for (unsigned int j = 0; j < arity(); ++j)
     if (operator[](j) < other[j])
       return true;
@@ -123,9 +113,9 @@ std::size_t hash_value(const MD_NAT &n)
 // Rationals -------------------------------------------------------------------
 
 RATIONAL::RATIONAL() : value_() {}
-RATIONAL::RATIONAL(NAT n) : value_(boost::rational<INT>(n, 1)) {}
-RATIONAL::RATIONAL(boost::rational<INT> value) : value_(value) {}
-RATIONAL::RATIONAL(INT n, INT d) : value_() {
+RATIONAL::RATIONAL(const NAT &n) : value_(boost::rational<INT>(n, 1)) {}
+RATIONAL::RATIONAL(const boost::rational<INT> &value) : value_(value) {}
+RATIONAL::RATIONAL(const INT &n, const INT &d) : value_() {
   boost::rational<long long int> v(n, d);
   set_value(v);
 }
@@ -229,9 +219,6 @@ NAT RATIONAL::toNat() const
   if (denominator() == 1 && 0 <= value_)
     return numerator();
 
-  std::cerr << "ERROR>>RATIONAL::toNat: " << *this << " is not NAT\n";
-  exit(1);
-
   return 0;
 }
 
@@ -240,7 +227,6 @@ INT RATIONAL::toInt() const
   if (denominator() == 1)
     return numerator();
 
-  ERROR("toInt: RATIONAL is not INT");
   return 0;
 }
 

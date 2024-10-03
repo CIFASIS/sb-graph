@@ -25,19 +25,21 @@ namespace Eval {
 
 LinearBaseType EvalLinear::operator()(Util::MD_NAT v) const 
 {
-  Util::ERROR("EvalLinear: trying to evaluate a MD_NAT");
+  Util::ERROR("EvalLinear: trying to evaluate MD_NAT ", v, "\n");
   return LinearBaseType();
 }
 
 LinearBaseType EvalLinear::operator()(Util::RATIONAL v) const 
 { 
-  Util::ERROR("EvalLinear: trying to evaluate a RATIONAL");
+  Util::ERROR("EvalLinear: trying to evaluate RATIONAL ", v, "\n");
   return LinearBaseType();
 }
 
 LinearBaseType EvalLinear::operator()(ContainerBaseType v) const
 {
-  Util::ERROR("EvalLinear: trying to evaluate a ContainerBaseType");
+  std::visit([](auto &&arg) {
+    Util::ERROR("EvalLinear: trying to evaluate ContainerBaseType ", arg, "\n");
+  }, v);
   return LinearBaseType();
 }
 
@@ -48,19 +50,25 @@ LinearBaseType EvalLinear::operator()(LinearBaseType v) const
 
 LinearBaseType EvalLinear::operator()(MapBaseType v) const
 {
-  Util::ERROR("EvalLinear: trying to evaluate a BaseType");
+  std::visit([](auto &&arg) {
+    Util::ERROR("EvalLinear: trying to evaluate MapBaseType ", arg, "\n");
+  }, v);
   return LinearBaseType();
 }
 
 LinearBaseType EvalLinear::operator()(SBGBaseType v) const
 {
-  Util::ERROR("EvalLinear: trying to evaluate a BaseType");
+  std::visit([](auto &&arg) {
+    Util::ERROR("EvalLinear: trying to evaluate SBGBaseType ", arg, "\n");
+  }, v);
   return LinearBaseType();
 }
 
 LinearBaseType EvalLinear::operator()(InfoBaseType v) const
 {
-  Util::ERROR("EvalLinear: trying to evaluate a BaseType");
+  std::visit([](auto &&arg) {
+    Util::ERROR("EvalLinear: trying to evaluate InfoBaseType ", arg, "\n");
+  }, v);
   return LinearBaseType();
 }
 } // namespace Eval

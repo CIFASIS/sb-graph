@@ -23,6 +23,8 @@ namespace SBG {
 
 namespace Eval {
 
+using Util::operator<<;
+
 // Environments ----------------------------------------------------------------
 
 VarEnv::VarEnv() : mapping_() {}
@@ -41,11 +43,11 @@ MaybeVValue VarEnv::operator[](VKey k) const
 
 FuncEnv::FuncEnv() {}
 FuncEnvType FuncEnv::mapping_ = {
-  {"isEmpty", 0}, {"isMember", 1}, {"minElem", 2}, {"maxElem", 3}, {"lt", 4}
-  , {"compose", 5}, {"inv", 6}, {"image", 7}, {"preImage", 8}, {"dom", 9}
-  , {"combine", 10}, {"firstInv", 11}, {"minMap", 12}, {"reduce", 13}
-  , {"minAdj", 14}, {"mapInf", 15}, {"CC", 16}, {"matching", 17}, {"scc", 18}
-  , {"sort", 19}, {"matchSCC", 20}, {"matchSCCTS", 21}, {"cut", 22}
+  {"isEmpty", 0}, {"isMember", 1}, {"minElem", 2}, {"maxElem", 3}
+  , {"compose", 4}, {"inv", 5}, {"image", 6}, {"preImage", 7}, {"dom", 8}
+  , {"combine", 9}, {"firstInv", 10}, {"minMap", 11}, {"reduce", 12}
+  , {"minAdj", 13}, {"mapInf", 14}, {"CC", 15}, {"matching", 16}, {"scc", 17}
+  , {"sort", 18}, {"matchSCC", 19}, {"matchSCCTS", 20}, {"cut", 21}
 };
 
 MaybeFValue FuncEnv::operator[](FKey k) const
@@ -57,21 +59,20 @@ MaybeFValue FuncEnv::operator[](FKey k) const
 // Classes for pretty printing ------------------------------------------------
 
 template<typename T, typename... Ts>
-std::ostream& operator<<(std::ostream& os, const std::variant<T, Ts...>& v)
+std::ostream &operator<<(std::ostream &out, const std::variant<T, Ts...> &v)
 {
-    std::visit([&os](auto&& arg) {
-        os << arg;
-    }, v);
-    return os;
+  std::visit([&out](auto&& arg) {
+    out << arg;
+  }, v);
+
+  return out;
 }
 
 std::ostream &operator<<(std::ostream &out, const ExprEval &e)
 {
   out << std::get<0>(e) << "\n  --> "; 
   ExprBaseType ebt = std::get<1>(e);
-  auto printer = [&](auto v) { out << v; };
-  std::visit(printer, ebt);
-  out << "\n";
+  out << ebt << "\n";
 
   return out;
 }

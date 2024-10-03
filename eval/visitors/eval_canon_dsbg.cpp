@@ -28,25 +28,25 @@ EvalCanonDSBG::EvalCanonDSBG(VarEnv env) : env_(env) {}
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::Natural v) const
 {
-  Util::ERROR("EvalCanonDSBG: trying to evaluate a Natural");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate Natural ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::MDNatural v) const
 {
-  Util::ERROR("EvalCanonDSBG: trying to evaluate a MDNatural");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate MDNatural ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::Rational v) const
 {
-  Util::ERROR("EvalCanonDSBG: trying to evaluate a Rational");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate Rational ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::Boolean v) const
 {
-  Util::ERROR("EvalCanonDSBG: trying to evaluate a Boolean");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate Boolean ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
@@ -62,126 +62,126 @@ LIB::CanonDSBG EvalCanonDSBG::operator()(Util::VariableName v) const
     }
 
     else {
-      Util::ERROR("EvalCanonDSBG: variable %s is not a PWMap", v.c_str());
+      Util::ERROR("EvalCanonDSBG: variable " , v, " is not a PWMap\n");
       return LIB::CanonDSBG(); 
     } 
   }
 
-  Util::ERROR("EvalCanonDSBG: variable %s not defined", v.c_str());
+  Util::ERROR("EvalCanonDSBG: variable ", v, " undefined\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::UnaryOp v) const 
 {
-  Util::ERROR("EvalCanonDSBG: trying to evaluate an arithmetic BinOp");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate arithmetic UnaryOp ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::BinOp v) const 
 {
-  Util::ERROR("EvalCanonDSBG: trying to evaluate an arithmetic BinOp");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate arithmetic BinOp ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::Call v) const
 {
-  Util::ERROR("EvalCanonDSBG: trying to evaluate a Call");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate Call ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::Interval v) const
 { 
-  Util::ERROR("EvalCanonDSBG: trying to evaluate an Interval");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate Interval ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::InterUnaryOp v) const
 {
-  Util::ERROR("EvalCanonDSBG: trying to evaluate an InterUnaryOp");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate InterUnaryOp ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::InterBinOp v) const
 {
-  Util::ERROR("EvalCanonDSBG: trying to evaluate an InterBinOp");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate InterBinOp ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::MultiDimInter v) const
 { 
-  Util::ERROR("EvalCanonDSBG: trying to evaluate an MultiDimInter");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate MultiDimInter ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::MDInterUnaryOp v) const
 {
-  Util::ERROR("EvalCanonDSBG: trying to evaluate an MDInterUnaryOp");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate MDInterUnaryOp ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::MDInterBinOp v) const
 {
-  Util::ERROR("EvalCanonDSBG: trying to evaluate an MDInterBinOp");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate MDInterBinOp ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::Set v) const 
 {
-  Util::ERROR("EvalCanonDSBG: trying to evaluate a Set");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate Set ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::SetUnaryOp v) const 
 {
-  Util::ERROR("EvalCanonDSBG: trying to evaluate a SetUnaryOp");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate SetUnaryOp ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::SetBinOp v) const 
 {
-  Util::ERROR("EvalCanonDSBG: trying to evaluate a SetBinOp");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate SetBinOp ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::LinearExp v) const
 { 
-  Util::ERROR("EvalCanonDSBG: trying to evaluate a LinearExp");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate LinearExp ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::LExpBinOp v) const 
 {
-  Util::ERROR("EvalCanonDSBG: trying to evaluate a LExpBinOp");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate LExpBinOp ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::MDLExp v) const
 { 
-  Util::ERROR("EvalCanonDSBG: trying to evaluate a MDLExp");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate MDLExp ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::MDLExpBinOp v) const 
 {
-  Util::ERROR("EvalCanonDSBG: trying to evaluate a MDLExpBinOp");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate MDLExpBinOp ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::LinearMap v) const 
 {
-  Util::ERROR("EvalCanonDSBG: trying to evaluate a LinearMap");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate LinearMap ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::PWLMap v) const 
 {
-  Util::ERROR("EvalCanonDSBG: trying to evaluate a PWLMap");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate PWLMap ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::SBG v) const 
 {
-  Util::ERROR("EvalCanonDSBG: trying to evaluate a SBG");
+  Util::ERROR("EvalCanonDSBG: trying to evaluate SBG ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 

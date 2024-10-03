@@ -27,37 +27,47 @@ NatBaseType EvalNatBT::operator()(Util::MD_NAT v) const { return v; }
 
 NatBaseType EvalNatBT::operator()(Util::RATIONAL v) const 
 { 
-  Util::ERROR("EvalNatBT: trying to evaluate a RATIONAL");
+  Util::ERROR("EvalNatBT: trying to evaluate RATIONAL ", v, "\n");
   return NatBaseType();
 }
 
 NatBaseType EvalNatBT::operator()(ContainerBaseType v) const
 {
-  Util::ERROR("EvalNatBT: trying to evaluate a ContainerBaseType");
+  std::visit([](auto &&arg) {
+    Util::ERROR("EvalNatBT: trying to evaluate ContainerBaseType ", arg, "\n");
+  }, v);
   return NatBaseType();
 }
 
 NatBaseType EvalNatBT::operator()(LinearBaseType v) const
 {
-  Util::ERROR("EvalNatBT: trying to evaluate a LinearBaseType");
+  std::visit([](auto &&arg) {
+    Util::ERROR("EvalNatBT: trying to evaluate LinearBaseType ", arg, "\n");
+  }, v);
   return NatBaseType();
 }
 
 NatBaseType EvalNatBT::operator()(MapBaseType v) const
 {
-  Util::ERROR("EvalNatBT: trying to evaluate a MapBaseType");
+  std::visit([](auto &&arg) {
+    Util::ERROR("EvalNatBT: trying to evaluate MapBaseType ", arg, "\n");
+  }, v);
   return NatBaseType();
 }
 
 NatBaseType EvalNatBT::operator()(SBGBaseType v) const
 {
-  Util::ERROR("EvalNatBT: trying to evaluate a SBGBaseType");
+  std::visit([](auto &&arg) {
+    Util::ERROR("EvalNatBT: trying to evaluate SBGBaseType ", arg, "\n");
+  }, v);
   return NatBaseType();
 }
 
 NatBaseType EvalNatBT::operator()(InfoBaseType v) const
 {
-  Util::ERROR("EvalNatBT: trying to evaluate an InfoBaseType");
+  std::visit([](auto &&arg) {
+    Util::ERROR("EvalNatBT: trying to evaluate InfoBaseType ", arg, "\n");
+  }, v);
   return NatBaseType();
 }
 

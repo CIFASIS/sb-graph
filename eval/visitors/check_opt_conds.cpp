@@ -94,9 +94,7 @@ bool OptConds::operator()(AST::InterBinOp v) const
       return l && r;
 
     default:
-      std::stringstream ss;
-      ss << v.op();
-      Util::ERROR("OptConds: InterBinOp %s not supported.", ss.str().c_str());
+      Util::ERROR("OptConds: InterBinOp ", v.op(), " unsupported\n");
       return false; 
   }
 }
@@ -125,9 +123,7 @@ bool OptConds::operator()(AST::MDInterBinOp v) const
       return l && r;
 
     default:
-      std::stringstream ss;
-      ss << v.op();
-      Util::ERROR("OptConds: MDInterBinOp %s not supported.", ss.str().c_str());
+      Util::ERROR("OptConds: MDInterBinOp ", v.op(), " unsupported\n");
       return false; 
   }
 }
@@ -159,9 +155,7 @@ bool OptConds::operator()(AST::SetBinOp v) const
       return l && r;
 
     default:
-      std::stringstream ss;
-      ss << v.op();
-      Util::ERROR("EvalUnordSet: SetBinOp %s not supported.", ss.str().c_str());
+      Util::ERROR("EvalUnordSet: SetBinOp ", v.op(), " unsupported\n");
       return false; 
   }
 }

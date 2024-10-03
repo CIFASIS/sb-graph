@@ -4,8 +4,7 @@ UTIL_DIR    := util
 # Sources
 	UTIL_SRC := \
     $(UTIL_DIR)/defs.cpp \
-    $(UTIL_DIR)/logger.cpp \
-    $(UTIL_DIR)/debug.cpp
+    $(UTIL_DIR)/logger.cpp
 
 # Objects
 UTIL_OBJ=$(addprefix $(BUILD_DIR)/, $(UTIL_SRC:.cpp=.o))

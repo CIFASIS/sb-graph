@@ -25,13 +25,13 @@ namespace Eval {
 
 ContainerBaseType EvalContainer::operator()(Util::MD_NAT v) const 
 {
-  Util::ERROR("EvalContainer: trying to evaluate a MD_NAT");
+  Util::ERROR("EvalContainer: trying to evaluate MD_NAT ", v, "\n");
   return ContainerBaseType();
 }
 
 ContainerBaseType EvalContainer::operator()(Util::RATIONAL v) const 
 { 
-  Util::ERROR("EvalContainer: trying to evaluate a RATIONAL");
+  Util::ERROR("EvalContainer: trying to evaluate RATIONAL ", v, "\n");
   return ContainerBaseType();
 }
 
@@ -42,25 +42,33 @@ ContainerBaseType EvalContainer::operator()(ContainerBaseType v) const
 
 ContainerBaseType EvalContainer::operator()(LinearBaseType v) const
 {
-  Util::ERROR("EvalContainer: trying to evaluate a LinearBaseType");
+  std::visit([](auto &&arg) {
+    Util::ERROR("EvalContainer: trying to evaluate LinearBaseType ", arg, "\n");
+  }, v);
   return ContainerBaseType();
 }
 
 ContainerBaseType EvalContainer::operator()(MapBaseType v) const
 {
-  Util::ERROR("EvalContainer: trying to evaluate a MapBaseType");
+  std::visit([](auto &&arg) {
+    Util::ERROR("EvalContainer: trying to evaluate MapBaseType ", arg, "\n");
+  }, v);
   return ContainerBaseType();
 }
 
 ContainerBaseType EvalContainer::operator()(SBGBaseType v) const
 {
-  Util::ERROR("EvalContainer: trying to evaluate a SBGBaseType");
+  std::visit([](auto &&arg) {
+    Util::ERROR("EvalContainer: trying to evaluate SBGBaseType ", arg, "\n");
+  }, v);
   return ContainerBaseType();
 }
 
 ContainerBaseType EvalContainer::operator()(InfoBaseType v) const
 {
-  Util::ERROR("EvalContainer: trying to evaluate an InfoBaseType");
+  std::visit([](auto &&arg) {
+    Util::ERROR("EvalContainer: trying to evaluate InfoBaseType ", arg, "\n");
+  }, v);
   return ContainerBaseType();
 }
 

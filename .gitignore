@@ -34,3 +34,12 @@ Makefile
 
 # Log files
 SBG.log
+
+# Binary generated files.
+sbg/test/utest/matching-test
+parser/sbg-parser
+sbg/test/utest/graph-test
+sbg/test/utest/GraphTest
+sbg/test/utest/order-test
+sbg/test/utest/PrintGraphs
+sbg/test/utest/scc-test

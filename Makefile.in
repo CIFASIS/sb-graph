@@ -87,7 +87,7 @@ doc:
 	@mkdir -p $(ROOT)/doc/html
 	@mkdir -p $(ROOT)/doc/latex
 	doxygen sbg/SBG.doxyfile
-	doxygen sbg/util/UTIL.doxyfile
+	doxygen util/UTIL.doxyfile
 
 test: lib-gtest $(SBG_TEST)
 

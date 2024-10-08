@@ -1,12 +1,14 @@
-/*
+/* Matching test originated from the following model
+(the result is indicated with comments):
+
 model Test1
   constant Integer N = 100;
   Real a[N], b[N], x[N];
 equation
   for i in 1:N loop
-    a[i] = 2 * x[i] - b[i];
-    a[i] = 2 * b[i] - x[i];
-    der(x[i]) = 1 - a[i];
+    a[i] = 2 * x[i] - b[i]; // a[1:N]
+    a[i] = 2 * b[i] - x[i]; // b[1:N]
+    der(x[i]) = 1 - a[i]; // der(x[1:N])
   end for;  
 end Test1;
 */

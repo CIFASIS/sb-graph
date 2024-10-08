@@ -33,4 +33,4 @@ Makefile
 /autom4te.cache
 
 # Log files
-SBG.log
+*.log

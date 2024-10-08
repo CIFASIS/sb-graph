@@ -1,4 +1,18 @@
-// SCC test, with a simple long cycle
+/* SCC test of a graph with a long cycle,
+originated from the model (where the matching
+is indicated with comments for each equation):
+
+model scc1
+  constant Integer N = 100000;
+  Real a[N], b;
+equation
+  for i in 1:N-1 loop
+    a[i] + a[i+1] = 0; // a[1:N-1]
+  end for;
+  a[N] + b = 0; // a[N]
+  a[1] + b = 0; // b
+end scc1;
+*/
 
 N = 100000
 

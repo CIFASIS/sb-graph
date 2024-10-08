@@ -1,10 +1,13 @@
-/*
+/* Detection of algebraic loops (SCC) for the following
+model, where the matching is indicated with comments
+for each equation:
+
 model testRL3
   //iR[i] and iR[i+1] can be computed out of each other
   //uL[i] and uL[i+1] can be computed out of each other
   //All variables form a large algebraic loop
 
-  constant Integer N=10;
+  constant Integer N=100000;
   Real iL[N],iR[N],uL[N];
   parameter Real L=1,R=1,L1=1,U=1,R0=1;
 equation

@@ -1,6 +1,8 @@
-/*
+/* Matching test originated from the following model
+(the result is indicated with comments):
+
 model Test3
-  constant Integer N = 100;
+  constant Integer N = 100000;
   Real a[N], x[N], b[N];
 equation 
   for i in 2:N-1 loop
@@ -17,7 +19,7 @@ equation
 end Test3;
 */
 
-N = 1000000
+N = 100000
 
 F1 = N-2
 F2 = N-2+F1

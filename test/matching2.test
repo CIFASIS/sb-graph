@@ -1,7 +1,20 @@
-// Matching test, with recursions that starts in the middle
+/* Matching test of a single large path + path starting
+at the middle of the first one, 
+originated from the following model:
 
-N = 10000
-N2 = 5000
+model matching1
+  constant Integer N = 100000;
+  Real a[N];
+equation
+  a[N/2] = 0;
+  for i in 2:N loop
+    a[i-1] + a[i] = 0;
+  end for;
+end matching1;
+*/
+
+N = 100000
+N2 = 50000
 
 V1 = 1
 V2 = N-1+V1

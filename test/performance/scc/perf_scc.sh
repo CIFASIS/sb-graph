@@ -63,8 +63,8 @@ echo
 echo "Average builder:"
 echo "scale=2; $total / $count" | bc	
 
-algo=$algo+$total/$count;
+total=$algo+$total/$count;
 
 echo 
 echo "Average total:"
-echo "scale=2; $algo" | bc	
+echo "scale=2; $total" | bc	

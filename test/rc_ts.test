@@ -1,25 +1,28 @@
-/*
+/* Topological sort test originated from the model
+(which is horizontally ordered and where algebraic
+loops have been identified):
+
 model rc
-  constant Integer n=100;
-  parameter Real RA=1,RB=1,C=1,i0=1;
-  Real vA[n],vB[n],vC[n],iR[n];
+  constant Integer N=100000;
+  parameter Real RA=1, RB=1,C=1, i0=1;
+  Real vA[N], vB[N], vC[N], iR[N];
 equation
-  iR[1]=i0; // Eq.(1)
-  for i in 1:n loop
-    vA[i]=RA*iR[i]; //Eq.(2)
-    vB[i]=RB*iR[i]; //Eq.(3)
+  iR[1] = i0;
+  vA[1] = RA*iR[1];
+  vB[1] = RB*iR[1];
+  for i in 2:N loop
+    0 = RA*iR[i] - vA[i]; // iR[2:N]
+    0 = RB*iR[i] - vB[i]; // vB[2:N]
+    0 = vC[i-1] - vC[i] - vA[i] - vB[i]; // vA[2:N]
   end for;
-  for i in 2:n loop
-    vA[i]+vB[i]=vC[i-1]-vC[i]; //Eq.(4)
+  for i in 1:N-1 loop
+    der(vC[i]) = (iR[i]-iR[i+1])/C;
   end for;
-  for i in 1:n-1 loop
-    C*der(vC[i])=iR[i]-iR[i+1]; //Eq.(5)
-  end for;
-  C*der(vC[n])=iR[n]; //Eq.(6)
+  der(vC[N]) = iR[N]/C;
 end rc;
 */
 
-N = 100
+N = 100000
 
 F1 = 1
 F2 = N+F1

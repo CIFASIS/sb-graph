@@ -1,25 +1,27 @@
-/*
+/* Matching test originated from the following model
+(the result is indicated with comments):
+
 model testRL1
   //iR[i] must be computed out of iR[i+1]
   //uL[i+1] must be computed out of uL[i]
 
-  constant Integer N=10;
+  constant Integer N=100000;
   Real iL[N],iR[N],uL[N];
   parameter Real L=1,R=1,L1=1,I=1,R0=1;
 equation
   for i in 1:N loop
-    L*der(iL[i])=uL[i];
+    L*der(iL[i])=uL[i]; // der(iL[1:N])
   end for;  
   for i in 1:N-1 loop
-    iR[i]-iR[i+1]-iL[i]=0;
-    uL[i]-uL[i+1]-R*iR[i+1]=0;
+    iR[i]-iR[i+1]-iL[i]=0; // iR[1:N-1]
+    uL[i]-uL[i+1]-R*iR[i+1]=0; // uL[2:N]
   end for;  
-  iR[N]-iL[N]+I=0;
-  uL[1]+(R+R0)*iR[1]=0;
+  iR[N]-iL[N]+I=0; // iR[N]
+  uL[1]+(R+R0)*iR[1]=0; // uL[1]
 end testRL1;
 */
  
-N = 100
+N = 100000
 
 F1 = N
 F2 = N-1+F1

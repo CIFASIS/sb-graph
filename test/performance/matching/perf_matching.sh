@@ -44,7 +44,5 @@ for i in $( awk '{ print $1; }' test_values )
    done
 
 echo 
-echo "Average:"
+echo "Average matching:"
 echo "scale=2; $total / $count" | bc	
-
-

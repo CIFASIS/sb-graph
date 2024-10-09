@@ -28,25 +28,25 @@ EvalMDLE::EvalMDLE(VarEnv env) : env_(env) {}
 
 LIB::Exp EvalMDLE::operator()(AST::Natural v) const
 {
-  Util::ERROR("EvalMDLE: trying to evaluate a Natural");
+  Util::ERROR("EvalMDLE: trying to evaluate Natural ", v, "\n");
   return LIB::Exp(); 
 }
 
 LIB::Exp EvalMDLE::operator()(AST::MDNatural v) const
 {
-  Util::ERROR("EvalMDLE: trying to evaluate a MDNatural");
+  Util::ERROR("EvalMDLE: trying to evaluate MDNatural ", v, "\n");
   return LIB::Exp(); 
 }
 
 LIB::Exp EvalMDLE::operator()(AST::Rational v) const
 {
-  Util::ERROR("EvalMDLE: trying to evaluate a Rational");
+  Util::ERROR("EvalMDLE: trying to evaluate Rational ", v, "\n");
   return LIB::Exp(); 
 }
 
 LIB::Exp EvalMDLE::operator()(AST::Boolean v) const
 {
-  Util::ERROR("EvalMDLE: trying to evaluate a Boolean");
+  Util::ERROR("EvalMDLE: trying to evaluate Boolean ", v, "\n");
   return LIB::Exp(); 
 }
 
@@ -62,96 +62,96 @@ LIB::Exp EvalMDLE::operator()(Util::VariableName v) const
     }
 
     else {
-      Util::ERROR("EvalMDLE: variable %s is not a linear expression", v.c_str());
+      Util::ERROR("EvalMDLE: variable ", v, " is not a mdle\n");
       return LIB::Exp(); 
     } 
   }
 
-  Util::ERROR("EvalMDLE: variable %s not defined", v.c_str());
+  Util::ERROR("EvalMDLE: variable ", v, " undefined\n");
   return LIB::Exp(); 
 }
 
 LIB::Exp EvalMDLE::operator()(AST::UnaryOp v) const
 {
-  Util::ERROR("EvalMDLE: trying to evaluate an arithmetic UnaryOp");
+  Util::ERROR("EvalMDLE: trying to evaluate arithmetic UnaryOp ", v , "\n");
   return LIB::Exp(); 
 }
 
 LIB::Exp EvalMDLE::operator()(AST::BinOp v) const 
 {
-  Util::ERROR("EvalMDLE: trying to evaluate an arithmetic BinOp");
+  Util::ERROR("EvalMDLE: trying to evaluate arithmetic BinOp ", v, "\n");
   return LIB::Exp(); 
 }
 
 LIB::Exp EvalMDLE::operator()(AST::Call v) const
 {
-  Util::ERROR("EvalMDLE: trying to evaluate a Call");
+  Util::ERROR("EvalMDLE: trying to evaluate Call ", v, "\n");
   return LIB::Exp(); 
 }
 
 LIB::Exp EvalMDLE::operator()(AST::Interval v) const
 { 
-  Util::ERROR("EvalMDLE: trying to evaluate an Interval");
+  Util::ERROR("EvalMDLE: trying to evaluate Interval ", v, "\n");
   return LIB::Exp(); 
 }
 
 LIB::Exp EvalMDLE::operator()(AST::InterUnaryOp v) const
 {
-  Util::ERROR("EvalMDLE: trying to evaluate an InterUnaryOp");
+  Util::ERROR("EvalMDLE: trying to evaluate InterUnaryOp ", v, "\n");
   return LIB::Exp(); 
 }
 
 LIB::Exp EvalMDLE::operator()(AST::InterBinOp v) const
 {
-  Util::ERROR("EvalMDLE: trying to evaluate an InterBinOp");
+  Util::ERROR("EvalMDLE: trying to evaluate InterBinOp ", v, "\n");
   return LIB::Exp(); 
 }
 
 LIB::Exp EvalMDLE::operator()(AST::MultiDimInter v) const
 { 
-  Util::ERROR("EvalMDLE: trying to evaluate an MultiDimInter");
+  Util::ERROR("EvalMDLE: trying to evaluate MultiDimInter ", v, "\n");
   return LIB::Exp(); 
 }
 
 LIB::Exp EvalMDLE::operator()(AST::MDInterUnaryOp v) const
 {
-  Util::ERROR("EvalMDLE: trying to evaluate an MDInterUnaryOp");
+  Util::ERROR("EvalMDLE: trying to evaluate MDInterUnaryOp ", v, "\n");
   return LIB::Exp(); 
 }
 
 LIB::Exp EvalMDLE::operator()(AST::MDInterBinOp v) const
 {
-  Util::ERROR("EvalMDLE: trying to evaluate an MDInterBinOp");
+  Util::ERROR("EvalMDLE: trying to evaluate MDInterBinOp ", v, "\n");
   return LIB::Exp(); 
 }
 
 LIB::Exp EvalMDLE::operator()(AST::Set v) const 
 {
-  Util::ERROR("EvalMDLE: trying to evaluate a Set");
+  Util::ERROR("EvalMDLE: trying to evaluate Set ", v, "\n");
   return LIB::Exp(); 
 }
 
 LIB::Exp EvalMDLE::operator()(AST::SetUnaryOp v) const 
 {
-  Util::ERROR("EvalMDLE: trying to evaluate a SetUnaryOp");
+  Util::ERROR("EvalMDLE: trying to evaluate SetUnaryOp ", v, "\n");
   return LIB::Exp(); 
 }
 
 LIB::Exp EvalMDLE::operator()(AST::SetBinOp v) const 
 {
-  Util::ERROR("EvalMDLE: trying to evaluate a SetBinOp");
+  Util::ERROR("EvalMDLE: trying to evaluate SetBinOp ", v, "\n");
   return LIB::Exp(); 
 }
 
 LIB::Exp EvalMDLE::operator()(AST::LinearExp v) const
 {
-  Util::ERROR("EvalMDLE: trying to evaluate a LinearExp");
+  Util::ERROR("EvalMDLE: trying to evaluate LinearExp ", v, "\n");
   return LIB::Exp(); 
 }
 
 LIB::Exp EvalMDLE::operator()(AST::LExpBinOp v) const 
 {
-  Util::ERROR("EvalMDLE: trying to evaluate a LExpBinOp");
+  Util::ERROR("EvalMDLE: trying to evaluate LExpBinOp ", v, "\n");
   return LIB::Exp(); 
 }
 
@@ -178,34 +178,32 @@ LIB::Exp EvalMDLE::operator()(AST::MDLExpBinOp v) const
       return l - r;
 
     default:
-      std::stringstream ss;
-      ss << v.op();
-      Util::ERROR("EvalMDLE: LExpBinOp %s not supported.", ss.str().c_str());
+      Util::ERROR("EvalMDLE: LExpBinOp ", v.op(), " unsupported\n");
       return LIB::Exp(); 
   }
 }
 
 LIB::Exp EvalMDLE::operator()(AST::LinearMap v) const 
 {
-  Util::ERROR("EvalMDLE: trying to evaluate a LinearMap");
+  Util::ERROR("EvalMDLE: trying to evaluate LinearMap ", v, "\n");
   return LIB::Exp(); 
 }
 
 LIB::Exp EvalMDLE::operator()(AST::PWLMap v) const 
 {
-  Util::ERROR("EvalMDLE: trying to evaluate a PWLMap");
+  Util::ERROR("EvalMDLE: trying to evaluate PWLMap ", v, "\n");
   return LIB::Exp(); 
 }
 
 LIB::Exp EvalMDLE::operator()(AST::SBG v) const 
 {
-  Util::ERROR("EvalMDLE: trying to evaluate a SBG");
+  Util::ERROR("EvalMDLE: trying to evaluate SBG ", v, "\n");
   return LIB::Exp(); 
 }
 
 LIB::Exp EvalMDLE::operator()(AST::DSBG v) const 
 {
-  Util::ERROR("EvalMDLE: trying to evaluate a DSBG");
+  Util::ERROR("EvalMDLE: trying to evaluate DSBG ", v, "\n");
   return LIB::Exp(); 
 }
 

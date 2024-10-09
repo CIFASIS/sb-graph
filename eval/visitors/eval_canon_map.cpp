@@ -28,25 +28,25 @@ EvalCanonMap::EvalCanonMap(VarEnv env) : env_(env) {}
 
 LIB::CanonMap EvalCanonMap::operator()(AST::Natural v) const
 {
-  Util::ERROR("EvalCanonMap: trying to evaluate a Natural");
+  Util::ERROR("EvalCanonMap: trying to evaluate Natural ", v, "\n");
   return LIB::CanonMap(); 
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::MDNatural v) const
 {
-  Util::ERROR("EvalCanonMap: trying to evaluate a MDNatural");
+  Util::ERROR("EvalCanonMap: trying to evaluate MDNatural ", v, "\n");
   return LIB::CanonMap(); 
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::Rational v) const
 {
-  Util::ERROR("EvalCanonMap: trying to evaluate a Rational");
+  Util::ERROR("EvalCanonMap: trying to evaluate Rational ", v, "\n");
   return LIB::CanonMap(); 
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::Boolean v) const
 {
-  Util::ERROR("EvalCanonMap: trying to evaluate a Boolean");
+  Util::ERROR("EvalCanonMap: trying to evaluate Boolean ", v, "\n");
   return LIB::CanonMap(); 
 }
 
@@ -62,108 +62,108 @@ LIB::CanonMap EvalCanonMap::operator()(Util::VariableName v) const
     }
 
     else {
-      Util::ERROR("EvalCanonMap: variable %s is not a linear expression", v.c_str());
+      Util::ERROR("EvalCanonMap: variable ", v, " is not a linear expression\n");
       return LIB::CanonMap(); 
     } 
   }
 
-  Util::ERROR("EvalCanonMap: variable %s not defined", v.c_str());
+  Util::ERROR("EvalCanonMap: variable ", v, " undefined\n");
   return LIB::CanonMap(); 
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::UnaryOp v) const 
 {
-  Util::ERROR("EvalCanonMap: trying to evaluate an arithmetic UnaryOp");
+  Util::ERROR("EvalCanonMap: trying to evaluate arithmetic UnaryOp ", v, "\n");
   return LIB::CanonMap(); 
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::BinOp v) const 
 {
-  Util::ERROR("EvalCanonMap: trying to evaluate an arithmetic BinOp");
+  Util::ERROR("EvalCanonMap: trying to evaluate arithmetic BinOp ", v, "\n");
   return LIB::CanonMap(); 
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::Call v) const
 {
-  Util::ERROR("EvalCanonMap: trying to evaluate a Call");
+  Util::ERROR("EvalCanonMap: trying to evaluate Call ", v, "\n");
   return LIB::CanonMap(); 
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::Interval v) const
 { 
-  Util::ERROR("EvalCanonMap: trying to evaluate an Interval");
+  Util::ERROR("EvalCanonMap: trying to evaluate Interval ", v, "\n");
   return LIB::CanonMap(); 
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::InterUnaryOp v) const
 {
-  Util::ERROR("EvalCanonMap: trying to evaluate an InterUnaryOp");
+  Util::ERROR("EvalCanonMap: trying to evaluate InterUnaryOp ", v, "\n");
   return LIB::CanonMap(); 
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::InterBinOp v) const
 {
-  Util::ERROR("EvalCanonMap: trying to evaluate an InterBinOp");
+  Util::ERROR("EvalCanonMap: trying to evaluate InterBinOp ", v, "\n");
   return LIB::CanonMap(); 
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::MultiDimInter v) const
 { 
-  Util::ERROR("EvalCanonMap: trying to evaluate an MultiDimInter");
+  Util::ERROR("EvalCanonMap: trying to evaluate MultiDimInter ", v, "\n");
   return LIB::CanonMap(); 
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::MDInterUnaryOp v) const
 {
-  Util::ERROR("EvalCanonMap: trying to evaluate an MDInterUnaryOp");
+  Util::ERROR("EvalCanonMap: trying to evaluate MDInterUnaryOp ", v, "\n");
   return LIB::CanonMap(); 
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::MDInterBinOp v) const
 {
-  Util::ERROR("EvalCanonMap: trying to evaluate an MDInterBinOp");
+  Util::ERROR("EvalCanonMap: trying to evaluate MDInterBinOp ", v, "\n");
   return LIB::CanonMap(); 
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::Set v) const 
 {
-  Util::ERROR("EvalCanonMap: trying to evaluate a Set");
+  Util::ERROR("EvalCanonMap: trying to evaluate Set ", v, "\n");
   return LIB::CanonMap(); 
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::SetUnaryOp v) const 
 {
-  Util::ERROR("EvalCanonMap: trying to evaluate a SetUnaryOp");
+  Util::ERROR("EvalCanonMap: trying to evaluate SetUnaryOp ", v, "\n");
   return LIB::CanonMap(); 
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::SetBinOp v) const 
 {
-  Util::ERROR("EvalCanonMap: trying to evaluate a SetBinOp");
+  Util::ERROR("EvalCanonMap: trying to evaluate SetBinOp ", v, "\n");
   return LIB::CanonMap(); 
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::LinearExp v) const
 { 
-  Util::ERROR("EvalCanonMap: trying to evaluate a LinearExp");
+  Util::ERROR("EvalCanonMap: trying to evaluate LinearExp ", v, "\n");
   return LIB::CanonMap(); 
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::LExpBinOp v) const 
 {
-  Util::ERROR("EvalCanonMap: trying to evaluate a LExpBinOp");
+  Util::ERROR("EvalCanonMap: trying to evaluate LExpBinOp ", v, "\n");
   return LIB::CanonMap(); 
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::MDLExp v) const
 { 
-  Util::ERROR("EvalCanonMap: trying to evaluate a MDLExp");
+  Util::ERROR("EvalCanonMap: trying to evaluate MDLExp ", v, "\n");
   return LIB::CanonMap(); 
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::MDLExpBinOp v) const 
 {
-  Util::ERROR("EvalCanonMap: trying to evaluate a MDLExpBinOp");
+  Util::ERROR("EvalCanonMap: trying to evaluate MDLExpBinOp ", v, "\n");
   return LIB::CanonMap(); 
 }
 
@@ -178,19 +178,19 @@ LIB::CanonMap EvalCanonMap::operator()(AST::LinearMap v) const
 
 LIB::CanonMap EvalCanonMap::operator()(AST::PWLMap v) const 
 {
-  Util::ERROR("EvalCanonMap: trying to evaluate a PWLMap");
+  Util::ERROR("EvalCanonMap: trying to evaluate PWLMap ", v, "\n");
   return LIB::CanonMap(); 
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::SBG v) const 
 {
-  Util::ERROR("EvalCanonMap: trying to evaluate a SBG");
+  Util::ERROR("EvalCanonMap: trying to evaluate SBG ", v, "\n");
   return LIB::CanonMap(); 
 }
 
 LIB::CanonMap EvalCanonMap::operator()(AST::DSBG v) const 
 {
-  Util::ERROR("EvalCanonMap: trying to evaluate a DSBG");
+  Util::ERROR("EvalCanonMap: trying to evaluate DSBG ", v, "\n");
   return LIB::CanonMap(); 
 }
 

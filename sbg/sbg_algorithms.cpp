@@ -462,7 +462,7 @@ SBGSCC<Set>::SBGSCC() : dsbg_(), V_(), Vmap_(), E_(), Emap_(), Ediff_(), mapB_()
 template<typename Set>
 SBGSCC<Set>::SBGSCC(DSBGraph<Set> dsbg, bool debug)
   : dsbg_(dsbg), debug_(debug), Ediff_() {
-  DSBGraph<Set> dg = partitionSE(dsbg);
+  DSBGraph<Set> dg = dsbg;
   dsbg_ = dg;
 
   V_ = dg.V();
@@ -496,7 +496,7 @@ template<typename Set>
 PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
 {
   if (debug())
-    Util::SBG_LOG << "Min reach graph:\n" << dg << "\n\n";
+    std::cout << "Min reach graph:\n" << dg << "\n\n";
 
   Set V = dg.V(), E = dg.E();
   PW mapB = dg.mapB(), mapD = dg.mapD(), subE_map = dg.subE_map();
@@ -507,6 +507,7 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
     if (E.isEmpty())
       return rmap;
 
+    Set Vc;
     do {
       old_rmap = rmap;
 
@@ -514,72 +515,86 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
 
       PW new_rmap = mapB.minAdjMap(ermapD);
       rmap = rmap.minMap(new_rmap).combine(rmap);
+      if (debug())
+        Util::SBG_LOG << "rmap before rec: " << rmap << "\n\n";
 
       Set positive(SetPiece(copies, Interval(1, 1, Util::Inf)));
       PW rec_rmap;
-      Set Vc = V.difference(old_rmap.equalImage(rmap));
-      for (const Map &subv : dg.Vmap()) {
-        Set vs = subv.dom();
-        if (!vs.isEmpty()) {
-          // Vertices in the set-vertex that share its rep with other vertex
-          // in the set-vertex
-          Set VR = rmap.restrict(vs).sharedImage();
-          // There is a recursive vertex that changed its rep in the last step
-          // (to avoid computing again an already found recursion)
-          if (!VR.intersection(Vc).isEmpty()) {
-            // Edges with both endings in VR (path to a minimum rep)
-            Set ERB = mapB.preImage(VR), ERD = mapD.preImage(VR);
-            Set ER = ERB.intersection(ERD);
+      Vc = V.difference(old_rmap.equalImage(rmap));
+      if (!Vc.isEmpty()) {
+        for (const Map &subv : dg.Vmap()) {
+          Set vs = subv.dom();
+          if (!vs.intersection(Vc).isEmpty()) {
+            // If the mrv is in the same SV, the algorithm would detect a false
+            // recursion, i.e. if we have a cycle 1 -> 2 -> ... -> 10 -> 1,
+            // where SV = [1:10], then it detects a recursion when mrv(10)
+            // becomes "1" (false recursion). So we take self mrvs out.
+            auto other_rep = rmap.filterMap([](const SBGMap<Set> &sbgmap) {
+              return notEqId(sbgmap);
+            }).dom();
+            // Vertices in the set-vertex that share its rep with other vertex
+            // in the set-vertex
+            Set VR = rmap.restrict(vs.intersection(other_rep)).sharedImage();
+            // There is a recursive vertex that changed its rep in the last step
+            // (to avoid computing again an already found recursion)
+            if (!VR.intersection(Vc).isEmpty()) {
+              // Vertices that reach the shared representative
+              Set repV = rmap.preImage(rmap.image(VR));
+              Set end = VR.difference(Vc);
 
-            // Distance map
-            PW dmap;
-            Set ith = rmap.image(VR), dom_VR;
-            //Set visited, dom_vs;
-            Util::NAT dist = 0;
-            // Calculate distance for vertices in same_rep that reach reps
-            for (; dg.Vmap().restrict(dom_VR).sharedImage().isEmpty();) {
-              Exp exp(Util::MD_NAT(copies, dist));
-              Set dom = ith.difference(dmap.dom());
-              dmap.emplaceBack(Map(ith.difference(dmap.dom()), exp));
-              dom_VR = dmap.dom().intersection(VR);
-              // Update ith to vertices that have outgoing edges entering ith
-              ith = mapB.image(mapD.preImage(ith));
-              ++dist;
-            }
-            dmap = dmap.restrict(VR);
-            PW dmapB = dmap.composition(mapB), dmapD = dmap.composition(mapD);
-            // Get edges where the end is closer to the rep that the beginning
-            Set not_cycle_edges = (dmapB - dmapD).preImage(positive);
-            ER = ER.intersection(not_cycle_edges);
+              // Edges with both endings in VR (path to a minimum rep)
+              Set ERB = mapB.preImage(repV), ERD = mapD.preImage(repV);
+              Set ER = ERB.intersection(ERD);
+              if (!end.isEmpty() && !ER.isEmpty()) {
+                // Distance map
+                PW dmap;
+                Set ith = end;
+                Util::NAT dist = 0;
+                // Calculate distance for vertices in same_rep that reach reps
+                for (; dg.Vmap().restrict(dmap.dom()).sharedImage().isEmpty();) {
+                  Set dom = ith.difference(dmap.dom());
+                  Exp exp(Util::MD_NAT(copies, dist));
+                  dmap.emplaceBack(Map(dom, exp));
+                  // Update ith to vertices that have outgoing edges entering ith
+                  ith = mapB.image(mapD.preImage(ith));
+                  ++dist;
+                }
+                PW dmapB = dmap.composition(mapB), dmapD = dmap.composition(mapD);
+                // Get edges where the end is closer to the rep than the beginning
+                Set not_cycle_edges = (dmapB - dmapD).preImage(positive);
+                ER = ER.intersection(not_cycle_edges);
 
-            // Extend to subset-edge
-            Set ER_plus = subE_map.preImage(subE_map.image(ER));
-            PW auxB = mapB.restrict(ER_plus), auxD = mapD.restrict(ER_plus);
-            // Calculate a succesor
-            Set same_SV = dg.Vmap().preImage(dg.Vmap().image(VR));
-            PW rmap_plus = auxB.minAdjMap(auxD).restrict(same_SV);
+                // Extend to subset-edge
+                Set ER_plus = subE_map.preImage(subE_map.image(ER));
+                // Calculate a succesor
+                PW auxB = mapB.restrict(ER_plus), auxD = mapD.restrict(ER_plus);
+                PW smap_plus = rmap.restrict(VR);
+                smap_plus = smap_plus.combine(auxB.minAdjMap(auxD));
 
-            // Update rmap for recursion, and leave the rest unchanged
-            rec_rmap = rmap_plus.combine(rec_rmap).compact();
+                // Update rmap for recursion, and leave the rest unchanged
+                rec_rmap = smap_plus.combine(rec_rmap).compact();
 
-            if (debug()) {
-              Util::SBG_LOG << "VR: " << VR << "\n";
-              Util::SBG_LOG << "ER: " << ER << "\n";
-              Util::SBG_LOG << "dmap: " << dmap << "\n";
-              Util::SBG_LOG << "not_cycle_edges: " << not_cycle_edges << "\n";
-              Util::SBG_LOG << "ER_plus: " << ER_plus << "\n";
-              Util::SBG_LOG << "rmap_plus: " << rmap_plus << "\n";
+                if (debug()) {
+                  Util::SBG_LOG << "VR: " << VR << "\n";
+                  Util::SBG_LOG << "repV: " << repV << "\n";
+                  Util::SBG_LOG << "ER: " << ER << "\n";
+                  Util::SBG_LOG << "dmap: " << dmap << "\n";
+                  Util::SBG_LOG << "not_cycle_edges: " << not_cycle_edges << "\n";
+                  Util::SBG_LOG << "ER_plus: " << ER_plus << "\n";
+                  Util::SBG_LOG << "smap_plus: " << smap_plus << "\n";
+                  Util::SBG_LOG << "rec_rmap: " << rec_rmap << "\n\n";
+                }
+              }
             }
           }
         }
-      }
-      rmap = rec_rmap.combine(rmap).compact();
-      if (debug())
-        Util::SBG_LOG << "rmap rec: " << rmap << "\n\n";
-
-      if (rmap != old_rmap)
+        rmap = rec_rmap.combine(rmap).compact();
         rmap = rmap.mapInf();
-    } while (rmap != old_rmap); 
+
+        if (debug())
+          Util::SBG_LOG << "rmap after rec: " << rmap << "\n\n";
+      }
+    } while (!Vc.isEmpty()); 
 
     return rmap;
   }
@@ -594,19 +609,21 @@ PWMap<Set> SBGSCC<Set>::sccStep()
 
   DSBGraph<Set> aux_dsbg(
     V(), Vmap()
-    , mapB().restrict(E()), mapD().restrict(E()), Emap().restrict(E())
+    , mapB().restrict(E()), mapD().restrict(E()), Emap().restrict(E()).compact()
   );
   PW new_rmap = sccMinReach(aux_dsbg);
   if (debug())
-    Util::SBG_LOG << "SCC new_rmap: " << new_rmap << "\n\n";
+    Util::SBG_LOG << "SCC new_rmap: " << new_rmap << "\n";
 
   PW rmap_B = new_rmap.composition(mapB());
   PW rmap_D = new_rmap.composition(mapD());
   Set Esame = rmap_B.equalImage(rmap_D); // Edges in the same SCC
   
   // Leave edges in the same SCC
-  set_E(Esame);
   set_Ediff(E().difference(Esame));
+  set_E(Esame);
+  if (debug())
+    Util::SBG_LOG << "SCC erased edges: " << Ediff() << "\n\n";
 
   // Swap directions
   PW aux_B = mapB();
@@ -623,12 +640,11 @@ PWMap<Set> SBGSCC<Set>::calculate()
     Util::SBG_LOG << "SCC dsbg: \n" << dsbg() << "\n\n";
 
   auto begin = std::chrono::high_resolution_clock::now();
+  PW rmap = sccStep();
   do {
-    sccStep();
-    sccStep();
+    rmap = sccStep();
   } while (Ediff() != Set());
-  PW rmap = sccStep().compact(); 
-  set_rmap(rmap);
+  set_rmap(rmap.compact());
   auto end = std::chrono::high_resolution_clock::now();
 
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(
@@ -637,7 +653,7 @@ PWMap<Set> SBGSCC<Set>::calculate()
   Util::SBG_LOG << "Total SCC exec time: " << total.count() << " [μs]\n\n"; 
 
   if (debug())
-    Util::SBG_LOG << "SCC result: " << rmap << "\n\n";
+    Util::SBG_LOG << "SCC result: " << rmap.compact() << "\n\n";
 
   return rmap;
 }
@@ -968,33 +984,8 @@ DSBGraph<Set> buildSCCFromMatching(const SBGMatching<Set> &match)
   PWMap<Set> mapD = matchedU_inv.composition(unmatchedU);
   mapD = mapD.compact();
 
-  unsigned int j = 1, dims = Vmap.arity();
-  PWMap<Set> Emap;
-  for (const SBGMap<Set> &map1 : Vmap) {
-    Set edges1 = mapB.preImage(map1.dom());
-    for (const SBGMap<Set> &map2 : Vmap) {
-      Set edges2 = mapD.preImage(map2.dom());
-      Set dom = edges1.intersection(edges2);
-      Exp exp(Util::MD_NAT(dims, j));
-
-      Emap.emplaceBack(SBGMap<Set>(dom.compact(), exp));
-      ++j;
-    }
-  }
-
-  PWMap<Set> subE_map;
-  j = 1;
-  for (const SBGMap<Set> &mapb : mapB) {
-    for (const SBGMap<Set> &mapd : mapD) {
-      Set ith = mapb.dom().intersection(mapd.dom());
-      Exp exp(Util::MD_NAT(dims, j));
-      subE_map.emplaceBack(SBGMap<Set>(ith.compact(), exp));
-      ++j; 
-    }
-  }
-
+  PWMap<Set> Emap = match.Emap().restrict(unmatched_edges);
   DSBGraph<Set> res(V, Vmap, mapB, mapD, Emap);
-  res.set_subE_map(subE_map);
   auto end = std::chrono::high_resolution_clock::now();
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(
     end - start 

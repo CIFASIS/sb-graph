@@ -47,13 +47,16 @@ using MD_NAT = Util::MD_NAT;
 struct Interval {
   using MaybeInterval = std::optional<Interval>;
 
-  member_class(NAT, begin);
-  member_class(NAT, step);
-  member_class(NAT, end);
+  NAT begin() const;
+  NAT &begin_ref();
+  NAT step() const;
+  NAT &step_ref();
+  NAT end() const;
+  NAT &end_ref();
 
   Interval();
-  Interval(NAT x);
-  Interval(NAT begin, NAT step, NAT end);
+  Interval(const NAT &x);
+  Interval(const NAT &begin, const NAT &step, const NAT &end);
  
   bool operator==(const Interval &i) const;
   bool operator!=(const Interval &i) const;
@@ -64,15 +67,20 @@ struct Interval {
    */
   unsigned int cardinal() const;
   bool isEmpty() const;
-  bool isMember(NAT x) const;
+  bool isMember(const NAT &x) const;
   Interval intersection(const Interval &i2) const;
 
   /**
    * @brief Extra operations.
    */
-  Interval offset(Util::NAT off) const;
+  Interval offset(const Util::NAT &off) const;
   Interval least(const Interval &i2) const;
   MaybeInterval compact(const Interval &i2) const;
+
+  private:
+  NAT begin_;
+  NAT step_;
+  NAT end_;
 };
 std::ostream &operator<<(std::ostream &out, const Interval &i);
 

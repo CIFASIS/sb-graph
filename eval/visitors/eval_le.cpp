@@ -28,25 +28,25 @@ EvalLE::EvalLE(VarEnv env) : env_(env) {}
 
 LIB::LExp EvalLE::operator()(AST::Natural v) const
 {
-  Util::ERROR("EvalLE: trying to evaluate a Natural");
+  Util::ERROR("EvalLE: trying to evaluate Natural ", v, "\n");
   return LIB::LExp(); 
 }
 
 LIB::LExp EvalLE::operator()(AST::MDNatural v) const
 {
-  Util::ERROR("EvalLE: trying to evaluate a MDNatural");
+  Util::ERROR("EvalLE: trying to evaluate MDNatural ", v, "\n");
   return LIB::LExp(); 
 }
 
 LIB::LExp EvalLE::operator()(AST::Rational v) const
 {
-  Util::ERROR("EvalLE: trying to evaluate a Rational");
+  Util::ERROR("EvalLE: trying to evaluate Rational ", v, "\n");
   return LIB::LExp(); 
 }
 
 LIB::LExp EvalLE::operator()(AST::Boolean v) const
 {
-  Util::ERROR("EvalLE: trying to evaluate a Boolean");
+  Util::ERROR("EvalLE: trying to evaluate Boolean ", v, "\n");
   return LIB::LExp(); 
 }
 
@@ -62,84 +62,84 @@ LIB::LExp EvalLE::operator()(Util::VariableName v) const
     }
 
     else {
-      Util::ERROR("EvalLE: variable %s is not a linear expression", v.c_str());
+      Util::ERROR("EvalLE: variable ", v, " is not a linear expression\n");
       return LIB::LExp(); 
     } 
   }
 
-  Util::ERROR("EvalLE: variable %s not defined", v.c_str());
+  Util::ERROR("EvalLE: variable ", v, " undefined\n");
   return LIB::LExp(); 
 }
 
 LIB::LExp EvalLE::operator()(AST::UnaryOp v) const
 {
-  Util::ERROR("EvalLE: trying to evaluate an arithmetic UnaryOp");
+  Util::ERROR("EvalLE: trying to evaluate arithmetic UnaryOp ", v, "\n");
   return LIB::LExp(); 
 }
 
 LIB::LExp EvalLE::operator()(AST::BinOp v) const 
 {
-  Util::ERROR("EvalLE: trying to evaluate an arithmetic BinOp");
+  Util::ERROR("EvalLE: trying to evaluate arithmetic BinOp ", v, "\n");
   return LIB::LExp(); 
 }
 
 LIB::LExp EvalLE::operator()(AST::Call v) const
 {
-  Util::ERROR("EvalLE: trying to evaluate a Call");
+  Util::ERROR("EvalLE: trying to evaluate Call ", v, "\n");
   return LIB::LExp(); 
 }
 
 LIB::LExp EvalLE::operator()(AST::Interval v) const
 { 
-  Util::ERROR("EvalLE: trying to evaluate an Interval");
+  Util::ERROR("EvalLE: trying to evaluate Interval ", v, "\n");
   return LIB::LExp(); 
 }
 
 LIB::LExp EvalLE::operator()(AST::InterUnaryOp v) const
 {
-  Util::ERROR("EvalLE: trying to evaluate an InterUnaryOp");
+  Util::ERROR("EvalLE: trying to evaluate InterUnaryOp ", v, "\n");
   return LIB::LExp(); 
 }
 
 LIB::LExp EvalLE::operator()(AST::InterBinOp v) const
 {
-  Util::ERROR("EvalLE: trying to evaluate an InterBinOp");
+  Util::ERROR("EvalLE: trying to evaluate InterBinOp ", v, "\n");
   return LIB::LExp(); 
 }
 
 LIB::LExp EvalLE::operator()(AST::MultiDimInter v) const
 { 
-  Util::ERROR("EvalLE: trying to evaluate an MultiDimInter");
+  Util::ERROR("EvalLE: trying to evaluate MultiDimInter ", v, "\n");
   return LIB::LExp(); 
 }
 
 LIB::LExp EvalLE::operator()(AST::MDInterUnaryOp v) const
 {
-  Util::ERROR("EvalLE: trying to evaluate an MDInterUnaryOp");
+  Util::ERROR("EvalLE: trying to evaluate MDInterUnaryOp ", v, "\n");
   return LIB::LExp(); 
 }
 
 LIB::LExp EvalLE::operator()(AST::MDInterBinOp v) const
 {
-  Util::ERROR("EvalLE: trying to evaluate an MDInterBinOp");
+  Util::ERROR("EvalLE: trying to evaluate MDInterBinOp ", v, "\n");
   return LIB::LExp(); 
 }
 
 LIB::LExp EvalLE::operator()(AST::Set v) const 
 {
-  Util::ERROR("EvalLE: trying to evaluate a Set");
+  Util::ERROR("EvalLE: trying to evaluate Set ", v, "\n");
   return LIB::LExp(); 
 }
 
 LIB::LExp EvalLE::operator()(AST::SetUnaryOp v) const 
 {
-  Util::ERROR("EvalLE: trying to evaluate a SetUnaryOp");
+  Util::ERROR("EvalLE: trying to evaluate SetUnaryOp ", v, "\n");
   return LIB::LExp(); 
 }
 
 LIB::LExp EvalLE::operator()(AST::SetBinOp v) const 
 {
-  Util::ERROR("EvalLE: trying to evaluate a SetBinOp");
+  Util::ERROR("EvalLE: trying to evaluate SetBinOp ", v, "\n");
   return LIB::LExp(); 
 }
 
@@ -165,46 +165,44 @@ LIB::LExp EvalLE::operator()(AST::LExpBinOp v) const
       return l - r;
 
     default:
-      std::stringstream ss;
-      ss << v.op();
-      Util::ERROR("EvalLE: LExpBinOp %s not supported.", ss.str().c_str());
+      Util::ERROR("EvalLE: LExpBinOp ", v.op(), " unsupported\n");
       return LIB::LExp(); 
   }
 }
 
 LIB::LExp EvalLE::operator()(AST::MDLExp v) const
 {
-  Util::ERROR("EvalLE: trying to evaluate an MDLExp");
+  Util::ERROR("EvalLE: trying to evaluate MDLExp ", v, "\n");
   return LIB::LExp(); 
 }
 
 LIB::LExp EvalLE::operator()(AST::MDLExpBinOp v) const
 {
-  Util::ERROR("EvalLE: trying to evaluate an MDLExpBinOp");
+  Util::ERROR("EvalLE: trying to evaluate MDLExpBinOp ", v, "\n");
   return LIB::LExp(); 
 }
 
 LIB::LExp EvalLE::operator()(AST::LinearMap v) const 
 {
-  Util::ERROR("EvalLE: trying to evaluate a LinearMap");
+  Util::ERROR("EvalLE: trying to evaluate LinearMap ", v, "\n");
   return LIB::LExp(); 
 }
 
 LIB::LExp EvalLE::operator()(AST::PWLMap v) const 
 {
-  Util::ERROR("EvalLE: trying to evaluate a PWLMap");
+  Util::ERROR("EvalLE: trying to evaluate PWLMap ", v, "\n");
   return LIB::LExp(); 
 }
 
 LIB::LExp EvalLE::operator()(AST::SBG v) const 
 {
-  Util::ERROR("EvalLE: trying to evaluate a SBG");
+  Util::ERROR("EvalLE: trying to evaluate SBG ", v, "\n");
   return LIB::LExp(); 
 }
 
 LIB::LExp EvalLE::operator()(AST::DSBG v) const 
 {
-  Util::ERROR("EvalLE: trying to evaluate a DSBG");
+  Util::ERROR("EvalLE: trying to evaluate DSBG ", v, "\n");
   return LIB::LExp(); 
 }
 

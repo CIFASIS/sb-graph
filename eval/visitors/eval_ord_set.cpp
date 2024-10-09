@@ -28,25 +28,25 @@ EvalOrdSet::EvalOrdSet(VarEnv env) : env_(env) {}
 
 LIB::OrdSet EvalOrdSet::operator()(AST::Natural v) const
 {
-  Util::ERROR("EvalOrdSet: trying to evaluate a Natural");
+  Util::ERROR("EvalOrdSet: trying to evaluate Natural ", v, "\n");
   return LIB::OrdSet(); 
 }
 
 LIB::OrdSet EvalOrdSet::operator()(AST::MDNatural v) const
 {
-  Util::ERROR("EvalOrdSet: trying to evaluate a MDNatural");
+  Util::ERROR("EvalOrdSet: trying to evaluate MDNatural ", v, "\n");
   return LIB::OrdSet(); 
 }
 
 LIB::OrdSet EvalOrdSet::operator()(AST::Rational v) const
 {
-  Util::ERROR("EvalOrdSet: trying to evaluate a Rational");
+  Util::ERROR("EvalOrdSet: trying to evaluate Rational ", v, "\n");
   return LIB::OrdSet(); 
 }
 
 LIB::OrdSet EvalOrdSet::operator()(AST::Boolean v) const
 {
-  Util::ERROR("EvalOrdSet: trying to evaluate a Boolean");
+  Util::ERROR("EvalOrdSet: trying to evaluate Boolean ", v, "\n");
   return LIB::OrdSet(); 
 }
 
@@ -62,66 +62,66 @@ LIB::OrdSet EvalOrdSet::operator()(Util::VariableName v) const
     }
 
     else {
-      Util::ERROR("EvalOrdSet: variable %s is not a set", v.c_str());
+      Util::ERROR("EvalOrdSet: variable ", v, " is not a set\n");
       return LIB::OrdSet(); 
     } 
   }
 
-  Util::ERROR("EvalOrdSet: variable %s not defined", v.c_str());
+  Util::ERROR("EvalOrdSet: variable ", v, " undefined\n");
   return LIB::OrdSet(); 
 }
 
 LIB::OrdSet EvalOrdSet::operator()(AST::UnaryOp v) const 
 {
-  Util::ERROR("EvalOrdSet: trying to evaluate an arithmetic UnaryOp");
+  Util::ERROR("EvalOrdSet: trying to evaluate arithmetic UnaryOp ", v, "\n");
   return LIB::OrdSet(); 
 }
 
 LIB::OrdSet EvalOrdSet::operator()(AST::BinOp v) const 
 {
-  Util::ERROR("EvalOrdSet: trying to evaluate an arithmetic BinOp");
+  Util::ERROR("EvalOrdSet: trying to evaluate arithmetic BinOp ", v, "\n");
   return LIB::OrdSet(); 
 }
 
 LIB::OrdSet EvalOrdSet::operator()(AST::Call v) const
 {
-  Util::ERROR("EvalOrdSet: trying to evaluate a Call");
+  Util::ERROR("EvalOrdSet: trying to evaluate Call ", v, "\n");
   return LIB::OrdSet(); 
 }
 
 LIB::OrdSet EvalOrdSet::operator()(AST::Interval v) const
 { 
-  Util::ERROR("EvalOrdSet: trying to evaluate an Interval");
+  Util::ERROR("EvalOrdSet: trying to evaluate Interval ", v, "\n");
   return LIB::OrdSet(); 
 }
 
 LIB::OrdSet EvalOrdSet::operator()(AST::InterUnaryOp v) const
 {
-  Util::ERROR("EvalOrdSet: trying to evaluate an InterUnaryOp");
+  Util::ERROR("EvalOrdSet: trying to evaluate InterUnaryOp ", v, "\n");
   return LIB::OrdSet(); 
 }
 
 LIB::OrdSet EvalOrdSet::operator()(AST::InterBinOp v) const
 {
-  Util::ERROR("EvalOrdSet: trying to evaluate an InterBinOp");
+  Util::ERROR("EvalOrdSet: trying to evaluate InterBinOp ", v, "\n");
   return LIB::OrdSet(); 
 }
 
 LIB::OrdSet EvalOrdSet::operator()(AST::MultiDimInter v) const
 { 
-  Util::ERROR("EvalOrdSet: trying to evaluate an MultiDimInter");
+  Util::ERROR("EvalOrdSet: trying to evaluate MultiDimInter ", v, "\n");
   return LIB::OrdSet(); 
 }
 
 LIB::OrdSet EvalOrdSet::operator()(AST::MDInterUnaryOp v) const
 {
-  Util::ERROR("EvalOrdSet: trying to evaluate an MDInterUnaryOp");
+  Util::ERROR("EvalOrdSet: trying to evaluate MDInterUnaryOp ", v, "\n");
   return LIB::OrdSet(); 
 }
 
 LIB::OrdSet EvalOrdSet::operator()(AST::MDInterBinOp v) const
 {
-  Util::ERROR("EvalOrdSet: trying to evaluate an MDInterBinOp");
+  Util::ERROR("EvalOrdSet: trying to evaluate MDInterBinOp ", v, "\n");
   return LIB::OrdSet(); 
 }
 
@@ -141,9 +141,7 @@ LIB::OrdSet EvalOrdSet::operator()(AST::SetUnaryOp v) const
   AST::Expr e = v.e();
   switch (v.op()) {
     default:
-      std::stringstream ss;
-      ss << v.op();
-      Util::ERROR("EvalOrdSet: SetUnaryOp %s not supported.", ss.str().c_str());
+      Util::ERROR("EvalOrdSet: SetUnaryOp ", v.op(), " unsupported\n");
       return LIB::OrdSet(); 
   }
 }
@@ -160,58 +158,56 @@ LIB::OrdSet EvalOrdSet::operator()(AST::SetBinOp v) const
       return l.difference(r);
 
     default:
-      std::stringstream ss;
-      ss << v.op();
-      Util::ERROR("EvalOrdSet: SetBinOp %s not supported.", ss.str().c_str());
+      Util::ERROR("EvalOrdSet: SetBinOp ", v.op(), " unsupported\n");
       return LIB::OrdSet(); 
   }
 }
 
 LIB::OrdSet EvalOrdSet::operator()(AST::LinearExp v) const
 { 
-  Util::ERROR("EvalOrdSet: trying to evaluate a LinearExp");
+  Util::ERROR("EvalOrdSet: trying to evaluate LinearExp ", v, "\n");
   return LIB::OrdSet(); 
 }
 
 LIB::OrdSet EvalOrdSet::operator()(AST::LExpBinOp v) const
 { 
-  Util::ERROR("EvalOrdSet: trying to evaluate a LExpBinOp");
+  Util::ERROR("EvalOrdSet: trying to evaluate LExpBinOp ", v, "\n");
   return LIB::OrdSet(); 
 }
 
 LIB::OrdSet EvalOrdSet::operator()(AST::MDLExp v) const
 { 
-  Util::ERROR("EvalOrdSet: trying to evaluate a MDLExp");
+  Util::ERROR("EvalOrdSet: trying to evaluate MDLExp ", v, "\n");
   return LIB::OrdSet(); 
 }
 
 LIB::OrdSet EvalOrdSet::operator()(AST::MDLExpBinOp v) const
 { 
-  Util::ERROR("EvalOrdSet: trying to evaluate a MDLExpBinOp");
+  Util::ERROR("EvalOrdSet: trying to evaluate MDLExpBinOp ", v, "\n");
   return LIB::OrdSet(); 
 }
 
 LIB::OrdSet EvalOrdSet::operator()(AST::LinearMap v) const
 { 
-  Util::ERROR("EvalOrdSet: trying to evaluate a LinearMap");
+  Util::ERROR("EvalOrdSet: trying to evaluate LinearMap ", v, "\n");
   return LIB::OrdSet(); 
 }
 
 LIB::OrdSet EvalOrdSet::operator()(AST::PWLMap v) const
 { 
-  Util::ERROR("EvalOrdSet: trying to evaluate a PWLMap");
+  Util::ERROR("EvalOrdSet: trying to evaluate PWLMap ", v, "\n");
   return LIB::OrdSet(); 
 }
 
 LIB::OrdSet EvalOrdSet::operator()(AST::SBG v) const
 { 
-  Util::ERROR("EvalOrdSet: trying to evaluate a SBG");
+  Util::ERROR("EvalOrdSet: trying to evaluate SBG ", v, "\n");
   return LIB::OrdSet(); 
 }
 
 LIB::OrdSet EvalOrdSet::operator()(AST::DSBG v) const
 { 
-  Util::ERROR("EvalOrdSet: trying to evaluate a DSBG");
+  Util::ERROR("EvalOrdSet: trying to evaluate DSBG ", v, "\n");
   return LIB::OrdSet(); 
 }
 

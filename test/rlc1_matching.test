@@ -1,27 +1,29 @@
-/*
+/* Matching test originated from the following model
+(the result is indicated with comments):
+
 model testRLC1
   //iRa[i] and iRb[i] form an algebraic loop
     
-  constant Integer N=10;
+  constant Integer N=100000;
   Real iL[N],uC[N],uL[N],iRa[N],iRb[N],iC[N];
   parameter Real L=1,Ra=1,Rb=1,C=1,U=1;
 equation
   for i in 1:N loop
-    L*der(iL[i])=uL[i]; 
-    C*der(uC[i])=iC[i];
-    iRa[i]-iRb[i]-iL[i]=0; 
-    uL[i]-Rb*iRb[i]-uC[i]=0; 
+    L*der(iL[i])=uL[i]; // der(iL[1:N]) 
+    C*der(uC[i])=iC[i]; // der(uC[1:N])
+    iRa[i]-iRb[i]-iL[i]=0; // iRa[1:N]
+    uL[i]-Rb*iRb[i]-uC[i]=0;  // iRb[1], uL[2:N]
   end for;  
   for i in 2:N loop
-    uC[i-1]-Ra*iRa[i]-Rb*iRb[i]-uC[i]=0; 
-    iRb[i-1]-iRa[i]-iC[i-1]=0; 
+    uC[i-1]-Ra*iRa[i]-Rb*iRb[i]-uC[i]=0; // iRb[2:N]
+    iRb[i-1]-iRa[i]-iC[i-1]=0; // iC[1:N-1]
   end for;  
-  U-Ra*iRa[1]-uL[1]=0; 
+  U-Ra*iRa[1]-uL[1]=0; // uL[1] 
   iRb[N]-iC[N]=0; // iC[N]
 end testRLC1;
 */
 
-N = 10
+N = 100000
 
 F1 = N
 F2 = N+F1

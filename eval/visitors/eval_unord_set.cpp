@@ -28,25 +28,25 @@ EvalUnordSet::EvalUnordSet(VarEnv env) : env_(env) {}
 
 LIB::UnordSet EvalUnordSet::operator()(AST::Natural v) const
 {
-  Util::ERROR("EvalUnordSet: trying to evaluate a Natural");
+  Util::ERROR("EvalUnordSet: trying to evaluate Natural");
   return LIB::UnordSet(); 
 }
 
 LIB::UnordSet EvalUnordSet::operator()(AST::MDNatural v) const
 {
-  Util::ERROR("EvalUnordSet: trying to evaluate a MDNatural");
+  Util::ERROR("EvalUnordSet: trying to evaluate MDNatural");
   return LIB::UnordSet(); 
 }
 
 LIB::UnordSet EvalUnordSet::operator()(AST::Rational v) const
 {
-  Util::ERROR("EvalUnordSet: trying to evaluate a Rational");
+  Util::ERROR("EvalUnordSet: trying to evaluate Rational");
   return LIB::UnordSet(); 
 }
 
 LIB::UnordSet EvalUnordSet::operator()(AST::Boolean v) const
 {
-  Util::ERROR("EvalUnordSet: trying to evaluate a Boolean");
+  Util::ERROR("EvalUnordSet: trying to evaluate Boolean");
   return LIB::UnordSet(); 
 }
 
@@ -62,66 +62,66 @@ LIB::UnordSet EvalUnordSet::operator()(Util::VariableName v) const
     }
 
     else {
-      Util::ERROR("EvalUnordSet: variable %s is not a set", v.c_str());
+      Util::ERROR("EvalUnordSet: variable", v, " is not a set\n");
       return LIB::UnordSet(); 
     } 
   }
 
-  Util::ERROR("EvalUnordSet: variable %s not defined", v.c_str());
+  Util::ERROR("EvalUnordSet: variable", v, " undefined\n");
   return LIB::UnordSet(); 
 }
 
 LIB::UnordSet EvalUnordSet::operator()(AST::UnaryOp v) const 
 {
-  Util::ERROR("EvalUnordSet: trying to evaluate an arithmetic UnaryOp");
+  Util::ERROR("EvalUnordSet: trying to evaluate arithmetic UnaryOp");
   return LIB::UnordSet(); 
 }
 
 LIB::UnordSet EvalUnordSet::operator()(AST::BinOp v) const 
 {
-  Util::ERROR("EvalUnordSet: trying to evaluate an arithmetic BinOp");
+  Util::ERROR("EvalUnordSet: trying to evaluate arithmetic BinOp");
   return LIB::UnordSet(); 
 }
 
 LIB::UnordSet EvalUnordSet::operator()(AST::Call v) const
 {
-  Util::ERROR("EvalUnordSet: trying to evaluate a Call");
+  Util::ERROR("EvalUnordSet: trying to evaluate Call");
   return LIB::UnordSet(); 
 }
 
 LIB::UnordSet EvalUnordSet::operator()(AST::Interval v) const
 { 
-  Util::ERROR("EvalUnordSet: trying to evaluate an Interval");
+  Util::ERROR("EvalUnordSet: trying to evaluate Interval");
   return LIB::UnordSet(); 
 }
 
 LIB::UnordSet EvalUnordSet::operator()(AST::InterUnaryOp v) const
 {
-  Util::ERROR("EvalUnordSet: trying to evaluate an InterUnaryOp");
+  Util::ERROR("EvalUnordSet: trying to evaluate InterUnaryOp");
   return LIB::UnordSet(); 
 }
 
 LIB::UnordSet EvalUnordSet::operator()(AST::InterBinOp v) const
 {
-  Util::ERROR("EvalUnordSet: trying to evaluate an InterBinOp");
+  Util::ERROR("EvalUnordSet: trying to evaluate InterBinOp");
   return LIB::UnordSet(); 
 }
 
 LIB::UnordSet EvalUnordSet::operator()(AST::MultiDimInter v) const
 { 
-  Util::ERROR("EvalUnordSet: trying to evaluate an MultiDimInter");
+  Util::ERROR("EvalUnordSet: trying to evaluate MultiDimInter");
   return LIB::UnordSet(); 
 }
 
 LIB::UnordSet EvalUnordSet::operator()(AST::MDInterUnaryOp v) const
 {
-  Util::ERROR("EvalUnordSet: trying to evaluate an MDInterUnaryOp");
+  Util::ERROR("EvalUnordSet: trying to evaluate MDInterUnaryOp");
   return LIB::UnordSet(); 
 }
 
 LIB::UnordSet EvalUnordSet::operator()(AST::MDInterBinOp v) const
 {
-  Util::ERROR("EvalUnordSet: trying to evaluate an MDInterBinOp");
+  Util::ERROR("EvalUnordSet: trying to evaluate MDInterBinOp");
   return LIB::UnordSet(); 
 }
 
@@ -141,9 +141,7 @@ LIB::UnordSet EvalUnordSet::operator()(AST::SetUnaryOp v) const
   AST::Expr e = v.e();
   switch (v.op()) {
     default:
-      std::stringstream ss;
-      ss << v.op();
-      Util::ERROR("EvalUnordSet: SetUnaryOp %s not supported.", ss.str().c_str());
+      Util::ERROR("EvalUnordSet: SetUnaryOp ", v.op(), " unsupported\n");
       return LIB::UnordSet(); 
   }
 }
@@ -160,58 +158,56 @@ LIB::UnordSet EvalUnordSet::operator()(AST::SetBinOp v) const
       return l.difference(r);
 
     default:
-      std::stringstream ss;
-      ss << v.op();
-      Util::ERROR("EvalUnordSet: SetBinOp %s not supported.", ss.str().c_str());
+      Util::ERROR("EvalUnordSet: SetBinOp ", v.op(), " unsupported\n");
       return LIB::UnordSet(); 
   }
 }
 
 LIB::UnordSet EvalUnordSet::operator()(AST::LinearExp v) const
 { 
-  Util::ERROR("EvalUnordSet: trying to evaluate a LinearExp");
+  Util::ERROR("EvalUnordSet: trying to evaluate LinearExp ", v, "\n");
   return LIB::UnordSet(); 
 }
 
 LIB::UnordSet EvalUnordSet::operator()(AST::LExpBinOp v) const
 { 
-  Util::ERROR("EvalUnordSet: trying to evaluate a LExpBinOp");
+  Util::ERROR("EvalUnordSet: trying to evaluate LExpBinOp ", v, "\n");
   return LIB::UnordSet(); 
 }
 
 LIB::UnordSet EvalUnordSet::operator()(AST::MDLExp v) const
 { 
-  Util::ERROR("EvalUnordSet: trying to evaluate a MDLExp");
+  Util::ERROR("EvalUnordSet: trying to evaluate MDLExp ", v, "\n");
   return LIB::UnordSet(); 
 }
 
 LIB::UnordSet EvalUnordSet::operator()(AST::MDLExpBinOp v) const
 { 
-  Util::ERROR("EvalUnordSet: trying to evaluate a MDLExpBinOp");
+  Util::ERROR("EvalUnordSet: trying to evaluate MDLExpBinOp ", v, "\n");
   return LIB::UnordSet(); 
 }
 
 LIB::UnordSet EvalUnordSet::operator()(AST::LinearMap v) const
 { 
-  Util::ERROR("EvalUnordSet: trying to evaluate a LinearMap");
+  Util::ERROR("EvalUnordSet: trying to evaluate LinearMap ", v, "\n");
   return LIB::UnordSet(); 
 }
 
 LIB::UnordSet EvalUnordSet::operator()(AST::PWLMap v) const
 { 
-  Util::ERROR("EvalUnordSet: trying to evaluate a PWLMap");
+  Util::ERROR("EvalUnordSet: trying to evaluate PWLMap ", v, "\n");
   return LIB::UnordSet(); 
 }
 
 LIB::UnordSet EvalUnordSet::operator()(AST::SBG v) const
 { 
-  Util::ERROR("EvalUnordSet: trying to evaluate a SBG");
+  Util::ERROR("EvalUnordSet: trying to evaluate SBG ", v, "\n");
   return LIB::UnordSet(); 
 }
 
 LIB::UnordSet EvalUnordSet::operator()(AST::DSBG v) const
 { 
-  Util::ERROR("EvalUnordSet: trying to evaluate a DSBG");
+  Util::ERROR("EvalUnordSet: trying to evaluate DSBG ", v, "\n");
   return LIB::UnordSet(); 
 }
 

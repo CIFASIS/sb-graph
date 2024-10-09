@@ -1,6 +1,9 @@
-/*
+/* Detection of algebraic loops (SCC) for the following
+model, where the matching is indicated with comments
+for each equation:
+
 model Test3
-  constant Integer N = 100;
+  constant Integer N = 100000;
   Real a[N], x[N], b[N];
 equation 
   for i in 2:N-1 loop

@@ -57,14 +57,11 @@ OrdPWMDInter::OrdPWMDInter(Interval i) : pieces_() {
     pieces_.insert(SetPiece(i));
 }
 OrdPWMDInter::OrdPWMDInter(SetPiece mdi) : pieces_() { 
-  Util::ERROR_UNLESS(mdi.isUnidim(), "LIB::Ord2: should be uni-dimensional");
-
   if (!mdi.isEmpty())
     pieces_.insert(mdi);
 }
 OrdPWMDInter::OrdPWMDInter(MDInterOrdSet container) : pieces_() {
   for (const SetPiece &mdi : container) {
-    Util::ERROR_UNLESS(mdi.isUnidim(), "LIB::Ord3:: should be uni-dimensional");
     if (!mdi.isEmpty())
       pieces_.insert(mdi);
   }
@@ -137,15 +134,11 @@ bool OrdPWMDInter::isEmpty() const { return pieces_.empty(); }
 
 Util::MD_NAT OrdPWMDInter::minElem() const
 {
-  Util::ERROR_UNLESS(!isEmpty(), "LIB::Ord::minElem: shouldn't be empty");
-
   return begin()->minElem();
 }
 
 Util::MD_NAT OrdPWMDInter::maxElem() const
 {
-  Util::ERROR_UNLESS(!isEmpty(), "LIB::Ord::maxElem: shouldn't be empty");
-
   auto it = end();
   --it;
   return it->maxElem();
@@ -299,7 +292,8 @@ OrdPWMDInter OrdPWMDInter::difference(const OrdPWMDInter &other) const
 
 std::size_t OrdPWMDInter::arity() const
 {
-  Util::ERROR_UNLESS(!isEmpty(), "LIB::Ord::arity: set is empty");
+  if (isEmpty())
+    return 0;
 
   return begin()->arity();
 }
@@ -350,7 +344,7 @@ OrdPWMDInter OrdPWMDInter::compact() const
         if (next_compacted.isEmpty()) {
           auto ith = new_ith.compact(*next_it);
           if (ith) {
-            new_ith = ith.value();
+            new_ith = std::move(ith.value());
             compacted.emplaceBack(*next_it);
           }
         }

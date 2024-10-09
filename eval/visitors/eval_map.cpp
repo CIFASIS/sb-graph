@@ -25,25 +25,29 @@ namespace Eval {
 
 MapBaseType EvalMap::operator()(Util::MD_NAT v) const 
 {
-  Util::ERROR("EvalMap: trying to evaluate a MD_NAT");
+  Util::ERROR("EvalMap: trying to evaluate MD_NAT ", v, "\n");
   return MapBaseType();
 }
 
 MapBaseType EvalMap::operator()(Util::RATIONAL v) const 
 { 
-  Util::ERROR("EvalMap: trying to evaluate a RATIONAL");
+  Util::ERROR("EvalMap: trying to evaluate RATIONAL ", v, "\n");
   return MapBaseType();
 }
 
 MapBaseType EvalMap::operator()(ContainerBaseType v) const
 {
-  Util::ERROR("EvalMap: trying to evaluate a ContainerBaseType");
+  std::visit([](auto &&arg) {
+    Util::ERROR("EvalMap: trying to evaluate ContainerBaseType ", arg, "\n");
+  }, v);
   return MapBaseType();
 }
 
 MapBaseType EvalMap::operator()(LinearBaseType v) const
 {
-  Util::ERROR("EvalMap: trying to evaluate a LinearBaseType");
+  std::visit([](auto &&arg) {
+    Util::ERROR("EvalMap: trying to evaluate LinearBaseType ", arg, "\n");
+  }, v);
   return MapBaseType();
 }
 
@@ -54,13 +58,17 @@ MapBaseType EvalMap::operator()(MapBaseType v) const
 
 MapBaseType EvalMap::operator()(SBGBaseType v) const
 {
-  Util::ERROR("EvalMap: trying to evaluate a SBGBaseType");
+  std::visit([](auto &&arg) {
+    Util::ERROR("EvalMap: trying to evaluate SBGBaseType ", arg, "\n");
+  }, v);
   return MapBaseType();
 }
 
 MapBaseType EvalMap::operator()(InfoBaseType v) const
 {
-  Util::ERROR("EvalMap: trying to evaluate an InfoBaseType");
+  std::visit([](auto &&arg) {
+    Util::ERROR("EvalMap: trying to evaluate InfoBaseType ", arg, "\n");
+  }, v);
   return MapBaseType();
 }
 

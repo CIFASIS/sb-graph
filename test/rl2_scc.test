@@ -1,9 +1,12 @@
-/*
+/* Detection of algebraic loops (SCC) for the following
+model, where the matching is indicated with comments
+for each equation:
+
 model testRL2
   //iR[i+1] must be computed out of iR[i]
   //uL[i] must be computed out of uL[i+1]
   
-  constant Integer N=10;
+  constant Integer N=100000;
   Real iL[N],iR[N],uL[N];
   parameter Real L=1,R=1,L1=1,I=1,R0=1;
 equation
@@ -19,7 +22,7 @@ equation
 end testRL2;
 */
  
-N = 100
+N = 100000
 
 F1 = N
 F2 = N-1+F1

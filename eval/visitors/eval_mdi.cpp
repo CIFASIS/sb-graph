@@ -28,25 +28,25 @@ EvalMDI::EvalMDI(VarEnv env) : env_(env) {}
 
 LIB::MultiDimInter EvalMDI::operator()(AST::Natural v) const 
 { 
-  Util::ERROR("EvalMDI: trying to evaluate an Natural");
+  Util::ERROR("EvalMDI: trying to evaluate Natural ", v, "\n");
   return LIB::MultiDimInter();
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::MDNatural v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate an MDNatural");
+  Util::ERROR("EvalMDI: trying to evaluate MDNatural ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::Rational v) const 
 { 
-  Util::ERROR("EvalMDI: trying to evaluate a Rational");
+  Util::ERROR("EvalMDI: trying to evaluate Rational ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::Boolean v) const 
 { 
-  Util::ERROR("EvalMDI: trying to evaluate a Boolean");
+  Util::ERROR("EvalMDI: trying to evaluate Boolean ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
@@ -62,48 +62,48 @@ LIB::MultiDimInter EvalMDI::operator()(Util::VariableName v) const
     }
 
     else {
-      Util::ERROR("EvalMDI: variable %s is not an interval", v.c_str());
+      Util::ERROR("EvalMDI: variable ", v, " is not an interval\n");
       return LIB::MultiDimInter(); 
     } 
   }
 
-  Util::ERROR("EvalMDI: variable %s not defined", v.c_str());
+  Util::ERROR("EvalMDI: variable ", v, " undefined\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::UnaryOp v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate an arithmetic UnaryOp");
+  Util::ERROR("EvalMDI: trying to evaluate arithmetic UnaryOp ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::BinOp v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate an arithmetic BinOp");
+  Util::ERROR("EvalMDI: trying to evaluate arithmetic BinOp ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::Call v) const
 {
-  Util::ERROR("EvalMDI: trying to evaluate a Call");
+  Util::ERROR("EvalMDI: trying to evaluate Call ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::Interval v) const 
 { 
-  Util::ERROR("EvalMDI: trying to evaluate an Interval");
+  Util::ERROR("EvalMDI: trying to evaluate Interval ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::InterUnaryOp v) const
 {
-  Util::ERROR("EvalMDI: trying to evaluate an InterUnaryOp");
+  Util::ERROR("EvalMDI: trying to evaluate InterUnaryOp ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::InterBinOp v) const
 {
-  Util::ERROR("EvalMDI: trying to evaluate an InterBinOp");
+  Util::ERROR("EvalMDI: trying to evaluate InterBinOp ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
@@ -123,9 +123,7 @@ LIB::MultiDimInter EvalMDI::operator()(AST::MDInterUnaryOp v) const
   AST::Expr exp = v.e();
   switch (v.op()) {
     default:
-      std::stringstream ss;
-      ss << v.op();
-      Util::ERROR("EvalMDI: MDInterUnaryOp %s not supported.", ss.str().c_str());
+      Util::ERROR("EvalMDI: MDInterUnaryOp ", v.op(), " unsupported\n");
       return LIB::MultiDimInter(); 
   }
 }
@@ -139,78 +137,74 @@ LIB::MultiDimInter EvalMDI::operator()(AST::MDInterBinOp v) const
       return l.intersection(r);
 
     default:
-      std::stringstream ss;
-      ss << v.op();
-      Util::ERROR("EvalMD: MDInterBinOp %s not supported.", ss.str().c_str());
+      Util::ERROR("EvalMD: MDInterBinOp ", v.op(), " unsupported\n");
       return LIB::MultiDimInter(); 
   }
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::Set v) const 
 {
-  std::stringstream ss;
-  ss << v;
-  Util::ERROR("EvalMDI: trying to evaluate the Set %s", ss.str().c_str());
+  Util::ERROR("EvalMDI: trying to evaluate Set ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::SetUnaryOp v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate a SetUnaryOp");
+  Util::ERROR("EvalMDI: trying to evaluate SetUnaryOp ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::SetBinOp v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate a SetBinOp");
+  Util::ERROR("EvalMDI: trying to evaluate SetBinOp ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::LinearExp v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate a LinearExp");
+  Util::ERROR("EvalMDI: trying to evaluate LinearExp ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::LExpBinOp v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate a LExpBinOp");
+  Util::ERROR("EvalMDI: trying to evaluate LExpBinOp ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::MDLExp v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate a LinearExp");
+  Util::ERROR("EvalMDI: trying to evaluate MDLExp ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::MDLExpBinOp v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate a LExpBinOp");
+  Util::ERROR("EvalMDI: trying to evaluate MDLExpBinOp ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::LinearMap v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate a LinearMap");
+  Util::ERROR("EvalMDI: trying to evaluate LinearMap ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::PWLMap v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate a PWLMap");
+  Util::ERROR("EvalMDI: trying to evaluate PWLMap ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::SBG v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate a SBG");
+  Util::ERROR("EvalMDI: trying to evaluate SBG ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::DSBG v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate a DSBG");
+  Util::ERROR("EvalMDI: trying to evaluate DSBG ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 

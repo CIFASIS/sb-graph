@@ -1,0 +1,9 @@
+Package: sb-graph-lib
+Version: 
+Architecture: amd64
+Maintainer: Denise Marzorati <marzorati@cifasis-conicet.gov.ar>
+Installed-Size: 801758
+Section: science
+Priority: extra
+Homepage: https://github.com/CIFASIS/sb-graph
+Description:  Set Based Graph library.

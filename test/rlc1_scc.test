@@ -1,8 +1,11 @@
-/*
+/* Detection of algebraic loops (SCC) for the following
+model, where the matching is indicated with comments
+for each equation:
+
 model testRLC1
   //iRa[i] and iRb[i] form an algebraic loop
     
-  constant Integer N=10;
+  constant Integer N=100000;
   Real iL[N],uC[N],uL[N],iRa[N],iRb[N],iC[N];
   parameter Real L=1,Ra=1,Rb=1,C=1,U=1;
 equation
@@ -21,7 +24,7 @@ equation
 end testRLC1;
 */
 
-N = 10
+N = 100000
 
 F1 = N
 F2 = N+F1

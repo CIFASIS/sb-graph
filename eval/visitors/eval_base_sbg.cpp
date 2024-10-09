@@ -28,25 +28,25 @@ EvalBaseSBG::EvalBaseSBG(VarEnv env) : env_(env) {}
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::Natural v) const
 {
-  Util::ERROR("EvalBaseSBG: trying to evaluate a Natural");
+  Util::ERROR("EvalBaseSBG: trying to evaluate Natural ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::MDNatural v) const
 {
-  Util::ERROR("EvalBaseSBG: trying to evaluate a MDNatural");
+  Util::ERROR("EvalBaseSBG: trying to evaluate MDNatural ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::Rational v) const
 {
-  Util::ERROR("EvalBaseSBG: trying to evaluate a Rational");
+  Util::ERROR("EvalBaseSBG: trying to evaluate Rational ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::Boolean v) const
 {
-  Util::ERROR("EvalBaseSBG: trying to evaluate a Boolean");
+  Util::ERROR("EvalBaseSBG: trying to evaluate Boolean ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
@@ -62,120 +62,120 @@ LIB::BaseSBG EvalBaseSBG::operator()(Util::VariableName v) const
     }
 
     else {
-      Util::ERROR("EvalBaseSBG: variable %s is not a PWMap", v.c_str());
+      Util::ERROR("EvalBaseSBG: variable ", v, " is not a PWMap\n");
       return LIB::BaseSBG(); 
     } 
   }
 
-  Util::ERROR("EvalBaseSBG: variable %s not defined", v.c_str());
+  Util::ERROR("EvalBaseSBG: variable ", v, " undefined\n");
   return LIB::BaseSBG(); 
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::UnaryOp v) const 
 {
-  Util::ERROR("EvalBaseSBG: trying to evaluate an arithmetic BinOp");
+  Util::ERROR("EvalBaseSBG: trying to evaluate arithmetic UnaryOp ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::BinOp v) const 
 {
-  Util::ERROR("EvalBaseSBG: trying to evaluate an arithmetic BinOp");
+  Util::ERROR("EvalBaseSBG: trying to evaluate arithmetic BinOp ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::Call v) const
 {
-  Util::ERROR("EvalBaseSBG: trying to evaluate a Call");
+  Util::ERROR("EvalBaseSBG: trying to evaluate Call ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::Interval v) const
 { 
-  Util::ERROR("EvalBaseSBG: trying to evaluate an Interval");
+  Util::ERROR("EvalBaseSBG: trying to evaluate Interval ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::InterUnaryOp v) const
 {
-  Util::ERROR("EvalBaseSBG: trying to evaluate an InterUnaryOp");
+  Util::ERROR("EvalBaseSBG: trying to evaluate InterUnaryOp ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::InterBinOp v) const
 {
-  Util::ERROR("EvalBaseSBG: trying to evaluate an InterBinOp");
+  Util::ERROR("EvalBaseSBG: trying to evaluate InterBinOp ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::MultiDimInter v) const
 { 
-  Util::ERROR("EvalBaseSBG: trying to evaluate an MultiDimInter");
+  Util::ERROR("EvalBaseSBG: trying to evaluate MultiDimInter ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::MDInterUnaryOp v) const
 {
-  Util::ERROR("EvalBaseSBG: trying to evaluate an MDInterUnaryOp");
+  Util::ERROR("EvalBaseSBG: trying to evaluate MDInterUnaryOp ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::MDInterBinOp v) const
 {
-  Util::ERROR("EvalBaseSBG: trying to evaluate an MDInterBinOp");
+  Util::ERROR("EvalBaseSBG: trying to evaluate MDInterBinOp ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::Set v) const 
 {
-  Util::ERROR("EvalBaseSBG: trying to evaluate a Set");
+  Util::ERROR("EvalBaseSBG: trying to evaluate Set ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::SetUnaryOp v) const 
 {
-  Util::ERROR("EvalBaseSBG: trying to evaluate a SetUnaryOp");
+  Util::ERROR("EvalBaseSBG: trying to evaluate SetUnaryOp ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::SetBinOp v) const 
 {
-  Util::ERROR("EvalBaseSBG: trying to evaluate a SetBinOp");
+  Util::ERROR("EvalBaseSBG: trying to evaluate SetBinOp ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::LinearExp v) const
 { 
-  Util::ERROR("EvalBaseSBG: trying to evaluate a LinearExp");
+  Util::ERROR("EvalBaseSBG: trying to evaluate LinearExp ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::LExpBinOp v) const 
 {
-  Util::ERROR("EvalBaseSBG: trying to evaluate a LExpBinOp");
+  Util::ERROR("EvalBaseSBG: trying to evaluate LExpBinOp ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::MDLExp v) const
 { 
-  Util::ERROR("EvalBaseSBG: trying to evaluate a MDLExp");
+  Util::ERROR("EvalBaseSBG: trying to evaluate MDLExp ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::MDLExpBinOp v) const 
 {
-  Util::ERROR("EvalBaseSBG: trying to evaluate a MDLExpBinOp");
+  Util::ERROR("EvalBaseSBG: trying to evaluate MDLExpBinOp ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::LinearMap v) const 
 {
-  Util::ERROR("EvalBaseSBG: trying to evaluate a LinearMap");
+  Util::ERROR("EvalBaseSBG: trying to evaluate LinearMap ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::PWLMap v) const 
 {
-  Util::ERROR("EvalBaseSBG: trying to evaluate a PWLMap");
+  Util::ERROR("EvalBaseSBG: trying to evaluate PWLMap ", v, "\n");
   return LIB::BaseSBG(); 
 }
 
@@ -195,7 +195,7 @@ LIB::BaseSBG EvalBaseSBG::operator()(AST::SBG v) const
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::DSBG v) const 
 {
-  Util::ERROR("EvalBaseSBG: trying to evaluate a DSBG");
+  Util::ERROR("EvalBaseSBG: trying to evaluate DSBG ", v, "\n");
   return LIB::BaseSBG(); 
 }
 

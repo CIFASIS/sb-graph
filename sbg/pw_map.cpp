@@ -55,13 +55,13 @@ template<typename Set>
 PWMap<Set>::PWMap(Set s) : maps_() {
   if (!s.isEmpty()) {
     SBGMap<Set> map(s, Exp(s.begin()->arity(), LExp()));
-    maps_.emplace_back(std::move(map));
+    maps_.emplace_back(map);
   }
 }
 template<typename Set>
 PWMap<Set>::PWMap(Map map) : maps_() {
   if (!map.dom().isEmpty())
-    maps_.emplace_back(std::move(map));
+    maps_.emplace_back(map);
 }
 template<typename Set>
 PWMap<Set>::PWMap(MS maps) : maps_(maps) {}
@@ -89,13 +89,13 @@ std::size_t PWMap<Set>::size() const { return maps_.size(); }
 template<typename Set>
 void PWMap<Set>::emplace(Map map) {
   if (!map.dom().isEmpty())
-    maps_.emplace_back(std::move(map));
+    maps_.emplace_back(map);
 }
 template<typename Set>
 void PWMap<Set>::emplaceBack(Map map)
 {
   if (!map.dom().isEmpty())
-    maps_.emplace_back(std::move(map));
+    maps_.emplace_back(map);
 }
 
 template<typename Set>
@@ -253,11 +253,11 @@ std::ostream &operator<<(std::ostream &out, const PWMap<Set> &pw)
 
 // PWMap functions -------------------------------------------------------------
 
-// Function should be called on a non-empty pw
 template<typename Set>
 std::size_t PWMap<Set>::arity() const
 {
-  Util::ERROR_UNLESS(!isEmpty(), "LIB::PWMap::arity: empty not allowed");
+  if (isEmpty())
+    return 0;
 
   return begin()->dom().begin()->arity();
 }
@@ -691,7 +691,7 @@ PWMap<Set> PWMap<Set>::compact() const
         if (next_compacted.isEmpty()) {
           auto ith = new_ith.compact(*next_it);
           if (ith) {
-            new_ith = ith.value();
+            new_ith = std::move(ith.value());
             compacted = compacted.cup(next_it->dom());
           }
         }

@@ -1,17 +1,20 @@
-/*
+/* Detection of algebraic loops (SCC) for the following
+model, where the matching is indicated with comments
+for each equation:
+
 model Test1
-  constant Integer N = 100;
+  constant Integer N = 100000;
   Real a[N], b[N], x[N];
 equation
   for i in 1:N loop
-    a[i] = 2 * x[i] - b[i];
-    a[i] = 2 * b[i] - x[i];
-    der(x[i]) = 1 - a[i];
+    a[i] = 2 * x[i] - b[i]; // a[1:N]
+    a[i] = 2 * b[i] - x[i]; // b[N:N]
+    der(x[i]) = 1 - a[i]; // der(x[1:N])
   end for;  
 end Test1;
 */
 
-N = 10
+N = 100000
 
 F1 = N
 F2 = N+F1

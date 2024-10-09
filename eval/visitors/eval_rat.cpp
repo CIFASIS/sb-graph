@@ -26,11 +26,14 @@ namespace Eval {
 EvalRat::EvalRat() : env_() {}
 EvalRat::EvalRat(VarEnv env) : env_(env) {}
 
-Util::RATIONAL EvalRat::operator()(AST::Natural v) const { return Util::RATIONAL(v, 1); }
+Util::RATIONAL EvalRat::operator()(AST::Natural v) const
+{
+  return Util::RATIONAL(v, 1);
+}
 
 Util::RATIONAL EvalRat::operator()(AST::MDNatural v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate a MDNatural");
+  Util::ERROR("EvalRat: trying to evaluate MDNatural ", v, "\n");
   return Util::RATIONAL(0, 1);
 }
 
@@ -64,12 +67,12 @@ Util::RATIONAL EvalRat::operator()(Util::VariableName v) const
    }
 
     else {
-      Util::ERROR("EvalRat: variable %s is not rational", v.c_str());
+      Util::ERROR("EvalRat: variable ", v, " is not rational\n");
       return Util::RATIONAL(0, 1);
     }
   }
 
-  Util::ERROR("EvalRat: variable %s not defined", v.c_str());
+  Util::ERROR("EvalRat: variable ", v, " undefined\n");
   return Util::RATIONAL(0, 1);
 }
 
@@ -85,19 +88,16 @@ Util::RATIONAL EvalRat::operator()(AST::UnaryOp v) const
       return -result;
 
     default:
-      Util::ERROR("EvalExpression: UnaryOp %s not supported.", ss.str().c_str());
+      Util::ERROR("EvalExpression: UnaryOp ", v.op(), " unsupported\n");
       return 0;
   }
 
-  Util::ERROR("EvalExpression: UnaryOp %s not supported.", ss.str().c_str());
+  Util::ERROR("EvalExpression: UnaryOp ", v.op(), " unsupported\n");
   return 0;
 }
 
 Util::RATIONAL EvalRat::operator()(AST::BinOp v) const 
 {
-  std::stringstream ss;
-  ss << v.op();
-
   Util::RATIONAL l = boost::apply_visitor(*this, v.left());
   Util::RATIONAL r = boost::apply_visitor(*this, v.right());
   switch (v.op()) {
@@ -111,119 +111,119 @@ Util::RATIONAL EvalRat::operator()(AST::BinOp v) const
       return l * r;
 
     default:
-      Util::ERROR("EvalRat: BinOp %s not supported.", ss.str().c_str());
+      Util::ERROR("EvalRat: BinOp ", v.op(), " unsupported\n");
       return Util::RATIONAL(0, 1);
   }
 
-  Util::ERROR("EvalExpression: BinOp %s not supported.", ss.str().c_str());
+  Util::ERROR("EvalExpression: BinOp ", v.op(), " unsupported\n");
   return 0;
 }
 
 Util::RATIONAL EvalRat::operator()(AST::Call v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate a Call");
+  Util::ERROR("EvalRat: trying to evaluate Call ", v, "\n");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::Interval v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate an Interval");
+  Util::ERROR("EvalRat: trying to evaluate Interval ", v, "\n");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::InterUnaryOp v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate an InterUnaryOp");
+  Util::ERROR("EvalRat: trying to evaluate InterUnaryOp ", v, "\n");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::InterBinOp v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate an InterBinOp");
+  Util::ERROR("EvalRat: trying to evaluate InterBinOp ", v, "\n");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::MultiDimInter v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate a MultiDimInter");
+  Util::ERROR("EvalRat: trying to evaluate MultiDimInter ", v, "\n");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::MDInterUnaryOp v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate a MDInterUnaryOp");
+  Util::ERROR("EvalRat: trying to evaluate MDInterUnaryOp ", v, "\n");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::MDInterBinOp v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate a MDInterBinOp");
+  Util::ERROR("EvalRat: trying to evaluate MDInterBinOp ", v, "\n");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::Set v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate a Set");
+  Util::ERROR("EvalRat: trying to evaluate Set ", v, "\n");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::SetUnaryOp v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate a SetUnaryOp");
+  Util::ERROR("EvalRat: trying to evaluate SetUnaryOp ", v, "\n");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::SetBinOp v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate a SetBinOp");
+  Util::ERROR("EvalRat: trying to evaluate SetBinOp ", v, "\n");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::LinearExp v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate a LinearExp");
+  Util::ERROR("EvalRat: trying to evaluate LinearExp ", v, "\n");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::LExpBinOp v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate a LExpBinOp");
+  Util::ERROR("EvalRat: trying to evaluate LExpBinOp ", v, "\n");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::MDLExp v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate a MDLExp");
+  Util::ERROR("EvalRat: trying to evaluate MDLExp ", v, "\n");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::MDLExpBinOp v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate a MDLExpBinOp");
+  Util::ERROR("EvalRat: trying to evaluate MDLExpBinOp ", v, "\n");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::LinearMap v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate a LinearMap");
+  Util::ERROR("EvalRat: trying to evaluate LinearMap ", v, "\n");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::PWLMap v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate a PWLMap");
+  Util::ERROR("EvalRat: trying to evaluate PWLMap ", v, "\n");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::SBG v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate a SBG");
+  Util::ERROR("EvalRat: trying to evaluate SBG ", v, "\n");
   return Util::RATIONAL(0, 1);
 }
 
 Util::RATIONAL EvalRat::operator()(AST::DSBG v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate a DSBG");
+  Util::ERROR("EvalRat: trying to evaluate DSBG ", v, "\n");
   return Util::RATIONAL(0, 1);
 }
 

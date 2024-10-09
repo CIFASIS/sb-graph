@@ -1,4 +1,37 @@
-// Matching test, with a cycle
+/* Matching test of a graph with a cycle,
+originated from the model:
+
+model buck
+  parameter Real C = 1e-4, L = 1e-4, R = 10, U = 24, T = 1e-4, DC = 0.5, ROn = 1e-5, ROff = 1e5;
+  discrete Real Rd(start=1e5), Rs(start=1e-5), nextT(start=T),lastT,diodeon;
+  Real uC,iL,iD,s;
+
+  equation
+    iD=(iL*Rs-U)/(Rs+Rd);
+    s=diodeon*iD+(1-diodeon)*iD*Rd;
+    der(iL) = (-iD*Rd- uC)/L;
+    der(uC) = (iL - uC/R)/C;
+
+  algorithm
+    when time > nextT then
+      lastT:=nextT;
+      nextT:=nextT+T;
+      Rs := ROn;
+    end when;
+
+    when time - lastT-DC*T>0 then
+      Rs := ROff;
+    end when;
+
+    when s>0 then
+      Rd:=ROn;
+      diodeon:=1;
+    elsewhen s<0 then
+      Rd := ROff;
+       diodeon:=0;
+    end when;
+end buck;
+*/  
 
 V %= {[2:1:2], [3:1:3], [4:1:4], [5:1:5], [9:1:9], [10:1:10], [11:1:11], [12:1:12]};
 Vmap %= <<{[2:1:2]} -> 0*x+1, {[3:1:3]} -> 0*x+2, {[4:1:4]} -> 0*x+3, {[5:1:5]} -> 0*x+4

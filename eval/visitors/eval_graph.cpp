@@ -25,31 +25,37 @@ namespace Eval {
 
 SBGBaseType EvalGraph::operator()(Util::MD_NAT v) const 
 {
-  Util::ERROR("EvalGraph: trying to evaluate a MD_NAT");
+  Util::ERROR("EvalGraph: trying to evaluate MD_NAT ", v, "\n");
   return SBGBaseType();
 }
 
 SBGBaseType EvalGraph::operator()(Util::RATIONAL v) const 
 {
-  Util::ERROR("EvalGraph: trying to evaluate a RATIONAL");
+  Util::ERROR("EvalGraph: trying to evaluate RATIONAL ", v, "\n");
   return SBGBaseType();
 }
 
 SBGBaseType EvalGraph::operator()(ContainerBaseType v) const
 {
-  Util::ERROR("EvalGraph: trying to evaluate a ContainerBaseType");
+  std::visit([](auto &&arg) {
+    Util::ERROR("EvalGraph: trying to evaluate ContainerBaseType ", arg, "\n");
+  }, v);
   return SBGBaseType();
 }
 
 SBGBaseType EvalGraph::operator()(LinearBaseType v) const
 {
-  Util::ERROR("EvalGraph: trying to evaluate a LinearBaseType");
+  std::visit([](auto &&arg) {
+    Util::ERROR("EvalGraph: trying to evaluate LinearBaseType ", arg, "\n");
+  }, v);
   return SBGBaseType();
 }
 
 SBGBaseType EvalGraph::operator()(MapBaseType v) const
 {
-  Util::ERROR("EvalGraph: trying to evaluate a MapBaseType");
+  std::visit([](auto &&arg) {
+    Util::ERROR("EvalGraph: trying to evaluate MapBaseType ", arg, "\n");
+  }, v);
   return SBGBaseType();
 }
 
@@ -60,7 +66,9 @@ SBGBaseType EvalGraph::operator()(SBGBaseType v) const
 
 SBGBaseType EvalGraph::operator()(InfoBaseType v) const
 {
-  Util::ERROR("EvalGraph: trying to evaluate an InfoBaseType");
+  std::visit([](auto &&arg) {
+    Util::ERROR("EvalGraph: trying to evaluate InfoBaseType ", arg, "\n");
+  }, v);
   return SBGBaseType();
 }
 

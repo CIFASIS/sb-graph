@@ -10,7 +10,6 @@ EVAL        := bin/sbg-eval
 all: $(EVAL)
 
 EVAL_SRC := \
-    $(UTIL_DIR)/debug.cpp \
     $(UTIL_DIR)/defs.cpp \
     $(UTIL_DIR)/logger.cpp \
 	  $(EVAL_DIR)/main.cpp \

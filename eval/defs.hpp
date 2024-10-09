@@ -121,11 +121,14 @@ struct FuncEnv{
   static FuncEnvType mapping_;
 };
 
-typedef enum { empty, member, min, max, lt, comp, inv, im, preim, dom, comb
+typedef enum { empty, min, max, comp, inv, im, preim, dom, comb
   , first_inv, min_map, red, min_adj, inf, connected, matching, scc, ts
   , match_scc, match_scc_ts, cut_set } Func;
 
 // Classes for pretty printing ------------------------------------------------
+
+template<typename T, typename... Ts>
+std::ostream &operator<<(std::ostream &out, const std::variant<T, Ts...> &v);
 
 typedef std::tuple<AST::Expr, ExprBaseType> ExprEval;
 std::ostream &operator<<(std::ostream &out, const ExprEval &e);

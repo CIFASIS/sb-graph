@@ -26,16 +26,12 @@ namespace LIB {
 MDLExp::MDLExp() : exps_() {}
 MDLExp::MDLExp(Util::MD_NAT x)
 {
-  Util::ERROR_UNLESS(x.arity() > 0, "LIB::MDLE1: empty not allowed");
-
   for (Util::NAT xi : x)
     exps_.emplace_back(LExp(0, Util::RATIONAL(xi)));
 }
 MDLExp::MDLExp(LExp le) : exps_() { exps_.emplace_back(le); }
 MDLExp::MDLExp(unsigned int nmbr_copies, LExp le) : exps_()
 {  
-  Util::ERROR_UNLESS(nmbr_copies > 0, "LIB::MDLE2: empty not allowed");
-
   for (unsigned int j = 0; j < nmbr_copies; ++j)
     exps_.emplace_back(le);
 }
@@ -100,9 +96,6 @@ std::size_t MDLExp::arity() const { return exps_.size(); }
 
 MDLExp MDLExp::composition(const MDLExp &other) const
 {
-  Util::ERROR_UNLESS(arity() == other.arity()
-                     , "LIB::MDLE::composition: dimensions don't match");
-
   MDLExp res;
 
   for (unsigned int j = 0; j < arity(); ++j)

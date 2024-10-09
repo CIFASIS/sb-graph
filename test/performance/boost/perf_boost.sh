@@ -61,10 +61,10 @@ for i in $( awk '{ print $1; }' test_values )
    done
 
 echo 
-echo "Average:"
+echo "Average algorithm:"
 echo "scale=2; $total / $count" | bc	
 
-
+algo=$total/$count;
 count=0;
 total=0; 
 
@@ -75,5 +75,11 @@ for i in $( awk '{ print $1; }' builder_values )
    done
 
 echo 
-echo "Average:"
+echo "Average builder:"
 echo "scale=2; $total / $count" | bc	
+
+total=$algo+$total/$count;
+
+echo 
+echo "Average total:"
+echo "scale=2; $total" | bc	

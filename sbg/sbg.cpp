@@ -32,7 +32,7 @@ template<typename Set>
 SBGraph<Set>::SBGraph(Set V, PW Vmap, PW map1, PW map2, PW Emap)
   : V_(V), Vmap_(Vmap), E_(map1.dom().intersection(map2.dom()))
     , map1_(map1), map2_(map2), Emap_(Emap), subE_map_() {
-  unsigned int j = 0;
+  unsigned int j = 1;
   for (const SBGMap<Set> &sbgmap : Emap) {
     Set dom = sbgmap.dom();
     for (const SetPiece &mdi : dom) {
@@ -56,11 +56,11 @@ std::ostream &operator<<(std::ostream &out, const SBGraph<Set> &g)
 {
   out << "V = " << g.V() << ";\n";
   out << "Vmap = " << g.Vmap() << ";\n\n";
-  out << "E = " << g.E() << "\n";
-  out << "map1 = " << g.map1() << "\n";
-  out << "map2 = " << g.map2() << "\n";
-  out << "Emap = " << g.Emap() << "\n";
-  out << "sub_Emap = " << g.subE_map() << "\n";
+  out << "E = " << g.E() << ";\n";
+  out << "map1 = " << g.map1() << ";\n";
+  out << "map2 = " << g.map2() << ";\n";
+  out << "Emap = " << g.Emap() << ";\n";
+  out << "sub_Emap = " << g.subE_map() << ";\n";
 
   return out;
 }
@@ -84,14 +84,8 @@ SBGraph<Set> SBGraph<Set>::addSV(const Set &vertices) const
     return res;
   }
 
-  else
-    Util::ERROR("LIB::SBG::addSV: vertices should be non-empty and disjoint from current vertices");
-
   return SBGraph();
 }
-
-template<typename Set>
-unsigned int SBGraph<Set>::nmbrSV() const { return Vmap_.image().size(); }
 
 template<typename Set>
 SBGraph<Set> SBGraph<Set>::addSE(const PW &pw1, const PW &pw2) const
@@ -117,11 +111,7 @@ SBGraph<Set> SBGraph<Set>::addSE(const PW &pw1, const PW &pw2) const
 
       return res;
     }
-
-    else Util::ERROR("LIB::SBG::addSE: edges should be non-empty and disjoint from current vertices");
   }
-
-  else Util::ERROR("LIB::SBG::addSE: maps domains should coincide");
 
   return SBGraph<Set>();
 }
@@ -180,7 +170,7 @@ template<typename Set>
 DSBGraph<Set>::DSBGraph(Set V, PW Vmap, PW mapB, PW mapD, PW Emap)
   : V_(V), Vmap_(Vmap), E_(mapB.dom().intersection(mapD.dom()))
     , mapB_(mapB), mapD_(mapD), Emap_(Emap), subE_map_() {
-  unsigned int j = 0;
+  unsigned int j = 1;
   for (const SBGMap<Set> &sbgmap : Emap) {
     Set dom = sbgmap.dom();
     for (const SetPiece &mdi : dom) {
@@ -204,11 +194,11 @@ std::ostream &operator<<(std::ostream &out, const DSBGraph<Set> &g)
 {
   out << "V = " << g.V() << ";\n";
   out << "Vmap = " << g.Vmap() << ";\n\n";
-  out << "E = " << g.E() << "\n";
-  out << "mapB = " << g.mapB() << "\n";
-  out << "mapD = " << g.mapD() << "\n";
-  out << "Emap = " << g.Emap() << "\n";
-  out << "subE_map = " << g.subE_map() << "\n";
+  out << "E = " << g.E() << ";\n";
+  out << "mapB = " << g.mapB() << ";\n";
+  out << "mapD = " << g.mapD() << ";\n";
+  out << "Emap = " << g.Emap() << ";\n";
+  out << "subE_map = " << g.subE_map() << ";\n";
 
   return out;
 }
@@ -232,13 +222,8 @@ DSBGraph<Set> DSBGraph<Set>::addSV(const Set &vertices) const
     return res;
   }
 
-  else Util::ERROR("LIB::SBG::addSV: vertices should be non-empty and disjoint from current vertices");
-
   return DSBGraph<Set>();
 }
-
-template<typename Set>
-unsigned int DSBGraph<Set>::nmbrSV() const { return Vmap_.image().size(); }
 
 template<typename Set>
 DSBGraph<Set> DSBGraph<Set>::addSE(const PW &pw1, const PW &pw2) const
@@ -264,11 +249,7 @@ DSBGraph<Set> DSBGraph<Set>::addSE(const PW &pw1, const PW &pw2) const
    
       return res;
     }
-
-    else Util::ERROR("LIB::SBG::addSE: edges should be non-empty and disjoint from current vertices");
   }
-
-  else Util::ERROR("LIB::SBG::addSE: maps domains should coincide");
 
   return DSBGraph<Set>();
 }

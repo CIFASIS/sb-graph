@@ -1,21 +1,23 @@
-/*
+/* Matching test originated from the following model
+(the result is indicated with comments):
+
 model rc
-  constant Integer n=100;
+  constant Integer N=100000;
   parameter Real RA=1,RB=1,C=1,i0=1;
-  Real vA[n],vB[n],vC[n],iR[n];
+  Real vA[N],vB[N],vC[N],iR[N];
 equation
-  iR[1]=i0; // Eq.(1)
-  for i in 1:n loop
-    vA[i]=RA*iR[i]; //Eq.(2)
-    vB[i]=RB*iR[i]; //Eq.(3)
+  iR[1]=i0; // iR[1]
+  for i in 1:N loop
+    vA[i]=RA*iR[i]; // iR[2:N], vA[1] 
+    vB[i]=RB*iR[i]; // vB[1:N]
   end for;
-  for i in 2:n loop
-    vA[i]+vB[i]=vC[i-1]-vC[i]; //Eq.(4)
+  for i in 2:N loop
+    vA[i]+vB[i]=vC[i-1]-vC[i]; // vA[2:N]
   end for;
-  for i in 1:n-1 loop
-    C*der(vC[i])=iR[i]-iR[i+1]; //Eq.(5)
+  for i in 1:N-1 loop
+    C*der(vC[i])=iR[i]-iR[i+1]; // vC[1:N-1]
   end for;
-  C*der(vC[n])=iR[n]; //Eq.(6)
+  C*der(vC[N])=iR[N]; // der(vC[N])
 end rc;
 */
 

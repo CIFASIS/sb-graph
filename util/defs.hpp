@@ -81,8 +81,8 @@ struct MD_NAT {
   member_class(VNAT, value);
 
   MD_NAT();
-  MD_NAT(NAT x);
-  MD_NAT(unsigned int nmbr_copies, NAT x);
+  MD_NAT(const NAT &x);
+  MD_NAT(const unsigned int &nmbr_copies, const NAT &x);
   MD_NAT(VNAT::iterator b, VNAT::iterator e);
 
   typedef VNAT::iterator iterator;
@@ -128,9 +128,9 @@ struct RATIONAL{
   member_class(boost::rational<INT>, value);
 
   RATIONAL();
-  RATIONAL(NAT n);
-  RATIONAL(boost::rational<INT> value);
-  RATIONAL(INT n, INT d);
+  RATIONAL(const NAT &n);
+  RATIONAL(const boost::rational<INT> &value);
+  RATIONAL(const INT &n, const INT &d);
 
   bool operator==(const RATIONAL &other) const;
   bool operator!=(const RATIONAL &other) const;

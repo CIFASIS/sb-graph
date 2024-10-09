@@ -1,31 +1,41 @@
-// SCC test, with a long path, and a branch in the middle
-// that goes to a minimum value
+// SCC test with a single long path, with small cycles
+// between pairs of vertices
 
 N = 100000
-N2 = 50000
 
 V1 = 1
-V2 = N+V1
+V2 = N-1+V1
+V3 = N+V2
 
 E1 = 1
 E2 = N-1+E1
+E3 = N-1+E2
+E4 = N-1+E3
 
-off1b = r(V2, 1)-E1-N2
-off2b = r(V2, 1)-E2-1
+off1b = r(V1, 1)-r(E1, 1) 
+off2b = r(V3, 1)-r(E2, 1)-1
+off3b = r(V2, 1)-r(E3, 1)
+off4b = r(V2, 1)-r(E4, 1)
 
-off1d = r(V1, 1)-E1
-off2d = r(V2, 1)-E2
+off1d = r(V3, 1)-r(E1, 1)-N+1
+off2d = r(V2, 1)-r(E2, 1)
+off3d = r(V3, 1)-r(E3, 1)
+off4d = r(V3, 1)-r(E4, 1)-1
 
-V %= {[1:1:V1], [V1+1:1:V2]};
-Vmap %= <<{[1:1:V1]} -> 0*x+1, {[V1+1:1:V2]} -> 0*x+2>>; 
-mapB %= <<{[1:1:E1]} -> 1*x+off1b, {[E1+1:1:E2]} -> 1*x+off2b>>;
-mapD %= <<{[1:1:E1]} -> 1*x+off1d, {[E1+1:1:E2]} -> 1*x+off2d>>;
-Emap %= <<{[1:1:E1]} -> 0*x+1, {[E1+1:1:E2]} -> 0*x+2>>;
+V %= {[1:1:V1], [V1+1:1:V2], [V2+1:1:V3]};
+Vmap %= <<{[1:1:V1]} -> 0*x+1, {[V1+1:1:V2]} -> 0*x+2, {[V2+1:1:V3]} -> 0*x+3>>; 
+mapB %= <<{[1:1:E1]} -> 1*x+off1b, {[E1+1:1:E2]} -> 1*x+off2b, {[E2+1:1:E3]} -> 1*x+off3b
+          , {[E3+1:1:E4]} -> 1*x+off4b>>;
+mapD %= <<{[1:1:E1]} -> 1*x+off1d, {[E1+1:1:E2]} -> 1*x+off2d, {[E2+1:1:E3]} -> 1*x+off3d
+          , {[E3+1:1:E4]} -> 1*x+off4d>>;
+Emap %= <<{[1:1:E1]} -> 0*x+1, {[E1+1:1:E2], [E2+1:1:E3], [E3+1:1:E4]} -> 0*x+2>>;
 
 scc(
-  V %= {[1:1:V1], [V1+1:1:V2]};
-  Vmap %= <<{[1:1:V1]} -> 0*x+1, {[V1+1:1:V2]} -> 0*x+2>>; 
-  mapB %= <<{[1:1:E1]} -> 1*x+off1b, {[E1+1:1:E2]} -> 1*x+off2b>>;
-  mapD %= <<{[1:1:E1]} -> 1*x+off1d, {[E1+1:1:E2]} -> 1*x+off2d>>;
-  Emap %= <<{[1:1:E1]} -> 0*x+1, {[E1+1:1:E2]} -> 0*x+2>>;
+  V %= {[1:1:V1], [V1+1:1:V2], [V2+1:1:V3]};
+  Vmap %= <<{[1:1:V1]} -> 0*x+1, {[V1+1:1:V2]} -> 0*x+2, {[V2+1:1:V3]} -> 0*x+3>>; 
+  mapB %= <<{[1:1:E1]} -> 1*x+off1b, {[E1+1:1:E2]} -> 1*x+off2b, {[E2+1:1:E3]} -> 1*x+off3b
+            , {[E3+1:1:E4]} -> 1*x+off4b>>;
+  mapD %= <<{[1:1:E1]} -> 1*x+off1d, {[E1+1:1:E2]} -> 1*x+off2d, {[E2+1:1:E3]} -> 1*x+off3d
+            , {[E3+1:1:E4]} -> 1*x+off4d>>;
+  Emap %= <<{[1:1:E1]} -> 0*x+1, {[E1+1:1:E2], [E2+1:1:E3], [E3+1:1:E4]} -> 0*x+2>>;
 )

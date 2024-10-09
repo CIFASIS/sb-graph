@@ -1,26 +1,28 @@
-/*
+/* Matching test originated from the following model
+(the result is indicated with comments):
+
 model testRL3
   //iR[i] and iR[i+1] can be computed out of each other
   //uL[i] and uL[i+1] can be computed out of each other
   //All variables form a large algebraic loop
 
-  constant Integer N=5;
+  constant Integer N=100000;
   Real iL[N],iR[N],uL[N];
   parameter Real L=1,R=1,L1=1,U=1,R0=1;
 equation
   for i in 1:N loop
-    L*der(iL[i])=uL[i]; 
+    L*der(iL[i])=uL[i]; // der(iL[1:N]) 
   end for;  
   for i in 1:N-1 loop
-    iR[i]-iR[i+1]-iL[i]=0; 
-    uL[i]-uL[i+1]-R*iR[i+1]=0; 
+    iR[i]-iR[i+1]-iL[i]=0; // iR[1], iR[3:N]
+    uL[i]-uL[i+1]-R*iR[i+1]=0; // iR[2], uL[2:N-1]
   end for;  
-  U-uL[1]-R*iR[1]=0; 
-  uL[N]-(iR[N]-iL[N])*R0=0; 
+  U-uL[1]-R*iR[1]=0; // uL[1]
+  uL[N]-(iR[N]-iL[N])*R0=0; // uL[N]
 end testRL3;
 */
 
-N = 2000
+N = 100000
 
 F1 = N
 F2 = N-1+F1

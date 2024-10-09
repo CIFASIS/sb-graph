@@ -5,6 +5,8 @@ Set-based graphs (SB-Graphs) are graphs in which the vertices and edges are grou
   * Connected Components
   * Matching
   * Strongly Connected Components (SCC)
+  * Topological Sort
+  * Minimum Vertex Cut Set
 
 This library defines data structures to represent SB-Graphs, and implements the aforementioned algorithms. The related publications can be used as documentation of the code.
 
@@ -12,11 +14,13 @@ This new approach was used in the flatter and causalization stage of the Modelic
 
 ## Related Publications
 
-[1] Denise Marzorati, Joaquin Fernández, Ernesto Kofman. Connected Components in Undirected Set--Based Graphs. Applications in Object--Oriented Model Manipulation Applied Mathematics and Computation, Volume 418, 2022, 126842,ISSN 0096-3003, https://doi.org/10.1016/j.amc.2021.126842.
+[1] Denise Marzorati, Joaquín Fernández, and Ernesto Kofman. 2024. Efficient Matching in Large DAE Models. ACM Trans. Math. Softw. Just Accepted (June 2024). https://doi.org/10.1145/3674831
 
-[2] Ernesto Kofman, Joaquín Fernández, Denise Marzorati. Compact sparse symbolic Jacobian computation in large systems of ODEs Applied Mathematics and Computation, Volume 403, 2021, 126181, ISSN 0096-3003, https://doi.org/10.1016/j.amc.2021.126181.
+[2] Denise Marzorati, Joaquin Fernández, Ernesto Kofman. Connected Components in Undirected Set--Based Graphs. Applications in Object--Oriented Model Manipulation Applied Mathematics and Computation, Volume 418, 2022, 126842,ISSN 0096-3003, https://doi.org/10.1016/j.amc.2021.126842.
 
-[3] Pablo Zimmermann, Joaquin Fernandez, Ernesto Kofman.
+[3] Ernesto Kofman, Joaquín Fernández, Denise Marzorati. Compact sparse symbolic Jacobian computation in large systems of ODEs Applied Mathematics and Computation, Volume 403, 2021, 126181, ISSN 0096-3003, https://doi.org/10.1016/j.amc.2021.126181.
+
+[4] Pablo Zimmermann, Joaquin Fernandez, Ernesto Kofman.
 **Set-based graph methods for fast equation sorting in large DAE systems**
  EOOLT '19: Proceedings of the 9th International Workshop on Equation-based Object-oriented Modeling Languages and Tools 2019
 
@@ -110,3 +114,12 @@ Please see the file called LICENSE.
 ## Bug Reporting
 
 Report bugs to: marzorati@cifasis-conicet.gov.ar or fernandez@cifasis-conicet.gov.ar
+
+# Changelog
+
+## [3.0.0] - 2024-10-09
+### Added
+- Implemented Ordered Sets of one-dimensional, compact MDIs.
+- Implemented novel versions of Maximum Matching, SCC and Topological Sort of SBG algorithms.
+- Implemented Cut Set SBG algorithm for Tearing.
+- Implemented JSON output for client code.

@@ -6,6 +6,8 @@
 
 # Binary files
 /bin
+/test/performance/boost/bin
+/test/performance/boost/obj
 
 # 3rd-party libraries.
 /3rd-party/gtest/usr/
@@ -33,4 +35,5 @@ Makefile
 /autom4te.cache
 
 # Log files
-SBG.log
+*.log
+

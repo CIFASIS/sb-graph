@@ -28,25 +28,25 @@ EvalCanonPWMap::EvalCanonPWMap(VarEnv env) : env_(env) {}
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::Natural v) const
 {
-  Util::ERROR("EvalCanonPWMap: trying to evaluate a Natural");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate Natural ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::MDNatural v) const
 {
-  Util::ERROR("EvalCanonPWMap: trying to evaluate a MDNatural");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate MDNatural ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::Rational v) const
 {
-  Util::ERROR("EvalCanonPWMap: trying to evaluate a Rational");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate Rational ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::Boolean v) const
 {
-  Util::ERROR("EvalCanonPWMap: trying to evaluate a Boolean");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate Boolean ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
@@ -62,114 +62,114 @@ LIB::CanonPWMap EvalCanonPWMap::operator()(Util::VariableName v) const
     }
 
     else {
-      Util::ERROR("EvalCanonPWMap: variable %s is not a PWMap", v.c_str());
+      Util::ERROR("EvalCanonPWMap: variable ", v, " is not a PWMap\n");
       return LIB::CanonPWMap(); 
     } 
   }
 
-  Util::ERROR("EvalCanonPWMap: variable %s not defined", v.c_str());
+  Util::ERROR("EvalCanonPWMap: variable ", v, " undefined\n");
   return LIB::CanonPWMap(); 
 }
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::UnaryOp v) const 
 {
-  Util::ERROR("EvalCanonPWMap: trying to evaluate an arithmetic UnaryOp");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate arithmetic UnaryOp ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::BinOp v) const 
 {
-  Util::ERROR("EvalCanonPWMap: trying to evaluate an arithmetic BinOp");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate arithmetic BinOp ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::Call v) const
 {
-  Util::ERROR("EvalCanonPWMap: trying to evaluate a Call");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate Call ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::Interval v) const
 { 
-  Util::ERROR("EvalCanonPWMap: trying to evaluate an Interval");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate Interval ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::InterUnaryOp v) const
 {
-  Util::ERROR("EvalCanonPWMap: trying to evaluate an InterUnaryOp");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate InterUnaryOp ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::InterBinOp v) const
 {
-  Util::ERROR("EvalCanonPWMap: trying to evaluate an InterBinOp");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate InterBinOp ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::MultiDimInter v) const
 { 
-  Util::ERROR("EvalCanonPWMap: trying to evaluate a MultiDimInter");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate MultiDimInter ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::MDInterUnaryOp v) const
 {
-  Util::ERROR("EvalCanonPWMap: trying to evaluate a MDInterUnaryOp");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate MDInterUnaryOp ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::MDInterBinOp v) const
 {
-  Util::ERROR("EvalCanonPWMap: trying to evaluate a MDInterBinOp");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate MDInterBinOp ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::Set v) const 
 {
-  Util::ERROR("EvalCanonPWMap: trying to evaluate a Set");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate Set ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::SetUnaryOp v) const 
 {
-  Util::ERROR("EvalCanonPWMap: trying to evaluate a SetUnaryOp");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate SetUnaryOp ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::SetBinOp v) const 
 {
-  Util::ERROR("EvalCanonPWMap: trying to evaluate a SetBinOp");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate SetBinOp ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::LinearExp v) const
 { 
-  Util::ERROR("EvalCanonPWMap: trying to evaluate a LinearExp");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate LinearExp ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::LExpBinOp v) const 
 {
-  Util::ERROR("EvalCanonPWMap: trying to evaluate a LExpBinOp");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate LExpBinOp ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::MDLExp v) const
 { 
-  Util::ERROR("EvalCanonPWMap: trying to evaluate a MDLExp");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate MDLExp ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::MDLExpBinOp v) const 
 {
-  Util::ERROR("EvalCanonPWMap: trying to evaluate a MDLExpBinOp");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate MDLExpBinOp ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::LinearMap v) const 
 {
-  Util::ERROR("EvalCanonPWMap: trying to evaluate a LinearMap");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate LinearMap ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
@@ -186,13 +186,13 @@ LIB::CanonPWMap EvalCanonPWMap::operator()(AST::PWLMap v) const
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::SBG v) const 
 {
-  Util::ERROR("EvalCanonPWMap: trying to evaluate a SBG");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate SBG ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::DSBG v) const 
 {
-  Util::ERROR("EvalCanonPWMap: trying to evaluate a DSBG");
+  Util::ERROR("EvalCanonPWMap: trying to evaluate DSBG ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 

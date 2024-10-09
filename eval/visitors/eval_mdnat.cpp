@@ -28,7 +28,7 @@ EvalMDNat::EvalMDNat(VarEnv env) : env_(env) {}
 
 Util::MD_NAT EvalMDNat::operator()(AST::Natural v) const
 {
-  Util::ERROR("EvalMDNat: trying to evaluate a Natural");
+  Util::ERROR("EvalMDNat: trying to evaluate Natural ", v, "\n");
   return 0;
 }
 
@@ -39,7 +39,7 @@ Util::MD_NAT EvalMDNat::operator()(AST::Rational v) const
   if (v.denominator() == 1)
     return v.numerator();
 
-  Util::ERROR("EvalMDNat: trying to evaluate a Rational");
+  Util::ERROR("EvalMDNat: trying to evaluate Rational ", v, "\n");
   return 0; 
 }
 
@@ -60,13 +60,13 @@ Util::MD_NAT EvalMDNat::operator()(Util::VariableName v) const
       return std::get<Util::MD_NAT>(value);
   }
 
-  Util::ERROR("EvalMDNat: variable %s not defined", v.c_str());
+  Util::ERROR("EvalMDNat: variable ", v, " undefined"\n);
   return 0;
 }
 
 Util::MD_NAT EvalMDNat::operator()(AST::UnaryOp v) const 
 {
-  Util::ERROR("EvalMDNat: trying to evaluate an arithmetic UnaryOp");
+  Util::ERROR("EvalMDNat: trying to evaluate arithmetic UnaryOp ", v, "\n");
   return 0;
 }
 
@@ -87,118 +87,116 @@ Util::MD_NAT EvalMDNat::operator()(AST::BinOp v) const
       return pow(ApplyThis(l), ApplyThis(r));
 
     default:
-      std::stringstream ss;
-      ss << v.op();
-      Util::ERROR("EvalMDNat: BinOp %s not supported.", ss.str().c_str());
+      Util::ERROR("EvalMDNat: BinOp ", v.op(), " unsupported\n");
       return 0;
   }
 }
 
 Util::MD_NAT EvalMDNat::operator()(AST::Call v) const
 {
-  Util::ERROR("EvalMDNat: trying to evaluate a Call");
+  Util::ERROR("EvalMDNat: trying to evaluate Call ", v, "\n");
   return 0;
 }
 
 Util::MD_NAT EvalMDNat::operator()(AST::Interval v) const
 {
-  Util::ERROR("EvalMDNat: trying to evaluate an Interval");
+  Util::ERROR("EvalMDNat: trying to evaluate Interval ", v, "\n");
   return 0;
 }
 
 Util::MD_NAT EvalMDNat::operator()(AST::InterUnaryOp v) const
 {
-  Util::ERROR("EvalMDNat: trying to evaluate an InterUnaryOp");
+  Util::ERROR("EvalMDNat: trying to evaluate InterUnaryOp ", v, "\n");
   return 0;
 }
 
 Util::MD_NAT EvalMDNat::operator()(AST::InterBinOp v) const
 {
-  Util::ERROR("EvalMDNat: trying to evaluate an InterBinOp");
+  Util::ERROR("EvalMDNat: trying to evaluate InterBinOp ", v, "\n");
   return 0;
 }
 
 Util::MD_NAT EvalMDNat::operator()(AST::MultiDimInter v) const
 {
-  Util::ERROR("EvalMDNat: trying to evaluate an MultiDimInter");
+  Util::ERROR("EvalMDNat: trying to evaluate MultiDimInter ", v, "\n");
   return 0;
 }
 
 Util::MD_NAT EvalMDNat::operator()(AST::MDInterUnaryOp v) const
 {
-  Util::ERROR("EvalMDNat: trying to evaluate an MDInterUnaryOp");
+  Util::ERROR("EvalMDNat: trying to evaluate MDInterUnaryOp ", v, "\n");
   return 0;
 }
 
 Util::MD_NAT EvalMDNat::operator()(AST::MDInterBinOp v) const
 {
-  Util::ERROR("EvalMDNat: trying to evaluate an MDInterBinOp");
+  Util::ERROR("EvalMDNat: trying to evaluate MDInterBinOp ", v, "\n");
   return 0;
 }
 
 Util::MD_NAT EvalMDNat::operator()(AST::Set v) const
 {
-  Util::ERROR("EvalMDNat: trying to evaluate an Set");
+  Util::ERROR("EvalMDNat: trying to evaluate Set ", v, "\n");
   return 0;
 }
 
 Util::MD_NAT EvalMDNat::operator()(AST::SetUnaryOp v) const
 {
-  Util::ERROR("EvalMDNat: trying to evaluate an SetUnaryOp");
+  Util::ERROR("EvalMDNat: trying to evaluate SetUnaryOp ", v, "\n");
   return 0;
 }
 
 Util::MD_NAT EvalMDNat::operator()(AST::SetBinOp v) const
 {
-  Util::ERROR("EvalMDNat: trying to evaluate an SetBinOp");
+  Util::ERROR("EvalMDNat: trying to evaluate SetBinOp ", v, "\n");
   return 0;
 }
 
 Util::MD_NAT EvalMDNat::operator()(AST::LinearExp v) const
 {
-  Util::ERROR("EvalMDNat: trying to evaluate a LinearExp");
+  Util::ERROR("EvalMDNat: trying to evaluate LinearExp ", v, "\n");
   return 0;
 }
 
 Util::MD_NAT EvalMDNat::operator()(AST::LExpBinOp v) const
 {
-  Util::ERROR("EvalMDNat: trying to evaluate a LExpBinOp");
+  Util::ERROR("EvalMDNat: trying to evaluate LExpBinOp ", v, "\n");
   return 0;
 }
 
 Util::MD_NAT EvalMDNat::operator()(AST::MDLExp v) const
 {
-  Util::ERROR("EvalMDNat: trying to evaluate a MDLExp");
+  Util::ERROR("EvalMDNat: trying to evaluate MDLExp ", v, "\n");
   return 0;
 }
 
 Util::MD_NAT EvalMDNat::operator()(AST::MDLExpBinOp v) const
 {
-  Util::ERROR("EvalMDNat: trying to evaluate a MDLExpBinOp");
+  Util::ERROR("EvalMDNat: trying to evaluate MDLExpBinOp ", v, "\n");
   return 0;
 }
 
 Util::MD_NAT EvalMDNat::operator()(AST::LinearMap v) const
 {
-  Util::ERROR("EvalMDNat: trying to evaluate a LinearMap");
+  Util::ERROR("EvalMDNat: trying to evaluate LinearMap ", v, "\n");
   return 0;
 }
 
 Util::MD_NAT EvalMDNat::operator()(AST::PWLMap v) const
 {
-  Util::ERROR("EvalMDNat: trying to evaluate a PWLMap");
+  Util::ERROR("EvalMDNat: trying to evaluate PWLMap ", v, "\n");
   return 0;
 }
 
 Util::MD_NAT EvalMDNat::operator()(AST::SBG v) const
 {
-  Util::ERROR("EvalMDNat: trying to evaluate a SBG");
+  Util::ERROR("EvalMDNat: trying to evaluate a SBG ", v, "\n");
   return 0;
 }
 
 Util::MD_NAT EvalMDNat::operator()(AST::DSBG v) const
 {
-  Util::ERROR("EvalMDNat: trying to evaluate a DSBG");
+  Util::ERROR("EvalMDNat: trying to evaluate a DSBG ", v, "\n");
   return 0;
 }
 

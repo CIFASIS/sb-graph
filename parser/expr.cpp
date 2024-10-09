@@ -444,8 +444,8 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
     | lexp_expr 
     | arithmetic_expr 
     | set_expr
-    | interval_expr
-    | mdi_expr;
+    | mdi_expr
+    | interval_expr;
   
   expr_list = expr[phx::push_back(qi::_val, qi::_1)]
     >> *(COMA >> expr)[phx::push_back(qi::_val, qi::_1)];

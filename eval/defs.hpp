@@ -121,7 +121,7 @@ struct FuncEnv{
   static FuncEnvType mapping_;
 };
 
-typedef enum { empty, member, min, max, comp, inv, im, preim, dom, comb
+typedef enum { empty, min, max, comp, inv, im, preim, dom, comb
   , first_inv, min_map, red, min_adj, inf, connected, matching, scc, ts
   , match_scc, match_scc_ts, cut_set } Func;
 

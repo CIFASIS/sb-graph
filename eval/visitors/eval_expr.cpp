@@ -27,15 +27,6 @@ namespace Eval {
 // Function visitors -----------------------------------------------------------
 // -----------------------------------------------------------------------------
 
-auto member_visitor_ = Util::Overload {
-  [](Util::NAT a, LIB::Interval b) { return b.isMember(a); },
-  [](auto a, auto b) {
-    Util::ERROR("member_visitor_: wrong arguments ", a, ", ", b
-      , " for isMember\n"); 
-    return false;
-  } 
-};
-
 auto min_visitor_ = Util::Overload {
   [](LIB::Interval a) { return Util::MD_NAT(a.begin()); },
   [](LIB::MultiDimInter a) { return a.minElem(); },
@@ -407,24 +398,6 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
         }
         break;
 
-      case Eval::Func::member:  
-        if (eval_args.size() == 2) {
-          arity_ok = true;
-
-          NatBaseType x = std::visit(EvalNatBT{}, eval_args[0]);
-          Util::MD_NAT aux = std::get<Util::MD_NAT>(x);
-          if (aux.arity() == 1) {
-            ContainerBaseType container
-              = std::visit(EvalContainer{}, eval_args[1]);
-            bool result = std::visit(member_visitor_, NatBaseType(aux[0])
-              , container);
-            return Util::MD_NAT(result);
-          }
-
-          return Util::MD_NAT(0);
-        }
-        break;
-
       case Eval::Func::min:
         if (eval_args.size() == 1) {
           arity_ok = true;
@@ -754,8 +727,8 @@ ExprBaseType EvalExpression::operator()(AST::MultiDimInter v) const
 {
   SBG::LIB::SetPiece mdi = boost::apply_visitor(EvalMDI(env_), AST::Expr(v));
 
-  Util::ERROR_UNLESS(mdi.arity() == nmbr_dims_
-    , "EvalExpr: nmbr_dims_: ", nmbr_dims_, "!= arity(", mdi, ")\n");
+  Util::ERROR_UNLESS(mdi.arity() == nmbr_dims_ || mdi.arity() == 0
+    , "EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", mdi, ")\n");
 
   return mdi;
 }
@@ -765,8 +738,8 @@ ExprBaseType EvalExpression::operator()(AST::MDInterUnaryOp v) const
   EvalMDI visit_mdi(env_);
   LIB::MultiDimInter mdi = boost::apply_visitor(visit_mdi, v.e());
 
-  Util::ERROR_UNLESS(mdi.arity() == nmbr_dims_
-    , "EvalExpr: nmbr_dims_: ", nmbr_dims_, "!= arity(", mdi, ")\n");
+  Util::ERROR_UNLESS(mdi.arity() == nmbr_dims_ || mdi.arity() == 0
+    , "EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", mdi, ")\n");
 
   switch (v.op()) {
     case AST::ContainerUOp::card:
@@ -786,9 +759,10 @@ ExprBaseType EvalExpression::operator()(AST::MDInterBinOp v) const
   LIB::MultiDimInter l = boost::apply_visitor(visit_mdi, v.left());
   LIB::MultiDimInter r = boost::apply_visitor(visit_mdi, v.right());
 
-  Util::ERROR_UNLESS(l.arity() == nmbr_dims_ && r.arity() == nmbr_dims_
-    ,"EvalExpr: nmbr_dims_: ", nmbr_dims_
-    , " != arity(", l, ") or arity(", r, ")\n");
+  Util::ERROR_UNLESS((l.arity() == nmbr_dims_ && r.arity() == nmbr_dims_)
+    || l.arity() == 0 || r.arity() == 0
+    ,"EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", l, ") or arity(", r
+    , ")\n");
 
   switch (v.op()) {
     case AST::ContainerOp::cap:

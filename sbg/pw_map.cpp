@@ -514,10 +514,12 @@ PWMap<Set> PWMap<Set>::minMap(const PWMap &other) const
   if (isEmpty() || other.isEmpty())
     return PWMap();
 
+  PWMap aux1 = restrict(other.dom()), aux2 = other.restrict(dom());
   Set zero(SetPiece(arity(), Interval(0, 1, 0)));
-  Set to_zero = (*this-other).preImage(zero);
-  Set not_zero = other.dom().difference(to_zero);
-  PWMap aux1 = restrict(to_zero), aux2 = other.restrict(not_zero);
+  Set to_zero = (aux1-aux2).preImage(zero);
+  Set not_zero = aux2.dom().difference(to_zero);
+  aux1 = aux1.restrict(to_zero);
+  aux2 = aux2.restrict(not_zero);
 
   return aux1.combine(aux2);
 }

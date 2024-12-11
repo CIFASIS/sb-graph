@@ -32,7 +32,9 @@
 
 namespace SBG {
 
-namespace DTO {
+namespace API {
+
+class IntervalDTOConverter;
 
 using NAT = Util::NAT;
 
@@ -48,9 +50,10 @@ struct IntervalDTO {
   NAT end_;
 
   friend std::ostream &operator<<(std::ostream &out, const IntervalDTO &i);
+  friend class IntervalDTOConverter;
 };
 
-} // namespace DTO
+} // namespace API
 
 }  // namespace SBG
 

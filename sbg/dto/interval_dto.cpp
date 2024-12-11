@@ -21,26 +21,13 @@
 
 namespace SBG {
 
-namespace DTO {
+namespace API {
 
 IntervalDTO::IntervalDTO() : begin_(1), step_(1), end_(0) {}
 IntervalDTO::IntervalDTO(const NAT &x) : begin_(x), step_(1), end_(x) {}
 IntervalDTO::IntervalDTO(const NAT &begin, const NAT &step, const NAT &end) 
   : begin_(begin), step_(step), end_(end) 
 {
-  if (end >= begin) {
-    int rem = fmod(end - begin, step);
-    end_ = end - rem;
-
-    if (begin_ == end_)
-      step_ = 1;
-  }
-
-  else {
-    begin_ = 1;
-    step_ = 1;
-    end_ = 0;
-  }
 }
 
 // Operators -------------------------------------------------------------------
@@ -54,6 +41,6 @@ std::ostream &operator<<(std::ostream &out, const IntervalDTO &i)
   return out;
 }
 
-} // namespace DTO
+} // namespace API
 
 } // namespace SBG

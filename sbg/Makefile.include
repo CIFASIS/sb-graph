@@ -16,14 +16,15 @@ CONVERTERS_ROOT := sbg/dto/converters
     $(SBG_ROOT)/map.cpp \
     $(SBG_ROOT)/pw_map.cpp \
     $(SBG_ROOT)/sbg.cpp \
-    $(SBG_ROOT)/sbg_algorithms.cpp \
-    $(DTO_ROOT)/interval_dto.cpp \
-    $(CONVERTERS_ROOT)/interval_dto_converter.cpp
+    $(SBG_ROOT)/sbg_algorithms.cpp
 
 include util/Makefile.include
+include sbg/dto/Makefile.include
 
 # Objects
 SBG_OBJ=$(addprefix $(BUILD_DIR)/, $(SBG_SRC:.cpp=.o))
+# Combine SBG and DTO objects
+SBG_OBJ += $(DTO_OBJ)
 
 create-folders::
 	@mkdir -p $(BUILD_DIR)/$(SBG_ROOT) \

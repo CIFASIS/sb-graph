@@ -30,6 +30,9 @@ IntervalDTO::IntervalDTO(const NAT &begin, const NAT &step, const NAT &end)
 {
 }
 
+// Set functions ---------------------------------------------------------------
+bool IntervalDTO::isEmpty() const { return end_ < begin_; }
+
 // Operators -------------------------------------------------------------------
 std::ostream &operator<<(std::ostream &out, const IntervalDTO &i) 
 {

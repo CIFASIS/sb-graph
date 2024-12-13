@@ -44,6 +44,11 @@ struct IntervalDTO {
   IntervalDTO(const NAT &x);
   IntervalDTO(const NAT &begin, const NAT &step, const NAT &end);
 
+  /**
+   * @brief Traditional set operations.
+   */
+  bool isEmpty() const;
+
   private:
   NAT begin_;
   NAT step_;

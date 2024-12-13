@@ -25,7 +25,6 @@
 #define SBG_DTO_MULTIDIM_INTERVAL_HPP
 
 #include "sbg/dto/interval_dto.hpp"
-#include <vector>
 
 namespace SBG {
 

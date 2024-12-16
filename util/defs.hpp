@@ -29,6 +29,7 @@
 #include <iostream>
 #include <optional>
 #include <variant>
+#include <vector>
 
 #include <boost/functional/hash.hpp>
 #include <boost/rational.hpp>

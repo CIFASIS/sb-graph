@@ -1,0 +1,9 @@
+# DTO Sources
+DTO_SRC := \
+    $(DTO_ROOT)/interval_dto.cpp \
+    $(DTO_ROOT)/multidim_inter_dto.cpp \
+    $(CONVERTERS_ROOT)/interval_dto_converter.cpp \
+    $(CONVERTERS_ROOT)/multidim_inter_dto_converter.cpp
+
+# DTO Objects
+DTO_OBJ=$(addprefix $(BUILD_DIR)/, $(DTO_SRC:.cpp=.o))

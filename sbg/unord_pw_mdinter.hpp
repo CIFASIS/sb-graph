@@ -1,6 +1,6 @@
 /** @file unord_pw_mdinter.hpp
 
- @brief <b>Piecewise  multi-dimensional interval</b>
+ @brief <b>Piecewise multi-dimensional interval</b>
 
  A piecewise multi-dimensional interval is a collection of non-empty disjoint
  intervals, and its corresponding set is the union of all composing mdis.

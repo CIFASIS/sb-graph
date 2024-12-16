@@ -1,6 +1,6 @@
 /** @file ord_pw_mdinter.hpp
 
- @brief <b>Piecewise uni-dimensional interval implementation</b>
+ @brief <b>Piecewise multi-dimensional interval implementation</b>
 
  A piecewise unidim interval is a collection of non-empty disjoint dense 
  (e.g. step = 1) intervals. The constructors aren't safe as they don't check if

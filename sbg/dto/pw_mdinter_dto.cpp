@@ -86,7 +86,7 @@ bool PWMDInterDTO::isEmpty() const { return pieces_.empty(); }
 
 std::ostream &operator<<(std::ostream &out, const PWMDInterDTO &pwi)
 {
-  out << pwi.pieces_; //TODO: check if this translates ok (it should use the operator<< for SetPieceDTOVector at the top of this file).
+  out << pwi.pieces_;
 
   return out;
 }

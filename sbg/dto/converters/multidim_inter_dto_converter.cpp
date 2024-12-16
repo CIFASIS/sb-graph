@@ -19,25 +19,19 @@
 
 #include "sbg/dto/converters/interval_dto_converter.hpp"
 #include "sbg/dto/converters/multidim_inter_dto_converter.hpp"
-#include "sbg/dto/interval_dto.hpp"
-#include "sbg/dto/multidim_inter_dto.hpp"
-#include "sbg/multidim_inter.hpp"
-#include "sbg/interval.hpp"
 
 namespace SBG {
 
 namespace API {
 
-SBG::LIB::MultiDimInter MultiDimInterDTOConverter::convertToMultiDimInter(const MultiDimInterDTO& dto) {
-  SBG::LIB::InterVector intervals;
-  intervals.reserve(dto.intervals_.size());
+SBG::LIB::SetPiece MultiDimInterDTOConverter::convertToSetPiece(const SetPieceDTO& dto) {
+  SBG::LIB::SetPiece set_piece;
 
-  std::transform(dto.intervals_.begin(), dto.intervals_.end(), intervals.begin(),
-                  [](const IntervalDTO& intervalDTO) {
-                      return IntervalDTOConverter::convertToInterval(intervalDTO);
-                  });
+  for (const IntervalDTO& interval_dto : dto.intervals_) {
+    set_piece.emplaceBack(IntervalDTOConverter::convertToInterval(interval_dto));
+  }
 
-  return SBG::LIB::MultiDimInter(intervals);
+  return set_piece;
 }
 
 } // namespace API

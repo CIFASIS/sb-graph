@@ -2,8 +2,8 @@
 
  @brief <b>IntervalDTO implementation</b>
 
- The IntervalDTO class is a Data Transfer Object (DTO) for parsing raw
- interval data, such as from JSON. It is designed for conversion into
+ The IntervalDTO class is a Data Transfer Object (DTO) for hanlding
+ raw data, such as from JSON. It is designed for conversion into
  concrete implementations like Interval via a dedicated converter.
 
  <hr>

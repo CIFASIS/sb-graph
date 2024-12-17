@@ -32,7 +32,7 @@ SBG::LIB::OrdSet PWMDInterDTOConverter::convertToOrdSet(const SetDTO& dto) {
   return ord_set;
 }
 
-SBG::LIB::UnordSet PWMDInterDTOConverter::convertToUnordSet(const PWMDInterDTO& dto) {
+SBG::LIB::UnordSet PWMDInterDTOConverter::convertToUnordSet(const SetDTO& dto) {
   SBG::LIB::UnordSet unord_set;
   for (const SetPieceDTO& set_piece_dto : dto.pieces_) {
     unord_set.emplace(SetPieceDTOConverter::convertToSetPiece(set_piece_dto));

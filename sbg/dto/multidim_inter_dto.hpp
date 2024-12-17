@@ -34,6 +34,8 @@ namespace SBG {
 
 namespace API {
 
+class MultiDimInterDTOConverter;
+
 using MD_NAT = Util::MD_NAT;
 using NAT = Util::NAT;
 

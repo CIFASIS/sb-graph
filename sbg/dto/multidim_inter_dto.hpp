@@ -2,6 +2,10 @@
 
  @brief <b>Multi-dimensional interval implementation</b>
 
+ The MultiDimInterDTO class is a Data Transfer Object (DTO) for handling 
+ raw data, such as from JSON. It is designed for conversion into
+ concrete implementations like SetPiece via a dedicated converter.
+
  <hr>
 
  This file is part of Set--Based Graph Library.
@@ -48,6 +52,11 @@ struct MultiDimInterDTO {
   void emplaceBack(IntervalDTO i);
   IntervalDTO &operator[](std::size_t n);
   const IntervalDTO &operator[](std::size_t n) const;
+
+  /**
+   * @brief Traditional set operations.
+   */
+  bool isEmpty() const;
 
   friend std::ostream &operator<<(std::ostream &out, const MultiDimInterDTO &i);
   friend class MultiDimInterDTOConverter;

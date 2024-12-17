@@ -2,9 +2,9 @@
 
  @brief <b>MultiDimInterDTOConverter implementation</b>
 
- The MultiDimInterDTOConverter provides the methods to convert an MultiDimInterDTO
+ The MultiDimInterDTOConverter is used to convert a MultiDimInterDTO (SetPieceDTO)
  to the corresponding multidimensional interval representation. Currently, it can
- convert to LIB::MultiDimInter, but more conversions can/will be added in the future.
+ convert to LIB::SetPiece, but more conversions can/will be added in the future.
 
  <hr>
 
@@ -38,14 +38,16 @@ namespace API {
 class MultiDimInterDTOConverter {
 public:
   /**
-   * @brief Converts a MultiDimInterDTO object to an actual multidimensional
+   * @brief Converts a SetPieceDTO object to an actual multidimensional
    * interval implementation (e.g., SBG::LIB::MultiDimInter).
    * 
-   * @param dto The MultiDimInterDTO object to convert.
-   * @return SBG::LIB::MultiDimInter The converted interval object.
+   * @param dto The SetPieceDTO object to convert.
+   * @return SBG::LIB::SetPiece The converted interval object.
    */
-  static SBG::LIB::MultiDimInter convertToMultiDimInter(const MultiDimInterDTO& dto);
+  static SBG::LIB::SetPiece convertToSetPiece(const SetPieceDTO& dto);
 };
+
+typedef MultiDimInterDTOConverter SetPieceDTOConverter;
 
 } // namespace API
 

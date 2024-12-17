@@ -17,21 +17,28 @@
 
  ******************************************************************************/
 
-#include "sbg/dto/converters/interval_dto_converter.hpp"
 #include "sbg/dto/converters/multidim_inter_dto_converter.hpp"
+#include "sbg/dto/converters/pw_mdinter_dto_converter.hpp"
 
 namespace SBG {
 
 namespace API {
-
-SBG::LIB::SetPiece MultiDimInterDTOConverter::convertToSetPiece(const SetPieceDTO& dto) {
-  SBG::LIB::SetPiece set_piece;
-
-  for (const IntervalDTO& interval_dto : dto.intervals_) {
-    set_piece.emplaceBack(IntervalDTOConverter::convertToInterval(interval_dto));
+SBG::LIB::OrdSet PWMDInterDTOConverter::convertToOrdSet(const SetDTO& dto) {
+  SBG::LIB::OrdSet ord_set;
+  for (const SetPieceDTO& set_piece_dto : dto.pieces_) {
+    ord_set.emplace(SetPieceDTOConverter::convertToSetPiece(set_piece_dto));
   }
 
-  return set_piece;
+  return ord_set;
+}
+
+SBG::LIB::UnordSet PWMDInterDTOConverter::convertToUnordSet(const SetDTO& dto) {
+  SBG::LIB::UnordSet unord_set;
+  for (const SetPieceDTO& set_piece_dto : dto.pieces_) {
+    unord_set.emplace(SetPieceDTOConverter::convertToSetPiece(set_piece_dto));
+  }
+
+  return unord_set;
 }
 
 } // namespace API

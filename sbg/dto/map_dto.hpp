@@ -38,8 +38,6 @@ namespace API {
 
 class SBGMapDTOConverter;
 
-//TODO: no need for template given that the map converter will convert the SetDTO to an actual UnordSet/OrdSet (BaseMap/CanonMap)
-//template<typename SetDTO>
 struct SBGMapDTO {
   member_class(SetDTO, dom);
   member_class(ExpDTO, exp);

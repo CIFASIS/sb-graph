@@ -60,6 +60,8 @@ const IntervalDTO &MultiDimInterDTO::operator[](std::size_t n) const
   return intervals_[n];
 }
 
+std::size_t MultiDimInterDTO::arity() const { return intervals_.size(); }
+
 bool MultiDimInterDTO::isEmpty() const { return intervals_.empty(); }
 
 std::ostream &operator<<(std::ostream &out, const MultiDimInterDTO &mdi)

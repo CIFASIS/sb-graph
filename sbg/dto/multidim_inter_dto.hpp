@@ -58,6 +58,7 @@ struct MultiDimInterDTO {
   /**
    * @brief Traditional set operations.
    */
+  std::size_t arity() const;
   bool isEmpty() const;
 
   friend std::ostream &operator<<(std::ostream &out, const MultiDimInterDTO &i);

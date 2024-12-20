@@ -55,6 +55,7 @@ struct PWMDInterDTO {
   PWMDInterDTO(SetPieceDTO mdi);
   PWMDInterDTO(SetPieceDTOVector container);
 
+  SetPieceDTOVector::iterator begin();
   std::size_t size() const;
   void emplace(SetPieceDTO mdi);
   void emplaceBack(SetPieceDTO mdi);

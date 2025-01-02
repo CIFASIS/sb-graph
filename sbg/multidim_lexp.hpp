@@ -1,6 +1,6 @@
 /** @file multidim_lexp.hpp
 
- @brief <b>Multi-dimensional inear expressions implementation</b>
+ @brief <b>Multi-dimensional linear expressions implementation</b>
 
  <hr>
 

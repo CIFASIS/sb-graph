@@ -36,6 +36,8 @@ namespace SBG {
 
 namespace API {
 
+class PWMDInterDTOConverter;
+
 // Container -------------------------------------------------------------------
 
 typedef std::vector<SetPieceDTO> SetPieceDTOVector;
@@ -53,6 +55,7 @@ struct PWMDInterDTO {
   PWMDInterDTO(SetPieceDTO mdi);
   PWMDInterDTO(SetPieceDTOVector container);
 
+  SetPieceDTOVector::iterator begin();
   std::size_t size() const;
   void emplace(SetPieceDTO mdi);
   void emplaceBack(SetPieceDTO mdi);
@@ -63,6 +66,7 @@ struct PWMDInterDTO {
   bool isEmpty() const;
 
   friend std::ostream &operator<<(std::ostream &out, const PWMDInterDTO &i);
+  friend class PWMDInterDTOConverter;
 };
 
 typedef PWMDInterDTO SetDTO;

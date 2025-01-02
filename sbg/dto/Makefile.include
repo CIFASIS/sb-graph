@@ -1,10 +1,18 @@
 # DTO Sources
 DTO_SRC := \
     $(DTO_ROOT)/interval_dto.cpp \
+    $(DTO_ROOT)/lexp_dto.cpp \
+    $(DTO_ROOT)/map_dto.cpp \
     $(DTO_ROOT)/multidim_inter_dto.cpp \
+    $(DTO_ROOT)/multidim_lexp_dto.cpp \
+    $(DTO_ROOT)/pw_map_dto.cpp \
     $(DTO_ROOT)/pw_mdinter_dto.cpp \
     $(CONVERTERS_ROOT)/interval_dto_converter.cpp \
+    $(CONVERTERS_ROOT)/lexp_dto_converter.cpp \
+    $(CONVERTERS_ROOT)/map_dto_converter.cpp \
     $(CONVERTERS_ROOT)/multidim_inter_dto_converter.cpp \
+    $(CONVERTERS_ROOT)/multidim_lexp_dto_converter.cpp \
+    $(CONVERTERS_ROOT)/pw_map_dto_converter.cpp \
     $(CONVERTERS_ROOT)/pw_mdinter_dto_converter.cpp
 
 # DTO Objects

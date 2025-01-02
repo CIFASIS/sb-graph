@@ -69,6 +69,8 @@ PWMDInterDTO::PWMDInterDTO(SetPieceDTOVector container) : pieces_() {
 
 member_imp(PWMDInterDTO, SetPieceDTOVector, pieces);
 
+SetPieceDTOVector::iterator PWMDInterDTO::begin() { return pieces_.begin(); }
+
 std::size_t PWMDInterDTO::size() const { return pieces_.size(); }
 
 void PWMDInterDTO::emplace(SetPieceDTO mdi)

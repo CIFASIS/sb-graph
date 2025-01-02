@@ -145,7 +145,6 @@ void createCanonDSBG(const std::string& document) //TODO: Document is a rapidjso
   //TODO: add node_set as graph V.
   _graph = _graph.addSV(node_set);
   //TODO: do the same with edges.
-  //TODO: save credentials
 
 
   //TODO: move this to a function probably.

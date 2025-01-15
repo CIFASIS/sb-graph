@@ -45,8 +45,6 @@ TEST_P(EvalTests, Eval)
   EXPECT_TRUE(result.good());
 }
 
-// @todo Restore both tests when fixed:
-// "map", "pw_map". See #iss-27
 const char* eval_program[] = {"arithmetic", "interval", "set", "lexp", "map", "pw_map"};
 
 INSTANTIATE_TEST_SUITE_P(EvalInst, EvalTests, testing::ValuesIn(eval_program));

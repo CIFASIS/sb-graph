@@ -125,36 +125,40 @@ SBGraph<Set> SBGraph<Set>::copy(unsigned int times) const
   PW map2_ith = map2_, map2_new = map2_ith;
   PW Emap_ith = Emap_, Emap_new = Emap_ith;
 
-  Util::MD_NAT maxv = V_ith.maxElem();
-  Util::MD_NAT maxV = Vmap_ith.image().maxElem();
-  Util::MD_NAT maxe = E_.maxElem();
-  Util::MD_NAT maxE = Emap_ith.image().maxElem();
+  if (!V_ith.isEmpty()) {
 
-  Exp off;
-  for (unsigned int j = 0; j < maxv.arity(); ++j) {
-    Util::RATIONAL o = Util::RATIONAL(maxv[j]) - Util::RATIONAL(maxe[j]);
-    off.emplaceBack(LExp(0, o));
-  }
+    Util::MD_NAT maxv = V_ith.maxElem();
+    auto dims = maxv.arity();
+    Util::MD_NAT maxV = Vmap_ith.isEmpty() ? Util::MD_NAT(dims, 0) : Vmap_ith.image().maxElem();
+    Util::MD_NAT maxe = E_.isEmpty() ? Util::MD_NAT(dims, 0) : E_.maxElem();
+    Util::MD_NAT maxE = Emap_ith.isEmpty() ? Util::MD_NAT(dims, 0) : Emap_ith.image().maxElem();
 
-  for (unsigned int j = 0; j < times; ++j) {
-    if (j > 0) {
-      V_new = V_new.concatenation(V_ith);
-      Vmap_new = Vmap_new.concatenation(Vmap_ith);
-      map1_new = map1_new.concatenation(map1_ith);
-      map2_new = map2_new.concatenation(map2_ith);
-      Emap_new = Emap_new.concatenation(Emap_ith);
+    Exp off;
+    for (unsigned int j = 0; j < dims; ++j) {
+      Util::RATIONAL o = Util::RATIONAL(maxv[j]) - Util::RATIONAL(maxe[j]);
+      off.emplaceBack(LExp(0, o));
     }
 
-    V_ith = V_ith.offset(maxv);
-    Vmap_ith = Vmap_ith.offsetDom(maxv);
-    Vmap_ith = Vmap_ith.offsetImage(maxV);
+    for (unsigned int j = 0; j < times; ++j) {
+      if (j > 0) {
+        V_new = V_new.concatenation(V_ith);
+        Vmap_new = Vmap_new.concatenation(Vmap_ith);
+        map1_new = map1_new.concatenation(map1_ith);
+        map2_new = map2_new.concatenation(map2_ith);
+        Emap_new = Emap_new.concatenation(Emap_ith);
+      }
 
-    map1_ith = map1_ith.offsetDom(maxe);
-    map1_ith = map1_ith.offsetImage(off);
-    map2_ith = map2_ith.offsetDom(maxe);
-    map2_ith = map2_ith.offsetImage(off);
-    Emap_ith = Emap_ith.offsetDom(maxe);
-    Emap_ith = Emap_ith.offsetImage(maxE);
+      V_ith = V_ith.offset(maxv);
+      Vmap_ith = Vmap_ith.offsetDom(maxv);
+      Vmap_ith = Vmap_ith.offsetImage(maxV);
+
+      map1_ith = map1_ith.offsetDom(maxe);
+      map1_ith = map1_ith.offsetImage(off);
+      map2_ith = map2_ith.offsetDom(maxe);
+      map2_ith = map2_ith.offsetImage(off);
+      Emap_ith = Emap_ith.offsetDom(maxe);
+      Emap_ith = Emap_ith.offsetImage(maxE);
+    }
   }
 
   SBGraph<Set> res(V_new, Vmap_new, map1_new, map2_new, Emap_new);

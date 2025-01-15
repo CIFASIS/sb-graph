@@ -694,54 +694,56 @@ PWMap<Set> SBGTopSort<Set>::calculate()
   auto begin = std::chrono::high_resolution_clock::now();
   PW mapB = dsbg().mapB(), mapD = dsbg().mapD(), Vmap = dsbg().Vmap(), smap;
   Set U = dsbg().V(), Nd = U.difference(mapB.image());
-  Util::MD_NAT vsucc = Nd.minElem();
-  Set SV, E = dsbg().E();
-  do {
-    Set Nd_vsucc = Nd.intersection(Vmap.preImage(Vmap.image(vsucc)));
-    Util::MD_NAT v = Nd.minElem();
-    if (!Nd_vsucc.isEmpty())
-      v = Nd_vsucc.minElem();
-    Set d(v);
-    Exp e = calculateExp(v, vsucc);
-    vsucc = v;
+  if (!Nd.isEmpty()) {
+    Util::MD_NAT vsucc = Nd.minElem();
+    Set SV, E = dsbg().E();
+    do {
+      Set Nd_vsucc = Nd.intersection(Vmap.preImage(Vmap.image(vsucc)));
+      Util::MD_NAT v = Nd.minElem();
+      if (!Nd_vsucc.isEmpty())
+        v = Nd_vsucc.minElem();
+      Set d(v);
+      Exp e = calculateExp(v, vsucc);
+      vsucc = v;
 
-    Set SVd = Vmap.image(d);
-    bool cond = SVd.intersection(SV).isEmpty();
-    if (!cond) {
-      Set dvs = Vmap.preImage(SVd);
-      for (const Map &map : smap.restrict(dvs)) {
-        if (e == map.exp()) {
-          d = dvs.difference(smap.dom());
-          break;
+      Set SVd = Vmap.image(d);
+      bool cond = SVd.intersection(SV).isEmpty();
+      if (!cond) {
+        Set dvs = Vmap.preImage(SVd);
+        for (const Map &map : smap.restrict(dvs)) {
+          if (e == map.exp()) {
+            d = dvs.difference(smap.dom());
+            break;
+          }
         }
       }
-    }
-    smap.emplaceBack(Map(d, e));
-    
-    Set Nsucc = U.difference(smap.dom());
-    Set S = smap.dom().difference(smap.preImage(Nsucc));
+      smap.emplaceBack(Map(d, e));
+      
+      Set Nsucc = U.difference(smap.dom());
+      Set S = smap.dom().difference(smap.preImage(Nsucc));
 
-    E = E.difference(mapD.preImage(S));
-    mapB = mapB.restrict(E);
-    mapD = mapD.restrict(E);
+      E = E.difference(mapD.preImage(S));
+      mapB = mapB.restrict(E);
+      mapD = mapD.restrict(E);
 
-    U = U.difference(S);
-    Nd = U.difference(mapB.image());
-    SV = SV.cup(Vmap.image(d));
-    if (S == smap.dom()) {
-      Set start = smap.dom().difference(smap.image());
-      if (!start.isEmpty())
-        vsucc = start.minElem(); 
-    }
+      U = U.difference(S);
+      Nd = U.difference(mapB.image());
+      SV = SV.cup(Vmap.image(d));
+      if (S == smap.dom()) {
+        Set start = smap.dom().difference(smap.image());
+        if (!start.isEmpty())
+          vsucc = start.minElem(); 
+      }
 
-    if (debug()) {
-      Util::SBG_LOG << "S: " << S << "\n";
-      Util::SBG_LOG << "U: " << U << "\n";
-      Util::SBG_LOG << "E: " << E << "\n";
-      Util::SBG_LOG << "Nd: " << Nd << "\n";
-      Util::SBG_LOG << "smap: " << smap << "\n\n";
-    }
-  } while (!U.isEmpty());
+      if (debug()) {
+        Util::SBG_LOG << "S: " << S << "\n";
+        Util::SBG_LOG << "U: " << U << "\n";
+        Util::SBG_LOG << "E: " << E << "\n";
+        Util::SBG_LOG << "Nd: " << Nd << "\n";
+        Util::SBG_LOG << "smap: " << smap << "\n\n";
+      }
+    } while (!U.isEmpty());
+  }
   auto end = std::chrono::high_resolution_clock::now();
 
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(

@@ -32,21 +32,9 @@ LIB::BaseMap EvalBaseMap::operator()(AST::Natural v) const
   return LIB::BaseMap(); 
 }
 
-LIB::BaseMap EvalBaseMap::operator()(AST::MDNatural v) const
-{ 
-  Util::ERROR("EvalBaseMap: trying to evaluate MDNatural ", v, "\n");
-  return LIB::BaseMap(); 
-}
-
 LIB::BaseMap EvalBaseMap::operator()(AST::Rational v) const
 { 
   Util::ERROR("EvalBaseMap: trying to evaluate Rational ", v, "\n");
-  return LIB::BaseMap(); 
-}
-
-LIB::BaseMap EvalBaseMap::operator()(AST::Boolean v) const
-{ 
-  Util::ERROR("EvalBaseMap: trying to evaluate Boolean ", v, "\n");
   return LIB::BaseMap(); 
 }
 

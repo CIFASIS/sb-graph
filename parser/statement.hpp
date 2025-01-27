@@ -49,7 +49,7 @@ struct StmRule : qi::grammar<Iterator, Skipper<Iterator>
   qi::rule<Iterator, Skipper<Iterator>, AST::Statement()> cfg_dims;
   qi::rule<Iterator, Skipper<Iterator>, AST::Statement()> assign;
   qi::rule<Iterator, Skipper<Iterator>, AST::Statement()> stm;
-  qi::rule<Iterator, Skipper<Iterator>, AST::StatementList()> stms_comments;
+  qi::rule<Iterator, Skipper<Iterator>, AST::StatementList()> stms;
 
   Iterator &it;
 };

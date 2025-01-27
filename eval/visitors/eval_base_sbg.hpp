@@ -37,9 +37,7 @@ struct EvalBaseSBG : public boost::static_visitor<LIB::BaseSBG> {
   EvalBaseSBG(VarEnv env);
 
   LIB::BaseSBG operator()(AST::Natural v) const;
-  LIB::BaseSBG operator()(AST::MDNatural v) const;
   LIB::BaseSBG operator()(AST::Rational v) const;
-  LIB::BaseSBG operator()(AST::Boolean v) const;
   LIB::BaseSBG operator()(Util::VariableName v) const;
   LIB::BaseSBG operator()(AST::UnaryOp v) const;
   LIB::BaseSBG operator()(AST::BinOp v) const;

@@ -36,9 +36,7 @@ struct EvalNat : public boost::static_visitor<Util::NAT> {
   EvalNat(VarEnv env);
 
   Util::NAT operator()(AST::Natural v) const;
-  Util::NAT operator()(AST::MDNatural v) const;
   Util::NAT operator()(AST::Rational v) const;
-  Util::NAT operator()(AST::Boolean v) const;
   Util::NAT operator()(Util::VariableName v) const;
   Util::NAT operator()(AST::UnaryOp v) const;
   Util::NAT operator()(AST::BinOp v) const;

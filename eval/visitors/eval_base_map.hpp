@@ -38,9 +38,7 @@ struct EvalBaseMap : public boost::static_visitor<LIB::BaseMap> {
   EvalBaseMap(VarEnv env);
 
   LIB::BaseMap operator()(AST::Natural v) const;
-  LIB::BaseMap operator()(AST::MDNatural v) const;
   LIB::BaseMap operator()(AST::Rational v) const;
-  LIB::BaseMap operator()(AST::Boolean v) const;
   LIB::BaseMap operator()(Util::VariableName v) const;
   LIB::BaseMap operator()(AST::UnaryOp v) const;
   LIB::BaseMap operator()(AST::BinOp v) const;

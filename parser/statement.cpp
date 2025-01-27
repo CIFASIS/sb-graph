@@ -34,22 +34,22 @@ namespace SBG {
 namespace Parser {
 
 template <typename Iterator>
-StmRule<Iterator>::StmRule(Iterator &it) : 
-  StmRule::base_type(stms_comments), 
-  it(it), 
-  expr(it),
-  ASSIGN("="),
-  NMBR_DIMS("dims =") 
+StmRule<Iterator>::StmRule(Iterator &it) : StmRule::base_type(stms) 
+  , it(it) 
+  , expr(it)
+  , ASSIGN("=")
+  , NMBR_DIMS("dims =") 
 {
   cfg_dims = (NMBR_DIMS >> qi::uint_)
     [qi::_val = phx::construct<AST::ConfigDims>(qi::_1)];
 
-  assign = (expr.ident >> ASSIGN >> expr.expr)
+  assign = (expr.ident >> ASSIGN >> expr.arithmetic_expr)
     [qi::_val = phx::construct<AST::Assign>(qi::_1, qi::_2)];
 
-  stm = cfg_dims | assign;
+  stm = assign >> expr.SEMI;
 
-  stms_comments = *(expr.comment | stm);
+  stms = -(cfg_dims[phx::push_back(qi::_val, qi::_1)] >> expr.SEMI)
+    >> *(stm[phx::push_back(qi::_val, qi::_1)]);
 };
 
 template struct StmRule<StrIt>;

@@ -45,45 +45,45 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   ExprRule(Iterator &it);
 
   // Rules with no skip
-  qi::rule<Iterator> comment, TRUE, FALSE;
+  qi::rule<Iterator> comment;
   qi::rule<Iterator, AST::Name()> ident;
-  qi::rule<Iterator, AST::Boolean()> boolean;
+  qi::rule<Iterator, AST::Name()> func_name;
 
   // Operators tokens
   qi::rule<Iterator> OPAREN, CPAREN, OBRACKET, CBRACKET, OBRACE, CBRACE, COLON
-    , RAT, COMA, ARROW, OANGLE, CANGLE, DIMS, PIPE, SEMI, V, VMAP, MAP1, MAP2
-    , EMAP, MAPB, MAPD;
+    , RAT, COMA, DIV, ARROW, OANGLE, CANGLE, CARTPROD, SLO, VAR, ADD, SUB, PIPE
+    , SEMI, V, VMAP, MAP1, MAP2, EMAP, MAPB, MAPD;
 
   // Other rules
-  qi::rule<Iterator, Skipper<Iterator>, Util::MD_NAT()> md_nat;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Rational> rational;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Call()> call_exp;
-  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> function_call_args;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> primary;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> factor;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> term;
+  qi::rule<Iterator, Skipper<Iterator>, Util::NAT()> nat;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> int_expr;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Rational> rat_legacy;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> rat_primary;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> rat_term;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> arithmetic_expr;
 
-
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> nat_primary;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> nat_factor;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> nat_term;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> nat_expr;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> interval;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> interval_unary;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> interval_binary;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> interval_expr;
-  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> inter_list;
 
   qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> inter_times;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> md_inter;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> mdi_unary;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> mdi_binary;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> mdi_expr;
-  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> mdi_list;
 
+  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> mdi_list;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> set;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> set_unary;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> set_binary;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> set_expr;
 
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> numeric;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp_left;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp_binary;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp_expr;
@@ -93,19 +93,19 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> mdlexp_binary;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> mdlexp_expr;
 
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbgmap;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> map_expr;
-  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> map_list;
 
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> pwl;
+  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> map_list;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> pwl_expr;
 
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> dsbg;
 
+  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> function_call_args;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Call()> call_expr;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> expr;
   qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> expr_list;
-  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> exprs_comments;
+  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> exprs;
 
   Iterator &it;
 };

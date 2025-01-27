@@ -36,9 +36,7 @@ struct EvalUnordSet : public boost::static_visitor<LIB::UnordSet> {
   EvalUnordSet(VarEnv env);
 
   LIB::UnordSet operator()(AST::Natural v) const;
-  LIB::UnordSet operator()(AST::MDNatural v) const;
   LIB::UnordSet operator()(AST::Rational v) const;
-  LIB::UnordSet operator()(AST::Boolean v) const;
   LIB::UnordSet operator()(Util::VariableName v) const;
   LIB::UnordSet operator()(AST::UnaryOp v) const;
   LIB::UnordSet operator()(AST::BinOp v) const;

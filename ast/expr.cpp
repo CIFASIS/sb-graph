@@ -56,6 +56,10 @@ std::ostream &operator<<(std::ostream &out, const Op &op)
       out << "*";
       break;
 
+    case Op::div:
+      out << "/";
+      break;
+
     case Op::expo:
       out << "^";
       break;
@@ -623,11 +627,11 @@ bool SBG::operator==(const SBG &other) const
 
 std::ostream &operator<<(std::ostream &out, const SBG &g)
 {
-  out << "V = " << g.V() << ";\n";
-  out << "Vmap = " << g.Vmap() << ";\n\n";
-  out << "map1 = " << g.map1() << ";\n";
-  out << "map2 = " << g.map2() << ";\n";
-  out << "Emap = " << g.Emap() << ";\n";
+  out << "V: " << g.V() << "\n";
+  out << "Vmap: " << g.Vmap() << "\n\n";
+  out << "map1: " << g.map1() << "\n";
+  out << "map2: " << g.map2() << "\n";
+  out << "Emap: " << g.Emap() << "\n";
 
   return out;
 }
@@ -652,11 +656,11 @@ bool DSBG::operator==(const DSBG &other) const
 
 std::ostream &operator<<(std::ostream &out, const DSBG &g)
 {
-  out << "V = " << g.V() << ";\n";
-  out << "Vmap = " << g.Vmap() << ";\n\n";
-  out << "mapB = " << g.mapB() << ";\n";
-  out << "mapD = " << g.mapD() << ";\n";
-  out << "Emap = " << g.Emap() << ";\n";
+  out << "V: " << g.V() << "\n";
+  out << "Vmap: " << g.Vmap() << "\n\n";
+  out << "mapB: " << g.mapB() << "\n";
+  out << "mapD: " << g.mapD() << "\n";
+  out << "Emap: " << g.Emap() << "\n";
 
   return out;
 }

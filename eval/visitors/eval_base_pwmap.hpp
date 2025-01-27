@@ -37,9 +37,7 @@ struct EvalBasePWMap : public boost::static_visitor<LIB::BasePWMap> {
   EvalBasePWMap(VarEnv env);
 
   LIB::BasePWMap operator()(AST::Natural v) const;
-  LIB::BasePWMap operator()(AST::MDNatural v) const;
   LIB::BasePWMap operator()(AST::Rational v) const;
-  LIB::BasePWMap operator()(AST::Boolean v) const;
   LIB::BasePWMap operator()(Util::VariableName v) const;
   LIB::BasePWMap operator()(AST::UnaryOp v) const;
   LIB::BasePWMap operator()(AST::BinOp v) const;

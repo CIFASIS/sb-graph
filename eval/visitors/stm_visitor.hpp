@@ -38,7 +38,7 @@ struct StmVisitor : public boost::static_visitor<void> {
   StmVisitor();
  
   VarEnv env();
-  void operator()(AST::Assign asgn) const; 
+  void operator()(AST::Assign assgn) const;
   void operator()(AST::ConfigDims cfg) const; 
 
   private:

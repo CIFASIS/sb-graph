@@ -37,8 +37,6 @@ namespace AST {
 
 typedef std::string Name;
 typedef Util::NAT Natural;
-typedef Util::MD_NAT MDNatural;
-typedef bool Boolean;
 struct Rational;
 struct UnaryOp;
 struct BinOp;
@@ -61,7 +59,7 @@ struct PWLMap;
 struct SBG;
 struct DSBG;
 
-typedef boost::variant<Natural, MDNatural, Boolean, Util::VariableName,
+typedef boost::variant<Natural, Util::VariableName,
   boost::recursive_wrapper<Rational>,
   boost::recursive_wrapper<UnaryOp>, 
   boost::recursive_wrapper<BinOp>, 
@@ -114,7 +112,7 @@ struct UnaryOp {
 };
 std::ostream &operator<<(std::ostream &out, const UnaryOp &uop);
 
-enum class Op { add, sub, mult, expo };
+enum class Op { add, sub, mult, div, expo };
 std::ostream &operator<<(std::ostream &out, const Op &op);
 
 struct BinOp {

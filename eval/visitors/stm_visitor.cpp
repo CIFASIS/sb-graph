@@ -27,10 +27,10 @@ StmVisitor::StmVisitor() : env_() {}
 
 VarEnv StmVisitor::env() { return env_; }
 
-void StmVisitor::operator()(AST::Assign asgn) const 
-{ 
+void StmVisitor::operator()(AST::Assign assgn) const 
+{
   EvalExpression eval_expr(env_);
-  env_.insert(asgn.l(), boost::apply_visitor(eval_expr, asgn.r()));
+  env_.insert(assgn.l(), boost::apply_visitor(eval_expr, assgn.r()));
 
   return;
 }

@@ -57,7 +57,7 @@ PWMap<Set> connectedComponents(SBGraph<Set> g)
       }
     } while (rmap != old_rmap); 
 
-    return rmap;
+    return rmap.compact();
   }
 
   return PWMap<Set>();
@@ -440,7 +440,7 @@ MatchInfo<Set> SBGMatching<Set>::calculate()
   auto end = std::chrono::high_resolution_clock::now();
 
   if (debug())
-    Util::SBG_LOG << "minReachable: " << matched_E() << "\n\n";
+    Util::SBG_LOG << "minReachable: " << matched_E().compact() << "\n\n";
 
   Util::SBG_LOG << MatchInfo(matched_E().compact(), fullyMatchedU()) << "\n\n";
 
@@ -496,7 +496,7 @@ template<typename Set>
 PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
 {
   if (debug())
-    std::cout << "Min reach graph:\n" << dg << "\n\n";
+    Util::SBG_LOG << "Min reach graph:\n" << dg << "\n\n";
 
   Set V = dg.V(), E = dg.E();
   PW mapB = dg.mapB(), mapD = dg.mapD(), subE_map = dg.subE_map();
@@ -515,6 +515,7 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
 
       PW new_rmap = mapB.minAdjMap(ermapD);
       rmap = rmap.minMap(new_rmap).combine(rmap);
+
       if (debug())
         Util::SBG_LOG << "rmap before rec: " << rmap << "\n\n";
 
@@ -551,7 +552,7 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
                 Set ith = end;
                 Util::NAT dist = 0;
                 // Calculate distance for vertices in same_rep that reach reps
-                for (; dg.Vmap().restrict(dmap.dom()).sharedImage().isEmpty();) {
+                for (; dmap.dom().intersection(Vc.intersection(VR)).isEmpty();) {
                   Set dom = ith.difference(dmap.dom());
                   Exp exp(Util::MD_NAT(copies, dist));
                   dmap.emplaceBack(Map(dom, exp));
@@ -588,8 +589,9 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
             }
           }
         }
-        rmap = rec_rmap.combine(rmap).compact();
-        rmap = rmap.mapInf();
+        PW rmap_plus = rec_rmap.combine(rmap);
+        rmap_plus = rmap_plus.mapInf();
+        rmap = rmap.minMap(rmap_plus).compact();
 
         if (debug())
           Util::SBG_LOG << "rmap after rec: " << rmap << "\n\n";
@@ -611,6 +613,7 @@ PWMap<Set> SBGSCC<Set>::sccStep()
     V(), Vmap()
     , mapB().restrict(E()), mapD().restrict(E()), Emap().restrict(E()).compact()
   );
+  aux_dsbg.set_subE_map(dsbg().subE_map().restrict(E()));
   PW new_rmap = sccMinReach(aux_dsbg);
   if (debug())
     Util::SBG_LOG << "SCC new_rmap: " << new_rmap << "\n";
@@ -655,7 +658,7 @@ PWMap<Set> SBGSCC<Set>::calculate()
   if (debug())
     Util::SBG_LOG << "SCC result: " << rmap.compact() << "\n\n";
 
-  return rmap;
+  return rmap.compact();
 }
 
 // -----------------------------------------------------------------------------
@@ -877,7 +880,7 @@ Set SBGCutSet<Set>::calculate()
   );
   Util::SBG_LOG << "Total vertex cut set exec time: " << total.count() << " [μs]\n\n"; 
 
-  return newD;
+  return newD.compact();
 }
 
 // Template instantiations -----------------------------------------------------

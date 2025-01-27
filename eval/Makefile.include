@@ -23,6 +23,7 @@ EVAL_SRC := \
     $(PARSER_DIR)/sbg_program.cpp \
     $(VISIT_DIR)/eval_nat.cpp \
     $(VISIT_DIR)/eval_natbt.cpp \
+    $(VISIT_DIR)/eval_int.cpp \
     $(VISIT_DIR)/eval_rat.cpp \
     $(VISIT_DIR)/eval_interval.cpp \
     $(VISIT_DIR)/eval_mdi.cpp \

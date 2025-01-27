@@ -32,21 +32,9 @@ LIB::CanonPWMap EvalCanonPWMap::operator()(AST::Natural v) const
   return LIB::CanonPWMap(); 
 }
 
-LIB::CanonPWMap EvalCanonPWMap::operator()(AST::MDNatural v) const
-{
-  Util::ERROR("EvalCanonPWMap: trying to evaluate MDNatural ", v, "\n");
-  return LIB::CanonPWMap(); 
-}
-
 LIB::CanonPWMap EvalCanonPWMap::operator()(AST::Rational v) const
 {
   Util::ERROR("EvalCanonPWMap: trying to evaluate Rational ", v, "\n");
-  return LIB::CanonPWMap(); 
-}
-
-LIB::CanonPWMap EvalCanonPWMap::operator()(AST::Boolean v) const
-{
-  Util::ERROR("EvalCanonPWMap: trying to evaluate Boolean ", v, "\n");
   return LIB::CanonPWMap(); 
 }
 

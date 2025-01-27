@@ -27,6 +27,7 @@
 #define AST_VISITOR_OPTCONDS
 
 #include "eval/visitors/eval_interval.hpp"
+#include "eval/visitors/eval_le.hpp"
 
 namespace SBG {
 
@@ -38,9 +39,7 @@ struct OptConds : public boost::static_visitor<bool> {
   OptConds(VarEnv env);
 
   bool operator()(AST::Natural v) const;
-  bool operator()(AST::MDNatural v) const;
   bool operator()(AST::Rational v) const;
-  bool operator()(AST::Boolean v) const;
   bool operator()(Util::VariableName v) const;
   bool operator()(AST::UnaryOp v) const;
   bool operator()(AST::BinOp v) const;

@@ -54,13 +54,13 @@ member_imp_temp(template<typename Set>, SBGraph<Set>, PWMap<Set>, subE_map);
 template<typename Set>
 std::ostream &operator<<(std::ostream &out, const SBGraph<Set> &g)
 {
-  out << "V = " << g.V() << ";\n";
-  out << "Vmap = " << g.Vmap() << ";\n\n";
-  out << "E = " << g.E() << ";\n";
-  out << "map1 = " << g.map1() << ";\n";
-  out << "map2 = " << g.map2() << ";\n";
-  out << "Emap = " << g.Emap() << ";\n";
-  out << "sub_Emap = " << g.subE_map() << ";\n";
+  out << "V: " << g.V() << "\n";
+  out << "Vmap: " << g.Vmap() << "\n\n";
+  out << "E: " << g.E() << "\n";
+  out << "map1: " << g.map1() << "\n";
+  out << "map2: " << g.map2() << "\n";
+  out << "Emap: " << g.Emap() << "\n";
+  out << "sub_Emap: " << g.subE_map() << "\n";
 
   return out;
 }
@@ -196,13 +196,13 @@ member_imp_temp(template<typename Set>, DSBGraph<Set>, PWMap<Set>, subE_map);
 template<typename Set>
 std::ostream &operator<<(std::ostream &out, const DSBGraph<Set> &g)
 {
-  out << "V = " << g.V() << ";\n";
-  out << "Vmap = " << g.Vmap() << ";\n\n";
-  out << "E = " << g.E() << ";\n";
-  out << "mapB = " << g.mapB() << ";\n";
-  out << "mapD = " << g.mapD() << ";\n";
-  out << "Emap = " << g.Emap() << ";\n";
-  out << "subE_map = " << g.subE_map() << ";\n";
+  out << "V: " << g.V() << "\n";
+  out << "Vmap: " << g.Vmap() << "\n\n";
+  out << "E: " << g.E() << "\n";
+  out << "mapB: " << g.mapB() << "\n";
+  out << "mapD: " << g.mapD() << "\n";
+  out << "Emap: " << g.Emap() << "\n";
+  out << "subE_map: " << g.subE_map() << "\n";
 
   return out;
 }

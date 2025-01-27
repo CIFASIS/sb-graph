@@ -36,9 +36,7 @@ struct EvalOrdSet : public boost::static_visitor<LIB::OrdSet> {
   EvalOrdSet(VarEnv env);
 
   LIB::OrdSet operator()(AST::Natural v) const;
-  LIB::OrdSet operator()(AST::MDNatural v) const;
   LIB::OrdSet operator()(AST::Rational v) const;
-  LIB::OrdSet operator()(AST::Boolean v) const;
   LIB::OrdSet operator()(Util::VariableName v) const;
   LIB::OrdSet operator()(AST::UnaryOp v) const;
   LIB::OrdSet operator()(AST::BinOp v) const;

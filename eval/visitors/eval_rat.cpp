@@ -31,25 +31,11 @@ Util::RATIONAL EvalRat::operator()(AST::Natural v) const
   return Util::RATIONAL(v, 1);
 }
 
-Util::RATIONAL EvalRat::operator()(AST::MDNatural v) const
-{
-  Util::ERROR("EvalRat: trying to evaluate MDNatural ", v, "\n");
-  return Util::RATIONAL(0, 1);
-}
-
 Util::RATIONAL EvalRat::operator()(AST::Rational v) const
 {
-  EvalNat visit_nat(env_);
-  return Util::RATIONAL(boost::apply_visitor(visit_nat, v.num())
-                        , boost::apply_visitor(visit_nat, v.den()));
-}
-
-Util::RATIONAL EvalRat::operator()(AST::Boolean v) const 
-{ 
-  if (v)
-    return Util::RATIONAL(1, 1);
-
-  return Util::RATIONAL(0, 1); 
+  EvalInt visit_int(env_);
+  return Util::RATIONAL(boost::apply_visitor(visit_int, v.num())
+                        , boost::apply_visitor(visit_int, v.den()));
 }
 
 Util::RATIONAL EvalRat::operator()(Util::VariableName v) const 
@@ -78,9 +64,6 @@ Util::RATIONAL EvalRat::operator()(Util::VariableName v) const
 
 Util::RATIONAL EvalRat::operator()(AST::UnaryOp v) const 
 { 
-  std::stringstream ss;
-  ss << v.op();
-
   EvalRat visit_rat(env_);
   Util::RATIONAL result = boost::apply_visitor(visit_rat, v.expr());
   switch (v.op()) {

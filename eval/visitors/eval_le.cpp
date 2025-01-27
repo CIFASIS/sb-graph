@@ -32,21 +32,9 @@ LIB::LExp EvalLE::operator()(AST::Natural v) const
   return LIB::LExp(); 
 }
 
-LIB::LExp EvalLE::operator()(AST::MDNatural v) const
-{
-  Util::ERROR("EvalLE: trying to evaluate MDNatural ", v, "\n");
-  return LIB::LExp(); 
-}
-
 LIB::LExp EvalLE::operator()(AST::Rational v) const
 {
   Util::ERROR("EvalLE: trying to evaluate Rational ", v, "\n");
-  return LIB::LExp(); 
-}
-
-LIB::LExp EvalLE::operator()(AST::Boolean v) const
-{
-  Util::ERROR("EvalLE: trying to evaluate Boolean ", v, "\n");
   return LIB::LExp(); 
 }
 

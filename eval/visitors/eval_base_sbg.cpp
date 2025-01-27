@@ -32,21 +32,9 @@ LIB::BaseSBG EvalBaseSBG::operator()(AST::Natural v) const
   return LIB::BaseSBG(); 
 }
 
-LIB::BaseSBG EvalBaseSBG::operator()(AST::MDNatural v) const
-{
-  Util::ERROR("EvalBaseSBG: trying to evaluate MDNatural ", v, "\n");
-  return LIB::BaseSBG(); 
-}
-
 LIB::BaseSBG EvalBaseSBG::operator()(AST::Rational v) const
 {
   Util::ERROR("EvalBaseSBG: trying to evaluate Rational ", v, "\n");
-  return LIB::BaseSBG(); 
-}
-
-LIB::BaseSBG EvalBaseSBG::operator()(AST::Boolean v) const
-{
-  Util::ERROR("EvalBaseSBG: trying to evaluate Boolean ", v, "\n");
   return LIB::BaseSBG(); 
 }
 

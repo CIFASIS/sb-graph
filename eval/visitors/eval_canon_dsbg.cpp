@@ -32,21 +32,9 @@ LIB::CanonDSBG EvalCanonDSBG::operator()(AST::Natural v) const
   return LIB::CanonDSBG(); 
 }
 
-LIB::CanonDSBG EvalCanonDSBG::operator()(AST::MDNatural v) const
-{
-  Util::ERROR("EvalCanonDSBG: trying to evaluate MDNatural ", v, "\n");
-  return LIB::CanonDSBG(); 
-}
-
 LIB::CanonDSBG EvalCanonDSBG::operator()(AST::Rational v) const
 {
   Util::ERROR("EvalCanonDSBG: trying to evaluate Rational ", v, "\n");
-  return LIB::CanonDSBG(); 
-}
-
-LIB::CanonDSBG EvalCanonDSBG::operator()(AST::Boolean v) const
-{
-  Util::ERROR("EvalCanonDSBG: trying to evaluate Boolean ", v, "\n");
   return LIB::CanonDSBG(); 
 }
 

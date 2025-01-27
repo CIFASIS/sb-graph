@@ -309,28 +309,13 @@ EvalExpression::EvalExpression(unsigned int nmbr_dims, bool opt_conds
 
 ExprBaseType EvalExpression::operator()(AST::Natural v) const
 {
-  Util::ERROR_UNLESS(nmbr_dims_ == 1
-    ,"EvalExpr: nmbr_dims_: ", nmbr_dims_, " not 1\n");
 
   return Util::MD_NAT(v);
-}
-
-ExprBaseType EvalExpression::operator()(AST::MDNatural v) const
-{
-  Util::ERROR_UNLESS(nmbr_dims_ == v.arity() || 0 == v.arity()
-    ,"EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", v, ")\n");
-
-  return v;
 }
 
 ExprBaseType EvalExpression::operator()(AST::Rational v) const
 {
   return boost::apply_visitor(EvalRat(env_), AST::Expr(v));
-}
-
-ExprBaseType EvalExpression::operator()(AST::Boolean v) const
-{
-  return Util::MD_NAT(v);
 }
 
 ExprBaseType EvalExpression::operator()(Util::VariableName v) const 
@@ -347,29 +332,60 @@ ExprBaseType EvalExpression::operator()(AST::UnaryOp v) const
 {
   ExprBaseType x = boost::apply_visitor(*this, v.expr());
 
-  if (std::holds_alternative<Util::MD_NAT>(x)) {
-    auto x_value = std::get<Util::MD_NAT>(x); 
+  switch (v.op()) {
+    case AST::UnOp::neg: 
+      if (std::holds_alternative<Util::MD_NAT>(x)) {
+        Util::MD_NAT x_value = std::get<Util::MD_NAT>(x); 
 
-    Util::ERROR_UNLESS(nmbr_dims_ == x_value.arity() || 0 == x_value.arity()
-      ,"EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", x_value, ")\n");
-   
-    return Util::MD_NAT(boost::apply_visitor(EvalNat(env_), AST::Expr(v)));
+        Util::ERROR_UNLESS(1 == x_value.arity()
+          ,"EvalExpr: UnaryOp neg only supported for unidimensional values, "
+          ,"arity(", x_value, ") = ", x_value.arity(), "\n");
+       
+        return Util::RATIONAL(x_value[0], -1);
+      }
+      else if (std::holds_alternative<Util::RATIONAL>(x)) {
+        return std::get<Util::RATIONAL>(x)*(-1);
+      }
+
+      Util::ERROR("EvalExpression: incompatible application of UnaryOp neg ", v, "\n");
+      return Util::MD_NAT(0);
+      break;
+
+    default:
+      Util::ERROR("EvalExpression: UnaryOp ", v.op(), " unsupported\n");
+      return Util::MD_NAT(0);
   }
 
-  return boost::apply_visitor(EvalRat(env_), AST::Expr(v));
+  return Util::MD_NAT(0); 
 }
 
 ExprBaseType EvalExpression::operator()(AST::BinOp v) const
 { 
-  ExprBaseType xl = boost::apply_visitor(*this, v.left());
-  ExprBaseType xr = boost::apply_visitor(*this, v.right());
-  bool r1 = std::holds_alternative<Util::RATIONAL>(xl);
-  bool r2 = std::holds_alternative<Util::RATIONAL>(xr);
+  ExprBaseType vl = boost::apply_visitor(*this, v.left());
+  ExprBaseType vr = boost::apply_visitor(*this, v.right());
+  bool n1 = std::holds_alternative<Util::MD_NAT>(vl);
+  bool n2 = std::holds_alternative<Util::MD_NAT>(vr);
 
-  if (!r1 && !r2)
-    return Util::MD_NAT(boost::apply_visitor(EvalNat(env_), AST::Expr(v)));
+  EvalRat visit_rat(env_);
+  if (n1 && n2) {
+    EvalNat visit_nat(env_);
+    switch (v.op()) {
+      case AST::Op::sub: {
+        Util::NAT xl = boost::apply_visitor(visit_nat, v.left());
+        Util::NAT xr = boost::apply_visitor(visit_nat, v.right());
+        if (xl >= xr)
+          return Util::MD_NAT(xl - xr);
+        else
+          return boost::apply_visitor(visit_rat, AST::Expr(v));
+        break;
+      }
 
-  return boost::apply_visitor(EvalRat(env_), AST::Expr(v));
+      default:
+        return boost::apply_visitor(visit_rat, AST::Expr(v));
+    } 
+  }
+
+  return boost::apply_visitor(visit_rat, AST::Expr(v));
 }
 
 ExprBaseType EvalExpression::operator()(AST::Call v) const
@@ -695,8 +711,6 @@ ExprBaseType EvalExpression::operator()(AST::InterUnaryOp v) const
       return Util::MD_NAT(i.cardinal());
 
     default:
-      std::stringstream ss;
-      ss << v.op();
       Util::ERROR("EvalExpression: InterUnaryOp ", v.op(), " unsupported\n");
       return Util::MD_NAT(0);
   }

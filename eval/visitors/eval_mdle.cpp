@@ -32,21 +32,9 @@ LIB::Exp EvalMDLE::operator()(AST::Natural v) const
   return LIB::Exp(); 
 }
 
-LIB::Exp EvalMDLE::operator()(AST::MDNatural v) const
-{
-  Util::ERROR("EvalMDLE: trying to evaluate MDNatural ", v, "\n");
-  return LIB::Exp(); 
-}
-
 LIB::Exp EvalMDLE::operator()(AST::Rational v) const
 {
   Util::ERROR("EvalMDLE: trying to evaluate Rational ", v, "\n");
-  return LIB::Exp(); 
-}
-
-LIB::Exp EvalMDLE::operator()(AST::Boolean v) const
-{
-  Util::ERROR("EvalMDLE: trying to evaluate Boolean ", v, "\n");
   return LIB::Exp(); 
 }
 

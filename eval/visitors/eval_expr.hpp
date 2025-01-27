@@ -47,9 +47,7 @@ struct EvalExpression : public boost::static_visitor<ExprBaseType> {
     , bool debug);
 
   ExprBaseType operator()(AST::Natural v) const;
-  ExprBaseType operator()(AST::MDNatural v) const;
   ExprBaseType operator()(AST::Rational v) const;
-  ExprBaseType operator()(AST::Boolean v) const;
   ExprBaseType operator()(Util::VariableName v) const;
   ExprBaseType operator()(AST::UnaryOp v) const;
   ExprBaseType operator()(AST::BinOp v) const;

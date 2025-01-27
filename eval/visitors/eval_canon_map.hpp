@@ -38,9 +38,7 @@ struct EvalCanonMap : public boost::static_visitor<LIB::CanonMap> {
   EvalCanonMap(VarEnv env);
 
   LIB::CanonMap operator()(AST::Natural v) const;
-  LIB::CanonMap operator()(AST::MDNatural v) const;
   LIB::CanonMap operator()(AST::Rational v) const;
-  LIB::CanonMap operator()(AST::Boolean v) const;
   LIB::CanonMap operator()(Util::VariableName v) const;
   LIB::CanonMap operator()(AST::UnaryOp v) const;
   LIB::CanonMap operator()(AST::BinOp v) const;

@@ -32,21 +32,9 @@ LIB::OrdSet EvalOrdSet::operator()(AST::Natural v) const
   return LIB::OrdSet(); 
 }
 
-LIB::OrdSet EvalOrdSet::operator()(AST::MDNatural v) const
-{
-  Util::ERROR("EvalOrdSet: trying to evaluate MDNatural ", v, "\n");
-  return LIB::OrdSet(); 
-}
-
 LIB::OrdSet EvalOrdSet::operator()(AST::Rational v) const
 {
   Util::ERROR("EvalOrdSet: trying to evaluate Rational ", v, "\n");
-  return LIB::OrdSet(); 
-}
-
-LIB::OrdSet EvalOrdSet::operator()(AST::Boolean v) const
-{
-  Util::ERROR("EvalOrdSet: trying to evaluate Boolean ", v, "\n");
   return LIB::OrdSet(); 
 }
 

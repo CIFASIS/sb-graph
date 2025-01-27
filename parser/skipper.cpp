@@ -23,12 +23,12 @@ namespace SBG {
 
 namespace Parser {
 
-template <typename Iterator>
+template<typename Iterator>
 Skipper<Iterator>::Skipper() : Skipper::base_type(start) {
-  single_line_comment = "//" >> *(qi::char_ - qi::eol) >> (qi::eol | qi::eoi);
+  single_line_comment = "//" >> *(qi::char_ - qi::eol);
   block_comment = "/*" >> *(block_comment | qi::char_ - "*/") > "*/";
 
-  start = asc::space | single_line_comment | block_comment;
+  start = qi::space | single_line_comment | block_comment;
 };
 
 template struct Skipper<StrIt>;

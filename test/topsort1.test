@@ -1,27 +1,27 @@
 // Topological sort test, with two set vertices, with a bijective
-// map from one to the other asa set-edge
+// map from one to the other as a set-edge
 
-N = 10
+N = 100000;
 
-V1 = N
-V2 = N+V1
+V1 = N;
+V2 = N+V1;
 
-E1 = N
+E1 = N;
 
-off1b = r(V2, 1)-E1
+off1b = V2-E1;
 
-off1d = r(V1, 1)-E1
+off1d = V1-E1;
 
-V %= {[1:1:V1], [V1+1:1:V2]};
-Vmap %= <<{[1:1:V1]} -> 0*x+1, {[V1+1:1:V2]} -> 0*x+2>>; 
-mapB %= <<{[1:1:E1]} -> 1*x+off1b>>;
-mapD %= <<{[1:1:E1]} -> 1*x+off1d>>;
-Emap %= <<{[1:1:E1]} -> 0*x+1>>;
+V: {[1:1:V1], [V1+1:1:V2]}
+Vmap: <<{[1:1:V1]} -> 0*x+1, {[V1+1:1:V2]} -> 0*x+2>>
+mapB: <<{[1:1:E1]} -> 1*x+off1b>>
+mapD: <<{[1:1:E1]} -> 1*x+off1d>>
+Emap: <<{[1:1:E1]} -> 0*x+1>>;
 
 sort(
-  V %= {[1:1:V1], [V1+1:1:V2]};
-  Vmap %= <<{[1:1:V1]} -> 0*x+1, {[V1+1:1:V2]} -> 0*x+2>>; 
-  mapB %= <<{[1:1:E1]} -> 1*x+off1b>>;
-  mapD %= <<{[1:1:E1]} -> 1*x+off1d>>;
-  Emap %= <<{[1:1:E1]} -> 0*x+1>>;
-)
+  V: {[1:1:V1], [V1+1:1:V2]}
+  Vmap: <<{[1:1:V1]} -> 0*x+1, {[V1+1:1:V2]} -> 0*x+2>>
+  mapB: <<{[1:1:E1]} -> 1*x+off1b>>
+  mapD: <<{[1:1:E1]} -> 1*x+off1d>>
+  Emap: <<{[1:1:E1]} -> 0*x+1>>
+);

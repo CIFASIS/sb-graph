@@ -32,21 +32,9 @@ LIB::MultiDimInter EvalMDI::operator()(AST::Natural v) const
   return LIB::MultiDimInter();
 }
 
-LIB::MultiDimInter EvalMDI::operator()(AST::MDNatural v) const 
-{
-  Util::ERROR("EvalMDI: trying to evaluate MDNatural ", v, "\n");
-  return LIB::MultiDimInter(); 
-}
-
 LIB::MultiDimInter EvalMDI::operator()(AST::Rational v) const 
 { 
   Util::ERROR("EvalMDI: trying to evaluate Rational ", v, "\n");
-  return LIB::MultiDimInter(); 
-}
-
-LIB::MultiDimInter EvalMDI::operator()(AST::Boolean v) const 
-{ 
-  Util::ERROR("EvalMDI: trying to evaluate Boolean ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 

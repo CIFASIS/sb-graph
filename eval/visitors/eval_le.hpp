@@ -38,9 +38,7 @@ struct EvalLE : public boost::static_visitor<LIB::LExp> {
   EvalLE(VarEnv env);
 
   LIB::LExp operator()(AST::Natural v) const;
-  LIB::LExp operator()(AST::MDNatural v) const;
   LIB::LExp operator()(AST::Rational v) const;
-  LIB::LExp operator()(AST::Boolean v) const;
   LIB::LExp operator()(Util::VariableName v) const;
   LIB::LExp operator()(AST::UnaryOp v) const;
   LIB::LExp operator()(AST::BinOp v) const;

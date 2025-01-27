@@ -37,9 +37,7 @@ struct EvalMDLE : public boost::static_visitor<LIB::Exp> {
   EvalMDLE(VarEnv env);
 
   LIB::Exp operator()(AST::Natural v) const;
-  LIB::Exp operator()(AST::MDNatural v) const;
   LIB::Exp operator()(AST::Rational v) const;
-  LIB::Exp operator()(AST::Boolean v) const;
   LIB::Exp operator()(Util::VariableName v) const;
   LIB::Exp operator()(AST::UnaryOp v) const;
   LIB::Exp operator()(AST::BinOp v) const;

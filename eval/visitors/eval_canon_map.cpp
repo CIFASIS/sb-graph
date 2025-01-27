@@ -32,21 +32,9 @@ LIB::CanonMap EvalCanonMap::operator()(AST::Natural v) const
   return LIB::CanonMap(); 
 }
 
-LIB::CanonMap EvalCanonMap::operator()(AST::MDNatural v) const
-{
-  Util::ERROR("EvalCanonMap: trying to evaluate MDNatural ", v, "\n");
-  return LIB::CanonMap(); 
-}
-
 LIB::CanonMap EvalCanonMap::operator()(AST::Rational v) const
 {
   Util::ERROR("EvalCanonMap: trying to evaluate Rational ", v, "\n");
-  return LIB::CanonMap(); 
-}
-
-LIB::CanonMap EvalCanonMap::operator()(AST::Boolean v) const
-{
-  Util::ERROR("EvalCanonMap: trying to evaluate Boolean ", v, "\n");
   return LIB::CanonMap(); 
 }
 

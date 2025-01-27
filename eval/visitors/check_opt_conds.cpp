@@ -31,17 +31,7 @@ bool OptConds::operator()(AST::Natural v) const
   return true;
 }
 
-bool OptConds::operator()(AST::MDNatural v) const 
-{ 
-  return true;
-}
-
 bool OptConds::operator()(AST::Rational v) const 
-{ 
-  return true; 
-}
-
-bool OptConds::operator()(AST::Boolean v) const 
 { 
   return true; 
 }
@@ -162,7 +152,10 @@ bool OptConds::operator()(AST::SetBinOp v) const
 
 bool OptConds::operator()(AST::LinearExp v) const 
 {
-  return true; 
+  EvalLE visit_le(env_);
+  LIB::LExp le = boost::apply_visitor(visit_le, AST::Expr(v));
+
+  return le.slope() == 0 || le.slope() == 1;
 }
 
 bool OptConds::operator()(AST::LExpBinOp v) const 
@@ -172,7 +165,12 @@ bool OptConds::operator()(AST::LExpBinOp v) const
 
 bool OptConds::operator()(AST::MDLExp v) const 
 {
-  return true; 
+  bool res = true;
+
+  for (const AST::Expr &e : v.exps())
+    res = res && boost::apply_visitor(*this, e);
+
+  return res;
 }
 
 bool OptConds::operator()(AST::MDLExpBinOp v) const 
@@ -182,7 +180,10 @@ bool OptConds::operator()(AST::MDLExpBinOp v) const
 
 bool OptConds::operator()(AST::LinearMap v) const 
 {
-  return boost::apply_visitor(*this, v.dom()); 
+  bool c1 = boost::apply_visitor(*this, v.dom());
+  bool c2 = boost::apply_visitor(*this, v.lexp());
+
+  return c1 && c2; 
 }
 
 bool OptConds::operator()(AST::PWLMap v) const 

@@ -32,21 +32,9 @@ LIB::BasePWMap EvalBasePWMap::operator()(AST::Natural v) const
   return LIB::BasePWMap(); 
 }
 
-LIB::BasePWMap EvalBasePWMap::operator()(AST::MDNatural v) const
-{
-  Util::ERROR("EvalBasePWMap: trying to evaluate MDNatural ", v, "\n");
-  return LIB::BasePWMap(); 
-}
-
 LIB::BasePWMap EvalBasePWMap::operator()(AST::Rational v) const
 {
   Util::ERROR("EvalBasePWMap: trying to evaluate Rational ", v, "\n");
-  return LIB::BasePWMap(); 
-}
-
-LIB::BasePWMap EvalBasePWMap::operator()(AST::Boolean v) const
-{
-  Util::ERROR("EvalBasePWMap: trying to evaluate Boolean ", v, "\n");
   return LIB::BasePWMap(); 
 }
 

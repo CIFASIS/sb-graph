@@ -28,26 +28,12 @@ EvalNat::EvalNat(VarEnv env) : env_(env) {}
 
 Util::NAT EvalNat::operator()(AST::Natural v) const { return v; }
 
-Util::NAT EvalNat::operator()(AST::MDNatural v) const 
-{
-  Util::ERROR("EvalNat: trying to evaluate MDNatural ", v, "\n");
-  return 0;
-}
-
 Util::NAT EvalNat::operator()(AST::Rational v) const 
 { 
   if (boost::apply_visitor(*this, v.den()) == 1)
     return boost::apply_visitor(*this, v.num());
 
   Util::ERROR("EvalNat: trying to evaluate Rational ", v, "\n");
-  return 0; 
-}
-
-Util::NAT EvalNat::operator()(AST::Boolean v) const 
-{ 
-  if (v)
-    return 1;
-
   return 0; 
 }
 

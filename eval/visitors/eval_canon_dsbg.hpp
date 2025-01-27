@@ -37,9 +37,7 @@ struct EvalCanonDSBG : public boost::static_visitor<LIB::CanonDSBG> {
   EvalCanonDSBG(VarEnv env);
 
   LIB::CanonDSBG operator()(AST::Natural v) const;
-  LIB::CanonDSBG operator()(AST::MDNatural v) const;
   LIB::CanonDSBG operator()(AST::Rational v) const;
-  LIB::CanonDSBG operator()(AST::Boolean v) const;
   LIB::CanonDSBG operator()(Util::VariableName v) const;
   LIB::CanonDSBG operator()(AST::UnaryOp v) const;
   LIB::CanonDSBG operator()(AST::BinOp v) const;

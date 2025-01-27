@@ -75,33 +75,61 @@ void parseEvalProgramFromFile(std::string fname, bool debug)
 
 void usage()
 {
-  std::cout << "Usage evaluator [options] file" << std::endl;
-  std::cout << "Parses a SBG program." << std::endl;
-  std::cout << std::endl;
-  std::cout << "-f, --file      SBG program file used as input " << std::endl;
-  std::cout << "-h, --help      Display this information and exit" << std::endl;
-  std::cout << "-d, --debug     Activate debug info" << std::endl;
-  std::cout << "-v, --version   Display version information and exit"
-    << std::endl;
-  std::cout << std::endl;
-  std::cout << "SBG library home page: https://github.com/CIFASIS/sb-graph"
-    << std::endl;
+  std::cout << "Usage evaluator: ./bin/sbg-eval -f filename [options]\n";
+  std::cout << "Parses and evaluates a SBG program.\n\n";
+  std::cout << "-f, --file      SBG program file used as input\n";
+  std::cout << "-h, --help      Display this information and exit\n";
+  std::cout << "-d, --debug     Activate debug info\n";
+  std::cout << "-v, --version   Display version information and exit\n\n";
+  std::cout << "SBG library home page: https://github.com/CIFASIS/sb-graph\n\n";
 
-  std::cout << "\nThe grammar for a SBG program can be derived from the .cpp\n"
-    << " files present in /parser.\n";
-  std::cout << "The following rules are used to avoid ambiguities:\n";
-  std::cout << "  * Naturals are evaluated into md_nat (with arity equal 1).\n";
-  std::cout << "  * Since a natural can be parsed both into an\n";
-  std::cout << "    an interval or a mdi interval with arity equal to 1, it\n";
-  std::cout << "    will be interpreted as an interval.\n";
-  std::cout << "    To test operations of mdis, single elements sets can be\n";
-  std::cout << "    used, i.e.: {[1:1:10] x [1:1:10]} /\\ {[5:1:10] x [5:1:10]}.";
-  std::cout << "\n  * The same situation arises for le and mdle, for which the\n";
-  std::cout << "    same criteria is used.\n";
-  std::cout << "  * In a file all elements should be of the same arity (i.e., \n";
-  std::cout << "    have the same number of dimensions).\n";
+  std::cout << "To start writing a SBG program the following considerations\n";
+  std::cout << "should be taken into account:\n";
+  std::cout << "  * Multi-block and single line C-like comments are supported.";
+  std::cout << "\n";
+  std::cout << "  * A SBG program starts with a list (possibly empty) of\n";
+  std::cout << "    assignments, and then continues with a list (possibly\n";
+  std::cout << "    empty) of expressions.\n";
+  std::cout << "  * Each assignment or expression should be ended with a\n";
+  std::cout << "    semicolon ;\n";
+  std::cout << "  * All expressions defined in a SBG program should have the\n";
+  std::cout << "    number of dimensions.\n";
+  std::cout << "  * The first assignment of a SBG program should be\n";
+  std::cout << "    \"dims = k\", where k is the number of the dimensions of\n";
+  std::cout << "    all elements defined in the SBG program. If it is\n";
+  std::cout << "    omitted then is considered to be 1.\n";
+  std::cout << "  * Numerical (and only numerical) variables can be defined.\n";
+  std::cout << "    through an assignment. It is forbidden to use a variable\n";
+  std::cout << "    before its definition.\n";
+  std::cout << "  * Variable names should start with a letter, and then\n";
+  std::cout << "    alfanumeric characters (including \"_\") can be used.\n";
+  std::cout << "    The variable name \"x\" is forbidden, to preserve it\n";
+  std::cout << "    for linear expressions. As explained above, \"dims\"\n";
+  std::cout << "    is also reserved.\n";
+  std::cout << "  * Linear expresssions should include a numeric value for\n";
+  std::cout << "    its slope. That is, to express a constant expression\n";
+  std::cout << "    it should be written as: 0*x+h.\n\n";
+  std::cout << "  * Both intervals and linear expressions will be parsed as\n";
+  std::cout << "    their multi-dimensional counterparts.\n\n";
 
-  std::cout << "\n\nA comprehensive list of the available functions to call on SBG"
+  std::cout << "A brief list of the available expressions:\n";
+  std::cout << "  * Arithmetic.\n";
+  std::cout << "  * Interval.\n";
+  std::cout << "  * Multi-dimensional Interval.\n";
+  std::cout << "  * SBG Set.\n";
+  std::cout << "  * Linear Expression.\n";
+  std::cout << "  * Multi-dimensional Expression.\n";
+  std::cout << "  * SBG Map.\n";
+  std::cout << "  * SBG Piecewise Linear Map.\n";
+  std::cout << "  * Undirected SBG.\n";
+  std::cout << "  * Directed SBG.\n";
+  std::cout << "  * Function Call.\n\n";
+
+  std::cout << "For a more detailed description of the grammar, the /parser\n";
+  std::cout << "files can be analyzed. Also /test files can be consulted\n";
+  std::cout << "to start writing basic SBG programs.\n\n";
+
+  std::cout << "\nA comprehensive list of the available functions to call on SBG"
     << " elements,\nwith a short description of the permitted arguments is";
   std::cout << " as follows:\n";
   std::cout << "  - isEmpty: check if container is empty\n";
@@ -165,7 +193,7 @@ void usage()
 
 void version()
 {
-  std::cout << "SBG library v3.0.0" << std::endl;
+  std::cout << "SBG library v3.0.0\n";
   std::cout << "License GPLv3+: GNU GPL version 3 or later"
     << " <http://gnu.org/licenses/gpl.html>\n";
   std::cout << "This is free software: you are free to change and redistribute" 

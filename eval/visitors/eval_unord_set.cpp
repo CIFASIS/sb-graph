@@ -32,21 +32,9 @@ LIB::UnordSet EvalUnordSet::operator()(AST::Natural v) const
   return LIB::UnordSet(); 
 }
 
-LIB::UnordSet EvalUnordSet::operator()(AST::MDNatural v) const
-{
-  Util::ERROR("EvalUnordSet: trying to evaluate MDNatural");
-  return LIB::UnordSet(); 
-}
-
 LIB::UnordSet EvalUnordSet::operator()(AST::Rational v) const
 {
   Util::ERROR("EvalUnordSet: trying to evaluate Rational");
-  return LIB::UnordSet(); 
-}
-
-LIB::UnordSet EvalUnordSet::operator()(AST::Boolean v) const
-{
-  Util::ERROR("EvalUnordSet: trying to evaluate Boolean");
   return LIB::UnordSet(); 
 }
 

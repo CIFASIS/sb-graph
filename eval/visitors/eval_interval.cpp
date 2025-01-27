@@ -32,21 +32,9 @@ LIB::Interval EvalInterval::operator()(AST::Natural v) const
   return LIB::Interval(); 
 }
 
-LIB::Interval EvalInterval::operator()(AST::MDNatural v) const 
-{ 
-  Util::ERROR("EvalInterval: trying to evaluate MDNatural ", v, "\n");
-  return LIB::Interval(); 
-}
-
 LIB::Interval EvalInterval::operator()(AST::Rational v) const 
 { 
   Util::ERROR("EvalInterval: trying to evaluate Rational ", v, "\n");
-  return LIB::Interval(); 
-}
-
-LIB::Interval EvalInterval::operator()(AST::Boolean v) const 
-{ 
-  Util::ERROR("EvalInterval: trying to evaluate Boolean ", v, "\n");
   return LIB::Interval(); 
 }
 

@@ -52,7 +52,7 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   // Operators tokens
   qi::rule<Iterator> OPAREN, CPAREN, OBRACKET, CBRACKET, OBRACE, CBRACE, COLON
     , RAT, COMA, DIV, ARROW, OANGLE, CANGLE, CARTPROD, SLO, VAR, ADD, SUB, PIPE
-    , SEMI, V, VMAP, MAP1, MAP2, EMAP, MAPB, MAPD;
+    , SEMI, V, VMAP, MAP1, MAP2, EMAP, SUBE, MAPB, MAPD;
 
   // Other rules
   qi::rule<Iterator, Skipper<Iterator>, Util::NAT()> nat;

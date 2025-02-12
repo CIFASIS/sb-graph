@@ -339,9 +339,10 @@ struct SBG {
   member_class(Expr, map1);
   member_class(Expr, map2);
   member_class(Expr, Emap);
+  member_class(Expr, subE_map);
 
   SBG();
-  SBG(Expr V, Expr Vmap, Expr map1, Expr map2, Expr Emap);
+  SBG(Expr V, Expr Vmap, Expr map1, Expr map2, Expr Emap, Expr subE);
 
   bool operator==(const SBG &sbg) const;
 };
@@ -355,9 +356,10 @@ struct DSBG {
   member_class(Expr, mapB);
   member_class(Expr, mapD);
   member_class(Expr, Emap);
+  member_class(Expr, subE_map);
 
   DSBG();
-  DSBG(Expr V, Expr Vmap, Expr mapB, Expr mapD, Expr Emap);
+  DSBG(Expr V, Expr Vmap, Expr mapB, Expr mapD, Expr Emap, Expr subE);
 
   bool operator==(const DSBG &dsbg) const;
 };

@@ -177,8 +177,21 @@ LIB::CanonSBG EvalCanonSBG::operator()(AST::SBG v) const
   LIB::CanonPWMap map1 = boost::apply_visitor(visit_pw, v.map1());
   LIB::CanonPWMap map2 = boost::apply_visitor(visit_pw, v.map2());
   LIB::CanonPWMap Emap = boost::apply_visitor(visit_pw, v.Emap());
+  LIB::CanonPWMap subE = boost::apply_visitor(visit_pw, v.subE_map());
 
-  return LIB::CanonSBG(V, Vmap, map1, map2, Emap);
+  if (subE.dom().isEmpty() && !Emap.dom().isEmpty()) {
+    unsigned int j = 1;
+    for (const LIB::CanonMap &sbgmap : Emap) {
+      LIB::OrdSet dom = sbgmap.dom();
+      for (const LIB::SetPiece &mdi : dom) {
+        LIB::Exp off(Util::MD_NAT(mdi.arity(), j));
+        subE.emplaceBack(LIB::CanonMap(LIB::OrdSet(mdi), off)); 
+        ++j;
+      }
+    }
+  } 
+
+  return LIB::CanonSBG(V, Vmap, map1, map2, Emap, subE);
 }
 
 LIB::CanonSBG EvalCanonSBG::operator()(AST::DSBG v) const 

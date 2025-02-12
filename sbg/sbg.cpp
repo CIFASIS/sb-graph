@@ -29,19 +29,9 @@ template<typename Set>
 SBGraph<Set>::SBGraph() : V_(), Vmap_(), E_(), map1_(), map2_(), Emap_()
   , subE_map_() {}
 template<typename Set>
-SBGraph<Set>::SBGraph(Set V, PW Vmap, PW map1, PW map2, PW Emap)
+SBGraph<Set>::SBGraph(Set V, PW Vmap, PW map1, PW map2, PW Emap, PW subE_map)
   : V_(V), Vmap_(Vmap), E_(map1.dom().intersection(map2.dom()))
-    , map1_(map1), map2_(map2), Emap_(Emap), subE_map_() {
-  unsigned int j = 1;
-  for (const SBGMap<Set> &sbgmap : Emap) {
-    Set dom = sbgmap.dom();
-    for (const SetPiece &mdi : dom) {
-      Exp off(Util::MD_NAT(mdi.arity(), j));
-      subE_map_.emplaceBack(SBGMap(Set(mdi), off)); 
-      ++j;
-    }
-  }
-}
+    , map1_(map1), map2_(map2), Emap_(Emap), subE_map_(subE_map) {}
 
 member_imp_temp(template<typename Set>, SBGraph<Set>, Set, V);
 member_imp_temp(template<typename Set>, SBGraph<Set>, PWMap<Set>, Vmap);
@@ -124,9 +114,9 @@ SBGraph<Set> SBGraph<Set>::copy(unsigned int times) const
   PW map1_ith = map1_, map1_new = map1_ith;
   PW map2_ith = map2_, map2_new = map2_ith;
   PW Emap_ith = Emap_, Emap_new = Emap_ith;
+  PW subE_map_ith = subE_map_, subE_map_new = subE_map_ith;
 
   if (!V_ith.isEmpty()) {
-
     Util::MD_NAT maxv = V_ith.maxElem();
     auto dims = maxv.arity();
     Util::MD_NAT maxV = Vmap_ith.isEmpty() ? Util::MD_NAT(dims, 0) : Vmap_ith.image().maxElem();
@@ -146,6 +136,7 @@ SBGraph<Set> SBGraph<Set>::copy(unsigned int times) const
         map1_new = map1_new.concatenation(map1_ith);
         map2_new = map2_new.concatenation(map2_ith);
         Emap_new = Emap_new.concatenation(Emap_ith);
+        subE_map_new = subE_map_new.concatenation(subE_map_ith);
       }
 
       V_ith = V_ith.offset(maxv);
@@ -158,11 +149,13 @@ SBGraph<Set> SBGraph<Set>::copy(unsigned int times) const
       map2_ith = map2_ith.offsetImage(off);
       Emap_ith = Emap_ith.offsetDom(maxe);
       Emap_ith = Emap_ith.offsetImage(maxE);
+      subE_map_ith = subE_map_ith.offsetDom(maxe);
+      subE_map_ith = subE_map_ith.offsetImage(maxE);
     }
   }
 
-  SBGraph<Set> res(V_new, Vmap_new, map1_new, map2_new, Emap_new);
-  return SBGraph<Set>(V_new, Vmap_new, map1_new, map2_new, Emap_new);
+  SBGraph<Set> res(V_new, Vmap_new, map1_new, map2_new, Emap_new, subE_map_new);
+  return res;
 }
 
 // Directed SBG ----------------------------------------------------------------
@@ -171,19 +164,9 @@ template<typename Set>
 DSBGraph<Set>::DSBGraph() : V_(), Vmap_(), E_(), mapB_(), mapD_(), Emap_()
   , subE_map_() {}
 template<typename Set>
-DSBGraph<Set>::DSBGraph(Set V, PW Vmap, PW mapB, PW mapD, PW Emap)
+DSBGraph<Set>::DSBGraph(Set V, PW Vmap, PW mapB, PW mapD, PW Emap, PW subE_map)
   : V_(V), Vmap_(Vmap), E_(mapB.dom().intersection(mapD.dom()))
-    , mapB_(mapB), mapD_(mapD), Emap_(Emap), subE_map_() {
-  unsigned int j = 1;
-  for (const SBGMap<Set> &sbgmap : Emap) {
-    Set dom = sbgmap.dom();
-    for (const SetPiece &mdi : dom) {
-      Exp off(Util::MD_NAT(mdi.arity(), j));
-      subE_map_.emplaceBack(SBGMap(Set(mdi), off)); 
-      ++j;
-    }
-  }
-}
+    , mapB_(mapB), mapD_(mapD), Emap_(Emap), subE_map_(subE_map) {}
 
 member_imp_temp(template<typename Set>, DSBGraph<Set>, Set, V);
 member_imp_temp(template<typename Set>, DSBGraph<Set>, PWMap<Set>, Vmap);
@@ -261,16 +244,17 @@ DSBGraph<Set> DSBGraph<Set>::addSE(const PW &pw1, const PW &pw2) const
 template<typename Set>
 DSBGraph<Set> DSBGraph<Set>::eraseVertices(Set vs) const
 {
-  Set newV = V_.difference(vs);
-  PW newVmap = Vmap_.restrict(V_);
+  Set new_V = V_.difference(vs);
+  PW new_Vmap = Vmap_.restrict(V_);
 
   Set eraseE = mapB_.preImage(vs).cup(mapD_.preImage(vs));
-  Set newE = E_.difference(eraseE);
-  PW new_mapB = mapB_.restrict(newE);
-  PW new_mapD = mapD_.restrict(newE);
-  PW newEmap = Emap_.restrict(newE);
+  Set new_E = E_.difference(eraseE);
+  PW new_mapB = mapB_.restrict(new_E);
+  PW new_mapD = mapD_.restrict(new_E);
+  PW new_Emap = Emap_.restrict(new_E);
+  PW new_subE = subE_map_.restrict(new_E);
 
-  return DSBGraph(newV, newVmap, new_mapB, new_mapD, newEmap);
+  return DSBGraph(new_V, new_Vmap, new_mapB, new_mapD, new_Emap, new_subE);
 }
 
 // Template instantiations -----------------------------------------------------

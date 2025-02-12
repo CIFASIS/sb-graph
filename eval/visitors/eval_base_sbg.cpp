@@ -177,8 +177,21 @@ LIB::BaseSBG EvalBaseSBG::operator()(AST::SBG v) const
   LIB::BasePWMap map1 = boost::apply_visitor(visit_pw, v.map1());
   LIB::BasePWMap map2 = boost::apply_visitor(visit_pw, v.map2());
   LIB::BasePWMap Emap = boost::apply_visitor(visit_pw, v.Emap());
+  LIB::BasePWMap subE = boost::apply_visitor(visit_pw, v.subE_map());
 
-  return LIB::BaseSBG(V, Vmap, map1, map2, Emap);
+  if (subE.dom().isEmpty() && !Emap.dom().isEmpty()) {
+    unsigned int j = 1;
+    for (const LIB::BaseMap &sbgmap : Emap) {
+      LIB::UnordSet dom = sbgmap.dom();
+      for (const LIB::SetPiece &mdi : dom) {
+        LIB::Exp off(Util::MD_NAT(mdi.arity(), j));
+        subE.emplaceBack(LIB::BaseMap(LIB::UnordSet(mdi), off)); 
+        ++j;
+      }
+    }
+  } 
+
+  return LIB::BaseSBG(V, Vmap, map1, map2, Emap, subE);
 }
 
 LIB::BaseSBG EvalBaseSBG::operator()(AST::DSBG v) const 

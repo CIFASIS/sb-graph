@@ -48,7 +48,7 @@ struct SBGraph {
   member_class(PW, subE_map);
 
   SBGraph();
-  SBGraph(Set V, PW Vmap, PW map1, PW map2, PW Emap);
+  SBGraph(Set V, PW Vmap, PW map1, PW map2, PW Emap, PW subE_map);
 
   SBGraph addSV(const Set &vertices) const;
   SBGraph addSE(const PW &pw1, const PW &pw2) const;
@@ -78,7 +78,7 @@ struct DSBGraph {
   member_class(PW, subE_map);
 
   DSBGraph();
-  DSBGraph(Set V, PW Vmap, PW mapB, PW mapD, PW Emap);
+  DSBGraph(Set V, PW Vmap, PW mapB, PW mapD, PW Emap, PW subE_map);
 
   DSBGraph addSV(const Set &vertices) const;
   DSBGraph addSE(const PW &pw1, const PW &pw2) const;

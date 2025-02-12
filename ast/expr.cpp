@@ -609,20 +609,22 @@ std::ostream &operator<<(std::ostream &out, const PWLMap &pwl)
 // SBG -------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 
-SBG::SBG() : V_(), Vmap_(), map1_(), map2_(), Emap_() {}
-SBG::SBG(Expr V, Expr Vmap, Expr map1, Expr map2, Expr Emap) : V_(V)
-  , Vmap_(Vmap), map1_(map1), map2_(map2), Emap_(Emap) {}
+SBG::SBG() : V_(), Vmap_(), map1_(), map2_(), Emap_(), subE_map_() {}
+SBG::SBG(Expr V, Expr Vmap, Expr map1, Expr map2, Expr Emap, Expr subE) : V_(V)
+  , Vmap_(Vmap), map1_(map1), map2_(map2), Emap_(Emap), subE_map_(subE) {}
 
 member_imp(SBG, Expr, V);
 member_imp(SBG, Expr, Vmap);
 member_imp(SBG, Expr, map1);
 member_imp(SBG, Expr, map2);
 member_imp(SBG, Expr, Emap);
+member_imp(SBG, Expr, subE_map);
 
 bool SBG::operator==(const SBG &other) const 
 { 
   return V() == other.V() && Vmap() == other.Vmap() && map1() == other.map1()
-    && map2() == other.map2() && Emap() == other.Emap();
+    && map2() == other.map2() && Emap() == other.Emap()
+    && subE_map() == other.subE_map();
 }
 
 std::ostream &operator<<(std::ostream &out, const SBG &g)
@@ -632,26 +634,29 @@ std::ostream &operator<<(std::ostream &out, const SBG &g)
   out << "map1: " << g.map1() << "\n";
   out << "map2: " << g.map2() << "\n";
   out << "Emap: " << g.Emap() << "\n";
+  out << "subE_map: " << g.subE_map() << "\n";
 
   return out;
 }
 
 // DSBG ------------------------------------------------------------------------
 
-DSBG::DSBG() : V_(), Vmap_(), mapB_(), mapD_(), Emap_() {}
-DSBG::DSBG(Expr V, Expr Vmap, Expr mapB, Expr mapD, Expr Emap) : V_(V)
-  , Vmap_(Vmap), mapB_(mapB), mapD_(mapD), Emap_(Emap) {}
+DSBG::DSBG() : V_(), Vmap_(), mapB_(), mapD_(), Emap_(), subE_map_() {}
+DSBG::DSBG(Expr V, Expr Vmap, Expr mapB, Expr mapD, Expr Emap, Expr subE) : V_(V)
+  , Vmap_(Vmap), mapB_(mapB), mapD_(mapD), Emap_(Emap), subE_map_(subE) {}
 
 member_imp(DSBG, Expr, V);
 member_imp(DSBG, Expr, Vmap);
 member_imp(DSBG, Expr, mapB);
 member_imp(DSBG, Expr, mapD);
 member_imp(DSBG, Expr, Emap);
+member_imp(DSBG, Expr, subE_map);
 
 bool DSBG::operator==(const DSBG &other) const 
 { 
   return V() == other.V() && Vmap() == other.Vmap() && mapB() == other.mapB()
-    && mapD() == other.mapD() && Emap() == other.Emap();
+    && mapD() == other.mapD() && Emap() == other.Emap()
+    && subE_map() == other.subE_map();
 }
 
 std::ostream &operator<<(std::ostream &out, const DSBG &g)
@@ -661,6 +666,7 @@ std::ostream &operator<<(std::ostream &out, const DSBG &g)
   out << "mapB: " << g.mapB() << "\n";
   out << "mapD: " << g.mapD() << "\n";
   out << "Emap: " << g.Emap() << "\n";
+  out << "subE_map: " << g.subE_map() << "\n";
 
   return out;
 }

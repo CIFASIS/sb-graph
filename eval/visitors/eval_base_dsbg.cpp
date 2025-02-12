@@ -183,8 +183,21 @@ LIB::BaseDSBG EvalBaseDSBG::operator()(AST::DSBG v) const
   LIB::BasePWMap mapB = boost::apply_visitor(visit_pw, v.mapB());
   LIB::BasePWMap mapD = boost::apply_visitor(visit_pw, v.mapD());
   LIB::BasePWMap Emap = boost::apply_visitor(visit_pw, v.Emap());
+  LIB::BasePWMap subE = boost::apply_visitor(visit_pw, v.subE_map());
 
-  return LIB::BaseDSBG(V, Vmap, mapB, mapD, Emap);
+  if (subE.dom().isEmpty() && !Emap.dom().isEmpty()) {
+    unsigned int j = 1;
+    for (const LIB::BaseMap &sbgmap : Emap) {
+      LIB::UnordSet dom = sbgmap.dom();
+      for (const LIB::SetPiece &mdi : dom) {
+        LIB::Exp off(Util::MD_NAT(mdi.arity(), j));
+        subE.emplaceBack(LIB::BaseMap(LIB::UnordSet(mdi), off)); 
+        ++j;
+      }
+    }
+  } 
+
+  return LIB::BaseDSBG(V, Vmap, mapB, mapD, Emap, subE);
 }
 
 } // namespace Eval

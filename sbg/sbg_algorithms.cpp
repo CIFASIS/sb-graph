@@ -18,8 +18,8 @@
  ******************************************************************************/
 
 #include "sbg/sbg_algorithms.hpp"
-#include <list>
 
+#include <list>
 namespace SBG {
 
 namespace LIB {
@@ -99,6 +99,7 @@ DSBGraph<Set> SBGMatching<Set>::offsetGraph(const PW &dir_omap) const
     , _mapB.compact()
     , _mapD.compact()
     , Emap().restrict(paths_edges()).compact()
+    , subE_map().restrict(paths_edges()).compact()
   );
 }
 
@@ -184,7 +185,6 @@ void SBGMatching<Set>::directedMinReach(const PW &dir_map)
   if (debug())
     Util::SBG_LOG << "dir_omap: " << dir_omap << "\n";
   DSBGraph<Set> dsbg = offsetGraph(dir_omap);
-  dsbg.set_subE_map(sbg().subE_map().restrict(paths_edges()));
 
   selectSucc(dsbg);
 
@@ -286,14 +286,14 @@ std::ostream &operator<<(std::ostream &out, const MatchInfo<Set> &m_info)
 
 template<typename Set>
 SBGMatching<Set>::SBGMatching() 
-  : sbg_(), V_(), Vmap_(), E_(), Emap_(), smap_(), rmap_(), omap_()
+  : sbg_(), V_(), Vmap_(), E_(), Emap_(), subE_map_(), smap_(), rmap_(), omap_()
     , max_V_(), F_(), U_(), mapF_(), mapU_(), mapB_(), mapD_(), paths_edges_()
     , matched_E_(), unmatched_E_(), matched_V_(), unmatched_V_(), unmatched_F_()
     , matched_U_(), unmatched_U_(), debug_(false) {}
 template<typename Set>
 SBGMatching<Set>::SBGMatching(SBGraph<Set> sbg, bool debug)
   : sbg_(sbg), V_(sbg.V()), Vmap_(sbg.Vmap()), Emap_(sbg.Emap())
-    , debug_(debug) {
+    , subE_map_(sbg.subE_map()), debug_(debug) {
   set_E(Emap_.dom());
 
   PW id_vertex(V_);
@@ -327,6 +327,7 @@ member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, V);
 member_imp_temp(template<typename Set>, SBGMatching<Set>, PWMap<Set>, Vmap);
 member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, E);
 member_imp_temp(template<typename Set>, SBGMatching<Set>, PWMap<Set>, Emap);
+member_imp_temp(template<typename Set>, SBGMatching<Set>, PWMap<Set>, subE_map);
 
 member_imp_temp(template<typename Set>, SBGMatching<Set>, PWMap<Set>, smap);
 member_imp_temp(template<typename Set>, SBGMatching<Set>, PWMap<Set>, rmap);
@@ -457,8 +458,8 @@ MatchInfo<Set> SBGMatching<Set>::calculate()
 // -----------------------------------------------------------------------------
 
 template<typename Set>
-SBGSCC<Set>::SBGSCC() : dsbg_(), V_(), Vmap_(), E_(), Emap_(), Ediff_(), mapB_()
-  , mapD_(), rmap_(), debug_(false) {}
+SBGSCC<Set>::SBGSCC() : dsbg_(), V_(), Vmap_(), E_(), Emap_(), subE_map_()
+  , Ediff_(), mapB_(), mapD_(), rmap_(), debug_(false) {}
 template<typename Set>
 SBGSCC<Set>::SBGSCC(DSBGraph<Set> dsbg, bool debug)
   : dsbg_(dsbg), debug_(debug), Ediff_() {
@@ -470,6 +471,7 @@ SBGSCC<Set>::SBGSCC(DSBGraph<Set> dsbg, bool debug)
   
   E_ = dg.E();
   Emap_ = dg.Emap();
+  subE_map_ = dg.subE_map();
 
   mapB_ = dg.mapB();
   mapD_ = dg.mapD(); 
@@ -482,6 +484,7 @@ member_imp_temp(template<typename Set>, SBGSCC<Set>, Set, V);
 member_imp_temp(template<typename Set>, SBGSCC<Set>, PWMap<Set>, Vmap);
 member_imp_temp(template<typename Set>, SBGSCC<Set>, Set, E);
 member_imp_temp(template<typename Set>, SBGSCC<Set>, PWMap<Set>, Emap);
+member_imp_temp(template<typename Set>, SBGSCC<Set>, PWMap<Set>, subE_map);
 
 member_imp_temp(template<typename Set>, SBGSCC<Set>, PWMap<Set>, mapB);
 member_imp_temp(template<typename Set>, SBGSCC<Set>, PWMap<Set>, mapD);
@@ -612,8 +615,8 @@ PWMap<Set> SBGSCC<Set>::sccStep()
   DSBGraph<Set> aux_dsbg(
     V(), Vmap()
     , mapB().restrict(E()), mapD().restrict(E()), Emap().restrict(E()).compact()
+    , subE_map().restrict(E())
   );
-  aux_dsbg.set_subE_map(dsbg().subE_map().restrict(E()));
   PW new_rmap = sccMinReach(aux_dsbg);
   if (debug())
     Util::SBG_LOG << "SCC new_rmap: " << new_rmap << "\n";
@@ -917,13 +920,14 @@ DSBGraph<Set> partitionSE(const DSBGraph<Set> &dg)
   Set V = dg.V();
   unsigned int dims = V.arity(), j = 1;
   PWMap mapB = dg.mapB(), mapD = dg.mapD(), Emap = dg.Emap();
+  PWMap subE = dg.subE_map();
 
   std::vector<Set> vs;
   for (const SBGMap<Set> &map : dg.Vmap())
     vs.emplace_back(map.dom());
 
   Set univ(SetPiece(dims, Interval(0, 1, Util::Inf)));
-  for (const SBGMap<Set> &map : dg.subE_map()) {
+  for (const SBGMap<Set> &map : subE) {
     Set ith_edge = mapB.image(map.dom());
     Set not_ith_edge = univ.difference(ith_edge);
     std::vector<Set> aux_vs;
@@ -941,7 +945,7 @@ DSBGraph<Set> partitionSE(const DSBGraph<Set> &dg)
     vs = aux_vs;
   }
 
-  for (const SBGMap<Set> &map : dg.subE_map()) {
+  for (const SBGMap<Set> &map : subE) {
     Set ith_edge = mapD.image(map.dom());
     Set not_ith_edge = univ.difference(ith_edge);
     std::vector<Set> aux_vs;
@@ -966,7 +970,7 @@ DSBGraph<Set> partitionSE(const DSBGraph<Set> &dg)
     ++j;
   }
 
-  return DSBGraph(V, Vmap, mapB, mapD, Emap);
+  return DSBGraph(V, Vmap, mapB, mapD, Emap, subE);
 }
 
 template<typename Set>
@@ -990,7 +994,9 @@ DSBGraph<Set> buildSCCFromMatching(const SBGMatching<Set> &match)
   mapD = mapD.compact();
 
   PWMap<Set> Emap = match.Emap().restrict(unmatched_edges);
-  DSBGraph<Set> res(V, Vmap, mapB, mapD, Emap);
+  PWMap<Set> subE_map = match.subE_map().restrict(unmatched_edges);
+
+  DSBGraph<Set> res(V, Vmap, mapB, mapD, Emap, subE_map);
   auto end = std::chrono::high_resolution_clock::now();
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(
     end - start 
@@ -1024,8 +1030,9 @@ DSBGraph<Set> buildSortFromSCC(
   PWMap<Set> Vmap = dsbg.Vmap().restrict(V);
 
   PWMap<Set> Emap = dsbg.Emap().restrict(Ediff);
+  PWMap<Set> subE_map = dsbg.subE_map().restrict(Ediff);
 
-  DSBGraph<Set> res(V, Vmap, mapB, mapD, Emap);
+  DSBGraph<Set> res(V, Vmap, mapB, mapD, Emap, subE_map);
   return res;
 }
 

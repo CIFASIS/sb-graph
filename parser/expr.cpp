@@ -234,6 +234,7 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   , MAP1("map1:")
   , MAP2("map2:")
   , EMAP("Emap:")
+  , SUBE("subE:")
   , MAPB("mapB:")
   , MAPD("mapD:")
 {
@@ -257,14 +258,15 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
     >> CPAREN)[qi::_val = phx::construct<AST::Rational>(qi::_1, qi::_2)];
 
   rat_primary = rat_legacy[qi::_val = qi::_1]
-    | (int_expr >> DIV >> int_expr)[qi::_val = phx::construct<AST::Rational>(qi::_1, qi::_2)]
+    | (int_expr >> DIV >> int_expr)
+      [qi::_val = phx::construct<AST::Rational>(qi::_1, qi::_2)]
     | int_expr[qi::_val = qi::_1];
 
   rat_term = rat_primary[qi::_val = qi::_1] >> *(mult_symbol >> rat_primary)
-       [qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
+    [qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
 
   arithmetic_expr = rat_term[qi::_val = qi::_1] >> *(add_symbols >> rat_term)
-      [qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
+    [qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
 
   // ------------ //
 
@@ -282,10 +284,10 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
       [qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
 
   interval = (OBRACKET 
-      >> nat_expr >> COLON 
-      >> nat_expr >> COLON 
-      >> nat_expr >> CBRACKET)
-      [qi::_val = phx::construct<AST::Interval>(qi::_1, qi::_2, qi::_3)];
+    >> nat_expr >> COLON 
+    >> nat_expr >> COLON 
+    >> nat_expr >> CBRACKET)
+    [qi::_val = phx::construct<AST::Interval>(qi::_1, qi::_2, qi::_3)];
 
   interval_unary = (inter_un >> interval_expr)
     [qi::_val = phx::construct<AST::InterUnaryOp>(qi::_1, qi::_2)];
@@ -401,13 +403,22 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   // ------------ //
 
   sbg = (V >> set 
-    >> VMAP >> pwl_expr 
-    >> MAP1 >> pwl_expr 
-    >> MAP2 >> pwl_expr 
-    >> EMAP >> pwl_expr)
-    [qi::_val = phx::construct<AST::SBG>(
-       qi::_1, qi::_2, qi::_3, qi::_4, qi::_5
-    )];
+      >> VMAP >> pwl_expr 
+      >> MAP1 >> pwl_expr 
+      >> MAP2 >> pwl_expr 
+      >> EMAP >> pwl_expr
+      >> SUBE >> pwl_expr)
+      [qi::_val = phx::construct<AST::SBG>(
+         qi::_1, qi::_2, qi::_3, qi::_4, qi::_5, qi::_6
+      )]
+   | (V >> set 
+      >> VMAP >> pwl_expr 
+      >> MAP1 >> pwl_expr 
+      >> MAP2 >> pwl_expr 
+      >> EMAP >> pwl_expr)
+      [qi::_val = phx::construct<AST::SBG>(
+         qi::_1, qi::_2, qi::_3, qi::_4, qi::_5, phx::construct<AST::PWLMap>()
+      )];
 
   // ------------ //
 
@@ -415,10 +426,19 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
      >> VMAP >> pwl_expr 
      >> MAPB >> pwl_expr 
      >> MAPD >> pwl_expr 
-     >> EMAP >> pwl_expr)
+     >> EMAP >> pwl_expr
+     >> SUBE >> pwl_expr)
      [qi::_val = phx::construct<AST::DSBG>(
-        qi::_1, qi::_2, qi::_3, qi::_4, qi::_5
-     )];
+        qi::_1, qi::_2, qi::_3, qi::_4, qi::_5, qi::_6
+     )]
+   | (V >> set 
+      >> VMAP >> pwl_expr 
+      >> MAPB >> pwl_expr 
+      >> MAPD >> pwl_expr 
+      >> EMAP >> pwl_expr)
+      [qi::_val = phx::construct<AST::DSBG>(
+         qi::_1, qi::_2, qi::_3, qi::_4, qi::_5, phx::construct<AST::PWLMap>()
+      )];
 
   // ------------ //
 

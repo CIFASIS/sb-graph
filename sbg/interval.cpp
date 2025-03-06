@@ -24,8 +24,8 @@ namespace SBG {
 namespace LIB {
 
 Interval::Interval() : begin_(1), step_(1), end_(0) {}
-Interval::Interval(const NAT &x) : begin_(x), step_(1), end_(x) {}
-Interval::Interval(const NAT &begin, const NAT &step, const NAT &end) 
+Interval::Interval(Util::NAT x) : begin_(x), step_(1), end_(x) {}
+Interval::Interval(Util::NAT begin, Util::NAT step, Util::NAT end) 
   : begin_(begin), step_(step), end_(end) 
 {
   if (end >= begin) {
@@ -43,12 +43,9 @@ Interval::Interval(const NAT &begin, const NAT &step, const NAT &end)
   }
 }
 
-NAT Interval::begin() const { return begin_; }
-NAT &Interval::begin_ref() { return begin_; }
-NAT Interval::step() const { return step_; }
-NAT &Interval::step_ref() { return step_; }
-NAT Interval::end() const { return end_; }
-NAT &Interval::end_ref() { return end_; }
+member_imp(Interval, Util::NAT, begin);
+member_imp(Interval, Util::NAT, step);
+member_imp(Interval, Util::NAT, end);
 
 // Operators -------------------------------------------------------------------
 
@@ -88,7 +85,7 @@ unsigned int Interval::cardinal() const
 
 bool Interval::isEmpty() const { return end_ < begin_; }
 
-bool Interval::isMember(const NAT &x) const
+bool Interval::isMember(Util::NAT x) const
 {
   if (x < begin_ || x > end_)
     return false;
@@ -131,7 +128,7 @@ Interval Interval::intersection(const Interval &other)const
 
 // Extra operations ------------------------------------------------------------
 
-Interval Interval::offset(const Util::NAT &off) const
+Interval Interval::offset(Util::NAT off) const
 {
   Util::NAT new_b = begin_ + off, new_e = end_ + off;
 

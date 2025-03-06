@@ -48,7 +48,7 @@ LExp LExp::operator-(const LExp &other) const
 
 std::ostream &operator<<(std::ostream &out, const LExp &le)
 {
-  RAT slo = le.slope_, off = le.offset_;
+  RAT slo = le.slope(), off = le.offset();
 
   if (slo != 0 && slo != 1) {
     if (slo.numerator() != 1)

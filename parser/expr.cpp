@@ -305,8 +305,7 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
 
   // ------------ //
 
-  inter_times = interval[phx::push_back(qi::_val, qi::_1)]
-    >> *(CARTPROD >> interval)[phx::push_back(qi::_val, qi::_1)];
+  inter_times = interval % CARTPROD;
 
   md_inter = inter_times[qi::_val = phx::construct<AST::MultiDimInter>(qi::_1)];
 
@@ -336,9 +335,9 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
     [qi::_val = phx::construct<AST::SetUnaryOp>(qi::_1, qi::_2)]; 
  
   set_binary = (OPAREN
-    >> set
+    >> set_expr
     >> set_bin
-    >> set 
+    >> set_expr
     >> CPAREN)[qi::_val = phx::construct<AST::SetBinOp>(qi::_1, qi::_2, qi::_3)];
   
   set_expr = set_unary[qi::_val = qi::_1]
@@ -361,19 +360,18 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
          , phx::construct<AST::UnaryOp>(AST::UnOp::neg, qi::_1))]
     | lexp_left[qi::_val = phx::construct<AST::LinearExp>(qi::_1, 0)];
 
-  lexp_binary = OPAREN
-    >> lexp[qi::_val = qi::_1] 
-    >> CPAREN 
-    >> *(lexp_bin > OPAREN >> lexp >> CPAREN)
-    [qi::_val = phx::construct<AST::LExpBinOp>(qi::_val, qi::_1, qi::_2)];
+  lexp_binary = (OPAREN
+    >> lexp_expr
+    >> lexp_bin
+    >> lexp_expr
+    >> CPAREN)
+    [qi::_val = phx::construct<AST::LExpBinOp>(qi::_1, qi::_2, qi::_3)];
 
   lexp_expr = lexp_binary[qi::_val = qi::_1]
     | lexp[qi::_val = qi::_1];
 
   // ------------ //
 
-  //lexp_pipe = lexp[phx::push_back(qi::_val, qi::_1)]
-  //  >> *(PIPE >> lexp)[phx::push_back(qi::_val, qi::_1)];
   lexp_pipe = lexp % PIPE;
 
   mdlexp = lexp_pipe[qi::_val = phx::construct<AST::MDLExp>(qi::_1)];
@@ -402,7 +400,7 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
 
   // ------------ //
 
-  sbg = (V >> set 
+  sbg = (V >> set_expr 
       >> VMAP >> pwl_expr 
       >> MAP1 >> pwl_expr 
       >> MAP2 >> pwl_expr 
@@ -411,7 +409,7 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
       [qi::_val = phx::construct<AST::SBG>(
          qi::_1, qi::_2, qi::_3, qi::_4, qi::_5, qi::_6
       )]
-   | (V >> set 
+   | (V >> set_expr
       >> VMAP >> pwl_expr 
       >> MAP1 >> pwl_expr 
       >> MAP2 >> pwl_expr 

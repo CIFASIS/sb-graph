@@ -29,6 +29,7 @@
 #include <iostream>
 #include <optional>
 #include <variant>
+#include <vector>
 
 #include <boost/functional/hash.hpp>
 #include <boost/rational.hpp>
@@ -56,9 +57,11 @@ namespace Util {
  *
  */
 #define member_class(X, Y) \
+  private:                 \
   X Y##_;                  \
-  X Y() const;             \
   void set_##Y(X x);       \
+  public:                  \
+  X Y() const;             \
   X &Y##_ref();
 
 #define member_imp(C, X, Y)          \

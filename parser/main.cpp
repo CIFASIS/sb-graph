@@ -72,7 +72,8 @@ void usage()
   std::cout << "\n";
   std::cout << "  * A SBG program starts with a list (possibly empty) of\n";
   std::cout << "    assignments, and then continues with a list (possibly\n";
-  std::cout << "    empty) of expressions.\n";
+  std::cout << "    empty) of expressions, each one separated by a\n";
+  std::cout << "    semicolon.\n";
   std::cout << "  * Each assignment or expression should be ended with a\n";
   std::cout << "    semicolon ;\n";
   std::cout << "  * All expressions defined in a SBG program should have the\n";
@@ -90,8 +91,9 @@ void usage()
   std::cout << "    for linear expressions. As explained above, \"dims\"\n";
   std::cout << "    is also reserved.\n";
   std::cout << "  * Linear expresssions should include a numeric value for\n";
-  std::cout << "    its slope. That is, to express a constant expression\n";
-  std::cout << "    it should be written as: 0*x+h.\n\n";
+  std::cout << "    its slope, except if its value is equal to 1. That is,\n";
+  std::cout << "    to express a constant expression it should be written\n";
+  std::cout << "    as: 0*x+h.\n\n";
 
   std::cout << "A brief list of the available expressions:\n";
   std::cout << "  * Arithmetic.\n";

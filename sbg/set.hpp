@@ -31,12 +31,6 @@
 #ifndef SBG_SET_HPP
 #define SBG_SET_HPP
 
-#include <algorithm>
-#include <memory>
-#include <unordered_set>
-
-#include <boost/container/flat_set.hpp>
-
 #include "sbg/multidim_inter.hpp"
 
 namespace SBG {
@@ -51,6 +45,12 @@ typedef std::unique_ptr<SetDelegate> SetDelegPtr;
 
 struct SetDelegate {
   virtual ~SetDelegate() = default;
+  SetDelegate();
+  SetDelegate(Util::MD_NAT x);
+  SetDelegate(Interval i);
+  SetDelegate(SetPiece mdi);
+
+  virtual SetDelegPtr clone() const = 0;
 
   struct Iterator {
     public:
@@ -108,6 +108,8 @@ struct UnorderedSet : public SetDelegate {
   UnorderedSet(const SetPiece &mdi);
   UnorderedSet(const MDIUnordSet &pieces);
 
+  SetDelegPtr clone() const override;
+
   struct Iterator : public SetDelegate::Iterator {
     member_class(MDIUnordSet::const_iterator, it);
 
@@ -151,14 +153,14 @@ struct UnorderedSet : public SetDelegate {
   SetDelegPtr compact() const override;
 
   private:
-  UnorderedSet complementAtom() const;
+  SetDelegPtr complementAtom() const;
 };
 
 typedef const UnorderedSet &UnordSetCRef;
 
 // Ordered Dense Set Implementation (concrete delegate) -----------------------
 
-typedef boost::container::flat_set<SetPiece> MDIOrdSet;
+typedef std::vector<SetPiece> MDIOrdSet;
 
 struct OrderedDenseSet : public SetDelegate {
   member_class(MDIOrdSet, pieces);
@@ -169,6 +171,8 @@ struct OrderedDenseSet : public SetDelegate {
   OrderedDenseSet(Interval i);
   OrderedDenseSet(SetPiece mdi);
   OrderedDenseSet(MDIOrdSet pieces);
+
+  SetDelegPtr clone() const override;
 
   struct Iterator : public SetDelegate::Iterator {
     member_class(MDIOrdSet::const_iterator, it);
@@ -188,7 +192,7 @@ struct OrderedDenseSet : public SetDelegate {
 
   bool operator==(const SetDelegate &other) const override;
   bool operator!=(const SetDelegate &other) const override;
-  bool operator<(const SetDelegate &other) const override;
+  bool operator<(const SetDelegate &other) const override; 
   std::ostream &print(std::ostream &out) const override;
 
   /**
@@ -229,6 +233,7 @@ struct Set {
 
   public:
   Set(SetDelegPtr deleg);
+  Set(const Set &other);
 
   struct Iterator {
     private:
@@ -250,6 +255,8 @@ struct Set {
   bool operator==(const Set &other) const;
   bool operator!=(const Set &other) const;
   bool operator<(const Set &other) const;
+  Set &operator=(const Set &other);
+  Set &operator=(Set &&other);
   std::ostream &print(std::ostream &out) const;
 
   /**

@@ -26,6 +26,15 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
+// Set Delegate constructors ---------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+SetDelegate::SetDelegate() {}
+SetDelegate::SetDelegate(Util::MD_NAT x) {}
+SetDelegate::SetDelegate(Interval i) {}
+SetDelegate::SetDelegate(SetPiece mdi) {}
+
+////////////////////////////////////////////////////////////////////////////////
 // Unordered Set Implementation ------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -47,6 +56,10 @@ UnorderedSet::UnorderedSet(const SetPiece &mdi) : pieces_() {
 UnorderedSet::UnorderedSet(const MDIUnordSet &pieces)
   : pieces_(std::move(pieces)) {}
 
+SetDelegPtr UnorderedSet::clone() const
+{
+  return std::make_unique<UnorderedSet>(*this);
+}
 
 member_imp(UnorderedSet::Iterator, MDIUnordSet::const_iterator, it);
 
@@ -246,11 +259,15 @@ SetDelegPtr UnorderedSet::cup(const SetDelegate &other) const
   return othr.disjointCup(diff_cast);
 }
 
-UnorderedSet UnorderedSet::complementAtom() const
+SetDelegPtr UnorderedSet::complementAtom() const
 {
-  UnorderedSet res;
+  MDIUnordSet res;
 
   SetPiece mdi = *pieces_.begin();
+  SetPiece dense_mdi;
+  for (const Interval &i : mdi)
+    dense_mdi.emplaceBack(Interval(i.begin(), 1, i.end()));
+  SetPiece during_mdi = dense_mdi;
 
   Interval univ(0, 1, Util::Inf);
   SetPiece all(mdi.arity(), univ);
@@ -271,57 +288,57 @@ UnorderedSet UnorderedSet::complementAtom() const
 
     // "During" interval
     if (i.begin() < Util::Inf) {
-      for (Util::NAT j = 1; j < i.step(); ++j) {
-        Interval i_res(i.begin() + j, i.step(), i.end());
-        if (!i_res.isEmpty()) {
-          all[dim] = i_res;
-          c.push_back(all);
+      if (i.step() > 1) {
+        for (unsigned int j = 0; j < i.step() - 1; ++j) {
+          Interval i_res(i.begin() + j + 1, i.step(), i.end());
+          if (!i_res.isEmpty()) {
+            during_mdi[dim] = i_res;
+            c.push_back(during_mdi);
+          }
         }
       }
-      all[dim] = univ;
     }
 
     // After interval
-    if (i.end() < Util::Inf)
-      all[dim] = Interval(i.end() + 1, 1, Util::Inf);
-    else
-      all[dim] = Interval(Util::Inf);
+    if (i.end() < Util::Inf) {
+      Interval i_res(i.end() + 1, 1, Util::Inf);
+      if (!i_res.isEmpty()) {
+        all[dim] = i_res;
+        c.push_back(all);
+        all[dim] = univ;
+      }
+    }
+    all[dim] = dense_mdi[dim];
+    during_mdi[dim] = i;
 
-    c.push_back(all);
-    all[dim] = i;
-
-    // Initialize result
-    if (dim == 0)
-      res = UnorderedSet(c);
-    else
-      for (const SetPiece &mdi : c)
-        res.emplaceBack(mdi);
+    // Insert results of current dim
+    for (const SetPiece &mdi : c)
+      res.push_back(mdi);
 
     ++dim;
   }
 
-  return UnorderedSet(res);
+  return std::make_unique<UnorderedSet>(res);
 }
 
 SetDelegPtr UnorderedSet::complement() const
 {
-  UnorderedSet res;
+  SetDelegPtr res = std::make_unique<UnorderedSet>(MDIUnordSet());
 
   if (!isEmpty()) {
     auto first_it = pieces_.begin();
     SetPiece first = *first_it;
-    res = UnorderedSet(first).complementAtom();
+    res = std::move(UnorderedSet(first).complementAtom());
 
     ++first_it;
     MDIUnordSet second(first_it, pieces_.end());
     for (const SetPiece &mdi : second) {
-      UnorderedSet c = UnorderedSet(mdi).complementAtom();
-      UnordSetCRef aux = static_cast<UnordSetCRef>(*res.intersection(c));
-      res.pieces_ = std::move(aux.pieces_);
+      SetDelegPtr c = UnorderedSet(mdi).complementAtom();
+      res = std::move(res->intersection(*c));
     }
   }
 
-  return std::make_unique<UnorderedSet>(res);
+  return res;
 }
 
 SetDelegPtr UnorderedSet::difference(const SetDelegate &other) const
@@ -412,18 +429,23 @@ member_imp(OrderedDenseSet, MDIOrdSet, pieces);
 OrderedDenseSet::~OrderedDenseSet() {}
 OrderedDenseSet::OrderedDenseSet() : pieces_() {}
 OrderedDenseSet::OrderedDenseSet(Util::MD_NAT x) : pieces_() {
-  pieces_.emplace(SetPiece(x));
+  pieces_.emplace_back(SetPiece(x));
 }
 OrderedDenseSet::OrderedDenseSet(Interval i) : pieces_() {
   if (!i.isEmpty())
-    pieces_.emplace(SetPiece(i));
+    pieces_.emplace_back(SetPiece(i));
 }
 OrderedDenseSet::OrderedDenseSet(SetPiece mdi) : pieces_() {
   if (!mdi.isEmpty())
-    pieces_.emplace(mdi);
+    pieces_.emplace_back(mdi);
 }
 OrderedDenseSet::OrderedDenseSet(MDIOrdSet pieces)
   : pieces_(std::move(pieces)) {}
+
+SetDelegPtr OrderedDenseSet::clone() const
+{
+  return std::make_unique<OrderedDenseSet>(*this);
+}
 
 member_imp(OrderedDenseSet::Iterator, MDIOrdSet::const_iterator, it);
 
@@ -458,13 +480,13 @@ std::size_t OrderedDenseSet::size() const { return pieces_.size(); }
 void OrderedDenseSet::emplace(const SetPiece &mdi)
 {
   if (!mdi.isEmpty())
-    pieces_.emplace(mdi);
+    pieces_.emplace_back(mdi);
   return;
 }
 void OrderedDenseSet::emplaceBack(const SetPiece &mdi)
 {
   if (!mdi.isEmpty())
-    pieces_.emplace_hint(pieces_.cend(), mdi);
+    pieces_.emplace(pieces_.end(), mdi);
   return;
 }
 
@@ -554,12 +576,12 @@ SetDelegPtr OrderedDenseSet::intersection(const SetDelegate &other) const
     return std::make_unique<OrderedDenseSet>(res);
 
   if (maxElem() == other.minElem()) {
-    res.emplace(SetPiece(maxElem()));
+    res.emplace_back(SetPiece(maxElem()));
     return std::make_unique<OrderedDenseSet>(res);
   }
 
   if (other.maxElem() == minElem()) {
-    res.emplace(SetPiece(minElem()));
+    res.emplace_back(SetPiece(minElem()));
     return std::make_unique<OrderedDenseSet>(res);
   }
 
@@ -586,7 +608,7 @@ SetDelegPtr OrderedDenseSet::cup(const SetDelegate &other) const
     MDIOrdSet un(pieces_.begin(), pieces_.end());
 
     for (const SetPiece &mdi : othr.pieces_) 
-      un.emplace(mdi);
+      un.emplace_back(mdi);
 
     return std::make_unique<OrderedDenseSet>(un);
   }
@@ -595,7 +617,7 @@ SetDelegPtr OrderedDenseSet::cup(const SetDelegate &other) const
     MDIOrdSet un(othr.pieces_.begin(), othr.pieces_.end());
 
     for (const SetPiece &mdi : pieces_) 
-      un.emplace(mdi);
+      un.emplace_back(mdi);
 
     return std::make_unique<OrderedDenseSet>(un);
   }
@@ -665,7 +687,7 @@ SetDelegPtr OrderedDenseSet::filterSet(bool (*f)(const SetPiece &mdi)) const
 
   for (const SetPiece &mdi : pieces_)
     if (f(mdi))
-      res.emplace(mdi);
+      res.emplace_back(mdi);
 
   return std::make_unique<OrderedDenseSet>(res);
 }
@@ -675,7 +697,7 @@ SetDelegPtr OrderedDenseSet::offset(const Util::MD_NAT &off) const
   MDIOrdSet res;
 
   for (const SetPiece &mdi : pieces_)
-    res.emplace(mdi.offset(off));
+    res.emplace_back(mdi.offset(off));
 
   return std::make_unique<OrderedDenseSet>(res);
 }
@@ -693,7 +715,7 @@ SetDelegPtr OrderedDenseSet::compact() const
   for (auto it = pieces_.begin(); next_it != pieces_.end(); ++it) {
     MultiDimInter::MaybeMDI ith = compacted.compact(*next_it);
     if (!ith) {
-      res.emplace(compacted);
+      res.emplace_back(compacted);
       compacted = *next_it;
     }
     else
@@ -701,7 +723,7 @@ SetDelegPtr OrderedDenseSet::compact() const
 
     ++next_it;
   }
-  res.emplace(compacted);
+  res.emplace_back(compacted);
 
   return std::make_unique<OrderedDenseSet>(res);
 }
@@ -725,7 +747,7 @@ MDIOrdSet OrderedDenseSet::boundedTraverse(
 
     SetPiece funci = (mdi1.*f)(mdi2);
     if (!funci.isEmpty())
-      res.emplace_hint(res.cend(), funci);
+      res.emplace(res.end(), funci);
 
     if (mdi1.maxElem() < mdi2.maxElem())
       ++it1;
@@ -758,7 +780,7 @@ MDIOrdSet OrderedDenseSet::traverse(
 
     SetPiece funci = (mdi1.*f)(mdi2);
     if (!funci.isEmpty())
-      res.emplace_hint(res.cend(), funci);
+      res.emplace(res.end(), funci);
 
     if (mdi1.maxElem() < mdi2.maxElem())
       ++it1;
@@ -768,12 +790,12 @@ MDIOrdSet OrderedDenseSet::traverse(
 
   for (; it1 != end1; ++it1) {
     mdi1 = *it1;
-    res.emplace_hint(res.cend(), mdi1);
+    res.emplace(res.end(), mdi1);
   }
 
   for (; it2 != end2; ++it2) {
     mdi2 = *it2;
-    res.emplace_hint(res.cend(), mdi2);
+    res.emplace(res.end(), mdi2);
   }
 
   return res;
@@ -783,7 +805,10 @@ MDIOrdSet OrderedDenseSet::traverse(
 // Set Implementation ----------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
+
 Set::Set(SetDelegPtr deleg) : delegate_(std::move(deleg)) {}
+Set::Set(const Set &other)
+  : delegate_(other.delegate_ ? other.delegate_->clone() : nullptr) {}
 
 Set::Iterator::Iterator(std::shared_ptr<SetDelegate::Iterator> it)
   : it_(std::move(it)) {}
@@ -829,6 +854,22 @@ bool Set::operator<(const Set &other) const
   return delegate_ < other.delegate_;
 }
 
+Set &Set::operator=(const Set &other)
+{
+  if (this != &other)
+    delegate_ = other.delegate_ ? other.delegate_->clone() : nullptr;
+
+  return *this;
+}
+
+Set &Set::operator=(Set &&other)
+{
+  if (this != &other)
+    delegate_ = std::move(other.delegate_);
+
+  return *this;
+}
+
 std::ostream &Set::print(std::ostream &out) const
 {
   delegate_->print(out);
@@ -858,6 +899,8 @@ Set Set::cup(const Set &other) const
 {
   return Set(delegate_->cup(*other.delegate_));
 }
+
+Set Set::complement() const { return Set(delegate_->complement()); }
 
 Set Set::difference(const Set &other) const
 {

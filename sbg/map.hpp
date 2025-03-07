@@ -1,9 +1,12 @@
 /** @file map.hpp
 
- @brief <b>SBG map implementation</b>
+ @brief <b>Map delegate pattern</b>
 
- An SBG map is a map consisting of an interval (domain) and a linear expression.
- The codomain should also be an interval (checked in the constructor).
+ A SBG map is an entity composed by a domain and a law.
+ As multiple implementations were developed, a need to pick the desired
+ implementation arised. It was then decided that a Delegate pattern was the
+ right choice to implement this feature. This file contains the interface
+ classes, while each concrete implementation is in a separate file.
 
  <hr>
 
@@ -27,63 +30,141 @@
 #ifndef SBG_MAP_HPP
 #define SBG_MAP_HPP
 
+#include "sbg/af_set.hpp"
 #include "sbg/multidim_lexp.hpp"
-#include "sbg/ord_pw_mdinter.hpp"
-#include "sbg/unord_pw_mdinter.hpp"
-#include "util/debug.hpp"
+#include "sbg/set.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
-Interval image(Interval i, LExp le);
-SetPiece image(SetPiece mdi, Exp le);
+// Map Abstract Delegate -------------------------------------------------------
 
-template<typename Set>
-struct SBGMap {
-  using MaybeMap = std::optional<SBGMap<Set>>;
+struct MapDelegate;
 
-  member_class(Set, dom);
-  member_class(Exp, exp);
+typedef std::unique_ptr<MapDelegate> MapDelegPtr;
 
-  SBGMap();
-  SBGMap(Util::MD_NAT x, Exp exp);
-  SBGMap(Interval i, LExp le);
-  SBGMap(SetPiece mdi, Exp exp);
-  SBGMap(Set dom, Exp exp);
+struct MapDelegate {
+  protected:
+  const SetAF &fact_;
+  Set dom_;
+  Exp exp_;
 
-  bool operator==(const SBGMap &other) const;
-  bool operator!=(const SBGMap &other) const;
- 
-  SBGMap operator+(const SBGMap &other) const;
+  public:
+  virtual ~MapDelegate() = default;
+  MapDelegate(const SetAF &fact);
+  MapDelegate(const SetAF &fact, Util::MD_NAT x, Exp exp);
+  MapDelegate(const SetAF &fact, Interval i, LExp le);
+  MapDelegate(const SetAF &fact, SetPiece mdi, Exp exp);
+  MapDelegate(const SetAF &fact, Set s, Exp exp);
+
+  virtual bool operator==(const MapDelegate &other) const = 0;
+  virtual bool operator!=(const MapDelegate &other) const = 0;
+  virtual MapDelegPtr operator+(const MapDelegate &other) = 0;
+  virtual std::ostream &print(std::ostream &out) const = 0;
 
   /**
    * @brief Traditional map operations.
    */
-  std::size_t arity() const;
-  bool isEmpty() const;
-  SBGMap restrict(const Set &subdom) const;
-  Set image() const;
-  Set image(const Set &subdom) const;
-  Set preImage() const;
-  Set preImage(const Set &subcodom) const;
-  SBGMap composition(const SBGMap &sbgmap2) const;
+  virtual Set dom() const = 0;
+  virtual Exp exp() const = 0;
+  virtual std::size_t arity() const = 0;
+  virtual bool isEmpty() const = 0;
+  virtual MapDelegPtr restrict(const Set &subdom) = 0;
+  virtual Set image() const = 0;
+  virtual Set image(const Set &subdom) const  = 0;
+  virtual Set preImage() const = 0;
+  virtual Set preImage(const Set &subdom) const = 0;
+  virtual MapDelegPtr composition(const MapDelegate &other) = 0;
 
   /**
    * @brief Extra operations.
    */
-  SBGMap minInv() const;
-  bool isId() const;
-  MaybeMap compact(const SBGMap<Set> &other) const; 
+  virtual MapDelegPtr minInv() = 0;
+  virtual bool isId() const = 0;
+  virtual MapDelegPtr compact(const MapDelegate &other) = 0;
 };
-template<typename Set>
-std::ostream &operator<<(std::ostream &out, const SBGMap<Set> &sbgmap);
 
-template<typename Set>
-using SBGMap = SBGMap<Set>;
+// Map Set Implementation (concrete delegate) ----------------------------
 
-typedef SBGMap<UnordSet> BaseMap;
-typedef SBGMap<OrdSet> CanonMap;
+struct MapSetDeleg : public MapDelegate {
+
+  public:
+  ~MapSetDeleg();
+  MapSetDeleg(const SetAF &fact);
+  MapSetDeleg(const SetAF &fact, Util::MD_NAT x, Exp exp);
+  MapSetDeleg(const SetAF &fact, Interval i, LExp le);
+  MapSetDeleg(const SetAF &fact, SetPiece mdi, Exp exp);
+  MapSetDeleg(const SetAF &fact, Set s, Exp exp);
+
+  bool operator==(const MapDelegate &other) const override;
+  bool operator!=(const MapDelegate &other) const override;
+  MapDelegPtr operator+(const MapDelegate &other) override;
+  std::ostream &print(std::ostream &out) const override;
+
+  /**
+   * @brief Traditional map operations.
+   */
+  Set dom() const override;
+  Exp exp() const override;
+  std::size_t arity() const override;
+  bool isEmpty() const override;
+  MapDelegPtr restrict(const Set &subdom) override;
+  Set image() const override;
+  Set image(const Set &subdom) const override;
+  Set preImage() const override;
+  Set preImage(const Set &subdom) const override;
+  MapDelegPtr composition(const MapDelegate &other) override;
+
+  /**
+   * @brief Extra operations.
+   */
+  MapDelegPtr minInv() override;
+  bool isId() const override;
+  MapDelegPtr compact(const MapDelegate &other) override;
+};
+
+typedef const MapSetDeleg &MapSetDelegCRef;
+
+// Map Implementation (delegator) --------------------------------------
+
+typedef std::unique_ptr<MapDelegate> MapDelegPtr;
+
+struct Map {
+  private:
+  MapDelegPtr delegate_;
+
+  public:
+  Map(MapDelegPtr deleg);
+
+  bool operator==(const Map &other) const;
+  bool operator!=(const Map &other) const;
+  Map operator+(const Map &other) const;
+  std::ostream &print(std::ostream &out) const;
+
+  /**
+   * @brief Traditional map operations.
+   */
+  Set dom() const;
+  Exp exp() const;
+  std::size_t arity() const;
+  bool isEmpty() const;
+  Map restrict(const Set &subdom) const;
+  Set image() const;
+  Set image(const Set &subdom) const;
+  Set preImage() const;
+  Set preImage(const Set &subdom) const;
+  Map composition(const Map &other) const;
+
+  /**
+   * @brief Extra operations.
+   */
+  Map minInv() const;
+  bool isId() const;
+  Map compact(Map &other) const;
+};
+std::ostream &operator<<(std::ostream &out, const Map &s);
+
 
 } // namespace LIB
 

@@ -24,72 +24,73 @@
 #ifndef SBG_SBG_HPP
 #define SBG_SBG_HPP
 
-#include "sbg/pw_map.hpp"
+#include "sbg/af_pwmap.hpp"
+#include "util/debug.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
+////////////////////////////////////////////////////////////////////////////////
 // Undirected SBG --------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
-template<typename Set>
 struct SBGraph {
-  using PW = PWMap<Set>;
+  private:
+  const PWMapAF &fact_;
 
+  public:
   // Vertex definitions
   member_class(Set, V);
-  member_class(PW, Vmap);
+  member_class(PWMap, Vmap);
 
   // Edge definitions
   member_class(Set, E);
-  member_class(PW, map1);
-  member_class(PW, map2);
-  member_class(PW, Emap);
-  member_class(PW, subE_map);
+  member_class(PWMap, map1);
+  member_class(PWMap, map2);
+  member_class(PWMap, Emap);
+  member_class(PWMap, subEmap);
 
-  SBGraph();
-  SBGraph(Set V, PW Vmap, PW map1, PW map2, PW Emap, PW subE_map);
+  SBGraph(const PWMapAF &fact);
+  SBGraph(const PWMapAF &fact, const Set &V, const PWMap &Vmap
+    , const PWMap &map1, const PWMap &map2
+    , const PWMap &Emap, const PWMap &subEmap);
 
   SBGraph addSV(const Set &vertices) const;
-  SBGraph addSE(const PW &pw1, const PW &pw2) const;
+  SBGraph addSE(const PWMap &pw1, const PWMap &pw2) const;
   SBGraph copy(unsigned int times) const;
 };
-template<typename Set>
-std::ostream &operator<<(std::ostream &out, const SBGraph<Set> &pw);
-
-typedef SBGraph<UnordSet> BaseSBG;
-typedef SBGraph<OrdSet> CanonSBG;
+std::ostream &operator<<(std::ostream &out, const SBGraph &g);
 
 // Directed SBG ----------------------------------------------------------------
 
-template<typename Set>
 struct DSBGraph {
-  using PW = PWMap<Set>;
+  private:
+  const PWMapAF &fact_;
 
+  public:
   // Vertex definitions
   member_class(Set, V);
-  member_class(PW, Vmap);
+  member_class(PWMap, Vmap);
 
   // Edge definitions
   member_class(Set, E);
-  member_class(PW, mapB);
-  member_class(PW, mapD);
-  member_class(PW, Emap);
-  member_class(PW, subE_map);
+  member_class(PWMap, mapB);
+  member_class(PWMap, mapD);
+  member_class(PWMap, Emap);
+  member_class(PWMap, subEmap);
 
-  DSBGraph();
-  DSBGraph(Set V, PW Vmap, PW mapB, PW mapD, PW Emap, PW subE_map);
+  DSBGraph(const PWMapAF &fact);
+  DSBGraph(const PWMapAF &fact, const Set &V, const PWMap &Vmap
+   , const PWMap &mapB, const PWMap &mapD
+   , const PWMap &Emap, const PWMap &subEmap);
 
   DSBGraph addSV(const Set &vertices) const;
-  DSBGraph addSE(const PW &pw1, const PW &pw2) const;
+  DSBGraph addSE(const PWMap &pw1, const PWMap &pw2) const;
 
-  DSBGraph eraseVertices(Set vs) const;
+  DSBGraph eraseVertices(const Set &vs) const;
 };
-template<typename Set>
-std::ostream &operator<<(std::ostream &out, const DSBGraph<Set> &pw);
-
-typedef DSBGraph<UnordSet> BaseDSBG;
-typedef DSBGraph<OrdSet> CanonDSBG;
+std::ostream &operator<<(std::ostream &out, const DSBGraph &dg);
 
 } // namespace LIB
 

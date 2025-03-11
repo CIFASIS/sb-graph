@@ -56,20 +56,10 @@ struct PWMapDelegate {
    */
   PWMapDelegate(const MapAF &fact);
 
-  ///**
-  // * @brief Constructs a pw with s as its domain, and the 1*x+0 as its law. 
-  // */
-  //PWMapDelegate(const MapAF &fact, const Set &s);
-
-  ///**
-  // * @brief Constructs a pw with an unique map m.
-  // */
-  //PWMapDelegate(const MapAF &fact, const Map &m);
-
   /**
    * @brief Auxiliary function for defining the copy constructor of PWMap.
    */
-  //virtual SetDelegPtr clone() const = 0;
+  virtual PWMapDelegPtr clone() const = 0;
 
   struct Iterator {
     public:
@@ -289,7 +279,7 @@ struct UnordPWMap : public PWMapDelegate {
   UnordPWMap(const MapAF &fact, const UnordMapCollection &pieces);
   UnordPWMap(const UnordPWMap &pw);
 
-  //SetDelegPtr clone() const override;
+  PWMapDelegPtr clone() const override;
 
   struct Iterator : public PWMapDelegate::Iterator {
     member_class(UnordMapCollection::const_iterator, it);
@@ -368,8 +358,7 @@ struct PWMap {
 
   public:
   PWMap(PWMapDelegPtr deleg);
-
-  //SetDelegPtr clone() const;
+  PWMap(const PWMap &other);
 
   struct Iterator {
     private:
@@ -389,6 +378,7 @@ struct PWMap {
 
   bool operator==(const PWMap &other) const;
   bool operator!=(const PWMap &other) const;
+  PWMap &operator=(const PWMap &other);
   PWMap &operator=(PWMap &&other);
   std::ostream &print(std::ostream &out) const;
 

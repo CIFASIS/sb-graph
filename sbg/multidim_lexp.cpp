@@ -24,18 +24,18 @@ namespace SBG {
 namespace LIB {
 
 MDLExp::MDLExp() : exps_() {}
-MDLExp::MDLExp(MD_NAT x)
+MDLExp::MDLExp(const MD_NAT &x)
 {
   for (NAT xi : x)
-    exps_.emplace_back(LExp(0, RATIONAL(xi)));
+    exps_.push_back(LExp(0, RATIONAL(xi)));
 }
-MDLExp::MDLExp(LExp le) : exps_() { exps_.emplace_back(le); }
-MDLExp::MDLExp(unsigned int nmbr_copies, LExp le) : exps_()
+MDLExp::MDLExp(const LExp &le) : exps_() { exps_.push_back(le); }
+MDLExp::MDLExp(unsigned int nmbr_copies, const LExp &le) : exps_()
 {  
   for (unsigned int j = 0; j < nmbr_copies; ++j)
-    exps_.emplace_back(le);
+    exps_.push_back(le);
 }
-MDLExp::MDLExp(LExpVector v) : exps_(std::move(v)) {}
+MDLExp::MDLExp(const LExpVector &v) : exps_(std::move(v)) {}
 
 member_imp(MDLExp, LExpVector, exps);
 
@@ -44,7 +44,7 @@ MDLExp::iterator MDLExp::end() { return exps_.end(); }
 MDLExp::const_iterator MDLExp::begin() const { return exps_.begin(); }
 MDLExp::const_iterator MDLExp::end() const { return exps_.end(); }
 
-void MDLExp::emplaceBack(LExp le) { exps_.emplace_back(le); }
+void MDLExp::emplaceBack(LExp le) { exps_.push_back(le); }
 
 LExp &MDLExp::operator[](std::size_t n) { return exps_[n]; }
 const LExp &MDLExp::operator[](std::size_t n) const { return exps_[n]; }

@@ -42,7 +42,7 @@ ConfigDims::ConfigDims(LIB::NAT nmbr_dims) : nmbr_dims_() {
     set_nmbr_dims(nmbr_dims);
 
   else
-    Util::ERROR("ConfigDims: dimension should be greater than 0\n");
+    Debug::ERROR("ConfigDims: dimension should be greater than 0\n");
 }
 
 member_imp(ConfigDims, LIB::NAT, nmbr_dims);

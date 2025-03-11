@@ -53,6 +53,11 @@ UnordPWMap::UnordPWMap(const MapAF &fact, const UnordMapCollection &pieces)
 UnordPWMap::UnordPWMap(const UnordPWMap &pw)
   : PWMapDelegate(pw.fact_), pieces_(pw.pieces_) {}
 
+PWMapDelegPtr UnordPWMap::clone() const
+{
+  return std::make_unique<UnordPWMap>(*this);
+}
+
 member_imp(UnordPWMap::Iterator, UnordMapCollection::const_iterator, it);
 
 UnordPWMap::Iterator::Iterator(UnordMapCollection::const_iterator it)
@@ -695,6 +700,8 @@ PWMapDelegPtr UnordPWMap::compact() const
 ////////////////////////////////////////////////////////////////////////////////
 
 PWMap::PWMap(PWMapDelegPtr deleg) : delegate_(std::move(deleg)) {}
+PWMap::PWMap(const PWMap &other)
+  : delegate_(other.delegate_ ? other.delegate_->clone() : nullptr) {}
 
 PWMap::Iterator::Iterator(std::shared_ptr<PWMapDelegate::Iterator> it)
   : it_(std::move(it)) {}
@@ -727,6 +734,14 @@ bool PWMap::operator==(const PWMap &other) const
 }
 
 bool PWMap::operator!=(const PWMap &other) const { return !(*this == other); }
+
+PWMap &PWMap::operator=(const PWMap &other)
+{
+  if (this != &other)
+    delegate_ = other.delegate_->clone();
+
+  return *this;
+}
 
 PWMap &PWMap::operator=(PWMap &&other)
 {

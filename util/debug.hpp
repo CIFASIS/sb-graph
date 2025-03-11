@@ -35,7 +35,7 @@
 
 namespace SBG {
 
-namespace Util {
+namespace Debug {
 
 /*
  * Print an ERROR message. Then exits with EXIT_FAILURE status.
@@ -61,7 +61,7 @@ void ERROR_UNLESS(bool cond, Args... args)
   }
 }
 
-} // namespace Util
+} // namespace DEBUG
 
 } // namespace SBG
 

@@ -40,11 +40,31 @@ typedef LExpVector::const_iterator LExpVectorConstIt;
 struct MDLExp {
   member_class(LExpVector, exps);
 
+  /**
+   * @brief Empty multi-dimensional expression constructor.
+   */
   MDLExp();
-  MDLExp(MD_NAT x);
-  MDLExp(LExp le);
-  MDLExp(unsigned int nmbr_copies, LExp le);
-  MDLExp(LExpVector v);
+
+  /**
+   * @brief Constructs a constant mdle in all dimensions that maps to x.
+   */
+  MDLExp(const MD_NAT &x);
+
+  /**
+   * @brief Constructs a one-dimensional mdle composed only by le.
+   */
+  MDLExp(const LExp &le);
+
+  /**
+   * @brief Constructs a mdle of dimension nmbr_copies with le as linear
+   * expression in each dimensions.
+   */
+  MDLExp(unsigned int nmbr_copies, const LExp &le);
+
+  /**
+   * @brief Collection move constructor.
+   */
+  MDLExp(const LExpVector &v);
 
   typedef LExpVectorIt iterator;
   typedef LExpVectorConstIt const_iterator;

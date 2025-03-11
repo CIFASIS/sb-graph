@@ -28,16 +28,16 @@ member_imp(MultiDimInter, InterVector, intervals);
 MultiDimInter::MultiDimInter() : intervals_() {}
 MultiDimInter::MultiDimInter(const MD_NAT &x) : intervals_() {
   for (NAT xi : x)
-    intervals_.emplace_back(Interval(xi, 1, xi));
+    intervals_.push_back(Interval(xi, 1, xi));
 }
 MultiDimInter::MultiDimInter(const Interval &i) : intervals_()
 {
-  intervals_.emplace_back(i);
+  intervals_.push_back(i);
 }
 MultiDimInter::MultiDimInter(const unsigned int &nmbr_copies
                              , const Interval &i) : intervals_() {
   for (unsigned int j = 0; j < nmbr_copies; ++j)
-    intervals_.emplace_back(i);
+    intervals_.push_back(i);
 }
 MultiDimInter::MultiDimInter(const InterVector &iv)
   : intervals_(std::move(iv)) {}
@@ -58,7 +58,7 @@ void MultiDimInter::emplaceBack(Interval i)
   if (i.isEmpty())
     intervals_ = InterVector();
   else
-    intervals_.emplace_back(i);
+    intervals_.push_back(i);
   return;
 }
 

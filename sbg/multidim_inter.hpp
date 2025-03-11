@@ -66,7 +66,7 @@ struct MultiDimInter {
   MultiDimInter(const unsigned int &nmbr_copies, const Interval &i);
 
   /**
-   * @brief Pseudo copy constructor.
+   * @brief Collection move constructor.
    */
   MultiDimInter(const InterVector &iv);
 

@@ -341,6 +341,7 @@ struct Set {
 
   bool operator==(const Set &other) const;
   bool operator!=(const Set &other) const;
+  Set &operator=(const Set &other);
   Set &operator=(Set &&other);
   std::ostream &print(std::ostream &out) const;
 

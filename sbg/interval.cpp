@@ -17,15 +17,20 @@
 
  ******************************************************************************/
 
+#include <iostream>
 #include "sbg/interval.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
+member_imp(Interval, NAT, begin);
+member_imp(Interval, NAT, step);
+member_imp(Interval, NAT, end);
+
 Interval::Interval() : begin_(1), step_(1), end_(0) {}
-Interval::Interval(const NAT &x) : begin_(x), step_(1), end_(x) {}
-Interval::Interval(const NAT &begin, const NAT &step, const NAT &end) 
+Interval::Interval(NAT x) : begin_(x), step_(1), end_(x) {}
+Interval::Interval(NAT begin, NAT step, NAT end) 
   : begin_(begin), step_(step), end_(end) 
 {
   if (end >= begin) {
@@ -42,13 +47,6 @@ Interval::Interval(const NAT &begin, const NAT &step, const NAT &end)
     end_ = 0;
   }
 }
-
-NAT Interval::begin() const { return begin_; }
-NAT &Interval::begin_ref() { return begin_; }
-NAT Interval::step() const { return step_; }
-NAT &Interval::step_ref() { return step_; }
-NAT Interval::end() const { return end_; }
-NAT &Interval::end_ref() { return end_; }
 
 // Operators -------------------------------------------------------------------
 
@@ -71,10 +69,10 @@ bool Interval::operator<(const Interval &other) const
 
 std::ostream &operator<<(std::ostream &out, const Interval &i) 
 {
-  out << "[" << Util::toStr(i.begin());
+  out << "[" << i.begin();
   if (i.step() != 1)
-    out << ":" << Util::toStr(i.step());
-  out << ":" << Util::toStr(i.end()) << "]";
+    out << ":" << i.step();
+  out << ":" << i.end() << "]";
  
   return out;
 }
@@ -88,7 +86,7 @@ unsigned int Interval::cardinal() const
 
 bool Interval::isEmpty() const { return end_ < begin_; }
 
-bool Interval::isMember(const NAT &x) const
+bool Interval::isMember(NAT x) const
 {
   if (x < begin_ || x > end_)
     return false;
@@ -131,9 +129,9 @@ Interval Interval::intersection(const Interval &other)const
 
 // Extra operations ------------------------------------------------------------
 
-Interval Interval::offset(const Util::NAT &off) const
+Interval Interval::offset(NAT off) const
 {
-  Util::NAT new_b = begin_ + off, new_e = end_ + off;
+  NAT new_b = begin_ + off, new_e = end_ + off;
 
   return Interval(new_b, step_, new_e);
 }
@@ -143,7 +141,7 @@ Interval Interval::least(const Interval &other) const
   return std::min(*this, other);
 }
 
-Interval::MaybeInterval Interval::compact(const Interval &other) const
+MaybeInterval Interval::compact(const Interval &other) const
 {
   if (step_ == other.step_) {
     if (end_+step_ == other.begin_)
@@ -153,8 +151,8 @@ Interval::MaybeInterval Interval::compact(const Interval &other) const
       return Interval(other.begin_, step_, end_);
 
     else if (!intersection(other).isEmpty()) {
-      Util::NAT new_b = std::min(begin_, other.begin_);
-      Util::NAT new_e = std::max(end_, other.end_);
+      NAT new_b = std::min(begin_, other.begin_);
+      NAT new_e = std::max(end_, other.end_);
       return Interval(new_b, step_, new_e);
     }
   }

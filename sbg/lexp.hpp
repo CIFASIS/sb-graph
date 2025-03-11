@@ -27,22 +27,25 @@
 #ifndef SBG_LEXP_HPP
 #define SBG_LEXP_HPP
 
-#include <boost/functional/hash.hpp>
-
-#include "util/defs.hpp"
+#include "sbg/rational.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
-using RAT = Util::RATIONAL;
-
 struct LExp {
-  member_class(RAT, slope);
-  member_class(RAT, offset);
+  member_class(RATIONAL, slope);
+  member_class(RATIONAL, offset);
 
+  /**
+   * @brief Identity constructor.
+   */
   LExp();
-  LExp(RAT slope, RAT offset);
+
+  /**
+   * @brief Construct a linear expression defining the slope and offset.
+   */
+  LExp(RATIONAL slope, RATIONAL offset);
 
   bool operator==(const LExp &other) const;
   bool operator!=(const LExp &other) const;
@@ -50,23 +53,23 @@ struct LExp {
   LExp operator+(const LExp &other) const;
   LExp operator-(const LExp &other) const;
 
-  /**
-   * @brief Traditional expression operations.
-   */
+  // Tradiotional le operations ------------------------------------------------
 
-  /* @function composition
-   *
-   * @brief Calculate the composition of le1 with le2, i.e. le1(le2)
+  /**
+   * @brief Calculate the composition of this with other, i.e. this(other).
    */
   LExp composition(const LExp &other) const;
-  LExp inverse() const;
 
   /**
-   * @brief Extra operations.
+   * @brief Calculates the inverse of a linear expression. If it is not bijective
+   * , i.e. it is constant, then it returns inf*x-inf.
    */
+  LExp inverse() const;
+
+  // Extra operations ----------------------------------------------------------
+
   bool isId() const;
   bool isConstant() const;
-  LExp offset(const Util::NAT &off) const;
 };
 std::ostream &operator<<(std::ostream &out, const LExp &le);
 

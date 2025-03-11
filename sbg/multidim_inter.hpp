@@ -2,6 +2,10 @@
 
  @brief <b>Multi-dimensional interval implementation</b>
 
+ A Multi-dimensional interval (mdi) i1 x ... x ik is the resulting set of the
+ cartesian product of intervals. As such the implementations an ordered
+ collection of intervals. 
+
  <hr>
 
  This file is part of Set--Based Graph Library.
@@ -30,21 +34,40 @@ namespace SBG {
 
 namespace LIB {
 
-using NAT = Util::NAT;
-
 typedef std::vector<Interval> InterVector;
 typedef InterVector::iterator InterVectorIt;
 typedef InterVector::const_iterator InterVectorConstIt;
 
-struct MultiDimInter {
-  using MaybeMDI = std::optional<MultiDimInter>;
+struct MultiDimInter;
 
+typedef std::optional<MultiDimInter> MaybeMDI;
+
+struct MultiDimInter {
   member_class(InterVector, intervals);
 
+  /**
+   * @brief Construct zero-dimensional mdi.
+   */
   MultiDimInter();
+
+  /**
+   * @brief Construct a mdi with a single element x. 
+   */
   MultiDimInter(const MD_NAT &x);
+
+  /**
+   * @brief Construct a one-dimensional mdi with the same elements as i.
+   */
   MultiDimInter(const Interval &i);
+
+  /**
+   * @brief Construct a mdi that is the result of i^nmbr_copies.
+   */
   MultiDimInter(const unsigned int &nmbr_copies, const Interval &i);
+
+  /**
+   * @brief Pseudo copy constructor.
+   */
   MultiDimInter(const InterVector &iv);
 
   typedef InterVectorIt iterator;
@@ -59,24 +82,48 @@ struct MultiDimInter {
 
   bool operator==(const MultiDimInter &other) const;
   bool operator!=(const MultiDimInter &other) const;
+
+  /**
+   * @brief A mdi mdi1 is less than another mdi2 iff min(mdi1) < min(mdi2).
+   * This operation is later needed to implement ordered sets.
+   */ 
   bool operator<(const MultiDimInter &other) const;
 
-  /**
-   * @brief Traditional set operations.
-   */
-  std::size_t arity() const;
-  unsigned int cardinal() const;
-  bool isEmpty() const;
-  Util::MD_NAT minElem() const;
-  Util::MD_NAT maxElem() const;
-  MultiDimInter intersection(const MultiDimInter &other) const;
+  // Traditional set operations ------------------------------------------------
 
   /**
-   * @brief Extra operations.
+   * @brief Number of elements contained in the mdi, i.e.
+   * cardinal([1:1:10]x[1:1:10]) = 100. 
+   */
+  unsigned int cardinal() const;
+  bool isEmpty() const;
+  MD_NAT minElem() const;
+  MD_NAT maxElem() const;
+  MultiDimInter intersection(const MultiDimInter &other) const;
+
+  // Extra operations ----------------------------------------------------------
+
+  /**
+   * @brief Number of dimensions of the elements that compose the mdi. For
+   * example, arity([1:1:10]x[1:1:10]) = 2.
+   */
+  std::size_t arity() const;
+
+  /**
+   * @brief Sum a constant value to every element of the mdi.
    */
   MultiDimInter offset(const MD_NAT &off) const;
+
+  /**
+   * @brief Operation that given two disjoint mdis returns the lesser one.
+   * It will be used by ordered sets operations.
+   */
   MultiDimInter least(const MultiDimInter &other) const;
-  bool isUnidim() const;
+
+  /**
+   * @brief Merge two contiguous mdis if possible. If not, then the result is
+   * not an mdi, so no value is returned.
+   */
   MaybeMDI compact(const MultiDimInter &other) const;
 };
 std::ostream &operator<<(std::ostream &out, const MultiDimInter &mi);

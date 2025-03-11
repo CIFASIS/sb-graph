@@ -37,7 +37,7 @@ $(BUILD_DIR)/test_%.o : $(TEST_DIR)/%.cpp
 $(BUILD_DIR)/%.o : $(SRC_DIR)/%.cpp
 	$(G++) $(G++_FLAGS) $< -o $@ 
 
-all: $(TARGET) $(RUN_TESTS)
+all: $(TARGET)
 
 $(TARGET): $(MAIN_OBJ) $(TEST_OBJ) $(BUILD_DIR)
 		g++ -o $(TARGET) $(MAIN_OBJ) $(TEST_OBJ) $(LD_FLAGS) $(LIB)

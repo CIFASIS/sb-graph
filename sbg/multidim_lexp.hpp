@@ -1,6 +1,9 @@
 /** @file multidim_lexp.hpp
 
- @brief <b>Multi-dimensional inear expressions implementation</b>
+ @brief <b>Multi-dimensional linear expressions implementation</b>
+
+ A Multi-dimensional linear expression (mdle) le1 | ... | lek is an ordered
+ collection of linear expressions.
 
  <hr>
 
@@ -38,7 +41,7 @@ struct MDLExp {
   member_class(LExpVector, exps);
 
   MDLExp();
-  MDLExp(Util::MD_NAT x); // Expression mapping to x
+  MDLExp(MD_NAT x);
   MDLExp(LExp le);
   MDLExp(unsigned int nmbr_copies, LExp le);
   MDLExp(LExpVector v);
@@ -59,21 +62,25 @@ struct MDLExp {
   MDLExp operator+(const MDLExp &other) const;
   MDLExp operator-(const MDLExp &other) const;
 
-  /**
-   * @brief Traditional expression operations.
-   */
+  // Traditional expression operations -----------------------------------------
 
+  /**
+   * @brief Number of dimensions of the mdle, i.e. arity(1*x+0 | 1*x+0) = 2.
+   */
   std::size_t arity() const;
-  /* @function composition
-   *
-   * @brief Calculate the composition of le1 with le2, i.e. le1(le2)
+
+  /**
+   * @brief Calculate the composition of mdle1 with mdle2, i.e. mdle1(mdle2)
    */
   MDLExp composition(const MDLExp &other) const;
-  MDLExp inverse() const;
 
   /**
-   * @brief Extra operations.
+   * @brief Calculates the inverse dimension by dimension.
    */
+  MDLExp inverse() const;
+
+  // Extra operations ----------------------------------------------------------
+
   bool isId() const;
   bool isConstant() const;
 };

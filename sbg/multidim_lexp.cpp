@@ -24,10 +24,10 @@ namespace SBG {
 namespace LIB {
 
 MDLExp::MDLExp() : exps_() {}
-MDLExp::MDLExp(Util::MD_NAT x)
+MDLExp::MDLExp(MD_NAT x)
 {
-  for (Util::NAT xi : x)
-    exps_.emplace_back(LExp(0, Util::RATIONAL(xi)));
+  for (NAT xi : x)
+    exps_.emplace_back(LExp(0, RATIONAL(xi)));
 }
 MDLExp::MDLExp(LExp le) : exps_() { exps_.emplace_back(le); }
 MDLExp::MDLExp(unsigned int nmbr_copies, LExp le) : exps_()
@@ -35,7 +35,7 @@ MDLExp::MDLExp(unsigned int nmbr_copies, LExp le) : exps_()
   for (unsigned int j = 0; j < nmbr_copies; ++j)
     exps_.emplace_back(le);
 }
-MDLExp::MDLExp(LExpVector v) : exps_(v) {}
+MDLExp::MDLExp(LExpVector v) : exps_(std::move(v)) {}
 
 member_imp(MDLExp, LExpVector, exps);
 

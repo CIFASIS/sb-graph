@@ -97,6 +97,7 @@ struct Map {
    * example, arity([1:1:10]x[1:1:10]) = 2.
    */
   std::size_t arity() const;
+
   bool isEmpty() const;
 
   /**

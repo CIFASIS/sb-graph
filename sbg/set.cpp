@@ -17,7 +17,6 @@
 
  ******************************************************************************/
 
-#include <iostream>
 #include "sbg/set.hpp"
 
 namespace SBG {
@@ -826,16 +825,6 @@ bool Set::operator==(const Set &other) const
 }
 
 bool Set::operator!=(const Set &other) const { return !(*this == other); }
-
-/*
-Set &Set::operator=(const Set &other)
-{
-  if (this != &other)
-    delegate_ = other.delegate_ ? other.delegate_->clone() : nullptr;
-
-  return *this;
-}
-*/
 
 Set &Set::operator=(Set &&other)
 {

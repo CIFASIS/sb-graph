@@ -17,7 +17,6 @@
 
  ******************************************************************************/
 
-#include <iostream>
 #include "sbg/interval.hpp"
 
 namespace SBG {

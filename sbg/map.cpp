@@ -18,7 +18,6 @@
  ******************************************************************************/
 
 #include "sbg/map.hpp"
-#include <iostream>
 
 namespace SBG {
 
@@ -96,7 +95,7 @@ Map::Map(const SetAF &fact, Set s, Exp exp)
 
 bool Map::operator==(const Map &other) const
 {
-  if (dom_ == other.dom_) {
+  if (dom_ == other.dom()) {
     if (dom_.cardinal() == 1) {
       return image() == other.image();
     }
@@ -205,6 +204,9 @@ Set Map::preImage(const Set &subcodom) const
 
 Map Map::composition(const Map &other) const
 {
+  if (exp_.isId())
+    return Map(fact_, std::move(dom_), exp_);
+
   Set res_dom = dom_.intersection(other.image());
   res_dom = other.preImage(res_dom);
   Exp res_exp = exp_.composition(other.exp_);

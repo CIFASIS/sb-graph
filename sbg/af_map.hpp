@@ -1,6 +1,15 @@
 /** @file af_map.hpp
 
+<<<<<<< HEAD
  @brief <b>Map Factory</b>
+=======
+ @brief <b>Map Abstract Factory</b>
+
+ It was proposed to try implementing SBG maps with "atomic" domains (i.e.,
+ the domain is a described with a mdi). For this reason, it was decided that
+ delegation should be used to provide different implementations, and also an
+ abstract factory was needed to create objects with the desired implementation.
+>>>>>>> 184fd91f83c3ebe8685db86370ecf5dee8410781
 
  <hr>
 

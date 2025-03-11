@@ -22,10 +22,10 @@
 // Adapt structures ------------------------------------------------------------
 
 BOOST_FUSION_ADAPT_STRUCT(
-  SBG::AST::Assign, (SBG::Util::VariableName, l_)(SBG::AST::Expr, r_)
+  SBG::AST::Assign, (SBG::AST::VariableName, l_)(SBG::AST::Expr, r_)
 )
 
-BOOST_FUSION_ADAPT_STRUCT(SBG::AST::ConfigDims, (SBG::Util::NAT, nmbr_dims_))
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::ConfigDims, (SBG::LIB::NAT, nmbr_dims_))
 
 // Statement parser ------------------------------------------------------------
 

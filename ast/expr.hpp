@@ -27,7 +27,7 @@
 #include <boost/variant/variant.hpp>
 #include <boost/variant/recursive_wrapper.hpp>
 
-#include "util/defs.hpp"
+#include "sbg/natural.hpp"
 
 namespace SBG {
 
@@ -36,7 +36,7 @@ namespace AST {
 // Arithmetic and call structures ----------------------------------------------
 
 typedef std::string Name;
-typedef Util::NAT Natural;
+typedef LIB::NAT Natural;
 struct Rational;
 struct UnaryOp;
 struct BinOp;
@@ -59,7 +59,9 @@ struct PWLMap;
 struct SBG;
 struct DSBG;
 
-typedef boost::variant<Natural, Util::VariableName,
+typedef std::string VariableName;
+
+typedef boost::variant<Natural, VariableName,
   boost::recursive_wrapper<Rational>,
   boost::recursive_wrapper<UnaryOp>, 
   boost::recursive_wrapper<BinOp>, 

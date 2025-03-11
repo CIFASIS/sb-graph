@@ -23,10 +23,24 @@ namespace SBG {
 
 namespace Eval {
 
-// -----------------------------------------------------------------------------
-// Function visitors -----------------------------------------------------------
-// -----------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+// Overload pattern ------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * @brief Provides in-place lambdas for visitation for the different
+ * operations. These are needed because different structures share the same
+ * functions (for example, isEmpty can be applied to intervals, sets, etc.).
+ */
+
+template<class... Ts> struct Overload : Ts... { using Ts::operator()...; };
+template<class... Ts> Overload(Ts...) -> Overload<Ts...>;
+
+////////////////////////////////////////////////////////////////////////////////
+// Function visitors -----------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+/*
 auto min_visitor_ = Util::Overload {
   [](LIB::Interval a) { return Util::MD_NAT(a.begin()); },
   [](LIB::MultiDimInter a) { return a.minElem(); },
@@ -294,18 +308,18 @@ auto cut_visitor_ = Util::Overload {
     return ContainerBaseType();
   }
 };
+*/
 
-// -----------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 // Expression evaluator --------------------------------------------------------
-// -----------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
-EvalExpression::EvalExpression() : nmbr_dims_(1), opt_conds_(true), env_()
-  , debug_(false) {}
 EvalExpression::EvalExpression(VarEnv env)
-  : nmbr_dims_(1), opt_conds_(true), env_(env), debug_(false) {}
-EvalExpression::EvalExpression(unsigned int nmbr_dims, bool opt_conds
+  : nmbr_dims_(1), fact_(std::make_shared<LIB::SBGUnordFact>()), env_(env)
+  , debug_(false) {}
+EvalExpression::EvalExpression(unsigned int nmbr_dims, LIB::SBGAFPtr fact
   , VarEnv env, bool debug)
-  : nmbr_dims_(nmbr_dims), opt_conds_(opt_conds), env_(env), debug_(debug) {}
+  : nmbr_dims_(nmbr_dims), fact_(fact), env_(env), debug_(debug) {}
 
 ExprBaseType EvalExpression::operator()(AST::Natural v) const
 {
@@ -404,13 +418,11 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
         if (eval_args.size() == 1) {
           arity_ok = true;
 
-          ContainerBaseType container 
-            = std::visit(EvalContainer{}, eval_args[0]);
           auto f = [](auto const &c) {
             return c.isEmpty();
           };
-          bool result = std::visit(f, container);
-          return Util::MD_NAT(result);
+          bool res = std::visit(f, eval_args[0]);
+          return res;
         }
         break;
 
@@ -473,6 +485,7 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
         }
         break;
 
+/*
       case Eval::Func::im:
         if (eval_args.size() == 1) {
           arity_ok = true;
@@ -680,6 +693,7 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
           return result;
         }
         break;
+*/
 
       default:
         Util::ERROR("EvalExpression: function ", vname, " not implemented\n");
@@ -800,123 +814,27 @@ ExprBaseType EvalExpression::operator()(AST::MDInterBinOp v) const
 
 ExprBaseType EvalExpression::operator()(AST::Set v) const
 {
-  ContainerBaseType c;
-  if (nmbr_dims_ == 1 && opt_conds_) {
-    LIB::OrdSet s = boost::apply_visitor(EvalOrdSet(env_), AST::Expr(v));
-    c = s;
+  SBG::LIB::Set s = boost::apply_visitor(EvalSet(fact_, env_), AST::Expr(v));
 
-    Util::ERROR_UNLESS(s.arity() == 1 || s.arity() == 0
-      , "EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", s, ")\n");
-  }
-  else {
-    LIB::UnordSet s = boost::apply_visitor(EvalUnordSet(env_), AST::Expr(v));
-    c = s;
+  Util::ERROR_UNLESS(s.arity() == nmbr_dims_ || s.arity() == 0
+    , "EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", s, ")\n");
 
-    Util::ERROR_UNLESS(s.arity() == nmbr_dims_ || s.arity() == 0
-      , "EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", s, ")\n");
-  }
-
-  return c;
-}
-
-// ----- //
-
-ExprBaseType VisitSetUnOp(AST::SetUnaryOp v, LIB::OrdSet s)
-{
-  switch (v.op()) {
-    case AST::ContainerUOp::card:
-      return Util::MD_NAT(s.cardinal());
-
-    default:
-      Util::ERROR("EvalExpression: SetUnaryOp ", v.op(), " unsupported\n");
-      return Util::MD_NAT(0);
-  }
-
-  return Util::MD_NAT(0);
-}
-
-ExprBaseType VisitSetUnOp(AST::SetUnaryOp v, LIB::UnordSet s)
-{
-  switch (v.op()) {
-    case AST::ContainerUOp::card:
-      return Util::MD_NAT(s.cardinal());
-
-    default:
-      Util::ERROR("EvalExpression: SetUnaryOp ", v.op(), " unsupported\n");
-      return Util::MD_NAT(0);
-  }
-
-  return Util::MD_NAT(0);
+  return s;
 }
 
 ExprBaseType EvalExpression::operator()(AST::SetUnaryOp v) const
 {
-  AST::Expr exp = v.e();
-  if (nmbr_dims_ == 1 && opt_conds_) {
-    EvalOrdSet visit_ord_set(env_);
-    LIB::OrdSet s = boost::apply_visitor(visit_ord_set, exp);
+  SBG::LIB::Set s = boost::apply_visitor(EvalSet(fact_, env_), v.e());
 
-    Util::ERROR_UNLESS(s.arity() == 1 || s.arity() == 0
-      , "EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", s, ")\n");
+  Util::ERROR_UNLESS(s.arity() == nmbr_dims_ || s.arity() == 0
+    , "EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", s, ")\n");
 
-    return VisitSetUnOp(v, s);
-  }
- 
-  else {
-    EvalUnordSet visit_unord_set(env_);
-    LIB::UnordSet s = boost::apply_visitor(visit_unord_set, exp);
-
-    Util::ERROR_UNLESS(s.arity() == nmbr_dims_ || s.arity() == 0
-      , "EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", s, ")\n");
-
-    return VisitSetUnOp(v, s);
-  }
-
-  return Util::MD_NAT(0);
-}
-
-// ----- //
-
-ExprBaseType VisitSetBinOp(AST::SetBinOp v, LIB::OrdSet sl, LIB::OrdSet sr)
-{
   switch (v.op()) {
-    case AST::ContainerOp::cap:
-      return ContainerBaseType(sl.intersection(sr));
-
-    case AST::ContainerOp::diff:
-      return ContainerBaseType(sl.difference(sr));
-
-    case AST::ContainerOp::eq:
-      return Util::MD_NAT(sl == sr);
-
-    case AST::ContainerOp::cup:
-      return ContainerBaseType(sl.cup(sr));
+    case AST::ContainerUOp::card:
+      return Util::MD_NAT(s.cardinal());
 
     default:
-      Util::ERROR("EvalExpression: SetBinOp ", v.op(), " unsupported\n");
-      return Util::MD_NAT(0);
-  }
-
-  return Util::MD_NAT(0);
-}
-
-ExprBaseType VisitSetBinOp(AST::SetBinOp v, LIB::UnordSet sl, LIB::UnordSet sr)
-{
-  switch (v.op()) {
-    case AST::ContainerOp::cap:
-      return ContainerBaseType(sl.intersection(sr));
-
-    case AST::ContainerOp::diff:
-      return ContainerBaseType(sl.difference(sr));
-
-    case AST::ContainerOp::eq:
-      return Util::MD_NAT(sl == sr);
-
-    case AST::ContainerOp::cup:
-      return ContainerBaseType(sl.cup(sr));
-
-    default:
-      Util::ERROR("EvalExpression: SetBinOp ", v.op(), " unsupported\n");
+      Util::ERROR("EvalExpression: SetUnaryOp ", v.op(), " unsupported\n");
       return Util::MD_NAT(0);
   }
 
@@ -926,36 +844,35 @@ ExprBaseType VisitSetBinOp(AST::SetBinOp v, LIB::UnordSet sl, LIB::UnordSet sr)
 ExprBaseType EvalExpression::operator()(AST::SetBinOp v) const
 {
   AST::Expr l = v.left(), r = v.right();
-  if (nmbr_dims_ == 1 && opt_conds_) {
-    EvalOrdSet visit_ord_set(env_);
-    LIB::OrdSet sl = boost::apply_visitor(visit_ord_set, l);
-    LIB::OrdSet sr = boost::apply_visitor(visit_ord_set, r);
+  EvalSet visit_set(fact_, env_);
+  LIB::Set sl = boost::apply_visitor(visit_set, l);
+  LIB::Set sr = boost::apply_visitor(visit_set, r);
 
-    Util::ERROR_UNLESS((sl.arity() == 1 && sr.arity() == 1)
-        || sl.arity() == 0 || sr.arity() == 0
-      ,"EvalExpr: nmbr_dims_: ", nmbr_dims_
-      , " != arity(", sl, ") or arity(", sr, ")\n");
+  Util::ERROR_UNLESS((sl.arity() == nmbr_dims_ && sr.arity() == nmbr_dims_)
+      || sl.arity() == 0 || sr.arity() == 0
+    ,"EvalExpr: nmbr_dims_: ", nmbr_dims_
+    , " != arity(", sl, ") or arity(", sr, ")\n");
 
-    return VisitSetBinOp(v, sl, sr);
-  }
+  switch (v.op()) {
+    case AST::ContainerOp::cap:
+      return sl.intersection(sr);
 
-  else {
-    EvalUnordSet visit_unord_set(env_);
-    LIB::UnordSet sl = boost::apply_visitor(visit_unord_set, l);
-    LIB::UnordSet sr = boost::apply_visitor(visit_unord_set, r);
+    case AST::ContainerOp::cup:
+      return sl.cup(sr);
 
-    Util::ERROR_UNLESS((sl.arity() == nmbr_dims_ && sr.arity() == nmbr_dims_)
-        || sl.arity() == 0 || sr.arity() == 0
-      ,"EvalExpr: nmbr_dims_: ", nmbr_dims_
-      , " != arity(", sl, ") or arity(", sr, ")\n");
+    case AST::ContainerOp::diff:
+      return sl.difference(sr);
 
-    return VisitSetBinOp(v, sl, sr);
+    case AST::ContainerOp::eq:
+      return Util::MD_NAT(sl == sr);
+
+    default:
+      Util::ERROR("EvalExpression: SetBinOp ", v.op(), " unsupported\n");
+      return Util::MD_NAT(0);
   }
 
   return Util::MD_NAT(0);
 }
-
-// ----- //
 
 ExprBaseType EvalExpression::operator()(AST::LinearExp v) const
 {
@@ -983,8 +900,6 @@ ExprBaseType EvalExpression::operator()(AST::LExpBinOp v) const
       return Util::MD_NAT(0);
   }
 }
-
-// ----- //
 
 ExprBaseType EvalExpression::operator()(AST::MDLExp v) const
 {
@@ -1025,10 +940,9 @@ ExprBaseType EvalExpression::operator()(AST::MDLExpBinOp v) const
   return Util::MD_NAT(0);
 }
 
-// ----- //
-
 ExprBaseType EvalExpression::operator()(AST::LinearMap v) const
 {
+/*
   if (nmbr_dims_ == 1 && opt_conds_) {
     LIB::CanonMap m = boost::apply_visitor(EvalCanonMap(env_), AST::Expr(v));
 
@@ -1044,12 +958,13 @@ ExprBaseType EvalExpression::operator()(AST::LinearMap v) const
     , "EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", m, ")\n");
 
   return m;
+*/
+  return Util::MD_NAT(0);
 }
-
-// ----- //
 
 ExprBaseType EvalExpression::operator()(AST::PWLMap v) const
 {
+/*
   if (nmbr_dims_ == 1 && opt_conds_) {
     LIB::CanonPWMap pw = boost::apply_visitor(EvalCanonPWMap(env_), AST::Expr(v));
 
@@ -1065,22 +980,30 @@ ExprBaseType EvalExpression::operator()(AST::PWLMap v) const
     , "EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", pw, ")\n");
 
   return pw;
+*/
+  return Util::MD_NAT(0);
 }
 
 ExprBaseType EvalExpression::operator()(AST::SBG v) const
 {
+/*
   if (nmbr_dims_ == 1 && opt_conds_)
     return boost::apply_visitor(EvalCanonSBG(env_), AST::Expr(v));
 
   return boost::apply_visitor(EvalBaseSBG(env_), AST::Expr(v));
+*/
+  return Util::MD_NAT(0);
 }
 
 ExprBaseType EvalExpression::operator()(AST::DSBG v) const
 {
+/*
   if (nmbr_dims_ == 1 && opt_conds_)
     return boost::apply_visitor(EvalCanonDSBG(env_), AST::Expr(v));
 
   return boost::apply_visitor(EvalBaseDSBG(env_), AST::Expr(v));
+*/
+  return Util::MD_NAT(0);
 }
 
 } // namespace Eval

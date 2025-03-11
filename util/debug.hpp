@@ -2,9 +2,9 @@
 
  @brief <b>Debugging</b>
 
- This debugging routines allow the user to turn on selected
- debugging messages, controllable from the command line arguments
- passed to SBG modules after de -d option.
+ This debugging routines allow the user to turn on selected debugging messages,
+ controllable from the command line arguments passed to SBG modules after the
+ -d option.
 
  <hr>
 
@@ -31,6 +31,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
+#include <iostream>
 
 namespace SBG {
 

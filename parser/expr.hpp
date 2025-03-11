@@ -33,6 +33,7 @@
 
 #include "ast/expr.hpp"
 #include "parser/skipper.hpp"
+#include "sbg/rational.hpp"
 
 namespace SBG {
 
@@ -55,7 +56,7 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
     , SEMI, V, VMAP, MAP1, MAP2, EMAP, SUBE, MAPB, MAPD;
 
   // Other rules
-  qi::rule<Iterator, Skipper<Iterator>, Util::NAT()> nat;
+  qi::rule<Iterator, Skipper<Iterator>, LIB::NAT()> nat;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> int_expr;
   qi::rule<Iterator, Skipper<Iterator>, AST::Rational> rat_legacy;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> rat_primary;

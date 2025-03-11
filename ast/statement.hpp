@@ -25,25 +25,27 @@
 #define PARSER_STATEMENT_AST_HPP
 
 #include "ast/expr.hpp"
+#include "sbg/natural.hpp"
+#include "util/debug.hpp"
 
 namespace SBG {
 
 namespace AST {
 
 struct Assign {
-  member_class(Util::VariableName, l);
+  member_class(VariableName, l);
   member_class(Expr, r);
 
   Assign();
-  Assign(Util::VariableName l, Expr r);
+  Assign(VariableName l, Expr r);
 };
 std::ostream &operator<<(std::ostream &out, const Assign &asgn);
 
 struct ConfigDims {
-  member_class(Util::NAT, nmbr_dims);
+  member_class(LIB::NAT, nmbr_dims);
   
   ConfigDims();
-  ConfigDims(Util::NAT nmbr_dims);
+  ConfigDims(LIB::NAT nmbr_dims);
 };
 std::ostream &operator<<(std::ostream &out, const ConfigDims &cfg);
 

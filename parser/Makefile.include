@@ -7,7 +7,6 @@ PARSER      := bin/sbg-parser
 all: $(PARSER)
 
 PARSER_SRC := \
-    $(UTIL_DIR)/defs.cpp \
 	  $(PARSER_DIR)/main.cpp \
     $(AST_DIR)/expr.cpp \
     $(PARSER_DIR)/expr.cpp \
@@ -24,4 +23,4 @@ create-folders::
 	@mkdir -p $(BUILD_DIR)/$(PARSER_DIR)
 
 $(PARSER): $(PARSER_OBJ)
-	$(CXX) $(INCLUDES) $(CXXFLAGS) -o $(PARSER) $(PARSER_OBJ) $(LIBS)
+	$(CXX) $(INCLUDES) $(CXXFLAGS) -o $(PARSER) $(PARSER_OBJ)

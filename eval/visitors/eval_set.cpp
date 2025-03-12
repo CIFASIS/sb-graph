@@ -28,73 +28,73 @@ EvalSet::EvalSet(unsigned int nmbr_dims, const LIB::PWMapAF &fact, VarEnv &env)
 
 LIB::Set EvalSet::operator()(AST::Natural v) const
 {
-  Debug::ERROR("EvalSet: trying to evaluate Natural ", v, "\n");
+  Util::ERROR("EvalSet: trying to evaluate Natural ", v, "\n");
   return fact_.createSet(); 
 }
 
 LIB::Set EvalSet::operator()(AST::Rational v) const
 {
-  Debug::ERROR("EvalSet: trying to evaluate Rational ", v, "\n");
+  Util::ERROR("EvalSet: trying to evaluate Rational ", v, "\n");
   return fact_.createSet(); 
 }
 
 LIB::Set EvalSet::operator()(AST::VariableName v) const
 {
-  Debug::ERROR("EvalSet: variable ", v, " is not a Set\n");
+  Util::ERROR("EvalSet: variable ", v, " is not a Set\n");
   return fact_.createSet(); 
 }
 
 LIB::Set EvalSet::operator()(AST::UnaryOp v) const 
 {
-  Debug::ERROR("EvalSet: trying to evaluate arithmetic UnaryOp ", v, "\n");
+  Util::ERROR("EvalSet: trying to evaluate arithmetic UnaryOp ", v, "\n");
   return fact_.createSet(); 
 }
 
 LIB::Set EvalSet::operator()(AST::BinOp v) const 
 {
-  Debug::ERROR("EvalSet: trying to evaluate arithmetic BinOp ", v, "\n");
+  Util::ERROR("EvalSet: trying to evaluate arithmetic BinOp ", v, "\n");
   return fact_.createSet(); 
 }
 
 LIB::Set EvalSet::operator()(AST::Call v) const
 {
-  Debug::ERROR("EvalSet: trying to evaluate Call ", v, "\n");
+  Util::ERROR("EvalSet: trying to evaluate Call ", v, "\n");
   return fact_.createSet(); 
 }
 
 LIB::Set EvalSet::operator()(AST::Interval v) const
 { 
-  Debug::ERROR("EvalSet: trying to evaluate Interval ", v, "\n");
+  Util::ERROR("EvalSet: trying to evaluate Interval ", v, "\n");
   return fact_.createSet(); 
 }
 
 LIB::Set EvalSet::operator()(AST::InterUnaryOp v) const
 {
-  Debug::ERROR("EvalSet: trying to evaluate InterUnaryOp ", v, "\n");
+  Util::ERROR("EvalSet: trying to evaluate InterUnaryOp ", v, "\n");
   return fact_.createSet(); 
 }
 
 LIB::Set EvalSet::operator()(AST::InterBinOp v) const
 {
-  Debug::ERROR("EvalSet: trying to evaluate InterBinOp ", v, "\n");
+  Util::ERROR("EvalSet: trying to evaluate InterBinOp ", v, "\n");
   return fact_.createSet(); 
 }
 
 LIB::Set EvalSet::operator()(AST::MultiDimInter v) const
 { 
-  Debug::ERROR("EvalSet: trying to evaluate MultiDimInter ", v, "\n");
+  Util::ERROR("EvalSet: trying to evaluate MultiDimInter ", v, "\n");
   return fact_.createSet(); 
 }
 
 LIB::Set EvalSet::operator()(AST::MDInterUnaryOp v) const
 {
-  Debug::ERROR("EvalSet: trying to evaluate MDInterUnaryOp ", v, "\n");
+  Util::ERROR("EvalSet: trying to evaluate MDInterUnaryOp ", v, "\n");
   return fact_.createSet(); 
 }
 
 LIB::Set EvalSet::operator()(AST::MDInterBinOp v) const
 {
-  Debug::ERROR("EvalSet: trying to evaluate MDInterBinOp ", v, "\n");
+  Util::ERROR("EvalSet: trying to evaluate MDInterBinOp ", v, "\n");
   return fact_.createSet(); 
 }
 
@@ -106,7 +106,7 @@ LIB::Set EvalSet::operator()(AST::Set v) const
   for (AST::Expr e : v.pieces())
     res.emplaceBack(boost::apply_visitor(mdi_visit, e));
 
-  Debug::ERROR_UNLESS(res.arity() == nmbr_dims_ || res.arity() == 0
+  Util::ERROR_UNLESS(res.arity() == nmbr_dims_ || res.arity() == 0
     , "EvalSet[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
     , res.arity(), "\n");
 
@@ -118,7 +118,7 @@ LIB::Set EvalSet::operator()(AST::SetUnaryOp v) const
   AST::Expr e = v.e();
   switch (v.op()) {
     default:
-      Debug::ERROR("EvalSet: SetUnaryOp ", v.op(), " unsupported\n");
+      Util::ERROR("EvalSet: SetUnaryOp ", v.op(), " unsupported\n");
       return fact_.createSet(); 
   }
 }
@@ -135,7 +135,7 @@ LIB::Set EvalSet::operator()(AST::SetBinOp v) const
       return l.difference(r);
 
     default:
-      Debug::ERROR("EvalSet: SetBinOp ", v.op(), " unsupported\n");
+      Util::ERROR("EvalSet: SetBinOp ", v.op(), " unsupported\n");
       return fact_.createSet(); 
   }
 
@@ -144,49 +144,49 @@ LIB::Set EvalSet::operator()(AST::SetBinOp v) const
 
 LIB::Set EvalSet::operator()(AST::LinearExp v) const
 { 
-  Debug::ERROR("EvalSet: trying to evaluate LinearExp ", v, "\n");
+  Util::ERROR("EvalSet: trying to evaluate LinearExp ", v, "\n");
   return fact_.createSet(); 
 }
 
 LIB::Set EvalSet::operator()(AST::LExpBinOp v) const
 { 
-  Debug::ERROR("EvalSet: trying to evaluate LExpBinOp ", v, "\n");
+  Util::ERROR("EvalSet: trying to evaluate LExpBinOp ", v, "\n");
   return fact_.createSet(); 
 }
 
 LIB::Set EvalSet::operator()(AST::MDLExp v) const
 { 
-  Debug::ERROR("EvalSet: trying to evaluate MDLExp ", v, "\n");
+  Util::ERROR("EvalSet: trying to evaluate MDLExp ", v, "\n");
   return fact_.createSet(); 
 }
 
 LIB::Set EvalSet::operator()(AST::MDLExpBinOp v) const
 { 
-  Debug::ERROR("EvalSet: trying to evaluate MDLExpBinOp ", v, "\n");
+  Util::ERROR("EvalSet: trying to evaluate MDLExpBinOp ", v, "\n");
   return fact_.createSet(); 
 }
 
 LIB::Set EvalSet::operator()(AST::LinearMap v) const
 { 
-  Debug::ERROR("EvalSet: trying to evaluate LinearMap ", v, "\n");
+  Util::ERROR("EvalSet: trying to evaluate LinearMap ", v, "\n");
   return fact_.createSet(); 
 }
 
 LIB::Set EvalSet::operator()(AST::PWLMap v) const
 { 
-  Debug::ERROR("EvalSet: trying to evaluate PWLMap ", v, "\n");
+  Util::ERROR("EvalSet: trying to evaluate PWLMap ", v, "\n");
   return fact_.createSet(); 
 }
 
 LIB::Set EvalSet::operator()(AST::SBG v) const
 { 
-  Debug::ERROR("EvalSet: trying to evaluate SBG ", v, "\n");
+  Util::ERROR("EvalSet: trying to evaluate SBG ", v, "\n");
   return fact_.createSet(); 
 }
 
 LIB::Set EvalSet::operator()(AST::DSBG v) const
 { 
-  Debug::ERROR("EvalSet: trying to evaluate DSBG ", v, "\n");
+  Util::ERROR("EvalSet: trying to evaluate DSBG ", v, "\n");
   return fact_.createSet(); 
 }
 

@@ -129,6 +129,10 @@ struct SetDelegate {
    */
   virtual SetDelegPtr cup(const SetDelegate &other) const = 0;
 
+  /**
+   * @brief Calculates the complement of a set.\n 
+   * Precondition: set must not be empty (undetermined arity).
+   */
   virtual SetDelegPtr complement() const = 0;
   virtual SetDelegPtr difference(const SetDelegate &other) const = 0;
 

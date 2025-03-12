@@ -52,9 +52,13 @@ bool MD_NAT::operator!=(const MD_NAT &other) const { return !(*this == other); }
 
 bool MD_NAT::operator<(const MD_NAT &other) const
 {
-  for (unsigned int j = 0; j < arity(); ++j)
+  for (unsigned int j = 0; j < arity(); ++j) {
     if (operator[](j) < other[j])
       return true;
+
+    if (operator[](j) > other[j])
+      return false;
+  }
 
   return false;
 }

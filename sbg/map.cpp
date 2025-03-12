@@ -170,7 +170,7 @@ Set Map::image(const Set &subdom) const
     else {
       // TODO: optimization?
       for (const SetPiece &mdi : capdom) {
-        res.cup(fact_.createSet(SBG::LIB::image(mdi, exp_)));
+        res = res.cup(fact_.createSet(SBG::LIB::image(mdi, exp_)));
       }
     }
   }

@@ -21,6 +21,7 @@
 
 #include "eval/visitors/program_visitor.hpp"
 #include "parser/sbg_program.hpp"
+#include "util/logger.hpp"
 
 void parseEvalProgramFromFile(std::string fname)
 {

@@ -21,12 +21,13 @@
 
 #include "eval/visitors/program_visitor.hpp"
 #include "parser/sbg_program.hpp"
+#include "util/logger.hpp"
 
 void parseEvalProgramFromFile(std::string fname)
 {
   std::ifstream in(fname.c_str());
   if (in.fail()) 
-    SBG::Debug::ERROR("Unable to open file");
+    SBG::Util::ERROR("Unable to open file");
   in.unsetf(std::ios::skipws);
 
   std::string str(

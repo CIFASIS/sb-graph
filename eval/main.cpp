@@ -35,7 +35,7 @@ void parseEvalProgramFromFile(std::string fname, bool debug)
 {
   std::ifstream in(fname.c_str());
   if (in.fail()) 
-    SBG::Debug::ERROR("Unable to open file ", fname, "\n");
+    SBG::Util::ERROR("Unable to open file ", fname, "\n");
   in.unsetf(std::ios::skipws);
 
   std::string str(
@@ -243,7 +243,7 @@ int main(int argc, char**argv)
   if (!filename.empty())
     parseEvalProgramFromFile(filename, debug);
   else
-    SBG::Debug::ERROR("A filename should be provided\n");
+    SBG::Util::ERROR("A filename should be provided\n");
 
   return 0;
 }

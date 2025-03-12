@@ -33,7 +33,7 @@ LIB::NAT EvalNat::operator()(AST::Rational v) const
   if (boost::apply_visitor(*this, v.den()) == 1)
     return boost::apply_visitor(*this, v.num());
 
-  Debug::ERROR("EvalNat: trying to evaluate Rational ", v, "\n");
+  Util::ERROR("EvalNat: trying to evaluate Rational ", v, "\n");
   return 0; 
 }
 
@@ -53,13 +53,13 @@ LIB::NAT EvalNat::operator()(AST::VariableName v) const
         return std::get<LIB::RATIONAL>(value).toNat();
   }
 
-  Debug::ERROR("EvalNat: variable ", v, " undefined\n");
+  Util::ERROR("EvalNat: variable ", v, " undefined\n");
   return 0;
 }
 
 LIB::NAT EvalNat::operator()(AST::UnaryOp v) const 
 {
-  Debug::ERROR("EvalNat: trying to evaluate arithmetic UnaryOp ", v, "\n");
+  Util::ERROR("EvalNat: trying to evaluate arithmetic UnaryOp ", v, "\n");
   return 0;
 }
 
@@ -81,116 +81,116 @@ LIB::NAT EvalNat::operator()(AST::BinOp v) const
       return pow(l, r);
 
     default:
-      Debug::ERROR("EvalNat: BinOp ", v.op(), " unsupported\n");
+      Util::ERROR("EvalNat: BinOp ", v.op(), " unsupported\n");
       return 0;
   }
 }
 
 LIB::NAT EvalNat::operator()(AST::Call v) const
 {
-  Debug::ERROR("EvalNat: trying to evaluate Call ", v, "\n");
+  Util::ERROR("EvalNat: trying to evaluate Call ", v, "\n");
   return 0;
 }
 
 LIB::NAT EvalNat::operator()(AST::Interval v) const
 {
-  Debug::ERROR("EvalNat: trying to evaluate Interval ", v, "\n");
+  Util::ERROR("EvalNat: trying to evaluate Interval ", v, "\n");
   return 0;
 }
 
 LIB::NAT EvalNat::operator()(AST::InterUnaryOp v) const
 {
-  Debug::ERROR("EvalNat: trying to evaluate InterUnaryOp ", v, "\n");
+  Util::ERROR("EvalNat: trying to evaluate InterUnaryOp ", v, "\n");
   return 0;
 }
 
 LIB::NAT EvalNat::operator()(AST::InterBinOp v) const
 {
-  Debug::ERROR("EvalNat: trying to evaluate InterBinOp ", v, "\n");
+  Util::ERROR("EvalNat: trying to evaluate InterBinOp ", v, "\n");
   return 0;
 }
 
 LIB::NAT EvalNat::operator()(AST::MultiDimInter v) const
 {
-  Debug::ERROR("EvalNat: trying to evaluate MultiDimInter ", v, "\n");
+  Util::ERROR("EvalNat: trying to evaluate MultiDimInter ", v, "\n");
   return 0;
 }
 
 LIB::NAT EvalNat::operator()(AST::MDInterUnaryOp v) const
 {
-  Debug::ERROR("EvalNat: trying to evaluate MDInterUnaryOp ", v, "\n");
+  Util::ERROR("EvalNat: trying to evaluate MDInterUnaryOp ", v, "\n");
   return 0;
 }
 
 LIB::NAT EvalNat::operator()(AST::MDInterBinOp v) const
 {
-  Debug::ERROR("EvalNat: trying to evaluate MDInterBinOp ", v, "\n");
+  Util::ERROR("EvalNat: trying to evaluate MDInterBinOp ", v, "\n");
   return 0;
 }
 
 LIB::NAT EvalNat::operator()(AST::Set v) const
 {
-  Debug::ERROR("EvalNat: trying to evaluate Set ", v, "\n");
+  Util::ERROR("EvalNat: trying to evaluate Set ", v, "\n");
   return 0;
 }
 
 LIB::NAT EvalNat::operator()(AST::SetUnaryOp v) const
 {
-  Debug::ERROR("EvalNat: trying to evaluate SetUnaryOp ", v, "\n");
+  Util::ERROR("EvalNat: trying to evaluate SetUnaryOp ", v, "\n");
   return 0;
 }
 
 LIB::NAT EvalNat::operator()(AST::SetBinOp v) const
 {
-  Debug::ERROR("EvalNat: trying to evaluate SetBinOp ", v, "\n");
+  Util::ERROR("EvalNat: trying to evaluate SetBinOp ", v, "\n");
   return 0;
 }
 
 LIB::NAT EvalNat::operator()(AST::LinearExp v) const
 {
-  Debug::ERROR("EvalNat: trying to evaluate LinearExp ", v, "\n");
+  Util::ERROR("EvalNat: trying to evaluate LinearExp ", v, "\n");
   return 0;
 }
 
 LIB::NAT EvalNat::operator()(AST::LExpBinOp v) const
 {
-  Debug::ERROR("EvalNat: trying to evaluate LExpBinOp ", v, "\n");
+  Util::ERROR("EvalNat: trying to evaluate LExpBinOp ", v, "\n");
   return 0;
 }
 
 LIB::NAT EvalNat::operator()(AST::MDLExp v) const
 {
-  Debug::ERROR("EvalNat: trying to evaluate MDLExp ", v, "\n");
+  Util::ERROR("EvalNat: trying to evaluate MDLExp ", v, "\n");
   return 0;
 }
 
 LIB::NAT EvalNat::operator()(AST::MDLExpBinOp v) const
 {
-  Debug::ERROR("EvalNat: trying to evaluate MDLExpBinOp ", v, "\n");
+  Util::ERROR("EvalNat: trying to evaluate MDLExpBinOp ", v, "\n");
   return 0;
 }
 
 LIB::NAT EvalNat::operator()(AST::LinearMap v) const
 {
-  Debug::ERROR("EvalNat: trying to evaluate LinearMap ", v, "\n");
+  Util::ERROR("EvalNat: trying to evaluate LinearMap ", v, "\n");
   return 0;
 }
 
 LIB::NAT EvalNat::operator()(AST::PWLMap v) const
 {
-  Debug::ERROR("EvalNat: trying to evaluate PWLMap ", v, "\n");
+  Util::ERROR("EvalNat: trying to evaluate PWLMap ", v, "\n");
   return 0;
 }
 
 LIB::NAT EvalNat::operator()(AST::SBG v) const
 {
-  Debug::ERROR("EvalNat: trying to evaluate SBG ", v, "\n");
+  Util::ERROR("EvalNat: trying to evaluate SBG ", v, "\n");
   return 0;
 }
 
 LIB::NAT EvalNat::operator()(AST::DSBG v) const
 {
-  Debug::ERROR("EvalNat: trying to evaluate DSBG ", v, "\n");
+  Util::ERROR("EvalNat: trying to evaluate DSBG ", v, "\n");
   return 0;
 }
 

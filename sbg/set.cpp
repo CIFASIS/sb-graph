@@ -181,10 +181,10 @@ SetDelegPtr UnorderedSet::intersection(const SetDelegate &other) const
   MDIUnordSet res;
 
   // Special cases to enhance performance
-  if (isEmpty() || other.isEmpty()) 
+  if (isEmpty() || other.isEmpty())
     return std::make_unique<UnorderedSet>(res);
 
-  if (maxElem() < other.minElem()) 
+  if (maxElem() < other.minElem())
     return std::make_unique<UnorderedSet>(res);
 
   if (other.maxElem() < minElem()) 
@@ -312,17 +312,15 @@ SetDelegPtr UnorderedSet::complement() const
 {
   SetDelegPtr res = std::make_unique<UnorderedSet>(MDIUnordSet());
 
-  if (!isEmpty()) {
-    auto first_it = pieces_.begin();
-    SetPiece first = *first_it;
-    res = std::move(UnorderedSet(first).complementAtom());
+  auto first_it = pieces_.begin();
+  SetPiece first = *first_it;
+  res = std::move(UnorderedSet(first).complementAtom());
 
-    ++first_it;
-    MDIUnordSet second(first_it, pieces_.end());
-    for (const SetPiece &mdi : second) {
-      SetDelegPtr c = UnorderedSet(mdi).complementAtom();
-      res = std::move(res->intersection(*c));
-    }
+  ++first_it;
+  MDIUnordSet second(first_it, pieces_.end());
+  for (const SetPiece &mdi : second) {
+    SetDelegPtr c = UnorderedSet(mdi).complementAtom();
+    res = std::move(res->intersection(*c));
   }
 
   return res;
@@ -330,6 +328,9 @@ SetDelegPtr UnorderedSet::complement() const
 
 SetDelegPtr UnorderedSet::difference(const SetDelegate &other) const
 {
+  if (isEmpty() || other.isEmpty())
+    return std::make_unique<UnorderedSet>(*this);
+
   UnordSetCRef othr = static_cast<UnordSetCRef>(other);
   return intersection(*othr.complement());
 }
@@ -637,6 +638,9 @@ SetDelegPtr OrderedDenseSet::complement() const
 
 SetDelegPtr OrderedDenseSet::difference(const SetDelegate &other) const
 {
+  if (isEmpty() || other.isEmpty())
+    return std::make_unique<OrderedDenseSet>(*this);
+
   OrdDenseSetCRef othr = static_cast<OrdDenseSetCRef>(other);
   return intersection(*othr.complement());
 }

@@ -53,12 +53,12 @@ LIB::RATIONAL EvalRat::operator()(AST::VariableName v) const
    }
 
     else {
-      Debug::ERROR("EvalRat: variable ", v, " is not rational\n");
+      Util::ERROR("EvalRat: variable ", v, " is not rational\n");
       return LIB::RATIONAL(0, 1);
     }
   }
 
-  Debug::ERROR("EvalRat: variable ", v, " undefined\n");
+  Util::ERROR("EvalRat: variable ", v, " undefined\n");
   return LIB::RATIONAL(0, 1);
 }
 
@@ -71,11 +71,11 @@ LIB::RATIONAL EvalRat::operator()(AST::UnaryOp v) const
       return -result;
 
     default:
-      Debug::ERROR("EvalExpression: UnaryOp ", v.op(), " unsupported\n");
+      Util::ERROR("EvalExpression: UnaryOp ", v.op(), " unsupported\n");
       return 0;
   }
 
-  Debug::ERROR("EvalExpression: UnaryOp ", v.op(), " unsupported\n");
+  Util::ERROR("EvalExpression: UnaryOp ", v.op(), " unsupported\n");
   return 0;
 }
 
@@ -94,119 +94,119 @@ LIB::RATIONAL EvalRat::operator()(AST::BinOp v) const
       return l * r;
 
     default:
-      Debug::ERROR("EvalRat: BinOp ", v.op(), " unsupported\n");
+      Util::ERROR("EvalRat: BinOp ", v.op(), " unsupported\n");
       return LIB::RATIONAL(0, 1);
   }
 
-  Debug::ERROR("EvalExpression: BinOp ", v.op(), " unsupported\n");
+  Util::ERROR("EvalExpression: BinOp ", v.op(), " unsupported\n");
   return 0;
 }
 
 LIB::RATIONAL EvalRat::operator()(AST::Call v) const
 {
-  Debug::ERROR("EvalRat: trying to evaluate Call ", v, "\n");
+  Util::ERROR("EvalRat: trying to evaluate Call ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
 LIB::RATIONAL EvalRat::operator()(AST::Interval v) const
 {
-  Debug::ERROR("EvalRat: trying to evaluate Interval ", v, "\n");
+  Util::ERROR("EvalRat: trying to evaluate Interval ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
 LIB::RATIONAL EvalRat::operator()(AST::InterUnaryOp v) const
 {
-  Debug::ERROR("EvalRat: trying to evaluate InterUnaryOp ", v, "\n");
+  Util::ERROR("EvalRat: trying to evaluate InterUnaryOp ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
 LIB::RATIONAL EvalRat::operator()(AST::InterBinOp v) const
 {
-  Debug::ERROR("EvalRat: trying to evaluate InterBinOp ", v, "\n");
+  Util::ERROR("EvalRat: trying to evaluate InterBinOp ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
 LIB::RATIONAL EvalRat::operator()(AST::MultiDimInter v) const
 {
-  Debug::ERROR("EvalRat: trying to evaluate MultiDimInter ", v, "\n");
+  Util::ERROR("EvalRat: trying to evaluate MultiDimInter ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
 LIB::RATIONAL EvalRat::operator()(AST::MDInterUnaryOp v) const
 {
-  Debug::ERROR("EvalRat: trying to evaluate MDInterUnaryOp ", v, "\n");
+  Util::ERROR("EvalRat: trying to evaluate MDInterUnaryOp ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
 LIB::RATIONAL EvalRat::operator()(AST::MDInterBinOp v) const
 {
-  Debug::ERROR("EvalRat: trying to evaluate MDInterBinOp ", v, "\n");
+  Util::ERROR("EvalRat: trying to evaluate MDInterBinOp ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
 LIB::RATIONAL EvalRat::operator()(AST::Set v) const
 {
-  Debug::ERROR("EvalRat: trying to evaluate Set ", v, "\n");
+  Util::ERROR("EvalRat: trying to evaluate Set ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
 LIB::RATIONAL EvalRat::operator()(AST::SetUnaryOp v) const
 {
-  Debug::ERROR("EvalRat: trying to evaluate SetUnaryOp ", v, "\n");
+  Util::ERROR("EvalRat: trying to evaluate SetUnaryOp ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
 LIB::RATIONAL EvalRat::operator()(AST::SetBinOp v) const
 {
-  Debug::ERROR("EvalRat: trying to evaluate SetBinOp ", v, "\n");
+  Util::ERROR("EvalRat: trying to evaluate SetBinOp ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
 LIB::RATIONAL EvalRat::operator()(AST::LinearExp v) const
 {
-  Debug::ERROR("EvalRat: trying to evaluate LinearExp ", v, "\n");
+  Util::ERROR("EvalRat: trying to evaluate LinearExp ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
 LIB::RATIONAL EvalRat::operator()(AST::LExpBinOp v) const
 {
-  Debug::ERROR("EvalRat: trying to evaluate LExpBinOp ", v, "\n");
+  Util::ERROR("EvalRat: trying to evaluate LExpBinOp ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
 LIB::RATIONAL EvalRat::operator()(AST::MDLExp v) const
 {
-  Debug::ERROR("EvalRat: trying to evaluate MDLExp ", v, "\n");
+  Util::ERROR("EvalRat: trying to evaluate MDLExp ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
 LIB::RATIONAL EvalRat::operator()(AST::MDLExpBinOp v) const
 {
-  Debug::ERROR("EvalRat: trying to evaluate MDLExpBinOp ", v, "\n");
+  Util::ERROR("EvalRat: trying to evaluate MDLExpBinOp ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
 LIB::RATIONAL EvalRat::operator()(AST::LinearMap v) const
 {
-  Debug::ERROR("EvalRat: trying to evaluate LinearMap ", v, "\n");
+  Util::ERROR("EvalRat: trying to evaluate LinearMap ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
 LIB::RATIONAL EvalRat::operator()(AST::PWLMap v) const
 {
-  Debug::ERROR("EvalRat: trying to evaluate PWLMap ", v, "\n");
+  Util::ERROR("EvalRat: trying to evaluate PWLMap ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
 LIB::RATIONAL EvalRat::operator()(AST::SBG v) const
 {
-  Debug::ERROR("EvalRat: trying to evaluate SBG ", v, "\n");
+  Util::ERROR("EvalRat: trying to evaluate SBG ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
 LIB::RATIONAL EvalRat::operator()(AST::DSBG v) const
 {
-  Debug::ERROR("EvalRat: trying to evaluate DSBG ", v, "\n");
+  Util::ERROR("EvalRat: trying to evaluate DSBG ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 

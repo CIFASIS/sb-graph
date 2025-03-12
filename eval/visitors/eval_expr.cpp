@@ -45,7 +45,7 @@ auto empty_visitor_ = Overload {
   [](LIB::MultiDimInter a) { return a.isEmpty(); },
   [](LIB::Set a) { return a.isEmpty(); },
   [](auto a) { 
-    Debug::ERROR("empty_visitor_: wrong argument ", a, " for isEmpty\n"); 
+    Util::ERROR("empty_visitor_: wrong argument ", a, " for isEmpty\n"); 
     return false;
   }
 };
@@ -55,7 +55,7 @@ auto min_visitor_ = Overload {
   [](LIB::MultiDimInter a) { return a.minElem(); },
   [](LIB::Set a) { return a.minElem(); },
   [](auto a) { 
-    Debug::ERROR("min_visitor_: wrong argument ", a, " for minElem\n"); 
+    Util::ERROR("min_visitor_: wrong argument ", a, " for minElem\n"); 
     return LIB::MD_NAT();
   }
 };
@@ -65,7 +65,7 @@ auto max_visitor_ = Overload {
   [](LIB::MultiDimInter a) { return a.maxElem(); },
   [](LIB::Set a) { return a.maxElem(); },
   [](auto a) { 
-    Debug::ERROR("max_visitor_: wrong argument ", a, " for maxElem\n"); 
+    Util::ERROR("max_visitor_: wrong argument ", a, " for maxElem\n"); 
     return LIB::MD_NAT(); 
   }
 };
@@ -76,20 +76,19 @@ auto compose_visitor_ = Overload {
   [](LIB::Map a, LIB::Map b) { return ExprBaseType(a.composition(b)); },
   [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a.composition(b)); },
   [](auto a, auto b) {
-    Debug::ERROR("compose_visitor_: wrong arguments ", a, ", ", b
+    Util::ERROR("compose_visitor_: wrong arguments ", a, ", ", b
       , " for compose\n"); 
     return ExprBaseType(); 
    }
 };
 
-auto inv_visitor_ = Overload {
-  [](LIB::LExp a) { return a.inverse(); },
-  [](LIB::Exp a) { return a.inverse(); },
-  [](LIB::Map a) { return a.minInv(); },
-  [](LIB::PWMap a) { return a.inverse(); },
-  [](auto a, auto b) { 
-    Debug::ERROR("image_visitor_: wrong arguments ", a, ", ", b
-      , " for image\n"); 
+auto inverse_visitor_ = Overload {
+  [](LIB::LExp a) { return ExprBaseType(a.inverse()); },
+  [](LIB::Exp a) { return ExprBaseType(a.inverse()); },
+  [](LIB::Map a) { return ExprBaseType(a.minInv()); },
+  [](LIB::PWMap a) { return ExprBaseType(a.inverse()); },
+  [](auto a) { 
+    Util::ERROR("inverse_visitor_: wrong arguments ", a, " for inverse\n"); 
     return ExprBaseType();
   }
 };
@@ -98,7 +97,7 @@ auto image_visitor_ = Overload {
   [](LIB::Map a) { return ExprBaseType(a.image()); },
   [](LIB::PWMap a) { return ExprBaseType(a.image()); },
   [](auto a) { 
-    Debug::ERROR("image_visitor_: wrong argument ", a, " for image\n"); 
+    Util::ERROR("image_visitor_: wrong argument ", a, " for image\n"); 
     return ExprBaseType();
   }
 };
@@ -107,8 +106,8 @@ auto image2_visitor_ = Overload {
   [](LIB::Set a, LIB::Map b) { return ExprBaseType(b.image(a)); },
   [](LIB::Set a, LIB::PWMap b) { return ExprBaseType(b.image(a)); },
   [](auto a, auto b) { 
-    Debug::ERROR("image_visitor_: wrong arguments ", a, ", ", b
-      , " for image\n"); 
+    Util::ERROR("image2_visitor_: wrong arguments ", a, ", ", b
+      , " for image2\n"); 
     return ExprBaseType();
   }
 };
@@ -117,8 +116,8 @@ auto pre_image2_visitor_ = Overload {
   [](LIB::Set a, LIB::Map b) { return ExprBaseType(b.preImage(a)); },
   [](LIB::Set a, LIB::PWMap b) { return ExprBaseType(b.preImage(a)); },
   [](auto a, auto b) { 
-    Debug::ERROR("pre_image_visitor_: wrong arguments ", a, ", ", b
-      , " for pre-image\n"); 
+    Util::ERROR("pre_image2_visitor_: wrong arguments ", a, ", ", b
+      , " for pre-image2\n"); 
     return ExprBaseType(); 
   }
 };
@@ -127,7 +126,7 @@ auto dom_visitor_ = Overload {
   [](LIB::Map a) { return ExprBaseType(a.dom()); },
   [](LIB::PWMap a) { return ExprBaseType(a.dom()); },
   [](auto a) {
-    Debug::ERROR("dom_visitor_: wrong arguments ", a, "for dom\n");
+    Util::ERROR("dom_visitor_: wrong arguments ", a, "for dom\n");
     return ExprBaseType();
   }
 };
@@ -135,7 +134,7 @@ auto dom_visitor_ = Overload {
 auto combine_visitor_ = Overload {
   [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a.combine(b)); },
   [](auto a, auto b) { 
-    Debug::ERROR("combine_visitor_: wrong arguments ", a, ", ", b
+    Util::ERROR("combine_visitor_: wrong arguments ", a, ", ", b
       , " for combine\n"); 
     return ExprBaseType(); 
   }
@@ -144,7 +143,7 @@ auto combine_visitor_ = Overload {
 auto first_inv_visitor_ = Overload {
   [](LIB::PWMap a) { return ExprBaseType(a.firstInv()); },
   [](auto a) {
-    Debug::ERROR("first_inv_visitor_: wrong argument ", a, " for firstInv\n"); 
+    Util::ERROR("first_inv_visitor_: wrong argument ", a, " for firstInv\n"); 
     return ExprBaseType();
   }
 };
@@ -152,7 +151,7 @@ auto first_inv_visitor_ = Overload {
 auto min_map_visitor_ = Overload {
   [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a.minMap(b)); },
   [](auto a, auto b) {
-    Debug::ERROR("min_map_visitor_: wrong arguments ", a, ", ", b
+    Util::ERROR("min_map_visitor_: wrong arguments ", a, ", ", b
       , " for minMap\n"); 
     return ExprBaseType();
   }
@@ -161,7 +160,7 @@ auto min_map_visitor_ = Overload {
 auto reduce_visitor_ = Overload {
   [](LIB::PWMap a) { return ExprBaseType(a.reduce()); },
   [](auto a) {
-    Debug::ERROR("reduce_visitor_: wrong argument ", a, " for reduce\n"); 
+    Util::ERROR("reduce_visitor_: wrong argument ", a, " for reduce\n"); 
     return ExprBaseType();
   }
 };
@@ -169,7 +168,7 @@ auto reduce_visitor_ = Overload {
 auto min_adj_visitor_ = Overload {
   [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a.minAdjMap(b)); },
   [](auto a, auto b) { 
-    Debug::ERROR("min_adj_visitor_: wrong arguments ", a, ", ", b
+    Util::ERROR("min_adj_visitor_: wrong arguments ", a, ", ", b
       , " for minAdj\n"); 
     return ExprBaseType(); 
   }
@@ -178,7 +177,7 @@ auto min_adj_visitor_ = Overload {
 auto inf_visitor_ = Overload {
   [](LIB::PWMap a) { return ExprBaseType(a.mapInf()); },
   [](auto a) { 
-    Debug::ERROR("inf_visitor_: wrong argument ", a, " for mapInf\n"); 
+    Util::ERROR("inf_visitor_: wrong argument ", a, " for mapInf\n"); 
     return ExprBaseType(); 
   }
 };
@@ -188,7 +187,7 @@ auto connected_visitor_ = Overload {
   [](LIB::BaseSBG a) { return MapBaseType(connectedComponents(a)); },
   [](LIB::CanonSBG a) { return MapBaseType(connectedComponents(a)); },
   [](auto a) {
-    Debug::ERROR("connected_visitor_: wrong argument ", a, " for CC\n"); 
+    Util::ERROR("connected_visitor_: wrong argument ", a, " for CC\n"); 
     return MapBaseType();
   }
 };
@@ -203,7 +202,7 @@ auto matching_visitor_ = Overload {
     return InfoBaseType(match.calculate());
   },
   [](auto a, auto b, auto c) {
-    Debug::ERROR("matching_visitor_: wrong arguments ", a, ", ", b
+    Util::ERROR("matching_visitor_: wrong arguments ", a, ", ", b
       , " for matching\n"); 
     return InfoBaseType();
   }
@@ -219,7 +218,7 @@ auto scc_visitor_ = Overload {
     return MapBaseType(scc.calculate());
   },
   [](auto a, auto b) {
-    Debug::ERROR("scc_visitor_: wrong argument ", a, " for scc\n"); 
+    Util::ERROR("scc_visitor_: wrong argument ", a, " for scc\n"); 
     return MapBaseType();
   }
 };
@@ -234,7 +233,7 @@ auto ts_visitor_ = Overload {
     return MapBaseType(ts.calculate());
   },
   [](auto a, auto b) {
-    Debug::ERROR("ts_visitor_: wrong argument ", a, " for sort\n"); 
+    Util::ERROR("ts_visitor_: wrong argument ", a, " for sort\n"); 
     return MapBaseType();
   }
 };
@@ -253,7 +252,7 @@ auto match_scc_visitor_ = Overload {
     return MapBaseType(scc.calculate());
   },
   [](auto a, auto b, auto c) {
-    Debug::ERROR("match_scc_visitor_: wrong arguments ", a, ", ", b
+    Util::ERROR("match_scc_visitor_: wrong arguments ", a, ", ", b
       , " for matchSCC\n"); 
     return MapBaseType();
   }
@@ -281,7 +280,7 @@ auto match_scc_ts_visitor_ = Overload {
     return MapBaseType(ts_res);
   },
   [](auto a, auto b, auto c) {
-    Debug::ERROR("match_scc_ts_visitor_: wrong arguments ", a, ", ", b
+    Util::ERROR("match_scc_ts_visitor_: wrong arguments ", a, ", ", b
       , " for matchSCCTS\n"); 
     return MapBaseType();
   }
@@ -297,7 +296,7 @@ auto cut_visitor_ = Overload {
     return ContainerBaseType(cut_set.calculate());
   },
   [](auto a, auto b) {
-    Debug::ERROR("cut_visitor_: wrong argument ", a, " for cut\n"); 
+    Util::ERROR("cut_visitor_: wrong argument ", a, " for cut\n"); 
     return ContainerBaseType();
   }
 };
@@ -330,7 +329,7 @@ ExprBaseType EvalExpression::operator()(AST::VariableName v) const
   if (v_opt)
     return *v_opt;
 
-  Debug::ERROR("EvalExpression: variable ", v, " undefined\n");
+  Util::ERROR("EvalExpression: variable ", v, " undefined\n");
   return LIB::MD_NAT(0); 
 }
 
@@ -343,7 +342,7 @@ ExprBaseType EvalExpression::operator()(AST::UnaryOp v) const
       if (std::holds_alternative<LIB::MD_NAT>(x)) {
         LIB::MD_NAT x_value = std::get<LIB::MD_NAT>(x); 
 
-        Debug::ERROR_UNLESS(1 == x_value.arity()
+        Util::ERROR_UNLESS(1 == x_value.arity()
           ,"EvalExpr: UnaryOp neg only supported for unidimensional values, "
           ,"arity(", x_value, ") = ", x_value.arity(), "\n");
        
@@ -353,13 +352,13 @@ ExprBaseType EvalExpression::operator()(AST::UnaryOp v) const
         return std::get<LIB::RATIONAL>(x)*(-1);
       }
 
-      Debug::ERROR("EvalExpression: incompatible application of UnaryOp neg "
+      Util::ERROR("EvalExpression: incompatible application of UnaryOp neg "
         , v, "\n");
       return LIB::MD_NAT(0);
       break;
 
     default:
-      Debug::ERROR("EvalExpression: UnaryOp ", v.op(), " unsupported\n");
+      Util::ERROR("EvalExpression: UnaryOp ", v.op(), " unsupported\n");
       return LIB::MD_NAT(0);
   }
 
@@ -443,7 +442,7 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
       case Eval::Func::inv:
         if (eval_args.size() == 1) {
           arity_ok = true;
-          return std::visit(inv_visitor_, eval_args[0], eval_args[1]);
+          return std::visit(inverse_visitor_, eval_args[0]);
         }
         break;
 
@@ -604,18 +603,18 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
 */
 
       default:
-        Debug::ERROR("EvalExpression: function ", vname, " not implemented\n");
+        Util::ERROR("EvalExpression: function ", vname, " not implemented\n");
         return LIB::MD_NAT(0);
     }
 
     if (!arity_ok) {
-      Debug::ERROR("EvalExpression: wrong number of arguments for Call "
+      Util::ERROR("EvalExpression: wrong number of arguments for Call "
         , vname, "\n");
       return LIB::MD_NAT(0);
     }
   }
 
-  Debug::ERROR("EvalExpression: function ", vname, " doesn't exist\n");
+  Util::ERROR("EvalExpression: function ", vname, " doesn't exist\n");
   return LIB::MD_NAT(0);
 }
 
@@ -633,7 +632,7 @@ ExprBaseType EvalExpression::operator()(AST::InterUnaryOp v) const
       return LIB::MD_NAT(i.cardinal());
 
     default:
-      Debug::ERROR("EvalExpression: InterUnaryOp ", v.op(), " unsupported\n");
+      Util::ERROR("EvalExpression: InterUnaryOp ", v.op(), " unsupported\n");
       return LIB::MD_NAT(0);
   }
 }
@@ -654,7 +653,7 @@ ExprBaseType EvalExpression::operator()(AST::InterBinOp v) const
       return LIB::MD_NAT(l == r);
 
     default:
-      Debug::ERROR("EvalExpression: InterBinOp ", v.op(), " unsupported\n");
+      Util::ERROR("EvalExpression: InterBinOp ", v.op(), " unsupported\n");
       return LIB::MD_NAT(0);
   }
 }
@@ -674,7 +673,7 @@ ExprBaseType EvalExpression::operator()(AST::MDInterUnaryOp v) const
       return LIB::MD_NAT(mdi.cardinal());
 
     default:
-      Debug::ERROR("EvalExpression: MDInterUnaryOp ", v.op(), " unsupported\n");
+      Util::ERROR("EvalExpression: MDInterUnaryOp ", v.op(), " unsupported\n");
       return LIB::MD_NAT(0);
   }
 
@@ -687,7 +686,7 @@ ExprBaseType EvalExpression::operator()(AST::MDInterBinOp v) const
   LIB::MultiDimInter l = boost::apply_visitor(visit_mdi, v.left());
   LIB::MultiDimInter r = boost::apply_visitor(visit_mdi, v.right());
 
-  Debug::ERROR_UNLESS((l.arity() == nmbr_dims_ && r.arity() == nmbr_dims_)
+  Util::ERROR_UNLESS((l.arity() == nmbr_dims_ && r.arity() == nmbr_dims_)
     || l.arity() == 0 || r.arity() == 0
     ,"EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", l, ") or arity(", r
     , ")\n");
@@ -703,7 +702,7 @@ ExprBaseType EvalExpression::operator()(AST::MDInterBinOp v) const
       return LIB::MD_NAT(l == r);
 
     default:
-      Debug::ERROR("EvalExpression: MDInterBinOp ", v.op(), " unsupported\n");
+      Util::ERROR("EvalExpression: MDInterBinOp ", v.op(), " unsupported\n");
       return LIB::MD_NAT(0);
   }
 
@@ -727,7 +726,7 @@ ExprBaseType EvalExpression::operator()(AST::SetUnaryOp v) const
       return LIB::MD_NAT(s.cardinal());
 
     default:
-      Debug::ERROR("EvalExpression: SetUnaryOp ", v.op(), " unsupported\n");
+      Util::ERROR("EvalExpression: SetUnaryOp ", v.op(), " unsupported\n");
       return LIB::MD_NAT(0);
   }
 
@@ -755,7 +754,7 @@ ExprBaseType EvalExpression::operator()(AST::SetBinOp v) const
       return LIB::MD_NAT(sl == sr);
 
     default:
-      Debug::ERROR("EvalExpression: SetBinOp ", v.op(), " unsupported\n");
+      Util::ERROR("EvalExpression: SetBinOp ", v.op(), " unsupported\n");
       return LIB::MD_NAT(0);
   }
 
@@ -784,7 +783,7 @@ ExprBaseType EvalExpression::operator()(AST::LExpBinOp v) const
       return lexp - rexp;
 
     default:
-      Debug::ERROR("EvalExpression: LExpBinOp ", v.op(), " unsupported\n");
+      Util::ERROR("EvalExpression: LExpBinOp ", v.op(), " unsupported\n");
       return LIB::MD_NAT(0);
   }
 }
@@ -812,7 +811,7 @@ ExprBaseType EvalExpression::operator()(AST::MDLExpBinOp v) const
       return lexp - rexp;
 
     default:
-      Debug::ERROR("EvalExpression: MDLExpBinOp ", v.op(), " unsupported\n");
+      Util::ERROR("EvalExpression: MDLExpBinOp ", v.op(), " unsupported\n");
       return LIB::MD_NAT(0);
   }
 

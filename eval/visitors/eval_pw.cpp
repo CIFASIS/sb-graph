@@ -29,121 +29,121 @@ EvalPWMap::EvalPWMap(unsigned int nmbr_dims, const LIB::PWMapAF &fact
 
 LIB::PWMap EvalPWMap::operator()(AST::Natural v) const
 {
-  Debug::ERROR("EvalPWMap: trying to evaluate Natural ", v, "\n");
+  Util::ERROR("EvalPWMap: trying to evaluate Natural ", v, "\n");
   return fact_.createPWMap(); 
 }
 
 LIB::PWMap EvalPWMap::operator()(AST::Rational v) const
 {
-  Debug::ERROR("EvalPWMap: trying to evaluate Rational ", v, "\n");
+  Util::ERROR("EvalPWMap: trying to evaluate Rational ", v, "\n");
   return fact_.createPWMap(); 
 }
 
 LIB::PWMap EvalPWMap::operator()(AST::VariableName v) const
 {
-  Debug::ERROR("EvalPWMap: variable ", v, " is not a PWMap\n");
+  Util::ERROR("EvalPWMap: variable ", v, " is not a PWMap\n");
   return fact_.createPWMap(); 
 }
 
 LIB::PWMap EvalPWMap::operator()(AST::UnaryOp v) const 
 {
-  Debug::ERROR("EvalPWMap: trying to evaluate arithmetic UnaryOp ", v, "\n");
+  Util::ERROR("EvalPWMap: trying to evaluate arithmetic UnaryOp ", v, "\n");
   return fact_.createPWMap(); 
 }
 
 LIB::PWMap EvalPWMap::operator()(AST::BinOp v) const 
 {
-  Debug::ERROR("EvalPWMap: trying to evaluate arithmetic BinOp ", v, "\n");
+  Util::ERROR("EvalPWMap: trying to evaluate arithmetic BinOp ", v, "\n");
   return fact_.createPWMap(); 
 }
 
 LIB::PWMap EvalPWMap::operator()(AST::Call v) const
 {
-  Debug::ERROR("EvalPWMap: trying to evaluate Call ", v, "\n");
+  Util::ERROR("EvalPWMap: trying to evaluate Call ", v, "\n");
   return fact_.createPWMap(); 
 }
 
 LIB::PWMap EvalPWMap::operator()(AST::Interval v) const
 { 
-  Debug::ERROR("EvalPWMap: trying to evaluate Interval ", v, "\n");
+  Util::ERROR("EvalPWMap: trying to evaluate Interval ", v, "\n");
   return fact_.createPWMap(); 
 }
 
 LIB::PWMap EvalPWMap::operator()(AST::InterUnaryOp v) const
 {
-  Debug::ERROR("EvalPWMap: trying to evaluate InterUnaryOp ", v, "\n");
+  Util::ERROR("EvalPWMap: trying to evaluate InterUnaryOp ", v, "\n");
   return fact_.createPWMap(); 
 }
 
 LIB::PWMap EvalPWMap::operator()(AST::InterBinOp v) const
 {
-  Debug::ERROR("EvalPWMap: trying to evaluate InterBinOp ", v, "\n");
+  Util::ERROR("EvalPWMap: trying to evaluate InterBinOp ", v, "\n");
   return fact_.createPWMap(); 
 }
 
 LIB::PWMap EvalPWMap::operator()(AST::MultiDimInter v) const
 { 
-  Debug::ERROR("EvalPWMap: trying to evaluate MultiDimInter ", v, "\n");
+  Util::ERROR("EvalPWMap: trying to evaluate MultiDimInter ", v, "\n");
   return fact_.createPWMap(); 
 }
 
 LIB::PWMap EvalPWMap::operator()(AST::MDInterUnaryOp v) const
 {
-  Debug::ERROR("EvalPWMap: trying to evaluate MDInterUnaryOp ", v, "\n");
+  Util::ERROR("EvalPWMap: trying to evaluate MDInterUnaryOp ", v, "\n");
   return fact_.createPWMap(); 
 }
 
 LIB::PWMap EvalPWMap::operator()(AST::MDInterBinOp v) const
 {
-  Debug::ERROR("EvalPWMap: trying to evaluate MDInterBinOp ", v, "\n");
+  Util::ERROR("EvalPWMap: trying to evaluate MDInterBinOp ", v, "\n");
   return fact_.createPWMap(); 
 }
 
 LIB::PWMap EvalPWMap::operator()(AST::Set v) const 
 {
-  Debug::ERROR("EvalPWMap: trying to evaluate Set ", v, "\n");
+  Util::ERROR("EvalPWMap: trying to evaluate Set ", v, "\n");
   return fact_.createPWMap(); 
 }
 
 LIB::PWMap EvalPWMap::operator()(AST::SetUnaryOp v) const 
 {
-  Debug::ERROR("EvalPWMap: trying to evaluate SetUnaryOp ", v, "\n");
+  Util::ERROR("EvalPWMap: trying to evaluate SetUnaryOp ", v, "\n");
   return fact_.createPWMap(); 
 }
 
 LIB::PWMap EvalPWMap::operator()(AST::SetBinOp v) const 
 {
-  Debug::ERROR("EvalPWMap: trying to evaluate SetBinOp ", v, "\n");
+  Util::ERROR("EvalPWMap: trying to evaluate SetBinOp ", v, "\n");
   return fact_.createPWMap(); 
 }
 
 LIB::PWMap EvalPWMap::operator()(AST::LinearExp v) const
 { 
-  Debug::ERROR("EvalPWMap: trying to evaluate LinearExp ", v, "\n");
+  Util::ERROR("EvalPWMap: trying to evaluate LinearExp ", v, "\n");
   return fact_.createPWMap(); 
 }
 
 LIB::PWMap EvalPWMap::operator()(AST::LExpBinOp v) const
 { 
-  Debug::ERROR("EvalPWMap: trying to evaluate LExpBinOp ", v, "\n");
+  Util::ERROR("EvalPWMap: trying to evaluate LExpBinOp ", v, "\n");
   return fact_.createPWMap(); 
 }
 
 LIB::PWMap EvalPWMap::operator()(AST::MDLExp v) const
 { 
-  Debug::ERROR("EvalPWMap: trying to evaluate MDLExp ", v, "\n");
+  Util::ERROR("EvalPWMap: trying to evaluate MDLExp ", v, "\n");
   return fact_.createPWMap(); 
 }
 
 LIB::PWMap EvalPWMap::operator()(AST::MDLExpBinOp v) const
 { 
-  Debug::ERROR("EvalPWMap: trying to evaluate MDLExpBinOp ", v, "\n");
+  Util::ERROR("EvalPWMap: trying to evaluate MDLExpBinOp ", v, "\n");
   return fact_.createPWMap(); 
 }
 
 LIB::PWMap EvalPWMap::operator()(AST::LinearMap v) const
 { 
-  Debug::ERROR("EvalPWMap: trying to evaluate LinearMap ", v, "\n");
+  Util::ERROR("EvalPWMap: trying to evaluate LinearMap ", v, "\n");
   return fact_.createPWMap(); 
 }
 
@@ -155,7 +155,7 @@ LIB::PWMap EvalPWMap::operator()(AST::PWLMap v) const
   for (AST::Expr e : v.maps())
     res.emplaceBack(boost::apply_visitor(visit_map, e));
 
-  Debug::ERROR_UNLESS(res.arity() == nmbr_dims_ || res.arity() == 0
+  Util::ERROR_UNLESS(res.arity() == nmbr_dims_ || res.arity() == 0
     , "EvalPWMap[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
     , res.arity(), "\n");
 
@@ -164,13 +164,13 @@ LIB::PWMap EvalPWMap::operator()(AST::PWLMap v) const
 
 LIB::PWMap EvalPWMap::operator()(AST::SBG v) const
 { 
-  Debug::ERROR("EvalPWMap: trying to evaluate SBG ", v, "\n");
+  Util::ERROR("EvalPWMap: trying to evaluate SBG ", v, "\n");
   return fact_.createPWMap(); 
 }
 
 LIB::PWMap EvalPWMap::operator()(AST::DSBG v) const
 { 
-  Debug::ERROR("EvalPWMap: trying to evaluate DSBG ", v, "\n");
+  Util::ERROR("EvalPWMap: trying to evaluate DSBG ", v, "\n");
   return fact_.createPWMap(); 
 }
 

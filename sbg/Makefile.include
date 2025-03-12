@@ -17,8 +17,7 @@ SBG_ROOT := sbg
   	$(SBG_ROOT)/multidim_inter.cpp \
   	$(SBG_ROOT)/interval.cpp \
     $(SBG_ROOT)/natural.cpp \
-    $(UTIL_ROOT)/logger.cpp #\
-    #$(SBG_ROOT)/sbg_algorithms.cpp
+    $(UTIL_ROOT)/logger.cpp
 
 include util/Makefile.include
 

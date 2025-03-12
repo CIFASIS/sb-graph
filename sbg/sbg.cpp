@@ -81,7 +81,7 @@ SBG SBG::addSV(const Set &vertices) const
   }
 
   else if (!vertices.intersection(V_).isEmpty())
-    Debug::ERROR("Trying to add existing vertices: ", vertices, " to SBG\n");
+    Util::ERROR("Trying to add existing vertices: ", vertices, " to SBG\n");
 
   return SBG(fact_);
 }
@@ -113,7 +113,7 @@ SBG SBG::addSE(const PWMap &pw1, const PWMap &pw2) const
     }
 
     else if (!edges.intersection(E_).isEmpty())
-      Debug::ERROR("Trying to add existing edges: ", edges, " to SBG\n");
+      Util::ERROR("Trying to add existing edges: ", edges, " to SBG\n");
   }
 
   return SBG(fact_);
@@ -231,7 +231,7 @@ DSBG DSBG::addSV(const Set &vertices) const
   }
 
   else if (!vertices.intersection(V_).isEmpty())
-    Debug::ERROR("Trying to add existing vertices: ", vertices, " to DSBG\n");
+    Util::ERROR("Trying to add existing vertices: ", vertices, " to DSBG\n");
 
   return DSBG(fact_);
 }
@@ -263,7 +263,7 @@ DSBG DSBG::addSE(const PWMap &pw1, const PWMap &pw2) const
     }
 
     else if (!edges.intersection(E_).isEmpty())
-      Debug::ERROR("Trying to add existing edges: ", edges, " to DSBG\n");
+      Util::ERROR("Trying to add existing edges: ", edges, " to DSBG\n");
   }
 
   return DSBG(fact_);

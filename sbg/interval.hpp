@@ -31,12 +31,7 @@
 #ifndef SBG_INTERVAL_HPP
 #define SBG_INTERVAL_HPP
 
-#include <cmath>
-#include <numeric>
-#include <optional>
-
 #include "sbg/natural.hpp"
-#include "util/defs.hpp"
 
 namespace SBG {
 
@@ -57,12 +52,12 @@ struct Interval {
   Interval();
 
   /**
-   * @brief Construct an interval only containing x.
+   * @brief Construct an interval only containing \p x.
    */
   Interval(NAT x);
 
   /**
-   * @brief Construct an interval with begin, step and end.
+   * @brief Construct an interval with \p begin, \p step and \p end.
    */
   Interval(NAT begin, NAT step, NAT end);
 

@@ -35,12 +35,11 @@ namespace Eval {
 
 struct OptConds : public boost::static_visitor<bool> {
   public:
-  OptConds();
   OptConds(VarEnv env);
 
   bool operator()(AST::Natural v) const;
   bool operator()(AST::Rational v) const;
-  bool operator()(Util::VariableName v) const;
+  bool operator()(AST::VariableName v) const;
   bool operator()(AST::UnaryOp v) const;
   bool operator()(AST::BinOp v) const;
   bool operator()(AST::Call v) const;

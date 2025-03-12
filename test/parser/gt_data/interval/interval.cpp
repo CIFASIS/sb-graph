@@ -26,7 +26,7 @@ void parseProgramFromFile(std::string fname)
 {
   std::ifstream in(fname.c_str());
   if (in.fail()) 
-    SBG::Util::ERROR("Unable to open file");
+    SBG::Debug::ERROR("Unable to open file");
   in.unsetf(std::ios::skipws);
 
   std::string str(

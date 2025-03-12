@@ -30,10 +30,10 @@ namespace OG {
 // Set-vertex ------------------------------------------------------------------
 
 struct Vertex {
-  member_class(SBG::Util::MD_NAT, id);            // Unique identifier
+  member_class(SBG::LIB::MD_NAT, id);            // Unique identifier
 
   Vertex();
-  Vertex(SBG::Util::MD_NAT id);
+  Vertex(SBG::LIB::MD_NAT id);
 
   bool operator==(const Vertex &v) const;
 };
@@ -43,10 +43,10 @@ std::ostream &operator<<(std::ostream &out, const Vertex &v);
 // Ordinary Graph Edge ---------------------------------------------------------
 
 struct Edge {
-  member_class(SBG::Util::MD_NAT, id);            // Unique identifier
+  member_class(SBG::LIB::MD_NAT, id);            // Unique identifier
 
   Edge();
-  Edge(SBG::Util::MD_NAT id);
+  Edge(SBG::LIB::MD_NAT id);
 
   bool operator==(const Edge &e) const;
 };

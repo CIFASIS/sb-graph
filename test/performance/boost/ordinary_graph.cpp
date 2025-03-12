@@ -27,9 +27,9 @@ using namespace std;
 
 Vertex::Vertex() : id_(0) {}
 
-Vertex::Vertex(SBG::Util::MD_NAT id) : id_(id) {}
+Vertex::Vertex(SBG::LIB::MD_NAT id) : id_(id) {}
 
-member_imp(Vertex, SBG::Util::MD_NAT, id);
+member_imp(Vertex, SBG::LIB::MD_NAT, id);
 
 bool Vertex::operator==(const Vertex &other) const
 {
@@ -46,9 +46,9 @@ std::ostream &operator<<(std::ostream &out, const Vertex &v)
 
 Edge::Edge() : id_(0) {}
 
-Edge::Edge(SBG::Util::MD_NAT id) : id_(id) {}
+Edge::Edge(SBG::LIB::MD_NAT id) : id_(id) {}
 
-member_imp(Edge, SBG::Util::MD_NAT, id);
+member_imp(Edge, SBG::LIB::MD_NAT, id);
 
 bool Edge::operator==(const Edge &other) const { return id() == other.id(); }
 

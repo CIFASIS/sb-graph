@@ -809,6 +809,8 @@ PWMap PWMap::combine(const PWMap &other) const
   return delegate_->combine(*other.delegate_);
 }
 
+PWMap PWMap::reduce() const { return delegate_->reduce(); }
+
 PWMap PWMap::minMap(const PWMap &other) const
 {
   return delegate_->minMap(*other.delegate_);
@@ -837,6 +839,26 @@ Set PWMap::equalImage(const PWMap &other) const
 }
 
 Set PWMap::sharedImage() const { return delegate_->sharedImage(); }
+
+PWMap PWMap::offsetDom(const MD_NAT &off) const
+{
+  return delegate_->offsetDom(off);
+}
+
+PWMap PWMap::offsetDom(const PWMap &off) const
+{
+  return delegate_->offsetDom(*off.delegate_);
+}
+
+PWMap PWMap::offsetImage(const MD_NAT &off) const
+{
+  return delegate_->offsetImage(off);
+}
+
+PWMap PWMap::offsetImage(const Exp &off) const
+{
+  return delegate_->offsetImage(off);
+}
 
 PWMap PWMap::compact() const { return delegate_->compact(); }
 

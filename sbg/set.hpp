@@ -56,17 +56,17 @@ struct SetDelegate {
   SetDelegate();
 
   /**
-   * @brief Constructs a set with an unique element x.
+   * @brief Constructs a set with an unique element \p x.
    */
   SetDelegate(const MD_NAT &x);
 
   /**
-   * @brief Constructs a one-dimensional set with the same elements as i.
+   * @brief Constructs a one-dimensional set with the same elements as \p i.
    */
   SetDelegate(const Interval &i);
 
   /**
-   * @brief Constructs a set with the same elements as mdi.
+   * @brief Constructs a set with the same elements as \p mdi.
    */
   SetDelegate(const SetPiece &mdi);
 
@@ -93,9 +93,9 @@ struct SetDelegate {
   virtual std::size_t size() const = 0;
 
   /**
-   * @brief Adds a compact piece to the set
+   * @brief Adds a compact piece to the set.
    *
-   * Complexity: O(size(mdi)) for ordered collections and O(1) for unordered
+   * Complexity: O(size(\p this)) for ordered collections and O(1) for unordered
    * collections.
    */
   virtual void emplace(const SetPiece &mdi) = 0;
@@ -141,8 +141,8 @@ struct SetDelegate {
   virtual std::size_t arity() const = 0;
 
   /**
-   * @brief Calculates the union of two disjoint sets. The function doesn't
-   * the condition, it's the caller responsability to do so.
+   * @brief Calculates the union of two disjoint sets. \n 
+   * Precondition: this->intersection(other) = {}.
    */
   virtual SetDelegPtr disjointCup(const SetDelegate &other) const = 0;
 

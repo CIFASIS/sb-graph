@@ -1,6 +1,6 @@
 /** @file eval_map.hpp
 
- @brief <b>Map base type evaluator</b>
+ @brief <b>Map expression evaluator</b>
 
  <hr>
 
@@ -24,21 +24,45 @@
 #ifndef AST_VISITOR_EVAL_MAP
 #define AST_VISITOR_EVAL_MAP
 
-#include "eval/defs.hpp"
+#include "eval/visitors/eval_mdle.hpp"
+#include "eval/visitors/eval_set.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-struct EvalMap {
+struct EvalMap : public boost::static_visitor<LIB::Map> {
   public:
-  MapBaseType operator()(Util::MD_NAT v) const;
-  MapBaseType operator()(Util::RATIONAL v) const;
-  MapBaseType operator()(ContainerBaseType v) const;
-  MapBaseType operator()(LinearBaseType v) const;
-  MapBaseType operator()(MapBaseType v) const;
-  MapBaseType operator()(SBGBaseType v) const;
-  MapBaseType operator()(InfoBaseType v) const;
+  EvalMap(unsigned int nmbr_dims, const LIB::PWMapAF &fact, VarEnv &env);
+
+  LIB::Map operator()(AST::Natural v) const;
+  LIB::Map operator()(AST::Rational v) const;
+  LIB::Map operator()(AST::VariableName v) const;
+  LIB::Map operator()(AST::UnaryOp v) const;
+  LIB::Map operator()(AST::BinOp v) const;
+  LIB::Map operator()(AST::Call v) const;
+  LIB::Map operator()(AST::Interval v) const;
+  LIB::Map operator()(AST::InterUnaryOp v) const;
+  LIB::Map operator()(AST::InterBinOp v) const;
+  LIB::Map operator()(AST::MultiDimInter v) const;
+  LIB::Map operator()(AST::MDInterUnaryOp v) const;
+  LIB::Map operator()(AST::MDInterBinOp v) const;
+  LIB::Map operator()(AST::Set v) const;
+  LIB::Map operator()(AST::SetUnaryOp v) const;
+  LIB::Map operator()(AST::SetBinOp v) const;
+  LIB::Map operator()(AST::LinearExp v) const;
+  LIB::Map operator()(AST::LExpBinOp v) const;
+  LIB::Map operator()(AST::MDLExp v) const;
+  LIB::Map operator()(AST::MDLExpBinOp v) const;
+  LIB::Map operator()(AST::LinearMap v) const;
+  LIB::Map operator()(AST::PWLMap v) const;
+  LIB::Map operator()(AST::SBG v) const;
+  LIB::Map operator()(AST::DSBG v) const;
+
+  private:
+  unsigned int nmbr_dims_;
+  const LIB::PWMapAF &fact_;
+  mutable VarEnv env_;
 };
 
 } // namespace Eval

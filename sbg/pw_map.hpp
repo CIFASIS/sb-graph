@@ -100,7 +100,7 @@ struct PWMapDelegate {
 
   /**
    * @brief Number of dimensions of the elements that compose the pw. For
-   * example, arity()
+   * example, arity(<<{[1:1:10] x [1:1:10]} -> 1*x+0|1*x+0>>) = 2.
    */
   virtual std::size_t arity() const = 0;
 
@@ -116,7 +116,7 @@ struct PWMapDelegate {
   virtual Set dom() const = 0;
 
   /**
-   * @brief Restrict the domain of the pw to subdom.
+   * @brief Restrict the domain of the pw to \p subdom.
    */
   virtual PWMapDelegPtr restrict(const Set &subdom) const = 0;
 
@@ -128,7 +128,7 @@ struct PWMapDelegate {
 
   /**
    * @brief Calculates all possible images for all elements in the domain of
-   * the pw restricted to subdom.
+   * the pw restricted to \p subdom.
    */
   virtual Set image(const Set &subdom) const = 0;
 
@@ -141,18 +141,19 @@ struct PWMapDelegate {
   virtual Set preImage(const Set &subcodom) const = 0;
 
   /** 
-   * @brief Calculate the inverse of a bijective pw. The function doesn't check
-   * if the map is bijective, the caller must ensure this condition.
+   * @brief Calculate the inverse of a bijective pw.\n  
+   * Precondition: the pw must be bijective.
    */
   virtual PWMapDelegPtr inverse() const = 0;
 
   /**
-   * @brief Calculate the composition of this with other, i.e. this(other).
+   * @brief Calculate the composition of \p this with \p other, i.e.
+   * \p this(\p other).
    */
   virtual PWMapDelegPtr composition(const PWMapDelegate &pw2) const = 0;
 
   /**
-   * @brief First compose the pw with itself n times, obtaining pw'. Then,
+   * @brief First compose the pw with itself \p n times, obtaining pw'. Then,
    * compose pw' with itself up to convergence.
    */
   virtual PWMapDelegPtr mapInf(unsigned int n) const = 0;
@@ -165,20 +166,18 @@ struct PWMapDelegate {
   // Extra operations ----------------------------------------------------------
 
   /** 
-   * @brief Concatenation of two pws. The two pws should be domain-disjoint.
-   * The caller is responsible for checking this condition.
+   * @brief Concatenation of two pws.\n 
+   * Precondition: pws should domain-disjoint.
    */
   virtual PWMapDelegPtr concatenation(const PWMapDelegate &other) const = 0;
 
   /**
-   * @brief Extend the pw with exclusive elements in the domain of "other".
+   * @brief Extend the pw with exclusive elements in the domain of \p other.
    */
   virtual PWMapDelegPtr combine(const PWMapDelegate &other) const = 0;
 
   /** 
-   * @brief Calculates (if possible) compactly the resulting map of
-   * composing with itself, without actually performing any composition. It is
-   * used by mapInf.
+   * @brief Calculates (if possible) compactly the result of mapInf.\n  
    *
    * Currently, the only expressions that can be efficiently reduced are:
    *   - x+h
@@ -196,7 +195,7 @@ struct PWMapDelegate {
   virtual PWMapDelegPtr minMap(const PWMapDelegate &other) const = 0;
 
   /**
-   * @brief Given two maps pw1 (this) and pw2 (other), for every element y1
+   * @brief Given two maps pw1 (\p this) and pw2 (\p other), for every element y1
    * in the image of pw1 returns a pw res such that
    * res(y1) = {min(pw2(x)) : pw1(x) = y1}. In SBG algorithms it is used to
    * calculate for every vertex which of its adjacent vertices returns the
@@ -205,9 +204,9 @@ struct PWMapDelegate {
   virtual PWMapDelegPtr minAdjMap(const PWMapDelegate &other) const = 0;
 
   /** 
-   * @brief Pseudo-inverse of a pw restricted to subdom. If a value is the image
-   * of several elements of the original domain, it will mapped to any of the
-   * possible candidates. 
+   * @brief Pseudo-inverse of a pw restricted to \p subdom. If a value is the
+   * image of several elements of the original domain, it will mapped to any
+   * of the possible candidates. 
    */
   virtual PWMapDelegPtr firstInv(const Set &subdom) const = 0;
 
@@ -229,7 +228,8 @@ struct PWMapDelegate {
   virtual Set equalImage(const PWMapDelegate &other) const = 0;
 
   /** 
-   * @brief Given a map, return elements that have the same image.
+   * @brief Given a map, return elements of the domain that share its image with
+   * other values of the domain.
    */
   virtual Set sharedImage() const = 0;
 
@@ -240,8 +240,8 @@ struct PWMapDelegate {
   virtual PWMapDelegPtr offsetDom(const MD_NAT &off) const = 0;
 
   /**
-   * @brief Sum the value indicated by pw off for every value in the domain of
-   * the pw this. The law remains unchanged.
+   * @brief Sum the value indicated by pw \p off for every value in the domain
+   * of the pw \p this. The law remains unchanged.
    */
   virtual PWMapDelegPtr offsetDom(const PWMapDelegate &off) const = 0;
 
@@ -252,8 +252,8 @@ struct PWMapDelegate {
   virtual PWMapDelegPtr offsetImage(const MD_NAT &off) const = 0;
 
   /**
-   * @brief Sum the expression off to every element in the image of the pw, that
-   * is, the law is modified without altering its domain.
+   * @brief Sum the expression \p off to every element in the image of the pw,
+   * that is, the law is modified without altering its domain.
    */
   virtual PWMapDelegPtr offsetImage(const Exp &off) const = 0;
 
@@ -404,6 +404,7 @@ struct PWMap {
 
   PWMap concatenation(const PWMap &other) const;
   PWMap combine(const PWMap &other) const;
+  PWMap reduce() const;
 
   PWMap minMap(const PWMap &other) const;
   PWMap minAdjMap(const PWMap &other) const;

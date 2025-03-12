@@ -51,17 +51,17 @@ struct MultiDimInter {
   MultiDimInter();
 
   /**
-   * @brief Construct a mdi with a single element x. 
+   * @brief Construct a mdi with a single element \p x. 
    */
   MultiDimInter(const MD_NAT &x);
 
   /**
-   * @brief Construct a one-dimensional mdi with the same elements as i.
+   * @brief Construct a one-dimensional mdi with the same elements as \p i.
    */
   MultiDimInter(const Interval &i);
 
   /**
-   * @brief Construct a mdi that is the result of i^nmbr_copies.
+   * @brief Construct a mdi that is the result of \p i ^ \p nmbr_copies.
    */
   MultiDimInter(const unsigned int &nmbr_copies, const Interval &i);
 

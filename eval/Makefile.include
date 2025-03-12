@@ -10,53 +10,45 @@ EVAL        := bin/sbg-eval
 all: $(EVAL)
 
 EVAL_SRC := \
-    $(UTIL_DIR)/defs.cpp \
-    $(UTIL_DIR)/logger.cpp \
 	  $(EVAL_DIR)/main.cpp \
-    $(EVAL_DIR)/defs.cpp \
-    $(AST_DIR)/expr.cpp \
-    $(AST_DIR)/statement.cpp \
-    $(AST_DIR)/sbg_program.cpp \
-    $(PARSER_DIR)/skipper.cpp \
-    $(PARSER_DIR)/expr.cpp \
-    $(PARSER_DIR)/statement.cpp \
-    $(PARSER_DIR)/sbg_program.cpp \
-    $(VISIT_DIR)/eval_nat.cpp \
-    $(VISIT_DIR)/eval_natbt.cpp \
-    $(VISIT_DIR)/eval_int.cpp \
-    $(VISIT_DIR)/eval_rat.cpp \
-    $(VISIT_DIR)/eval_interval.cpp \
-    $(VISIT_DIR)/eval_mdi.cpp \
-    $(VISIT_DIR)/eval_unord_set.cpp \
-    $(VISIT_DIR)/eval_ord_set.cpp \
-    $(VISIT_DIR)/eval_container.cpp \
-    $(VISIT_DIR)/eval_le.cpp \
-    $(VISIT_DIR)/eval_mdle.cpp \
-    $(VISIT_DIR)/eval_linear.cpp \
-    $(VISIT_DIR)/eval_base_map.cpp \
-    $(VISIT_DIR)/eval_canon_map.cpp \
-    $(VISIT_DIR)/eval_base_pwmap.cpp \
-    $(VISIT_DIR)/eval_canon_pwmap.cpp \
-    $(VISIT_DIR)/eval_base_sbg.cpp \
-    $(VISIT_DIR)/eval_canon_sbg.cpp \
-    $(VISIT_DIR)/eval_base_dsbg.cpp \
-    $(VISIT_DIR)/eval_canon_dsbg.cpp \
-    $(VISIT_DIR)/eval_map.cpp \
-    $(VISIT_DIR)/eval_graph.cpp \
-    $(VISIT_DIR)/eval_expr.cpp \
+    $(VISIT_DIR)/program_visitor.cpp \
     $(VISIT_DIR)/check_opt_conds.cpp \
     $(VISIT_DIR)/stm_visitor.cpp \
-    $(VISIT_DIR)/program_visitor.cpp \
-    $(SBG_DIR)/interval.cpp \
-    $(SBG_DIR)/multidim_inter.cpp \
-    $(SBG_DIR)/unord_pw_mdinter.cpp \
-    $(SBG_DIR)/ord_pw_mdinter.cpp \
-    $(SBG_DIR)/lexp.cpp \
-    $(SBG_DIR)/multidim_lexp.cpp \
-    $(SBG_DIR)/map.cpp \
-    $(SBG_DIR)/pw_map.cpp \
+    $(VISIT_DIR)/eval_expr.cpp \
+    $(VISIT_DIR)/eval_dsbg.cpp \
+    $(VISIT_DIR)/eval_sbg.cpp \
+    $(VISIT_DIR)/eval_pw.cpp \
+    $(VISIT_DIR)/eval_map.cpp \
+    $(VISIT_DIR)/eval_mdle.cpp \
+    $(VISIT_DIR)/eval_le.cpp \
+    $(VISIT_DIR)/eval_set.cpp \
+    $(VISIT_DIR)/eval_mdi.cpp \
+    $(VISIT_DIR)/eval_interval.cpp \
+    $(VISIT_DIR)/eval_rat.cpp \
+    $(VISIT_DIR)/eval_int.cpp \
+    $(VISIT_DIR)/eval_nat.cpp \
+    $(EVAL_DIR)/defs.cpp \
     $(SBG_DIR)/sbg.cpp \
-    $(SBG_DIR)/sbg_algorithms.cpp
+    $(SBG_DIR)/af_pwmap.cpp \
+    $(SBG_DIR)/pw_map.cpp \
+    $(SBG_DIR)/af_map.cpp \
+    $(SBG_DIR)/map.cpp \
+    $(SBG_DIR)/multidim_lexp.cpp \
+    $(SBG_DIR)/lexp.cpp \
+    $(SBG_DIR)/af_set.cpp \
+    $(SBG_DIR)/set.cpp \
+    $(SBG_DIR)/multidim_inter.cpp \
+    $(SBG_DIR)/interval.cpp \
+    $(SBG_DIR)/rational.cpp \
+    $(SBG_DIR)/natural.cpp \
+    $(PARSER_DIR)/sbg_program.cpp \
+    $(PARSER_DIR)/statement.cpp \
+    $(PARSER_DIR)/expr.cpp \
+    $(PARSER_DIR)/skipper.cpp \
+    $(AST_DIR)/sbg_program.cpp \
+    $(AST_DIR)/statement.cpp \
+    $(AST_DIR)/expr.cpp \
+    $(UTIL_DIR)/logger.cpp
 
 # Objects
 EVAL_OBJ=$(addprefix $(BUILD_DIR)/, $(EVAL_SRC:.cpp=.o))
@@ -66,4 +58,4 @@ create-folders::
 	@mkdir -p $(BUILD_DIR)/$(EVAL_DIR)/visitors
 
 $(EVAL): $(EVAL_OBJ)
-	$(CXX) $(INCLUDES) $(CXXFLAGS) -o $(EVAL) $(EVAL_OBJ) $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $(EVAL) $(EVAL_OBJ)

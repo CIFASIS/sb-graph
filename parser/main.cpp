@@ -78,7 +78,7 @@ void usage()
   std::cout << "  * Each assignment or expression should be ended with a\n";
   std::cout << "    semicolon ;\n";
   std::cout << "  * All expressions defined in a SBG program should have the\n";
-  std::cout << "    number of dimensions.\n";
+  std::cout << "    same number of dimensions.\n";
   std::cout << "  * The first assignment of a SBG program should be\n";
   std::cout << "    \"dims = k\", where k is the number of the dimensions of\n";
   std::cout << "    all elements defined in the SBG program. If it is\n";

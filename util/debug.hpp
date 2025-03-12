@@ -38,8 +38,8 @@ namespace SBG {
 namespace Debug {
 
 /*
- * Print an ERROR message. Then exits with EXIT_FAILURE status.
-*/
+ * @brief Print an ERROR message. Then exits with EXIT_FAILURE status.
+ */
 template<class... Args>
 void ERROR(Args... args)
 {
@@ -47,9 +47,8 @@ void ERROR(Args... args)
   exit(EXIT_FAILURE);
 }
 
-
 /**
- * Print an ERROR message if condition is false.
+ * @brief Print an ERROR message if condition is false.
  * Then exits with EXIT_FAILURE status.
  */
 template<class... Args>

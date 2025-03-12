@@ -30,50 +30,34 @@
 
 namespace OG {
 
-template<typename Set>
 class OrdinaryGraphBuilder {
-  using PW = SBG::LIB::PWMap<Set>;
-  using SBGraph = SBG::LIB::SBGraph<Set>;
-
-  public:
-  OrdinaryGraphBuilder(SBGraph graph);
+  OrdinaryGraphBuilder(SBG::LIB::SBG graph);
   ~OrdinaryGraphBuilder() = default;
 
   virtual OG::Graph build();
 
   protected:
-  OG::VertexDesc addVertex(SBG::Util::MD_NAT id, OG::Graph &g);
-  OG::EdgeDesc addEdge(SBG::Util::MD_NAT id, OG::Graph &g);
+  OG::VertexDesc addVertex(SBG::LIB::MD_NAT id, OG::Graph &g);
+  OG::EdgeDesc addEdge(SBG::LIB::MD_NAT id, OG::Graph &g);
 
-  SBGraph _sb_graph;
-  std::map<SBG::Util::MD_NAT, OG::VertexDesc> _vertex_map;
+  SBG::LIB::SBG _sb_graph;
+  std::map<SBG::LIB::MD_NAT, OG::VertexDesc> _vertex_map;
 };
 
-typedef OrdinaryGraphBuilder<SBG::LIB::UnordSet> BaseBuilder;
-typedef OrdinaryGraphBuilder<SBG::LIB::OrdSet> CanonBuilder; 
-
-template<typename Set>
 class OrdinaryDGraphBuilder {
-  using PW = SBG::LIB::PWMap<Set>;
-  using DSBGraph = SBG::LIB::DSBGraph<Set>;
-
-  public:
-  OrdinaryDGraphBuilder(DSBGraph graph);
+  OrdinaryDGraphBuilder(SBG::LIB::DSBG graph);
   ~OrdinaryDGraphBuilder() = default;
 
   virtual OG::DGraph build();
 
   protected:
-  OG::DVertexDesc addVertex(SBG::Util::MD_NAT id, OG::DGraph &g);
-  OG::DEdgeDesc addEdge(SBG::Util::MD_NAT id, SBG::Util::MD_NAT v1
-    , SBG::Util::MD_NAT v2, OG::DGraph &g);
+  OG::DVertexDesc addVertex(SBG::LIB::MD_NAT id, OG::DGraph &g);
+  OG::DEdgeDesc addEdge(SBG::LIB::MD_NAT id, SBG::LIB::MD_NAT v1
+    , SBG::LIB::MD_NAT v2, OG::DGraph &g);
 
-  DSBGraph _sb_graph;
-  std::map<SBG::Util::MD_NAT, OG::DVertexDesc> _vertex_map;
+  SBG::LIB::DSBG _sb_graph;
+  std::map<SBG::LIB::MD_NAT, OG::DVertexDesc> _vertex_map;
 };
-
-typedef OrdinaryDGraphBuilder<SBG::LIB::UnordSet> BaseDBuilder;
-typedef OrdinaryDGraphBuilder<SBG::LIB::OrdSet> CanonDBuilder; 
 
 }  // namespace OG
 

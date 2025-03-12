@@ -88,7 +88,7 @@ void computeTS(OG::DGraph graph)
     << total.count() << " [μs]" << std::endl;
 }
 
-auto graph_visitor_ = SBG::Util::Overload {
+auto graph_visitor_ = SBG::Eval::Overload {
   [](int a, SBG::LIB::BaseSBG b) {
     SBG::LIB::BaseMatch match(b, false);
     match.calculate().matched_edges();

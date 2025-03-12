@@ -23,7 +23,6 @@ namespace SBG {
 
 namespace Eval {
 
-OptConds::OptConds() : env_() {}
 OptConds::OptConds(VarEnv env) : env_(env) {}
 
 bool OptConds::operator()(AST::Natural v) const 
@@ -36,7 +35,7 @@ bool OptConds::operator()(AST::Rational v) const
   return true; 
 }
 
-bool OptConds::operator()(Util::VariableName v) const 
+bool OptConds::operator()(AST::VariableName v) const 
 { 
   return true; 
 }
@@ -84,7 +83,7 @@ bool OptConds::operator()(AST::InterBinOp v) const
       return l && r;
 
     default:
-      Util::ERROR("OptConds: InterBinOp ", v.op(), " unsupported\n");
+      Debug::ERROR("OptConds: InterBinOp ", v.op(), " unsupported\n");
       return false; 
   }
 }
@@ -113,7 +112,7 @@ bool OptConds::operator()(AST::MDInterBinOp v) const
       return l && r;
 
     default:
-      Util::ERROR("OptConds: MDInterBinOp ", v.op(), " unsupported\n");
+      Debug::ERROR("OptConds: MDInterBinOp ", v.op(), " unsupported\n");
       return false; 
   }
 }
@@ -145,7 +144,7 @@ bool OptConds::operator()(AST::SetBinOp v) const
       return l && r;
 
     default:
-      Util::ERROR("EvalUnordSet: SetBinOp ", v.op(), " unsupported\n");
+      Debug::ERROR("EvalUnordSet: SetBinOp ", v.op(), " unsupported\n");
       return false; 
   }
 }

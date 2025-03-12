@@ -30,34 +30,34 @@ namespace SBG {
 
 namespace Eval {
 
-struct EvalNat : public boost::static_visitor<Util::NAT> {
+struct EvalNat : public boost::static_visitor<LIB::NAT> {
   public:
   EvalNat();
-  EvalNat(VarEnv env);
+  EvalNat(VarEnv &env);
 
-  Util::NAT operator()(AST::Natural v) const;
-  Util::NAT operator()(AST::Rational v) const;
-  Util::NAT operator()(Util::VariableName v) const;
-  Util::NAT operator()(AST::UnaryOp v) const;
-  Util::NAT operator()(AST::BinOp v) const;
-  Util::NAT operator()(AST::Call v) const;
-  Util::NAT operator()(AST::Interval v) const;
-  Util::NAT operator()(AST::InterUnaryOp v) const;
-  Util::NAT operator()(AST::InterBinOp v) const;
-  Util::NAT operator()(AST::MultiDimInter v) const;
-  Util::NAT operator()(AST::MDInterUnaryOp v) const;
-  Util::NAT operator()(AST::MDInterBinOp v) const;
-  Util::NAT operator()(AST::Set v) const;
-  Util::NAT operator()(AST::SetUnaryOp v) const;
-  Util::NAT operator()(AST::SetBinOp v) const;
-  Util::NAT operator()(AST::LinearExp v) const;
-  Util::NAT operator()(AST::LExpBinOp v) const;
-  Util::NAT operator()(AST::MDLExp v) const;
-  Util::NAT operator()(AST::MDLExpBinOp v) const;
-  Util::NAT operator()(AST::LinearMap v) const;
-  Util::NAT operator()(AST::PWLMap v) const;
-  Util::NAT operator()(AST::SBG v) const;
-  Util::NAT operator()(AST::DSBG v) const;
+  LIB::NAT operator()(AST::Natural v) const;
+  LIB::NAT operator()(AST::Rational v) const;
+  LIB::NAT operator()(AST::VariableName v) const;
+  LIB::NAT operator()(AST::UnaryOp v) const;
+  LIB::NAT operator()(AST::BinOp v) const;
+  LIB::NAT operator()(AST::Call v) const;
+  LIB::NAT operator()(AST::Interval v) const;
+  LIB::NAT operator()(AST::InterUnaryOp v) const;
+  LIB::NAT operator()(AST::InterBinOp v) const;
+  LIB::NAT operator()(AST::MultiDimInter v) const;
+  LIB::NAT operator()(AST::MDInterUnaryOp v) const;
+  LIB::NAT operator()(AST::MDInterBinOp v) const;
+  LIB::NAT operator()(AST::Set v) const;
+  LIB::NAT operator()(AST::SetUnaryOp v) const;
+  LIB::NAT operator()(AST::SetBinOp v) const;
+  LIB::NAT operator()(AST::LinearExp v) const;
+  LIB::NAT operator()(AST::LExpBinOp v) const;
+  LIB::NAT operator()(AST::MDLExp v) const;
+  LIB::NAT operator()(AST::MDLExpBinOp v) const;
+  LIB::NAT operator()(AST::LinearMap v) const;
+  LIB::NAT operator()(AST::PWLMap v) const;
+  LIB::NAT operator()(AST::SBG v) const;
+  LIB::NAT operator()(AST::DSBG v) const;
 
   private:
   mutable VarEnv env_;

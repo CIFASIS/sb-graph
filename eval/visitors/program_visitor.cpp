@@ -27,19 +27,19 @@ ProgramVisitor::ProgramVisitor(bool debug) : env_(), debug_(debug) {}
 
 ProgramIO ProgramVisitor::operator()(AST::Program p) const 
 { 
-  ProgramIO result;
+  LIB::NAT dims = 1;
+  AST::StatementList stms;
+  ExprEvalList exprs;
 
   AST::IsConfig cfg_visit;
   StmVisitor stm_visit;
   for (AST::Statement s : p.stms()) {
-    if (boost::apply_visitor(cfg_visit, s)) {
-      AST::ConfigDims cfg = boost::get<AST::ConfigDims>(s);
-      result.set_nmbr_dims(cfg.nmbr_dims());
-    }
+    if (boost::apply_visitor(cfg_visit, s))
+      dims = boost::get<AST::ConfigDims>(s).nmbr_dims();
 
     else {
       boost::apply_visitor(stm_visit, s);
-      result.stms_ref().push_back(s);
+      stms.push_back(s);
     }
   }
 
@@ -48,13 +48,20 @@ ProgramIO ProgramVisitor::operator()(AST::Program p) const
   for (AST::Expr e : p.exprs())
     check = check && boost::apply_visitor(opt_conds, e);
 
-  EvalExpression eval_expr(result.nmbr_dims(), check, stm_visit.env(), debug_);
+  // Choose concrete factory according to the desired implementation
+  std::unique_ptr<LIB::SetAF> set_fact = std::make_unique<LIB::UnordAF>();
+  if (check)
+    set_fact = std::make_unique<LIB::OrdDenseAF>();
+  LIB::MapAF map_fact(*set_fact);
+  LIB::UnordPWMapAF pw_fact(map_fact);
+
+  EvalExpression eval_expr(dims, pw_fact, stm_visit.env(), debug_);
   for (AST::Expr e : p.exprs()) {
     ExprBaseType expr_res = boost::apply_visitor(eval_expr, e);
-    result.exprs_ref().push_back(ExprEval(e, expr_res));
+    exprs.push_back(ExprEval(e, expr_res));
   }
 
-  return result;
+  return ProgramIO(dims, stms, exprs);
 }
 
 } // namespace Eval

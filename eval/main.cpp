@@ -35,7 +35,7 @@ void parseEvalProgramFromFile(std::string fname, bool debug)
 {
   std::ifstream in(fname.c_str());
   if (in.fail()) 
-    SBG::Util::ERROR("Unable to open file ", fname, "\n");
+    SBG::Debug::ERROR("Unable to open file ", fname, "\n");
   in.unsetf(std::ios::skipws);
 
   std::string str(
@@ -108,7 +108,7 @@ void usage()
   std::cout << "    is also reserved.\n";
   std::cout << "  * Linear expresssions should include a numeric value for\n";
   std::cout << "    its slope. That is, to express a constant expression\n";
-  std::cout << "    it should be written as: 0*x+h.\n\n";
+  std::cout << "    it should be written as: 0*x+h.\n";
   std::cout << "  * Both intervals and linear expressions will be parsed as\n";
   std::cout << "    their multi-dimensional counterparts.\n\n";
 
@@ -243,7 +243,7 @@ int main(int argc, char**argv)
   if (!filename.empty())
     parseEvalProgramFromFile(filename, debug);
   else
-    SBG::Util::ERROR("A filename should be provided\n");
+    SBG::Debug::ERROR("A filename should be provided\n");
 
   return 0;
 }

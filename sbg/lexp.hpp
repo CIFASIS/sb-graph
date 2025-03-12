@@ -43,7 +43,7 @@ struct LExp {
   LExp();
 
   /**
-   * @brief Construct a linear expression defining the slope and offset.
+   * @brief Construct a linear expression defining the \p slope and \p offset.
    */
   LExp(RATIONAL slope, RATIONAL offset);
 
@@ -56,7 +56,8 @@ struct LExp {
   // Tradiotional le operations ------------------------------------------------
 
   /**
-   * @brief Calculate the composition of this with other, i.e. this(other).
+   * @brief Calculate the composition of \p this with \p other, i.e.
+   * \p this(\p other).
    */
   LExp composition(const LExp &other) const;
 

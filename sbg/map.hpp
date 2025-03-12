@@ -4,7 +4,8 @@
 
  A SBG map dom -> exp is an entity composed by a set (domain) and a law.
  Currently only linear expressions are supported. Both the domain and law should
- share the same arity.
+ share the same arity. As such, function notation will be used, i.e. given a map
+ m writing m(x) calculates the result of applying m to value x.
 
  <hr>
 
@@ -41,7 +42,7 @@ typedef std::optional<Map> MaybeMap;
 
 /**
  * @brief Implementation of maps. Every map has as member a SetAF that keeps
- * track of the chosen implementation of sets.
+ * track of the chosen implementation for Sets.
  */
 struct Map {
   private:
@@ -59,25 +60,25 @@ struct Map {
   Map(const SetAF &fact);
 
   /**
-   * @brief Construct a map with a single element x in its domain, with mdle
-   * exp.
+   * @brief Construct a map with a single element \p x in its domain, and with
+   * \p exp as its law.
    */
   Map(const SetAF &fact, MD_NAT x, Exp exp);
 
   /**
-   * @brief Construct a map with all the elements of i in its domain, with law
-   * le.
+   * @brief Construct a map with all the elements of \p i in its domain, and law
+   * \p le.
    */
   Map(const SetAF &fact, Interval i, LExp le);
 
   /**
-   * @brief Construct a map with all the elements of mdi in its domain, with law
-   * exp. 
+   * @brief Construct a map with all the elements of \p mdi in its domain, and
+   * law \p exp. 
    */
   Map(const SetAF &fact, SetPiece mdi, Exp exp);
 
   /**
-   * @brief Construct a map defining its domain and law as a mdle.
+   * @brief Construct a map defining its domain as \p s and law as \p exp.
    */
   Map(const SetAF &fact, Set s, Exp exp);
 
@@ -101,7 +102,7 @@ struct Map {
   bool isEmpty() const;
 
   /**
-   * @brief Restrict the domain of the map to subdom.
+   * @brief Restrict the domain of the map to \p subdom.
    */
   Map restrict(const Set &subdom) const;
 
@@ -111,7 +112,7 @@ struct Map {
   Set image() const;
 
   /**
-   * @brief Return the image of the map with its domain restricted to subdom.
+   * @brief Return the image of the map with its domain restricted to \p subdom.
    */
   Set image(const Set &subdom) const;
 
@@ -124,7 +125,8 @@ struct Map {
   Set preImage(const Set &subcodom) const;
 
   /**
-   * @brief Calculate the composition of this with other, i.e. this(other).
+   * @brief Calculate the composition of \p this with \p other, i.e.
+   * \p this(\p other).
    */
   Map composition(const Map &other) const;
 

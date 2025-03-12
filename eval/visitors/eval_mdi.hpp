@@ -32,12 +32,11 @@ namespace Eval {
 
 struct EvalMDI : public boost::static_visitor<LIB::SetPiece> {
   public:
-  EvalMDI();
-  EvalMDI(VarEnv env);
+  EvalMDI(unsigned int nmbr_dims, VarEnv &env);
 
   LIB::SetPiece operator()(AST::Natural v) const;
   LIB::SetPiece operator()(AST::Rational v) const;
-  LIB::SetPiece operator()(Util::VariableName v) const;
+  LIB::SetPiece operator()(AST::VariableName v) const;
   LIB::SetPiece operator()(AST::UnaryOp v) const;
   LIB::SetPiece operator()(AST::BinOp v) const;
   LIB::SetPiece operator()(AST::Call v) const;
@@ -60,6 +59,7 @@ struct EvalMDI : public boost::static_visitor<LIB::SetPiece> {
   LIB::SetPiece operator()(AST::DSBG v) const;
 
   private:
+  unsigned int nmbr_dims_;
   mutable VarEnv env_;
 };
 

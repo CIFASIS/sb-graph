@@ -23,75 +23,60 @@ namespace SBG {
 
 namespace Eval {
 
-EvalMDI::EvalMDI() : env_() {}
-EvalMDI::EvalMDI(VarEnv env) : env_(env) {}
+EvalMDI::EvalMDI(unsigned int nmbr_dims, VarEnv &env)
+  : nmbr_dims_(nmbr_dims), env_(env) {}
 
 LIB::MultiDimInter EvalMDI::operator()(AST::Natural v) const 
 { 
-  Util::ERROR("EvalMDI: trying to evaluate Natural ", v, "\n");
+  Debug::ERROR("EvalMDI: trying to evaluate Natural ", v, "\n");
   return LIB::MultiDimInter();
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::Rational v) const 
 { 
-  Util::ERROR("EvalMDI: trying to evaluate Rational ", v, "\n");
+  Debug::ERROR("EvalMDI: trying to evaluate Rational ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
-LIB::MultiDimInter EvalMDI::operator()(Util::VariableName v) const 
+LIB::MultiDimInter EvalMDI::operator()(AST::VariableName v) const 
 { 
-  MaybeEBT v_opt = env_[v];
-  if (v_opt) { 
-    ExprBaseType value = *v_opt;
-    if (std::holds_alternative<ContainerBaseType>(value)) {
-      auto c = std::get<ContainerBaseType>(value);
-      if (std::holds_alternative<LIB::MultiDimInter>(c))
-        return std::get<LIB::MultiDimInter>(c);
-    }
-
-    else {
-      Util::ERROR("EvalMDI: variable ", v, " is not an interval\n");
-      return LIB::MultiDimInter(); 
-    } 
-  }
-
-  Util::ERROR("EvalMDI: variable ", v, " undefined\n");
+  Debug::ERROR("EvalMDI: variable ", v, " is not a MDI\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::UnaryOp v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate arithmetic UnaryOp ", v, "\n");
+  Debug::ERROR("EvalMDI: trying to evaluate arithmetic UnaryOp ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::BinOp v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate arithmetic BinOp ", v, "\n");
+  Debug::ERROR("EvalMDI: trying to evaluate arithmetic BinOp ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::Call v) const
 {
-  Util::ERROR("EvalMDI: trying to evaluate Call ", v, "\n");
+  Debug::ERROR("EvalMDI: trying to evaluate Call ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::Interval v) const 
 { 
-  Util::ERROR("EvalMDI: trying to evaluate Interval ", v, "\n");
+  Debug::ERROR("EvalMDI: trying to evaluate Interval ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::InterUnaryOp v) const
 {
-  Util::ERROR("EvalMDI: trying to evaluate InterUnaryOp ", v, "\n");
+  Debug::ERROR("EvalMDI: trying to evaluate InterUnaryOp ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::InterBinOp v) const
 {
-  Util::ERROR("EvalMDI: trying to evaluate InterBinOp ", v, "\n");
+  Debug::ERROR("EvalMDI: trying to evaluate InterBinOp ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
@@ -103,6 +88,10 @@ LIB::MultiDimInter EvalMDI::operator()(AST::MultiDimInter v) const
   for (AST::Expr ith : v.intervals())
     res.emplaceBack(boost::apply_visitor(visit_inter, ith));
 
+  Debug::ERROR_UNLESS(res.arity() == nmbr_dims_ || res.arity() == 0
+    , "EvalMDI[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
+    , res.arity(), "\n");
+
   return res;
 }
 
@@ -111,7 +100,7 @@ LIB::MultiDimInter EvalMDI::operator()(AST::MDInterUnaryOp v) const
   AST::Expr exp = v.e();
   switch (v.op()) {
     default:
-      Util::ERROR("EvalMDI: MDInterUnaryOp ", v.op(), " unsupported\n");
+      Debug::ERROR("EvalMDI: MDInterUnaryOp ", v.op(), " unsupported\n");
       return LIB::MultiDimInter(); 
   }
 }
@@ -125,74 +114,74 @@ LIB::MultiDimInter EvalMDI::operator()(AST::MDInterBinOp v) const
       return l.intersection(r);
 
     default:
-      Util::ERROR("EvalMD: MDInterBinOp ", v.op(), " unsupported\n");
+      Debug::ERROR("EvalMD: MDInterBinOp ", v.op(), " unsupported\n");
       return LIB::MultiDimInter(); 
   }
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::Set v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate Set ", v, "\n");
+  Debug::ERROR("EvalMDI: trying to evaluate Set ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::SetUnaryOp v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate SetUnaryOp ", v, "\n");
+  Debug::ERROR("EvalMDI: trying to evaluate SetUnaryOp ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::SetBinOp v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate SetBinOp ", v, "\n");
+  Debug::ERROR("EvalMDI: trying to evaluate SetBinOp ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::LinearExp v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate LinearExp ", v, "\n");
+  Debug::ERROR("EvalMDI: trying to evaluate LinearExp ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::LExpBinOp v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate LExpBinOp ", v, "\n");
+  Debug::ERROR("EvalMDI: trying to evaluate LExpBinOp ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::MDLExp v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate MDLExp ", v, "\n");
+  Debug::ERROR("EvalMDI: trying to evaluate MDLExp ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::MDLExpBinOp v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate MDLExpBinOp ", v, "\n");
+  Debug::ERROR("EvalMDI: trying to evaluate MDLExpBinOp ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::LinearMap v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate LinearMap ", v, "\n");
+  Debug::ERROR("EvalMDI: trying to evaluate LinearMap ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::PWLMap v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate PWLMap ", v, "\n");
+  Debug::ERROR("EvalMDI: trying to evaluate PWLMap ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::SBG v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate SBG ", v, "\n");
+  Debug::ERROR("EvalMDI: trying to evaluate SBG ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 
 LIB::MultiDimInter EvalMDI::operator()(AST::DSBG v) const 
 {
-  Util::ERROR("EvalMDI: trying to evaluate DSBG ", v, "\n");
+  Debug::ERROR("EvalMDI: trying to evaluate DSBG ", v, "\n");
   return LIB::MultiDimInter(); 
 }
 

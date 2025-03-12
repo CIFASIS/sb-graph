@@ -24,55 +24,55 @@ namespace SBG {
 namespace Eval {
 
 EvalInt::EvalInt() : env_() {}
-EvalInt::EvalInt(VarEnv env) : env_(env) {}
+EvalInt::EvalInt(VarEnv &env) : env_(env) {}
 
-Util::INT EvalInt::operator()(AST::Natural v) const { return v; }
+LIB::INT EvalInt::operator()(AST::Natural v) const { return v; }
 
-Util::INT EvalInt::operator()(AST::Rational v) const 
+LIB::INT EvalInt::operator()(AST::Rational v) const 
 { 
   if (boost::apply_visitor(*this, v.den()) == 1)
     return boost::apply_visitor(*this, v.num());
 
-  Util::ERROR("EvalInt: trying to evaluate Rational ", v, "\n");
+  Debug::ERROR("EvalInt: trying to evaluate Rational ", v, "\n");
   return 0; 
 }
 
-Util::INT EvalInt::operator()(Util::VariableName v) const 
+LIB::INT EvalInt::operator()(AST::VariableName v) const 
 { 
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (std::holds_alternative<Util::MD_NAT>(value)) {
-      Util::MD_NAT x = std::get<Util::MD_NAT>(value);
-      return (Util::INT)(x[0]);
+    if (std::holds_alternative<LIB::MD_NAT>(value)) {
+      LIB::MD_NAT x = std::get<LIB::MD_NAT>(value);
+      return (LIB::INT)(x[0]);
     }
-    else if (std::holds_alternative<Util::RATIONAL>(value)) {
-      Util::RATIONAL x = std::get<Util::RATIONAL>(value);
+    else if (std::holds_alternative<LIB::RATIONAL>(value)) {
+      LIB::RATIONAL x = std::get<LIB::RATIONAL>(value);
       return x.toInt();
     }
   }
 
-  Util::ERROR("EvalInt: variable ", v, " undefined\n");
+  Debug::ERROR("EvalInt: variable ", v, " undefined\n");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::UnaryOp v) const 
+LIB::INT EvalInt::operator()(AST::UnaryOp v) const 
 {
-  Util::INT x = boost::apply_visitor(*this, v.expr());
+  LIB::INT x = boost::apply_visitor(*this, v.expr());
   switch (v.op()) {
     case AST::UnOp::neg:
       return -x;
 
     default:
-      Util::ERROR("EvalInt: BinOp ", v.op(), " unsupported\n");
+      Debug::ERROR("EvalInt: BinOp ", v.op(), " unsupported\n");
       return 0;
   }
 }
 
-Util::INT EvalInt::operator()(AST::BinOp v) const 
+LIB::INT EvalInt::operator()(AST::BinOp v) const 
 {
-  Util::INT l = boost::apply_visitor(*this, v.left());
-  Util::INT r = boost::apply_visitor(*this, v.right());
+  LIB::INT l = boost::apply_visitor(*this, v.left());
+  LIB::INT r = boost::apply_visitor(*this, v.right());
   switch (v.op()) {
     case AST::Op::add:
       return l + r;
@@ -87,116 +87,116 @@ Util::INT EvalInt::operator()(AST::BinOp v) const
       return pow(l, r);
 
     default:
-      Util::ERROR("EvalInt: BinOp ", v.op(), " unsupported\n");
+      Debug::ERROR("EvalInt: BinOp ", v.op(), " unsupported\n");
       return 0;
   }
 }
 
-Util::INT EvalInt::operator()(AST::Call v) const
+LIB::INT EvalInt::operator()(AST::Call v) const
 {
-  Util::ERROR("EvalInt: trying to evaluate Call ", v, "\n");
+  Debug::ERROR("EvalInt: trying to evaluate Call ", v, "\n");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::Interval v) const
+LIB::INT EvalInt::operator()(AST::Interval v) const
 {
-  Util::ERROR("EvalInt: trying to evaluate Interval ", v, "\n");
+  Debug::ERROR("EvalInt: trying to evaluate Interval ", v, "\n");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::InterUnaryOp v) const
+LIB::INT EvalInt::operator()(AST::InterUnaryOp v) const
 {
-  Util::ERROR("EvalInt: trying to evaluate InterUnaryOp ", v, "\n");
+  Debug::ERROR("EvalInt: trying to evaluate InterUnaryOp ", v, "\n");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::InterBinOp v) const
+LIB::INT EvalInt::operator()(AST::InterBinOp v) const
 {
-  Util::ERROR("EvalInt: trying to evaluate InterBinOp ", v, "\n");
+  Debug::ERROR("EvalInt: trying to evaluate InterBinOp ", v, "\n");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::MultiDimInter v) const
+LIB::INT EvalInt::operator()(AST::MultiDimInter v) const
 {
-  Util::ERROR("EvalInt: trying to evaluate MultiDimInter ", v, "\n");
+  Debug::ERROR("EvalInt: trying to evaluate MultiDimInter ", v, "\n");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::MDInterUnaryOp v) const
+LIB::INT EvalInt::operator()(AST::MDInterUnaryOp v) const
 {
-  Util::ERROR("EvalInt: trying to evaluate MDInterUnaryOp ", v, "\n");
+  Debug::ERROR("EvalInt: trying to evaluate MDInterUnaryOp ", v, "\n");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::MDInterBinOp v) const
+LIB::INT EvalInt::operator()(AST::MDInterBinOp v) const
 {
-  Util::ERROR("EvalInt: trying to evaluate MDInterBinOp ", v, "\n");
+  Debug::ERROR("EvalInt: trying to evaluate MDInterBinOp ", v, "\n");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::Set v) const
+LIB::INT EvalInt::operator()(AST::Set v) const
 {
-  Util::ERROR("EvalInt: trying to evaluate Set ", v, "\n");
+  Debug::ERROR("EvalInt: trying to evaluate Set ", v, "\n");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::SetUnaryOp v) const
+LIB::INT EvalInt::operator()(AST::SetUnaryOp v) const
 {
-  Util::ERROR("EvalInt: trying to evaluate SetUnaryOp ", v, "\n");
+  Debug::ERROR("EvalInt: trying to evaluate SetUnaryOp ", v, "\n");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::SetBinOp v) const
+LIB::INT EvalInt::operator()(AST::SetBinOp v) const
 {
-  Util::ERROR("EvalInt: trying to evaluate SetBinOp ", v, "\n");
+  Debug::ERROR("EvalInt: trying to evaluate SetBinOp ", v, "\n");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::LinearExp v) const
+LIB::INT EvalInt::operator()(AST::LinearExp v) const
 {
-  Util::ERROR("EvalInt: trying to evaluate LinearExp ", v, "\n");
+  Debug::ERROR("EvalInt: trying to evaluate LinearExp ", v, "\n");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::LExpBinOp v) const
+LIB::INT EvalInt::operator()(AST::LExpBinOp v) const
 {
-  Util::ERROR("EvalInt: trying to evaluate LExpBinOp ", v, "\n");
+  Debug::ERROR("EvalInt: trying to evaluate LExpBinOp ", v, "\n");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::MDLExp v) const
+LIB::INT EvalInt::operator()(AST::MDLExp v) const
 {
-  Util::ERROR("EvalInt: trying to evaluate MDLExp ", v, "\n");
+  Debug::ERROR("EvalInt: trying to evaluate MDLExp ", v, "\n");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::MDLExpBinOp v) const
+LIB::INT EvalInt::operator()(AST::MDLExpBinOp v) const
 {
-  Util::ERROR("EvalInt: trying to evaluate MDLExpBinOp ", v, "\n");
+  Debug::ERROR("EvalInt: trying to evaluate MDLExpBinOp ", v, "\n");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::LinearMap v) const
+LIB::INT EvalInt::operator()(AST::LinearMap v) const
 {
-  Util::ERROR("EvalInt: trying to evaluate LinearMap ", v, "\n");
+  Debug::ERROR("EvalInt: trying to evaluate LinearMap ", v, "\n");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::PWLMap v) const
+LIB::INT EvalInt::operator()(AST::PWLMap v) const
 {
-  Util::ERROR("EvalInt: trying to evaluate PWLMap ", v, "\n");
+  Debug::ERROR("EvalInt: trying to evaluate PWLMap ", v, "\n");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::SBG v) const
+LIB::INT EvalInt::operator()(AST::SBG v) const
 {
-  Util::ERROR("EvalInt: trying to evaluate SBG ", v, "\n");
+  Debug::ERROR("EvalInt: trying to evaluate SBG ", v, "\n");
   return 0;
 }
 
-Util::INT EvalInt::operator()(AST::DSBG v) const
+LIB::INT EvalInt::operator()(AST::DSBG v) const
 {
-  Util::ERROR("EvalInt: trying to evaluate DSBG ", v, "\n");
+  Debug::ERROR("EvalInt: trying to evaluate DSBG ", v, "\n");
   return 0;
 }
 

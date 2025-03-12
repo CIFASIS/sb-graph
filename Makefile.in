@@ -22,7 +22,7 @@ boost_libdir  ?= $(prefix)
 
 # Flags, Libraries and Includes
 INCLUDES := -I. -I$(boost_libdir)/include
-CXXFLAGS := -std=c++17 -Wall -Werror -Wno-reorder -O2 -D BOOST_PHOENIX_STL_TUPLE_H_ -D BOOST_MPL_LIMIT_LIST_SIZE=30 -D BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
+CXXFLAGS := -std=c++17 -Wall -Werror -Wno-reorder -O3 -D BOOST_PHOENIX_STL_TUPLE_H_ -D BOOST_MPL_LIMIT_LIST_SIZE=30 -D BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
 ifeq ($(MODE),Debug)
 CXXFLAGS 	+= -ggdb  
 endif
@@ -32,7 +32,6 @@ all: $(LIB_SBGRAPH)
 
 include sbg/Makefile.include
 include parser/Makefile.include
-include util/Makefile.include
 include eval/Makefile.include
 include test/Makefile.include
 
@@ -40,8 +39,8 @@ $(BUILD_DIR)/%.o : %.cpp
 	$(CC) $(INCLUDES) $(CXXFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<
 	$(CC) $(INCLUDES) -c $< -o $@ $(CXXFLAGS)
 
-$(LIB_SBGRAPH): create-folders $(SBG_OBJ) $(UTIL_OBJ) $(PARSER_OBJ) $(EVAL_OBJ)
-	$(AR) rcs $(LIB_SBGRAPH) $(SBG_OBJ) $(UTIL_OBJ) $(PARSER_OBJ) $(EVAL_OBJ)
+$(LIB_SBGRAPH): create-folders $(SBG_OBJ) $(UTIL_OBJ) $(PARSER_OBJ)
+	$(AR) rcs $(LIB_SBGRAPH) $(SBG_OBJ) $(UTIL_OBJ) $(PARSER_OBJ)
 
 lib-gtest: | create-folders 
 ifeq ("$(wildcard $(3RD_PARTY_DIR)/gtest/usr/lib)","")
@@ -86,6 +85,7 @@ doc:
 	@mkdir -p $(ROOT)/doc
 	@mkdir -p $(ROOT)/doc/html
 	@mkdir -p $(ROOT)/doc/latex
+	doxygen eval/EVAL.doxyfile
 	doxygen sbg/SBG.doxyfile
 	doxygen util/UTIL.doxyfile
 

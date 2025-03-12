@@ -34,12 +34,11 @@ namespace Eval {
 
 struct EvalLE : public boost::static_visitor<LIB::LExp> {
   public:
-  EvalLE();
-  EvalLE(VarEnv env);
+  EvalLE(VarEnv &env);
 
   LIB::LExp operator()(AST::Natural v) const;
   LIB::LExp operator()(AST::Rational v) const;
-  LIB::LExp operator()(Util::VariableName v) const;
+  LIB::LExp operator()(AST::VariableName v) const;
   LIB::LExp operator()(AST::UnaryOp v) const;
   LIB::LExp operator()(AST::BinOp v) const;
   LIB::LExp operator()(AST::Call v) const;

@@ -33,12 +33,11 @@ namespace Eval {
 
 struct EvalMDLE : public boost::static_visitor<LIB::Exp> {
   public:
-  EvalMDLE();
-  EvalMDLE(VarEnv env);
+  EvalMDLE(unsigned int nmbr_dims, VarEnv &env);
 
   LIB::Exp operator()(AST::Natural v) const;
   LIB::Exp operator()(AST::Rational v) const;
-  LIB::Exp operator()(Util::VariableName v) const;
+  LIB::Exp operator()(AST::VariableName v) const;
   LIB::Exp operator()(AST::UnaryOp v) const;
   LIB::Exp operator()(AST::BinOp v) const;
   LIB::Exp operator()(AST::Call v) const;
@@ -61,6 +60,7 @@ struct EvalMDLE : public boost::static_visitor<LIB::Exp> {
   LIB::Exp operator()(AST::DSBG v) const;
 
   private:
+  unsigned int nmbr_dims_;
   mutable VarEnv env_;
 };
 

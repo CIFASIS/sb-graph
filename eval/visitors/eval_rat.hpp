@@ -31,34 +31,34 @@ namespace SBG {
 
 namespace Eval {
 
-struct EvalRat : public boost::static_visitor<Util::RATIONAL> {
+struct EvalRat : public boost::static_visitor<LIB::RATIONAL> {
   public:
   EvalRat();
-  EvalRat(VarEnv env);
+  EvalRat(VarEnv &env);
 
-  Util::RATIONAL operator()(AST::Natural v) const;
-  Util::RATIONAL operator()(AST::Rational v) const;
-  Util::RATIONAL operator()(Util::VariableName v) const;
-  Util::RATIONAL operator()(AST::UnaryOp v) const;
-  Util::RATIONAL operator()(AST::BinOp v) const;
-  Util::RATIONAL operator()(AST::Call v) const;
-  Util::RATIONAL operator()(AST::Interval v) const;
-  Util::RATIONAL operator()(AST::InterUnaryOp v) const;
-  Util::RATIONAL operator()(AST::InterBinOp v) const;
-  Util::RATIONAL operator()(AST::MultiDimInter v) const;
-  Util::RATIONAL operator()(AST::MDInterUnaryOp v) const;
-  Util::RATIONAL operator()(AST::MDInterBinOp v) const;
-  Util::RATIONAL operator()(AST::Set v) const;
-  Util::RATIONAL operator()(AST::SetUnaryOp v) const;
-  Util::RATIONAL operator()(AST::SetBinOp v) const;
-  Util::RATIONAL operator()(AST::LinearExp v) const;
-  Util::RATIONAL operator()(AST::LExpBinOp v) const;
-  Util::RATIONAL operator()(AST::MDLExp v) const;
-  Util::RATIONAL operator()(AST::MDLExpBinOp v) const;
-  Util::RATIONAL operator()(AST::LinearMap v) const;
-  Util::RATIONAL operator()(AST::PWLMap v) const;
-  Util::RATIONAL operator()(AST::SBG v) const;
-  Util::RATIONAL operator()(AST::DSBG v) const;
+  LIB::RATIONAL operator()(AST::Natural v) const;
+  LIB::RATIONAL operator()(AST::Rational v) const;
+  LIB::RATIONAL operator()(AST::VariableName v) const;
+  LIB::RATIONAL operator()(AST::UnaryOp v) const;
+  LIB::RATIONAL operator()(AST::BinOp v) const;
+  LIB::RATIONAL operator()(AST::Call v) const;
+  LIB::RATIONAL operator()(AST::Interval v) const;
+  LIB::RATIONAL operator()(AST::InterUnaryOp v) const;
+  LIB::RATIONAL operator()(AST::InterBinOp v) const;
+  LIB::RATIONAL operator()(AST::MultiDimInter v) const;
+  LIB::RATIONAL operator()(AST::MDInterUnaryOp v) const;
+  LIB::RATIONAL operator()(AST::MDInterBinOp v) const;
+  LIB::RATIONAL operator()(AST::Set v) const;
+  LIB::RATIONAL operator()(AST::SetUnaryOp v) const;
+  LIB::RATIONAL operator()(AST::SetBinOp v) const;
+  LIB::RATIONAL operator()(AST::LinearExp v) const;
+  LIB::RATIONAL operator()(AST::LExpBinOp v) const;
+  LIB::RATIONAL operator()(AST::MDLExp v) const;
+  LIB::RATIONAL operator()(AST::MDLExpBinOp v) const;
+  LIB::RATIONAL operator()(AST::LinearMap v) const;
+  LIB::RATIONAL operator()(AST::PWLMap v) const;
+  LIB::RATIONAL operator()(AST::SBG v) const;
+  LIB::RATIONAL operator()(AST::DSBG v) const;
 
   private:
   mutable VarEnv env_;

@@ -32,12 +32,11 @@ namespace Eval {
 
 struct EvalInterval : public boost::static_visitor<LIB::Interval> {
   public:
-  EvalInterval();
-  EvalInterval(VarEnv env);
+  EvalInterval(VarEnv &env);
 
   LIB::Interval operator()(AST::Natural v) const;
   LIB::Interval operator()(AST::Rational v) const;
-  LIB::Interval operator()(Util::VariableName v) const;
+  LIB::Interval operator()(AST::VariableName v) const;
   LIB::Interval operator()(AST::UnaryOp v) const;
   LIB::Interval operator()(AST::BinOp v) const;
   LIB::Interval operator()(AST::Call v) const;

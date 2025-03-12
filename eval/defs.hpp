@@ -27,11 +27,12 @@
 #define EVAL_DEFS_HPP
 
 #include <map>
-#include <tuple>
+#include <variant>
 
 #include "ast/expr.hpp"
 #include "ast/statement.hpp"
-#include "sbg/sbg_algorithms.hpp"
+#include "sbg/af_pwmap.hpp"
+#include "sbg/sbg.hpp"
 
 namespace SBG {
 
@@ -45,9 +46,9 @@ namespace Eval {
  *  one generates a function table with size dependent of the number types in
  *  the variant. Initially ExprBaseType was used.
  */
-
+/*
 typedef std::variant<Util::NAT
-  , Util::MD_NAT> NatBaseType;
+  , Util::MD_NAT> NatType;
 
 typedef std::variant<LIB::Interval
   , LIB::SetPiece
@@ -55,7 +56,7 @@ typedef std::variant<LIB::Interval
   , LIB::OrdSet> ContainerBaseType;
 
 typedef std::variant<LIB::LExp
-  , LIB::Exp> LinearBaseType;
+  , LIB::Exp> ExprBaseType;
 
 typedef std::variant<LIB::BaseMap
   , LIB::CanonMap
@@ -69,28 +70,32 @@ typedef std::variant<LIB::BaseSBG
 
 typedef std::variant<LIB::MatchInfo<LIB::UnordSet>
   , LIB::MatchInfo<LIB::OrdSet>> InfoBaseType;
+*/
 
-typedef std::variant<Util::MD_NAT
-  , Util::RATIONAL
-  , ContainerBaseType
-  , LinearBaseType
-  , MapBaseType
-  , SBGBaseType
-  , InfoBaseType> ExprBaseType;
+typedef std::variant<LIB::MD_NAT
+  , LIB::RATIONAL
+  , LIB::Interval
+  , LIB::SetPiece
+  , LIB::Set
+  , LIB::Exp
+  , LIB::Map
+  , LIB::PWMap
+  , LIB::SBG
+  , LIB::DSBG> ExprBaseType;
 typedef std::optional<ExprBaseType> MaybeEBT;
 
 // Environments ----------------------------------------------------------------
 
-/** @struct VarEnv
- *
- * @brief Variable environment (with expressions already evaluated). This env
- * will be populated by StmVisitor, and used by EvalExpression.
- */
-typedef Util::VariableName VKey;
+typedef AST::VariableName VKey;
 typedef ExprBaseType VValue;
 typedef std::optional<VValue> MaybeVValue;
 typedef std::map<VKey, VValue> VarEnvType;
-struct VarEnv{
+
+/** 
+ * @brief Variable environment (with expressions already evaluated). This env
+ * will be populated by StmVisitor, and used by EvalExpression.
+ */
+struct VarEnv {
   VarEnv();
 
   void insert(VKey k, VValue v);
@@ -100,18 +105,18 @@ struct VarEnv{
   mutable VarEnvType mapping_;
 };
 
-/** @struct FuncEnv
- *
+typedef AST::Name FKey;
+typedef int FValue;
+typedef std::optional<FValue> MaybeFValue;
+typedef std::map<FKey, FValue> FuncEnvType;
+
+/**
  * @brief Function environment. Statically defined: SBG programs don't allow
  * the definition of new functions. This table should be updated manually each
  * time a new operation for SBG and their structures is defined. Each function
  * is associated with a number that will be used by the EvalExpression. The
  * pairs should be inserted in the same order as the enum class. 
  */
-typedef AST::Name FKey;
-typedef int FValue;
-typedef std::optional<FValue> MaybeFValue;
-typedef std::map<FKey, FValue> FuncEnvType;
 struct FuncEnv{
   FuncEnv();
 
@@ -135,20 +140,17 @@ std::ostream &operator<<(std::ostream &out, const ExprEval &e);
 typedef std::vector<ExprEval> ExprEvalList; 
 std::ostream &operator<<(std::ostream &out, const ExprEvalList &ee);
 
-/** @struct ProgramIO
- *
+/** 
  * @brief Class to pretty print a program and its correspondent evaluation.
- *   - Assign statements only evaluate the right side.
+ *   - Assign statements only evaluate the right side of an assignment.
  *   - There will be a tuple for each expression with its original form and
  *     the result of evaluating it.
  */
-
 struct ProgramIO {
   member_class(unsigned int, nmbr_dims);
   member_class(AST::StatementList, stms);
-  member_class(ExprEvalList, exprs);
+  ExprEvalList exprs_;
  
-  ProgramIO(); 
   ProgramIO(AST::StatementList stms, ExprEvalList exprs);
   ProgramIO(unsigned int nmbr_dims, AST::StatementList stms, ExprEvalList exprs);
 };

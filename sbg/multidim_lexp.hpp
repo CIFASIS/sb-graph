@@ -46,17 +46,17 @@ struct MDLExp {
   MDLExp();
 
   /**
-   * @brief Constructs a constant mdle in all dimensions that maps to x.
+   * @brief Constructs a constant mdle in all dimensions that maps to \p x.
    */
   MDLExp(const MD_NAT &x);
 
   /**
-   * @brief Constructs a one-dimensional mdle composed only by le.
+   * @brief Constructs a one-dimensional mdle composed only by \p le.
    */
   MDLExp(const LExp &le);
 
   /**
-   * @brief Constructs a mdle of dimension nmbr_copies with le as linear
+   * @brief Constructs a mdle of dimension \p nmbr_copies with \p le as linear
    * expression in each dimensions.
    */
   MDLExp(unsigned int nmbr_copies, const LExp &le);
@@ -90,7 +90,8 @@ struct MDLExp {
   std::size_t arity() const;
 
   /**
-   * @brief Calculate the composition of mdle1 with mdle2, i.e. mdle1(mdle2)
+   * @brief Calculate the composition of \p this with \p other, i.e.
+   * \p this(\p other).
    */
   MDLExp composition(const MDLExp &other) const;
 

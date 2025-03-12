@@ -2,6 +2,23 @@
 
  @brief <b>Set-based graph implementation</b>
 
+ Given a graph G, if there is a biunivocal assignment of naturals for elements
+ in V(G) and E(G), an associated SBG is a tuple composed by:
+ - A Set V_ describing V(G).
+ - A Set E_ listing elements of E(G).
+ - A PWMap map1_ mapping elements of E_ to V_ (one of the endings of each edge).
+ - A PWMap map2_ mapping elements of E_ to V_ (the other ending of each edge). \n 
+ where map1_ and map_2 share the same domain. These elements all together keep
+ the same information as G. Additionally, the SBG keeps:
+ - A PWMap Vmap_ mapping elements in V_ to some constant value. Vertices that
+   share the same image conform a *Set-Vertex*.
+ - A PWMap Emap_ mapping elements in E_ to some constant value. Edges that
+   share the same image conform a *Set-Edge*.
+ - A PWMap subEmap_ mapping elements in E_ to some constant value. Edges that
+   share the same image conform a *Subset-Edge*.\n 
+ These components are added to keep track of repetitve structures in G. Note
+ that a Set-Edge might be composed by several Subset-Edges.
+
  <hr>
 
  This file is part of Set--Based Graph Library.
@@ -35,7 +52,7 @@ namespace LIB {
 // Undirected SBG --------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct SBGraph {
+struct SBG {
   private:
   const PWMapAF &fact_;
 
@@ -51,20 +68,46 @@ struct SBGraph {
   member_class(PWMap, Emap);
   member_class(PWMap, subEmap);
 
-  SBGraph(const PWMapAF &fact);
-  SBGraph(const PWMapAF &fact, const Set &V, const PWMap &Vmap
+  /**
+   * @brief Empty SBG constructor.
+   */
+  SBG(const PWMapAF &fact);
+
+  /**
+   * @brief SBG constructor that copies arguments to construct member variables.
+   * A set of edges E is not needed, as it will be obtained from the domain of
+   * map1_ and map2_.
+   */
+  SBG(const PWMapAF &fact, const Set &V, const PWMap &Vmap
     , const PWMap &map1, const PWMap &map2
     , const PWMap &Emap, const PWMap &subEmap);
 
-  SBGraph addSV(const Set &vertices) const;
-  SBGraph addSE(const PWMap &pw1, const PWMap &pw2) const;
-  SBGraph copy(unsigned int times) const;
+  /**
+   * @brief Adds a new set-vertex composed by \p vertices. \n
+   * Precondition: V_.intersection(vertices) = {}
+   */
+  SBG addSV(const Set &vertices) const;
+
+  /**
+   * @brief Adds a new set-edge described by \p pw1 and \p pw2. \n 
+   * Precondition: dom(pw1) = dom(pw2) and
+   * E_.intersection(pw1.dom()) = {} and E_.intersection(pw2.dom()) = {} 
+   */
+  SBG addSE(const PWMap &pw1, const PWMap &pw2) const;
+
+  /**
+   * @brief Returns a new SBG composed by \p times copies of the original SBG,
+   * where each copy is isomorphic to the argument.
+   */
+  SBG copy(unsigned int times) const;
 };
-std::ostream &operator<<(std::ostream &out, const SBGraph &g);
+std::ostream &operator<<(std::ostream &out, const SBG &g);
 
+////////////////////////////////////////////////////////////////////////////////
 // Directed SBG ----------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
-struct DSBGraph {
+struct DSBG {
   private:
   const PWMapAF &fact_;
 
@@ -80,17 +123,36 @@ struct DSBGraph {
   member_class(PWMap, Emap);
   member_class(PWMap, subEmap);
 
-  DSBGraph(const PWMapAF &fact);
-  DSBGraph(const PWMapAF &fact, const Set &V, const PWMap &Vmap
+  /**
+   * @brief Empty SBG constructor.
+   */
+  DSBG(const PWMapAF &fact);
+
+  /**
+   * @brief SBG constructor that copies arguments to construct member variables.
+   * A set of edges E is not needed, as it will be obtained from the domain of
+   * map1_ and map2_.
+   */
+  DSBG(const PWMapAF &fact, const Set &V, const PWMap &Vmap
    , const PWMap &mapB, const PWMap &mapD
    , const PWMap &Emap, const PWMap &subEmap);
 
-  DSBGraph addSV(const Set &vertices) const;
-  DSBGraph addSE(const PWMap &pw1, const PWMap &pw2) const;
+  /**
+   * @brief Adds a new set-vertex composed by \p vertices.
+   * Precondition: V_.intersection(vertices) = {}
+   */
+  DSBG addSV(const Set &vertices) const;
 
-  DSBGraph eraseVertices(const Set &vs) const;
+  /**
+   * @brief Adds a new set-edge described by \p pw1 and \p pw2.
+   * Precondition: dom(pw1) = dom(pw2) and
+   * E_.intersection(pw1.dom()) = {} and E_.intersection(pw2.dom()) = {} 
+   */
+  DSBG addSE(const PWMap &pw1, const PWMap &pw2) const;
+
+  DSBG eraseVertices(const Set &vs) const;
 };
-std::ostream &operator<<(std::ostream &out, const DSBGraph &dg);
+std::ostream &operator<<(std::ostream &out, const DSBG &dg);
 
 } // namespace LIB
 

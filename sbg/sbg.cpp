@@ -27,6 +27,14 @@ namespace LIB {
 // SBG -------------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
+member_imp(SBG, Set, V);
+member_imp(SBG, PWMap, Vmap);
+member_imp(SBG, Set, E);
+member_imp(SBG, PWMap, map1);
+member_imp(SBG, PWMap, map2);
+member_imp(SBG, PWMap, Emap);
+member_imp(SBG, PWMap, subEmap);
+
 SBG::SBG(const PWMapAF &fact) 
   : fact_(fact), V_(fact_.createSet()), Vmap_(fact_.createPWMap())
   , E_(fact_.createSet()), map1_(fact_.createPWMap())
@@ -38,13 +46,18 @@ SBG::SBG(const PWMapAF &fact, const Set &V, const PWMap &Vmap
   : fact_(fact), V_(V), Vmap_(Vmap), E_(map1.dom().intersection(map2.dom()))
     , map1_(map1), map2_(map2), Emap_(Emap), subEmap_(subEmap) {}
 
-member_imp(SBG, Set, V);
-member_imp(SBG, PWMap, Vmap);
-member_imp(SBG, Set, E);
-member_imp(SBG, PWMap, map1);
-member_imp(SBG, PWMap, map2);
-member_imp(SBG, PWMap, Emap);
-member_imp(SBG, PWMap, subEmap);
+SBG &SBG::operator=(const SBG &other)
+{
+  V_ = other.V_;
+  Vmap_ = other.Vmap_;
+  E_ = other.E_;
+  map1_ = other.map1_;
+  map2_ = other.map2_;
+  Emap_ = other.Emap_;
+  subEmap_ = other.subEmap_;
+
+  return *this;
+}
 
 std::ostream &operator<<(std::ostream &out, const SBG &g)
 {
@@ -172,9 +185,19 @@ SBG SBG::copy(unsigned int times) const
   return res;
 }
 
+const PWMapAF &SBG::fact() const { return fact_; }
+
 ////////////////////////////////////////////////////////////////////////////////
 // Directed SBG ----------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
+
+member_imp(DSBG, Set, V);
+member_imp(DSBG, PWMap, Vmap);
+member_imp(DSBG, Set, E);
+member_imp(DSBG, PWMap, mapB);
+member_imp(DSBG, PWMap, mapD);
+member_imp(DSBG, PWMap, Emap);
+member_imp(DSBG, PWMap, subEmap);
 
 DSBG::DSBG(const PWMapAF &fact)
   : fact_(fact), V_(fact_.createSet()), Vmap_(fact_.createPWMap())
@@ -188,13 +211,18 @@ DSBG::DSBG(const PWMapAF &fact, const Set &V, const PWMap &Vmap
     , E_(mapB.dom().intersection(mapD.dom()))
     , mapB_(mapB), mapD_(mapD), Emap_(Emap), subEmap_(subEmap) {}
 
-member_imp(DSBG, Set, V);
-member_imp(DSBG, PWMap, Vmap);
-member_imp(DSBG, Set, E);
-member_imp(DSBG, PWMap, mapB);
-member_imp(DSBG, PWMap, mapD);
-member_imp(DSBG, PWMap, Emap);
-member_imp(DSBG, PWMap, subEmap);
+DSBG &DSBG::operator=(const DSBG &other)
+{
+  V_ = other.V_;
+  Vmap_ = other.Vmap_;
+  E_ = other.E_;
+  mapB_ = other.mapB_;
+  mapD_ = other.mapD_;
+  Emap_ = other.Emap_;
+  subEmap_ = other.subEmap_;
+
+  return *this;
+}
 
 std::ostream &operator<<(std::ostream &out, const DSBG &dg)
 {
@@ -284,6 +312,8 @@ DSBG DSBG::eraseVertices(const Set &vs) const
   return DSBG(fact_, new_V, new_Vmap, new_mapB, new_mapD
     , new_Emap, new_subE);
 }
+
+const PWMapAF &DSBG::fact() const { return fact_; }
 
 } // namespace LIB
 

@@ -19,7 +19,6 @@
 
 #include "sbg/sbg_algorithms.hpp"
 
-#include <list>
 namespace SBG {
 
 namespace LIB {
@@ -28,11 +27,12 @@ namespace LIB {
 // Connected components --------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-template<typename Set>
-PWMap<Set> connectedComponents(SBGraph<Set> g)
+PWMap connectedComponents(SBG g)
 {
+  const PWMapAF &fact_ = g.fact();
+
   if (!g.V().isEmpty()) {
-    PWMap<Set> rmap(g.V()), old_rmap;
+    PWMap rmap = fact_.createPWMap(g.V()), old_rmap = fact_.createPWMap();
 
     if (g.E().isEmpty())
       return rmap;
@@ -40,11 +40,11 @@ PWMap<Set> connectedComponents(SBGraph<Set> g)
     do {
       old_rmap = rmap;
 
-      PWMap<Set> ermap1 = rmap.composition(g.map1());
-      PWMap<Set> ermap2 = rmap.composition(g.map2());
+      PWMap ermap1 = rmap.composition(g.map1());
+      PWMap ermap2 = rmap.composition(g.map2());
 
-      PWMap<Set> rmap1 = ermap1.minAdjMap(ermap2);
-      PWMap<Set> rmap2 = ermap2.minAdjMap(ermap1);
+      PWMap rmap1 = ermap1.minAdjMap(ermap2);
+      PWMap rmap2 = ermap2.minAdjMap(ermap1);
       rmap1 = rmap1.combine(rmap);
       rmap2 = rmap2.combine(rmap);
 
@@ -60,7 +60,7 @@ PWMap<Set> connectedComponents(SBGraph<Set> g)
     return rmap.compact();
   }
 
-  return PWMap<Set>();
+  return fact_.createPWMap();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -69,79 +69,77 @@ PWMap<Set> connectedComponents(SBGraph<Set> g)
 
 // Minimum reachable -----------------------------------------------------------
 
-template<typename Set>
-PWMap<Set> SBGMatching<Set>::directedOffset(const PW &dir_map) const
+PWMap SBGMatching::directedOffset(const PWMap &dir_map) const
 {
   if (debug())
     Util::SBG_LOG << "directedOffset unmatched_V: " << unmatched_V() << "\n\n";
   Set unmatched_side = dir_map.image(paths_edges());
   unmatched_side = unmatched_side.intersection(unmatched_V());
-  PW res = omap().restrict(unmatched_side);
+  PWMap res = omap().restrict(unmatched_side);
   res = res.offsetImage(max_V());
 
   return res.combine(omap()).compact();
 }
 
-template<typename Set>
-DSBGraph<Set> SBGMatching<Set>::offsetGraph(const PW &dir_omap) const
+DSBG SBGMatching::offsetGraph(const PWMap &dir_omap) const
 {
   Set _V = dir_omap.image();
-  PWMap<Set> _Vmap = Vmap().offsetDom(dir_omap);
+  PWMap _Vmap = Vmap().offsetDom(dir_omap);
 
-  PWMap<Set> _mapB = dir_omap.composition(mapB())
+  PWMap _mapB = dir_omap.composition(mapB())
             , _mapD = dir_omap.composition(mapD());
   _mapB = _mapB.restrict(paths_edges());
   _mapD = _mapD.restrict(paths_edges());
 
-  return DSBGraph<Set>(
-     _V.compact()
+  return DSBG(
+    fact_
+    , _V.compact()
     , _Vmap.compact() 
     , _mapB.compact()
     , _mapD.compact()
     , Emap().restrict(paths_edges()).compact()
-    , subE_map().restrict(paths_edges()).compact()
+    , subEmap().restrict(paths_edges()).compact()
   );
 }
 
-template<typename Set>
-void SBGMatching<Set>::selectSucc(DSBGraph<Set> dsbg)
+void SBGMatching::selectSucc(DSBG dsbg)
 {
   Set dsbgV = dsbg.V();
-  PW dsbgB = dsbg.mapB(), dsbgD = dsbg.mapD(), dsbg_subEmap = dsbg.subE_map();
+  PWMap dsbgB = dsbg.mapB(), dsbgD = dsbg.mapD(), dsbg_subE = dsbg.subEmap();
   if (debug())
     Util::SBG_LOG << "\nsucc dsbg:\n" << dsbg << "\n\n";
 
   Set M = matched_E(), NM = unmatched_E();
-  PW subEmap;
+  PWMap subEmap = fact_.createPWMap();
   unsigned int j = 1, dims = dsbgV.arity();
-  for (const Map &SE : dsbg_subEmap) {
-    Exp expM(Util::MD_NAT(dims, j));
-    Map SEM(M.intersection(SE.dom()), expM);
+  for (const Map &SE : dsbg_subE) {
+    Exp expM(MD_NAT(dims, j));
+    Map SEM = fact_.createMap(M.intersection(SE.dom()), expM);
     ++j;
-    Exp expU(Util::MD_NAT(dims, j));
-    Map SEU(NM.intersection(SE.dom()), expU);
+    Exp expU(MD_NAT(dims, j));
+    Map SEU = fact_.createMap(NM.intersection(SE.dom()), expU);
     ++j;
 
     subEmap.emplaceBack(SEM);
     subEmap.emplaceBack(SEU);
   }
   if (debug())
-    Util::SBG_LOG << "subE_map:\n" << subEmap << "\n\n";
+    Util::SBG_LOG << "subEmap:\n" << subEmap << "\n\n";
 
   // Unmatched vertices in forward direction
   Set unmatched_D = dsbgD.image().intersection(unmatched_V());
-  PW res(unmatched_D);
+  PWMap res = fact_.createPWMap(unmatched_D);
 
   // A record of allowed edges to keep out cycle edges
   Set allowed_edges = dsbg.E();
   // Ingoing edges to vertices that reach unmatched_D
   Set ingoing = dsbgD.preImage(unmatched_D); 
   // A record of visited set-edges
-  Set visitedE;
+  Set visitedE = fact_.createSet();
   do {
     // Calculate successor for ith vertices
-    PW ingB = dsbgB.restrict(ingoing), ingD = dsbgD.restrict(ingoing);
-    PW ith_smap = ingB.minAdjMap(ingD);
+    PWMap ingB = dsbgB.restrict(ingoing), ingD = dsbgD.restrict(ingoing);
+    PWMap ith_smap = ingB.minAdjMap(ingD);
     if (debug())
       Util::SBG_LOG << "ith_smap: " << ith_smap << "\n";
 
@@ -152,7 +150,7 @@ void SBGMatching<Set>::selectSucc(DSBGraph<Set> dsbg)
     // Handle recursion
     if (!Erec.isEmpty()) {
       Set Eplus = subEmap.preImage(Erec);
-      PW rec_smap = dsbgB.restrict(Eplus).minAdjMap(dsbgD.restrict(Eplus)); 
+      PWMap rec_smap = dsbgB.restrict(Eplus).minAdjMap(dsbgD.restrict(Eplus)); 
       ith_smap = ith_smap.combine(rec_smap);
     }
     res = ith_smap.combine(res);
@@ -178,20 +176,19 @@ void SBGMatching<Set>::selectSucc(DSBGraph<Set> dsbg)
   set_rmap(res.mapInf());
 }
 
-template<typename Set>
-void SBGMatching<Set>::directedMinReach(const PW &dir_map)
+void SBGMatching::directedMinReach(const PWMap &dir_map)
 {
-  PW dir_omap = directedOffset(dir_map);
+  PWMap dir_omap = directedOffset(dir_map);
   if (debug())
     Util::SBG_LOG << "dir_omap: " << dir_omap << "\n";
-  DSBGraph<Set> dsbg = offsetGraph(dir_omap);
+  DSBG dsbg = offsetGraph(dir_omap);
 
   selectSucc(dsbg);
 
-  PW aux_omap = dir_omap.combine(omap()), to_normal = aux_omap.inverse();
-  PW succs = smap().composition(aux_omap);
+  PWMap aux_omap = dir_omap.combine(omap()), to_normal = aux_omap.inverse();
+  PWMap succs = smap().composition(aux_omap);
   set_smap(to_normal.composition(succs));
-  PW reps = rmap().composition(aux_omap);
+  PWMap reps = rmap().composition(aux_omap);
   set_rmap(to_normal.composition(reps));
 
   if (debug()) {
@@ -200,18 +197,17 @@ void SBGMatching<Set>::directedMinReach(const PW &dir_map)
   }
 }
 
-template<typename Set>
-void SBGMatching<Set>::minReachableStep()
+void SBGMatching::minReachableStep()
 {
   // *** Forward direction
   directedMinReach(mapU());
-  PW rmapd = rmap();
+  PWMap rmapd = rmap();
   Set reach_unmatched = rmap().preImage(unmatched_F());
   Set pe = edgesInPaths();
   set_paths_edges(pe);
 
   // *** Backward direction
-  PWMap<Set> auxB = mapB();
+  PWMap auxB = mapB();
   set_mapB(mapD());
   set_mapD(auxB);
 
@@ -221,7 +217,7 @@ void SBGMatching<Set>::minReachableStep()
   set_rmap(rmap().restrict(reach_unmatched));
   set_smap(smap().restrict(reach_unmatched));
 
-  const PW &rmaprmapd = rmap().composition(rmapd);
+  const PWMap &rmaprmapd = rmap().composition(rmapd);
   Set edgesb = edgesSameRepLR(rmaprmapd);
   pe = pe.intersection(edgesInPaths().intersection(edgesb));
   set_paths_edges(pe);
@@ -239,8 +235,7 @@ void SBGMatching<Set>::minReachableStep()
   return;
 }
 
-template<typename Set>
-void SBGMatching<Set>::minReachable()
+void SBGMatching::minReachable()
 {
   do {
     set_paths_edges(E());
@@ -256,23 +251,17 @@ void SBGMatching<Set>::minReachable()
 
 // Matching --------------------------------------------------------------------
 
-template<typename Set>
-bool eqId(const SBGMap<Set> &sbgmap) { return sbgmap.isId(); }
+bool eqId(const Map &sbgmap) { return sbgmap.isId(); }
 
-template<typename Set>
-bool notEqId(const SBGMap<Set> &sbgmap) { return !(sbgmap.isId()); }
+bool notEqId(const Map &sbgmap) { return !(sbgmap.isId()); }
 
-template<typename Set>
-MatchInfo<Set>::MatchInfo() : matched_edges_(), fully_matchedU_() {}
-template<typename Set>
-MatchInfo<Set>::MatchInfo(Set matched_edges, bool fully_matchedU) 
+MatchInfo::MatchInfo(Set matched_edges, bool fully_matchedU) 
   : matched_edges_(matched_edges), fully_matchedU_(fully_matchedU) {}
 
-member_imp_temp(template<typename Set>, MatchInfo<Set>, Set, matched_edges);
-member_imp_temp(template<typename Set>, MatchInfo<Set>, bool, fully_matchedU);
+member_imp(MatchInfo, Set, matched_edges);
+member_imp(MatchInfo, bool, fully_matchedU);
 
-template<typename Set>
-std::ostream &operator<<(std::ostream &out, const MatchInfo<Set> &m_info)
+std::ostream &operator<<(std::ostream &out, const MatchInfo &m_info)
 {
   out << m_info.matched_edges();
   if (m_info.fully_matchedU())
@@ -284,19 +273,21 @@ std::ostream &operator<<(std::ostream &out, const MatchInfo<Set> &m_info)
   return out;
 }
 
-template<typename Set>
-SBGMatching<Set>::SBGMatching() 
-  : sbg_(), V_(), Vmap_(), E_(), Emap_(), subE_map_(), smap_(), rmap_(), omap_()
-    , max_V_(), F_(), U_(), mapF_(), mapU_(), mapB_(), mapD_(), paths_edges_()
-    , matched_E_(), unmatched_E_(), matched_V_(), unmatched_V_(), unmatched_F_()
-    , matched_U_(), unmatched_U_(), debug_(false) {}
-template<typename Set>
-SBGMatching<Set>::SBGMatching(SBGraph<Set> sbg, bool debug)
-  : sbg_(sbg), V_(sbg.V()), Vmap_(sbg.Vmap()), Emap_(sbg.Emap())
-    , subE_map_(sbg.subE_map()), debug_(debug) {
+SBGMatching::SBGMatching(const SBG &sbg, bool debug)
+  : fact_(sbg.fact()), sbg_(sbg), V_(sbg.V()), Vmap_(sbg.Vmap())
+    , E_(fact_.createSet()), Emap_(sbg.Emap()), subEmap_(sbg.subEmap())
+    , smap_(fact_.createPWMap()), rmap_(fact_.createPWMap())
+    , omap_(fact_.createPWMap()), F_(fact_.createSet()), U_(fact_.createSet())
+    , mapF_(fact_.createPWMap()), mapU_(fact_.createPWMap())
+    , mapB_(fact_.createPWMap()), mapD_(fact_.createPWMap())
+    , paths_edges_(fact_.createSet()), matched_E_(fact_.createSet())
+    , unmatched_E_(fact_.createSet()), matched_V_(fact_.createSet())
+    , unmatched_V_(fact_.createSet()), unmatched_F_(fact_.createSet())
+    , matched_U_(fact_.createSet()), unmatched_U_(fact_.createSet())
+    , cycle_edges_(fact_.createSet()), debug_(debug) {
   set_E(Emap_.dom());
 
-  PW id_vertex(V_);
+  PWMap id_vertex = fact_.createPWMap(V_);
   smap_ = id_vertex;
   rmap_ = id_vertex;
 
@@ -312,92 +303,88 @@ SBGMatching<Set>::SBGMatching(SBGraph<Set> sbg, bool debug)
   mapD_ = sbg.map1();
 
   paths_edges_ = E_;
-  matched_E_ = Set();
+  matched_E_ = fact_.createSet();
   unmatched_E_ = E_;
 
-  matched_V_ = Set();
+  matched_V_ = fact_.createSet();
   unmatched_V_ = V_;
   unmatched_F_ = F_;
-  matched_U_ = Set();
+  matched_U_ = fact_.createSet();
   unmatched_U_ = U_;
 }
 
-member_imp_temp(template<typename Set>, SBGMatching<Set>, SBGraph<Set>, sbg);
-member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, V);
-member_imp_temp(template<typename Set>, SBGMatching<Set>, PWMap<Set>, Vmap);
-member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, E);
-member_imp_temp(template<typename Set>, SBGMatching<Set>, PWMap<Set>, Emap);
-member_imp_temp(template<typename Set>, SBGMatching<Set>, PWMap<Set>, subE_map);
+member_imp(SBGMatching, SBG, sbg);
+member_imp(SBGMatching, Set, V);
+member_imp(SBGMatching, PWMap, Vmap);
+member_imp(SBGMatching, Set, E);
+member_imp(SBGMatching, PWMap, Emap);
+member_imp(SBGMatching, PWMap, subEmap);
 
-member_imp_temp(template<typename Set>, SBGMatching<Set>, PWMap<Set>, smap);
-member_imp_temp(template<typename Set>, SBGMatching<Set>, PWMap<Set>, rmap);
+member_imp(SBGMatching, PWMap, smap);
+member_imp(SBGMatching, PWMap, rmap);
 
-member_imp_temp(template<typename Set>, SBGMatching<Set>, PWMap<Set>, omap);
-member_imp_temp(template<typename Set>, SBGMatching<Set>, Util::MD_NAT, max_V);
+member_imp(SBGMatching, PWMap, omap);
+member_imp(SBGMatching, MD_NAT, max_V);
 
-member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, F);
-member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, U);
-member_imp_temp(template<typename Set>, SBGMatching<Set>, PWMap<Set>, mapF);
-member_imp_temp(template<typename Set>, SBGMatching<Set>, PWMap<Set>, mapU);
+member_imp(SBGMatching, Set, F);
+member_imp(SBGMatching, Set, U);
+member_imp(SBGMatching, PWMap, mapF);
+member_imp(SBGMatching, PWMap, mapU);
 
-member_imp_temp(template<typename Set>, SBGMatching<Set>, PWMap<Set>, mapB);
-member_imp_temp(template<typename Set>, SBGMatching<Set>, PWMap<Set>, mapD);
+member_imp(SBGMatching, PWMap, mapB);
+member_imp(SBGMatching, PWMap, mapD);
 
-member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, paths_edges);
-member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, matched_E);
-member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, unmatched_E);
+member_imp(SBGMatching, Set, paths_edges);
+member_imp(SBGMatching, Set, matched_E);
+member_imp(SBGMatching, Set, unmatched_E);
 
-member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, matched_V);
-member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, unmatched_V);
-member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, unmatched_F);
-member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, matched_U);
-member_imp_temp(template<typename Set>, SBGMatching<Set>, Set, unmatched_U);
+member_imp(SBGMatching, Set, matched_V);
+member_imp(SBGMatching, Set, unmatched_V);
+member_imp(SBGMatching, Set, unmatched_F);
+member_imp(SBGMatching, Set, matched_U);
+member_imp(SBGMatching, Set, unmatched_U);
 
-member_imp_temp(template<typename Set>, SBGMatching<Set>, bool, debug);
+member_imp(SBGMatching, bool, debug);
 
-template<typename Set>
-Set SBGMatching<Set>::edgesInPaths() const
+Set SBGMatching::edgesInPaths() const
 {
   // Vertices that are successor of other vertices in a path
-  Set succs = smap().filterMap([](const SBGMap<Set> &sbgmap) {
+  Set succs = smap().filterMap([](const Map &sbgmap) {
     return notEqId(sbgmap);
   }).image();
   // Edges whose endings are successors 
   Set ending_edges = mapD().preImage(succs);
   // Map from a 'successor' edge to its start
-  PWMap<Set> auxB = mapB().restrict(ending_edges);
+  PWMap auxB = mapB().restrict(ending_edges);
   // Map from edge to the successor of its start
-  PWMap<Set> map_succs = smap().composition(auxB);
+  PWMap map_succs = smap().composition(auxB);
  
   return map_succs.equalImage(mapD());
 }
 
-template<typename Set>
-Set SBGMatching<Set>::edgesSameRepLR(const PW &rmaprmapd) const
+Set SBGMatching::edgesSameRepLR(const PWMap &rmaprmapd) const
 {
-  PW rmap_neq_id = rmap().filterMap([](const SBGMap<Set> &sbgmap) {
+  PWMap rmap_neq_id = rmap().filterMap([](const Map &sbgmap) {
     return notEqId(sbgmap);
   });
-  PW rmapb = rmap_neq_id.composition(mapB());
-  PW rmaprmapd_neq_id = rmaprmapd.filterMap([](const SBGMap<Set> &sbgmap) {
+  PWMap rmapb = rmap_neq_id.composition(mapB());
+  PWMap rmaprmapd_neq_id = rmaprmapd.filterMap([](const Map &sbgmap) {
     return notEqId(sbgmap);
   }); 
-  PW rmaprmapdb = rmaprmapd_neq_id.composition(mapB());
+  PWMap rmaprmapdb = rmaprmapd_neq_id.composition(mapB());
   
   return rmapb.equalImage(rmaprmapdb);
 }
 
-template<typename Set>
-bool SBGMatching<Set>::fullyMatchedU() const
+bool SBGMatching::fullyMatchedU() const
 {
   return U().difference(matched_U()).isEmpty();
 }
 
-template<typename Set>
-void SBGMatching<Set>::updatePaths()
+void SBGMatching::updatePaths()
 {
   // *** Revert match and unmatched edges in augmenting paths
-  PW paths_mapB = mapB().restrict(paths_edges())
+  PWMap paths_mapB = mapB().restrict(paths_edges())
      , paths_mapD = mapD().restrict(paths_edges());
   set_mapB(paths_mapD.combine(mapB()));
   set_mapD(paths_mapB.combine(mapD()));
@@ -419,10 +406,9 @@ void SBGMatching<Set>::updatePaths()
   return;
 }
 
-template<typename Set>
-void SBGMatching<Set>::updateOffset()
+void SBGMatching::updateOffset()
 {
-  PWMap<Set> aux = omap().restrict(matched_V());
+  PWMap aux = omap().restrict(matched_V());
   aux = aux.offsetImage(max_V());
   aux = aux.offsetImage(max_V());
   set_omap(aux.combine(omap()));
@@ -430,8 +416,7 @@ void SBGMatching<Set>::updateOffset()
   return;
 }
 
-template<typename Set>
-MatchInfo<Set> SBGMatching<Set>::calculate()
+MatchInfo SBGMatching::calculate()
 {
   if (debug())
     Util::SBG_LOG << "Matching sbg: \n" << sbg() << "\n\n";
@@ -453,17 +438,20 @@ MatchInfo<Set> SBGMatching<Set>::calculate()
   return MatchInfo(matched_E().compact(), fullyMatchedU());
 }
 
+const PWMapAF &SBGMatching::fact() const { return fact_; }
+
 ////////////////////////////////////////////////////////////////////////////////
 // SCC -------------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-template<typename Set>
-SBGSCC<Set>::SBGSCC() : dsbg_(), V_(), Vmap_(), E_(), Emap_(), subE_map_()
-  , Ediff_(), mapB_(), mapD_(), rmap_(), debug_(false) {}
-template<typename Set>
-SBGSCC<Set>::SBGSCC(DSBGraph<Set> dsbg, bool debug)
-  : dsbg_(dsbg), debug_(debug), Ediff_() {
-  DSBGraph<Set> dg = dsbg;
+SBGSCC::SBGSCC(const DSBG &dsbg, bool debug)
+  : fact_(dsbg.fact()), dsbg_(dsbg), V_(fact_.createSet())
+    , Vmap_(fact_.createPWMap()), Emap_(fact_.createPWMap())
+    , subEmap_(fact_.createPWMap()), E_(fact_.createSet())
+    , Ediff_(fact_.createSet()), mapB_(fact_.createPWMap())
+    , mapD_(fact_.createPWMap()), rmap_(fact_.createPWMap())
+    , debug_(debug) {
+  DSBG dg = dsbg;
   dsbg_ = dg;
 
   V_ = dg.V();
@@ -471,59 +459,58 @@ SBGSCC<Set>::SBGSCC(DSBGraph<Set> dsbg, bool debug)
   
   E_ = dg.E();
   Emap_ = dg.Emap();
-  subE_map_ = dg.subE_map();
+  subEmap_ = dg.subEmap();
 
   mapB_ = dg.mapB();
   mapD_ = dg.mapD(); 
 
-  rmap_ = PW(V_);
+  rmap_ = fact_.createPWMap(V_);
 }
 
-member_imp_temp(template<typename Set>, SBGSCC<Set>, DSBGraph<Set>, dsbg);
-member_imp_temp(template<typename Set>, SBGSCC<Set>, Set, V);
-member_imp_temp(template<typename Set>, SBGSCC<Set>, PWMap<Set>, Vmap);
-member_imp_temp(template<typename Set>, SBGSCC<Set>, Set, E);
-member_imp_temp(template<typename Set>, SBGSCC<Set>, PWMap<Set>, Emap);
-member_imp_temp(template<typename Set>, SBGSCC<Set>, PWMap<Set>, subE_map);
+member_imp(SBGSCC, DSBG, dsbg);
+member_imp(SBGSCC, Set, V);
+member_imp(SBGSCC, PWMap, Vmap);
+member_imp(SBGSCC, Set, E);
+member_imp(SBGSCC, PWMap, Emap);
+member_imp(SBGSCC, PWMap, subEmap);
 
-member_imp_temp(template<typename Set>, SBGSCC<Set>, PWMap<Set>, mapB);
-member_imp_temp(template<typename Set>, SBGSCC<Set>, PWMap<Set>, mapD);
+member_imp(SBGSCC, PWMap, mapB);
+member_imp(SBGSCC, PWMap, mapD);
 
-member_imp_temp(template<typename Set>, SBGSCC<Set>, Set, Ediff);
+member_imp(SBGSCC, Set, Ediff);
 
-member_imp_temp(template<typename Set>, SBGSCC<Set>, PWMap<Set>, rmap);
+member_imp(SBGSCC, PWMap, rmap);
 
-member_imp_temp(template<typename Set>, SBGSCC<Set>, bool, debug);
+member_imp(SBGSCC, bool, debug);
 
-template<typename Set>
-PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
+PWMap SBGSCC::sccMinReach(const DSBG &dg) const
 {
   if (debug())
     Util::SBG_LOG << "Min reach graph:\n" << dg << "\n\n";
 
   Set V = dg.V(), E = dg.E();
-  PW mapB = dg.mapB(), mapD = dg.mapD(), subE_map = dg.subE_map();
+  PWMap mapB = dg.mapB(), mapD = dg.mapD(), subEmap = dg.subEmap();
   if (!V.isEmpty()) {
     unsigned int copies = V.arity();
-    PW rmap(V), old_rmap;
+    PWMap rmap = fact_.createPWMap(V), old_rmap = fact_.createPWMap();
 
     if (E.isEmpty())
       return rmap;
 
-    Set Vc;
+    Set Vc = fact_.createSet();
     do {
       old_rmap = rmap;
 
-      PW ermapD = rmap.composition(mapD);
+      PWMap ermapD = rmap.composition(mapD);
 
-      PW new_rmap = mapB.minAdjMap(ermapD);
+      PWMap new_rmap = mapB.minAdjMap(ermapD);
       rmap = rmap.minMap(new_rmap).combine(rmap);
 
       if (debug())
         Util::SBG_LOG << "rmap before rec: " << rmap << "\n\n";
 
-      Set positive(SetPiece(copies, Interval(1, 1, Util::Inf)));
-      PW rec_rmap;
+      Set positive = fact_.createSet(SetPiece(copies, Interval(1, 1, Inf)));
+      PWMap rec_rmap = fact_.createPWMap();
       Vc = V.difference(old_rmap.equalImage(rmap));
       if (!Vc.isEmpty()) {
         for (const Map &subv : dg.Vmap()) {
@@ -533,7 +520,7 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
             // recursion, i.e. if we have a cycle 1 -> 2 -> ... -> 10 -> 1,
             // where SV = [1:10], then it detects a recursion when mrv(10)
             // becomes "1" (false recursion). So we take self mrvs out.
-            auto other_rep = rmap.filterMap([](const SBGMap<Set> &sbgmap) {
+            auto other_rep = rmap.filterMap([](const Map &sbgmap) {
               return notEqId(sbgmap);
             }).dom();
             // Vertices in the set-vertex that share its rep with other vertex
@@ -551,28 +538,28 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
               Set ER = ERB.intersection(ERD);
               if (!end.isEmpty() && !ER.isEmpty()) {
                 // Distance map
-                PW dmap;
+                PWMap dmap = fact_.createPWMap();
                 Set ith = end;
-                Util::NAT dist = 0;
+                NAT dist = 0;
                 // Calculate distance for vertices in same_rep that reach reps
                 for (; dmap.dom().intersection(Vc.intersection(VR)).isEmpty();) {
                   Set dom = ith.difference(dmap.dom());
-                  Exp exp(Util::MD_NAT(copies, dist));
-                  dmap.emplaceBack(Map(dom, exp));
+                  Exp exp(MD_NAT(copies, dist));
+                  dmap.emplaceBack(fact_.createMap(dom, exp));
                   // Update ith to vertices that have outgoing edges entering ith
                   ith = mapB.image(mapD.preImage(ith));
                   ++dist;
                 }
-                PW dmapB = dmap.composition(mapB), dmapD = dmap.composition(mapD);
+                PWMap dmapB = dmap.composition(mapB), dmapD = dmap.composition(mapD);
                 // Get edges where the end is closer to the rep than the beginning
                 Set not_cycle_edges = (dmapB - dmapD).preImage(positive);
                 ER = ER.intersection(not_cycle_edges);
 
                 // Extend to subset-edge
-                Set ER_plus = subE_map.preImage(subE_map.image(ER));
+                Set ER_plus = subEmap.preImage(subEmap.image(ER));
                 // Calculate a succesor
-                PW auxB = mapB.restrict(ER_plus), auxD = mapD.restrict(ER_plus);
-                PW smap_plus = rmap.restrict(VR);
+                PWMap auxB = mapB.restrict(ER_plus), auxD = mapD.restrict(ER_plus);
+                PWMap smap_plus = rmap.restrict(VR);
                 smap_plus = smap_plus.combine(auxB.minAdjMap(auxD));
 
                 // Update rmap for recursion, and leave the rest unchanged
@@ -592,7 +579,7 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
             }
           }
         }
-        PW rmap_plus = rec_rmap.combine(rmap);
+        PWMap rmap_plus = rec_rmap.combine(rmap);
         rmap_plus = rmap_plus.mapInf();
         rmap = rmap.minMap(rmap_plus).compact();
 
@@ -604,25 +591,24 @@ PWMap<Set> SBGSCC<Set>::sccMinReach(DSBGraph<Set> dg) const
     return rmap;
   }
 
-  return PWMap<Set>();
+  return fact_.createPWMap();
 }
 
-template<typename Set>
-PWMap<Set> SBGSCC<Set>::sccStep()
+PWMap SBGSCC::sccStep()
 {
-  PW id_V(V());
+  PWMap id_V = fact_.createPWMap(V());
 
-  DSBGraph<Set> aux_dsbg(
-    V(), Vmap()
+  DSBG aux_dsbg(
+    fact_, V(), Vmap()
     , mapB().restrict(E()), mapD().restrict(E()), Emap().restrict(E()).compact()
-    , subE_map().restrict(E())
+    , subEmap().restrict(E())
   );
-  PW new_rmap = sccMinReach(aux_dsbg);
+  PWMap new_rmap = sccMinReach(aux_dsbg);
   if (debug())
     Util::SBG_LOG << "SCC new_rmap: " << new_rmap << "\n";
 
-  PW rmap_B = new_rmap.composition(mapB());
-  PW rmap_D = new_rmap.composition(mapD());
+  PWMap rmap_B = new_rmap.composition(mapB());
+  PWMap rmap_D = new_rmap.composition(mapD());
   Set Esame = rmap_B.equalImage(rmap_D); // Edges in the same SCC
   
   // Leave edges in the same SCC
@@ -632,24 +618,23 @@ PWMap<Set> SBGSCC<Set>::sccStep()
     Util::SBG_LOG << "SCC erased edges: " << Ediff() << "\n\n";
 
   // Swap directions
-  PW aux_B = mapB();
+  PWMap aux_B = mapB();
   set_mapB(mapD());
   set_mapD(aux_B);
 
   return new_rmap;
 }
 
-template<typename Set>
-PWMap<Set> SBGSCC<Set>::calculate()
+PWMap SBGSCC::calculate()
 {
   if (debug())
     Util::SBG_LOG << "SCC dsbg: \n" << dsbg() << "\n\n";
 
   auto begin = std::chrono::high_resolution_clock::now();
-  PW rmap = sccStep();
+  PWMap rmap = sccStep();
   do {
     rmap = sccStep();
-  } while (Ediff() != Set());
+  } while (Ediff() != fact_.createSet());
   set_rmap(rmap.compact());
   auto end = std::chrono::high_resolution_clock::now();
 
@@ -664,51 +649,112 @@ PWMap<Set> SBGSCC<Set>::calculate()
   return rmap.compact();
 }
 
+const PWMapAF &SBGSCC::fact() const { return fact_; }
+
 ////////////////////////////////////////////////////////////////////////////////
 // Topological sort ------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-template<typename Set>
-SBGTopSort<Set>::SBGTopSort() : dsbg_(), debug_(false) {}
-template<typename Set>
-SBGTopSort<Set>::SBGTopSort(DSBGraph<Set> dsbg, bool debug) 
-  : dsbg_(partitionSE(dsbg)), debug_(debug) {}
+/* TODO
+DSBG partitionSE(const DSBG &dg)
+{
+  const PWMapAF &fact_ = dg.fact();
 
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, DSBGraph<Set>, dsbg);
-member_imp_temp(template<typename Set>, SBGTopSort<Set>, bool, debug);
+  Set V = dg.V();
+  unsigned int dims = V.arity(), j = 1;
+  PWMap mapB = dg.mapB(), mapD = dg.mapD(), Emap = dg.Emap();
+  PWMap subE = dg.subEmap();
 
-template<typename Set>
-Exp SBGTopSort<Set>::calculateExp(Util::MD_NAT from, Util::MD_NAT to)
+  std::vector<Map> vs;
+  for (const Map &map : dg.Vmap())
+    vs.emplace_back(map.dom());
+
+  Set univ = fact_.createSet(SetPiece(dims, Interval(0, 1, Inf)));
+  for (const Map &map : subE) {
+    Set ith_edge = mapB.image(map.dom());
+    Set not_ith_edge = univ.difference(ith_edge);
+    std::vector<Set> aux_vs;
+    aux_vs.reserve(2*vs.size());
+    for (const Set &ith_vs : vs) {
+      Set s1 = ith_edge.intersection(ith_vs);
+      Set s2 = not_ith_edge.intersection(ith_vs);
+
+      if (!s1.isEmpty())
+        aux_vs.emplace_back(s1);
+
+      if (!s2.isEmpty())
+        aux_vs.emplace_back(s2);
+    }
+    vs = aux_vs;
+  }
+
+  for (const Map &map : subE) {
+    Set ith_edge = mapD.image(map.dom());
+    Set not_ith_edge = univ.difference(ith_edge);
+    std::vector aux_vs;
+    aux_vs.reserve(2*vs.size());
+    for (const Set &ith_vs : vs) {
+      Set s1 = ith_edge.intersection(ith_vs);
+      Set s2 = not_ith_edge.intersection(ith_vs);
+
+      if (!s1.isEmpty())
+        aux_vs.emplace_back(s1);
+
+      if (!s2.isEmpty())
+        aux_vs.emplace_back(s2);
+    }
+    vs = aux_vs;
+  }
+
+  PWMap Vmap;
+  for (const Set &dom : vs) {
+    MD_NAT v(dims, j);
+    Vmap.emplaceBack(Map(dom, Exp(v)));
+    ++j;
+  }
+
+  return DSBG(V, Vmap, mapB, mapD, Emap, subE);
+}
+*/
+
+SBGTopSort::SBGTopSort(const DSBG &dsbg, bool debug) 
+  : fact_(dsbg.fact()), dsbg_(dsbg), debug_(debug) {}
+
+member_imp(SBGTopSort, DSBG, dsbg);
+member_imp(SBGTopSort, bool, debug);
+
+Exp SBGTopSort::calculateExp(const MD_NAT &from, const MD_NAT & to)
 {
   Exp res;
 
-  Util::RATIONAL one(1, 1);
+  RATIONAL one(1, 1);
   for (unsigned int j = 0; j < from.arity(); ++j) { 
-    Util::RATIONAL r_from(from[j]), r_to(to[j]);
+    RATIONAL r_from(from[j]), r_to(to[j]);
     res.emplaceBack(LExp(1, r_to - r_from));
   }
 
   return res;
 }
 
-template<typename Set>
-PWMap<Set> SBGTopSort<Set>::calculate()
+PWMap SBGTopSort::calculate()
 {
   if (debug())
     Util::SBG_LOG << "Topological sort dsbg:\n" << dsbg() << "\n\n";
 
   auto begin = std::chrono::high_resolution_clock::now();
-  PW mapB = dsbg().mapB(), mapD = dsbg().mapD(), Vmap = dsbg().Vmap(), smap;
+  PWMap mapB = dsbg().mapB(), mapD = dsbg().mapD(), Vmap = dsbg().Vmap();
+  PWMap smap = fact_.createPWMap();
   Set U = dsbg().V(), Nd = U.difference(mapB.image());
   if (!Nd.isEmpty()) {
-    Util::MD_NAT vsucc = Nd.minElem();
-    Set SV, E = dsbg().E();
+    MD_NAT vsucc = Nd.minElem();
+    Set SV = fact_.createSet(), E = dsbg().E();
     do {
-      Set Nd_vsucc = Nd.intersection(Vmap.preImage(Vmap.image(vsucc)));
-      Util::MD_NAT v = Nd.minElem();
+      Set vsucc_set = fact_.createSet(SetPiece(vsucc));
+      Set Nd_vsucc = Nd.intersection(Vmap.preImage(Vmap.image(vsucc_set)));
+      MD_NAT v = Nd.minElem();
       if (!Nd_vsucc.isEmpty())
         v = Nd_vsucc.minElem();
-      Set d(v);
+      Set d = fact_.createSet(v);
       Exp e = calculateExp(v, vsucc);
       vsucc = v;
 
@@ -723,7 +769,7 @@ PWMap<Set> SBGTopSort<Set>::calculate()
           }
         }
       }
-      smap.emplaceBack(Map(d, e));
+      smap.emplaceBack(fact_.createMap(d, e));
       
       Set Nsucc = U.difference(smap.dom());
       Set S = smap.dom().difference(smap.preImage(Nsucc));
@@ -763,47 +809,45 @@ PWMap<Set> SBGTopSort<Set>::calculate()
   return smap.compact();
 }
 
+const PWMapAF &SBGTopSort::fact() const { return fact_; }
+
 ////////////////////////////////////////////////////////////////////////////////
 // Cut-set algorithm -----------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-template<typename Set>
-SBGCutSet<Set>::SBGCutSet() : dsbg_(), debug_(false) {}
-template<typename Set>
-SBGCutSet<Set>::SBGCutSet(DSBGraph<Set> dsbg, bool debug) 
-  : dsbg_(dsbg), debug_(debug) {}
+SBGCutSet::SBGCutSet(const DSBG &dsbg, bool debug) 
+  : fact_(dsbg.fact()), dsbg_(dsbg), debug_(debug) {}
 
-member_imp_temp(template<typename Set>, SBGCutSet<Set>, DSBGraph<Set>, dsbg);
-member_imp_temp(template<typename Set>, SBGCutSet<Set>, bool, debug);
+member_imp(SBGCutSet, DSBG, dsbg);
+member_imp(SBGCutSet, bool, debug);
 
-template<typename Set>
-PWMap<Set> SBGCutSet<Set>::getDegMap(DSBGraph<Set> dsbg)
+PWMap SBGCutSet::getDegMap(const DSBG &dsbg)
 {
   Set V = dsbg.V();
-  PW mapB = dsbg.mapB(), mapD = dsbg.mapD();
+  PWMap mapB = dsbg.mapB(), mapD = dsbg.mapD();
 
   auto dims = V.arity();
-  Util::MD_NAT zero(dims, 0), one(dims, 1);
-  PW dmap(Map(V, Exp(zero))); 
+  MD_NAT zero(dims, 0), one(dims, 1);
+  PWMap dmap = fact_.createPWMap(fact_.createMap(V, Exp(zero))); 
 
-  for (const Map &SE : dsbg.subE_map()) {
+  for (const Map &SE : dsbg.subEmap()) {
     Set dom = SE.dom();
-    Util::MD_NAT n(dims, dom.cardinal());
+    MD_NAT n(dims, dom.cardinal());
     Set vsB = mapB.image(dom), vsD = mapD.image(dom);
     if (vsB.cardinal() == 1) {
-      PW ith = dmap.restrict(vsD).offsetImage(n);
+      PWMap ith = dmap.restrict(vsD).offsetImage(n);
       dmap = ith.combine(dmap);
       ith = dmap.restrict(vsB).offsetImage(one);
       dmap = ith.combine(dmap);
     }
     else if (vsD.cardinal() == 1) {
-      PW ith = dmap.restrict(vsB).offsetImage(n);
+      PWMap ith = dmap.restrict(vsB).offsetImage(n);
       dmap = ith.combine(dmap);
       ith = dmap.restrict(vsD).offsetImage(one);
       dmap = ith.combine(dmap);
     }
     else {
-      PW ith = dmap.restrict(vsB.cup(vsD)).offsetImage(one);
+      PWMap ith = dmap.restrict(vsB.cup(vsD)).offsetImage(one);
       dmap = ith.combine(dmap);
     }
   }
@@ -811,18 +855,17 @@ PWMap<Set> SBGCutSet<Set>::getDegMap(DSBGraph<Set> dsbg)
   return dmap;
 }
 
-template<typename Set>
-Set SBGCutSet<Set>::calculate()
+Set SBGCutSet::calculate()
 {
   auto begin = std::chrono::high_resolution_clock::now();
-  DSBGraph<Set> dg = dsbg();
-  PW Vmap = dg.Vmap(), mapB = dg.mapB(), mapD = dg.mapD();
-  PW rmap = SBGSCC(dg, debug()).calculate();
-  Set newD, oldD, visitedV, V = dg.V();
+  DSBG dg = dsbg();
+  PWMap Vmap = dg.Vmap(), mapB = dg.mapB(), mapD = dg.mapD();
+  PWMap rmap = SBGSCC(dg, debug()).calculate();
+  Set newD = fact_.createSet(), oldD = newD, visitedV = newD, V = dg.V();
   if (debug())
     Util::SBG_LOG << "initial dg vertex cut set:\n" << dg << "\n";
 
-  PW dmap = getDegMap(dg);
+  PWMap dmap = getDegMap(dg);
   // Degree map
   if (debug())
     Util::SBG_LOG << "initial dmap: " << dmap << "\n\n";
@@ -830,31 +873,32 @@ Set SBGCutSet<Set>::calculate()
   while (rmap.dom() != rmap.image()) {
     oldD = newD;
  
-    Util::MD_NAT aux = dmap.image().maxElem();
-    Util::MD_NAT vmax = dmap.preImage(Set(aux)).minElem();
-    Set vmaxSV = Vmap.image(Set(vmax));
-    newD = newD.cup(Set(vmax));
+    MD_NAT aux = dmap.image().maxElem();
+    MD_NAT vmax = dmap.preImage(fact_.createSet(aux)).minElem();
+    Set vmaxSV = Vmap.image(fact_.createSet(vmax));
+    newD = newD.cup(fact_.createSet(vmax));
 
     if (!visitedV.intersection(vmaxSV).isEmpty()) {
-      Util::MD_NAT vmaxD = newD.intersection(Vmap.preImage(vmaxSV)).minElem();
+      MD_NAT vmaxD = newD.intersection(Vmap.preImage(vmaxSV)).minElem();
 
       SetPiece mdi;
       for (unsigned int j = 0; j < vmax.arity(); ++j) {
         if (vmax[j] < vmaxD[j]) {
-          Util::NAT st = vmaxD[j] - vmax[j];
-          Util::NAT beg = vmax[j] % st;
+          NAT st = vmaxD[j] - vmax[j];
+          NAT beg = vmax[j] % st;
           mdi.emplaceBack(Interval(beg, st, vmax[j]));
         }
 
         else
-          mdi.emplaceBack(Interval(vmaxD[j], vmax[j] - vmaxD[j], Util::Inf));    
+          mdi.emplaceBack(Interval(vmaxD[j], vmax[j] - vmaxD[j], Inf));    
       }
       if (debug()) {
         Util::SBG_LOG << "vmax: " << vmax << "\n"; 
         Util::SBG_LOG << "vmaxD: " << vmaxD << "\n"; 
         Util::SBG_LOG << "mdi: " << mdi << "\n\n";
       }
-      newD = newD.cup(Set(mdi).intersection(Vmap.preImage(vmaxSV)));
+      Set mdi_set = fact_.createSet(mdi);
+      newD = newD.cup(mdi_set.intersection(Vmap.preImage(vmaxSV)));
     }
 
     // Update graph info erasing newD vertices
@@ -888,119 +932,36 @@ Set SBGCutSet<Set>::calculate()
   return newD.compact();
 }
 
-// Template instantiations -----------------------------------------------------
-
-template BasePWMap connectedComponents<UnordSet>(BaseSBG g);
-template CanonPWMap connectedComponents<OrdSet>(CanonSBG g);
-
-template struct MatchInfo<UnordSet>;
-template std::ostream &operator<<(
-  std::ostream &out, const MatchInfo<UnordSet> &mi
-);
-template struct MatchInfo<OrdSet>;
-template std::ostream &operator<<(
-  std::ostream &out, const MatchInfo<OrdSet> &mi
-);
-
-template struct SBGMatching<UnordSet>;
-template struct SBGMatching<OrdSet>;
-
-template struct SBGSCC<UnordSet>;
-template struct SBGSCC<OrdSet>;
-
-template struct SBGTopSort<UnordSet>;
-template struct SBGTopSort<OrdSet>;
-
-template struct SBGCutSet<UnordSet>;
-template struct SBGCutSet<OrdSet>;
-
 ////////////////////////////////////////////////////////////////////////////////
 // Additional operations -------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-template<typename Set>
-DSBGraph<Set> partitionSE(const DSBGraph<Set> &dg)
+DSBG buildSCCFromMatching(const SBGMatching &match)
 {
-  Set V = dg.V();
-  unsigned int dims = V.arity(), j = 1;
-  PWMap mapB = dg.mapB(), mapD = dg.mapD(), Emap = dg.Emap();
-  PWMap subE = dg.subE_map();
+  const PWMapAF &fact = match.fact();
 
-  std::vector<Set> vs;
-  for (const SBGMap<Set> &map : dg.Vmap())
-    vs.emplace_back(map.dom());
-
-  Set univ(SetPiece(dims, Interval(0, 1, Util::Inf)));
-  for (const SBGMap<Set> &map : subE) {
-    Set ith_edge = mapB.image(map.dom());
-    Set not_ith_edge = univ.difference(ith_edge);
-    std::vector<Set> aux_vs;
-    aux_vs.reserve(2*vs.size());
-    for (const Set &ith_vs : vs) {
-      Set s1 = ith_edge.intersection(ith_vs);
-      Set s2 = not_ith_edge.intersection(ith_vs);
-
-      if (!s1.isEmpty())
-        aux_vs.emplace_back(s1);
-
-      if (!s2.isEmpty())
-        aux_vs.emplace_back(s2);
-    }
-    vs = aux_vs;
-  }
-
-  for (const SBGMap<Set> &map : subE) {
-    Set ith_edge = mapD.image(map.dom());
-    Set not_ith_edge = univ.difference(ith_edge);
-    std::vector<Set> aux_vs;
-    aux_vs.reserve(2*vs.size());
-    for (const Set &ith_vs : vs) {
-      Set s1 = ith_edge.intersection(ith_vs);
-      Set s2 = not_ith_edge.intersection(ith_vs);
-
-      if (!s1.isEmpty())
-        aux_vs.emplace_back(s1);
-
-      if (!s2.isEmpty())
-        aux_vs.emplace_back(s2);
-    }
-    vs = aux_vs;
-  }
-
-  PWMap<Set> Vmap;
-  for (const Set &dom : vs) {
-    Util::MD_NAT v(dims, j);
-    Vmap.emplaceBack(SBGMap<Set>(dom, Exp(v)));
-    ++j;
-  }
-
-  return DSBGraph(V, Vmap, mapB, mapD, Emap, subE);
-}
-
-template<typename Set>
-DSBGraph<Set> buildSCCFromMatching(const SBGMatching<Set> &match)
-{
   auto start = std::chrono::high_resolution_clock::now();
   Set matched_edges = match.matched_E(), unmatched_edges = match.unmatched_E();
 
   Set V = matched_edges.compact();
-  PWMap<Set> auxVmap = match.sbg().subE_map().restrict(matched_edges), Vmap;
-  for (const SBGMap<Set> &map : auxVmap) 
-    Vmap.emplaceBack(SBGMap<Set>(map.dom().compact(), map.exp()));
+  PWMap auxVmap = match.sbg().subEmap().restrict(matched_edges);
+  PWMap Vmap = fact.createPWMap();
+  for (const Map &map : auxVmap) 
+    Vmap.emplaceBack(fact.createMap(map.dom().compact(), map.exp()));
 
-  PWMap<Set> matchedF_inv = match.mapF().restrict(matched_edges).inverse();
-  PWMap<Set> unmatchedF = match.mapF().restrict(unmatched_edges);
-  PWMap<Set> mapB = matchedF_inv.composition(unmatchedF);
+  PWMap matchedF_inv = match.mapF().restrict(matched_edges).inverse();
+  PWMap unmatchedF = match.mapF().restrict(unmatched_edges);
+  PWMap mapB = matchedF_inv.composition(unmatchedF);
   mapB = mapB.compact();
-  PWMap<Set> matchedU_inv = match.mapU().restrict(matched_edges).inverse();
-  PWMap<Set> unmatchedU = match.mapU().restrict(unmatched_edges);
-  PWMap<Set> mapD = matchedU_inv.composition(unmatchedU);
+  PWMap matchedU_inv = match.mapU().restrict(matched_edges).inverse();
+  PWMap unmatchedU = match.mapU().restrict(unmatched_edges);
+  PWMap mapD = matchedU_inv.composition(unmatchedU);
   mapD = mapD.compact();
 
-  PWMap<Set> Emap = match.Emap().restrict(unmatched_edges);
-  PWMap<Set> subE_map = match.subE_map().restrict(unmatched_edges);
+  PWMap Emap = match.Emap().restrict(unmatched_edges);
+  PWMap subEmap = match.subEmap().restrict(unmatched_edges);
 
-  DSBGraph<Set> res(V, Vmap, mapB, mapD, Emap, subE_map);
+  DSBG res(fact, V, Vmap, mapB, mapD, Emap, subEmap);
   auto end = std::chrono::high_resolution_clock::now();
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(
     end - start 
@@ -1010,45 +971,38 @@ DSBGraph<Set> buildSCCFromMatching(const SBGMatching<Set> &match)
   return res;
 }
 
-template BaseDSBG buildSCCFromMatching(const BaseMatch &match);
-template CanonDSBG buildSCCFromMatching(const CanonMatch &match);
-
-template<typename Set>
-DSBGraph<Set> buildSortFromSCC(
-  const SBGSCC<Set> &scc, const PWMap<Set> &rmap
+DSBG buildSortFromSCC(
+  const SBGSCC &scc, const PWMap &rmap
 )
 {
-  DSBGraph dsbg = scc.dsbg();
+  DSBG dsbg = scc.dsbg();
   Set Ediff = dsbg.E().difference(scc.E());
-  PWMap<Set> mapB = rmap.composition(dsbg.mapB().restrict(Ediff));
+  PWMap mapB = rmap.composition(dsbg.mapB().restrict(Ediff));
   mapB = mapB.compact();
-  PWMap<Set> mapD = rmap.composition(dsbg.mapD().restrict(Ediff));
+  PWMap mapD = rmap.composition(dsbg.mapD().restrict(Ediff));
   mapD = mapD.compact();
 
-  PWMap<Set> aux_rmap = rmap.compact();
-  PWMap<Set> reps_rmap = aux_rmap.filterMap([](const SBGMap<Set> &sbgmap) {
+  PWMap aux_rmap = rmap.compact();
+  PWMap reps_rmap = aux_rmap.filterMap([](const Map &sbgmap) {
     return eqId(sbgmap);
   });
   Set V = reps_rmap.dom();
 
-  PWMap<Set> Vmap = dsbg.Vmap().restrict(V);
+  PWMap Vmap = dsbg.Vmap().restrict(V);
 
-  PWMap<Set> Emap = dsbg.Emap().restrict(Ediff);
-  PWMap<Set> subE_map = dsbg.subE_map().restrict(Ediff);
+  PWMap Emap = dsbg.Emap().restrict(Ediff);
+  PWMap subEmap = dsbg.subEmap().restrict(Ediff);
 
-  DSBGraph<Set> res(V, Vmap, mapB, mapD, Emap, subE_map);
+  DSBG res(dsbg.fact(), V, Vmap, mapB, mapD, Emap, subEmap);
   return res;
 }
-
-template BaseDSBG buildSortFromSCC(const BaseSCC &scc, const BasePWMap &rmap);
-template CanonDSBG buildSortFromSCC(const CanonSCC &scc, const CanonPWMap &rmap);
 
 ////////////////////////////////////////////////////////////////////////////////
 // JSON output -----------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-template<typename Set>
-rapidjson::Value setJson(const Set &s, rapidjson::Document::AllocatorType &alloc)
+rapidjson::Value setJson(const Set &s
+  , rapidjson::Document::AllocatorType &alloc)
 {
   rapidjson::Value res(rapidjson::kArrayType);
 
@@ -1102,14 +1056,13 @@ rapidjson::Value expJson(Exp exp, rapidjson::Document::AllocatorType &alloc)
   return res;
 }
 
-template<typename Set>
 rapidjson::Value mapJson(
-  const PWMap<Set> &pw, rapidjson::Document::AllocatorType &alloc
+  const PWMap &pw, rapidjson::Document::AllocatorType &alloc
 )
 {
   rapidjson::Value res(rapidjson::kArrayType);
 
-  for (const SBGMap<Set> &map : pw) {
+  for (const Map &map : pw) {
     rapidjson::Value ith(rapidjson::kObjectType);
 
     ith.AddMember("dom", setJson(map.dom(), alloc), alloc);
@@ -1121,10 +1074,7 @@ rapidjson::Value mapJson(
   return res;
 }
 
-template<typename Set>
-void buildJson(
-  const Set &matching, const PWMap<Set> &scc, const PWMap<Set> &order
-)
+void buildJson(const Set &matching, const PWMap &scc, const PWMap &order)
 {
   rapidjson::Document d;
   d.SetObject();
@@ -1154,15 +1104,6 @@ void buildJson(
 
   return;
 }
-
-template void buildJson
-(
-  const UnordSet &match, const BasePWMap &scc, const BasePWMap &order
-);
-template void buildJson
-(
-  const OrdSet &match, const CanonPWMap &scc, const CanonPWMap &order
-);
 
 } // namespace LIB
 

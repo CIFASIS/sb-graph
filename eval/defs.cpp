@@ -66,6 +66,8 @@ std::ostream &operator<<(std::ostream &out, const std::variant<T, Ts...> &v)
   return out;
 }
 
+template std::ostream &operator<<(std::ostream &out, const ExprBaseType &v);
+
 std::ostream &operator<<(std::ostream &out, const ExprEval &e)
 {
   out << std::get<0>(e) << "\n  --> "; 

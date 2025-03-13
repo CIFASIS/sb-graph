@@ -113,8 +113,8 @@ bool UnordPWMap::operator==(const PWMapDelegate &other) const
         // two different lexps.
         // Example: [1:1:1] -> 10 and [1:1:1] -> x+9
         if (cap_dom.cardinal() == 1) {
-          Map map1 = fact_.createMap(cap_dom, map1.exp());
-          Map map2 = fact_.createMap(cap_dom, map2.exp());
+          Map map1 = fact_.createMap(cap_dom, m1.exp());
+          Map map2 = fact_.createMap(cap_dom, m2.exp());
           if (map1.image() != map2.image())
             return false;
         }
@@ -766,6 +766,11 @@ std::ostream &operator<<(std::ostream &out, const PWMap &pw)
 PWMap PWMap::operator+(const PWMap &other) const
 {
   return delegate_->operator+(*other.delegate_);
+}
+
+PWMap PWMap::operator-(const PWMap &other) const
+{
+  return delegate_->operator-(*other.delegate_);
 }
 
 std::size_t PWMap::arity() const { return delegate_->arity(); }

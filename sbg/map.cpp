@@ -17,6 +17,7 @@
 
  ******************************************************************************/
 
+#include <iostream>
 #include "sbg/map.hpp"
 
 namespace SBG {
@@ -204,9 +205,6 @@ Set Map::preImage(const Set &subcodom) const
 
 Map Map::composition(const Map &other) const
 {
-  if (exp_.isId())
-    return Map(fact_, std::move(dom_), exp_);
-
   Set res_dom = dom_.intersection(other.image());
   res_dom = other.preImage(res_dom);
   Exp res_exp = exp_.composition(other.exp_);

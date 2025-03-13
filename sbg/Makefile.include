@@ -4,6 +4,7 @@ SBG_ROOT := sbg
 
 # Sources
 	SBG_SRC := \
+    $(SBG_ROOT)/sbg_algorithms.cpp \
     $(SBG_ROOT)/sbg.cpp \
     $(SBG_ROOT)/af_pwmap.cpp \
     $(SBG_ROOT)/pw_map.cpp \

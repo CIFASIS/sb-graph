@@ -28,6 +28,7 @@ EVAL_SRC := \
     $(VISIT_DIR)/eval_int.cpp \
     $(VISIT_DIR)/eval_nat.cpp \
     $(EVAL_DIR)/defs.cpp \
+    $(SBG_DIR)/sbg_algorithms.cpp \
     $(SBG_DIR)/sbg.cpp \
     $(SBG_DIR)/af_pwmap.cpp \
     $(SBG_DIR)/pw_map.cpp \

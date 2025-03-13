@@ -32,7 +32,7 @@
 #include "ast/expr.hpp"
 #include "ast/statement.hpp"
 #include "sbg/af_pwmap.hpp"
-#include "sbg/sbg.hpp"
+#include "sbg/sbg_algorithms.hpp"
 
 namespace SBG {
 
@@ -81,7 +81,8 @@ typedef std::variant<LIB::MD_NAT
   , LIB::Map
   , LIB::PWMap
   , LIB::SBG
-  , LIB::DSBG> ExprBaseType;
+  , LIB::DSBG
+  , LIB::MatchInfo> ExprBaseType;
 typedef std::optional<ExprBaseType> MaybeEBT;
 
 // Environments ----------------------------------------------------------------

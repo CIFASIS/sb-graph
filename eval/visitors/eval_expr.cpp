@@ -182,125 +182,90 @@ auto inf_visitor_ = Overload {
   }
 };
 
-/*
 auto connected_visitor_ = Overload {
-  [](LIB::BaseSBG a) { return MapBaseType(connectedComponents(a)); },
-  [](LIB::CanonSBG a) { return MapBaseType(connectedComponents(a)); },
+  [](LIB::SBG a) { return ExprBaseType(connectedComponents(a)); },
   [](auto a) {
     Util::ERROR("connected_visitor_: wrong argument ", a, " for CC\n"); 
-    return MapBaseType();
+    return ExprBaseType();
   }
 };
 
 auto matching_visitor_ = Overload {
-  [](LIB::BaseSBG a, LIB::MD_NAT b, bool c) { 
-    LIB::BaseMatch match(a.copy(b[0]), c);
-    return InfoBaseType(match.calculate());
-  },
-  [](LIB::CanonSBG a, LIB::MD_NAT b, bool c) {
-    LIB::CanonMatch match(a.copy(b[0]), c);
-    return InfoBaseType(match.calculate());
+  [](LIB::SBG a, LIB::MD_NAT b, bool c) { 
+    LIB::SBGMatching match(a.copy(b[0]), c);
+    return ExprBaseType(match.calculate());
   },
   [](auto a, auto b, auto c) {
     Util::ERROR("matching_visitor_: wrong arguments ", a, ", ", b
       , " for matching\n"); 
-    return InfoBaseType();
+    return ExprBaseType();
   }
 };
 
 auto scc_visitor_ = Overload {
-  [](LIB::BaseDSBG a, bool b) { 
-    LIB::BaseSCC scc(a, b);
-    return MapBaseType(scc.calculate());
-  },
-  [](LIB::CanonDSBG a, bool b) {
-    LIB::CanonSCC scc(a, b);
-    return MapBaseType(scc.calculate());
+  [](LIB::DSBG a, bool b) { 
+    LIB::SBGSCC scc(a, b);
+    return ExprBaseType(scc.calculate());
   },
   [](auto a, auto b) {
     Util::ERROR("scc_visitor_: wrong argument ", a, " for scc\n"); 
-    return MapBaseType();
+    return ExprBaseType();
   }
 };
 
 auto ts_visitor_ = Overload {
-  [](LIB::BaseDSBG a, bool b) { 
-    LIB::BaseTopSort ts(a, b);
-    return MapBaseType(ts.calculate()); 
-  },
-  [](LIB::CanonDSBG a, bool b) {
-    LIB::CanonTopSort ts(a, b);
-    return MapBaseType(ts.calculate());
+  [](LIB::DSBG a, bool b) { 
+    LIB::SBGTopSort ts(a, b);
+    return ExprBaseType(ts.calculate()); 
   },
   [](auto a, auto b) {
     Util::ERROR("ts_visitor_: wrong argument ", a, " for sort\n"); 
-    return MapBaseType();
+    return ExprBaseType();
   }
 };
 
 auto match_scc_visitor_ = Overload {
-  [](LIB::BaseSBG a, LIB::MD_NAT b, bool c) { 
-    LIB::BaseMatch match(a.copy(b[0]), c);
+  [](LIB::SBG a, LIB::MD_NAT b, bool c) { 
+    LIB::SBGMatching match(a.copy(b[0]), c);
     match.calculate();
-    LIB::BaseSCC scc(buildSCCFromMatching(match), c);
-    return MapBaseType(scc.calculate());
-  },
-  [](LIB::CanonSBG a, LIB::MD_NAT b, bool c) {
-    LIB::CanonMatch match(a.copy(b[0]), c);
-    match.calculate();
-    LIB::CanonSCC scc(buildSCCFromMatching(match), c);
-    return MapBaseType(scc.calculate());
+    LIB::SBGSCC scc(buildSCCFromMatching(match), c);
+    return ExprBaseType(scc.calculate());
   },
   [](auto a, auto b, auto c) {
     Util::ERROR("match_scc_visitor_: wrong arguments ", a, ", ", b
       , " for matchSCC\n"); 
-    return MapBaseType();
+    return ExprBaseType();
   }
 };
 
 auto match_scc_ts_visitor_ = Overload {
-  [](LIB::BaseSBG a, LIB::MD_NAT b, bool c) { 
-    LIB::BaseMatch match(a.copy(b[0]), c);
-    LIB::UnordSet match_res = match.calculate().matched_edges();
-    LIB::BaseSCC scc(buildSCCFromMatching(match), c);
-    LIB::BasePWMap scc_res = scc.calculate();
-    LIB::BaseTopSort ts(buildSortFromSCC(scc, scc_res), c);
-    LIB::BasePWMap ts_res = ts.calculate(); 
+  [](LIB::SBG a, LIB::MD_NAT b, bool c) { 
+    LIB::SBGMatching match(a.copy(b[0]), c);
+    LIB::Set match_res = match.calculate().matched_edges();
+    LIB::SBGSCC scc(buildSCCFromMatching(match), c);
+    LIB::PWMap scc_res = scc.calculate();
+    LIB::SBGTopSort ts(buildSortFromSCC(scc, scc_res), c);
+    LIB::PWMap ts_res = ts.calculate(); 
     buildJson(match_res, scc_res, ts_res);
-    return MapBaseType(ts_res);
-  },
-  [](LIB::CanonSBG a, LIB::MD_NAT b, bool c) {
-    LIB::CanonMatch match(a.copy(b[0]), c);
-    LIB::OrdSet match_res = match.calculate().matched_edges();
-    LIB::CanonSCC scc(buildSCCFromMatching(match), c);
-    LIB::CanonPWMap scc_res = scc.calculate();
-    LIB::CanonTopSort ts(buildSortFromSCC(scc, scc_res), c);
-    LIB::CanonPWMap ts_res = ts.calculate();
-    buildJson(match_res, scc_res, ts_res);
-    return MapBaseType(ts_res);
+    return ExprBaseType(ts_res);
   },
   [](auto a, auto b, auto c) {
     Util::ERROR("match_scc_ts_visitor_: wrong arguments ", a, ", ", b
       , " for matchSCCTS\n"); 
-    return MapBaseType();
+    return ExprBaseType();
   }
 };
 
 auto cut_visitor_ = Overload {
-  [](LIB::BaseDSBG a, bool b) { 
-    LIB::BaseCutSet cut_set(a, b);
-    return ContainerBaseType(cut_set.calculate());
-  },
-  [](LIB::CanonDSBG a, bool b) {
-    LIB::CanonCutSet cut_set(a, b);
-    return ContainerBaseType(cut_set.calculate());
+  [](LIB::DSBG a, bool b) { 
+    LIB::SBGCutSet cut_set(a, b);
+    return ExprBaseType(cut_set.calculate());
   },
   [](auto a, auto b) {
     Util::ERROR("cut_visitor_: wrong argument ", a, " for cut\n"); 
-    return ContainerBaseType();
+    return ExprBaseType();
   }
 };
-*/
 
 ////////////////////////////////////////////////////////////////////////////////
 // Expression evaluator --------------------------------------------------------
@@ -514,39 +479,26 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
         }
         break;
 
-/*
       case Eval::Func::connected:
         if (eval_args.size() == 1) {
           arity_ok = true;
-
-          SBGBaseType sbg = std::visit(EvalGraph{}, eval_args[0]);
-          MapBaseType result = std::visit(connected_visitor_, sbg);
-          return result;
+          return std::visit(connected_visitor_, eval_args[0]);
         }
         break;
 
       case Eval::Func::matching:
         if (eval_args.size() == 2) {
           arity_ok = true;
-
-          SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
-          NatBaseType copies = std::visit(EvalNatBT{}, eval_args[1]);
-          InfoBaseType result = std::visit(
-            matching_visitor_, g, copies, std::variant<bool>(debug_)
-          );
-          return result;
+          return std::visit(matching_visitor_, eval_args[0], eval_args[1]
+            , std::variant<bool>(debug_));
         }
         break;
 
       case Eval::Func::scc:
         if (eval_args.size() == 1) {
           arity_ok = true;
-
-          SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
-          MapBaseType result = std::visit(
-            scc_visitor_, g, std::variant<bool>(debug_)
-          );
-          return result;
+          return std::visit(scc_visitor_, eval_args[0]
+            , std::variant<bool>(debug_));
         }
         break;
 
@@ -554,53 +506,34 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
       case Eval::Func::ts:
         if (eval_args.size() == 1) {
           arity_ok = true;
-
-          SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
-          MapBaseType result = std::visit(
-            ts_visitor_, g, std::variant<bool>(debug_)
-          );
-          return result;
+          return std::visit(ts_visitor_, eval_args[0]
+            , std::variant<bool>(debug_));
         }
         break;
 
       case Eval::Func::match_scc:
         if (eval_args.size() == 2) {
           arity_ok = true;
-
-          SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
-          NatBaseType copies = std::visit(EvalNatBT{}, eval_args[1]);
-          MapBaseType result = std::visit(
-            match_scc_visitor_, g, copies, std::variant<bool>(debug_)
-          );
-          return result;
+          return std::visit(match_scc_visitor_, eval_args[0], eval_args[1]
+            , std::variant<bool>(debug_));
         }
         break;
 
       case Eval::Func::match_scc_ts:
         if (eval_args.size() == 2) {
           arity_ok = true;
-
-          SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
-          NatBaseType copies = std::visit(EvalNatBT{}, eval_args[1]);
-          MapBaseType result = std::visit(
-            match_scc_ts_visitor_, g, copies, std::variant<bool>(debug_)
-          );
-          return result;
+          return std::visit(match_scc_ts_visitor_, eval_args[0], eval_args[1]
+            , std::variant<bool>(debug_));
         }
         break;
 
       case Eval::Func::cut_set:
         if (eval_args.size() == 1) {
           arity_ok = true;
-
-          SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
-          ContainerBaseType result = std::visit(
-            cut_visitor_, g, std::variant<bool>(debug_)
-          );
-          return result;
+          return std::visit(cut_visitor_, eval_args[0]
+            , std::variant<bool>(debug_));
         }
         break;
-*/
 
       default:
         Util::ERROR("EvalExpression: function ", vname, " not implemented\n");

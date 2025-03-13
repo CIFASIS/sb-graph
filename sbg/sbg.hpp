@@ -82,6 +82,8 @@ struct SBG {
     , const PWMap &map1, const PWMap &map2
     , const PWMap &Emap, const PWMap &subEmap);
 
+  SBG &operator=(const SBG &other);
+
   /**
    * @brief Adds a new set-vertex composed by \p vertices. \n
    * Precondition: V_.intersection(vertices) = {}
@@ -100,6 +102,8 @@ struct SBG {
    * where each copy is isomorphic to the argument.
    */
   SBG copy(unsigned int times) const;
+
+  const PWMapAF &fact() const;
 };
 std::ostream &operator<<(std::ostream &out, const SBG &g);
 
@@ -137,6 +141,8 @@ struct DSBG {
    , const PWMap &mapB, const PWMap &mapD
    , const PWMap &Emap, const PWMap &subEmap);
 
+  DSBG &operator=(const DSBG &other);
+
   /**
    * @brief Adds a new set-vertex composed by \p vertices.
    * Precondition: V_.intersection(vertices) = {}
@@ -150,7 +156,13 @@ struct DSBG {
    */
   DSBG addSE(const PWMap &pw1, const PWMap &pw2) const;
 
+  /**
+   * @brief Erase vertices \p vs from the DSBG, together with associated edges
+   * with \p vs.
+   */
   DSBG eraseVertices(const Set &vs) const;
+
+  const PWMapAF &fact() const;
 };
 std::ostream &operator<<(std::ostream &out, const DSBG &dg);
 

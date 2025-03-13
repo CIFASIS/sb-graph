@@ -692,7 +692,34 @@ PWMapDelegPtr UnordPWMap::offsetImage(const Exp &off) const
 // TODO
 PWMapDelegPtr UnordPWMap::compact() const
 {
-  return std::make_unique<UnordPWMap>(*this);
+  UnordPWMap res(fact_);
+
+  if (dom().isEmpty())
+    return std::make_unique<UnordPWMap>(res);
+
+  Set compacted = fact_.createSet();
+  for (auto it = pieces_.begin(); it != pieces_.end(); ++it) {
+    auto next_it = it;
+    ++next_it;
+    Set ith_compacted = compacted.intersection(it->dom());
+    if (ith_compacted.isEmpty()) {
+      Map new_ith = fact_.createMap(it->dom().compact(), it->exp());
+      for (; next_it != pieces_.end(); ++next_it) {
+        Set next_compacted = compacted.intersection(next_it->dom());
+        if (next_compacted.isEmpty()) {
+          auto ith = new_ith.compact(*next_it);
+          if (ith) {
+            new_ith = ith.value();
+            compacted = compacted.cup(next_it->dom());
+          }
+        }
+      }
+
+      res.emplaceBack(new_ith);
+    }
+  }
+
+  return std::make_unique<UnordPWMap>(res);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

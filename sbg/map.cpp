@@ -17,7 +17,6 @@
 
  ******************************************************************************/
 
-#include <iostream>
 #include "sbg/map.hpp"
 
 namespace SBG {
@@ -110,6 +109,14 @@ bool Map::operator==(const Map &other) const
 bool Map::operator!=(const Map &other) const
 {
   return !(*this == other);
+}
+
+Map &Map::operator=(const Map &other)
+{
+  dom_ = other.dom_;
+  exp_ = other.exp_;
+
+  return *this;
 }
 
 Map Map::operator+(const Map &other) const
@@ -239,7 +246,7 @@ MaybeMap Map::compact(const Map &other) const
 {
   Set res_dom = fact_.createSet();
   if (exp_ == other.exp())
-    return Map(fact_, dom_.cup(other.dom()), exp_);
+    return Map(fact_, dom_.cup(other.dom()).compact(), exp_);
 
   return {};
 }

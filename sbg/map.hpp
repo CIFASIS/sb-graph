@@ -84,6 +84,7 @@ struct Map {
 
   bool operator==(const Map &other) const;
   bool operator!=(const Map &other) const;
+  Map &operator=(const Map &other);
 
   /**
    * @brief Calculates the sum of both maps for elements that belong to both

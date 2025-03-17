@@ -24,52 +24,17 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
+// PWMap AF --------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+PWMapAF::PWMapAF(const MapAF &map_fact)
+  : MapAF(map_fact), map_fact_(map_fact) {}
+
+////////////////////////////////////////////////////////////////////////////////
 // UnordPWMap AF ---------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-UnordPWMapAF::UnordPWMapAF(const MapAF &map_fact) : map_fact_(map_fact) {}
-
-Set UnordPWMapAF::createSet() const { return map_fact_.createSet(); }
-
-Set UnordPWMapAF::createSet(const MD_NAT &x) const
-{
-  return map_fact_.createSet(x);
-}
-
-Set UnordPWMapAF::createSet(const Interval &i) const
-{
-  return map_fact_.createSet(i);
-}
-
-Set UnordPWMapAF::createSet(const SetPiece &mdi) const
-{
-  return map_fact_.createSet(mdi);
-}
-
-Map UnordPWMapAF::createMap() const
-{
-  return map_fact_.createMap();
-}
-
-Map UnordPWMapAF::createMap(MD_NAT x, Exp exp) const
-{
-  return map_fact_.createMap(x, exp);
-}
-
-Map UnordPWMapAF::createMap(Interval i, LExp le) const
-{
-  return map_fact_.createMap(i, le);
-}
-
-Map UnordPWMapAF::createMap(SetPiece mdi, Exp exp) const
-{
-  return map_fact_.createMap(mdi, exp);
-}
-
-Map UnordPWMapAF::createMap(Set s, Exp exp) const
-{
-  return map_fact_.createMap(s, exp);
-}
+UnordPWMapAF::UnordPWMapAF(const MapAF &map_fact) : PWMapAF(map_fact) {}
 
 PWMap UnordPWMapAF::createPWMap() const
 {

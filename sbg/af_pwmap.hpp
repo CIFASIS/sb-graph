@@ -33,19 +33,13 @@ namespace SBG {
 
 namespace LIB {
 
-struct PWMapAF {
+struct PWMapAF : public MapAF {
+  protected:
+  const MapAF &map_fact_;
+
+  public:
   virtual ~PWMapAF() = default;
-
-  virtual Set createSet() const = 0;
-  virtual Set createSet(const MD_NAT &x) const = 0;
-  virtual Set createSet(const Interval &i) const = 0;
-  virtual Set createSet(const SetPiece &mdi) const = 0;
-
-  virtual Map createMap() const = 0;
-  virtual Map createMap(MD_NAT x, Exp exp) const = 0;
-  virtual Map createMap(Interval i, LExp le) const = 0;
-  virtual Map createMap(SetPiece mdi, Exp exp) const = 0;
-  virtual Map createMap(Set s, Exp exp) const = 0;
+  PWMapAF(const MapAF &map_fact);
 
   virtual PWMap createPWMap() const = 0;
   virtual PWMap createPWMap(const Set &s) const = 0;
@@ -53,26 +47,12 @@ struct PWMapAF {
 };
 
 struct UnordPWMapAF : public PWMapAF {
-  private:
-  const MapAF &map_fact_;
-
   public:
   UnordPWMapAF(const MapAF &map_fact);
 
-  Set createSet() const override;
-  Set createSet(const MD_NAT &x) const override;
-  Set createSet(const Interval &i) const override;
-  Set createSet(const SetPiece &mdi) const override;
-
-  Map createMap() const override;
-  Map createMap(MD_NAT x, Exp exp) const override;
-  Map createMap(Interval i, LExp le) const override;
-  Map createMap(SetPiece mdi, Exp exp) const override;
-  Map createMap(Set s, Exp exp) const override;
-
-  PWMap createPWMap() const;
-  PWMap createPWMap(const Set &s) const;
-  PWMap createPWMap(const Map &m) const;
+  PWMap createPWMap() const override;
+  PWMap createPWMap(const Set &s) const override;
+  PWMap createPWMap(const Map &m) const override;
 };
 
 } // namespace LIB

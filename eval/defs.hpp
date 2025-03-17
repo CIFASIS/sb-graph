@@ -40,38 +40,6 @@ namespace Eval {
 
 // Type definitions ------------------------------------------------------------
 
-/** @brief Types NatBaseType, ContainerBaseType, LinearBaseType and MapBaseType 
- *  are defined to decrease the compilation memory consumption of eval_expr.cpp.
- *  When evaluating an AST::Call, multiple std::visit are invoked, where each 
- *  one generates a function table with size dependent of the number types in
- *  the variant. Initially ExprBaseType was used.
- */
-/*
-typedef std::variant<Util::NAT
-  , Util::MD_NAT> NatType;
-
-typedef std::variant<LIB::Interval
-  , LIB::SetPiece
-  , LIB::UnordSet
-  , LIB::OrdSet> ContainerBaseType;
-
-typedef std::variant<LIB::LExp
-  , LIB::Exp> ExprBaseType;
-
-typedef std::variant<LIB::BaseMap
-  , LIB::CanonMap
-  , LIB::BasePWMap
-  , LIB::CanonPWMap> MapBaseType;
-
-typedef std::variant<LIB::BaseSBG
-  , LIB::CanonSBG
-  , LIB::BaseDSBG
-  , LIB::CanonDSBG> SBGBaseType;
-
-typedef std::variant<LIB::MatchInfo<LIB::UnordSet>
-  , LIB::MatchInfo<LIB::OrdSet>> InfoBaseType;
-*/
-
 typedef std::variant<LIB::MD_NAT
   , LIB::RATIONAL
   , LIB::Interval

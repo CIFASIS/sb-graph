@@ -173,13 +173,11 @@ Set Map::image(const Set &subdom) const
 
     if (cond) {
       for (const SetPiece &mdi : capdom)
-        res.emplace(SBG::LIB::image(mdi, exp_));
+        res.emplaceBack(SBG::LIB::image(mdi, exp_));
     }
     else {
-      // TODO: optimization?
-      for (const SetPiece &mdi : capdom) {
+      for (const SetPiece &mdi : capdom)
         res = res.cup(fact_.createSet(SBG::LIB::image(mdi, exp_)));
-      }
     }
   }
 

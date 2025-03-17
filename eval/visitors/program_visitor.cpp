@@ -23,7 +23,8 @@ namespace SBG {
 
 namespace Eval {
 
-ProgramVisitor::ProgramVisitor(bool debug) : env_(), debug_(debug) {}
+ProgramVisitor::ProgramVisitor(const LIB::PWMapAF &fact, bool debug)
+  : fact_(fact), env_(), debug_(debug) {}
 
 ProgramIO ProgramVisitor::operator()(AST::Program p) const 
 { 
@@ -43,19 +44,7 @@ ProgramIO ProgramVisitor::operator()(AST::Program p) const
     }
   }
 
-  bool check = true;
-  OptConds opt_conds(stm_visit.env());
-  for (AST::Expr e : p.exprs())
-    check = check && boost::apply_visitor(opt_conds, e);
-
-  // Choose concrete factory according to the desired implementation
-  std::unique_ptr<LIB::SetAF> set_fact = std::make_unique<LIB::UnordAF>();
-  if (check)
-    set_fact = std::make_unique<LIB::OrdDenseAF>();
-  LIB::MapAF map_fact(*set_fact);
-  LIB::UnordPWMapAF pw_fact(map_fact);
-
-  EvalExpression eval_expr(dims, pw_fact, stm_visit.env(), debug_);
+  EvalExpression eval_expr(dims, fact_, stm_visit.env(), debug_);
   for (AST::Expr e : p.exprs()) {
     ExprBaseType expr_res = boost::apply_visitor(eval_expr, e);
     exprs.push_back(ExprEval(e, expr_res));

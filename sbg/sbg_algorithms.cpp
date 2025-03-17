@@ -655,68 +655,6 @@ const PWMapAF &SBGSCC::fact() const { return fact_; }
 // Topological sort ------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-/* TODO
-DSBG partitionSE(const DSBG &dg)
-{
-  const PWMapAF &fact_ = dg.fact();
-
-  Set V = dg.V();
-  unsigned int dims = V.arity(), j = 1;
-  PWMap mapB = dg.mapB(), mapD = dg.mapD(), Emap = dg.Emap();
-  PWMap subE = dg.subEmap();
-
-  std::vector<Map> vs;
-  for (const Map &map : dg.Vmap())
-    vs.emplace_back(map.dom());
-
-  Set univ = fact_.createSet(SetPiece(dims, Interval(0, 1, Inf)));
-  for (const Map &map : subE) {
-    Set ith_edge = mapB.image(map.dom());
-    Set not_ith_edge = univ.difference(ith_edge);
-    std::vector<Set> aux_vs;
-    aux_vs.reserve(2*vs.size());
-    for (const Set &ith_vs : vs) {
-      Set s1 = ith_edge.intersection(ith_vs);
-      Set s2 = not_ith_edge.intersection(ith_vs);
-
-      if (!s1.isEmpty())
-        aux_vs.emplace_back(s1);
-
-      if (!s2.isEmpty())
-        aux_vs.emplace_back(s2);
-    }
-    vs = aux_vs;
-  }
-
-  for (const Map &map : subE) {
-    Set ith_edge = mapD.image(map.dom());
-    Set not_ith_edge = univ.difference(ith_edge);
-    std::vector aux_vs;
-    aux_vs.reserve(2*vs.size());
-    for (const Set &ith_vs : vs) {
-      Set s1 = ith_edge.intersection(ith_vs);
-      Set s2 = not_ith_edge.intersection(ith_vs);
-
-      if (!s1.isEmpty())
-        aux_vs.emplace_back(s1);
-
-      if (!s2.isEmpty())
-        aux_vs.emplace_back(s2);
-    }
-    vs = aux_vs;
-  }
-
-  PWMap Vmap;
-  for (const Set &dom : vs) {
-    MD_NAT v(dims, j);
-    Vmap.emplaceBack(Map(dom, Exp(v)));
-    ++j;
-  }
-
-  return DSBG(V, Vmap, mapB, mapD, Emap, subE);
-}
-*/
-
 SBGTopSort::SBGTopSort(const DSBG &dsbg, bool debug) 
   : fact_(dsbg.fact()), dsbg_(dsbg), debug_(debug) {}
 

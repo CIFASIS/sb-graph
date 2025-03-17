@@ -31,7 +31,14 @@
 #include "parser/sbg_program.hpp"
 #include "eval/visitors/program_visitor.hpp"
 
-void parseEvalProgramFromFile(std::string fname, bool debug)
+struct Impl {
+  int set_impl_;
+  int pw_impl_;
+
+  Impl(int set_impl, int pw_impl) : set_impl_(set_impl), pw_impl_(pw_impl) {};
+};
+
+void parseEvalProgramFromFile(std::string fname, Impl impl, bool debug)
 {
   std::ifstream in(fname.c_str());
   if (in.fail()) 
@@ -57,7 +64,26 @@ void parseEvalProgramFromFile(std::string fname, bool debug)
     std::cout << ">>>>>> Eval result <<<<<<\n";
     std::cout << "-------------------------\n\n";
 
-    SBG::Eval::ProgramVisitor program_visit(debug); 
+    std::unique_ptr<SBG::LIB::SetAF> set_fact 
+      = std::make_unique<SBG::LIB::UnordAF>();
+
+    switch (impl.set_impl_) {
+      case 2:
+        set_fact = std::make_unique<SBG::LIB::OrdDenseAF>();
+
+      default:
+        break;
+    }
+
+    SBG::LIB::MapAF map_fact(*set_fact);
+    std::unique_ptr<SBG::LIB::PWMapAF> fact
+      = std::make_unique<SBG::LIB::UnordPWMapAF>(map_fact);
+    switch (impl.pw_impl_) {
+      default:
+        break;
+    }
+
+    SBG::Eval::ProgramVisitor program_visit(*fact, debug); 
     SBG::Eval::ProgramIO visit_result = boost::apply_visitor(
       program_visit, parser_result
     );
@@ -78,6 +104,8 @@ void usage()
   std::cout << "Usage evaluator: ./bin/sbg-eval -f filename [options]\n";
   std::cout << "Parses and evaluates a SBG program.\n\n";
   std::cout << "-f, --file      SBG program file used as input\n";
+  std::cout << "-s, --set_impl  Choose set implementation: 0 unordered sets,\n";
+  std::cout << "                1 ordered sets, 2 ordered dense sets.\n";
   std::cout << "-h, --help      Display this information and exit\n";
   std::cout << "-d, --debug     Activate debug info\n";
   std::cout << "-v, --version   Display version information and exit\n\n";
@@ -201,26 +229,29 @@ void version()
   std::cout << "There is NO WARRANTY, to the extent permitted by law.\n";
 }
 
-
 int main(int argc, char**argv)
 {
   std::string filename;
-  int opt;
+  int opt, set_impl = 0, pw_impl = 0;
   extern char* optarg;
   bool debug = false;
 
   while (true) {
     static struct option long_options[] = {{"file", required_argument, 0, 'f'}
+                                           , {"set_impl", required_argument, 0, 's'}
                                            , {"help", no_argument, 0, 'h'}
                                            , {"debug", no_argument, 0, 'd'}
                                            , {"version", no_argument, 0, 'v'}
                                            , {0, 0, 0, 0}};
-    opt = getopt_long(argc, argv, "f:hdv", long_options, nullptr);
+    opt = getopt_long(argc, argv, "f:s:hdv", long_options, nullptr);
     if (opt == EOF) 
       break;
     switch (opt) {
       case 'f':
         filename = optarg;
+        break;
+      case 's':
+        set_impl = std::stoi(optarg);
         break;
       case 'h':
         usage();
@@ -241,7 +272,7 @@ int main(int argc, char**argv)
   }
 
   if (!filename.empty())
-    parseEvalProgramFromFile(filename, debug);
+    parseEvalProgramFromFile(filename, Impl(set_impl, pw_impl), debug);
   else
     SBG::Util::ERROR("A filename should be provided\n");
 

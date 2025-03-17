@@ -37,10 +37,10 @@ struct MapAF : public SetAF {
   public:
   MapAF(const SetAF &set_fact);
 
-  Set createSet() const;
-  Set createSet(const MD_NAT &x) const;
-  Set createSet(const Interval &i) const;
-  Set createSet(const SetPiece &mdi) const;
+  Set createSet() const override;
+  Set createSet(const MD_NAT &x) const override;
+  Set createSet(const Interval &i) const override;
+  Set createSet(const SetPiece &mdi) const override;
 
   Map createMap() const;
   Map createMap(MD_NAT x, Exp exp) const;

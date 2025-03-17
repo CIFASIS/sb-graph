@@ -689,7 +689,6 @@ PWMapDelegPtr UnordPWMap::offsetImage(const Exp &off) const
   return res;
 }
 
-// TODO
 PWMapDelegPtr UnordPWMap::compact() const
 {
   UnordPWMap res(fact_);

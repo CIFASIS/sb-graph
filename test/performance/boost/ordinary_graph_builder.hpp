@@ -31,6 +31,7 @@
 namespace OG {
 
 class OrdinaryGraphBuilder {
+  public:
   OrdinaryGraphBuilder(SBG::LIB::SBG graph);
   ~OrdinaryGraphBuilder() = default;
 
@@ -45,6 +46,7 @@ class OrdinaryGraphBuilder {
 };
 
 class OrdinaryDGraphBuilder {
+  public:
   OrdinaryDGraphBuilder(SBG::LIB::DSBG graph);
   ~OrdinaryDGraphBuilder() = default;
 

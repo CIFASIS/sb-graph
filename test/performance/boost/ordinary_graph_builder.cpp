@@ -40,14 +40,10 @@ SBG::LIB::MD_NAT nextElem(SBG::LIB::MD_NAT curr, SBG::LIB::SetPiece mdi)
   return res;
 }
 
-template<typename Set>
-OrdinaryGraphBuilder<Set>::OrdinaryGraphBuilder(
-  OrdinaryGraphBuilder::SBGraph sb_graph
-)
+OrdinaryGraphBuilder::OrdinaryGraphBuilder(SBG::LIB::SBG sb_graph)
   : _sb_graph(sb_graph), _vertex_map() {}
 
-template<typename Set>
-OG::Graph OrdinaryGraphBuilder<Set>::build()
+OG::Graph OrdinaryGraphBuilder::build()
 {
   OG::Graph graph;
 
@@ -70,8 +66,7 @@ OG::Graph OrdinaryGraphBuilder<Set>::build()
   return graph;
 }
 
-template<typename Set>
-OG::VertexDesc OrdinaryGraphBuilder<Set>::addVertex(
+OG::VertexDesc OrdinaryGraphBuilder::addVertex(
   SBG::LIB::MD_NAT id, OG::Graph &g
 )
 {
@@ -82,15 +77,15 @@ OG::VertexDesc OrdinaryGraphBuilder<Set>::addVertex(
   return v;
 }
 
-template<typename Set>
-OG::EdgeDesc OrdinaryGraphBuilder<Set>::addEdge(
+OG::EdgeDesc OrdinaryGraphBuilder::addEdge(
   SBG::LIB::MD_NAT id, OG::Graph &g
 )
 {
   SBG::LIB::SetPiece mdi(id);
-  PW map1 = _sb_graph.map1(), map2 = _sb_graph.map2();
-  SBG::LIB::MD_NAT v1 = map1.image(Set(mdi)).minElem();
-  SBG::LIB::MD_NAT v2 = map2.image(Set(mdi)).minElem();
+  SBG::LIB::PWMap map1 = _sb_graph.map1(), map2 = _sb_graph.map2();
+  SBG::LIB::UnordAF fact;
+  SBG::LIB::MD_NAT v1 = map1.image(fact.createSet(mdi)).minElem();
+  SBG::LIB::MD_NAT v2 = map2.image(fact.createSet(mdi)).minElem();
 
   Edge E(id);
   OG::EdgeDesc e;
@@ -100,20 +95,12 @@ OG::EdgeDesc OrdinaryGraphBuilder<Set>::addEdge(
   return e;
 }
 
-template class OrdinaryGraphBuilder<SBG::LIB::UnordSet>;
-
-template class OrdinaryGraphBuilder<SBG::LIB::OrdSet>;
-
 // Directed graph builder ------------------------------------------------------
 
-template<typename Set>
-OrdinaryDGraphBuilder<Set>::OrdinaryDGraphBuilder(
-  OrdinaryDGraphBuilder::DSBGraph sb_graph
-)
+OrdinaryDGraphBuilder::OrdinaryDGraphBuilder(SBG::LIB::DSBG sb_graph)
   : _sb_graph(sb_graph), _vertex_map() {}
 
-template<typename Set>
-OG::DGraph OrdinaryDGraphBuilder<Set>::build()
+OG::DGraph OrdinaryDGraphBuilder::build()
 {
   OG::DGraph graph;
 
@@ -132,14 +119,15 @@ OG::DGraph OrdinaryDGraphBuilder<Set>::build()
     addVertex(end, graph);
   }
 
-  PW mapb = _sb_graph.mapB(), mapd = _sb_graph.mapD();
+  SBG::LIB::UnordAF fact;
+  SBG::LIB::PWMap mapb = _sb_graph.mapB(), mapd = _sb_graph.mapD();
   for (const SBG::LIB::SetPiece &e : _sb_graph.E()) {
     assert(!e.isEmpty());
     SBG::LIB::MD_NAT beg = e.minElem(), end = e.maxElem();
     for (auto it = beg; it != end; it = nextElem(it, e)) {
       SBG::LIB::SetPiece mdi(it);
-      SBG::LIB::MD_NAT v1 = mapb.image(Set(mdi)).minElem();
-      SBG::LIB::MD_NAT v2 = mapd.image(Set(mdi)).minElem();
+      SBG::LIB::MD_NAT v1 = mapb.image(fact.createSet(mdi)).minElem();
+      SBG::LIB::MD_NAT v2 = mapd.image(fact.createSet(mdi)).minElem();
       auto tbegin = std::chrono::high_resolution_clock::now();
       addEdge(it, v1, v2, graph);
       auto tend = std::chrono::high_resolution_clock::now();
@@ -148,8 +136,8 @@ OG::DGraph OrdinaryDGraphBuilder<Set>::build()
       );
     }
     SBG::LIB::SetPiece mdi(end);
-    SBG::LIB::MD_NAT v1 = mapb.image(Set(mdi)).minElem();
-    SBG::LIB::MD_NAT v2 = mapd.image(Set(mdi)).minElem();
+    SBG::LIB::MD_NAT v1 = mapb.image(fact.createSet(mdi)).minElem();
+    SBG::LIB::MD_NAT v2 = mapd.image(fact.createSet(mdi)).minElem();
     addEdge(end, v1, v2, graph);
   }
   SBG::Util::SBG_LOG << "Scalar directed graph builder time: " 
@@ -158,8 +146,7 @@ OG::DGraph OrdinaryDGraphBuilder<Set>::build()
   return graph;
 }
 
-template<typename Set>
-OG::DVertexDesc OrdinaryDGraphBuilder<Set>::addVertex(
+OG::DVertexDesc OrdinaryDGraphBuilder::addVertex(
   SBG::LIB::MD_NAT id, OG::DGraph &g
 )
 {
@@ -170,8 +157,7 @@ OG::DVertexDesc OrdinaryDGraphBuilder<Set>::addVertex(
   return v;
 }
 
-template<typename Set>
-OG::DEdgeDesc OrdinaryDGraphBuilder<Set>::addEdge(
+OG::DEdgeDesc OrdinaryDGraphBuilder::addEdge(
   SBG::LIB::MD_NAT id, SBG::LIB::MD_NAT v1, SBG::LIB::MD_NAT v2, OG::DGraph &g
 )
 {
@@ -182,9 +168,5 @@ OG::DEdgeDesc OrdinaryDGraphBuilder<Set>::addEdge(
   g[e] = E;
   return e;
 }
-
-template class OrdinaryDGraphBuilder<SBG::LIB::UnordSet>;
-
-template class OrdinaryDGraphBuilder<SBG::LIB::OrdSet>;
 
 }  // namespace OG

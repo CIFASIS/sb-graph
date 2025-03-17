@@ -64,26 +64,26 @@ void parseEvalProgramFromFile(std::string fname, Impl impl, bool debug)
     std::cout << ">>>>>> Eval result <<<<<<\n";
     std::cout << "-------------------------\n\n";
 
-    std::unique_ptr<SBG::LIB::SetAF> set_fact 
-      = std::make_unique<SBG::LIB::UnordAF>();
+    std::shared_ptr<SBG::LIB::SetAF> set_fact 
+      = std::make_shared<SBG::LIB::UnordAF>();
 
     switch (impl.set_impl_) {
       case 2:
-        set_fact = std::make_unique<SBG::LIB::OrdDenseAF>();
+        set_fact = std::make_shared<SBG::LIB::OrdDenseAF>();
 
       default:
         break;
     }
 
     SBG::LIB::MapAF map_fact(*set_fact);
-    std::unique_ptr<SBG::LIB::PWMapAF> fact
-      = std::make_unique<SBG::LIB::UnordPWMapAF>(map_fact);
+    std::shared_ptr<SBG::LIB::PWMapAF> fact
+      = std::make_shared<SBG::LIB::UnordPWMapAF>(map_fact);
     switch (impl.pw_impl_) {
       default:
         break;
     }
 
-    SBG::Eval::ProgramVisitor program_visit(*fact, debug); 
+    SBG::Eval::ProgramVisitor program_visit(fact, debug); 
     SBG::Eval::ProgramIO visit_result = boost::apply_visitor(
       program_visit, parser_result
     );

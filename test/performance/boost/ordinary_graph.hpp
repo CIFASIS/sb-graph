@@ -23,7 +23,7 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/subgraph.hpp>
 
-#include <util/defs.hpp>
+#include <sbg/natural.hpp>
 
 namespace OG {
 

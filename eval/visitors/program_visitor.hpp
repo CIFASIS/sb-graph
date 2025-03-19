@@ -31,7 +31,6 @@
 
 #include "ast/sbg_program.hpp"
 #include "eval/visitors/stm_visitor.hpp"
-#include "eval/visitors/check_opt_conds.hpp"
 
 namespace SBG {
 

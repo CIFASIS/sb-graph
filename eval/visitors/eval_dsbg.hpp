@@ -41,18 +41,10 @@ struct EvalDSBG : public boost::static_visitor<LIB::DSBG> {
   LIB::DSBG operator()(AST::BinOp v) const;
   LIB::DSBG operator()(AST::Call v) const;
   LIB::DSBG operator()(AST::Interval v) const;
-  LIB::DSBG operator()(AST::InterUnaryOp v) const;
-  LIB::DSBG operator()(AST::InterBinOp v) const;
   LIB::DSBG operator()(AST::MultiDimInter v) const;
-  LIB::DSBG operator()(AST::MDInterUnaryOp v) const;
-  LIB::DSBG operator()(AST::MDInterBinOp v) const;
   LIB::DSBG operator()(AST::Set v) const;
-  LIB::DSBG operator()(AST::SetUnaryOp v) const;
-  LIB::DSBG operator()(AST::SetBinOp v) const;
   LIB::DSBG operator()(AST::LinearExp v) const;
-  LIB::DSBG operator()(AST::LExpBinOp v) const;
   LIB::DSBG operator()(AST::MDLExp v) const;
-  LIB::DSBG operator()(AST::MDLExpBinOp v) const;
   LIB::DSBG operator()(AST::LinearMap v) const;
   LIB::DSBG operator()(AST::PWLMap v) const;
   LIB::DSBG operator()(AST::SBG v) const;

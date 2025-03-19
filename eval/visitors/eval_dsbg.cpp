@@ -68,33 +68,9 @@ LIB::DSBG EvalDSBG::operator()(AST::Interval v) const
   return LIB::DSBG(fact_); 
 }
 
-LIB::DSBG EvalDSBG::operator()(AST::InterUnaryOp v) const
-{
-  Util::ERROR("EvalDSBG: trying to evaluate InterUnaryOp ", v, "\n");
-  return LIB::DSBG(fact_); 
-}
-
-LIB::DSBG EvalDSBG::operator()(AST::InterBinOp v) const
-{
-  Util::ERROR("EvalDSBG: trying to evaluate InterBinOp ", v, "\n");
-  return LIB::DSBG(fact_); 
-}
-
 LIB::DSBG EvalDSBG::operator()(AST::MultiDimInter v) const
 { 
   Util::ERROR("EvalDSBG: trying to evaluate MultiDimInter ", v, "\n");
-  return LIB::DSBG(fact_); 
-}
-
-LIB::DSBG EvalDSBG::operator()(AST::MDInterUnaryOp v) const
-{
-  Util::ERROR("EvalDSBG: trying to evaluate MDInterUnaryOp ", v, "\n");
-  return LIB::DSBG(fact_); 
-}
-
-LIB::DSBG EvalDSBG::operator()(AST::MDInterBinOp v) const
-{
-  Util::ERROR("EvalDSBG: trying to evaluate MDInterBinOp ", v, "\n");
   return LIB::DSBG(fact_); 
 }
 
@@ -104,39 +80,15 @@ LIB::DSBG EvalDSBG::operator()(AST::Set v) const
   return LIB::DSBG(fact_); 
 }
 
-LIB::DSBG EvalDSBG::operator()(AST::SetUnaryOp v) const 
-{
-  Util::ERROR("EvalDSBG: trying to evaluate SetUnaryOp ", v, "\n");
-  return LIB::DSBG(fact_); 
-}
-
-LIB::DSBG EvalDSBG::operator()(AST::SetBinOp v) const 
-{
-  Util::ERROR("EvalDSBG: trying to evaluate SetBinOp ", v, "\n");
-  return LIB::DSBG(fact_); 
-}
-
 LIB::DSBG EvalDSBG::operator()(AST::LinearExp v) const
 { 
   Util::ERROR("EvalDSBG: trying to evaluate LinearExp ", v, "\n");
   return LIB::DSBG(fact_); 
 }
 
-LIB::DSBG EvalDSBG::operator()(AST::LExpBinOp v) const
-{ 
-  Util::ERROR("EvalDSBG: trying to evaluate LExpBinOp ", v, "\n");
-  return LIB::DSBG(fact_); 
-}
-
 LIB::DSBG EvalDSBG::operator()(AST::MDLExp v) const
 { 
   Util::ERROR("EvalDSBG: trying to evaluate MDLExp ", v, "\n");
-  return LIB::DSBG(fact_); 
-}
-
-LIB::DSBG EvalDSBG::operator()(AST::MDLExpBinOp v) const
-{ 
-  Util::ERROR("EvalDSBG: trying to evaluate MDLExpBinOp ", v, "\n");
   return LIB::DSBG(fact_); 
 }
 

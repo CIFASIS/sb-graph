@@ -12,7 +12,6 @@ all: $(EVAL)
 EVAL_SRC := \
 	  $(EVAL_DIR)/main.cpp \
     $(VISIT_DIR)/program_visitor.cpp \
-    $(VISIT_DIR)/check_opt_conds.cpp \
     $(VISIT_DIR)/stm_visitor.cpp \
     $(VISIT_DIR)/eval_expr.cpp \
     $(VISIT_DIR)/eval_dsbg.cpp \

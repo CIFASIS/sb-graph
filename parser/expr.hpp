@@ -74,9 +74,7 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> mdi_list;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> set;
 
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp_left;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp;
-
+  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> lexp_list;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> mdlexp;
 
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> map;
@@ -92,10 +90,10 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   qi::rule<Iterator, Skipper<Iterator>, AST::Call()> call_expr;
 
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg_primary;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg_factor;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg_term;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg_expr;
 
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> primary;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> expr;
   qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> expr_list;
 

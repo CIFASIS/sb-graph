@@ -61,7 +61,8 @@ bool IsConfig::operator()(ConfigDims v) const { return true; }
 
 std::ostream &operator<<(std::ostream &out, const StatementList &stml)
 {
-  for (Statement s : stml) out << s << "\n";
+  for (Statement s : stml)
+    out << s << ";\n";
 
   return out;
 }

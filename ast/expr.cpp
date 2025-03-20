@@ -369,13 +369,6 @@ std::ostream &operator<<(std::ostream &out, const Op &op)
   return out;
 }
 
-std::ostream &operator<<(std::ostream &out, const ExprList &el)
-{
-  for (Expr e : el) out << e << "\n";
-
-  return out;
-}
-
 UnaryOp::UnaryOp() : op_(), expr_() {}
 UnaryOp::UnaryOp(UnOp op, Expr expr) : op_(op), expr_(expr) {}
 
@@ -389,7 +382,15 @@ bool UnaryOp::operator==(const UnaryOp &other) const
 
 std::ostream &operator<<(std::ostream &out, const UnaryOp &uop)
 { 
-  out << uop.op() << uop.expr();
+  switch (uop.op()) {
+    case UnOp::comp:
+      out << uop.expr() << uop.op();
+      break;
+
+    default:
+      out << uop.op() << uop.expr();
+      break;
+  }
 
   return out;
 }
@@ -440,6 +441,14 @@ std::ostream &operator<<(std::ostream &out, const Call &c)
     out << c.args()[i];
   }
   out << ")"; 
+
+  return out;
+}
+
+std::ostream &operator<<(std::ostream &out, const ExprList &el)
+{
+  for (Expr e : el)
+    out << e << ";\n";
 
   return out;
 }

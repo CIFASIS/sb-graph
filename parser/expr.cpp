@@ -171,7 +171,7 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   , MAPD("mapD:")
 {
   // Take out "x" as identifier to preserve it for linear expressions
-  ident = qi::lexeme[qi::char_("a-wy-zA-WY-Z")
+  ident = qi::lexeme[qi::char_("a-xy-zA-XY-Z")
     >> *(qi::alnum | qi::char_('_'))]
     | qi::lexeme[qi::char_("x") >> +(qi::alnum | qi::char_('_'))];
 
@@ -192,7 +192,8 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   rat_primary = rat_legacy[qi::_val = qi::_1]
     | (int_expr >> DIV >> int_expr)
       [qi::_val = phx::construct<AST::Rational>(qi::_1, qi::_2)]
-    | int_expr[qi::_val = qi::_1];
+    | int_expr[qi::_val = qi::_1]
+    | (OPAREN >> arithmetic_expr>> CPAREN)[qi::_val = qi::_1];
 
   rat_term = rat_primary[qi::_val = qi::_1] >> *(mult_symbol >> rat_primary)
     [qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
@@ -238,25 +239,10 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
 
   // ------------ //
 
-  lexp_left = (arithmetic_expr >> SLO >> VAR)[qi::_val = qi::_1];
+  lexp_list = arithmetic_expr % PIPE;
 
-  lexp = (lexp_left >> ADD >> arithmetic_expr)
-      [qi::_val = phx::construct<AST::LinearExp>(qi::_1, qi::_2)] 
-    | (VAR >> ADD >> arithmetic_expr)
-      [qi::_val = phx::construct<AST::LinearExp>(1, qi::_1)]
-    | (lexp_left >> SUB >> arithmetic_expr)
-      [qi::_val = phx::construct<AST::LinearExp>(qi::_1
-        , phx::construct<AST::UnaryOp>(AST::UnOp::neg, qi::_2))] 
-    | (VAR >> SUB >> arithmetic_expr)
-      [qi::_val = phx::construct<AST::LinearExp>(1
-         , phx::construct<AST::UnaryOp>(AST::UnOp::neg, qi::_1))]
-    | lexp_left[qi::_val = phx::construct<AST::LinearExp>(qi::_1, 0)];
-
-  // ------------ //
-
-  mdlexp = (lexp % PIPE)[qi::_val = phx::construct<AST::MDLExp>(qi::_1)]
-    | (OPAREN >> (lexp % PIPE)[qi::_val = phx::construct<AST::MDLExp>(qi::_1)]
-      >> CPAREN);
+  mdlexp = (PIPE >> lexp_list >> PIPE)
+    [qi::_val = phx::construct<AST::MDLExp>(qi::_1)];
 
   // ------------ //
 
@@ -274,42 +260,32 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   // ------------ //
 
   sbg = (V >> set 
-      >> VMAP >> pwl 
-      >> MAP1 >> pwl 
-      >> MAP2 >> pwl 
-      >> EMAP >> pwl
-      >> SUBE >> pwl)
-      [qi::_val = phx::construct<AST::SBG>(
-         qi::_1, qi::_2, qi::_3, qi::_4, qi::_5, qi::_6
-      )]
-   | (V >> set
-      >> VMAP >> pwl 
-      >> MAP1 >> pwl 
-      >> MAP2 >> pwl 
-      >> EMAP >> pwl)
-      [qi::_val = phx::construct<AST::SBG>(
-         qi::_1, qi::_2, qi::_3, qi::_4, qi::_5, phx::construct<AST::PWLMap>()
-      )];
+    >> VMAP >> pwl 
+    >> MAP1 >> pwl 
+    >> MAP2 >> pwl 
+    >> EMAP >> pwl
+    >> -(SUBE >> pwl))[qi::_val = phx::if_else(qi::_6
+          , phx::construct<AST::SBG>(qi::_1, qi::_2, qi::_3, qi::_4, qi::_5
+            , *qi::_6)
+          , phx::construct<AST::SBG>(qi::_1, qi::_2, qi::_3, qi::_4, qi::_5
+            , phx::construct<AST::PWLMap>())
+        )
+      ];
 
   // ------------ //
 
   dsbg = (V >> set 
-     >> VMAP >> pwl 
-     >> MAPB >> pwl 
-     >> MAPD >> pwl 
-     >> EMAP >> pwl
-     >> SUBE >> pwl)
-     [qi::_val = phx::construct<AST::DSBG>(
-        qi::_1, qi::_2, qi::_3, qi::_4, qi::_5, qi::_6
-     )]
-   | (V >> set 
-      >> VMAP >> pwl 
-      >> MAPB >> pwl 
-      >> MAPD >> pwl 
-      >> EMAP >> pwl)
-      [qi::_val = phx::construct<AST::DSBG>(
-         qi::_1, qi::_2, qi::_3, qi::_4, qi::_5, phx::construct<AST::PWLMap>()
-      )];
+    >> VMAP >> pwl 
+    >> MAPB >> pwl 
+    >> MAPD >> pwl 
+    >> EMAP >> pwl
+    >> -(SUBE >> pwl))[qi::_val = phx::if_else(qi::_6
+           , phx::construct<AST::DSBG>(qi::_1, qi::_2, qi::_3, qi::_4, qi::_5
+             , *qi::_6)
+           , phx::construct<AST::DSBG>(qi::_1, qi::_2, qi::_3, qi::_4, qi::_5
+             , phx::construct<AST::PWLMap>())
+         )
+       ];
 
   // ------------ //
 
@@ -332,31 +308,23 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
     | map
     | mdlexp
     | set
-    | md_inter;
+    | md_inter
+    | arithmetic_expr;
 
-  sbg_term = (OPAREN >> sbg_expr >> binary_symbol >> sbg_expr >> CPAREN)
-      [qi::_val = phx::construct<AST::BinOp>(qi::_1, qi::_2, qi::_3)]
-    | (sbg_primary >> binary_symbol >> sbg_primary)
-      [qi::_val = phx::construct<AST::BinOp>(qi::_1, qi::_2, qi::_3)]
-    | sbg_primary[qi::_val = qi::_1];
+  sbg_factor = (sbg_primary
+      | (OPAREN >> sbg_expr >> CPAREN))[qi::_val = qi::_1]
+    >> -(sbg_unary_symbol[qi::_val = phx::construct<AST::UnaryOp>(qi::_1, qi::_val)]);
 
-  sbg_expr = (sbg_unary_symbol >> sbg_term)
-      [qi::_val = phx::construct<AST::UnaryOp>(qi::_1, qi::_2)]
-    | sbg_term[qi::_val = qi::_1];
+  sbg_expr = (sbg_factor >> binary_symbol >> sbg_factor)
+      [qi::_val = phx::construct<AST::BinOp>(qi::_1, qi::_2, qi::_3)]
+    | sbg_factor[qi::_val = qi::_1];
 
   // ------------ //
 
-  primary = sbg_expr[qi::_val = qi::_1] | arithmetic_expr[qi::_val = qi::_1];
-
-  expr = primary[qi::_val = qi::_1] >> -(rel_symbol >> primary)
+  expr = sbg_expr[qi::_val = qi::_1] >> -(rel_symbol >> sbg_expr)
     [qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
 
   expr_list = expr % COMA;
-
-  BOOST_SPIRIT_DEBUG_NODE(sbg_expr);
-  BOOST_SPIRIT_DEBUG_NODE(sbg_term);
-  BOOST_SPIRIT_DEBUG_NODE(sbg_primary);
-  BOOST_SPIRIT_DEBUG_NODE(mdlexp);
 };
 
 template struct ExprRule<StrIt>;

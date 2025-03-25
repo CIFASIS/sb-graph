@@ -62,5 +62,3 @@ $(BUILD_DIR):
 
 clean:
 	$(RM) $(BIN_DIR) $(BUILD_DIR) $(DATA_DIR) 
-                    
-.PHONY: all clean

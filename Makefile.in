@@ -31,7 +31,7 @@ all: $(LIB_SBGRAPH)
 
 include sbg/Makefile.include
 include parser/Makefile.include
-#include eval/Makefile.include
+include eval/Makefile.include
 #include test/Makefile.include
 
 $(BUILD_DIR)/%.o : %.cpp

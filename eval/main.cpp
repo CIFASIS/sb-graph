@@ -83,7 +83,7 @@ void parseEvalProgramFromFile(std::string fname, Impl impl, bool debug)
         break;
     }
 
-    SBG::Eval::ProgramVisitor program_visit(fact, debug); 
+    SBG::Eval::ProgramVisitor program_visit(*fact, debug); 
     SBG::Eval::ProgramIO visit_result = boost::apply_visitor(
       program_visit, parser_result
     );

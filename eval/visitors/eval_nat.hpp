@@ -42,18 +42,10 @@ struct EvalNat : public boost::static_visitor<LIB::NAT> {
   LIB::NAT operator()(AST::BinOp v) const;
   LIB::NAT operator()(AST::Call v) const;
   LIB::NAT operator()(AST::Interval v) const;
-  LIB::NAT operator()(AST::InterUnaryOp v) const;
-  LIB::NAT operator()(AST::InterBinOp v) const;
   LIB::NAT operator()(AST::MultiDimInter v) const;
-  LIB::NAT operator()(AST::MDInterUnaryOp v) const;
-  LIB::NAT operator()(AST::MDInterBinOp v) const;
   LIB::NAT operator()(AST::Set v) const;
-  LIB::NAT operator()(AST::SetUnaryOp v) const;
-  LIB::NAT operator()(AST::SetBinOp v) const;
   LIB::NAT operator()(AST::LinearExp v) const;
-  LIB::NAT operator()(AST::LExpBinOp v) const;
   LIB::NAT operator()(AST::MDLExp v) const;
-  LIB::NAT operator()(AST::MDLExpBinOp v) const;
   LIB::NAT operator()(AST::LinearMap v) const;
   LIB::NAT operator()(AST::PWLMap v) const;
   LIB::NAT operator()(AST::SBG v) const;

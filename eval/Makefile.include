@@ -14,15 +14,7 @@ EVAL_SRC := \
     $(VISIT_DIR)/program_visitor.cpp \
     $(VISIT_DIR)/stm_visitor.cpp \
     $(VISIT_DIR)/eval_expr.cpp \
-    $(VISIT_DIR)/eval_dsbg.cpp \
-    $(VISIT_DIR)/eval_sbg.cpp \
-    $(VISIT_DIR)/eval_pw.cpp \
-    $(VISIT_DIR)/eval_map.cpp \
-    $(VISIT_DIR)/eval_mdle.cpp \
     $(VISIT_DIR)/eval_le.cpp \
-    $(VISIT_DIR)/eval_set.cpp \
-    $(VISIT_DIR)/eval_mdi.cpp \
-    $(VISIT_DIR)/eval_interval.cpp \
     $(VISIT_DIR)/eval_rat.cpp \
     $(VISIT_DIR)/eval_int.cpp \
     $(VISIT_DIR)/eval_nat.cpp \

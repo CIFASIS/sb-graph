@@ -35,13 +35,15 @@ namespace Eval {
 
 struct StmVisitor : public boost::static_visitor<void> {
   public:
-  StmVisitor();
+  StmVisitor(unsigned int nmbr_dims, const LIB::PWMapAF &fact);
  
   VarEnv env();
   void operator()(AST::Assign assgn) const;
   void operator()(AST::ConfigDims cfg) const; 
 
   private:
+  unsigned int nmbr_dims_;
+  const LIB::PWMapAF &fact_;
   mutable VarEnv env_;
 };
 

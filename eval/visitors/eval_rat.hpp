@@ -43,18 +43,10 @@ struct EvalRat : public boost::static_visitor<LIB::RATIONAL> {
   LIB::RATIONAL operator()(AST::BinOp v) const;
   LIB::RATIONAL operator()(AST::Call v) const;
   LIB::RATIONAL operator()(AST::Interval v) const;
-  LIB::RATIONAL operator()(AST::InterUnaryOp v) const;
-  LIB::RATIONAL operator()(AST::InterBinOp v) const;
   LIB::RATIONAL operator()(AST::MultiDimInter v) const;
-  LIB::RATIONAL operator()(AST::MDInterUnaryOp v) const;
-  LIB::RATIONAL operator()(AST::MDInterBinOp v) const;
   LIB::RATIONAL operator()(AST::Set v) const;
-  LIB::RATIONAL operator()(AST::SetUnaryOp v) const;
-  LIB::RATIONAL operator()(AST::SetBinOp v) const;
   LIB::RATIONAL operator()(AST::LinearExp v) const;
-  LIB::RATIONAL operator()(AST::LExpBinOp v) const;
   LIB::RATIONAL operator()(AST::MDLExp v) const;
-  LIB::RATIONAL operator()(AST::MDLExpBinOp v) const;
   LIB::RATIONAL operator()(AST::LinearMap v) const;
   LIB::RATIONAL operator()(AST::PWLMap v) const;
   LIB::RATIONAL operator()(AST::SBG v) const;

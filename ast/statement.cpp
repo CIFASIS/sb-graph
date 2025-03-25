@@ -39,7 +39,7 @@ std::ostream &operator<<(std::ostream &out, const Assign &asgn)
 ConfigDims::ConfigDims() : nmbr_dims_() {}
 ConfigDims::ConfigDims(LIB::NAT nmbr_dims) : nmbr_dims_() {
   if (nmbr_dims > 0)
-    set_nmbr_dims(nmbr_dims);
+    nmbr_dims_ = nmbr_dims;
 
   else
     Util::ERROR("ConfigDims: dimension should be greater than 0\n");

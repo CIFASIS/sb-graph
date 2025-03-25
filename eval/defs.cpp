@@ -23,6 +23,22 @@ namespace SBG {
 
 namespace Eval {
 
+// Types -----------------------------------------------------------------------
+
+Boolean::Boolean() : b_() {}
+Boolean::Boolean(bool b) : b_(b) {}
+
+std::ostream &operator<<(std::ostream &out, const Boolean &b)
+{
+  if (b.b_)
+    out << "true";
+
+  else
+    out << "false";
+
+  return out;
+}
+
 // Environments ----------------------------------------------------------------
 
 VarEnv::VarEnv() : mapping_() {}

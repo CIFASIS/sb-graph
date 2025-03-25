@@ -42,7 +42,9 @@ LIB::INT EvalInt::operator()(AST::VariableName v) const
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (std::holds_alternative<LIB::MD_NAT>(value)) {
+    if (std::holds_alternative<LIB::NAT>(value))
+      return (LIB::INT)(std::get<LIB::NAT>(value));
+    else if (std::holds_alternative<LIB::MD_NAT>(value)) {
       LIB::MD_NAT x = std::get<LIB::MD_NAT>(value);
       return (LIB::INT)(x[0]);
     }
@@ -60,7 +62,7 @@ LIB::INT EvalInt::operator()(AST::UnaryOp v) const
 {
   LIB::INT x = boost::apply_visitor(*this, v.expr());
   switch (v.op()) {
-    case AST::UnOp::neg:
+    case AST::UnOp::oppo:
       return -x;
 
     default:
@@ -104,33 +106,9 @@ LIB::INT EvalInt::operator()(AST::Interval v) const
   return 0;
 }
 
-LIB::INT EvalInt::operator()(AST::InterUnaryOp v) const
-{
-  Util::ERROR("EvalInt: trying to evaluate InterUnaryOp ", v, "\n");
-  return 0;
-}
-
-LIB::INT EvalInt::operator()(AST::InterBinOp v) const
-{
-  Util::ERROR("EvalInt: trying to evaluate InterBinOp ", v, "\n");
-  return 0;
-}
-
 LIB::INT EvalInt::operator()(AST::MultiDimInter v) const
 {
   Util::ERROR("EvalInt: trying to evaluate MultiDimInter ", v, "\n");
-  return 0;
-}
-
-LIB::INT EvalInt::operator()(AST::MDInterUnaryOp v) const
-{
-  Util::ERROR("EvalInt: trying to evaluate MDInterUnaryOp ", v, "\n");
-  return 0;
-}
-
-LIB::INT EvalInt::operator()(AST::MDInterBinOp v) const
-{
-  Util::ERROR("EvalInt: trying to evaluate MDInterBinOp ", v, "\n");
   return 0;
 }
 
@@ -140,39 +118,15 @@ LIB::INT EvalInt::operator()(AST::Set v) const
   return 0;
 }
 
-LIB::INT EvalInt::operator()(AST::SetUnaryOp v) const
-{
-  Util::ERROR("EvalInt: trying to evaluate SetUnaryOp ", v, "\n");
-  return 0;
-}
-
-LIB::INT EvalInt::operator()(AST::SetBinOp v) const
-{
-  Util::ERROR("EvalInt: trying to evaluate SetBinOp ", v, "\n");
-  return 0;
-}
-
 LIB::INT EvalInt::operator()(AST::LinearExp v) const
 {
   Util::ERROR("EvalInt: trying to evaluate LinearExp ", v, "\n");
   return 0;
 }
 
-LIB::INT EvalInt::operator()(AST::LExpBinOp v) const
-{
-  Util::ERROR("EvalInt: trying to evaluate LExpBinOp ", v, "\n");
-  return 0;
-}
-
 LIB::INT EvalInt::operator()(AST::MDLExp v) const
 {
   Util::ERROR("EvalInt: trying to evaluate MDLExp ", v, "\n");
-  return 0;
-}
-
-LIB::INT EvalInt::operator()(AST::MDLExpBinOp v) const
-{
-  Util::ERROR("EvalInt: trying to evaluate MDLExpBinOp ", v, "\n");
   return 0;
 }
 

@@ -40,7 +40,17 @@ namespace Eval {
 
 // Type definitions ------------------------------------------------------------
 
-typedef std::variant<LIB::MD_NAT
+struct Boolean {
+  bool b_;
+
+  Boolean();
+  Boolean(bool b);
+};
+std::ostream &operator<<(std::ostream &out, const Boolean &b);
+
+typedef std::variant<Boolean
+  , LIB::NAT
+  , LIB::MD_NAT
   , LIB::RATIONAL
   , LIB::Interval
   , LIB::SetPiece

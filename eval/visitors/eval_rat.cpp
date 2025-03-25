@@ -45,12 +45,13 @@ LIB::RATIONAL EvalRat::operator()(AST::VariableName v) const
     ExprBaseType value = *v_opt;
     if (std::holds_alternative<LIB::RATIONAL>(value))
       return std::get<LIB::RATIONAL>(value);
-
-    if (std::holds_alternative<LIB::MD_NAT>(value)) {
+    else if (std::holds_alternative<LIB::MD_NAT>(value)) {
       LIB::MD_NAT x = std::get<LIB::MD_NAT>(value);
       if (x.arity() == 1)
         return LIB::RATIONAL(x[0]);
-   }
+    }
+    else if (std::holds_alternative<LIB::NAT>(value))
+      return LIB::RATIONAL(std::get<LIB::NAT>(value));
 
     else {
       Util::ERROR("EvalRat: variable ", v, " is not rational\n");
@@ -67,7 +68,7 @@ LIB::RATIONAL EvalRat::operator()(AST::UnaryOp v) const
   EvalRat visit_rat(env_);
   LIB::RATIONAL result = boost::apply_visitor(visit_rat, v.expr());
   switch (v.op()) {
-    case AST::UnOp::neg:
+    case AST::UnOp::oppo:
       return -result;
 
     default:
@@ -114,33 +115,9 @@ LIB::RATIONAL EvalRat::operator()(AST::Interval v) const
   return LIB::RATIONAL(0, 1);
 }
 
-LIB::RATIONAL EvalRat::operator()(AST::InterUnaryOp v) const
-{
-  Util::ERROR("EvalRat: trying to evaluate InterUnaryOp ", v, "\n");
-  return LIB::RATIONAL(0, 1);
-}
-
-LIB::RATIONAL EvalRat::operator()(AST::InterBinOp v) const
-{
-  Util::ERROR("EvalRat: trying to evaluate InterBinOp ", v, "\n");
-  return LIB::RATIONAL(0, 1);
-}
-
 LIB::RATIONAL EvalRat::operator()(AST::MultiDimInter v) const
 {
   Util::ERROR("EvalRat: trying to evaluate MultiDimInter ", v, "\n");
-  return LIB::RATIONAL(0, 1);
-}
-
-LIB::RATIONAL EvalRat::operator()(AST::MDInterUnaryOp v) const
-{
-  Util::ERROR("EvalRat: trying to evaluate MDInterUnaryOp ", v, "\n");
-  return LIB::RATIONAL(0, 1);
-}
-
-LIB::RATIONAL EvalRat::operator()(AST::MDInterBinOp v) const
-{
-  Util::ERROR("EvalRat: trying to evaluate MDInterBinOp ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
@@ -150,39 +127,15 @@ LIB::RATIONAL EvalRat::operator()(AST::Set v) const
   return LIB::RATIONAL(0, 1);
 }
 
-LIB::RATIONAL EvalRat::operator()(AST::SetUnaryOp v) const
-{
-  Util::ERROR("EvalRat: trying to evaluate SetUnaryOp ", v, "\n");
-  return LIB::RATIONAL(0, 1);
-}
-
-LIB::RATIONAL EvalRat::operator()(AST::SetBinOp v) const
-{
-  Util::ERROR("EvalRat: trying to evaluate SetBinOp ", v, "\n");
-  return LIB::RATIONAL(0, 1);
-}
-
 LIB::RATIONAL EvalRat::operator()(AST::LinearExp v) const
 {
   Util::ERROR("EvalRat: trying to evaluate LinearExp ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
-LIB::RATIONAL EvalRat::operator()(AST::LExpBinOp v) const
-{
-  Util::ERROR("EvalRat: trying to evaluate LExpBinOp ", v, "\n");
-  return LIB::RATIONAL(0, 1);
-}
-
 LIB::RATIONAL EvalRat::operator()(AST::MDLExp v) const
 {
   Util::ERROR("EvalRat: trying to evaluate MDLExp ", v, "\n");
-  return LIB::RATIONAL(0, 1);
-}
-
-LIB::RATIONAL EvalRat::operator()(AST::MDLExpBinOp v) const
-{
-  Util::ERROR("EvalRat: trying to evaluate MDLExpBinOp ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 

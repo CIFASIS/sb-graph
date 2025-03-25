@@ -24,8 +24,9 @@
 #ifndef AST_VISITOR_EVALEXP
 #define AST_VISITOR_EVALEXP
 
-#include "eval/visitors/eval_dsbg.hpp"
-#include "eval/visitors/eval_sbg.hpp"
+#include "eval/visitors/eval_nat.hpp"
+#include "eval/visitors/eval_rat.hpp"
+#include "eval/visitors/eval_le.hpp"
 
 namespace SBG {
 
@@ -44,18 +45,10 @@ struct EvalExpression : public boost::static_visitor<ExprBaseType> {
   ExprBaseType operator()(AST::BinOp v) const;
   ExprBaseType operator()(AST::Call v) const;
   ExprBaseType operator()(AST::Interval v) const;
-  ExprBaseType operator()(AST::InterUnaryOp v) const;
-  ExprBaseType operator()(AST::InterBinOp v) const;
   ExprBaseType operator()(AST::MultiDimInter v) const;
-  ExprBaseType operator()(AST::MDInterUnaryOp v) const;
-  ExprBaseType operator()(AST::MDInterBinOp v) const;
   ExprBaseType operator()(AST::Set v) const;
-  ExprBaseType operator()(AST::SetUnaryOp v) const;
-  ExprBaseType operator()(AST::SetBinOp v) const;
   ExprBaseType operator()(AST::LinearExp v) const;
-  ExprBaseType operator()(AST::LExpBinOp v) const;
   ExprBaseType operator()(AST::MDLExp v) const;
-  ExprBaseType operator()(AST::MDLExpBinOp v) const;
   ExprBaseType operator()(AST::LinearMap v) const;
   ExprBaseType operator()(AST::PWLMap v) const;
   ExprBaseType operator()(AST::SBG v) const;

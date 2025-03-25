@@ -23,13 +23,14 @@ namespace SBG {
 
 namespace Eval {
 
-StmVisitor::StmVisitor() : env_() {}
+StmVisitor::StmVisitor(unsigned int nmbr_dims, const LIB::PWMapAF &fact)
+  : nmbr_dims_(nmbr_dims), fact_(fact), env_() {}
 
 VarEnv StmVisitor::env() { return env_; }
 
 void StmVisitor::operator()(AST::Assign assgn) const 
 {
-  EvalExpression eval_expr(env_);
+  EvalExpression eval_expr(nmbr_dims_, fact_, env_, false);
   env_.insert(assgn.l(), boost::apply_visitor(eval_expr, assgn.r()));
 
   return;

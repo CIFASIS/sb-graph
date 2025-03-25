@@ -26,20 +26,14 @@
 #ifndef EXPR_PARSER_HPP
 #define EXPR_PARSER_HPP
 
-#define BOOST_SPIRIT_DEBUG
-
-#include <boost/phoenix.hpp>
-#include <boost/rational.hpp>
-
 #include "ast/expr.hpp"
 #include "parser/skipper.hpp"
-#include "sbg/rational.hpp"
 
 namespace SBG {
 
 namespace Parser {
 
-namespace phx = boost::phoenix;
+namespace qi = boost::spirit::qi;
 
 template <typename Iterator>
 struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {

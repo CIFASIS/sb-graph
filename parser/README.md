@@ -1,3 +1,6 @@
 # Set-Based Graph Parser
 
-This module was intended to provide the user with a tool that would allow for easy testing of the library. Currently, when compiled, the executable /parser/sbg-parser is created that allows files as input. Many test cases are presented in the /test folder. 
+The SBG library started with only the /sbg directory. Then the project was
+extended with a parser and evaluator to test algorithms independently of any
+client application. As such, to make use of the SBG algorithms this module is
+not necessary, but a developing tool used for debugging.

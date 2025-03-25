@@ -218,7 +218,7 @@ std::ostream &operator<<(std::ostream &out, const DSBG &g);
 // Composite expressions -------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-enum class UnOp { neg, card, comp };
+enum class UnOp { oppo, card, comp };
 std::ostream &operator<<(std::ostream &out, const UnOp &op);
 
 struct UnaryOp {

@@ -17,15 +17,47 @@
 
  ******************************************************************************/
 
-#include "parser/sbg_program.hpp"
-#include "parser/sbg_program_def.hpp"
+#ifndef PROGRAM_DEF_PARSER_HPP
+#define PROGRAM_DEF_PARSER_HPP
+
+#include <boost/phoenix.hpp>
+
+#include "ast/sbg_program.hpp"
+
+
+// Adapt structures ------------------------------------------------------------
+
+BOOST_FUSION_ADAPT_STRUCT(
+  SBG::AST::Program
+  , (SBG::LIB::NAT, nmbr_dims_)
+    (SBG::AST::StatementList, stms_)
+    (SBG::AST::ExprList, exprs_)
+)
+
+// SBG program parser ----------------------------------------------------------
 
 namespace SBG {
 
 namespace Parser {
 
-template struct SBGProgramRule<StrIt>;
+namespace phx = boost::phoenix;
+
+template <typename Iterator>
+SBGProgramRule<Iterator>::SBGProgramRule(Iterator &it) : 
+  SBGProgramRule::base_type(program_comments), 
+  it(it), 
+  expr(it),
+  stm(it)
+{
+  program_comments = (stm.stms >> *(expr.expr >> expr.SEMI))
+    [qi::_val = phx::construct<AST::Program>(
+      phx::construct<AST::StatementList>(qi::_1)
+      , phx::construct<AST::ExprList>(qi::_2)
+    )];
+};
 
 } // namespace Parser
 
 } // namespace SBG
+
+#endif

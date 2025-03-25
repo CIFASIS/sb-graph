@@ -17,46 +17,10 @@
 
  ******************************************************************************/
 
-#include <fstream>
 #include <getopt.h>
 
-#include "parser/sbg_program.hpp"
+#include "parser/parser.hpp"
 #include "util/debug.hpp"
-
-void parseProgramFromFile(std::string fname)
-{
-  std::ifstream in(fname.c_str());
-  if (in.fail()) 
-    SBG::Util::ERROR("Unable to open file ", fname, "\n");
-  in.unsetf(std::ios::skipws);
-
-  std::string str(
-    (std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>()
-  );
-  SBG::Parser::StrIt iter = str.begin();
-  SBG::Parser::StrIt end = str.end();
-
-  SBG::Parser::SBGProgramRule g(iter); // Grammar
-  SBG::AST::SBGProgram result;
-  bool r = boost::spirit::qi::phrase_parse(
-    iter, end, g, SBG::Parser::Skipper<SBG::Parser::StrIt>(), result
-  );
-
-  std::cout << "-------------------------\n";
-  if (r && iter == end) {
-    std::cout << "Parsing succeeded\n";
-    std::cout << "-------------------------\n";
-    std::cout << "\n" << result;
-  }
-  else {
-    std::string rest(iter, end);
-    std::cout << "Parsing failed\n";
-    std::cout << "-------------------------\n";
-    std::cout << "\nstopped at: \n" << rest << "\n";
-  }
-
-  return;
-}
 
 void usage()
 {
@@ -194,7 +158,7 @@ int main(int argc, char** argv)
   }
 
   if (!filename.empty())
-    parseProgramFromFile(filename);
+    SBG::Parser::parseProgramFromFile(filename);
   else
     SBG::Util::ERROR("A filename should be provided\n");
 

@@ -304,7 +304,7 @@ std::ostream &operator<<(std::ostream &out, const DSBG &g)
 std::ostream &operator<<(std::ostream &out, const UnOp &op)
 {
   switch (op) {
-    case UnOp::neg:
+    case UnOp::oppo:
       out << "-";
       break;
 

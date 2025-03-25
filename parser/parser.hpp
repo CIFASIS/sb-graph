@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*****************************************************************************
 
  This file is part of Set--Based Graph Library.
 
@@ -17,15 +17,21 @@
 
  ******************************************************************************/
 
+#ifndef PARSER_HPP
+#define PARSER_HPP
+
+#include <string>
+
 #include "parser/sbg_program.hpp"
-#include "parser/sbg_program_def.hpp"
 
 namespace SBG {
 
-namespace Parser {
+namespace Parser  {
 
-template struct SBGProgramRule<StrIt>;
+AST::SBGProgram parseProgramFromFile(std::string fname);
 
 } // namespace Parser
 
 } // namespace SBG
+
+#endif

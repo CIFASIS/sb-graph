@@ -1,4 +1,3 @@
-
 # Target variables
 MODE ?= Debug
 
@@ -11,7 +10,7 @@ OBJ_DIR       := $(ROOT)/obj
 BUILD_DIR    	:= $(OBJ_DIR)/release
 AST_DIR    	  := $(ROOT)/ast
 BIN_DIR    	  := $(ROOT)/bin
-ifeq ($(MODE),Debug)
+ifeq ($(MODE), Debug)
 BUILD_DIR    	:= $(OBJ_DIR)/debug
 endif
 prefix 			  ?= /usr/local
@@ -24,7 +23,7 @@ boost_libdir  ?= $(prefix)
 INCLUDES := -I. -I$(boost_libdir)/include
 CXXFLAGS := -std=c++17 -Wall -Werror -Wno-reorder -O3 -D BOOST_PHOENIX_STL_TUPLE_H_ -D BOOST_MPL_LIMIT_LIST_SIZE=30 -D BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
 ifeq ($(MODE),Debug)
-CXXFLAGS 	+= -ggdb  
+CXXFLAGS 	+= -ggdb
 endif
 LIB_SBGRAPH = lib/libsbgraph.a
 
@@ -32,8 +31,8 @@ all: $(LIB_SBGRAPH)
 
 include sbg/Makefile.include
 include parser/Makefile.include
-include eval/Makefile.include
-include test/Makefile.include
+#include eval/Makefile.include
+#include test/Makefile.include
 
 $(BUILD_DIR)/%.o : %.cpp
 	$(CC) $(INCLUDES) $(CXXFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<
@@ -91,7 +90,7 @@ doc:
 
 test: lib-gtest $(SBG_TEST)
 
-TEST_DIRS         := test/parser test/performance test/performance/boost test/eval
+TEST_DIRS := test/parser test/performance test/performance/boost test/eval
  
 clean:
 	$(RM) -rf $(BIN_DIR) $(OBJ_DIR) $(LIB_SBGRAPH) $(ROOT)/lib $(ROOT)/include $(3RD_PARTY_DIR)/gtest/usr

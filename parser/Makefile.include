@@ -8,6 +8,7 @@ all: $(PARSER)
 
 PARSER_SRC := \
 	  $(PARSER_DIR)/main.cpp \
+	  $(PARSER_DIR)/parser.cpp \
     $(AST_DIR)/expr.cpp \
     $(PARSER_DIR)/expr.cpp \
     $(AST_DIR)/statement.cpp \

@@ -50,8 +50,11 @@ $(BUILD_DIR)/%.o : %.cpp | create-folders
 	$(CC) $(INCLUDES) $(CXXFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<
 	$(CC) $(INCLUDES) -c $< -o $@ $(CXXFLAGS)
 
-$(LIB_SBGRAPH): create-folders $(UTIL_OBJ) $(SBG_OBJ) $(PARSER_OBJ) $(EVAL_OBJ)
-	$(AR) rcs $(LIB_SBGRAPH) $(UTIL_OBJ) $(SBG_OBJ) $(PARSER_OBJ) $(EVAL_OBJ)
+LIB_SRC := $(shell find ast parser sbg eval util -type f -name "*.cpp")
+LIB_OBJ = $(addprefix $(BUILD_DIR)/, $(LIB_SRC:.cpp=.o))
+
+$(LIB_SBGRAPH): create-folders $(LIB_OBJ)
+	$(AR) rcs $(LIB_SBGRAPH) $(LIB_OBJ)
 
 #///////////////////////////////////////////////////////////////////////////////
 # Library Installation ---------------------------------------------------------
@@ -92,7 +95,7 @@ ifeq ("$(wildcard $(3RD_PARTY_DIR)/gtest/usr/lib)","")
 endif
 
 test: lib-gtest
-	@cd $(TEST_DIR) && make
+	@cd $(TEST_DIR) && ./compile_run_tests.sh
 
 #///////////////////////////////////////////////////////////////////////////////
 # Documentation ----------------------------------------------------------------

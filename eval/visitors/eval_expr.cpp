@@ -184,12 +184,12 @@ auto diff_visitor_ = Overload{
 };
 
 auto empty_visitor_ = Overload {
-  [](LIB::Interval a) { return a.isEmpty(); },
-  [](LIB::MultiDimInter a) { return a.isEmpty(); },
-  [](LIB::Set a) { return a.isEmpty(); },
+  [](LIB::Interval a) { return Boolean(a.isEmpty()); },
+  [](LIB::MultiDimInter a) { return Boolean(a.isEmpty()); },
+  [](LIB::Set a) { return Boolean(a.isEmpty()); },
   [](auto a) { 
     Util::ERROR("empty_visitor_: wrong argument ", a, " for isEmpty\n"); 
-    return false;
+    return Boolean();
   }
 };
 
@@ -556,25 +556,20 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
       case Eval::Func::empty: 
         if (eval_args.size() == 1) {
           arity_ok = true;
-
-          bool res = std::visit(empty_visitor_, eval_args[0]);
-          return LIB::MD_NAT(res);
+          return std::visit(empty_visitor_, eval_args[0]);
         }
         break;
 
       case Eval::Func::min:
         if (eval_args.size() == 1) {
           arity_ok = true;
-
-          LIB::MD_NAT result = std::visit(min_visitor_, eval_args[0]);
-          return result;
+          return std::visit(min_visitor_, eval_args[0]);
         }
         break;
 
       case Eval::Func::max:
         if (eval_args.size() == 1) {
           arity_ok = true;
-
           return std::visit(max_visitor_, eval_args[0]);
         }
         break;

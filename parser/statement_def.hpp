@@ -20,7 +20,10 @@
 #ifndef STATEMENT_DEF_PARSER_HPP
 #define STATEMENT_DEF_PARSER_HPP
 
-#include <boost/phoenix.hpp>
+#include <boost/phoenix/stl/container.hpp>
+#include <boost/phoenix/core.hpp>
+#include <boost/phoenix/operator.hpp>
+#include <boost/phoenix/object.hpp>
 
 #include "ast/statement.hpp"
 

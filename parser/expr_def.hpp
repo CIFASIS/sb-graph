@@ -20,7 +20,9 @@
 #ifndef EXPR_DEF_PARSER_HPP
 #define EXPR_DEF_PARSER_HPP
 
-#include <boost/phoenix.hpp>
+#include <boost/phoenix/core.hpp>
+#include <boost/phoenix/operator.hpp>
+#include <boost/phoenix/object.hpp>
 
 #include "ast/expr.hpp"
 #include "sbg/rational.hpp"

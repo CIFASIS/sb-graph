@@ -35,6 +35,9 @@
 
 #include "sbg/multidim_inter.hpp"
 
+#include <forward_list>
+#include <algorithm>
+
 namespace SBG {
 
 namespace LIB {
@@ -309,9 +312,86 @@ struct OrderedDenseSet : public SetDelegate {
    */
   MDIOrdSet traverse(SetPiece (SetPiece::*f)(const SetPiece &) const
     , const MDIOrdSet &other) const;
+
+  
 };
 
 typedef const OrderedDenseSet &OrdDenseSetCRef;
+
+////////////////////////////////////////////////////////////////////////////////
+// Ordered Set Implementation (concrete delegate) ------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+
+struct OrderedSet : public SetDelegate {
+  member_class(MDIOrdSet, pieces);
+
+  ~OrderedSet();
+  OrderedSet();
+  OrderedSet(MD_NAT x);
+  OrderedSet(Interval i);
+  OrderedSet(SetPiece mdi);
+  OrderedSet(MDIOrdSet pieces);
+
+  SetDelegPtr clone() const override;
+
+  struct Iterator : public SetDelegate::Iterator {
+    member_class(MDIOrdSet::const_iterator, it);
+
+    Iterator(MDIOrdSet::const_iterator it);
+    void operator++() override;
+    bool operator!=(const SetDelegate::Iterator &other) const override;
+    const SetPiece &operator*() const override;
+  };
+
+  std::shared_ptr<SetDelegate::Iterator> begin() const override;
+  std::shared_ptr<SetDelegate::Iterator> end() const override;
+
+  std::size_t size() const override;
+  void emplace(const SetPiece &mdi) override;
+  void emplaceBack(const SetPiece &mdi) override;
+
+  bool operator==(const SetDelegate &other) const override;
+  bool operator!=(const SetDelegate &other) const override;
+  std::ostream &print(std::ostream &out) const override;
+
+  // Traditional set operations ------------------------------------------------
+
+  unsigned int cardinal() const override;
+  bool isEmpty() const override;
+  MD_NAT minElem() const override;
+  MD_NAT maxElem() const override;
+  SetDelegPtr intersection(const SetDelegate &other) const override;
+  SetDelegPtr cup(const SetDelegate &other) const override;
+  SetDelegPtr complement() const;
+  SetDelegPtr difference(const SetDelegate &other) const override;
+
+  // Extra operations ----------------------------------------------------------
+
+  std::size_t arity() const override;
+  SetDelegPtr disjointCup(const SetDelegate &other) const override;
+  SetDelegPtr filterSet(bool (*f)(const SetPiece &mdi)) const override;
+  SetDelegPtr offset(const MD_NAT &off) const override;
+  SetDelegPtr compact() const override;
+
+  private:
+
+  /**
+   * @brief Performs operation f between a piece of s1 and a piece of s2. At the
+   * start begins with both minimum elements, and advances the iterator of the
+   * set with the piece that has the minimum end. This is repeated until one of
+   * the two collections is consumed. Then, all the remaining pieces of the
+   * other set are also inserted.
+   */
+  MDIOrdSet traverse(const MDIOrdSet &other) const;
+    
+  SetDelegPtr complementAtom() const;
+    
+};
+
+typedef const OrderedSet &OrdSetCRef;
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Set Implementation (delegator) --------------------------------------

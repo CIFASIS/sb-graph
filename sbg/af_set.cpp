@@ -71,6 +71,31 @@ Set OrdDenseAF::createSet(const SetPiece &mdi) const
   return Set(std::make_unique<OrderedDenseSet>(mdi));
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Ordered Set -----------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+Set OrdAF::createSet() const
+{
+  return Set(std::make_unique<OrderedSet>());
+}
+
+Set OrdAF::createSet(const MD_NAT &x) const
+{
+  return Set(std::make_unique<OrderedSet>(x));
+}
+
+Set OrdAF::createSet(const Interval &i) const
+{
+  return Set(std::make_unique<OrderedSet>(i));
+}
+
+Set OrdAF::createSet(const SetPiece &mdi) const
+{
+  return Set(std::make_unique<OrderedSet>(mdi));
+}
+
+
 } // namespace LIB
 
 } // namespace SBG

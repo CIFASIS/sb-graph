@@ -59,6 +59,13 @@ struct OrdDenseAF : public SetAF {
   Set createSet(const SetPiece &mdi) const override;
 };
 
+struct OrdAF : public SetAF {
+  Set createSet()  const override;
+  Set createSet(const MD_NAT &x) const override;
+  Set createSet(const Interval &i) const override;
+  Set createSet(const SetPiece &mdi) const override;
+};
+
 } // namespace LIB
 
 }  // namespace SBG

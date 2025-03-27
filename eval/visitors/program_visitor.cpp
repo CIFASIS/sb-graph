@@ -29,7 +29,7 @@ ProgramVisitor::ProgramVisitor(const LIB::PWMapAF &fact, bool debug)
 ProgramIO ProgramVisitor::operator()(AST::Program p) const 
 { 
   LIB::NAT dims = 1;
-  AST::StatementList stms;
+  StmEvalList stms;
   ExprEvalList exprs;
 
   AST::IsConfig cfg_visit;
@@ -43,8 +43,8 @@ ProgramIO ProgramVisitor::operator()(AST::Program p) const
   StmVisitor stm_visit(dims, fact_);
   for (AST::Statement s : p.stms()) {
     if (!boost::apply_visitor(cfg_visit, s)) {
-      boost::apply_visitor(stm_visit, s);
-      stms.push_back(s);
+      StmEval se = boost::apply_visitor(stm_visit, s);
+      stms.push_back(se);
     }
   }
 

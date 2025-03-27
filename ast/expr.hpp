@@ -50,10 +50,9 @@ struct LinearMap;
 struct PWLMap;
 struct SBG;
 struct DSBG;
+struct ParenExpr;
 
-typedef std::string VariableName;
-
-typedef boost::variant<Natural, VariableName,
+typedef boost::variant<Natural, Name,
   boost::recursive_wrapper<Rational>,
   boost::recursive_wrapper<UnaryOp>, 
   boost::recursive_wrapper<BinOp>, 
@@ -66,7 +65,8 @@ typedef boost::variant<Natural, VariableName,
   boost::recursive_wrapper<LinearMap>,
   boost::recursive_wrapper<PWLMap>,
   boost::recursive_wrapper<SBG>,
-  boost::recursive_wrapper<DSBG>> Expr;
+  boost::recursive_wrapper<DSBG>,
+  boost::recursive_wrapper<ParenExpr>> Expr;
 typedef std::vector<Expr> ExprList;
 std::ostream &operator<<(std::ostream &out, const ExprList &el);
 
@@ -258,6 +258,16 @@ struct Call {
   bool operator==(const Call &c) const;
 };
 std::ostream &operator<<(std::ostream &out, const Call &c);
+
+struct ParenExpr {
+  member_class(Expr, e);
+
+  ParenExpr();
+  ParenExpr(Expr e);
+
+  bool operator==(const ParenExpr &pe) const;
+};
+std::ostream &operator<<(std::ostream &out, const ParenExpr &pe);
 
 } // namespace AST
 

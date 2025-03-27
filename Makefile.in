@@ -56,6 +56,10 @@ LIB_OBJ = $(addprefix $(BUILD_DIR)/, $(LIB_SRC:.cpp=.o))
 $(LIB_SBGRAPH): create-folders $(LIB_OBJ)
 	$(AR) rcs $(LIB_SBGRAPH) $(LIB_OBJ)
 
+DEPS = $(addprefix $(BUILD_DIR)/, $(LIB_SRC:.cpp=.d))
+
+-include $(DEPS)
+
 #///////////////////////////////////////////////////////////////////////////////
 # Library Installation ---------------------------------------------------------
 #///////////////////////////////////////////////////////////////////////////////

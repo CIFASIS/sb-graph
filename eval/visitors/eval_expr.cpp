@@ -459,7 +459,7 @@ ExprBaseType EvalExpression::operator()(AST::Rational v) const
   return boost::apply_visitor(EvalRat(env_), AST::Expr(v));
 }
 
-ExprBaseType EvalExpression::operator()(AST::VariableName v) const 
+ExprBaseType EvalExpression::operator()(AST::Name v) const 
 {
   MaybeEBT v_opt = env_[v];
   if (v_opt)
@@ -864,6 +864,11 @@ ExprBaseType EvalExpression::operator()(AST::DSBG v) const
   } 
 
   return LIB::DSBG(fact_, V, Vmap, mapB, mapD, Emap, subE);
+}
+
+ExprBaseType EvalExpression::operator()(AST::ParenExpr v) const
+{
+  return boost::apply_visitor(*this, v.e());
 }
 
 } // namespace Eval

@@ -37,7 +37,7 @@ LIB::NAT EvalNat::operator()(AST::Rational v) const
   return 0; 
 }
 
-LIB::NAT EvalNat::operator()(AST::VariableName v) const 
+LIB::NAT EvalNat::operator()(AST::Name v) const 
 { 
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
@@ -147,6 +147,11 @@ LIB::NAT EvalNat::operator()(AST::DSBG v) const
 {
   Util::ERROR("EvalNat: trying to evaluate DSBG ", v, "\n");
   return 0;
+}
+
+LIB::NAT EvalNat::operator()(AST::ParenExpr v) const
+{
+  return boost::apply_visitor(*this, v.e());
 }
 
 } // namespace Eval

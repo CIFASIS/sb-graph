@@ -26,7 +26,7 @@ namespace Eval {
 EvalInt::EvalInt() : env_() {}
 EvalInt::EvalInt(VarEnv &env) : env_(env) {}
 
-LIB::INT EvalInt::operator()(AST::Natural v) const { return v; }
+LIB::INT EvalInt::operator()(AST::Natural v) const { return (LIB::INT) v; }
 
 LIB::INT EvalInt::operator()(AST::Rational v) const 
 { 
@@ -37,7 +37,7 @@ LIB::INT EvalInt::operator()(AST::Rational v) const
   return 0; 
 }
 
-LIB::INT EvalInt::operator()(AST::VariableName v) const 
+LIB::INT EvalInt::operator()(AST::Name v) const 
 { 
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
@@ -152,6 +152,11 @@ LIB::INT EvalInt::operator()(AST::DSBG v) const
 {
   Util::ERROR("EvalInt: trying to evaluate DSBG ", v, "\n");
   return 0;
+}
+
+LIB::INT EvalInt::operator()(AST::ParenExpr v) const
+{
+  return boost::apply_visitor(*this, v.e());
 }
 
 } // namespace Eval

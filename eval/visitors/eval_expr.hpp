@@ -40,7 +40,7 @@ struct EvalExpression : public boost::static_visitor<ExprBaseType> {
 
   ExprBaseType operator()(AST::Natural v) const;
   ExprBaseType operator()(AST::Rational v) const;
-  ExprBaseType operator()(AST::VariableName v) const;
+  ExprBaseType operator()(AST::Name v) const;
   ExprBaseType operator()(AST::UnaryOp v) const;
   ExprBaseType operator()(AST::BinOp v) const;
   ExprBaseType operator()(AST::Call v) const;
@@ -53,6 +53,7 @@ struct EvalExpression : public boost::static_visitor<ExprBaseType> {
   ExprBaseType operator()(AST::PWLMap v) const;
   ExprBaseType operator()(AST::SBG v) const;
   ExprBaseType operator()(AST::DSBG v) const;
+  ExprBaseType operator()(AST::ParenExpr v) const;
 
   private:
   unsigned int nmbr_dims_;

@@ -33,12 +33,12 @@ LIB::LExp EvalLE::operator()(AST::Natural v) const
 LIB::LExp EvalLE::operator()(AST::Rational v) const
 {
   EvalInt visit_int(env_);
-  LIB::INT p = boost::apply_visitor(visit_int, v.den());
-  LIB::INT q = boost::apply_visitor(visit_int, v.num());
+  LIB::INT p = boost::apply_visitor(visit_int, v.num());
+  LIB::INT q = boost::apply_visitor(visit_int, v.den());
   return LIB::LExp(0, LIB::RATIONAL(p, q));
 }
 
-LIB::LExp EvalLE::operator()(AST::VariableName v) const
+LIB::LExp EvalLE::operator()(AST::Name v) const
 {
   if (v == "x")
     return LIB::LExp(1, 0);
@@ -163,6 +163,10 @@ LIB::LExp EvalLE::operator()(AST::DSBG v) const
   return LIB::LExp(); 
 }
 
+LIB::LExp EvalLE::operator()(AST::ParenExpr v) const
+{
+  return boost::apply_visitor(*this, v.e());
+}
 
 } // namespace Eval
 

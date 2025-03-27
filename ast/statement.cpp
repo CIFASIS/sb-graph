@@ -24,9 +24,9 @@ namespace SBG {
 namespace AST {
 
 Assign::Assign() : l_(), r_() {}
-Assign::Assign(VariableName l, Expr r) : l_(l), r_(r) {}
+Assign::Assign(Name l, Expr r) : l_(l), r_(r) {}
 
-member_imp(Assign, VariableName, l);
+member_imp(Assign, Name, l);
 member_imp(Assign, Expr, r);
 
 std::ostream &operator<<(std::ostream &out, const Assign &asgn)

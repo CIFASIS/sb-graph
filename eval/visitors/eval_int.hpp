@@ -37,7 +37,7 @@ struct EvalInt : public boost::static_visitor<LIB::INT> {
 
   LIB::INT operator()(AST::Natural v) const;
   LIB::INT operator()(AST::Rational v) const;
-  LIB::INT operator()(AST::VariableName v) const;
+  LIB::INT operator()(AST::Name v) const;
   LIB::INT operator()(AST::UnaryOp v) const;
   LIB::INT operator()(AST::BinOp v) const;
   LIB::INT operator()(AST::Call v) const;
@@ -50,6 +50,7 @@ struct EvalInt : public boost::static_visitor<LIB::INT> {
   LIB::INT operator()(AST::PWLMap v) const;
   LIB::INT operator()(AST::SBG v) const;
   LIB::INT operator()(AST::DSBG v) const;
+  LIB::INT operator()(AST::ParenExpr v) const;
 
   private:
   mutable VarEnv env_;

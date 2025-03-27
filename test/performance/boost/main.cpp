@@ -150,7 +150,7 @@ void parseEvalProgramFromFile(int alg, std::string fname, int copies)
       program_visit, parser_result
     );
 
-    for (const SBG::Eval::ExprEval &ev : visit_result.exprs_) {
+    for (const SBG::Eval::ExprEval &ev : visit_result.exprs()) {
       SBG::Eval::ExprBaseType e = std::get<1>(ev);
       if (std::holds_alternative<SBG::LIB::SBG>(e))
         algorithmEvaluator(alg, std::get<SBG::LIB::SBG>(e));

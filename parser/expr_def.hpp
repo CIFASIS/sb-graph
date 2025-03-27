@@ -83,6 +83,8 @@ BOOST_FUSION_ADAPT_STRUCT(
     (SBG::AST::Expr, mapB_)(SBG::AST::Expr, mapD_)(SBG::AST::Expr, Emap_)
 )
 
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::ParenExpr, (SBG::AST::Expr, e_))
+
 namespace SBG {
 
 namespace Parser {
@@ -200,7 +202,8 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
     | (int_expr >> DIV >> int_expr)
       [qi::_val = phx::construct<AST::Rational>(qi::_1, qi::_2)]
     | int_expr[qi::_val = qi::_1]
-    | (OPAREN >> arithmetic_expr>> CPAREN)[qi::_val = qi::_1];
+    | (OPAREN >> arithmetic_expr>> CPAREN)
+      [qi::_val = phx::construct<AST::ParenExpr>(qi::_1)];
 
   rat_term = rat_primary[qi::_val = qi::_1] >> *(mult_symbol >> rat_primary)
     [qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
@@ -321,8 +324,10 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
     | arithmetic_expr;
 
   sbg_factor = (sbg_primary
-      | (OPAREN >> sbg_expr >> CPAREN))[qi::_val = qi::_1]
-    >> -(sbg_unary_symbol[qi::_val = phx::construct<AST::UnaryOp>(qi::_1, qi::_val)]);
+      | (OPAREN >> sbg_expr >> CPAREN)
+        [qi::_val = phx::construct<AST::ParenExpr>(qi::_1)])[qi::_val = qi::_1]
+    >> -(sbg_unary_symbol
+        [qi::_val = phx::construct<AST::UnaryOp>(qi::_1, qi::_val)]);
 
   sbg_expr = (sbg_factor >> binary_symbol >> sbg_factor)
       [qi::_val = phx::construct<AST::BinOp>(qi::_1, qi::_2, qi::_3)]

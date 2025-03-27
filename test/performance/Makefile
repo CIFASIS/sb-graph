@@ -45,6 +45,8 @@ PERF_OBJ=$(addprefix $(BUILD_DIR)/, $(PERF_SRC:.cpp=.o))
 $(PERFORMANCE): $(PERF_OBJ)
 	$(CXX) $(INCLUDES) -o $(PERFORMANCE) $(PERF_OBJ) $(CXXFLAGS) $(LD_FLAGS)
 
+DEPS = $(addprefix $(BUILD_DIR)/, $(BOOST_SRC:.cpp=.d))
+
 BOOST_SRC = $(BOOST_DIR)/main.cpp \
   $(BOOST_DIR)/ordinary_graph.cpp \
   $(BOOST_DIR)/ordinary_graph_builder.cpp
@@ -54,6 +56,10 @@ BOOST_OBJ=$(addprefix $(BUILD_DIR)/, $(BOOST_SRC:.cpp=.o))
 
 $(BOOST_PERF): $(BOOST_OBJ)
 	$(CXX) $(INCLUDES) -o $(BOOST_PERF) $(BOOST_OBJ) $(CXXFLAGS) $(LD_FLAGS)
+
+DEPS_BOOST = $(addprefix $(BUILD_DIR)/boost/, $(BOOST_SRC:.cpp=.d))
+
+-include $(DEPS) $(DEPS_BOOST)
 
 #///////////////////////////////////////////////////////////////////////////////
 # Cleaning --------------------------------------------------------------------- 

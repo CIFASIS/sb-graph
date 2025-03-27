@@ -33,13 +33,13 @@ namespace SBG {
 
 namespace Eval {
 
-struct StmVisitor : public boost::static_visitor<void> {
+struct StmVisitor : public boost::static_visitor<StmEval> {
   public:
   StmVisitor(unsigned int nmbr_dims, const LIB::PWMapAF &fact);
  
   VarEnv env();
-  void operator()(AST::Assign assgn) const;
-  void operator()(AST::ConfigDims cfg) const; 
+  StmEval operator()(AST::Assign assgn) const;
+  StmEval operator()(AST::ConfigDims cfg) const; 
 
   private:
   unsigned int nmbr_dims_;

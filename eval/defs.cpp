@@ -86,9 +86,9 @@ template std::ostream &operator<<(std::ostream &out, const ExprBaseType &v);
 
 std::ostream &operator<<(std::ostream &out, const ExprEval &e)
 {
-  out << std::get<0>(e) << "\n  --> "; 
-  ExprBaseType ebt = std::get<1>(e);
-  out << ebt << "\n";
+  out << std::get<0>(e) << "\n  --> " << std::get<1>(e) << "\n"; 
+  //ExprBaseType ebt = std::get<1>(e);
+  //out << ebt << "\n";
 
   return out;
 }
@@ -101,19 +101,35 @@ std::ostream &operator<<(std::ostream &out, const ExprEvalList &ee)
   return out;
 }
 
-ProgramIO::ProgramIO(AST::StatementList stms, ExprEvalList exprs) 
+std::ostream &operator<<(std::ostream &out, const StmEval &s)
+{
+  out << std::get<0>(s) << " = " << std::get<1>(s) << ";";
+
+  return out;
+}
+
+std::ostream &operator<<(std::ostream &out, const StmEvalList &ss)
+{
+  for (StmEval s : ss)
+    out << s << "\n";
+
+  return out;
+}
+
+ProgramIO::ProgramIO(StmEvalList stms, ExprEvalList exprs) 
   : nmbr_dims_(1), stms_(stms), exprs_(exprs) {}
-ProgramIO::ProgramIO(unsigned int nmbr_dims, AST::StatementList stms, ExprEvalList exprs)
+ProgramIO::ProgramIO(unsigned int nmbr_dims, StmEvalList stms
+  , ExprEvalList exprs)
   : nmbr_dims_(nmbr_dims), stms_(stms), exprs_(exprs) {}
 
 member_imp(ProgramIO, unsigned int, nmbr_dims);
-member_imp(ProgramIO, AST::StatementList, stms);
+member_imp(ProgramIO, StmEvalList, stms);
+member_imp(ProgramIO, ExprEvalList, exprs);
 
 std::ostream &operator<<(std::ostream &out, const ProgramIO &p)
 {
-  if (!p.stms().empty())
-    out << p.stms() << "\n";
-  out << p.exprs_;
+  out << p.stms() << "\n";
+  out << p.exprs();
 
   return out;
 }

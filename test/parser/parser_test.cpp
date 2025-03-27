@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <gtest/gtest.h>
 #include <fstream>
+#include <iostream>
 
 /// @file parser_test.cpp
 ///
@@ -39,7 +40,7 @@ TEST_P(ParserTests, Parser)
   const std::string DIR_CMD = "mkdir -p " + TEST_DIR;
   std::system(DIR_CMD.c_str());
   const std::string PARSER_CMD = "../../bin/sbg-parser -f ../" + NAME
-    + ".test > " + TEST_DIR + "/SBG.log 2>&1";
+    + ".test > " + TEST_DIR + "/" + NAME + ".log 2>&1";
   std::system(PARSER_CMD.c_str());
   const std::string TEST_CMD = "./results.sh " + NAME;
   std::system(TEST_CMD.c_str());

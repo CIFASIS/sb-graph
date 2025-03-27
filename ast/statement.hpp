@@ -33,11 +33,11 @@ namespace SBG {
 namespace AST {
 
 struct Assign {
-  member_class(VariableName, l);
+  member_class(Name, l);
   member_class(Expr, r);
 
   Assign();
-  Assign(VariableName l, Expr r);
+  Assign(Name l, Expr r);
 };
 std::ostream &operator<<(std::ostream &out, const Assign &asgn);
 

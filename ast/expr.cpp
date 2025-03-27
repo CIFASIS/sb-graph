@@ -418,8 +418,9 @@ std::ostream &operator<<(std::ostream &out, const BinOp &bop)
 
 Call::Call() : name_(), args_() {}
 Call::Call(Name name, ExprList args) : name_(name), args_(args) {}
-Call::Call(Name name, Expr args) : name_(name), args_()
-  { args_ref().push_back(args); }
+Call::Call(Name name, Expr args) : name_(name), args_() {
+  args_ref().push_back(args);
+}
 
 member_imp(Call, Name, name);
 member_imp(Call, ExprList, args);
@@ -441,6 +442,20 @@ std::ostream &operator<<(std::ostream &out, const Call &c)
     out << c.args()[i];
   }
   out << ")"; 
+
+  return out;
+}
+
+ParenExpr::ParenExpr() : e_() {}
+ParenExpr::ParenExpr(Expr e) : e_(e) {}
+
+member_imp(ParenExpr, Expr, e);
+
+bool ParenExpr::operator==(const ParenExpr &pe) const { return e_ == pe.e_; }
+
+std::ostream &operator<<(std::ostream &out, const ParenExpr &pe)
+{
+  out << "(" << pe.e() << ")";
 
   return out;
 }

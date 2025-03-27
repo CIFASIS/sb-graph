@@ -38,7 +38,7 @@ struct EvalLE : public boost::static_visitor<LIB::LExp> {
 
   LIB::LExp operator()(AST::Natural v) const;
   LIB::LExp operator()(AST::Rational v) const;
-  LIB::LExp operator()(AST::VariableName v) const;
+  LIB::LExp operator()(AST::Name v) const;
   LIB::LExp operator()(AST::UnaryOp v) const;
   LIB::LExp operator()(AST::BinOp v) const;
   LIB::LExp operator()(AST::Call v) const;
@@ -51,6 +51,7 @@ struct EvalLE : public boost::static_visitor<LIB::LExp> {
   LIB::LExp operator()(AST::PWLMap v) const;
   LIB::LExp operator()(AST::SBG v) const;
   LIB::LExp operator()(AST::DSBG v) const;
+  LIB::LExp operator()(AST::ParenExpr v) const;
 
   private:
   mutable VarEnv env_;

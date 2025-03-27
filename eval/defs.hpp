@@ -65,7 +65,7 @@ typedef std::optional<ExprBaseType> MaybeEBT;
 
 // Environments ----------------------------------------------------------------
 
-typedef AST::VariableName VKey;
+typedef AST::Name VKey;
 typedef ExprBaseType VValue;
 typedef std::optional<VValue> MaybeVValue;
 typedef std::map<VKey, VValue> VarEnvType;
@@ -114,6 +114,10 @@ typedef enum { empty, min, max, comp, inv, im, preim, dom, comb
 template<typename T, typename... Ts>
 std::ostream &operator<<(std::ostream &out, const std::variant<T, Ts...> &v);
 
+typedef std::tuple<AST::Name, ExprBaseType> StmEval;
+std::ostream &operator<<(std::ostream &out, const StmEval &e);
+typedef std::vector<StmEval> StmEvalList;
+std::ostream &operator<<(std::ostream &out, const StmEvalList &e);
 typedef std::tuple<AST::Expr, ExprBaseType> ExprEval;
 std::ostream &operator<<(std::ostream &out, const ExprEval &e);
 typedef std::vector<ExprEval> ExprEvalList; 
@@ -127,11 +131,11 @@ std::ostream &operator<<(std::ostream &out, const ExprEvalList &ee);
  */
 struct ProgramIO {
   member_class(unsigned int, nmbr_dims);
-  member_class(AST::StatementList, stms);
-  ExprEvalList exprs_;
+  member_class(StmEvalList, stms);
+  member_class(ExprEvalList, exprs);
  
-  ProgramIO(AST::StatementList stms, ExprEvalList exprs);
-  ProgramIO(unsigned int nmbr_dims, AST::StatementList stms, ExprEvalList exprs);
+  ProgramIO(StmEvalList stms, ExprEvalList exprs);
+  ProgramIO(unsigned int nmbr_dims, StmEvalList stms, ExprEvalList exprs);
 };
 std::ostream &operator<<(std::ostream &out, const ProgramIO &p);
 

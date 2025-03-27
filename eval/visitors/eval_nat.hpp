@@ -37,7 +37,7 @@ struct EvalNat : public boost::static_visitor<LIB::NAT> {
 
   LIB::NAT operator()(AST::Natural v) const;
   LIB::NAT operator()(AST::Rational v) const;
-  LIB::NAT operator()(AST::VariableName v) const;
+  LIB::NAT operator()(AST::Name v) const;
   LIB::NAT operator()(AST::UnaryOp v) const;
   LIB::NAT operator()(AST::BinOp v) const;
   LIB::NAT operator()(AST::Call v) const;
@@ -50,6 +50,7 @@ struct EvalNat : public boost::static_visitor<LIB::NAT> {
   LIB::NAT operator()(AST::PWLMap v) const;
   LIB::NAT operator()(AST::SBG v) const;
   LIB::NAT operator()(AST::DSBG v) const;
+  LIB::NAT operator()(AST::ParenExpr) const;
 
   private:
   mutable VarEnv env_;

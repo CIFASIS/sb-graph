@@ -38,7 +38,7 @@ LIB::RATIONAL EvalRat::operator()(AST::Rational v) const
                         , boost::apply_visitor(visit_int, v.den()));
 }
 
-LIB::RATIONAL EvalRat::operator()(AST::VariableName v) const 
+LIB::RATIONAL EvalRat::operator()(AST::Name v) const 
 {
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
@@ -161,6 +161,11 @@ LIB::RATIONAL EvalRat::operator()(AST::DSBG v) const
 {
   Util::ERROR("EvalRat: trying to evaluate DSBG ", v, "\n");
   return LIB::RATIONAL(0, 1);
+}
+
+LIB::RATIONAL EvalRat::operator()(AST::ParenExpr v) const
+{
+  return boost::apply_visitor(*this, v.e());
 }
 
 } // namespace Eval

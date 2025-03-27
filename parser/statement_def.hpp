@@ -30,7 +30,7 @@
 // Adapt structures ------------------------------------------------------------
 
 BOOST_FUSION_ADAPT_STRUCT(
-  SBG::AST::Assign, (SBG::AST::VariableName, l_)(SBG::AST::Expr, r_)
+  SBG::AST::Assign, (SBG::AST::Name, l_)(SBG::AST::Expr, r_)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::ConfigDims, (SBG::LIB::NAT, nmbr_dims_))

@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "sbg/multidim_inter.hpp"
+#include <iostream>
 
 #include <forward_list>
 #include <algorithm>
@@ -386,6 +387,8 @@ struct OrderedSet : public SetDelegate {
   MDIOrdSet traverse(const MDIOrdSet &other) const;
     
   SetDelegPtr complementAtom() const;
+  
+  //void emplaceIt(const MDIOrdSet::Iterator it,const SetPiece &mdi) const;
     
 };
 

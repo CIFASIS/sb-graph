@@ -920,6 +920,7 @@ MD_NAT OrderedSet::maxElem() const
   return res;
 }
 
+
 SetDelegPtr OrderedSet::intersection(const SetDelegate &other) const
 {
   OrdSetCRef othr = static_cast<OrdSetCRef>(other);
@@ -961,7 +962,6 @@ SetDelegPtr OrderedSet::intersection(const SetDelegate &other) const
     const auto elementMax = element.maxElem();
     const auto elementMin0 = elementMin[0];
     const auto elementMax0 = elementMax[0];
-
     // Iteradores para recorrer los índices del conjunto largo.
     auto liPrev = longIndices.before_begin();
     auto liCurr = longIndices.begin();
@@ -985,29 +985,29 @@ SetDelegPtr OrderedSet::intersection(const SetDelegate &other) const
         break;
 
     // Si hay intersección entre los elementos:
-    if (!(longElemMax < elementMin) && !(elementMax < longElemMin)) {
+    if (!(longElemMax.menorThan(elementMin)) && !(elementMax.menorThan(longElemMin))) {
         auto interRes = element.intersection(longElem);
-        
-        auto it = inter.begin();
-        advance(it , posLocal);
-        // Búsqueda lineal para encontrar la posición de inserción
-        while (it != inter.end() && *it < interRes) {
-            ++it;
-            ++posLocal;
-        }
+        if(interRes.isEmpty()){
+          auto it = inter.begin();
+          advance(it , posLocal);
+          // Búsqueda lineal para encontrar la posición de inserción
+          while (it != inter.end() && *it < interRes) {
+              ++it;
+              ++posLocal;
+          }
+          
+          
+          inter.insert(it, interRes);
 
-        // Insertar en la posición encontrada
-        inter.insert(it, interRes);
-
-        // Devolver iterador a la posición siguiente
-        ++posLocal;
-        
-        if(bandera){
-          bandera = false;
-          posGlobal = --posLocal;
-        
-        }
-
+          // Devolver iterador a la posición siguiente
+          ++posLocal;
+          
+          if(bandera){
+            bandera = false;
+            posGlobal = posLocal;
+          
+          }
+      }
 
     }
     ++liPrev;
@@ -1060,7 +1060,8 @@ SetDelegPtr OrderedSet::cup(const SetDelegate &other) const
 
 SetDelegPtr OrderedSet::complementAtom() const
 {
-  MDIOrdSet res;
+  OrderedSet res;
+  
 
   SetPiece mdi = *pieces_.begin();
   SetPiece dense_mdi;
@@ -1070,7 +1071,6 @@ SetDelegPtr OrderedSet::complementAtom() const
 
   Interval univ(0, 1, Inf);
   SetPiece all(mdi.arity(), univ);
-
   unsigned int dim = 0;
   for (const Interval &i : mdi) {
     MDIOrdSet c;
@@ -1109,14 +1109,11 @@ SetDelegPtr OrderedSet::complementAtom() const
     }
     all[dim] = dense_mdi[dim];
     during_mdi[dim] = i;
-    
-    
-    // Insert results of current dim
-    res=traverse(c);
+    res=OrderedSet(res.traverse(c));//TODO chequear el costo de esto
 
+    
     ++dim;
   }
-
   return std::make_unique<OrderedSet>(res);
 }
 
@@ -1134,6 +1131,7 @@ SetDelegPtr OrderedSet::complement() const
   for (const SetPiece &mdi : second) {
     SetDelegPtr c = OrderedSet(mdi).complementAtom();
     res = std::move(res->intersection(*c));
+
   }
 
   return res;
@@ -1145,7 +1143,9 @@ SetDelegPtr OrderedSet::difference(const SetDelegate &other) const
     return std::make_unique<OrderedSet>(*this);
 
   OrdSetCRef othr = static_cast<OrdSetCRef>(other);
-  return intersection(*othr.complement());
+
+  SetDelegPtr diff = intersection(*othr.complement());
+  return diff;
 }
 
 // Extra operations ------------------------------------------------------------
@@ -1217,7 +1217,7 @@ SetDelegPtr OrderedSet::compact() const
 MDIOrdSet OrderedSet::traverse(const MDIOrdSet &other) const
 {
   MDIOrdSet res;
-
+  
   if (isEmpty())
     return other;
 
@@ -1226,6 +1226,7 @@ MDIOrdSet OrderedSet::traverse(const MDIOrdSet &other) const
   
   auto it1 = pieces_.begin(), it2 = other.begin();
   auto end1 = pieces_.end(), end2 = other.end();
+  
 
   SetPiece mdi1, mdi2;
   for (; it1 != end1 && it2 != end2;) {
@@ -1237,6 +1238,7 @@ MDIOrdSet OrderedSet::traverse(const MDIOrdSet &other) const
       ++it1;}
     else{
       res.emplace(res.end(), mdi2);
+     
       ++it2;}
   }
 
@@ -1249,6 +1251,8 @@ MDIOrdSet OrderedSet::traverse(const MDIOrdSet &other) const
     mdi2 = *it2;
     res.emplace(res.end(), mdi2);
   }
+  it1 = res.begin();
+  end1 = res.end();
 
   return res;
 }

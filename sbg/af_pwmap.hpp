@@ -55,6 +55,15 @@ struct UnordPWMapAF : public PWMapAF {
   PWMap createPWMap(const Map &m) const override;
 };
 
+struct OrdPWMapAF : public PWMapAF {
+  public:
+  OrdPWMapAF(const MapAF &map_fact);
+
+  PWMap createPWMap() const override;
+  PWMap createPWMap(const Set &s) const override;
+  PWMap createPWMap(const Map &m) const override;
+};
+
 } // namespace LIB
 
 }  // namespace SBG

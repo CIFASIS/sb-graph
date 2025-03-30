@@ -348,6 +348,101 @@ struct UnordPWMap : public PWMapDelegate {
 typedef const UnordPWMap &UnordPWMapCRef;
 typedef std::unique_ptr<UnordPWMap> UnordPWMapPtr;
 
+
+////////////////////////////////////////////////////////////////////////////////
+// Ordered PWMap Implementation (concrete delegate) ----------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+typedef std::vector<Map> OrdMapCollection;
+
+struct OrdPWMap : public PWMapDelegate {
+  member_class(OrdMapCollection, pieces);
+
+  ~OrdPWMap() = default;
+  OrdPWMap(const MapAF &fact);
+  OrdPWMap(const MapAF &fact, const Set &s);
+  OrdPWMap(const MapAF &fact, const Map &m);
+  OrdPWMap(const MapAF &fact, const OrdMapCollection &pieces);
+  OrdPWMap(const OrdPWMap &pw);
+
+  PWMapDelegPtr clone() const override;
+
+  struct Iterator : public PWMapDelegate::Iterator {
+    member_class(OrdMapCollection::const_iterator, it);
+
+    Iterator(OrdMapCollection::const_iterator it);
+    void operator++() override;
+    bool operator!=(const PWMapDelegate::Iterator &other) const override;
+    const Map &operator*() const override;
+  };
+
+  std::shared_ptr<PWMapDelegate::Iterator> begin() const override;
+  std::shared_ptr<PWMapDelegate::Iterator> end() const override;
+
+  void emplaceBack(const Map &m) override;
+
+  bool operator==(const PWMapDelegate &other) const override;
+  bool operator!=(const PWMapDelegate &other) const override;
+  OrdPWMap &operator=(OrdPWMap &&other);
+  std::ostream &print(std::ostream &out) const override;
+
+  PWMapDelegPtr operator+(const PWMapDelegate &other) const override;
+  PWMapDelegPtr operator-(const PWMapDelegate &other) const override;
+
+  // Traditional map operations ------------------------------------------------
+
+  std::size_t arity() const override;
+  bool isEmpty() const override;
+  Set dom() const override;
+  PWMapDelegPtr restrict(const Set &subdom) const override;
+  Set image() const override;
+  Set image(const Set &subdom) const override;
+  Set preImage(const Set &subcodom) const override;
+  PWMapDelegPtr inverse() const override;
+  PWMapDelegPtr composition(const PWMapDelegate &pw2) const override;
+
+  PWMapDelegPtr mapInf(unsigned int n) const override;
+  PWMapDelegPtr mapInf() const override;
+
+  // Extra operations ----------------------------------------------------------
+
+  PWMapDelegPtr concatenation(const PWMapDelegate &other) const override;
+  PWMapDelegPtr combine(const PWMapDelegate &other) const override;
+  PWMapDelegPtr reduce(const Interval &i, const LExp &e) const override;
+  PWMapDelegPtr reduce(const Map &sbgmap) const override;
+  PWMapDelegPtr reduce() const override;
+
+  PWMapDelegPtr minMap(const PWMapDelegate &other) const override;
+  PWMapDelegPtr minAdjMap(const PWMapDelegate &other) const override;
+
+  PWMapDelegPtr firstInv(const Set &subdom) const override;
+  PWMapDelegPtr firstInv() const override;
+
+  PWMapDelegPtr filterMap(bool (*f)(const Map &)) const override;
+
+  Set equalImage(const PWMapDelegate &other) const override;
+  Set sharedImage() const override;
+
+  PWMapDelegPtr offsetDom(const MD_NAT &off) const override;
+  PWMapDelegPtr offsetDom(const PWMapDelegate &off) const override;
+  PWMapDelegPtr offsetImage(const MD_NAT &off) const override;
+  PWMapDelegPtr offsetImage(const Exp &off) const override;
+
+  PWMapDelegPtr compact() const override;
+  
+  private:
+  
+  void processEqualImage(const Map &m1, const Map &m2, Set &res) const; 
+  
+  void processMapsOrd(
+  const PWMapDelegate &other,
+  Set &set, 
+  void (OrdPWMap::*process)(const Map &, const Map &, Set &) const) const;
+};
+
+typedef const OrdPWMap &OrdPWMapCRef;
+typedef std::unique_ptr<OrdPWMap> OrdPWMapPtr;
+
 ////////////////////////////////////////////////////////////////////////////////
 // PWMap Implementation (delegator) --------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////

@@ -22,9 +22,9 @@
 
 #include "sbg/af_set.hpp"
 
-TEST(SetPerf, Intersection)
+TEST(SetPerf, OrdDenseIntersection)
 {
-  int N = 100000;
+  int N = 10000;
 
   SBG::LIB::OrdDenseAF fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
@@ -42,12 +42,13 @@ TEST(SetPerf, Intersection)
   s1.intersection(s2);
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  std::cout << "INTERSECTION TEST elapsed time: " << elapsed.count() << "ms\n";
+  std::cout << "ORDERED DENSE INTERSECTION TEST elapsed time: " << elapsed.count() << "ms\n";
 
   SUCCEED();
 }
 
-TEST(SetPerf, Difference)
+
+TEST(SetPerf, OrdDenseDifference)
 {
   int N = 100000;
 
@@ -67,12 +68,12 @@ TEST(SetPerf, Difference)
   s1.difference(s2);
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  std::cout << "DIFFERENCE TEST elapsed time: " << elapsed.count() << "ms\n";
+  std::cout << "ORDERED DENSE DIFFERENCE TEST elapsed time: " << elapsed.count() << "ms\n";
 
   SUCCEED();
 }
 
-TEST(SetPerf, Union)
+TEST(SetPerf, OrdDenseUnion)
 {
   int N = 100000;
 
@@ -92,10 +93,11 @@ TEST(SetPerf, Union)
   s1.cup(s2);
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  std::cout << "UNION TEST elapsed time: " << elapsed.count() << "ms\n";
+  std::cout << "ORDERED DENSE UNION TEST elapsed time: " << elapsed.count() << "ms\n";
 
   SUCCEED();
 }
+
 
 TEST(SetPerf, UnordIntersection)
 {
@@ -168,6 +170,181 @@ TEST(SetPerf, UnordUnion)
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
   std::cout << "UNORDERED UNION TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+TEST(SetPerf, OrdIntersection)
+{
+  int N = 10000;
+
+  SBG::LIB::OrdAF fact;
+  SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
+    s1.emplaceBack(i);
+  }
+
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
+    s2.emplaceBack(i);
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  s1.intersection(s2);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "ORDERED INTERSECTION TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+TEST(SetPerf, OrdDifference)
+{
+  int N = 10000;
+
+  SBG::LIB::OrdAF fact;
+  SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
+    s1.emplaceBack(i);
+  }
+
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
+    s2.emplaceBack(i);
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  s1.difference(s2);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "ORDERED DIFFERENCE TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+TEST(SetPerf, OrdUnion)
+{
+  int N = 10000;
+
+  SBG::LIB::OrdAF fact;
+  SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
+    s1.emplaceBack(i);
+  }
+
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*95+1, 1, (j+1)*95);
+    s2.emplaceBack(i);
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  s1.cup(s2);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "ORDERED UNION TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+TEST(SetPerf, OrdIntersectionLinearTest1)
+{
+  int N = 10000;
+
+  SBG::LIB::OrdAF fact;
+  SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
+    s1.emplaceBack(i);
+  }
+
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
+    s2.emplaceBack(i);
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  s1.intersection(s2);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "ORDERED INTERSECTION LINEAR TEST 1 elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+TEST(SetPerf, OrdIntersectionLinearTest2)
+{
+  int N = 20000;
+
+  SBG::LIB::OrdAF fact;
+  SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
+    s1.emplaceBack(i);
+  }
+
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
+    s2.emplaceBack(i);
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  s1.intersection(s2);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "ORDERED INTERSECTION LINEAR TEST 2 elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+TEST(SetPerf, OrdIntersectionLinearTest3)
+{
+  int N = 30000;
+
+  SBG::LIB::OrdAF fact;
+  SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
+    s1.emplaceBack(i);
+  }
+
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
+    s2.emplaceBack(i);
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  s1.intersection(s2);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "ORDERED INTERSECTION LINEAR TEST 3 elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+TEST(SetPerf, OrdIntersectionLinearTest4)
+{
+  int N = 40000;
+
+  SBG::LIB::OrdAF fact;
+  SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
+    s1.emplaceBack(i);
+  }
+
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
+    s2.emplaceBack(i);
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  s1.intersection(s2);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "ORDERED INTERSECTION LINEAR TEST 4 elapsed time: " << elapsed.count() << "ms\n";
 
   SUCCEED();
 }

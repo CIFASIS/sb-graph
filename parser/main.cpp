@@ -17,46 +17,10 @@
 
  ******************************************************************************/
 
-#include <fstream>
 #include <getopt.h>
 
-#include "parser/sbg_program.hpp"
+#include "parser/parser.hpp"
 #include "util/debug.hpp"
-
-void parseProgramFromFile(std::string fname)
-{
-  std::ifstream in(fname.c_str());
-  if (in.fail()) 
-    SBG::Util::ERROR("Unable to open file ", fname, "\n");
-  in.unsetf(std::ios::skipws);
-
-  std::string str(
-    (std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>()
-  );
-  SBG::Parser::StrIt iter = str.begin();
-  SBG::Parser::StrIt end = str.end();
-
-  SBG::Parser::SBGProgramRule g(iter); // Grammar
-  SBG::AST::SBGProgram result;
-  bool r = boost::spirit::qi::phrase_parse(
-    iter, end, g, SBG::Parser::Skipper<SBG::Parser::StrIt>(), result
-  );
-
-  std::cout << "-------------------------\n";
-  if (r && iter == end) {
-    std::cout << "Parsing succeeded\n";
-    std::cout << "-------------------------\n";
-    std::cout << "\n" << result;
-  }
-  else {
-    std::string rest(iter, end);
-    std::cout << "Parsing failed\n";
-    std::cout << "-------------------------\n";
-    std::cout << "\nstopped at: \n" << rest << "\n";
-  }
-
-  return;
-}
 
 void usage()
 {
@@ -76,42 +40,72 @@ void usage()
   std::cout << "    empty) of expressions, each one separated by a\n";
   std::cout << "    semicolon.\n";
   std::cout << "  * Each assignment or expression should be ended with a\n";
-  std::cout << "    semicolon ;\n";
+  std::cout << "    semicolon ;,\n";
   std::cout << "  * All expressions defined in a SBG program should have the\n";
   std::cout << "    same number of dimensions.\n";
   std::cout << "  * The first assignment of a SBG program should be\n";
   std::cout << "    \"dims = k\", where k is the number of the dimensions of\n";
   std::cout << "    all elements defined in the SBG program. If it is\n";
   std::cout << "    omitted then is considered to be 1.\n";
-  std::cout << "  * Numerical (and only numerical) variables can be defined.\n";
-  std::cout << "    through an assignment. It is forbidden to use a variable\n";
-  std::cout << "    before its definition.\n";
+  std::cout << "  * It is forbidden to use a variable before its definition.\n";
   std::cout << "  * Variable names should start with a letter, and then\n";
   std::cout << "    alfanumeric characters (including \"_\") can be used.\n";
   std::cout << "    The variable name \"x\" is forbidden, to preserve it\n";
   std::cout << "    for linear expressions. As explained above, \"dims\"\n";
   std::cout << "    is also reserved.\n";
-  std::cout << "  * Linear expresssions should include a numeric value for\n";
-  std::cout << "    its slope, except if its value is equal to 1. That is,\n";
-  std::cout << "    to express a constant expression it should be written\n";
-  std::cout << "    as: 0*x+h.\n\n";
 
   std::cout << "A brief list of the available expressions:\n";
   std::cout << "  * Arithmetic.\n";
   std::cout << "  * Interval.\n";
-  std::cout << "  * Multi-dimensional Interval.\n";
+  std::cout << "  * Multi-dimensional Interval (MDI).\n";
   std::cout << "  * SBG Set.\n";
   std::cout << "  * Linear Expression.\n";
-  std::cout << "  * Multi-dimensional Expression.\n";
+  std::cout << "  * Multi-dimensional Linear Expression (MDLE).\n";
   std::cout << "  * SBG Map.\n";
   std::cout << "  * SBG Piecewise Linear Map.\n";
   std::cout << "  * Undirected SBG.\n";
   std::cout << "  * Directed SBG.\n";
   std::cout << "  * Function Call.\n\n";
 
-  std::cout << "For a more detailed description of the grammar, the /parser\n";
-  std::cout << "files can be analyzed. Also /test files can be consulted\n";
-  std::cout << "to start writing basic SBG programs.\n\n";
+  std::cout << "A brief list of available operators:\n";
+  std::cout << "  * Arithmetic expressions: +, -, *, /.\n";
+  std::cout << "  * SBG expressions:\n";
+  std::cout << "    - For linear expressions and maps: + and -.\n";
+  std::cout << "    - For containers (intervals, MDIs, sets): /\\ \n";
+  std::cout << "      (intersection), \\/ (union), \\ (difference),\n";
+  std::cout << "      \' (complement).\n";
+  std::cout << "  * Relational operators for any expression: <, == (equality).";
+  std::cout << "\n\n";
+
+  std::cout << "As functions definitions are not supported, there is a fixed\n";
+  std::cout << "list of callable functions:\n";
+  std::cout << "  * isEmpty(expr)\n";
+  std::cout << "  * minElem(expr)\n";
+  std::cout << "  * maxElem(expr)\n";
+  std::cout << "  * compose(expr, expr)\n";
+  std::cout << "  * inv(expr)\n";
+  std::cout << "  * image(expr) and image(expr, expr)\n";
+  std::cout << "  * preImage(expr) and preImage(expr, expr)\n";
+  std::cout << "  * dom(expr)\n";
+  std::cout << "  * combine(expr, expr)\n";
+  std::cout << "  * firstInv(expr)\n";
+  std::cout << "  * minMap(expr, expr)\n";
+  std::cout << "  * reduce(expr)\n";
+  std::cout << "  * minAdj(expr, expr)\n";
+  std::cout << "  * mapInf(expr)\n";
+  std::cout << "  * CC(expr)\n";
+  std::cout << "  * matching(expr, expr)\n";
+  std::cout << "  * scc(expr)\n";
+  std::cout << "  * sort(expr)\n";
+  std::cout << "  * matchSCC(expr, expr)\n";
+  std::cout << "  * matchSCCTS(expr, expr)\n";
+  std::cout << "  * cut(expr)\n";
+  std::cout << "Then the evaluator will be in charge of analyzing if\n";
+  std::cout << "arguments have the correct type to call the function\n\n";
+
+  std::cout << "For a more detailed description of the grammar, the files\n";
+  std::cout << "present in /parser may be of use. Examples of such programs\n";
+  std::cout << "are present in the /test directory.\n\n";
 }
 
 void version()
@@ -158,7 +152,7 @@ int main(int argc, char** argv)
   }
 
   if (!filename.empty())
-    parseProgramFromFile(filename);
+    SBG::Parser::parseProgramFromFile(filename);
   else
     SBG::Util::ERROR("A filename should be provided\n");
 

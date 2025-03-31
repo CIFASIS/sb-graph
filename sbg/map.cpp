@@ -79,8 +79,8 @@ SetPiece image(SetPiece mdi, Exp mdle)
 // Map Implementation ----------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-member_move_imp(Map, Set, dom);
-member_move_imp(Map, Exp, exp);
+member_imp(Map, Set, dom);
+member_imp(Map, Exp, exp);
 
 Map::~Map() {}
 Map::Map(const SetAF &fact) : fact_(fact), dom_(fact.createSet()) {}

@@ -37,27 +37,20 @@ struct EvalInt : public boost::static_visitor<LIB::INT> {
 
   LIB::INT operator()(AST::Natural v) const;
   LIB::INT operator()(AST::Rational v) const;
-  LIB::INT operator()(AST::VariableName v) const;
+  LIB::INT operator()(AST::Name v) const;
   LIB::INT operator()(AST::UnaryOp v) const;
   LIB::INT operator()(AST::BinOp v) const;
   LIB::INT operator()(AST::Call v) const;
   LIB::INT operator()(AST::Interval v) const;
-  LIB::INT operator()(AST::InterUnaryOp v) const;
-  LIB::INT operator()(AST::InterBinOp v) const;
   LIB::INT operator()(AST::MultiDimInter v) const;
-  LIB::INT operator()(AST::MDInterUnaryOp v) const;
-  LIB::INT operator()(AST::MDInterBinOp v) const;
   LIB::INT operator()(AST::Set v) const;
-  LIB::INT operator()(AST::SetUnaryOp v) const;
-  LIB::INT operator()(AST::SetBinOp v) const;
   LIB::INT operator()(AST::LinearExp v) const;
-  LIB::INT operator()(AST::LExpBinOp v) const;
   LIB::INT operator()(AST::MDLExp v) const;
-  LIB::INT operator()(AST::MDLExpBinOp v) const;
   LIB::INT operator()(AST::LinearMap v) const;
   LIB::INT operator()(AST::PWLMap v) const;
   LIB::INT operator()(AST::SBG v) const;
   LIB::INT operator()(AST::DSBG v) const;
+  LIB::INT operator()(AST::ParenExpr v) const;
 
   private:
   mutable VarEnv env_;

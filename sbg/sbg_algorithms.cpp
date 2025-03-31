@@ -172,8 +172,8 @@ void SBGMatching::selectSucc(DSBG dsbg)
     }
   } while (!ingoing.isEmpty());
 
-  set_smap(res);
-  set_rmap(res.mapInf());
+  smap_ = res;
+  rmap_ = res.mapInf();
 }
 
 void SBGMatching::directedMinReach(const PWMap &dir_map)
@@ -187,9 +187,9 @@ void SBGMatching::directedMinReach(const PWMap &dir_map)
 
   PWMap aux_omap = dir_omap.combine(omap()), to_normal = aux_omap.inverse();
   PWMap succs = smap().composition(aux_omap);
-  set_smap(to_normal.composition(succs));
+  smap_ = to_normal.composition(succs);
   PWMap reps = rmap().composition(aux_omap);
-  set_rmap(to_normal.composition(reps));
+  rmap_ = to_normal.composition(reps);
 
   if (debug()) {
     Util::SBG_LOG << "minReach smap: " << smap() << "\n";
@@ -204,27 +204,27 @@ void SBGMatching::minReachableStep()
   PWMap rmapd = rmap();
   Set reach_unmatched = rmap().preImage(unmatched_F());
   Set pe = edgesInPaths();
-  set_paths_edges(pe);
+  paths_edges_ = pe;
 
   // *** Backward direction
   PWMap auxB = mapB();
-  set_mapB(mapD());
-  set_mapD(auxB);
+  mapB_ = mapD();
+  mapD_ = auxB;
 
   directedMinReach(mapF());
   // Vertices that reach unmatched left and right vertices 
   reach_unmatched = reach_unmatched.intersection(rmap().preImage(unmatched_U()));
-  set_rmap(rmap().restrict(reach_unmatched));
-  set_smap(smap().restrict(reach_unmatched));
+  rmap_ = rmap().restrict(reach_unmatched);
+  smap_ = smap().restrict(reach_unmatched);
 
   const PWMap &rmaprmapd = rmap().composition(rmapd);
   Set edgesb = edgesSameRepLR(rmaprmapd);
   pe = pe.intersection(edgesInPaths().intersection(edgesb));
-  set_paths_edges(pe);
+  paths_edges_ = pe;
 
   // *** Initial direction
-  set_mapD(mapB());
-  set_mapB(auxB);
+  mapD_ = mapB();
+  mapB_ = auxB;
 
   // *** Update structures to reflect new matched edges
   updatePaths(); 
@@ -238,7 +238,7 @@ void SBGMatching::minReachableStep()
 void SBGMatching::minReachable()
 {
   do {
-    set_paths_edges(E());
+    paths_edges_ = E();
     minReachableStep();
     if (debug()) {
       Util::SBG_LOG << "minimum reachable step smap: " << smap() << "\n";
@@ -285,7 +285,7 @@ SBGMatching::SBGMatching(const SBG &sbg, bool debug)
     , unmatched_V_(fact_.createSet()), unmatched_F_(fact_.createSet())
     , matched_U_(fact_.createSet()), unmatched_U_(fact_.createSet())
     , cycle_edges_(fact_.createSet()), debug_(debug) {
-  set_E(Emap_.dom());
+  E_ = Emap_.dom();
 
   PWMap id_vertex = fact_.createPWMap(V_);
   smap_ = id_vertex;
@@ -386,22 +386,22 @@ void SBGMatching::updatePaths()
   // *** Revert match and unmatched edges in augmenting paths
   PWMap paths_mapB = mapB().restrict(paths_edges())
      , paths_mapD = mapD().restrict(paths_edges());
-  set_mapB(paths_mapD.combine(mapB()));
-  set_mapD(paths_mapB.combine(mapD()));
+  mapB_ = paths_mapD.combine(mapB());
+  mapD_ = paths_mapB.combine(mapD());
 
   // *** Update matched edges
-  set_matched_E(mapD().preImage(U()));
-  set_unmatched_E(mapD().preImage(F()));
+  matched_E_ = mapD().preImage(U());
+  unmatched_E_ = mapD().preImage(F());
 
   // *** Update matched vertices
   Set matchedB = mapB().image(matched_E())
       , matchedD = mapD().image(matched_E());
-  set_matched_V(matchedB.cup(matchedD));
-  set_matched_U(U().intersection(matched_V()));
+  matched_V_= matchedB.cup(matchedD);
+  matched_U_= U().intersection(matched_V());
 
-  set_unmatched_V(V().difference(matched_V()));
-  set_unmatched_F(unmatched_V().intersection(F()));
-  set_unmatched_U(unmatched_V().intersection(U()));
+  unmatched_V_ = V().difference(matched_V());
+  unmatched_F_ = unmatched_V().intersection(F());
+  unmatched_U_ = unmatched_V().intersection(U());
 
   return;
 }
@@ -411,7 +411,7 @@ void SBGMatching::updateOffset()
   PWMap aux = omap().restrict(matched_V());
   aux = aux.offsetImage(max_V());
   aux = aux.offsetImage(max_V());
-  set_omap(aux.combine(omap()));
+  omap_ = aux.combine(omap());
 
   return;
 }
@@ -612,15 +612,15 @@ PWMap SBGSCC::sccStep()
   Set Esame = rmap_B.equalImage(rmap_D); // Edges in the same SCC
   
   // Leave edges in the same SCC
-  set_Ediff(E().difference(Esame));
-  set_E(Esame);
+  Ediff_ = E().difference(Esame);
+  E_ = Esame;
   if (debug())
     Util::SBG_LOG << "SCC erased edges: " << Ediff() << "\n\n";
 
   // Swap directions
   PWMap aux_B = mapB();
-  set_mapB(mapD());
-  set_mapD(aux_B);
+  mapB_ = mapD();
+  mapD_ = aux_B;
 
   return new_rmap;
 }
@@ -635,7 +635,7 @@ PWMap SBGSCC::calculate()
   do {
     rmap = sccStep();
   } while (Ediff() != fact_.createSet());
-  set_rmap(rmap.compact());
+  rmap_ = rmap.compact();
   auto end = std::chrono::high_resolution_clock::now();
 
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(

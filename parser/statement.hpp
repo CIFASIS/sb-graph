@@ -39,7 +39,7 @@ struct StmRule : qi::grammar<Iterator, Skipper<Iterator>
   StmRule(Iterator &it);
 
   // Rules with no skip
-  qi::rule<Iterator, AST::VariableName()> ident;
+  qi::rule<Iterator, AST::Name()> ident;
 
   // Operators tokens
   qi::rule<Iterator> ASSIGN, NMBR_DIMS;

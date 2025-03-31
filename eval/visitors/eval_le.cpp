@@ -27,32 +27,76 @@ EvalLE::EvalLE(VarEnv &env) : env_(env) {}
 
 LIB::LExp EvalLE::operator()(AST::Natural v) const
 {
-  Util::ERROR("EvalLE: trying to evaluate Natural ", v, "\n");
-  return LIB::LExp(); 
+  return LIB::LExp(0, LIB::RATIONAL(v)); 
 }
 
 LIB::LExp EvalLE::operator()(AST::Rational v) const
 {
-  Util::ERROR("EvalLE: trying to evaluate Rational ", v, "\n");
-  return LIB::LExp(); 
+  EvalInt visit_int(env_);
+  LIB::INT p = boost::apply_visitor(visit_int, v.num());
+  LIB::INT q = boost::apply_visitor(visit_int, v.den());
+  return LIB::LExp(0, LIB::RATIONAL(p, q));
 }
 
-LIB::LExp EvalLE::operator()(AST::VariableName v) const
+LIB::LExp EvalLE::operator()(AST::Name v) const
 {
-  Util::ERROR("EvalLE: variable ", v, " is not a LE\n");
-  return LIB::LExp(); 
+  if (v == "x")
+    return LIB::LExp(1, 0);
+
+  LIB::RATIONAL off = boost::apply_visitor(EvalRat(env_), AST::Expr(v));
+  return LIB::LExp(0, off);
 }
 
 LIB::LExp EvalLE::operator()(AST::UnaryOp v) const
 {
-  Util::ERROR("EvalLE: trying to evaluate arithmetic UnaryOp ", v, "\n");
-  return LIB::LExp(); 
+  LIB::LExp le = boost::apply_visitor(*this, v.expr());
+
+  switch (v.op()) {
+    case AST::UnOp::oppo:
+      LIB::LExp(-le.slope(), -le.offset()); 
+      break;
+
+    default:
+      Util::ERROR("EvalLE: UnaryOp ", v.op(), " is not arithmetic\n");
+      break;
+  };
+
+  return LIB::LExp();
 }
 
 LIB::LExp EvalLE::operator()(AST::BinOp v) const 
 {
-  Util::ERROR("EvalLE: trying to evaluate arithmetic BinOp ", v, "\n");
-  return LIB::LExp(); 
+  LIB::LExp vl = boost::apply_visitor(*this, v.left());
+  LIB::LExp vr = boost::apply_visitor(*this, v.right());
+
+  switch (v.op()) {
+    case AST::Op::add:
+      return LIB::LExp(vl.slope() + vr.slope(), vl.offset() + vr.offset()); 
+      break;
+
+    case AST::Op::sub:
+      return LIB::LExp(vl.slope() - vr.slope(), vl.offset() - vr.offset()); 
+      break;
+
+    case AST::Op::mult:
+      if (vl.slope() == 0 && vr.slope() == 0)
+          return LIB::LExp(0, vr.offset()*vl.offset());
+
+      else if (vl.slope() == 0)
+        return LIB::LExp(vl.offset()*vr.slope(), vl.offset()*vr.offset());
+
+      else if (vr.slope() == 0)
+        return LIB::LExp(vl.slope()*vr.offset(), vl.offset()*vr.offset());
+
+      Util::ERROR("EvalLE: expression ", v, " is not linear\n");
+      break;
+
+    default:
+      Util::ERROR("EvalLE: UnaryOp ", v.op(), " is not arithmetic\n");
+      break;
+  };
+
+  return LIB::LExp();
 }
 
 LIB::LExp EvalLE::operator()(AST::Call v) const
@@ -67,51 +111,15 @@ LIB::LExp EvalLE::operator()(AST::Interval v) const
   return LIB::LExp(); 
 }
 
-LIB::LExp EvalLE::operator()(AST::InterUnaryOp v) const
-{
-  Util::ERROR("EvalLE: trying to evaluate InterUnaryOp ", v, "\n");
-  return LIB::LExp(); 
-}
-
-LIB::LExp EvalLE::operator()(AST::InterBinOp v) const
-{
-  Util::ERROR("EvalLE: trying to evaluate InterBinOp ", v, "\n");
-  return LIB::LExp(); 
-}
-
 LIB::LExp EvalLE::operator()(AST::MultiDimInter v) const
 { 
   Util::ERROR("EvalLE: trying to evaluate MultiDimInter ", v, "\n");
   return LIB::LExp(); 
 }
 
-LIB::LExp EvalLE::operator()(AST::MDInterUnaryOp v) const
-{
-  Util::ERROR("EvalLE: trying to evaluate MDInterUnaryOp ", v, "\n");
-  return LIB::LExp(); 
-}
-
-LIB::LExp EvalLE::operator()(AST::MDInterBinOp v) const
-{
-  Util::ERROR("EvalLE: trying to evaluate MDInterBinOp ", v, "\n");
-  return LIB::LExp(); 
-}
-
 LIB::LExp EvalLE::operator()(AST::Set v) const 
 {
   Util::ERROR("EvalLE: trying to evaluate Set ", v, "\n");
-  return LIB::LExp(); 
-}
-
-LIB::LExp EvalLE::operator()(AST::SetUnaryOp v) const 
-{
-  Util::ERROR("EvalLE: trying to evaluate SetUnaryOp ", v, "\n");
-  return LIB::LExp(); 
-}
-
-LIB::LExp EvalLE::operator()(AST::SetBinOp v) const 
-{
-  Util::ERROR("EvalLE: trying to evaluate SetBinOp ", v, "\n");
   return LIB::LExp(); 
 }
 
@@ -125,32 +133,9 @@ LIB::LExp EvalLE::operator()(AST::LinearExp v) const
                    , boost::apply_visitor(visit_rat, h));
 }
 
-LIB::LExp EvalLE::operator()(AST::LExpBinOp v) const 
-{
-  LIB::LExp l = boost::apply_visitor(*this, v.left());
-  LIB::LExp r = boost::apply_visitor(*this, v.right());
-  switch (v.op()) {
-    case AST::ExpOp::add:
-      return l + r;
-
-    case AST::ExpOp::sub:
-      return l - r;
-
-    default:
-      Util::ERROR("EvalLE: LExpBinOp ", v.op(), " unsupported\n");
-      return LIB::LExp(); 
-  }
-}
-
 LIB::LExp EvalLE::operator()(AST::MDLExp v) const
 {
   Util::ERROR("EvalLE: trying to evaluate MDLExp ", v, "\n");
-  return LIB::LExp(); 
-}
-
-LIB::LExp EvalLE::operator()(AST::MDLExpBinOp v) const
-{
-  Util::ERROR("EvalLE: trying to evaluate MDLExpBinOp ", v, "\n");
   return LIB::LExp(); 
 }
 
@@ -178,6 +163,10 @@ LIB::LExp EvalLE::operator()(AST::DSBG v) const
   return LIB::LExp(); 
 }
 
+LIB::LExp EvalLE::operator()(AST::ParenExpr v) const
+{
+  return boost::apply_visitor(*this, v.e());
+}
 
 } // namespace Eval
 

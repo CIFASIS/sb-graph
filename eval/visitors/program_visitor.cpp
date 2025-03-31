@@ -23,24 +23,28 @@ namespace SBG {
 
 namespace Eval {
 
-ProgramVisitor::ProgramVisitor(std::shared_ptr<LIB::PWMapAF> fact, bool debug)
-  : fact_(*fact), env_(), debug_(debug) {}
+ProgramVisitor::ProgramVisitor(const LIB::PWMapAF &fact, bool debug)
+  : fact_(fact), env_(), debug_(debug) {}
 
 ProgramIO ProgramVisitor::operator()(AST::Program p) const 
 { 
   LIB::NAT dims = 1;
-  AST::StatementList stms;
+  StmEvalList stms;
   ExprEvalList exprs;
 
   AST::IsConfig cfg_visit;
-  StmVisitor stm_visit;
-  for (AST::Statement s : p.stms()) {
-    if (boost::apply_visitor(cfg_visit, s))
-      dims = boost::get<AST::ConfigDims>(s).nmbr_dims();
+  if (!p.stms().empty()) {
+    AST::Statement first = p.stms()[0];
 
-    else {
-      boost::apply_visitor(stm_visit, s);
-      stms.push_back(s);
+    if (boost::apply_visitor(cfg_visit, first))
+      dims = boost::get<AST::ConfigDims>(first).nmbr_dims();
+  }
+
+  StmVisitor stm_visit(dims, fact_);
+  for (AST::Statement s : p.stms()) {
+    if (!boost::apply_visitor(cfg_visit, s)) {
+      StmEval se = boost::apply_visitor(stm_visit, s);
+      stms.push_back(se);
     }
   }
 

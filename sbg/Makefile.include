@@ -1,29 +1,27 @@
 # The Directories, Source, Includes, Objects, Binary 
-UTIL_ROOT := util
-SBG_ROOT := sbg
+UTIL_DIR := util
+SBG_DIR  := sbg
 
 # Sources
-	SBG_SRC := \
-    $(SBG_ROOT)/sbg_algorithms.cpp \
-    $(SBG_ROOT)/sbg.cpp \
-    $(SBG_ROOT)/af_pwmap.cpp \
-    $(SBG_ROOT)/pw_map.cpp \
-  	$(SBG_ROOT)/af_map.cpp \
-    $(SBG_ROOT)/map.cpp \
-    $(SBG_ROOT)/multidim_lexp.cpp \
-    $(SBG_ROOT)/lexp.cpp \
-    $(SBG_ROOT)/rational.cpp \
-  	$(SBG_ROOT)/af_set.cpp \
-  	$(SBG_ROOT)/set.cpp \
-  	$(SBG_ROOT)/multidim_inter.cpp \
-  	$(SBG_ROOT)/interval.cpp \
-    $(SBG_ROOT)/natural.cpp \
-    $(UTIL_ROOT)/logger.cpp
+SBG_SRC := \
+  $(SBG_DIR)/sbg_algorithms.cpp \
+  $(SBG_DIR)/sbg.cpp \
+  $(SBG_DIR)/af_pwmap.cpp \
+  $(SBG_DIR)/pw_map.cpp \
+	$(SBG_DIR)/af_map.cpp \
+  $(SBG_DIR)/map.cpp \
+  $(SBG_DIR)/multidim_lexp.cpp \
+  $(SBG_DIR)/lexp.cpp \
+  $(SBG_DIR)/rational.cpp \
+	$(SBG_DIR)/af_set.cpp \
+	$(SBG_DIR)/set.cpp \
+	$(SBG_DIR)/multidim_inter.cpp \
+	$(SBG_DIR)/interval.cpp \
+  $(SBG_DIR)/natural.cpp \
+  $(UTIL_DIR)/logger.cpp
 
-include util/Makefile.include
+create-folders::
+	@mkdir -p $(BUILD_DIR)/$(SBG_DIR)
 
 # Objects
 SBG_OBJ=$(addprefix $(BUILD_DIR)/, $(SBG_SRC:.cpp=.o))
-
-create-folders::
-	@mkdir -p $(BUILD_DIR)/$(SBG_ROOT)

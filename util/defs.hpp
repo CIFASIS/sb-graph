@@ -51,19 +51,13 @@ namespace Util {
 #define member_class(X, Y) \
   private:                 \
   X Y##_;                  \
-  void set_##Y(X x);       \
   public:                  \
   X Y() const;             \
   X &Y##_ref();
 
 #define member_imp(C, X, Y)          \
   X C::Y() const { return Y##_; }    \
-  void C::set_##Y(X x) { Y##_ = x; } \
   X &C::Y##_ref() { return Y##_; }
-
-#define member_move_imp(C, X, Y)     \
-  X C::Y() const { return Y##_; }    \
-  void C::set_##Y(X x) { Y##_ = std::move(x); } \
 
 } // namespace Util
 

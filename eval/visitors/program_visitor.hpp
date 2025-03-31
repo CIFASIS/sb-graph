@@ -31,7 +31,6 @@
 
 #include "ast/sbg_program.hpp"
 #include "eval/visitors/stm_visitor.hpp"
-#include "eval/visitors/check_opt_conds.hpp"
 
 namespace SBG {
 
@@ -39,7 +38,7 @@ namespace Eval {
 
 struct ProgramVisitor : public boost::static_visitor<ProgramIO> {
   public:
-  ProgramVisitor(std::shared_ptr<LIB::PWMapAF> fact, bool debug);
+  ProgramVisitor(const LIB::PWMapAF &fact, bool debug);
  
   ProgramIO operator()(AST::Program p) const; 
 

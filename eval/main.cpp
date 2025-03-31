@@ -83,7 +83,7 @@ void parseEvalProgramFromFile(std::string fname, Impl impl, bool debug)
         break;
     }
 
-    SBG::Eval::ProgramVisitor program_visit(fact, debug); 
+    SBG::Eval::ProgramVisitor program_visit(*fact, debug); 
     SBG::Eval::ProgramIO visit_result = boost::apply_visitor(
       program_visit, parser_result
     );
@@ -117,26 +117,22 @@ void usage()
   std::cout << "\n";
   std::cout << "  * A SBG program starts with a list (possibly empty) of\n";
   std::cout << "    assignments, and then continues with a list (possibly\n";
-  std::cout << "    empty) of expressions.\n";
+  std::cout << "    empty) of expressions, each one separated by a\n";
+  std::cout << "    semicolon.";
   std::cout << "  * Each assignment or expression should be ended with a\n";
-  std::cout << "    semicolon ;\n";
+  std::cout << "    semicolon ;.\n";
   std::cout << "  * All expressions defined in a SBG program should have the\n";
-  std::cout << "    number of dimensions.\n";
+  std::cout << "    same number of dimensions.\n";
   std::cout << "  * The first assignment of a SBG program should be\n";
   std::cout << "    \"dims = k\", where k is the number of the dimensions of\n";
   std::cout << "    all elements defined in the SBG program. If it is\n";
   std::cout << "    omitted then is considered to be 1.\n";
-  std::cout << "  * Numerical (and only numerical) variables can be defined.\n";
-  std::cout << "    through an assignment. It is forbidden to use a variable\n";
-  std::cout << "    before its definition.\n";
+  std::cout << "  * It is forbidden to use a variable before its definition.\n";
   std::cout << "  * Variable names should start with a letter, and then\n";
   std::cout << "    alfanumeric characters (including \"_\") can be used.\n";
   std::cout << "    The variable name \"x\" is forbidden, to preserve it\n";
   std::cout << "    for linear expressions. As explained above, \"dims\"\n";
   std::cout << "    is also reserved.\n";
-  std::cout << "  * Linear expresssions should include a numeric value for\n";
-  std::cout << "    its slope. That is, to express a constant expression\n";
-  std::cout << "    it should be written as: 0*x+h.\n";
   std::cout << "  * Both intervals and linear expressions will be parsed as\n";
   std::cout << "    their multi-dimensional counterparts.\n\n";
 
@@ -157,26 +153,39 @@ void usage()
   std::cout << "files can be analyzed. Also /test files can be consulted\n";
   std::cout << "to start writing basic SBG programs.\n\n";
 
-  std::cout << "\nA comprehensive list of the available functions to call on SBG"
-    << " elements,\nwith a short description of the permitted arguments is";
-  std::cout << " as follows:\n";
+  std::cout << "A brief list of available operators:\n";
+  std::cout << "  * Arithmetic expressions: +, -, *, /.\n";
+  std::cout << "  * SBG expressions:\n";
+  std::cout << "    - For linear expressions and maps: + and -.\n";
+  std::cout << "    - For containers (intervals, MDIs, sets): /\\ \n";
+  std::cout << "      (intersection), \\/ (union), \\ (difference),\n";
+  std::cout << "      \' (complement).\n";
+  std::cout << "  * Relational operators for any expression: <, == (equality).";
+  std::cout << "\n\n";
+
+  std::cout << "\nA comprehensive list of the available functions to call on"
+    << " SBG elements,\nwith a short description of the correct types for"
+    << " arguments is as follows\n(a container is either an interval, a mdi or"
+    << " a set):\n\n";
   std::cout << "  - isEmpty: check if container is empty\n";
-  std::cout << "    --> isEmpty(interval) | isEmpty(set)\n";
-  std::cout << "\n  - isMember: check if an element belongs to a container\n";
-  std::cout << "    --> isMember(nat, interval)\n";
+  std::cout << "    --> isEmpty(container)\n";
   std::cout << "\n  - minElem: minimum element of a container\n";
-  std::cout << "    --> minElem(interval) | minElem(set)\n";
+  std::cout << "    --> minElem(container)\n";
   std::cout << "\n  - maxElem: maximum element of a container\n";
-  std::cout << "    --> maxElem(interval)  | maxElem(set)\n";
+  std::cout << "    --> maxElem(container)\n";
   std::cout << "\n  - compose: composition of expressions or maps\n";
   std::cout << "    --> compose(lexp, lexp) | compose(mdlexp, mdlexp)\n";
   std::cout << "    | compose(map, map) | compose(pw, pw)\n";
-  std::cout << "\n  - inv: calculate the inverse of an expression.\n";
+  std::cout << "\n  - inv: calculate the inverse of an expression or map.\n";
   std::cout << "    If the expression is constant in some dimension, returns\n";
-  std::cout << "    inf-inf there\n";
-  std::cout << "    --> inv(lexp) | inv(mdlexp)\n";
-  std::cout << "\n  - image: return the image for a set of elements of the domain";
-  std::cout << "\n    --> image(set, map) | image(set, pw)\n";
+  std::cout << "    inf-inf there. If the argument is a map, it should be\n";
+  std::cout << "    bijective.\n";
+  std::cout << "    --> inv(lexp) | inv(mdlexp) | inv(map) | inv(pw)\n";
+  std::cout << "\n  - image: return the image for a set of elements of the\n";
+  std::cout << "    domain. If no subdomain is specified, the whole domain\n";
+  std::cout << "    is used.";
+  std::cout << "\n    --> image(map) | image(pw) | image(set, map) ";
+  std::cout << "| image(set, pw)\n";
   std::cout << "\n  - preImage: return the pre-image for a set of elements in the\n";
   std::cout << "    image of the map\n";
   std::cout << "    --> preImage(set, map) | preImage(set, pw)\n";

@@ -33,7 +33,7 @@ PWMapDelegate::PWMapDelegate(const MapAF &fact) : fact_(std::move(fact)) {}
 // Unordered PWMap Implementation ----------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-member_move_imp(UnordPWMap, UnordMapCollection, pieces);
+member_imp(UnordPWMap, UnordMapCollection, pieces);
 
 UnordPWMap::UnordPWMap(const MapAF &fact) : PWMapDelegate(fact) {}
 UnordPWMap::UnordPWMap(const MapAF &fact, const Set &s)

@@ -37,12 +37,15 @@ LIB::NAT EvalNat::operator()(AST::Rational v) const
   return 0; 
 }
 
-LIB::NAT EvalNat::operator()(AST::VariableName v) const 
+LIB::NAT EvalNat::operator()(AST::Name v) const 
 { 
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
     ExprBaseType value = *v_opt;
-    if (std::holds_alternative<LIB::MD_NAT>(value)) {
+    if (std::holds_alternative<LIB::NAT>(value)) 
+      return std::get<LIB::NAT>(value);
+
+    else if (std::holds_alternative<LIB::MD_NAT>(value)) {
       LIB::MD_NAT x = std::get<LIB::MD_NAT>(value);
       if (x.arity() == 1)
         return x[0];
@@ -98,33 +101,9 @@ LIB::NAT EvalNat::operator()(AST::Interval v) const
   return 0;
 }
 
-LIB::NAT EvalNat::operator()(AST::InterUnaryOp v) const
-{
-  Util::ERROR("EvalNat: trying to evaluate InterUnaryOp ", v, "\n");
-  return 0;
-}
-
-LIB::NAT EvalNat::operator()(AST::InterBinOp v) const
-{
-  Util::ERROR("EvalNat: trying to evaluate InterBinOp ", v, "\n");
-  return 0;
-}
-
 LIB::NAT EvalNat::operator()(AST::MultiDimInter v) const
 {
   Util::ERROR("EvalNat: trying to evaluate MultiDimInter ", v, "\n");
-  return 0;
-}
-
-LIB::NAT EvalNat::operator()(AST::MDInterUnaryOp v) const
-{
-  Util::ERROR("EvalNat: trying to evaluate MDInterUnaryOp ", v, "\n");
-  return 0;
-}
-
-LIB::NAT EvalNat::operator()(AST::MDInterBinOp v) const
-{
-  Util::ERROR("EvalNat: trying to evaluate MDInterBinOp ", v, "\n");
   return 0;
 }
 
@@ -134,39 +113,15 @@ LIB::NAT EvalNat::operator()(AST::Set v) const
   return 0;
 }
 
-LIB::NAT EvalNat::operator()(AST::SetUnaryOp v) const
-{
-  Util::ERROR("EvalNat: trying to evaluate SetUnaryOp ", v, "\n");
-  return 0;
-}
-
-LIB::NAT EvalNat::operator()(AST::SetBinOp v) const
-{
-  Util::ERROR("EvalNat: trying to evaluate SetBinOp ", v, "\n");
-  return 0;
-}
-
 LIB::NAT EvalNat::operator()(AST::LinearExp v) const
 {
   Util::ERROR("EvalNat: trying to evaluate LinearExp ", v, "\n");
   return 0;
 }
 
-LIB::NAT EvalNat::operator()(AST::LExpBinOp v) const
-{
-  Util::ERROR("EvalNat: trying to evaluate LExpBinOp ", v, "\n");
-  return 0;
-}
-
 LIB::NAT EvalNat::operator()(AST::MDLExp v) const
 {
   Util::ERROR("EvalNat: trying to evaluate MDLExp ", v, "\n");
-  return 0;
-}
-
-LIB::NAT EvalNat::operator()(AST::MDLExpBinOp v) const
-{
-  Util::ERROR("EvalNat: trying to evaluate MDLExpBinOp ", v, "\n");
   return 0;
 }
 
@@ -192,6 +147,11 @@ LIB::NAT EvalNat::operator()(AST::DSBG v) const
 {
   Util::ERROR("EvalNat: trying to evaluate DSBG ", v, "\n");
   return 0;
+}
+
+LIB::NAT EvalNat::operator()(AST::ParenExpr v) const
+{
+  return boost::apply_visitor(*this, v.e());
 }
 
 } // namespace Eval

@@ -8,6 +8,8 @@ BIN_DIR     := $(TEST_DIR)/bin
 PERFORMANCE := $(BIN_DIR)/sbg-performance
 BOOST_PERF  := $(BIN_DIR)/boost-perf
 
+.PHONY: create-folders clean
+
 #///////////////////////////////////////////////////////////////////////////////
 # Compilation ------------------------------------------------------------------ 
 #///////////////////////////////////////////////////////////////////////////////
@@ -22,12 +24,12 @@ GOOGLE_TEST_INCLUDE = $(GOOGLE_TEST_INSTALL)/usr/include
 
 INCLUDES := -I../.. -I$(boost_libdir)/include -I$(GOOGLE_TEST_INCLUDE)
 CXXFLAGS := -std=c++17 -Wno-reorder -O3
-LD_FLAGS := -L../../lib -lsbgraph -L$(GOOGLE_TEST_INSTALL)/usr/lib -l$(GOOGLE_TEST_LIB) -l$(GOOGLE_MOCK_LIB)
+LD_FLAGS := -L../../lib -lsbgraph -L$(GOOGLE_TEST_INSTALL)/usr/lib -l$(GOOGLE_TEST_LIB) -l$(GOOGLE_MOCK_LIB) -lpthread
 
 # Source files.
 PERF_SRC = main.cpp \
   set_perf.cpp \
-  pw_map_perf.cpp \
+  pw_map_perf.cpp
 
 create-folders::
 	@mkdir -p $(OBJ_DIR)

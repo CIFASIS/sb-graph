@@ -266,7 +266,6 @@ auto pre_image2_visitor_ = Overload {
 };
 
 auto dom_visitor_ = Overload {
-  [](LIB::Map a) { return ExprBaseType(a.dom()); },
   [](LIB::PWMap a) { return ExprBaseType(a.dom()); },
   [](auto a) {
     Util::ERROR("dom_visitor_: wrong arguments ", a, "for dom\n");

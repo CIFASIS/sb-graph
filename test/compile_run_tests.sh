@@ -14,8 +14,8 @@ fi
 if [[ -z "$1" || "$1" == "parser" ]]; then
   SRC_FILES="../main.cpp ../parser_test.cpp"
   GTEST_INCLUDE="-I../../../3rd-party/gtest/usr/include"
-  LD_FLAGS="-L../../../3rd-party/gtest/usr/lib -lgtest -lgmock"
-  COMPILE=("g++" "${GTEST_INCLUDE}" "-std=c++17" "${SRC_FILES}" 
+  LD_FLAGS="-L../../../3rd-party/gtest/usr/lib -lgtest -lgmock -lpthread"
+  COMPILE=("g++" "${GTEST_INCLUDE}" "-std=c++17" "${SRC_FILES}"
     "-o parser-test" "${LD_FLAGS}")
 
   echo "BUILDING PARSER SYSTEM TESTS"
@@ -31,7 +31,7 @@ fi
 if [[ -z "$1" || "$1" == "eval" ]]; then
   SRC_FILES="../main.cpp ../eval_test.cpp"
   GTEST_INCLUDE="-I../../../3rd-party/gtest/usr/include"
-  LD_FLAGS="-L../../../3rd-party/gtest/usr/lib -lgtest -lgmock"
+  LD_FLAGS="-L../../../3rd-party/gtest/usr/lib -lgtest -lgmock -lpthread"
   COMPILE=("g++" "${GTEST_INCLUDE}" "-std=c++17" "${SRC_FILES}" 
     "-o eval-test" "${LD_FLAGS}")
 

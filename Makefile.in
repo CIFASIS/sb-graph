@@ -20,6 +20,8 @@ includedir    ?= $(prefix)/include
 libdir        ?= $(exec_prefix)/lib
 boost_libdir  ?= $(prefix)
 
+.PHONY: doc clean create-folders install install-folders lib-gtest test
+
 #///////////////////////////////////////////////////////////////////////////////
 # Compilation ------------------------------------------------------------------
 #///////////////////////////////////////////////////////////////////////////////
@@ -105,8 +107,6 @@ test: lib-gtest
 # Documentation ----------------------------------------------------------------
 #///////////////////////////////////////////////////////////////////////////////
 
-.PHONY: doc
-
 doc:
 	@mkdir -p $(ROOT)/doc
 	@mkdir -p $(ROOT)/doc/html
@@ -120,7 +120,7 @@ doc:
 #///////////////////////////////////////////////////////////////////////////////
 
 TEST_DIRS := test/parser test/performance test/performance/boost test/eval
- 
+
 clean:
 	$(RM) -rf $(BIN_DIR) $(OBJ_DIR) $(LIB_SBGRAPH) $(ROOT)/lib $(ROOT)/include $(3RD_PARTY_DIR)/gtest/usr
 	for dir in $(TEST_DIRS); do \

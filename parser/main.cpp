@@ -40,25 +40,19 @@ void usage()
   std::cout << "    empty) of expressions, each one separated by a\n";
   std::cout << "    semicolon.\n";
   std::cout << "  * Each assignment or expression should be ended with a\n";
-  std::cout << "    semicolon ;\n";
+  std::cout << "    semicolon ;,\n";
   std::cout << "  * All expressions defined in a SBG program should have the\n";
   std::cout << "    same number of dimensions.\n";
   std::cout << "  * The first assignment of a SBG program should be\n";
   std::cout << "    \"dims = k\", where k is the number of the dimensions of\n";
   std::cout << "    all elements defined in the SBG program. If it is\n";
   std::cout << "    omitted then is considered to be 1.\n";
-  std::cout << "  * Numerical (and only numerical) variables can be defined.\n";
-  std::cout << "    through an assignment. It is forbidden to use a variable\n";
-  std::cout << "    before its definition.\n";
+  std::cout << "  * It is forbidden to use a variable before its definition.\n";
   std::cout << "  * Variable names should start with a letter, and then\n";
   std::cout << "    alfanumeric characters (including \"_\") can be used.\n";
   std::cout << "    The variable name \"x\" is forbidden, to preserve it\n";
   std::cout << "    for linear expressions. As explained above, \"dims\"\n";
   std::cout << "    is also reserved.\n";
-  std::cout << "  * Linear expresssions should include a numeric value for\n";
-  std::cout << "    its slope, except if its value is equal to 1. That is,\n";
-  std::cout << "    to express a constant expression it should be written\n";
-  std::cout << "    as: 0*x+h.\n\n";
 
   std::cout << "A brief list of the available expressions:\n";
   std::cout << "  * Arithmetic.\n";

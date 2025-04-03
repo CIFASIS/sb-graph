@@ -978,17 +978,49 @@ OrdPWMap &OrdPWMap::operator=(OrdPWMap &&other)
   return *this;
 }
 
+
 PWMapDelegPtr OrdPWMap::operator+(const PWMapDelegate &other) const
 {
+  Set noUsed = fact_.createSet();
   OrdMapCollection res;
-
   OrdPWMapCRef othr = static_cast<OrdPWMapCRef>(other);
-  for (const Map &m1 : pieces_) 
-    for (const Map &m2 : othr.pieces_) 
-      res.push_back(m1 + m2);
-
-  return std::make_unique<OrdPWMap>(fact_, res);
+  processMapsOrd(othr,noUsed, res, &OrdPWMap::processAdd);
+  return std::make_unique<OrdPWMap>(fact_,res);
 }
+
+void OrdPWMap::processAdd(const Map &m1, const Map &m2, Set &NUSet, OrdMapCollection &res,
+                                unsigned int* posGlobal  , unsigned int* posLocal  , bool* bandera ) const
+{
+    Map resMap = fact_.createMap();
+    auto it = res.begin();
+    advance(it , *posLocal);
+    auto resAdd = m1 + m2;
+    if (!resAdd.dom().isEmpty()){
+      while (it != res.end()) {
+          resMap = *it;
+          if (resMap.dom().minElem() < resAdd.dom().minElem()){
+              ++it;
+              ++(*posLocal);
+              resMap = *it;
+          }
+          else
+            break;
+
+      }
+
+      res.insert(it, resAdd);
+      ++(*posLocal);
+      
+      if(bandera){
+        *bandera = false;
+        *posGlobal = *posLocal;
+      
+      }
+    
+    }                            
+                                                          
+}
+
 
 PWMapDelegPtr OrdPWMap::operator-(const PWMapDelegate &other) const
 {
@@ -1159,7 +1191,7 @@ Set OrdPWMap::preImage(const Set &subcodom) const
 }
 
 PWMapDelegPtr OrdPWMap::inverse() const
-{
+{ 
   PWMapDelegPtr res = std::make_unique<OrdPWMap>(fact_);
 
   for (const Map &m : pieces_)
@@ -1446,13 +1478,16 @@ PWMapDelegPtr OrdPWMap::filterMap(bool (*f)(const Map &)) const
 Set OrdPWMap::equalImage(const PWMapDelegate &other) const
 {
   Set res = fact_.createSet();
+  OrdMapCollection noUsed;
   OrdPWMapCRef othr = static_cast<OrdPWMapCRef>(other);
-  processMapsOrd(othr, res, &OrdPWMap::processEqualImage);
+  processMapsOrd(othr, res, noUsed, &OrdPWMap::processEqualImage);
   return res;
 
 }
 
-void OrdPWMap::processEqualImage(const Map &m1, const Map &m2, Set &res) const {
+void OrdPWMap::processEqualImage(const Map &m1, const Map &m2, Set &res, OrdMapCollection &NUOrdmap,
+                                unsigned int* NUPG , unsigned int*NUPL  , bool*NUB ) const 
+{ 
   Set cap_dom = m1.dom().intersection(m2.dom());
   if (!cap_dom.isEmpty()) {
     Map m1_cap = fact_.createMap(cap_dom, m1.exp());
@@ -1464,8 +1499,10 @@ void OrdPWMap::processEqualImage(const Map &m1, const Map &m2, Set &res) const {
 
 void OrdPWMap::processMapsOrd(
   const PWMapDelegate &other,
-  Set &set, 
-  void (OrdPWMap::*process)(const Map &, const Map &, Set &) const) const
+  Set &set,
+  OrdMapCollection &ordmap,
+  void (OrdPWMap::*process)(const Map &, const Map &, Set &, OrdMapCollection &, 
+                            unsigned int* , unsigned int* , bool* ) const) const
 {
   OrdPWMapCRef othr = static_cast<OrdPWMapCRef>(other);
 
@@ -1484,15 +1521,17 @@ void OrdPWMap::processMapsOrd(
     liIt = longIndices.insert_after(liIt, i);
 
   auto longBegin = longMap->pieces_.begin();
-
+  unsigned int posGlobal = 0;
   for (const Map &m1 : shortMap->pieces_) {
     const auto m1Min = m1.dom().minElem();
     const auto m1Max = m1.dom().maxElem();
     const auto m1Min0 = m1Min[0];
     const auto m1Max0 = m1Max[0];
-
+  
     auto liPrev = longIndices.before_begin();
     auto liCurr = longIndices.begin();
+    unsigned int posLocal = posGlobal;
+    bool bandera = true;
     while (liCurr != longIndices.end()) {
       size_t idx = *liCurr;
       const Map &m2 = *(longBegin + idx);
@@ -1510,7 +1549,7 @@ void OrdPWMap::processMapsOrd(
         break;
 
       if (!(m2Max < m1Min) && !(m1Max < m2Min)) {
-        (this->*process)(m1, m2, set);
+        (this->*process)(m1, m2, set, ordmap, &posGlobal ,&posLocal, &bandera);
       }
 
       ++liPrev;

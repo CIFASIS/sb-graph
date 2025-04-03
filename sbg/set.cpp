@@ -987,7 +987,7 @@ SetDelegPtr OrderedSet::intersection(const SetDelegate &other) const
     // Si hay intersección entre los elementos:
     if (!(longElemMax.menorThan(elementMin)) && !(elementMax.menorThan(longElemMin))) {
         auto interRes = element.intersection(longElem);
-        if(interRes.isEmpty()){
+        if(!interRes.isEmpty()){
           auto it = inter.begin();
           advance(it , posLocal);
           // Búsqueda lineal para encontrar la posición de inserción
@@ -995,7 +995,6 @@ SetDelegPtr OrderedSet::intersection(const SetDelegate &other) const
               ++it;
               ++posLocal;
           }
-          
           
           inter.insert(it, interRes);
 

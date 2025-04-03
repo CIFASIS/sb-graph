@@ -432,12 +432,18 @@ struct OrdPWMap : public PWMapDelegate {
   
   private:
   
-  void processEqualImage(const Map &m1, const Map &m2, Set &res) const; 
+  void processAdd(const Map &m1, const Map &m2, Set &NUSet, OrdMapCollection &res,
+                                unsigned int* posGlobal  , unsigned int* posLocal  , bool* bandera ) const; 
+  
+  void processEqualImage(const Map &m1, const Map &m2, Set &res, OrdMapCollection &NUOrdmap,
+                                unsigned int*NUPG , unsigned int*NUPL  , bool*NUB ) const; 
   
   void processMapsOrd(
   const PWMapDelegate &other,
-  Set &set, 
-  void (OrdPWMap::*process)(const Map &, const Map &, Set &) const) const;
+  Set &set,
+  OrdMapCollection &ordmap,
+  void (OrdPWMap::*process)(const Map &, const Map &, Set &, OrdMapCollection &, 
+                            unsigned int* , unsigned int* , bool* ) const) const;
 };
 
 typedef const OrdPWMap &OrdPWMapCRef;

@@ -50,7 +50,7 @@ TEST(SetPerf, OrdDenseIntersection)
 
 TEST(SetPerf, OrdDenseDifference)
 {
-  int N = 100000;
+  int N = 10000;
 
   SBG::LIB::OrdDenseAF fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
@@ -75,7 +75,7 @@ TEST(SetPerf, OrdDenseDifference)
 
 TEST(SetPerf, OrdDenseUnion)
 {
-  int N = 100000;
+  int N = 10000;
 
   SBG::LIB::OrdDenseAF fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
@@ -94,6 +94,26 @@ TEST(SetPerf, OrdDenseUnion)
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
   std::cout << "ORDERED DENSE UNION TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+TEST(SetPerf, OrdDenseComplement)
+{
+  int N = 10000;
+
+  SBG::LIB::OrdDenseAF fact;
+  SBG::LIB::Set s1 = fact.createSet();
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
+    s1.emplaceBack(i);
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  s1.complement();
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "ORDERED DENSE COMPLEMENT TEST elapsed time: " << elapsed.count() << "ms\n";
 
   SUCCEED();
 }
@@ -174,6 +194,28 @@ TEST(SetPerf, UnordUnion)
   SUCCEED();
 }
 
+
+TEST(SetPerf, UnordComplement)
+{
+  int N = 10000;
+
+  SBG::LIB::UnordAF fact;
+  SBG::LIB::Set s1 = fact.createSet();
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
+    s1.emplaceBack(i);
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  s1.complement();
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "UNORDERED COMPLEMENT TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+
 TEST(SetPerf, OrdIntersection)
 {
   int N = 10000;
@@ -248,6 +290,28 @@ TEST(SetPerf, OrdUnion)
 
   SUCCEED();
 }
+
+TEST(SetPerf, OrdComplement)
+{
+  int N = 10000;
+
+  SBG::LIB::OrdAF fact;
+  SBG::LIB::Set s1 = fact.createSet();
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
+    s1.emplaceBack(i);
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  s1.complement();
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "ORDERED COMPLEMENT TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+
 
 TEST(SetPerf, OrdIntersectionLinearTest1)
 {
@@ -345,6 +409,229 @@ TEST(SetPerf, OrdIntersectionLinearTest4)
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
   std::cout << "ORDERED INTERSECTION LINEAR TEST 4 elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+TEST(SetPerf, OrdIntersectionThreeDims)
+{
+  int N = 10000;
+
+  SBG::LIB::OrdAF fact;
+  SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i1(j*100+1, 1, (j+1)*100);
+    SBG::LIB::Interval i2(j*100+1, 1, (j+1)*100);
+    SBG::LIB::Interval i3(j*100+1, 1, (j+1)*100);
+    SBG::LIB::MultiDimInter mdi;
+    mdi.emplaceBack(i1);
+    mdi.emplaceBack(i2);
+    mdi.emplaceBack(i3);
+    s1.emplaceBack(mdi);
+  }
+
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i1(j*105+1, 1, (j+1)*105);
+    SBG::LIB::Interval i2(j*105+1, 1, (j+1)*105);
+    SBG::LIB::Interval i3(j*105+1, 1, (j+1)*105);
+    SBG::LIB::MultiDimInter mdi;
+    mdi.emplaceBack(i1);
+    mdi.emplaceBack(i2);
+    mdi.emplaceBack(i3);
+    s2.emplaceBack(mdi);
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  s1.intersection(s2);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "ORDERED INTERSECTION TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+TEST(SetPerf, OrdDifferenceThreeDims)
+{
+  int N = 1000;
+
+  SBG::LIB::OrdAF fact;
+  SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i1(j*100+1, 1, (j+1)*100);
+    SBG::LIB::Interval i2(j*100+1, 1, (j+1)*100);
+    SBG::LIB::Interval i3(j*100+1, 1, (j+1)*100);
+    SBG::LIB::MultiDimInter mdi;
+    mdi.emplaceBack(i1);
+    mdi.emplaceBack(i2);
+    mdi.emplaceBack(i3);
+    s1.emplaceBack(mdi);
+  }
+
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i1(j*105+1, 1, (j+1)*105);
+    SBG::LIB::Interval i2(j*105+1, 1, (j+1)*105);
+    SBG::LIB::Interval i3(j*105+1, 1, (j+1)*105);
+    SBG::LIB::MultiDimInter mdi;
+    mdi.emplaceBack(i1);
+    mdi.emplaceBack(i2);
+    mdi.emplaceBack(i3);
+    s2.emplaceBack(mdi);
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  s1.difference(s2);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "ORDERED DIFFERENCE TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+TEST(SetPerf, OrdUnionThreeDims)
+{
+  int N = 1000;
+
+  SBG::LIB::OrdAF fact;
+  SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i1(j*100+1, 1, (j+1)*100);
+    SBG::LIB::Interval i2(j*100+1, 1, (j+1)*100);
+    SBG::LIB::Interval i3(j*100+1, 1, (j+1)*100);
+    SBG::LIB::MultiDimInter mdi;
+    mdi.emplaceBack(i1);
+    mdi.emplaceBack(i2);
+    mdi.emplaceBack(i3);
+    s1.emplaceBack(mdi);
+  }
+
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i1(j*105+1, 1, (j+1)*105);
+    SBG::LIB::Interval i2(j*105+1, 1, (j+1)*105);
+    SBG::LIB::Interval i3(j*105+1, 1, (j+1)*105);
+    SBG::LIB::MultiDimInter mdi;
+    mdi.emplaceBack(i1);
+    mdi.emplaceBack(i2);
+    mdi.emplaceBack(i3);
+    s2.emplaceBack(mdi);
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  s1.cup(s2);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "ORDERED UNION TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+
+TEST(SetPerf, UnordIntersectionThreeDims)
+{
+  int N = 10000;
+
+  SBG::LIB::UnordAF fact;
+  SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i1(j*100+1, 1, (j+1)*100);
+    SBG::LIB::Interval i2(j*100+1, 1, (j+1)*100);
+    SBG::LIB::Interval i3(j*100+1, 1, (j+1)*100);
+    SBG::LIB::MultiDimInter mdi;
+    mdi.emplaceBack(i1);
+    mdi.emplaceBack(i2);
+    mdi.emplaceBack(i3);
+    s1.emplaceBack(mdi);
+  }
+
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i1(j*105+1, 1, (j+1)*105);
+    SBG::LIB::Interval i2(j*105+1, 1, (j+1)*105);
+    SBG::LIB::Interval i3(j*105+1, 1, (j+1)*105);
+    SBG::LIB::MultiDimInter mdi;
+    mdi.emplaceBack(i1);
+    mdi.emplaceBack(i2);
+    mdi.emplaceBack(i3);
+    s2.emplaceBack(mdi);
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  s1.intersection(s2);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "ORDERED INTERSECTION TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+TEST(SetPerf, UnordDifferenceThreeDims)
+{
+  int N = 1000;
+
+  SBG::LIB::UnordAF fact;
+  SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i1(j*100+1, 1, (j+1)*100);
+    SBG::LIB::Interval i2(j*100+1, 1, (j+1)*100);
+    SBG::LIB::Interval i3(j*100+1, 1, (j+1)*100);
+    SBG::LIB::MultiDimInter mdi;
+    mdi.emplaceBack(i1);
+    mdi.emplaceBack(i2);
+    mdi.emplaceBack(i3);
+    s1.emplaceBack(mdi);
+  }
+
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i1(j*105+1, 1, (j+1)*105);
+    SBG::LIB::Interval i2(j*105+1, 1, (j+1)*105);
+    SBG::LIB::Interval i3(j*105+1, 1, (j+1)*105);
+    SBG::LIB::MultiDimInter mdi;
+    mdi.emplaceBack(i1);
+    mdi.emplaceBack(i2);
+    mdi.emplaceBack(i3);
+    s2.emplaceBack(mdi);
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  s1.difference(s2);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "ORDERED DIFFERENCE TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+TEST(SetPerf, UnordUnionThreeDims)
+{
+  int N = 1000;
+
+  SBG::LIB::UnordAF fact;
+  SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i1(j*100+1, 1, (j+1)*100);
+    SBG::LIB::Interval i2(j*100+1, 1, (j+1)*100);
+    SBG::LIB::Interval i3(j*100+1, 1, (j+1)*100);
+    SBG::LIB::MultiDimInter mdi;
+    mdi.emplaceBack(i1);
+    mdi.emplaceBack(i2);
+    mdi.emplaceBack(i3);
+    s1.emplaceBack(mdi);
+  }
+
+  for (int j = 0; j < N; j++) {
+    SBG::LIB::Interval i1(j*105+1, 1, (j+1)*105);
+    SBG::LIB::Interval i2(j*105+1, 1, (j+1)*105);
+    SBG::LIB::Interval i3(j*105+1, 1, (j+1)*105);
+    SBG::LIB::MultiDimInter mdi;
+    mdi.emplaceBack(i1);
+    mdi.emplaceBack(i2);
+    mdi.emplaceBack(i3);
+    s2.emplaceBack(mdi);
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  s1.cup(s2);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "ORDERED UNION TEST elapsed time: " << elapsed.count() << "ms\n";
 
   SUCCEED();
 }

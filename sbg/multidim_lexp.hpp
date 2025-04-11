@@ -1,6 +1,9 @@
 /** @file multidim_lexp.hpp
 
- @brief <b>Multi-dimensional inear expressions implementation</b>
+ @brief <b>Multi-dimensional linear expressions implementation</b>
+
+ A Multi-dimensional linear expression (mdle) le1 | ... | lek is an ordered
+ collection of linear expressions.
 
  <hr>
 
@@ -37,11 +40,31 @@ typedef LExpVector::const_iterator LExpVectorConstIt;
 struct MDLExp {
   member_class(LExpVector, exps);
 
+  /**
+   * @brief Empty multi-dimensional expression constructor.
+   */
   MDLExp();
-  MDLExp(Util::MD_NAT x); // Expression mapping to x
-  MDLExp(LExp le);
-  MDLExp(unsigned int nmbr_copies, LExp le);
-  MDLExp(LExpVector v);
+
+  /**
+   * @brief Constructs a constant mdle in all dimensions that maps to \p x.
+   */
+  MDLExp(const MD_NAT &x);
+
+  /**
+   * @brief Constructs a one-dimensional mdle composed only by \p le.
+   */
+  MDLExp(const LExp &le);
+
+  /**
+   * @brief Constructs a mdle of dimension \p nmbr_copies with \p le as linear
+   * expression in each dimensions.
+   */
+  MDLExp(unsigned int nmbr_copies, const LExp &le);
+
+  /**
+   * @brief Collection move constructor.
+   */
+  MDLExp(const LExpVector &v);
 
   typedef LExpVectorIt iterator;
   typedef LExpVectorConstIt const_iterator;
@@ -59,21 +82,26 @@ struct MDLExp {
   MDLExp operator+(const MDLExp &other) const;
   MDLExp operator-(const MDLExp &other) const;
 
-  /**
-   * @brief Traditional expression operations.
-   */
+  // Traditional expression operations -----------------------------------------
 
+  /**
+   * @brief Number of dimensions of the mdle, i.e. arity(1*x+0 | 1*x+0) = 2.
+   */
   std::size_t arity() const;
-  /* @function composition
-   *
-   * @brief Calculate the composition of le1 with le2, i.e. le1(le2)
+
+  /**
+   * @brief Calculate the composition of \p this with \p other, i.e.
+   * \p this(\p other).
    */
   MDLExp composition(const MDLExp &other) const;
-  MDLExp inverse() const;
 
   /**
-   * @brief Extra operations.
+   * @brief Calculates the inverse dimension by dimension.
    */
+  MDLExp inverse() const;
+
+  // Extra operations ----------------------------------------------------------
+
   bool isId() const;
   bool isConstant() const;
 };

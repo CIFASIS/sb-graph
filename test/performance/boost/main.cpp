@@ -40,6 +40,9 @@
 #include <test/performance/boost/ordinary_graph_builder.hpp>
 #include <util/defs.hpp>
 
+template<class... Ts> struct Overload : Ts... { using Ts::operator()...; };
+template<class... Ts> Overload(Ts...) -> Overload<Ts...>;
+
 void computeMaxCardinalityMatching(OG::Graph graph)
 {
   int n_vertices = num_vertices(graph);
@@ -88,66 +91,36 @@ void computeTS(OG::DGraph graph)
     << total.count() << " [μs]" << std::endl;
 }
 
-auto graph_visitor_ = SBG::Util::Overload {
-  [](int a, SBG::LIB::BaseSBG b) {
-    SBG::LIB::BaseMatch match(b, false);
-    match.calculate().matched_edges();
+void algorithmEvaluator(int alg, SBG::LIB::SBG g)
+{
+  SBG::LIB::SBGMatching match(g, false);
+  match.calculate();
 
-    if (a == 0) {
-      OG::OrdinaryGraphBuilder ordinary_graph_builder(b);
-      OG::Graph graph = ordinary_graph_builder.build();
-      computeMaxCardinalityMatching(graph);
-    }
-
-    SBG::LIB::BaseSCC scc(buildSCCFromMatching(match), false);
-    SBG::LIB::BasePWMap scc_res = scc.calculate();
- 
-    if (a == 1) {
-      OG::OrdinaryDGraphBuilder ordinary_dgraph_builder(scc.dsbg());
-      OG::DGraph dgraph = ordinary_dgraph_builder.build();
-      computeSCC(dgraph);
-    }
-
-    SBG::LIB::BaseTopSort ts(buildSortFromSCC(scc, scc_res), false);
-
-    if (a == 2) {
-      OG::OrdinaryDGraphBuilder ordinary_dgraph_builder(ts.dsbg());
-      OG::DGraph dgraph = ordinary_dgraph_builder.build();
-      computeTS(dgraph);
-    }
-  },
-  [](int a, SBG::LIB::CanonSBG b) {
-    SBG::LIB::CanonMatch match(b, false);
-    match.calculate().matched_edges();
-
-    if (a == 0) {
-      OG::OrdinaryGraphBuilder ordinary_graph_builder(b);
-      OG::Graph graph = ordinary_graph_builder.build();
-      computeMaxCardinalityMatching(graph);
-    }
-
-    SBG::LIB::CanonSCC scc(buildSCCFromMatching(match), false);
-    SBG::LIB::CanonPWMap scc_res = scc.calculate();
- 
-    if (a == 1) {
-      OG::OrdinaryDGraphBuilder ordinary_dgraph_builder(scc.dsbg());
-      OG::DGraph dgraph = ordinary_dgraph_builder.build();
-      computeSCC(dgraph);
-    }
-
-    SBG::LIB::CanonTopSort ts(buildSortFromSCC(scc, scc_res), false);
-
-    if (a == 2) {
-      OG::OrdinaryDGraphBuilder ordinary_dgraph_builder(ts.dsbg());
-      OG::DGraph dgraph = ordinary_dgraph_builder.build();
-      computeTS(dgraph);
-    }
-  },
-  [](auto a, auto b) {
-    SBG::Util::ERROR("Wrong arguments for algorithm");
-    return;
+  if (alg == 0) {
+    OG::OrdinaryGraphBuilder ordinary_graph_builder(g);
+    OG::Graph graph = ordinary_graph_builder.build();
+    computeMaxCardinalityMatching(graph);
   }
-};
+
+  SBG::LIB::SBGSCC scc(buildSCCFromMatching(match), false);
+  SBG::LIB::PWMap scc_res = scc.calculate();
+ 
+  if (alg == 1) {
+    OG::OrdinaryDGraphBuilder ordinary_dgraph_builder(scc.dsbg());
+    OG::DGraph dgraph = ordinary_dgraph_builder.build();
+    computeSCC(dgraph);
+  }
+
+  SBG::LIB::SBGTopSort ts(buildSortFromSCC(scc, scc_res), false);
+
+  if (alg == 2) {
+    OG::OrdinaryDGraphBuilder ordinary_dgraph_builder(ts.dsbg());
+    OG::DGraph dgraph = ordinary_dgraph_builder.build();
+    computeTS(dgraph);
+  }
+
+  return;
+}
 
 void parseEvalProgramFromFile(int alg, std::string fname, int copies)
 {
@@ -169,17 +142,18 @@ void parseEvalProgramFromFile(int alg, std::string fname, int copies)
   );
 
   if (r && iter == end) {
-    SBG::Eval::ProgramVisitor program_visit(false); 
+    SBG::LIB::UnordAF set_fact;
+    SBG::LIB::MapAF map_fact(set_fact);
+    SBG::LIB::UnordPWMapAF fact(map_fact);
+    SBG::Eval::ProgramVisitor program_visit(fact, false); 
     SBG::Eval::ProgramIO visit_result = boost::apply_visitor(
       program_visit, parser_result
     );
 
     for (const SBG::Eval::ExprEval &ev : visit_result.exprs()) {
-      auto e = std::get<1>(ev);
-      if (std::holds_alternative<SBG::Eval::SBGBaseType>(e)) {
-        auto g_variant = std::get<SBG::Eval::SBGBaseType>(e);
-        std::visit(graph_visitor_, std::variant<int>(alg), g_variant);
-      }
+      SBG::Eval::ExprBaseType e = std::get<1>(ev);
+      if (std::holds_alternative<SBG::LIB::SBG>(e))
+        algorithmEvaluator(alg, std::get<SBG::LIB::SBG>(e));
     }
   }
   else {

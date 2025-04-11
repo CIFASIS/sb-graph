@@ -2,9 +2,9 @@
 
  @brief <b>Debugging</b>
 
- This debugging routines allow the user to turn on selected
- debugging messages, controllable from the command line arguments
- passed to SBG modules after de -d option.
+ This debugging routines allow the user to turn on selected debugging messages,
+ controllable from the command line arguments passed to SBG modules after the
+ -d option.
 
  <hr>
 
@@ -31,14 +31,15 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
+#include <iostream>
 
 namespace SBG {
 
 namespace Util {
 
 /*
- * Print an ERROR message. Then exits with EXIT_FAILURE status.
-*/
+ * @brief Print an ERROR message. Then exits with EXIT_FAILURE status.
+ */
 template<class... Args>
 void ERROR(Args... args)
 {
@@ -46,9 +47,8 @@ void ERROR(Args... args)
   exit(EXIT_FAILURE);
 }
 
-
 /**
- * Print an ERROR message if condition is false.
+ * @brief Print an ERROR message if condition is false.
  * Then exits with EXIT_FAILURE status.
  */
 template<class... Args>

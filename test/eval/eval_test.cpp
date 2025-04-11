@@ -34,20 +34,23 @@ TEST_P(EvalTests, Eval)
 {
   const std::string NAME = GetParam();
   std::cout << "Testing program: " << NAME << std::endl;
-  const std::string EVAL_CMD = "./compile_and_run.sh " + NAME;
-  const std::string RESULT_FILE = "./test_data/" + NAME + "/" + NAME + ".passed";
-  const std::string TEST_CMD = "./results.sh " + NAME;
 
+  const std::string TEST_DIR = "./test_data/" + NAME;
+  const std::string DIR_CMD = "mkdir -p " + TEST_DIR;
+  std::system(DIR_CMD.c_str());
+  const std::string EVAL_CMD = "../../bin/sbg-eval -f ../" + NAME
+    + ".test > " + TEST_DIR + "/" + NAME + ".log 2>&1";
   std::system(EVAL_CMD.c_str());
+  const std::string TEST_CMD = "./results.sh " + NAME;
   std::system(TEST_CMD.c_str());
 
+  const std::string RESULT_FILE = "./test_data/" + NAME + "/" + NAME + ".passed";
   std::ifstream result(RESULT_FILE.c_str());
   EXPECT_TRUE(result.good());
 }
 
-// @todo Restore both tests when fixed:
-// "map", "pw_map". See #iss-27
-const char* eval_program[] = {"arithmetic", "interval", "set", "lexp"};
+const char* eval_program[] = {"arithmetic", "interval", "set", "lexp", "map"
+ , "pw_map1", "pw_map2", "pw_map3"};
 
 INSTANTIATE_TEST_SUITE_P(EvalInst, EvalTests, testing::ValuesIn(eval_program));
 

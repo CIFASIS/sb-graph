@@ -31,56 +31,75 @@
 #ifndef SBG_INTERVAL_HPP
 #define SBG_INTERVAL_HPP
 
-#include <cmath>
-#include <numeric>
-#include <optional>
-
-#include "util/defs.hpp"
+#include "sbg/natural.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
-using NAT = Util::NAT;
-using MD_NAT = Util::MD_NAT;
+struct Interval;
+
+typedef std::optional<Interval> MaybeInterval;
 
 struct Interval {
-  using MaybeInterval = std::optional<Interval>;
-
-  NAT begin() const;
-  NAT &begin_ref();
-  NAT step() const;
-  NAT &step_ref();
-  NAT end() const;
-  NAT &end_ref();
-
-  Interval();
-  Interval(const NAT &x);
-  Interval(const NAT &begin, const NAT &step, const NAT &end);
- 
-  bool operator==(const Interval &i) const;
-  bool operator!=(const Interval &i) const;
-  bool operator<(const Interval &i) const;
+  member_class(NAT, begin);
+  member_class(NAT, step);
+  member_class(NAT, end);
 
   /**
-   * @brief Traditional set operations.
+   * @brief Construct an empty interval.
+   */
+  Interval();
+
+  /**
+   * @brief Construct an interval only containing \p x.
+   */
+  Interval(NAT x);
+
+  /**
+   * @brief Construct an interval with \p begin, \p step and \p end.
+   */
+  Interval(NAT begin, NAT step, NAT end);
+
+  bool operator==(const Interval &i) const;
+  bool operator!=(const Interval &i) const;
+
+  /**
+   * @brief An interval i1 is less than another interval i2 iff
+   * min(i1) < min(i2). This operation is later needed to implement ordered
+   * sets.
+   */ 
+  bool operator<(const Interval &i) const;
+
+  // Traditional set operations ------------------------------------------------
+
+  /**
+   * @brief Number of elements contained in the interval, i.e.
+   * cardinal([1:1:10]) = 10. 
    */
   unsigned int cardinal() const;
   bool isEmpty() const;
-  bool isMember(const NAT &x) const;
+  bool isMember(NAT x) const;
   Interval intersection(const Interval &i2) const;
 
-  /**
-   * @brief Extra operations.
-   */
-  Interval offset(const Util::NAT &off) const;
-  Interval least(const Interval &i2) const;
-  MaybeInterval compact(const Interval &i2) const;
+  // Extra operations ----------------------------------------------------------
 
-  private:
-  NAT begin_;
-  NAT step_;
-  NAT end_;
+  /**
+   * @brief Sum a constant value to every element of the interval.
+   */
+  Interval offset(NAT off) const;
+
+  /**
+   * @brief Operation that given two disjoint intervals returns the lesser one.
+   * It will be used by ordered sets operations.
+   */
+  Interval least(const Interval &i2) const;
+
+  /**
+   * @brief Merge two contiguous intervals if possible. If not, then the result
+   * is not an interval, so no value is returned.
+   */
+  MaybeInterval compact(const Interval &i2) const;
 };
 std::ostream &operator<<(std::ostream &out, const Interval &i);
 

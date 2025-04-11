@@ -24,16 +24,9 @@
 #ifndef AST_VISITOR_EVALEXP
 #define AST_VISITOR_EVALEXP
 
-#include "eval/visitors/eval_base_sbg.hpp"
-#include "eval/visitors/eval_canon_sbg.hpp"
-#include "eval/visitors/eval_base_dsbg.hpp"
-#include "eval/visitors/eval_canon_dsbg.hpp"
-#include "eval/visitors/eval_natbt.hpp"
-#include "eval/visitors/eval_container.hpp"
-#include "eval/visitors/eval_linear.hpp"
-#include "eval/visitors/eval_map.hpp"
-#include "eval/visitors/eval_graph.hpp"
-#include "sbg/sbg_algorithms.hpp"
+#include "eval/visitors/eval_nat.hpp"
+#include "eval/visitors/eval_rat.hpp"
+#include "eval/visitors/eval_le.hpp"
 
 namespace SBG {
 
@@ -41,42 +34,32 @@ namespace Eval {
 
 struct EvalExpression : public boost::static_visitor<ExprBaseType> {
   public:
-  EvalExpression();
   EvalExpression(VarEnv env);
-  EvalExpression(unsigned int nmbr_dims, bool opt_conds, VarEnv env
-    , bool debug);
+  EvalExpression(unsigned int nmbr_dims, const LIB::PWMapAF &fact
+    , VarEnv env, bool debug);
 
   ExprBaseType operator()(AST::Natural v) const;
-  ExprBaseType operator()(AST::MDNatural v) const;
   ExprBaseType operator()(AST::Rational v) const;
-  ExprBaseType operator()(AST::Boolean v) const;
-  ExprBaseType operator()(Util::VariableName v) const;
+  ExprBaseType operator()(AST::Name v) const;
   ExprBaseType operator()(AST::UnaryOp v) const;
   ExprBaseType operator()(AST::BinOp v) const;
   ExprBaseType operator()(AST::Call v) const;
   ExprBaseType operator()(AST::Interval v) const;
-  ExprBaseType operator()(AST::InterUnaryOp v) const;
-  ExprBaseType operator()(AST::InterBinOp v) const;
   ExprBaseType operator()(AST::MultiDimInter v) const;
-  ExprBaseType operator()(AST::MDInterUnaryOp v) const;
-  ExprBaseType operator()(AST::MDInterBinOp v) const;
   ExprBaseType operator()(AST::Set v) const;
-  ExprBaseType operator()(AST::SetUnaryOp v) const;
-  ExprBaseType operator()(AST::SetBinOp v) const;
   ExprBaseType operator()(AST::LinearExp v) const;
-  ExprBaseType operator()(AST::LExpBinOp v) const;
   ExprBaseType operator()(AST::MDLExp v) const;
-  ExprBaseType operator()(AST::MDLExpBinOp v) const;
   ExprBaseType operator()(AST::LinearMap v) const;
   ExprBaseType operator()(AST::PWLMap v) const;
   ExprBaseType operator()(AST::SBG v) const;
   ExprBaseType operator()(AST::DSBG v) const;
+  ExprBaseType operator()(AST::ParenExpr v) const;
 
   private:
   unsigned int nmbr_dims_;
-  bool opt_conds_;
+  const LIB::PWMapAF &fact_;
   mutable VarEnv env_;
-  const FuncEnv fenv_;
+  FuncEnv fenv_;
   mutable bool debug_;
 };
 

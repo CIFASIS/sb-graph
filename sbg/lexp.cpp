@@ -24,10 +24,10 @@ namespace SBG {
 namespace LIB {
 
 LExp::LExp() : slope_(1), offset_(0) {}
-LExp::LExp(RAT slope, RAT offset) : slope_(slope), offset_(offset) {}
+LExp::LExp(RATIONAL slope, RATIONAL offset) : slope_(slope), offset_(offset) {}
 
-member_imp(LExp, RAT, slope);
-member_imp(LExp, RAT, offset);
+member_imp(LExp, RATIONAL, slope);
+member_imp(LExp, RATIONAL, offset);
 
 bool LExp::operator==(const LExp &other) const
 {
@@ -48,7 +48,7 @@ LExp LExp::operator-(const LExp &other) const
 
 std::ostream &operator<<(std::ostream &out, const LExp &le)
 {
-  RAT slo = le.slope_, off = le.offset_;
+  RATIONAL slo = le.slope(), off = le.offset();
 
   if (slo != 0 && slo != 1) {
     if (slo.numerator() != 1)
@@ -82,27 +82,27 @@ std::ostream &operator<<(std::ostream &out, const LExp &le)
 
 LExp LExp::composition(const LExp &other)const
 {
-  RAT new_slope = other.slope_ * slope_;
-  RAT new_offset = slope_ * other.offset_ + offset_;
+  RATIONAL new_slope = other.slope_ * slope_;
+  RATIONAL new_offset = slope_ * other.offset_ + offset_;
 
   return LExp(new_slope, new_offset);
 }
 
 LExp LExp::inverse() const
 {
-  RAT zero, one(1);
-  RAT new_slope(0, 1), new_offset(0, 1);
+  RATIONAL zero, one(1);
+  RATIONAL new_slope(0, 1), new_offset(0, 1);
 
   // Non constant map
   if (slope_ != 0) {
-    new_slope = RAT(slope_.denominator(), slope_.numerator());
+    new_slope = RATIONAL(slope_.denominator(), slope_.numerator());
     new_offset = (-offset_)/slope_;
   }
 
   // Constant map
   else {
-    new_slope = RAT(Util::INT_Inf, 1);
-    new_offset = RAT(-Util::INT_Inf, 1);
+    new_slope = RATIONAL(INT_Inf, 1);
+    new_offset = RATIONAL(-INT_Inf, 1);
   }
 
   return LExp(new_slope, new_offset);

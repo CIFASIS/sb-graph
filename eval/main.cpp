@@ -31,7 +31,14 @@
 #include "parser/sbg_program.hpp"
 #include "eval/visitors/program_visitor.hpp"
 
-void parseEvalProgramFromFile(std::string fname, bool debug)
+struct Impl {
+  int set_impl_;
+  int pw_impl_;
+
+  Impl(int set_impl, int pw_impl) : set_impl_(set_impl), pw_impl_(pw_impl) {};
+};
+
+void parseEvalProgramFromFile(std::string fname, Impl impl, bool debug)
 {
   std::ifstream in(fname.c_str());
   if (in.fail()) 
@@ -57,7 +64,26 @@ void parseEvalProgramFromFile(std::string fname, bool debug)
     std::cout << ">>>>>> Eval result <<<<<<\n";
     std::cout << "-------------------------\n\n";
 
-    SBG::Eval::ProgramVisitor program_visit(debug); 
+    std::shared_ptr<SBG::LIB::SetAF> set_fact 
+      = std::make_shared<SBG::LIB::UnordAF>();
+
+    switch (impl.set_impl_) {
+      case 2:
+        set_fact = std::make_shared<SBG::LIB::OrdDenseAF>();
+
+      default:
+        break;
+    }
+
+    SBG::LIB::MapAF map_fact(*set_fact);
+    std::shared_ptr<SBG::LIB::PWMapAF> fact
+      = std::make_shared<SBG::LIB::UnordPWMapAF>(map_fact);
+    switch (impl.pw_impl_) {
+      default:
+        break;
+    }
+
+    SBG::Eval::ProgramVisitor program_visit(*fact, debug); 
     SBG::Eval::ProgramIO visit_result = boost::apply_visitor(
       program_visit, parser_result
     );
@@ -75,52 +101,91 @@ void parseEvalProgramFromFile(std::string fname, bool debug)
 
 void usage()
 {
-  std::cout << "Usage evaluator [options] file" << std::endl;
-  std::cout << "Parses a SBG program." << std::endl;
-  std::cout << std::endl;
-  std::cout << "-f, --file      SBG program file used as input " << std::endl;
-  std::cout << "-h, --help      Display this information and exit" << std::endl;
-  std::cout << "-d, --debug     Activate debug info" << std::endl;
-  std::cout << "-v, --version   Display version information and exit"
-    << std::endl;
-  std::cout << std::endl;
-  std::cout << "SBG library home page: https://github.com/CIFASIS/sb-graph"
-    << std::endl;
+  std::cout << "Usage evaluator: ./bin/sbg-eval -f filename [options]\n";
+  std::cout << "Parses and evaluates a SBG program.\n\n";
+  std::cout << "-f, --file      SBG program file used as input\n";
+  std::cout << "-s, --set_impl  Choose set implementation: 0 unordered sets,\n";
+  std::cout << "                1 ordered sets, 2 ordered dense sets.\n";
+  std::cout << "-h, --help      Display this information and exit\n";
+  std::cout << "-d, --debug     Activate debug info\n";
+  std::cout << "-v, --version   Display version information and exit\n\n";
+  std::cout << "SBG library home page: https://github.com/CIFASIS/sb-graph\n\n";
 
-  std::cout << "\nThe grammar for a SBG program can be derived from the .cpp\n"
-    << " files present in /parser.\n";
-  std::cout << "The following rules are used to avoid ambiguities:\n";
-  std::cout << "  * Naturals are evaluated into md_nat (with arity equal 1).\n";
-  std::cout << "  * Since a natural can be parsed both into an\n";
-  std::cout << "    an interval or a mdi interval with arity equal to 1, it\n";
-  std::cout << "    will be interpreted as an interval.\n";
-  std::cout << "    To test operations of mdis, single elements sets can be\n";
-  std::cout << "    used, i.e.: {[1:1:10] x [1:1:10]} /\\ {[5:1:10] x [5:1:10]}.";
-  std::cout << "\n  * The same situation arises for le and mdle, for which the\n";
-  std::cout << "    same criteria is used.\n";
-  std::cout << "  * In a file all elements should be of the same arity (i.e., \n";
-  std::cout << "    have the same number of dimensions).\n";
+  std::cout << "To start writing a SBG program the following considerations\n";
+  std::cout << "should be taken into account:\n";
+  std::cout << "  * Multi-block and single line C-like comments are supported.";
+  std::cout << "\n";
+  std::cout << "  * A SBG program starts with a list (possibly empty) of\n";
+  std::cout << "    assignments, and then continues with a list (possibly\n";
+  std::cout << "    empty) of expressions, each one separated by a\n";
+  std::cout << "    semicolon.";
+  std::cout << "  * Each assignment or expression should be ended with a\n";
+  std::cout << "    semicolon ;.\n";
+  std::cout << "  * All expressions defined in a SBG program should have the\n";
+  std::cout << "    same number of dimensions.\n";
+  std::cout << "  * The first assignment of a SBG program should be\n";
+  std::cout << "    \"dims = k\", where k is the number of the dimensions of\n";
+  std::cout << "    all elements defined in the SBG program. If it is\n";
+  std::cout << "    omitted then is considered to be 1.\n";
+  std::cout << "  * It is forbidden to use a variable before its definition.\n";
+  std::cout << "  * Variable names should start with a letter, and then\n";
+  std::cout << "    alfanumeric characters (including \"_\") can be used.\n";
+  std::cout << "    The variable name \"x\" is forbidden, to preserve it\n";
+  std::cout << "    for linear expressions. As explained above, \"dims\"\n";
+  std::cout << "    is also reserved.\n";
+  std::cout << "  * Both intervals and linear expressions will be parsed as\n";
+  std::cout << "    their multi-dimensional counterparts.\n\n";
 
-  std::cout << "\n\nA comprehensive list of the available functions to call on SBG"
-    << " elements,\nwith a short description of the permitted arguments is";
-  std::cout << " as follows:\n";
+  std::cout << "A brief list of the available expressions:\n";
+  std::cout << "  * Arithmetic.\n";
+  std::cout << "  * Interval.\n";
+  std::cout << "  * Multi-dimensional Interval.\n";
+  std::cout << "  * SBG Set.\n";
+  std::cout << "  * Linear Expression.\n";
+  std::cout << "  * Multi-dimensional Expression.\n";
+  std::cout << "  * SBG Map.\n";
+  std::cout << "  * SBG Piecewise Linear Map.\n";
+  std::cout << "  * Undirected SBG.\n";
+  std::cout << "  * Directed SBG.\n";
+  std::cout << "  * Function Call.\n\n";
+
+  std::cout << "For a more detailed description of the grammar, the /parser\n";
+  std::cout << "files can be analyzed. Also /test files can be consulted\n";
+  std::cout << "to start writing basic SBG programs.\n\n";
+
+  std::cout << "A brief list of available operators:\n";
+  std::cout << "  * Arithmetic expressions: +, -, *, /.\n";
+  std::cout << "  * SBG expressions:\n";
+  std::cout << "    - For linear expressions and maps: + and -.\n";
+  std::cout << "    - For containers (intervals, MDIs, sets): /\\ \n";
+  std::cout << "      (intersection), \\/ (union), \\ (difference),\n";
+  std::cout << "      \' (complement).\n";
+  std::cout << "  * Relational operators for any expression: <, == (equality).";
+  std::cout << "\n\n";
+
+  std::cout << "\nA comprehensive list of the available functions to call on"
+    << " SBG elements,\nwith a short description of the correct types for"
+    << " arguments is as follows\n(a container is either an interval, a mdi or"
+    << " a set):\n\n";
   std::cout << "  - isEmpty: check if container is empty\n";
-  std::cout << "    --> isEmpty(interval) | isEmpty(set)\n";
-  std::cout << "\n  - isMember: check if an element belongs to a container\n";
-  std::cout << "    --> isMember(nat, interval)\n";
+  std::cout << "    --> isEmpty(container)\n";
   std::cout << "\n  - minElem: minimum element of a container\n";
-  std::cout << "    --> minElem(interval) | minElem(set)\n";
+  std::cout << "    --> minElem(container)\n";
   std::cout << "\n  - maxElem: maximum element of a container\n";
-  std::cout << "    --> maxElem(interval)  | maxElem(set)\n";
+  std::cout << "    --> maxElem(container)\n";
   std::cout << "\n  - compose: composition of expressions or maps\n";
   std::cout << "    --> compose(lexp, lexp) | compose(mdlexp, mdlexp)\n";
   std::cout << "    | compose(map, map) | compose(pw, pw)\n";
-  std::cout << "\n  - inv: calculate the inverse of an expression.\n";
+  std::cout << "\n  - inv: calculate the inverse of an expression or map.\n";
   std::cout << "    If the expression is constant in some dimension, returns\n";
-  std::cout << "    inf-inf there\n";
-  std::cout << "    --> inv(lexp) | inv(mdlexp)\n";
-  std::cout << "\n  - image: return the image for a set of elements of the domain";
-  std::cout << "\n    --> image(set, map) | image(set, pw)\n";
+  std::cout << "    inf-inf there. If the argument is a map, it should be\n";
+  std::cout << "    bijective.\n";
+  std::cout << "    --> inv(lexp) | inv(mdlexp) | inv(map) | inv(pw)\n";
+  std::cout << "\n  - image: return the image for a set of elements of the\n";
+  std::cout << "    domain. If no subdomain is specified, the whole domain\n";
+  std::cout << "    is used.";
+  std::cout << "\n    --> image(map) | image(pw) | image(set, map) ";
+  std::cout << "| image(set, pw)\n";
   std::cout << "\n  - preImage: return the pre-image for a set of elements in the\n";
   std::cout << "    image of the map\n";
   std::cout << "    --> preImage(set, map) | preImage(set, pw)\n";
@@ -165,7 +230,7 @@ void usage()
 
 void version()
 {
-  std::cout << "SBG library v3.0.0" << std::endl;
+  std::cout << "SBG library v4.0.0" << std::endl;
   std::cout << "License GPLv3+: GNU GPL version 3 or later"
     << " <http://gnu.org/licenses/gpl.html>\n";
   std::cout << "This is free software: you are free to change and redistribute" 
@@ -177,22 +242,26 @@ void version()
 int main(int argc, char**argv)
 {
   std::string filename;
-  int opt;
+  int opt, set_impl = 0, pw_impl = 0;
   extern char* optarg;
   bool debug = false;
 
   while (true) {
     static struct option long_options[] = {{"file", required_argument, 0, 'f'}
+                                           , {"set_impl", required_argument, 0, 's'}
                                            , {"help", no_argument, 0, 'h'}
                                            , {"debug", no_argument, 0, 'd'}
                                            , {"version", no_argument, 0, 'v'}
                                            , {0, 0, 0, 0}};
-    opt = getopt_long(argc, argv, "f:hdv", long_options, nullptr);
+    opt = getopt_long(argc, argv, "f:s:hdv", long_options, nullptr);
     if (opt == EOF) 
       break;
     switch (opt) {
       case 'f':
         filename = optarg;
+        break;
+      case 's':
+        set_impl = std::stoi(optarg);
         break;
       case 'h':
         usage();
@@ -213,7 +282,7 @@ int main(int argc, char**argv)
   }
 
   if (!filename.empty())
-    parseEvalProgramFromFile(filename, debug);
+    parseEvalProgramFromFile(filename, Impl(set_impl, pw_impl), debug);
   else
     SBG::Util::ERROR("A filename should be provided\n");
 

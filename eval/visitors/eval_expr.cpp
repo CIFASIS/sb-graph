@@ -23,304 +23,434 @@ namespace SBG {
 
 namespace Eval {
 
-// -----------------------------------------------------------------------------
-// Function visitors -----------------------------------------------------------
-// -----------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+// Overload pattern ------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
-auto min_visitor_ = Util::Overload {
-  [](LIB::Interval a) { return Util::MD_NAT(a.begin()); },
+/**
+ * @brief Provides in-place lambdas for visitation for the different
+ * operations. These are needed because different structures share the same
+ * functions (for example, isEmpty can be applied to intervals, sets, etc.).
+ */
+
+template<class... Ts> struct Overload : Ts... { using Ts::operator()...; };
+template<class... Ts> Overload(Ts...) -> Overload<Ts...>;
+
+////////////////////////////////////////////////////////////////////////////////
+// Function visitors -----------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+auto oppo_visitor_ = Overload {
+  [](LIB::NAT a) { return LIB::RATIONAL(a, -1); },
+  [](LIB::RATIONAL a) { return LIB::RATIONAL(-1)*a; },
+  [](auto a) { 
+    Util::ERROR("oppo_visitor_: wrong argument ", a, " for - (opposite)\n");
+    return LIB::RATIONAL(0);
+  }
+};
+
+auto cardinal_visitor_ = Overload {
+  [](LIB::Interval a) { return (LIB::NAT) a.cardinal(); },
+  [](LIB::MultiDimInter a) { return (LIB::NAT) a.cardinal(); },
+  [](LIB::Set a) { return (LIB::NAT) a.cardinal(); },
+  [](auto a) { 
+    Util::ERROR("empty_visitor_: wrong argument ", a, " for #\n");
+    return (LIB::NAT) 0;
+  }
+};
+
+auto complement_visitor_ = Overload {
+  [](LIB::Set a) { return ExprBaseType(a.complement()); },
+  [](auto a) { 
+    Util::ERROR("empty_visitor_: wrong argument ", a, " for \' (complement)\n"); 
+    return ExprBaseType();
+  }
+};
+
+auto add_visitor_ = Overload {
+  [](LIB::NAT a, LIB::NAT b) { return ExprBaseType(a + b); },
+  [](LIB::MD_NAT a, LIB::MD_NAT b) { return ExprBaseType(a + b); },
+  [](LIB::RATIONAL a, LIB::RATIONAL b) { return ExprBaseType(a + b); },
+  [](LIB::NAT a, LIB::RATIONAL b) {
+    return ExprBaseType(LIB::RATIONAL(a) + b);
+  },
+  [](LIB::RATIONAL a, LIB::NAT b) {
+    return ExprBaseType(a + LIB::RATIONAL(b));
+  },
+  [](LIB::Exp a, LIB::Exp b) { return ExprBaseType(a + b); },
+  [](LIB::Map a, LIB::Map b) { return ExprBaseType(a + b); },
+  [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a + b); },
+  [](auto a, auto b) { 
+    Util::ERROR("add_visitor_: wrong arguments ", a, ", ", b
+      , " for operator+\n"); 
+    return ExprBaseType();
+  }
+};
+
+auto sub_visitor_ = Overload {
+  [](LIB::NAT a, LIB::NAT b) {
+    if (a > b)
+      return ExprBaseType(LIB::NAT(a - b));
+    else
+      return ExprBaseType(LIB::RATIONAL(a) - LIB::RATIONAL(b));
+  },
+  [](LIB::RATIONAL a, LIB::RATIONAL b) { return ExprBaseType(a - b); },
+  [](LIB::NAT a, LIB::RATIONAL b) {
+    return ExprBaseType(LIB::RATIONAL(a) - b);
+  },
+  [](LIB::RATIONAL a, LIB::NAT b) {
+    return ExprBaseType(a - LIB::RATIONAL(b));
+  },
+  [](LIB::Exp a, LIB::Exp b) { return ExprBaseType(a - b); },
+  [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a - b); },
+  [](auto a, auto b) { 
+    Util::ERROR("sub_visitor_: wrong arguments ", a, ", ", b
+      , " for operator-\n"); 
+    return ExprBaseType();
+  }
+};
+
+auto mult_visitor_ = Overload {
+  [](LIB::NAT a, LIB::NAT b) { return ExprBaseType(a*b); },
+  [](LIB::RATIONAL a, LIB::RATIONAL b) { return ExprBaseType(a*b); },
+  [](LIB::NAT a, LIB::RATIONAL b) { return ExprBaseType(LIB::RATIONAL(a)*b); },
+  [](LIB::RATIONAL a, LIB::NAT b) { return ExprBaseType(a*LIB::RATIONAL(b)); },
+  [](auto a, auto b) { 
+    Util::ERROR("mult_visitor_: wrong arguments ", a, ", ", b
+      , " for operator*\n"); 
+    return ExprBaseType();
+  }
+};
+
+auto eq_visitor_ = Overload {
+  [](LIB::MD_NAT a, LIB::MD_NAT b) { return Boolean(a == b); },
+  [](LIB::RATIONAL a, LIB::RATIONAL b) { return Boolean(a == b); },
+  [](LIB::Interval a, LIB::Interval b) { return Boolean(a == b); },
+  [](LIB::SetPiece a, LIB::SetPiece b) { return Boolean(a == b); },
+  [](LIB::Set a, LIB::Set b) { return Boolean(a == b); },
+  [](LIB::Exp a, LIB::Exp b) { return Boolean(a == b); },
+  [](LIB::Map a, LIB::Map b) { return Boolean(a == b); },
+  [](LIB::PWMap a, LIB::PWMap b) { return Boolean(a == b); },
+  [](auto a, auto b) {
+    Util::ERROR("eq_visitor_: wrong arguments ", a, ", ", b
+      , " for operator==\n");
+    return Boolean();
+  }
+};
+
+auto less_visitor_ = Overload {
+  [](LIB::MD_NAT a, LIB::MD_NAT b) { return Boolean(a < b); },
+  [](LIB::RATIONAL a, LIB::RATIONAL b) { return Boolean(a < b); },
+  [](LIB::Interval a, LIB::Interval b) { return Boolean(a < b); },
+  [](LIB::SetPiece a, LIB::SetPiece b) { return Boolean(a < b); },
+  [](auto a, auto b) { 
+    Util::ERROR("less_visitor_: wrong arguments ", a, ", ", b
+      , " for operator<\n"); 
+    return Boolean();
+  }
+};
+
+auto cap_visitor_ = Overload{
+  [](LIB::Interval a, LIB::Interval b) {
+    return ExprBaseType(a.intersection(b));
+  },
+  [](LIB::SetPiece a, LIB::SetPiece b) {
+    return ExprBaseType(a.intersection(b));
+  },
+  [](LIB::Set a, LIB::Set b) { return ExprBaseType(a.intersection(b)); },
+  [](auto a, auto b) { 
+    Util::ERROR("cap_visitor_: wrong arguments ", a, ", ", b
+      , " for intersection\n"); 
+    return ExprBaseType();
+  }
+};
+
+auto cup_visitor_ = Overload{
+  [](LIB::Set a, LIB::Set b) { return ExprBaseType(a.cup(b)); },
+  [](auto a, auto b) { 
+    Util::ERROR("cap_visitor_: wrong arguments ", a, ", ", b
+      , " for union\n"); 
+    return ExprBaseType();
+  }
+};
+
+auto diff_visitor_ = Overload{
+  [](LIB::Set a, LIB::Set b) { return ExprBaseType(a.difference(b)); },
+  [](auto a, auto b) { 
+    Util::ERROR("diff_visitor_: wrong arguments ", a, ", ", b
+      , " for difference\n"); 
+    return ExprBaseType();
+  }
+};
+
+auto empty_visitor_ = Overload {
+  [](LIB::Interval a) { return Boolean(a.isEmpty()); },
+  [](LIB::MultiDimInter a) { return Boolean(a.isEmpty()); },
+  [](LIB::Set a) { return Boolean(a.isEmpty()); },
+  [](auto a) { 
+    Util::ERROR("empty_visitor_: wrong argument ", a, " for isEmpty\n"); 
+    return Boolean();
+  }
+};
+
+auto min_visitor_ = Overload {
+  [](LIB::Interval a) { return LIB::MD_NAT(a.begin()); },
   [](LIB::MultiDimInter a) { return a.minElem(); },
-  [](LIB::UnordSet a) { return a.minElem(); },
-  [](LIB::OrdSet a) { return a.minElem(); },
+  [](LIB::Set a) { return a.minElem(); },
   [](auto a) { 
     Util::ERROR("min_visitor_: wrong argument ", a, " for minElem\n"); 
-    return Util::MD_NAT();
+    return LIB::MD_NAT();
   }
 };
 
-auto max_visitor_ = Util::Overload {
-  [](LIB::Interval a) { return Util::MD_NAT(a.end()); },
+auto max_visitor_ = Overload {
+  [](LIB::Interval a) { return LIB::MD_NAT(a.end()); },
   [](LIB::MultiDimInter a) { return a.maxElem(); },
-  [](LIB::UnordSet a) { return a.maxElem(); },
-  [](LIB::OrdSet a) { return a.maxElem(); },
+  [](LIB::Set a) { return a.maxElem(); },
   [](auto a) { 
     Util::ERROR("max_visitor_: wrong argument ", a, " for maxElem\n"); 
-    return Util::MD_NAT(); 
+    return LIB::MD_NAT(); 
   }
 };
 
-auto compose_linear_visitor_ = Util::Overload {
-  [](LIB::LExp a, LIB::LExp b) { return LinearBaseType(a.composition(b)); },
-  [](LIB::Exp a, LIB::Exp b) { return LinearBaseType(a.composition(b)); },
+auto compose_visitor_ = Overload {
+  [](LIB::LExp a, LIB::LExp b) { return ExprBaseType(a.composition(b)); },
+  [](LIB::Exp a, LIB::Exp b) { return ExprBaseType(a.composition(b)); },
+  [](LIB::Map a, LIB::Map b) { return ExprBaseType(a.composition(b)); },
+  [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a.composition(b)); },
   [](auto a, auto b) {
-    Util::ERROR("compose_linear_visitor_: wrong arguments ", a, ", ", b
+    Util::ERROR("compose_visitor_: wrong arguments ", a, ", ", b
       , " for compose\n"); 
-    return LinearBaseType(); 
+    return ExprBaseType(); 
    }
 };
 
-auto compose_map_visitor_ = Util::Overload {
-  [](LIB::BaseMap a, LIB::BaseMap b) { return MapBaseType(a.composition(b)); },
-  [](LIB::CanonMap a, LIB::CanonMap b) {
-    return MapBaseType(a.composition(b));
-  },
-  [](LIB::BasePWMap a, LIB::BasePWMap b) {
-    return MapBaseType(a.composition(b));
-  },
-  [](LIB::CanonPWMap a, LIB::CanonPWMap b) {
-    return MapBaseType(a.composition(b));
-  },
-  [](auto a, auto b) { 
-    Util::ERROR("compose_map_visitor_: wrong arguments ", a, ", ", b
-      , " for compose\n"); 
-    return MapBaseType(); 
+auto inverse_visitor_ = Overload {
+  [](LIB::LExp a) { return ExprBaseType(a.inverse()); },
+  [](LIB::Exp a) { return ExprBaseType(a.inverse()); },
+  [](LIB::Map a) { return ExprBaseType(a.minInv()); },
+  [](LIB::PWMap a) { return ExprBaseType(a.inverse()); },
+  [](auto a) { 
+    Util::ERROR("inverse_visitor_: wrong arguments ", a, " for inverse\n"); 
+    return ExprBaseType();
   }
 };
 
-auto image_visitor_ = Util::Overload {
-  [](LIB::UnordSet a, LIB::BaseMap b) { return ContainerBaseType(b.image(a)); },
-  [](LIB::OrdSet a, LIB::CanonMap b) { return ContainerBaseType(b.image(a)); },
-  [](LIB::UnordSet a, LIB::BasePWMap b) { 
-    return ContainerBaseType(b.image(a)); 
-  },
-  [](LIB::OrdSet a, LIB::CanonPWMap b) {
-    return ContainerBaseType(b.image(a));
-  },
-  [](auto a, auto b) { 
-    Util::ERROR("image_visitor_: wrong arguments ", a, ", ", b, " for image\n"); 
-    return ContainerBaseType();
+auto image_visitor_ = Overload {
+  [](LIB::Map a) { return ExprBaseType(a.image()); },
+  [](LIB::PWMap a) { return ExprBaseType(a.image()); },
+  [](auto a) { 
+    Util::ERROR("image_visitor_: wrong argument ", a, " for image\n"); 
+    return ExprBaseType();
   }
 };
 
-auto pre_image_visitor_ = Util::Overload {
-  [](LIB::UnordSet a, LIB::BaseMap b) {
-    return ContainerBaseType(b.preImage(a));
-  },
-  [](LIB::OrdSet a, LIB::CanonMap b) {
-    return ContainerBaseType(b.preImage(a));
-  },
-  [](LIB::UnordSet a, LIB::BasePWMap b) {
-    return ContainerBaseType(b.preImage(a));
-  },
-  [](LIB::OrdSet a, LIB::CanonPWMap b) {
-    return ContainerBaseType(b.preImage(a));
-  },
+auto image2_visitor_ = Overload {
+  [](LIB::Set a, LIB::Map b) { return ExprBaseType(b.image(a)); },
+  [](LIB::Set a, LIB::PWMap b) { return ExprBaseType(b.image(a)); },
   [](auto a, auto b) { 
-    Util::ERROR("pre_image_visitor_: wrong arguments ", a, ", ", b
-      , " for pre-image\n"); 
-    return ContainerBaseType(); 
+    Util::ERROR("image2_visitor_: wrong arguments ", a, ", ", b
+      , " for image2\n"); 
+    return ExprBaseType();
   }
 };
 
-auto combine_visitor_ = Util::Overload {
-  [](LIB::BasePWMap a, LIB::BasePWMap b) { return MapBaseType(a.combine(b)); },
-  [](LIB::CanonPWMap a, LIB::CanonPWMap b) {
-    return MapBaseType(a.combine(b));
-  },
+auto pre_image2_visitor_ = Overload {
+  [](LIB::Set a, LIB::Map b) { return ExprBaseType(b.preImage(a)); },
+  [](LIB::Set a, LIB::PWMap b) { return ExprBaseType(b.preImage(a)); },
+  [](auto a, auto b) { 
+    Util::ERROR("pre_image2_visitor_: wrong arguments ", a, ", ", b
+      , " for pre-image2\n"); 
+    return ExprBaseType(); 
+  }
+};
+
+auto dom_visitor_ = Overload {
+  [](LIB::PWMap a) { return ExprBaseType(a.dom()); },
+  [](auto a) {
+    Util::ERROR("dom_visitor_: wrong arguments ", a, "for dom\n");
+    return ExprBaseType();
+  }
+};
+
+auto combine_visitor_ = Overload {
+  [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a.combine(b)); },
   [](auto a, auto b) { 
     Util::ERROR("combine_visitor_: wrong arguments ", a, ", ", b
       , " for combine\n"); 
-    return MapBaseType(); 
+    return ExprBaseType(); 
   }
 };
 
-auto first_inv_visitor_ = Util::Overload {
-  [](LIB::BasePWMap a) { 
-    return MapBaseType(a.firstInv()); 
-  },
-  [](LIB::CanonPWMap a) {
-    return MapBaseType(a.firstInv());
-  },
+auto first_inv_visitor_ = Overload {
+  [](LIB::PWMap a) { return ExprBaseType(a.firstInv()); },
   [](auto a) {
     Util::ERROR("first_inv_visitor_: wrong argument ", a, " for firstInv\n"); 
-    return MapBaseType();
+    return ExprBaseType();
   }
 };
 
-auto min_map_visitor_ = Util::Overload {
-  [](LIB::BasePWMap a, LIB::BasePWMap b) { return MapBaseType(a.minMap(b)); },
-  [](LIB::CanonPWMap a, LIB::CanonPWMap b) { return MapBaseType(a.minMap(b)); },
+auto min_map_visitor_ = Overload {
+  [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a.minMap(b)); },
   [](auto a, auto b) {
     Util::ERROR("min_map_visitor_: wrong arguments ", a, ", ", b
       , " for minMap\n"); 
-    return MapBaseType();
+    return ExprBaseType();
   }
 };
 
-auto reduce_visitor_ = Util::Overload {
-  [](LIB::BasePWMap a) { return MapBaseType(a.reduce()); },
-  [](LIB::CanonPWMap a) { return MapBaseType(a.reduce()); },
+auto reduce_visitor_ = Overload {
+  [](LIB::PWMap a) { return ExprBaseType(a.reduce()); },
   [](auto a) {
     Util::ERROR("reduce_visitor_: wrong argument ", a, " for reduce\n"); 
-    return MapBaseType();
+    return ExprBaseType();
   }
 };
 
-auto min_adj_visitor_ = Util::Overload {
-  [](LIB::BasePWMap a, LIB::BasePWMap b) { return MapBaseType(a.minAdjMap(b)); },
-  [](LIB::CanonPWMap a, LIB::CanonPWMap b) {
-    return MapBaseType(a.minAdjMap(b));
-  },
+auto min_adj_visitor_ = Overload {
+  [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a.minAdjMap(b)); },
   [](auto a, auto b) { 
     Util::ERROR("min_adj_visitor_: wrong arguments ", a, ", ", b
       , " for minAdj\n"); 
-    return MapBaseType(); 
+    return ExprBaseType(); 
   }
 };
 
-auto inf_visitor_ = Util::Overload {
-  [](LIB::BasePWMap a) { return MapBaseType(a.mapInf()); },
-  [](LIB::CanonPWMap a) { return MapBaseType(a.mapInf()); },
-  [](auto a, auto b) { 
+auto inf_visitor_ = Overload {
+  [](LIB::PWMap a) { return ExprBaseType(a.mapInf()); },
+  [](auto a) { 
     Util::ERROR("inf_visitor_: wrong argument ", a, " for mapInf\n"); 
-    return MapBaseType(); 
+    return ExprBaseType(); 
   }
 };
 
-auto connected_visitor_ = Util::Overload {
-  [](LIB::BaseSBG a) { return MapBaseType(connectedComponents(a)); },
-  [](LIB::CanonSBG a) { return MapBaseType(connectedComponents(a)); },
+auto connected_visitor_ = Overload {
+  [](LIB::SBG a) { return ExprBaseType(connectedComponents(a)); },
   [](auto a) {
     Util::ERROR("connected_visitor_: wrong argument ", a, " for CC\n"); 
-    return MapBaseType();
+    return ExprBaseType();
   }
 };
 
-auto matching_visitor_ = Util::Overload {
-  [](LIB::BaseSBG a, Util::MD_NAT b, bool c) { 
-    LIB::BaseMatch match(a.copy(b[0]), c);
-    return InfoBaseType(match.calculate());
+auto matching_visitor_ = Overload {
+  [](LIB::SBG a, LIB::NAT b, bool c) { 
+    LIB::SBGMatching match(a.copy(b), c);
+    return ExprBaseType(match.calculate());
   },
-  [](LIB::CanonSBG a, Util::MD_NAT b, bool c) {
-    LIB::CanonMatch match(a.copy(b[0]), c);
-    return InfoBaseType(match.calculate());
+  [](LIB::SBG a, LIB::MD_NAT b, bool c) { 
+    LIB::SBGMatching match(a.copy(b[0]), c);
+    return ExprBaseType(match.calculate());
   },
   [](auto a, auto b, auto c) {
     Util::ERROR("matching_visitor_: wrong arguments ", a, ", ", b
       , " for matching\n"); 
-    return InfoBaseType();
+    return ExprBaseType();
   }
 };
 
-auto scc_visitor_ = Util::Overload {
-  [](LIB::BaseDSBG a, bool b) { 
-    LIB::BaseSCC scc(a, b);
-    return MapBaseType(scc.calculate());
-  },
-  [](LIB::CanonDSBG a, bool b) {
-    LIB::CanonSCC scc(a, b);
-    return MapBaseType(scc.calculate());
+auto scc_visitor_ = Overload {
+  [](LIB::DSBG a, bool b) { 
+    LIB::SBGSCC scc(a, b);
+    return ExprBaseType(scc.calculate());
   },
   [](auto a, auto b) {
     Util::ERROR("scc_visitor_: wrong argument ", a, " for scc\n"); 
-    return MapBaseType();
+    return ExprBaseType();
   }
 };
 
-auto ts_visitor_ = Util::Overload {
-  [](LIB::BaseDSBG a, bool b) { 
-    LIB::BaseTopSort ts(a, b);
-    return MapBaseType(ts.calculate()); 
-  },
-  [](LIB::CanonDSBG a, bool b) {
-    LIB::CanonTopSort ts(a, b);
-    return MapBaseType(ts.calculate());
+auto ts_visitor_ = Overload {
+  [](LIB::DSBG a, bool b) { 
+    LIB::SBGTopSort ts(a, b);
+    return ExprBaseType(ts.calculate()); 
   },
   [](auto a, auto b) {
     Util::ERROR("ts_visitor_: wrong argument ", a, " for sort\n"); 
-    return MapBaseType();
+    return ExprBaseType();
   }
 };
 
-auto match_scc_visitor_ = Util::Overload {
-  [](LIB::BaseSBG a, Util::MD_NAT b, bool c) { 
-    LIB::BaseMatch match(a.copy(b[0]), c);
+auto match_scc_visitor_ = Overload {
+  [](LIB::SBG a, LIB::NAT b, bool c) { 
+    LIB::SBGMatching match(a.copy(b), c);
     match.calculate();
-    LIB::BaseSCC scc(buildSCCFromMatching(match), c);
-    return MapBaseType(scc.calculate());
+    LIB::SBGSCC scc(buildSCCFromMatching(match), c);
+    return ExprBaseType(scc.calculate());
   },
-  [](LIB::CanonSBG a, Util::MD_NAT b, bool c) {
-    LIB::CanonMatch match(a.copy(b[0]), c);
+  [](LIB::SBG a, LIB::MD_NAT b, bool c) { 
+    LIB::SBGMatching match(a.copy(b[0]), c);
     match.calculate();
-    LIB::CanonSCC scc(buildSCCFromMatching(match), c);
-    return MapBaseType(scc.calculate());
+    LIB::SBGSCC scc(buildSCCFromMatching(match), c);
+    return ExprBaseType(scc.calculate());
   },
   [](auto a, auto b, auto c) {
     Util::ERROR("match_scc_visitor_: wrong arguments ", a, ", ", b
       , " for matchSCC\n"); 
-    return MapBaseType();
+    return ExprBaseType();
   }
 };
 
-auto match_scc_ts_visitor_ = Util::Overload {
-  [](LIB::BaseSBG a, Util::MD_NAT b, bool c) { 
-    LIB::BaseMatch match(a.copy(b[0]), c);
-    LIB::UnordSet match_res = match.calculate().matched_edges();
-    LIB::BaseSCC scc(buildSCCFromMatching(match), c);
-    LIB::BasePWMap scc_res = scc.calculate();
-    LIB::BaseTopSort ts(buildSortFromSCC(scc, scc_res), c);
-    LIB::BasePWMap ts_res = ts.calculate(); 
+auto match_scc_ts_visitor_ = Overload {
+  [](LIB::SBG a, LIB::NAT b, bool c) { 
+    LIB::SBGMatching match(a.copy(b), c);
+    LIB::Set match_res = match.calculate().matched_edges();
+    LIB::SBGSCC scc(buildSCCFromMatching(match), c);
+    LIB::PWMap scc_res = scc.calculate();
+    LIB::SBGTopSort ts(buildSortFromSCC(scc, scc_res), c);
+    LIB::PWMap ts_res = ts.calculate(); 
     buildJson(match_res, scc_res, ts_res);
-    return MapBaseType(ts_res);
+    return ExprBaseType(ts_res);
   },
-  [](LIB::CanonSBG a, Util::MD_NAT b, bool c) {
-    LIB::CanonMatch match(a.copy(b[0]), c);
-    LIB::OrdSet match_res = match.calculate().matched_edges();
-    LIB::CanonSCC scc(buildSCCFromMatching(match), c);
-    LIB::CanonPWMap scc_res = scc.calculate();
-    LIB::CanonTopSort ts(buildSortFromSCC(scc, scc_res), c);
-    LIB::CanonPWMap ts_res = ts.calculate();
+  [](LIB::SBG a, LIB::MD_NAT b, bool c) { 
+    LIB::SBGMatching match(a.copy(b[0]), c);
+    LIB::Set match_res = match.calculate().matched_edges();
+    LIB::SBGSCC scc(buildSCCFromMatching(match), c);
+    LIB::PWMap scc_res = scc.calculate();
+    LIB::SBGTopSort ts(buildSortFromSCC(scc, scc_res), c);
+    LIB::PWMap ts_res = ts.calculate(); 
     buildJson(match_res, scc_res, ts_res);
-    return MapBaseType(ts_res);
+    return ExprBaseType(ts_res);
   },
   [](auto a, auto b, auto c) {
     Util::ERROR("match_scc_ts_visitor_: wrong arguments ", a, ", ", b
       , " for matchSCCTS\n"); 
-    return MapBaseType();
+    return ExprBaseType();
   }
 };
 
-auto cut_visitor_ = Util::Overload {
-  [](LIB::BaseDSBG a, bool b) { 
-    LIB::BaseCutSet cut_set(a, b);
-    return ContainerBaseType(cut_set.calculate());
-  },
-  [](LIB::CanonDSBG a, bool b) {
-    LIB::CanonCutSet cut_set(a, b);
-    return ContainerBaseType(cut_set.calculate());
+auto cut_visitor_ = Overload {
+  [](LIB::DSBG a, bool b) { 
+    LIB::SBGCutSet cut_set(a, b);
+    return ExprBaseType(cut_set.calculate());
   },
   [](auto a, auto b) {
     Util::ERROR("cut_visitor_: wrong argument ", a, " for cut\n"); 
-    return ContainerBaseType();
+    return ExprBaseType();
   }
 };
 
-// -----------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 // Expression evaluator --------------------------------------------------------
-// -----------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
-EvalExpression::EvalExpression() : nmbr_dims_(1), opt_conds_(true), env_()
-  , debug_(false) {}
-EvalExpression::EvalExpression(VarEnv env)
-  : nmbr_dims_(1), opt_conds_(true), env_(env), debug_(false) {}
-EvalExpression::EvalExpression(unsigned int nmbr_dims, bool opt_conds
-  , VarEnv env, bool debug)
-  : nmbr_dims_(nmbr_dims), opt_conds_(opt_conds), env_(env), debug_(debug) {}
+template<typename T>
+T eval(const EvalExpression &visit, AST::Expr e)
+{
+  ExprBaseType visited = boost::apply_visitor(visit, e);
+
+  Util::ERROR_UNLESS(std::holds_alternative<T>(visited)
+    , "EvalExpr: expression ", e, " is not ???\n");
+
+  return std::get<T>(visited);
+}
+
+EvalExpression::EvalExpression(unsigned int nmbr_dims
+  , const LIB::PWMapAF &fact , VarEnv env, bool debug)
+  : nmbr_dims_(nmbr_dims), fact_(fact), env_(env), debug_(debug) {}
 
 ExprBaseType EvalExpression::operator()(AST::Natural v) const
 {
-  Util::ERROR_UNLESS(nmbr_dims_ == 1
-    ,"EvalExpr: nmbr_dims_: ", nmbr_dims_, " not 1\n");
-
-  return Util::MD_NAT(v);
-}
-
-ExprBaseType EvalExpression::operator()(AST::MDNatural v) const
-{
-  Util::ERROR_UNLESS(nmbr_dims_ == v.arity() || 0 == v.arity()
-    ,"EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", v, ")\n");
-
-  return v;
+  return (LIB::NAT) v;
 }
 
 ExprBaseType EvalExpression::operator()(AST::Rational v) const
@@ -328,48 +458,86 @@ ExprBaseType EvalExpression::operator()(AST::Rational v) const
   return boost::apply_visitor(EvalRat(env_), AST::Expr(v));
 }
 
-ExprBaseType EvalExpression::operator()(AST::Boolean v) const
-{
-  return Util::MD_NAT(v);
-}
-
-ExprBaseType EvalExpression::operator()(Util::VariableName v) const 
+ExprBaseType EvalExpression::operator()(AST::Name v) const 
 {
   MaybeEBT v_opt = env_[v];
   if (v_opt)
     return *v_opt;
 
   Util::ERROR("EvalExpression: variable ", v, " undefined\n");
-  return Util::MD_NAT(0); 
+  return ExprBaseType(); 
 }
 
 ExprBaseType EvalExpression::operator()(AST::UnaryOp v) const
 {
   ExprBaseType x = boost::apply_visitor(*this, v.expr());
 
-  if (std::holds_alternative<Util::MD_NAT>(x)) {
-    auto x_value = std::get<Util::MD_NAT>(x); 
+  switch (v.op()) {
+    case AST::UnOp::oppo:
+      return std::visit(oppo_visitor_, x);
+      break;
 
-    Util::ERROR_UNLESS(nmbr_dims_ == x_value.arity() || 0 == x_value.arity()
-      ,"EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", x_value, ")\n");
-   
-    return Util::MD_NAT(boost::apply_visitor(EvalNat(env_), AST::Expr(v)));
+    case AST::UnOp::card:
+      return std::visit(cardinal_visitor_, x);
+      break;
+
+    case AST::UnOp::comp:
+      return std::visit(complement_visitor_, x);
+      break;
+
+    default:
+      Util::ERROR("EvalExpression: UnaryOp ", v.op(), " unsupported\n");
+      return ExprBaseType();
   }
 
-  return boost::apply_visitor(EvalRat(env_), AST::Expr(v));
+  return ExprBaseType(); 
 }
 
 ExprBaseType EvalExpression::operator()(AST::BinOp v) const
 { 
-  ExprBaseType xl = boost::apply_visitor(*this, v.left());
-  ExprBaseType xr = boost::apply_visitor(*this, v.right());
-  bool r1 = std::holds_alternative<Util::RATIONAL>(xl);
-  bool r2 = std::holds_alternative<Util::RATIONAL>(xr);
+  ExprBaseType vl = boost::apply_visitor(*this, v.left());
+  ExprBaseType vr = boost::apply_visitor(*this, v.right());
 
-  if (!r1 && !r2)
-    return Util::MD_NAT(boost::apply_visitor(EvalNat(env_), AST::Expr(v)));
+  EvalNat visit_nat(env_);
+  switch (v.op()) {
+    case AST::Op::add:
+      return std::visit(add_visitor_, vl, vr);
+      break;
 
-  return boost::apply_visitor(EvalRat(env_), AST::Expr(v));
+    case AST::Op::sub:
+      return std::visit(sub_visitor_, vl, vr);
+      break;
+
+    case AST::Op::mult:
+      return std::visit(mult_visitor_, vl, vr);
+      break;
+
+    case AST::Op::eq:
+      return std::visit(eq_visitor_, vl, vr);
+      break;
+
+    case AST::Op::less:
+      return std::visit(less_visitor_, vl, vr);
+      break;
+
+    case AST::Op::cap:
+      return std::visit(cap_visitor_, vl, vr);
+      break;
+
+    case AST::Op::cup:
+      return std::visit(cup_visitor_, vl, vr);
+      break;
+
+    case AST::Op::diff:
+      return std::visit(diff_visitor_, vl, vr);
+      break;
+
+    default:
+      Util::ERROR("EvalExpression: BinOp ", v.op(), " unsupported\n");
+      return ExprBaseType(); 
+  } 
+
+  return ExprBaseType(); 
 }
 
 ExprBaseType EvalExpression::operator()(AST::Call v) const
@@ -387,119 +555,55 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
       case Eval::Func::empty: 
         if (eval_args.size() == 1) {
           arity_ok = true;
-
-          ContainerBaseType container 
-            = std::visit(EvalContainer{}, eval_args[0]);
-          auto f = [](auto const &c) {
-            return c.isEmpty();
-          };
-          bool result = std::visit(f, container);
-          return Util::MD_NAT(result);
+          return std::visit(empty_visitor_, eval_args[0]);
         }
         break;
 
       case Eval::Func::min:
         if (eval_args.size() == 1) {
           arity_ok = true;
-
-          ContainerBaseType container
-            = std::visit(EvalContainer{}, eval_args[0]);
-          Util::MD_NAT result = std::visit(min_visitor_, container);
-          return result;
+          return std::visit(min_visitor_, eval_args[0]);
         }
         break;
 
       case Eval::Func::max:
         if (eval_args.size() == 1) {
           arity_ok = true;
-
-          ContainerBaseType container
-            = std::visit(EvalContainer{}, eval_args[0]);
-          Util::MD_NAT result = std::visit(max_visitor_, container);
-          return result;
+          return std::visit(max_visitor_, eval_args[0]);
         }
         break;
 
       case Eval::Func::comp:
         if (eval_args.size() == 2) {
           arity_ok = true;
-
-          ExprBaseType result;
-          if (std::holds_alternative<LinearBaseType>(eval_args[0])) { 
-            EvalLinear visit_linear;
-            LinearBaseType e1 = std::visit(visit_linear, eval_args[0]);
-            LinearBaseType e2  = std::visit(visit_linear, eval_args[1]);
-            result = std::visit(compose_linear_visitor_, e1, e2);
-          }
-
-          else {
-            EvalMap visit_map;
-            MapBaseType m1 = std::visit(visit_map, eval_args[0]);
-            MapBaseType m2 = std::visit(visit_map, eval_args[1]);
-            result = std::visit(compose_map_visitor_, m1, m2);
-          }
-
-          return result;
+          return std::visit(compose_visitor_, eval_args[0], eval_args[1]);
         }
         break;
 
       case Eval::Func::inv:
         if (eval_args.size() == 1) {
           arity_ok = true;
-
-          LinearBaseType lexp 
-            = std::visit(EvalLinear(), eval_args[0]);
-          auto f = [](auto const &l) {
-            return LinearBaseType(l.inverse());
-          };
-          LinearBaseType result = std::visit(f, lexp);
-          return result;
+          return std::visit(inverse_visitor_, eval_args[0]);
         }
         break;
 
       case Eval::Func::im:
         if (eval_args.size() == 1) {
           arity_ok = true;
-
-          MapBaseType sbgmap = std::visit(EvalMap(), eval_args[0]);
-          auto f = [](auto const &m) {
-            return ContainerBaseType(m.image());
-          };
-          ContainerBaseType result = std::visit(f, sbgmap);
-          return result;
+          return std::visit(image_visitor_, eval_args[0]);
         }
 
         else if (eval_args.size() == 2) {
           arity_ok = true;
-
-          ContainerBaseType subdom
-            = std::visit(EvalContainer{}, eval_args[0]);
-          MapBaseType sbgmap = std::visit(EvalMap(), eval_args[1]);
-          ExprBaseType result = std::visit(image_visitor_, subdom, sbgmap);
-          return result;
+          return std::visit(image2_visitor_, eval_args[0], eval_args[1]);
         }
 
         break;
 
       case Eval::Func::preim:
-        if (eval_args.size() == 1) {
+        if (eval_args.size() == 2) {
           arity_ok = true;
-
-          MapBaseType sbgmap = std::visit(EvalMap(), eval_args[0]);
-          auto f = [](auto const &m) {
-            return ContainerBaseType(m.preImage());
-          };
-          ContainerBaseType result = std::visit(f, sbgmap);
-          return result;
-        }
-
-        else if (eval_args.size() == 2) {
-          arity_ok = true;
-
-          ContainerBaseType subdom = std::visit(EvalContainer{}, eval_args[0]);
-          MapBaseType map = std::visit(EvalMap(), eval_args[1]);
-          ExprBaseType result = std::visit(pre_image_visitor_, subdom, map);
-          return result;
+          return std::visit(pre_image2_visitor_, eval_args[0], eval_args[1]);
         }
         
         break;
@@ -507,110 +611,70 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
       case Eval::Func::dom:
         if (eval_args.size() == 1) {
           arity_ok = true;
-
-          MapBaseType pw = std::visit(EvalMap(), eval_args[0]); 
-          auto f = [](auto const &c) {
-            return ContainerBaseType(c.dom());
-          };
-          ContainerBaseType result = std::visit(f, pw);
-          return result;
+          return std::visit(dom_visitor_, eval_args[0]);
         }
         break;
 
       case Eval::Func::comb:
         if (eval_args.size() == 2) {
           arity_ok = true;
- 
-          MapBaseType pw1 = std::visit(EvalMap(), eval_args[0]);
-          MapBaseType pw2 = std::visit(EvalMap(), eval_args[1]);
-          MapBaseType result = std::visit(combine_visitor_, pw1, pw2);
-          return result;
+          return std::visit(combine_visitor_, eval_args[0], eval_args[1]);
         }
         break;
 
       case Eval::Func::first_inv:
         if (eval_args.size() == 1) {
           arity_ok = true;
-
-          MapBaseType pw = std::visit(EvalMap(), eval_args[0]); 
-          MapBaseType result = std::visit(first_inv_visitor_, pw);
-          return result;
+          return std::visit(first_inv_visitor_, eval_args[0]);
         }
 
       case Eval::Func::min_map:
         if (eval_args.size() == 2) {
           arity_ok = true;
-
-          EvalMap visit_map;
-          MapBaseType pw1 = std::visit(visit_map, eval_args[0]);
-          MapBaseType pw2 = std::visit(visit_map, eval_args[1]);
-          MapBaseType result = std::visit(min_map_visitor_, pw1, pw2);
-          return result;
+          return std::visit(min_map_visitor_, eval_args[0], eval_args[1]);
         }
 
       case Eval::Func::red:
         if (eval_args.size() == 1) {
           arity_ok = true;
-
-          MapBaseType map = std::visit(EvalMap{}, eval_args[0]);
-          MapBaseType result = std::visit(reduce_visitor_, map);
-          return result;
+          return std::visit(reduce_visitor_, eval_args[0]);
         }
         break;
 
       case Eval::Func::min_adj:
         if (eval_args.size() == 2) {
           arity_ok = true;
-
-          MapBaseType map1 = std::visit(EvalMap{}, eval_args[0]);
-          MapBaseType map2 = std::visit(EvalMap{}, eval_args[1]);
-          MapBaseType result = std::visit(min_adj_visitor_, map1, map2);
-          return result;
+          return std::visit(min_adj_visitor_, eval_args[0], eval_args[1]);
         }
         break;
 
       case Eval::Func::inf:
         if (eval_args.size() == 1) {
           arity_ok = true;
-
-          MapBaseType map = std::visit(EvalMap{}, eval_args[0]);
-          MapBaseType result = std::visit(inf_visitor_, map);
-          return result;
+          return std::visit(inf_visitor_, eval_args[0]);
         }
         break;
 
       case Eval::Func::connected:
         if (eval_args.size() == 1) {
           arity_ok = true;
-
-          SBGBaseType sbg = std::visit(EvalGraph{}, eval_args[0]);
-          MapBaseType result = std::visit(connected_visitor_, sbg);
-          return result;
+          return std::visit(connected_visitor_, eval_args[0]);
         }
         break;
 
       case Eval::Func::matching:
         if (eval_args.size() == 2) {
           arity_ok = true;
-
-          SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
-          NatBaseType copies = std::visit(EvalNatBT{}, eval_args[1]);
-          InfoBaseType result = std::visit(
-            matching_visitor_, g, copies, std::variant<bool>(debug_)
-          );
-          return result;
+          return std::visit(matching_visitor_, eval_args[0], eval_args[1]
+            , std::variant<bool>(debug_));
         }
         break;
 
       case Eval::Func::scc:
         if (eval_args.size() == 1) {
           arity_ok = true;
-
-          SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
-          MapBaseType result = std::visit(
-            scc_visitor_, g, std::variant<bool>(debug_)
-          );
-          return result;
+          return std::visit(scc_visitor_, eval_args[0]
+            , std::variant<bool>(debug_));
         }
         break;
 
@@ -618,455 +682,193 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
       case Eval::Func::ts:
         if (eval_args.size() == 1) {
           arity_ok = true;
-
-          SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
-          MapBaseType result = std::visit(
-            ts_visitor_, g, std::variant<bool>(debug_)
-          );
-          return result;
+          return std::visit(ts_visitor_, eval_args[0]
+            , std::variant<bool>(debug_));
         }
         break;
 
       case Eval::Func::match_scc:
         if (eval_args.size() == 2) {
           arity_ok = true;
-
-          SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
-          NatBaseType copies = std::visit(EvalNatBT{}, eval_args[1]);
-          MapBaseType result = std::visit(
-            match_scc_visitor_, g, copies, std::variant<bool>(debug_)
-          );
-          return result;
+          return std::visit(match_scc_visitor_, eval_args[0], eval_args[1]
+            , std::variant<bool>(debug_));
         }
         break;
 
       case Eval::Func::match_scc_ts:
         if (eval_args.size() == 2) {
           arity_ok = true;
-
-          SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
-          NatBaseType copies = std::visit(EvalNatBT{}, eval_args[1]);
-          MapBaseType result = std::visit(
-            match_scc_ts_visitor_, g, copies, std::variant<bool>(debug_)
-          );
-          return result;
+          return std::visit(match_scc_ts_visitor_, eval_args[0], eval_args[1]
+            , std::variant<bool>(debug_));
         }
         break;
 
       case Eval::Func::cut_set:
         if (eval_args.size() == 1) {
           arity_ok = true;
-
-          SBGBaseType g = std::visit(EvalGraph{}, eval_args[0]);
-          ContainerBaseType result = std::visit(
-            cut_visitor_, g, std::variant<bool>(debug_)
-          );
-          return result;
+          return std::visit(cut_visitor_, eval_args[0]
+            , std::variant<bool>(debug_));
         }
         break;
 
       default:
         Util::ERROR("EvalExpression: function ", vname, " not implemented\n");
-        return Util::MD_NAT(0);
+        return ExprBaseType();
     }
 
     if (!arity_ok) {
       Util::ERROR("EvalExpression: wrong number of arguments for Call "
         , vname, "\n");
-      return Util::MD_NAT(0);
+      return ExprBaseType();
     }
   }
 
   Util::ERROR("EvalExpression: function ", vname, " doesn't exist\n");
-  return Util::MD_NAT(0);
+  return ExprBaseType();
 }
 
 ExprBaseType EvalExpression::operator()(AST::Interval v) const
 {
-  return boost::apply_visitor(EvalInterval(env_), AST::Expr(v));
-}
+  EvalNat visit_nat(env_);
 
-ExprBaseType EvalExpression::operator()(AST::InterUnaryOp v) const
-{
-  EvalInterval eval_interval(env_);
-  LIB::Interval i = boost::apply_visitor(eval_interval, v.e());
-  switch (v.op()) {
-    case AST::ContainerUOp::card:
-      return Util::MD_NAT(i.cardinal());
+  LIB::NAT b = boost::apply_visitor(visit_nat, v.begin());
+  LIB::NAT s = boost::apply_visitor(visit_nat, v.step());
+  LIB::NAT e = boost::apply_visitor(visit_nat, v.end());
 
-    default:
-      std::stringstream ss;
-      ss << v.op();
-      Util::ERROR("EvalExpression: InterUnaryOp ", v.op(), " unsupported\n");
-      return Util::MD_NAT(0);
-  }
-}
-
-ExprBaseType EvalExpression::operator()(AST::InterBinOp v) const
-{
-  EvalInterval eval_interval(env_);
-  LIB::Interval l = boost::apply_visitor(eval_interval, v.left());
-  LIB::Interval r = boost::apply_visitor(eval_interval, v.right());
-  switch (v.op()) {
-    case AST::ContainerOp::cap:
-      return l.intersection(r);
-
-    case AST::ContainerOp::less:
-      return Util::MD_NAT(l < r);
-
-    case AST::ContainerOp::eq:
-      return Util::MD_NAT(l == r);
-
-    default:
-      Util::ERROR("EvalExpression: InterBinOp ", v.op(), " unsupported\n");
-      return Util::MD_NAT(0);
-  }
+  return LIB::Interval(b, s, e);
 }
 
 ExprBaseType EvalExpression::operator()(AST::MultiDimInter v) const
 {
-  SBG::LIB::SetPiece mdi = boost::apply_visitor(EvalMDI(env_), AST::Expr(v));
+  LIB::SetPiece res;
 
-  Util::ERROR_UNLESS(mdi.arity() == nmbr_dims_ || mdi.arity() == 0
-    , "EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", mdi, ")\n");
+  for (const AST::Expr &e : v.intervals()) 
+    res.emplaceBack(eval<LIB::Interval>(*this, e));
 
-  return mdi;
-}
+  Util::ERROR_UNLESS(res.arity() == nmbr_dims_ || res.arity() == 0
+    , "EvalMDI[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
+    , res.arity(), "\n");
 
-ExprBaseType EvalExpression::operator()(AST::MDInterUnaryOp v) const
-{
-  EvalMDI visit_mdi(env_);
-  LIB::MultiDimInter mdi = boost::apply_visitor(visit_mdi, v.e());
-
-  Util::ERROR_UNLESS(mdi.arity() == nmbr_dims_ || mdi.arity() == 0
-    , "EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", mdi, ")\n");
-
-  switch (v.op()) {
-    case AST::ContainerUOp::card:
-      return Util::MD_NAT(mdi.cardinal());
-
-    default:
-      Util::ERROR("EvalExpression: MDInterUnaryOp ", v.op(), " unsupported\n");
-      return Util::MD_NAT(0);
-  }
-
-  return Util::MD_NAT(0);
-}
-
-ExprBaseType EvalExpression::operator()(AST::MDInterBinOp v) const
-{
-  EvalMDI visit_mdi(env_);
-  LIB::MultiDimInter l = boost::apply_visitor(visit_mdi, v.left());
-  LIB::MultiDimInter r = boost::apply_visitor(visit_mdi, v.right());
-
-  Util::ERROR_UNLESS((l.arity() == nmbr_dims_ && r.arity() == nmbr_dims_)
-    || l.arity() == 0 || r.arity() == 0
-    ,"EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", l, ") or arity(", r
-    , ")\n");
-
-  switch (v.op()) {
-    case AST::ContainerOp::cap:
-      return l.intersection(r);
-
-    case AST::ContainerOp::less:
-      return Util::MD_NAT(l < r);
-
-    case AST::ContainerOp::eq:
-      return Util::MD_NAT(l == r);
-
-    default:
-      Util::ERROR("EvalExpression: MDInterBinOp ", v.op(), " unsupported\n");
-      return Util::MD_NAT(0);
-  }
-
-
-  return Util::MD_NAT(0);
+  return res;
 }
 
 
 ExprBaseType EvalExpression::operator()(AST::Set v) const
 {
-  ContainerBaseType c;
-  if (nmbr_dims_ == 1 && opt_conds_) {
-    LIB::OrdSet s = boost::apply_visitor(EvalOrdSet(env_), AST::Expr(v));
-    c = s;
+  LIB::Set res = fact_.createSet();
 
-    Util::ERROR_UNLESS(s.arity() == 1 || s.arity() == 0
-      , "EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", s, ")\n");
-  }
-  else {
-    LIB::UnordSet s = boost::apply_visitor(EvalUnordSet(env_), AST::Expr(v));
-    c = s;
+  for (const AST::Expr &e : v.pieces())
+    res.emplaceBack(eval<LIB::SetPiece>(*this, e));
 
-    Util::ERROR_UNLESS(s.arity() == nmbr_dims_ || s.arity() == 0
-      , "EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", s, ")\n");
-  }
+  Util::ERROR_UNLESS(res.arity() == nmbr_dims_ || res.arity() == 0
+    , "EvalExpr[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
+    , res.arity(), "\n");
 
-  return c;
+  return res;
 }
-
-// ----- //
-
-ExprBaseType VisitSetUnOp(AST::SetUnaryOp v, LIB::OrdSet s)
-{
-  switch (v.op()) {
-    case AST::ContainerUOp::card:
-      return Util::MD_NAT(s.cardinal());
-
-    default:
-      Util::ERROR("EvalExpression: SetUnaryOp ", v.op(), " unsupported\n");
-      return Util::MD_NAT(0);
-  }
-
-  return Util::MD_NAT(0);
-}
-
-ExprBaseType VisitSetUnOp(AST::SetUnaryOp v, LIB::UnordSet s)
-{
-  switch (v.op()) {
-    case AST::ContainerUOp::card:
-      return Util::MD_NAT(s.cardinal());
-
-    default:
-      Util::ERROR("EvalExpression: SetUnaryOp ", v.op(), " unsupported\n");
-      return Util::MD_NAT(0);
-  }
-
-  return Util::MD_NAT(0);
-}
-
-ExprBaseType EvalExpression::operator()(AST::SetUnaryOp v) const
-{
-  AST::Expr exp = v.e();
-  if (nmbr_dims_ == 1 && opt_conds_) {
-    EvalOrdSet visit_ord_set(env_);
-    LIB::OrdSet s = boost::apply_visitor(visit_ord_set, exp);
-
-    Util::ERROR_UNLESS(s.arity() == 1 || s.arity() == 0
-      , "EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", s, ")\n");
-
-    return VisitSetUnOp(v, s);
-  }
- 
-  else {
-    EvalUnordSet visit_unord_set(env_);
-    LIB::UnordSet s = boost::apply_visitor(visit_unord_set, exp);
-
-    Util::ERROR_UNLESS(s.arity() == nmbr_dims_ || s.arity() == 0
-      , "EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", s, ")\n");
-
-    return VisitSetUnOp(v, s);
-  }
-
-  return Util::MD_NAT(0);
-}
-
-// ----- //
-
-ExprBaseType VisitSetBinOp(AST::SetBinOp v, LIB::OrdSet sl, LIB::OrdSet sr)
-{
-  switch (v.op()) {
-    case AST::ContainerOp::cap:
-      return ContainerBaseType(sl.intersection(sr));
-
-    case AST::ContainerOp::diff:
-      return ContainerBaseType(sl.difference(sr));
-
-    case AST::ContainerOp::eq:
-      return Util::MD_NAT(sl == sr);
-
-    case AST::ContainerOp::cup:
-      return ContainerBaseType(sl.cup(sr));
-
-    default:
-      Util::ERROR("EvalExpression: SetBinOp ", v.op(), " unsupported\n");
-      return Util::MD_NAT(0);
-  }
-
-  return Util::MD_NAT(0);
-}
-
-ExprBaseType VisitSetBinOp(AST::SetBinOp v, LIB::UnordSet sl, LIB::UnordSet sr)
-{
-  switch (v.op()) {
-    case AST::ContainerOp::cap:
-      return ContainerBaseType(sl.intersection(sr));
-
-    case AST::ContainerOp::diff:
-      return ContainerBaseType(sl.difference(sr));
-
-    case AST::ContainerOp::eq:
-      return Util::MD_NAT(sl == sr);
-
-    case AST::ContainerOp::cup:
-      return ContainerBaseType(sl.cup(sr));
-
-    default:
-      Util::ERROR("EvalExpression: SetBinOp ", v.op(), " unsupported\n");
-      return Util::MD_NAT(0);
-  }
-
-  return Util::MD_NAT(0);
-}
-
-ExprBaseType EvalExpression::operator()(AST::SetBinOp v) const
-{
-  AST::Expr l = v.left(), r = v.right();
-  if (nmbr_dims_ == 1 && opt_conds_) {
-    EvalOrdSet visit_ord_set(env_);
-    LIB::OrdSet sl = boost::apply_visitor(visit_ord_set, l);
-    LIB::OrdSet sr = boost::apply_visitor(visit_ord_set, r);
-
-    Util::ERROR_UNLESS((sl.arity() == 1 && sr.arity() == 1)
-        || sl.arity() == 0 || sr.arity() == 0
-      ,"EvalExpr: nmbr_dims_: ", nmbr_dims_
-      , " != arity(", sl, ") or arity(", sr, ")\n");
-
-    return VisitSetBinOp(v, sl, sr);
-  }
-
-  else {
-    EvalUnordSet visit_unord_set(env_);
-    LIB::UnordSet sl = boost::apply_visitor(visit_unord_set, l);
-    LIB::UnordSet sr = boost::apply_visitor(visit_unord_set, r);
-
-    Util::ERROR_UNLESS((sl.arity() == nmbr_dims_ && sr.arity() == nmbr_dims_)
-        || sl.arity() == 0 || sr.arity() == 0
-      ,"EvalExpr: nmbr_dims_: ", nmbr_dims_
-      , " != arity(", sl, ") or arity(", sr, ")\n");
-
-    return VisitSetBinOp(v, sl, sr);
-  }
-
-  return Util::MD_NAT(0);
-}
-
-// ----- //
 
 ExprBaseType EvalExpression::operator()(AST::LinearExp v) const
 {
-  return boost::apply_visitor(EvalLE(env_), AST::Expr(v));
-}
-
-ExprBaseType EvalExpression::operator()(AST::LExpBinOp v) const
-{
-  AST::Expr l = v.left(), r = v.right();
   EvalLE visit_le(env_);
-  const LIB::LExp lexp = boost::apply_visitor(visit_le, l);
-  const LIB::LExp rexp = boost::apply_visitor(visit_le, r);
-  switch (v.op()) {
-    case AST::ExpOp::eq:
-      return Util::MD_NAT(lexp == rexp);
-
-    case AST::ExpOp::add:
-      return lexp + rexp;
-
-    case AST::ExpOp::sub:
-      return lexp - rexp;
-
-    default:
-      Util::ERROR("EvalExpression: LExpBinOp ", v.op(), " unsupported\n");
-      return Util::MD_NAT(0);
-  }
+  return boost::apply_visitor(visit_le, AST::Expr(v));
 }
-
-// ----- //
 
 ExprBaseType EvalExpression::operator()(AST::MDLExp v) const
 {
-  LIB::Exp mdle = boost::apply_visitor(EvalMDLE(env_), AST::Expr(v));
-  
-  Util::ERROR_UNLESS(mdle.arity() == nmbr_dims_
-    , "EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", mdle, ")\n");
+  LIB::Exp res;
 
-  return mdle;
-}
-
-ExprBaseType EvalExpression::operator()(AST::MDLExpBinOp v) const
-{
-  AST::Expr l = v.left(), r = v.right();
-  EvalMDLE visit_le(env_);
-  LIB::Exp lexp = boost::apply_visitor(visit_le, l);
-  LIB::Exp rexp = boost::apply_visitor(visit_le, r);
-
-  Util::ERROR_UNLESS(lexp.arity() == nmbr_dims_ && rexp.arity() == nmbr_dims_
-    ,"EvalExpr: nmbr_dims_: ", nmbr_dims_
-    , " != arity(", lexp, ") or arity(", rexp, ")\n");
-
-  switch (v.op()) {
-    case AST::ExpOp::eq:
-      return Util::MD_NAT(lexp == rexp);
-
-    case AST::ExpOp::add:
-      return lexp + rexp;
-
-    case AST::ExpOp::sub:
-      return lexp - rexp;
-
-    default:
-      Util::ERROR("EvalExpression: MDLExpBinOp ", v.op(), " unsupported\n");
-      return Util::MD_NAT(0);
+  EvalLE visit_le(env_);
+  for (const AST::Expr &e : v.exps()) {
+    LIB::LExp ith = boost::apply_visitor(visit_le, e);
+    res.emplaceBack(ith);
   }
 
-  return Util::MD_NAT(0);
-}
+  Util::ERROR_UNLESS(res.arity() == nmbr_dims_ || res.arity() == 0
+    , "EvalExpr[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
+    , res.arity(), "\n");
 
-// ----- //
+  return res;
+}
 
 ExprBaseType EvalExpression::operator()(AST::LinearMap v) const
 {
-  if (nmbr_dims_ == 1 && opt_conds_) {
-    LIB::CanonMap m = boost::apply_visitor(EvalCanonMap(env_), AST::Expr(v));
+  LIB::Set d = eval<LIB::Set>(*this, v.dom());
+  LIB::Exp e = eval<LIB::Exp>(*this, v.lexp());
 
-    Util::ERROR_UNLESS(m.arity() == 1 || m.arity() == 0
-      , "EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", m, ")\n");
+  LIB::Map res = fact_.createMap(d, e);
 
-    return m;
-  }
+  Util::ERROR_UNLESS(res.arity() == nmbr_dims_ || res.arity() == 0
+    , "EvalExpr[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
+    , res.arity(), "\n");
 
-  LIB::BaseMap m = boost::apply_visitor(EvalBaseMap(env_), AST::Expr(v));
-  
-  Util::ERROR_UNLESS(m.arity() == nmbr_dims_ || m.arity() == 0
-    , "EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", m, ")\n");
-
-  return m;
+  return res;
 }
-
-// ----- //
 
 ExprBaseType EvalExpression::operator()(AST::PWLMap v) const
 {
-  if (nmbr_dims_ == 1 && opt_conds_) {
-    LIB::CanonPWMap pw = boost::apply_visitor(EvalCanonPWMap(env_), AST::Expr(v));
+  LIB::PWMap res = fact_.createPWMap();
 
-    Util::ERROR_UNLESS(pw.arity() == 1 || pw.arity() == 0
-      , "EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", pw, ")\n");
+  for (const AST::Expr &e : v.maps())
+    res.emplaceBack(eval<LIB::Map>(*this, e));
 
-    return pw;
-  }
+  Util::ERROR_UNLESS(res.arity() == nmbr_dims_ || res.arity() == 0
+    , "EvalExpr[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
+    , res.arity(), "\n");
 
-  LIB::BasePWMap pw =  boost::apply_visitor(EvalBasePWMap(env_), AST::Expr(v));
-
-  Util::ERROR_UNLESS(pw.arity() == nmbr_dims_ || pw.arity() == 0
-    , "EvalExpr: nmbr_dims_: ", nmbr_dims_, " != arity(", pw, ")\n");
-
-  return pw;
+  return res;
 }
 
 ExprBaseType EvalExpression::operator()(AST::SBG v) const
 {
-  if (nmbr_dims_ == 1 && opt_conds_)
-    return boost::apply_visitor(EvalCanonSBG(env_), AST::Expr(v));
+  LIB::Set V = eval<LIB::Set>(*this, v.V());
+  LIB::PWMap Vmap = eval<LIB::PWMap>(*this, v.Vmap());
+  LIB::PWMap map1 = eval<LIB::PWMap>(*this, v.map1());
+  LIB::PWMap map2 = eval<LIB::PWMap>(*this, v.map2());
+  LIB::PWMap Emap = eval<LIB::PWMap>(*this, v.Emap());
+  LIB::PWMap subE = eval<LIB::PWMap>(*this, v.subE_map());
 
-  return boost::apply_visitor(EvalBaseSBG(env_), AST::Expr(v));
+  if (subE.dom().isEmpty() && !Emap.dom().isEmpty()) {
+    unsigned int j = 1;
+    for (const LIB::Map &m : Emap) {
+      LIB::Set dom = m.dom();
+      for (const LIB::SetPiece &mdi : dom) {
+        LIB::Exp off(LIB::MD_NAT(mdi.arity(), j));
+        subE.emplaceBack(fact_.createMap(fact_.createSet(mdi), off)); 
+        ++j;
+      }
+    }
+  } 
+
+  return LIB::SBG(fact_, V, Vmap, map1, map2, Emap, subE);
 }
 
 ExprBaseType EvalExpression::operator()(AST::DSBG v) const
 {
-  if (nmbr_dims_ == 1 && opt_conds_)
-    return boost::apply_visitor(EvalCanonDSBG(env_), AST::Expr(v));
+  LIB::Set V = eval<LIB::Set>(*this, v.V());
+  LIB::PWMap Vmap = eval<LIB::PWMap>(*this, v.Vmap());
+  LIB::PWMap mapB = eval<LIB::PWMap>(*this, v.mapB());
+  LIB::PWMap mapD = eval<LIB::PWMap>(*this, v.mapD());
+  LIB::PWMap Emap = eval<LIB::PWMap>(*this, v.Emap());
+  LIB::PWMap subE = eval<LIB::PWMap>(*this, v.subE_map());
 
-  return boost::apply_visitor(EvalBaseDSBG(env_), AST::Expr(v));
+  if (subE.dom().isEmpty() && !Emap.dom().isEmpty()) {
+    unsigned int j = 1;
+    for (const LIB::Map &sbgmap : Emap) {
+      LIB::Set dom = sbgmap.dom();
+      for (const LIB::SetPiece &mdi : dom) {
+        LIB::Exp off(LIB::MD_NAT(mdi.arity(), j));
+        subE.emplaceBack(fact_.createMap(fact_.createSet(mdi), off)); 
+        ++j;
+      }
+    }
+  } 
+
+  return LIB::DSBG(fact_, V, Vmap, mapB, mapD, Emap, subE);
+}
+
+ExprBaseType EvalExpression::operator()(AST::ParenExpr v) const
+{
+  return boost::apply_visitor(*this, v.e());
 }
 
 } // namespace Eval

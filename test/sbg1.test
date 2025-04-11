@@ -1,0 +1,14 @@
+// Eval test of empty SBG
+
+N = 100000;
+
+V1 = N;
+
+matchSCCTS(
+  V: {[1:1:V1]}
+  Vmap: <<{[1:1:V1]} -> |0*x+1|>> 
+  map1: <<|>>
+  map2: <<|>>
+  Emap: <<|>>
+, 1
+);

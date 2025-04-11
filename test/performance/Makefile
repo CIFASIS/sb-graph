@@ -1,61 +1,73 @@
 # The Directories, Source, Includes, Objects, Binary 
-ROOT_DIR       := ../..
-SRC_DIR        := .
-TEST_DIR   	   := $(SRC_DIR)
-BUILD_DIR  	   := $(TEST_DIR)/obj
-BIN_DIR        := $(TEST_DIR)/bin
+ROOT_DIR    := ../..
+TEST_DIR    := .
+BOOST_DIR   := boost
+OBJ_DIR     := $(TEST_DIR)/obj
+BUILD_DIR   := $(OBJ_DIR)
+BIN_DIR     := $(TEST_DIR)/bin
+PERFORMANCE := $(BIN_DIR)/sbg-performance
+BOOST_PERF  := $(BIN_DIR)/boost-perf
+
+.PHONY: create-folders clean
+
+#///////////////////////////////////////////////////////////////////////////////
+# Compilation ------------------------------------------------------------------ 
+#///////////////////////////////////////////////////////////////////////////////
+
+all: $(PERFORMANCE) $(BOOST_PERF)
 
 # Flags, Libraries and Includes
 GOOGLE_TEST_INSTALL = $(ROOT_DIR)/3rd-party/gtest
 GOOGLE_TEST_LIB = gtest
 GOOGLE_MOCK_LIB = gmock
 GOOGLE_TEST_INCLUDE = $(GOOGLE_TEST_INSTALL)/usr/include
-LIB 		+= -lgmp  
-G++ = g++
-G++_FLAGS = -c -Wall -I ../../ -I $(GOOGLE_TEST_INCLUDE) -std=c++17 -D BOOST_PHOENIX_STL_TUPLE_H_ -D BOOST_MPL_LIMIT_LIST_SIZE=30 -D BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS -O3
-LD_FLAGS = -L $(GOOGLE_TEST_INSTALL)/usr/lib -l $(GOOGLE_TEST_LIB) -l $(GOOGLE_MOCK_LIB) -L ../../lib -l pthread -lsbgraph 
-RM = rm -rf
 
-# The Target Binary Program
-TARGET      := $(BIN_DIR)/sbg-performance
-RUN_TESTS   := sbg-performance
+INCLUDES := -I../.. -I$(boost_libdir)/include -I$(GOOGLE_TEST_INCLUDE)
+CXXFLAGS := -std=c++17 -Wno-reorder -O3
+LD_FLAGS := -L../../lib -lsbgraph -L$(GOOGLE_TEST_INSTALL)/usr/lib -l$(GOOGLE_TEST_LIB) -l$(GOOGLE_MOCK_LIB) -lpthread
 
 # Source files.
-MAIN_SRC = $(SRC_DIR)/main.cpp
+PERF_SRC = main.cpp \
+  set_perf.cpp \
+  pw_map_perf.cpp
 
-TEST_SRC = $(TEST_DIR)/set_perf.cpp \
-  $(TEST_DIR)/pw_map_perf.cpp 
+create-folders::
+	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(OBJ_DIR)/$(BOOST_DIR)
+	@mkdir -p $(BIN_DIR)
+
+# Compilation
+$(BUILD_DIR)/%.o : %.cpp | create-folders
+	$(CC) $(INCLUDES) $(CXXFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<
+	$(CC) $(INCLUDES) -c $< -o $@ $(CXXFLAGS)
 
 # Objects
-TEST_OBJ=$(addprefix $(BUILD_DIR)/test_, $(notdir $(TEST_SRC:.cpp=.o)))
+PERF_OBJ=$(addprefix $(BUILD_DIR)/, $(PERF_SRC:.cpp=.o))
 
-MAIN_OBJ=$(addprefix $(BUILD_DIR)/, $(notdir $(MAIN_SRC:.cpp=.o)))
+$(PERFORMANCE): $(PERF_OBJ)
+	$(CXX) $(INCLUDES) -o $(PERFORMANCE) $(PERF_OBJ) $(CXXFLAGS) $(LD_FLAGS)
 
-$(BUILD_DIR)/test_%.o : $(TEST_DIR)/%.cpp
-	$(G++) $(G++_FLAGS) $< -o $@
+DEPS = $(addprefix $(BUILD_DIR)/, $(BOOST_SRC:.cpp=.d))
 
-$(BUILD_DIR)/%.o : $(SRC_DIR)/%.cpp
-	$(G++) $(G++_FLAGS) $< -o $@ 
+BOOST_SRC = $(BOOST_DIR)/main.cpp \
+  $(BOOST_DIR)/ordinary_graph.cpp \
+  $(BOOST_DIR)/ordinary_graph_builder.cpp
 
-all: $(TARGET) $(RUN_TESTS)
+# Objects
+BOOST_OBJ=$(addprefix $(BUILD_DIR)/, $(BOOST_SRC:.cpp=.o))
 
-$(TARGET): $(MAIN_OBJ) $(TEST_OBJ) $(BUILD_DIR)
-		g++ -o $(TARGET) $(MAIN_OBJ) $(TEST_OBJ) $(LD_FLAGS) $(LIB)
+$(BOOST_PERF): $(BOOST_OBJ)
+	$(CXX) $(INCLUDES) -o $(BOOST_PERF) $(BOOST_OBJ) $(CXXFLAGS) $(LD_FLAGS)
 
-$(RUN_TESTS): $(TARGET)
-		@echo Running performance tests.
-		$(TARGET)
-		@echo Done.
+DEPS_BOOST = $(addprefix $(BUILD_DIR)/boost/, $(BOOST_SRC:.cpp=.d))
 
-$(TEST_OBJ): | $(BUILD_DIR)
+-include $(DEPS) $(DEPS_BOOST)
 
-$(MAIN_OBJ): | $(BUILD_DIR)
+#///////////////////////////////////////////////////////////////////////////////
+# Cleaning --------------------------------------------------------------------- 
+#///////////////////////////////////////////////////////////////////////////////
 
-$(BUILD_DIR):
-	@mkdir -p $(BIN_DIR)
-	@mkdir -p $(BUILD_DIR)
+RM = rm -rf
 
 clean:
 	$(RM) $(BIN_DIR) $(BUILD_DIR) 
-                    
-.PHONY: all clean

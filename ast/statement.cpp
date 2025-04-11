@@ -24,9 +24,9 @@ namespace SBG {
 namespace AST {
 
 Assign::Assign() : l_(), r_() {}
-Assign::Assign(Util::VariableName l, Expr r) : l_(l), r_(r) {}
+Assign::Assign(Name l, Expr r) : l_(l), r_(r) {}
 
-member_imp(Assign, Util::VariableName, l);
+member_imp(Assign, Name, l);
 member_imp(Assign, Expr, r);
 
 std::ostream &operator<<(std::ostream &out, const Assign &asgn)
@@ -37,15 +37,15 @@ std::ostream &operator<<(std::ostream &out, const Assign &asgn)
 }
 
 ConfigDims::ConfigDims() : nmbr_dims_() {}
-ConfigDims::ConfigDims(Util::NAT nmbr_dims) : nmbr_dims_() {
+ConfigDims::ConfigDims(LIB::NAT nmbr_dims) : nmbr_dims_() {
   if (nmbr_dims > 0)
-    set_nmbr_dims(nmbr_dims);
+    nmbr_dims_ = nmbr_dims;
 
   else
     Util::ERROR("ConfigDims: dimension should be greater than 0\n");
 }
 
-member_imp(ConfigDims, Util::NAT, nmbr_dims);
+member_imp(ConfigDims, LIB::NAT, nmbr_dims);
 
 std::ostream &operator<<(std::ostream &out, const ConfigDims &cfg)
 {
@@ -61,7 +61,8 @@ bool IsConfig::operator()(ConfigDims v) const { return true; }
 
 std::ostream &operator<<(std::ostream &out, const StatementList &stml)
 {
-  for (Statement s : stml) out << s << "\n";
+  for (Statement s : stml)
+    out << s << ";\n";
 
   return out;
 }

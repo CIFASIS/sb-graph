@@ -20,28 +20,31 @@
 #include <chrono>
 #include <gtest/gtest.h>
 
-#include "sbg/pw_map.hpp"
+#include "sbg/af_pwmap.hpp"
 
 TEST(PWMapPerf, Combine)
 {
   unsigned int inter_sz = 10000;
-  unsigned int set_sz = 10;
-  unsigned int map_sz = 200;
+  unsigned int set_sz = 100;
+  unsigned int map_sz = 100;
 
-  SBG::LIB::CanonPWMap ms1;
+  SBG::LIB::OrdDenseAF set_fact;
+  SBG::LIB::MapAF map_fact(set_fact);
+  SBG::LIB::UnordPWMapAF pw_fact(map_fact);
+  SBG::LIB::PWMap pw = pw_fact.createPWMap();
   for (unsigned int k = 0; k < map_sz; k++) {
     SBG::LIB::LExp le1(1, k);
-    SBG::LIB::OrdSet s1;
+    SBG::LIB::Set s1 = map_fact.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
       SBG::LIB::Interval i(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
-      s1.emplaceBack(i);
+      s1.emplaceBack(SBG::LIB::SetPiece(i));
     }
-    ms1.emplace(SBG::LIB::CanonMap(s1, le1));
+    pw.emplaceBack(map_fact.createMap(s1, SBG::LIB::Exp(le1)));
   }
 
   auto start = std::chrono::high_resolution_clock::now();
-  SBG::LIB::PWMap res = ms1.combine(ms1);
+  SBG::LIB::PWMap res = pw.combine(pw);
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
   std::cout << "PWL MAP COMBINE TEST elapsed time: " << elapsed.count() << "ms\n";
@@ -51,24 +54,27 @@ TEST(PWMapPerf, Combine)
 
 TEST(PWMapPerf, Composition)
 {
-  unsigned int inter_sz = 10000;
-  unsigned int set_sz = 10;
-  unsigned int map_sz = 10;
+  unsigned int inter_sz = 100000;
+  unsigned int set_sz = 100;
+  unsigned int map_sz = 100;
 
-  SBG::LIB::CanonPWMap ms1;
+  SBG::LIB::OrdDenseAF set_fact;
+  SBG::LIB::MapAF map_fact(set_fact);
+  SBG::LIB::UnordPWMapAF pw_fact(map_fact);
+  SBG::LIB::PWMap pw = pw_fact.createPWMap();
   for (unsigned int k = 0; k < map_sz; k++) {
     SBG::LIB::LExp le1(1, k);
-    SBG::LIB::OrdSet s1;
+    SBG::LIB::Set s1 = set_fact.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
       SBG::LIB::Interval i(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
-      s1.emplaceBack(i);
+      s1.emplaceBack(SBG::LIB::SetPiece(i));
     }
-    ms1.emplace(SBG::LIB::CanonMap(s1, le1));
+    pw.emplaceBack(map_fact.createMap(s1, SBG::LIB::Exp(le1)));
   }
 
   auto start = std::chrono::high_resolution_clock::now();
-  SBG::LIB::PWMap res = ms1.composition(ms1);
+  pw.composition(pw);
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
   std::cout << "PWL MAP COMPOSITION TEST elapsed time: " << elapsed.count() << "ms\n";
@@ -77,10 +83,13 @@ TEST(PWMapPerf, Composition)
 }
 
 TEST(PWMapPerf, MapInf) {
-  int N = 12;
-  int sz = 10;
+  int N = 300;
+  int sz = 1000;
 
-  SBG::LIB::CanonPWMap aux;
+  SBG::LIB::OrdDenseAF set_fact;
+  SBG::LIB::MapAF map_fact(set_fact);
+  SBG::LIB::UnordPWMapAF pw_fact(map_fact);
+  SBG::LIB::PWMap pw = pw_fact.createPWMap();
   for (int i = 0; i < N; i += 6) {
     SBG::LIB::Interval i1(i * sz + 1, 1, (i + 1) * sz);
     SBG::LIB::Interval i2((i + 1) * sz + 1, 1, (i + 2) * sz);
@@ -96,23 +105,22 @@ TEST(PWMapPerf, MapInf) {
     SBG::LIB::LExp le5(1, sz);
     SBG::LIB::LExp le6(1, sz);
 
-    SBG::LIB::CanonMap sm1(i1, le1);
-    aux.emplace(sm1);
-    SBG::LIB::CanonMap sm2(i2, le2);
-    aux.emplace(sm2);
-    SBG::LIB::CanonMap sm3(i3, le3);
-    aux.emplace(sm3);
-    SBG::LIB::CanonMap sm4(i4, le4);
-    aux.emplace(sm4);
-    SBG::LIB::CanonMap sm5(i5, le5);
-    aux.emplace(sm5);
-    SBG::LIB::CanonMap sm6(i6, le6);
-    aux.emplace(sm6);
+    SBG::LIB::Map sm1 = map_fact.createMap(i1, le1);
+    pw.emplaceBack(sm1);
+    SBG::LIB::Map sm2 = map_fact.createMap(i2, le2);
+    pw.emplaceBack(sm2);
+    SBG::LIB::Map sm3 = map_fact.createMap(i3, le3);
+    pw.emplaceBack(sm3);
+    SBG::LIB::Map sm4 = map_fact.createMap(i4, le4);
+    pw.emplaceBack(sm4);
+    SBG::LIB::Map sm5 = map_fact.createMap(i5, le5);
+    pw.emplaceBack(sm5);
+    SBG::LIB::Map sm6 = map_fact.createMap(i6, le6);
+    pw.emplaceBack(sm6);
   }
-  SBG::LIB::PWMap pw(aux);
 
   auto start = std::chrono::high_resolution_clock::now();
-  SBG::LIB::PWMap res = pw.mapInf();
+  pw.mapInf();
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
   std::cout << "PWL MAP MAPINF TEST elapsed time: " << elapsed.count() << "ms\n";

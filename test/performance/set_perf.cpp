@@ -20,14 +20,14 @@
 #include <chrono>
 #include <gtest/gtest.h>
 
-#include "sbg/ord_pw_mdinter.hpp"
-#include "sbg/unord_pw_mdinter.hpp"
+#include "sbg/af_set.hpp"
 
 TEST(SetPerf, Intersection)
 {
-  int N = 3;
+  int N = 100000;
 
-  SBG::LIB::OrdSet s1, s2;
+  SBG::LIB::OrdDenseAF fact;
+  SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
   for (int j = 0; j < N; j++) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
     s1.emplaceBack(i);
@@ -49,9 +49,10 @@ TEST(SetPerf, Intersection)
 
 TEST(SetPerf, Difference)
 {
-  int N = 3;
+  int N = 100000;
 
-  SBG::LIB::OrdSet s1, s2;
+  SBG::LIB::OrdDenseAF fact;
+  SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
   for (int j = 0; j < N; j++) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
     s1.emplaceBack(i);
@@ -73,9 +74,10 @@ TEST(SetPerf, Difference)
 
 TEST(SetPerf, Union)
 {
-  int N = 3;
+  int N = 100000;
 
-  SBG::LIB::OrdSet s1, s2;
+  SBG::LIB::OrdDenseAF fact;
+  SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
   for (int j = 0; j < N; j++) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
     s1.emplaceBack(i);
@@ -97,9 +99,10 @@ TEST(SetPerf, Union)
 
 TEST(SetPerf, UnordIntersection)
 {
-  int N = 3;
+  int N = 10000;
 
-  SBG::LIB::UnordSet s1, s2;
+  SBG::LIB::UnordAF fact;
+  SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
   for (int j = 0; j < N; j++) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
     s1.emplaceBack(i);
@@ -114,16 +117,17 @@ TEST(SetPerf, UnordIntersection)
   s1.intersection(s2);
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  std::cout << "INTERSECTION TEST elapsed time: " << elapsed.count() << "ms\n";
+  std::cout << "UNORDERED INTERSECTION TEST elapsed time: " << elapsed.count() << "ms\n";
 
   SUCCEED();
 }
 
 TEST(SetPerf, UnordDifference)
 {
-  int N = 3;
+  int N = 10000;
 
-  SBG::LIB::UnordSet s1, s2;
+  SBG::LIB::UnordAF fact;
+  SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
   for (int j = 0; j < N; j++) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
     s1.emplaceBack(i);
@@ -138,16 +142,17 @@ TEST(SetPerf, UnordDifference)
   s1.difference(s2);
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  std::cout << "DIFFERENCE TEST elapsed time: " << elapsed.count() << "ms\n";
+  std::cout << "UNORDERED DIFFERENCE TEST elapsed time: " << elapsed.count() << "ms\n";
 
   SUCCEED();
 }
 
 TEST(SetPerf, UnordUnion)
 {
-  int N = 3;
+  int N = 10000;
 
-  SBG::LIB::UnordSet s1, s2;
+  SBG::LIB::UnordAF fact;
+  SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
   for (int j = 0; j < N; j++) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
     s1.emplaceBack(i);
@@ -162,7 +167,7 @@ TEST(SetPerf, UnordUnion)
   s1.cup(s2);
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  std::cout << "UNION TEST elapsed time: " << elapsed.count() << "ms\n";
+  std::cout << "UNORDERED UNION TEST elapsed time: " << elapsed.count() << "ms\n";
 
   SUCCEED();
 }

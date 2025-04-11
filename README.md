@@ -66,7 +66,8 @@ The simplest way to compile this package is:
 
 The makefile script accepts the following options:
 
-  * MODE = <Debug|Release> 	When set to Debug (default), adds the compiler's debug flags.
+  * MODE = <Debug|Release>  When set to Debug, adds the compiler's debug flags. Set to Release
+    by default.
 
   * prefix = <Installation prefix path> 	Set the prefix installation path, default: /usr/local.
 
@@ -96,9 +97,10 @@ The SBG library is composed by four main modules:
 
   * sbg
 
-The first three were developed to allow for more user-friendly input. The first
-three were developed to allow for more user-friendly input, and the last one
-contains all the logical implementation of structures and operations.
+The library started with only sbg module, but then it was extended with the
+other three to enable faster debugging. While not necessary for client
+applications, these optional tools are useful to grasp SBG concepts and
+operations. 
 
 ## Examples:			   
 

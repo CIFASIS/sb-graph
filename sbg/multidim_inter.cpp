@@ -23,23 +23,24 @@ namespace SBG {
 
 namespace LIB {
 
+member_imp(MultiDimInter, InterVector, intervals);
+
 MultiDimInter::MultiDimInter() : intervals_() {}
 MultiDimInter::MultiDimInter(const MD_NAT &x) : intervals_() {
   for (NAT xi : x)
-    intervals_.emplace_back(Interval(xi, 1, xi));
+    intervals_.push_back(Interval(xi, 1, xi));
 }
 MultiDimInter::MultiDimInter(const Interval &i) : intervals_()
 {
-  intervals_.emplace_back(i);
+  intervals_.push_back(i);
 }
 MultiDimInter::MultiDimInter(const unsigned int &nmbr_copies
                              , const Interval &i) : intervals_() {
   for (unsigned int j = 0; j < nmbr_copies; ++j)
-    intervals_.emplace_back(i);
+    intervals_.push_back(i);
 }
-MultiDimInter::MultiDimInter(const InterVector &iv) : intervals_(iv) {}
-
-member_imp(MultiDimInter, InterVector, intervals);
+MultiDimInter::MultiDimInter(const InterVector &iv)
+  : intervals_(std::move(iv)) {}
 
 MultiDimInter::iterator MultiDimInter::begin() { return intervals_.begin(); }
 MultiDimInter::iterator MultiDimInter::end() { return intervals_.end(); }
@@ -57,7 +58,7 @@ void MultiDimInter::emplaceBack(Interval i)
   if (i.isEmpty())
     intervals_ = InterVector();
   else
-    intervals_.emplace_back(i);
+    intervals_.push_back(i);
   return;
 }
 
@@ -107,8 +108,6 @@ std::ostream &operator<<(std::ostream &out, const MultiDimInter &mdi)
 
 // Set functions ---------------------------------------------------------------
 
-std::size_t MultiDimInter::arity() const { return intervals_.size(); }
-
 unsigned int MultiDimInter::cardinal() const
 {
   unsigned int res = 1;
@@ -121,7 +120,7 @@ unsigned int MultiDimInter::cardinal() const
 
 bool MultiDimInter::isEmpty() const { return intervals_.empty(); }
 
-Util::MD_NAT MultiDimInter::minElem() const
+MD_NAT MultiDimInter::minElem() const
 {
   MD_NAT res;
 
@@ -131,7 +130,7 @@ Util::MD_NAT MultiDimInter::minElem() const
   return res;
 }
 
-Util::MD_NAT MultiDimInter::maxElem() const
+MD_NAT MultiDimInter::maxElem() const
 {
   MD_NAT res;
 
@@ -162,6 +161,8 @@ MultiDimInter MultiDimInter::intersection(const MultiDimInter &other) const
 
 // Extra operations ------------------------------------------------------------
 
+std::size_t MultiDimInter::arity() const { return intervals_.size(); }
+
 MultiDimInter MultiDimInter::offset(const MD_NAT &off) const
 {
   MultiDimInter res;
@@ -177,9 +178,7 @@ MultiDimInter MultiDimInter::least(const MultiDimInter &other) const
   return std::min(*this, other);
 }
 
-bool MultiDimInter::isUnidim() const { return arity() <= 1; }
-
-MultiDimInter::MaybeMDI MultiDimInter::compact(const MultiDimInter &other) const
+MaybeMDI MultiDimInter::compact(const MultiDimInter &other) const
 {
   MultiDimInter res;
 

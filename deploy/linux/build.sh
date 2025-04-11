@@ -13,7 +13,7 @@
 #         NOTES: --- 
 #        AUTHOR: Joaquin Fernandez, joaquin.f.fernandez@gmail.com
 #       PROJECT: Set Based Graph Library
-#       VERSION: 3.0.0
+#       VERSION: 4.0.0
 #===================================================================================
 
 LIB_NAME=sb-graph-lib

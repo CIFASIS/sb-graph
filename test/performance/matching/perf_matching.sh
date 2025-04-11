@@ -1,4 +1,22 @@
 #!/bin/bash
+#===============================================================================
+# 				 FILE: perf_matching.sh
+#
+# 				USAGE: perf_matching.sh FILE ITERS SIZE
+#
+# 	DESCRIPTION: Helper script to execute multiple ITERS times the evaluator on
+#                a matching test saved in FILE, with N set to SIZE.
+#
+#    PARAMETERS: [FILE] Filename of the desired test.
+#                [ITERS] Number of executions of the test. The reported time
+#                will be the average of all runs.
+#                [SIZE] Sets the size of variable N in the test to SIZE.
+#       OPTIONS: ---
+#  REQUIREMENTS: [1] ../../../bin/sbg-eval binary. 
+#         NOTES: --- 
+#        AUTHOR: Denise Marzorati, denise.marzorati@gmail.com
+#       PROJECT: Set Based Graph Library
+#===============================================================================
 
 file=$1
 iterations=$2

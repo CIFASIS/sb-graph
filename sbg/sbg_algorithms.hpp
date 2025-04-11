@@ -25,10 +25,6 @@
 #define SBG_SBGALGO_HPP
 
 #include <chrono>
-#include <list>
-#include <map>
-#include <set>
-#include <unordered_set>
 
 #include "rapidjson/document.h"
 #include "rapidjson/filewritestream.h"
@@ -40,54 +36,54 @@ namespace SBG {
 
 namespace LIB {
 
+////////////////////////////////////////////////////////////////////////////////
 // Connected components --------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
-template<typename Set>
-PWMap<Set> connectedComponents(SBGraph<Set> g);
+PWMap connectedComponents(SBG g);
 
+////////////////////////////////////////////////////////////////////////////////
 // Matching --------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
 enum Direction { forward, backward };
 
-template<typename Set>
 struct MatchInfo {
   member_class(Set, matched_edges);
   member_class(bool, fully_matchedU);
 
-  MatchInfo();
   MatchInfo(Set matched_edges, bool fully_matchedU);
 };
-template<typename Set>
-std::ostream &operator<<(std::ostream &out, const MatchInfo<Set> &m_info);
+std::ostream &operator<<(std::ostream &out, const MatchInfo &m_info);
 
-template<typename Set>
 struct SBGMatching {
-  using Map = SBGMap<Set>;
-  using PW = PWMap<Set>;
+  private:
+  const PWMapAF &fact_;
 
   //*** SBG info, constant
-  member_class(SBGraph<Set>, sbg);
+  member_class(SBG, sbg);
 
   member_class(Set, V);
-  member_class(PW, Vmap);
+  member_class(PWMap, Vmap);
 
   member_class(Set, E);
-  member_class(PW, Emap);
+  member_class(PWMap, Emap);
+  member_class(PWMap, subEmap);
 
   //-----------------------------
-  member_class(PW, smap); // Successors map
-  member_class(PW, rmap); // Representatives map
+  member_class(PWMap, smap); // Successors map
+  member_class(PWMap, rmap); // Representatives map
 
-  member_class(PW, omap); // Offset map
-  member_class(Util::MD_NAT, max_V); // Current maximum value
+  member_class(PWMap, omap); // Offset map
+  member_class(MD_NAT, max_V); // Current maximum value
 
   member_class(Set, F); // Left vertices, constant
   member_class(Set, U); // Right vertices, constant
-  member_class(PW, mapF); // Left map, constant
-  member_class(PW, mapU); // Right map, constant
+  member_class(PWMap, mapF); // Left map, constant
+  member_class(PWMap, mapU); // Right map, constant
 
-  member_class(PW, mapB); // Backward map, mutable
-  member_class(PW, mapD); // Forward map, mutable
+  member_class(PWMap, mapB); // Backward map, mutable
+  member_class(PWMap, mapD); // Forward map, mutable
 
   member_class(Set, paths_edges); // Available edges in each step to find paths, mutable
   member_class(Set, matched_E); // Matched edges, mutable
@@ -103,17 +99,19 @@ struct SBGMatching {
 
   member_class(bool, debug);
 
-  SBGMatching();
-  SBGMatching(SBGraph<Set> sbg, bool debug);
+  public:
+  SBGMatching(const SBG &sbg, bool debug);
 
-  MatchInfo<Set> calculate();
+  MatchInfo calculate();
+
+  const PWMapAF &fact() const;
 
   private:
-  void selectSucc(DSBGraph<Set> dsbg);
+  void selectSucc(DSBG dsbg);
 
-  PW directedOffset(const PW &dir_map) const;
-  DSBGraph<Set> offsetGraph(const PW &dir_omap) const;
-  void directedMinReach(const PW &dir_map);
+  PWMap directedOffset(const PWMap &dir_map) const;
+  DSBG offsetGraph(const PWMap &dir_omap) const;
+  void directedMinReach(const PWMap &dir_map);
   void minReachableStep();
   void minReachable();  
 
@@ -122,125 +120,117 @@ struct SBGMatching {
   // p1, p2, ..., pk. When vl chooses its right representant "vr" through path
   // pj all the other paths should be discarded. This function discards all
   // the edges in paths p1, ..., pj-1, pj+1, ..., pk.
-  Set edgesSameRepLR(const PW &rmapd) const; 
+  Set edgesSameRepLR(const PWMap &rmapd) const; 
   bool fullyMatchedU() const;
   void offsetVertices();
   void updatePaths();
   void updateOffset();
 };
 
-typedef SBGMatching<UnordSet> BaseMatch;
-typedef SBGMatching<OrdSet> CanonMatch;
-
+////////////////////////////////////////////////////////////////////////////////
 // SCC -------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
-template<typename Set>
 struct SBGSCC {
-  using Map = SBGMap<Set>;
-  using PW = PWMap<Set>;
+  private:
+  const PWMapAF &fact_;
 
   //*** SBG info, constant
-  member_class(DSBGraph<Set>, dsbg);
+  member_class(DSBG, dsbg);
 
   member_class(Set, V);
-  member_class(PW, Vmap);
+  member_class(PWMap, Vmap);
 
-  member_class(PW, Emap);
+  member_class(PWMap, Emap);
+  member_class(PWMap, subEmap);
 
   //-----------------------------
   member_class(Set, E); // Edges in the same SCC in each step
   member_class(Set, Ediff); // Edges between different SCC in each step
 
-  member_class(PW, mapB);
-  member_class(PW, mapD);
+  member_class(PWMap, mapB);
+  member_class(PWMap, mapD);
  
-  member_class(PW, rmap);
+  member_class(PWMap, rmap);
 
   member_class(bool, debug);
 
-  SBGSCC();
-  SBGSCC(DSBGraph<Set> dsbg, bool debug);
+  public:
+  SBGSCC(const DSBG &dsbg, bool debug);
 
-  PW calculate();
+  PWMap calculate();
+
+  const PWMapAF &fact() const;
 
   private:
-  PW sccMinReach(DSBGraph<Set> dg) const;
-  PW sccStep();
+  PWMap sccMinReach(const DSBG &dg) const;
+  PWMap sccStep();
 };
 
-typedef SBGSCC<UnordSet> BaseSCC;
-typedef SBGSCC<OrdSet> CanonSCC;
-
+////////////////////////////////////////////////////////////////////////////////
 // Topological sort ------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
-template<typename Set>
 struct SBGTopSort {
-  using Map = SBGMap<Set>;
-  using PW = PWMap<Set>;
+  private:
+  const PWMapAF &fact_;
 
   //*** SBG info, constant
-  member_class(DSBGraph<Set>, dsbg);
+  member_class(DSBG, dsbg);
 
   //-----------------------------
   member_class(bool, debug);
 
-  SBGTopSort();
-  SBGTopSort(DSBGraph<Set> dsbg, bool debug);
+  public:
+  SBGTopSort(const DSBG &dsbg, bool debug);
 
-  PW calculate(); 
+  PWMap calculate(); 
+
+  const PWMapAF &fact() const;
 
   private:
-  Exp calculateExp(Util::MD_NAT from, Util::MD_NAT to);
+  Exp calculateExp(const MD_NAT &from, const MD_NAT &to);
 };
 
-typedef SBGTopSort<UnordSet> BaseTopSort;
-typedef SBGTopSort<OrdSet> CanonTopSort;
-
+///////////////////////////////////////////////////////////////////////////////
 // Cut-set algorithm ----------------------------------------------------------
+///////////////////////////////////////////////////////////////////////////////
 
-/** @struct SBGCutSet
-*
-* @brief Aims to calculate a minimum cut-set of vertices, that is, if those
-* vertices are taken out, the resulting graph has no SCC. Since this is a
-* NP-hard problem, heuristics are used, and thus is not guaranteed that the
-* set is actually minimum.
+/**
+* @brief Aims to calculate a minimum cut-set of vertices, that is, a set of
+* vertices such that if these vertices are taken out, the resulting graph has no
+* SCC left. Since this is a NP-hard problem, heuristics are used, and thus is
+* not guaranteed that the set is actually minimum.
 */
 
-template<typename Set>
 struct SBGCutSet {
-  using Map = SBGMap<Set>;
-  using PW = PWMap<Set>;
+  private:
+  const PWMapAF &fact_;
 
   //*** SBG info, constant
-  member_class(DSBGraph<Set>, dsbg);
+  member_class(DSBG, dsbg);
 
   //-----------------------------
   member_class(bool, debug);
 
-  SBGCutSet();
-  SBGCutSet(DSBGraph<Set> dsbg, bool debug);
+  public:
+  SBGCutSet(const DSBG &dsbg, bool debug);
 
   Set calculate(); 
 
   private:
-  PW getDegMap(DSBGraph<Set> dsbg);
+  PWMap getDegMap(const DSBG &dsbg);
 };
 
-typedef SBGCutSet<UnordSet> BaseCutSet;
-typedef SBGCutSet<OrdSet> CanonCutSet;
-
+///////////////////////////////////////////////////////////////////////////////
 // Additional operations ------------------------------------------------------
+///////////////////////////////////////////////////////////////////////////////
 
-template<typename Set>
-DSBGraph<Set> buildSCCFromMatching(const SBGMatching<Set> &match);
+DSBG buildSCCFromMatching(const SBGMatching &match);
 
-template<typename Set>
-DSBGraph<Set> buildSortFromSCC(const SBGSCC<Set> &scc, const PWMap<Set> &rmap);
+DSBG buildSortFromSCC(const SBGSCC &scc, const PWMap &rmap);
 
-template<typename Set>
-void buildJson(
-  const Set &matching, const PWMap<Set> &scc, const PWMap<Set> &order
-);
+void buildJson(const Set &matching, const PWMap &scc, const PWMap &order);
 
 } // namespace LIB
 

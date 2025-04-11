@@ -505,7 +505,6 @@ PWMap SBGSCC::sccMinReach(const DSBG &dg) const
 
       PWMap new_rmap = mapB.minAdjMap(ermapD);
       rmap = rmap.minMap(new_rmap).combine(rmap);
-
       if (debug())
         Util::SBG_LOG << "rmap before rec: " << rmap << "\n\n";
 

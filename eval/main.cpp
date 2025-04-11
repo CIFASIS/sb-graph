@@ -230,13 +230,14 @@ void usage()
 
 void version()
 {
-  std::cout << "SBG library v3.0.0\n";
+  std::cout << "SBG library v4.0.0" << std::endl;
   std::cout << "License GPLv3+: GNU GPL version 3 or later"
     << " <http://gnu.org/licenses/gpl.html>\n";
   std::cout << "This is free software: you are free to change and redistribute" 
     << "it.\n";
   std::cout << "There is NO WARRANTY, to the extent permitted by law.\n";
 }
+
 
 int main(int argc, char**argv)
 {

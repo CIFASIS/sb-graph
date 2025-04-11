@@ -87,8 +87,6 @@ template std::ostream &operator<<(std::ostream &out, const ExprBaseType &v);
 std::ostream &operator<<(std::ostream &out, const ExprEval &e)
 {
   out << std::get<0>(e) << "\n  --> " << std::get<1>(e) << "\n"; 
-  //ExprBaseType ebt = std::get<1>(e);
-  //out << ebt << "\n";
 
   return out;
 }

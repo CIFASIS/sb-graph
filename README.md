@@ -119,6 +119,13 @@ Report bugs to: marzorati@cifasis-conicet.gov.ar or fernandez@cifasis-conicet.go
 
 # Changelog
 
+## [4.0.0] - 2025-04-11
+### Added
+- Separated parser grammars for lightweight compilation.
+- New implementation of evaluator, cleaner and simpler.
+- Support of sets and pwmaps implementation switching in runtime.
+- Corrected makefiles and test folders code.
+
 ## [3.0.0] - 2024-10-09
 ### Added
 - Implemented Ordered Sets of one-dimensional, compact MDIs.

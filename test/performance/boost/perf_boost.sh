@@ -1,4 +1,28 @@
 #!/bin/bash
+#===============================================================================
+# 				 FILE: perf_boost.sh
+#
+# 				USAGE: perf_boost.sh FILE ALGORITHM ITERS SIZE
+#
+# 	DESCRIPTION: Helper script that given a SBG test file FILE replaces line
+#                "N = ..." with "N = SIZE" and then finds the first
+#                defined SBG in the file, constructing a traditional graph
+#                with the BGL library. Then, executes the selected algorithm
+#                according to option ALGORITHM. This is repeated ITERS times,
+#                and the average of all executions is reported.
+#
+#    PARAMETERS: [FILE] Filename of the desired test.
+#                [ALGORITHM] 0 = BGL Edmonds-Karp maximum matching, 1 = BGL
+#                Tarjan SCC, 2 = BGL topological sort.
+#                [ITERS] Number of executions of the test. The reported time
+#                will be the average of all runs.
+#                [SIZE] Sets the size of variable N in the test to SIZE.
+#       OPTIONS: ---
+#  REQUIREMENTS: [1] ../../../bin/sbg-eval binary. 
+#         NOTES: --- 
+#        AUTHOR: Denise Marzorati, denise.marzorati@gmail.com
+#       PROJECT: Set Based Graph Library
+#===============================================================================
 
 file=$1
 algo=$2

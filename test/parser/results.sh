@@ -1,4 +1,23 @@
 #/bin/bash
+#===============================================================================
+#
+# 				 FILE: results.sh
+#
+# 				USAGE: results.sh FILE
+#
+# 	DESCRIPTION: Helper script to compare expected results of parser tests with
+#                the execution of the current parsing version of the library.
+#
+#    PARAMETERS: [FILE] Name of the test (without extension). 
+#       OPTIONS: ---
+#  REQUIREMENTS: [1] A filename FILE.log in the ./gt_data (expected results).
+#                [2] A filename FILE.test in the ./test_data directory (actual
+#                    results).
+#         NOTES: --- 
+#        AUTHOR: Joaquin Fernandez and Denise Marzorati
+#                , denise.marzorati@gmail.com
+#       PROJECT: Set Based Graph Library
+#===============================================================================
 
 MODEL=$1
 GT_MODEL="./gt_data/"${MODEL}

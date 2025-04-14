@@ -1,4 +1,20 @@
 #!/bin/bash
+#===============================================================================
+# 				 FILE: compile_run_tests.sh
+#
+# 				USAGE: compile_run_tests.sh OPTION
+#
+# 	DESCRIPTION: Helper script to compile and run all tests in this folder.
+#
+#    PARAMETERS: ---
+#       OPTIONS: performance, parser or eval (to build a single test suite).
+#  REQUIREMENTS: [1] googletest (available if `make test` was executed in the
+#                parent directory).
+#                [2] Test binaries in each subfolder.
+#         NOTES: --- 
+#        AUTHOR: Denise Marzorati, denise.marzorati@gmail.com
+#       PROJECT: Set Based Graph Library
+#===============================================================================
 set -e
 
 if [[ -z "$1" || "$1" == "performance" ]]; then

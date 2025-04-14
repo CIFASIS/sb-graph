@@ -752,6 +752,7 @@ ExprBaseType EvalExpression::operator()(AST::MultiDimInter v) const
   return res;
 }
 
+
 ExprBaseType EvalExpression::operator()(AST::Set v) const
 {
   LIB::Set res = fact_.createSet();

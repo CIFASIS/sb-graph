@@ -35,7 +35,6 @@
 
 #include "sbg/multidim_inter.hpp"
 #include <iostream>
-#include <boost/container/flat_set.hpp>
 #include <forward_list>
 #include <algorithm>
 
@@ -242,7 +241,7 @@ typedef const UnorderedSet &UnordSetCRef;
 ////////////////////////////////////////////////////////////////////////////////
 
 typedef std::vector<SetPiece> MDIOrdSet;
-typedef boost::container::flat_set<SetPiece> MDInterOrdSet;
+
 struct OrderedDenseSet : public SetDelegate {
   member_class(MDIOrdSet, pieces);
 

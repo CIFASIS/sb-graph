@@ -356,6 +356,7 @@ typedef std::unique_ptr<UnordPWMap> UnordPWMapPtr;
 typedef std::vector<Map> OrdMapCollection;
 
 struct OrdPWMap : public PWMapDelegate {
+
   member_class(OrdMapCollection, pieces);
 
   ~OrdPWMap() = default;
@@ -432,21 +433,50 @@ struct OrdPWMap : public PWMapDelegate {
   
   private:
   
-  void processAdd(const Map &m1, const Map &m2, Set &NUSet, OrdMapCollection &res,
-                                unsigned int* posGlobal  , unsigned int* posLocal  , bool* bandera ) const; 
+  PWMapDelegPtr merge(const PWMapDelegate &other) const;
   
-  void processEqualImage(const Map &m1, const Map &m2, Set &res, OrdMapCollection &NUOrdmap,
-                                unsigned int*NUPG , unsigned int*NUPL  , bool*NUB ) const; 
+  void emplace(const Map &m);
+  
+  void processMinus(
+  const Map &m1, 
+  const Map &m2, 
+  Set &set, 
+  PWMapDelegate  &ordpwmap,
+  unsigned int*posGlobal) const; 
+  
+  
+  void processAdd(
+  const Map &m1, 
+  const Map &m2, 
+  Set &set, 
+  PWMapDelegate  &ordpwmap,
+  unsigned int*posGlobal) const; 
+  
+  
+  void processEqualImage(
+  const Map &m1, 
+  const Map &m2, 
+  Set &set, 
+  PWMapDelegate &ordpwmap,
+  unsigned int*posGlobal) const; 
+  
+  using ProcessFunc = void (OrdPWMap::*)(
+  const Map &, const Map &, 
+  Set &, PWMapDelegate &, 
+  unsigned int*
+  ) const;
   
   void processMapsOrd(
-  const PWMapDelegate &other,
-  Set &set,
-  OrdMapCollection &ordmap,
-  void (OrdPWMap::*process)(const Map &, const Map &, Set &, OrdMapCollection &, 
-                            unsigned int* , unsigned int* , bool* ) const) const;
+    const PWMapDelegate &other,
+    Set &set,
+    PWMapDelegate &ordmap,
+    ProcessFunc process
+  ) const;
 };
 
+
 typedef const OrdPWMap &OrdPWMapCRef;
+typedef OrdPWMap &OrdPWMapRef;
 typedef std::unique_ptr<OrdPWMap> OrdPWMapPtr;
 
 ////////////////////////////////////////////////////////////////////////////////

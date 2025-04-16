@@ -82,6 +82,165 @@ TEST(PWMapPerf, Composition)
   SUCCEED();
 }
 
+
+TEST(PWMapPerf, UnordAdd)
+{
+  unsigned int inter_sz = 100000;
+  unsigned int set_sz = 100;
+  unsigned int map_sz = 100;
+
+  SBG::LIB::UnordAF set_fact;
+  SBG::LIB::MapAF map_fact(set_fact);
+  SBG::LIB::UnordPWMapAF pw_fact(map_fact);
+  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  for (unsigned int k = 0; k < map_sz; k++) {
+    SBG::LIB::LExp le1(1, k);
+    SBG::LIB::Set s1 = set_fact.createSet();
+    int map_offset = k * inter_sz * set_sz;
+    for (unsigned int j = 0; j < set_sz; j++) {
+      SBG::LIB::Interval i(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      s1.emplaceBack(SBG::LIB::SetPiece(i));
+    }
+    pw.emplaceBack(map_fact.createMap(s1, SBG::LIB::Exp(le1)));
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  pw=pw+pw;
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "PWL UNORDERED MAP ADD TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+
+TEST(PWMapPerf, OrdAdd)
+{
+  unsigned int inter_sz = 100000;
+  unsigned int set_sz = 100;
+  unsigned int map_sz = 100;
+
+  SBG::LIB::OrdAF set_fact;
+  SBG::LIB::MapAF map_fact(set_fact);
+  SBG::LIB::OrdPWMapAF pw_fact(map_fact);
+  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  for (unsigned int k = 0; k < map_sz; k++) {
+    SBG::LIB::LExp le1(1, k);
+    SBG::LIB::Set s1 = set_fact.createSet();
+    int map_offset = k * inter_sz * set_sz;
+    for (unsigned int j = 0; j < set_sz; j++) {
+      SBG::LIB::Interval i(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      s1.emplaceBack(SBG::LIB::SetPiece(i));
+    }
+    pw.emplaceBack(map_fact.createMap(s1, SBG::LIB::Exp(le1)));
+  }
+  
+  
+  auto start = std::chrono::high_resolution_clock::now();
+  pw=pw+pw;
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "PWL ORDERED MAP ADD TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+
+TEST(PWMapPerf, UnordMinus)
+{
+  unsigned int inter_sz = 100000;
+  unsigned int set_sz = 100;
+  unsigned int map_sz = 100;
+
+  SBG::LIB::UnordAF set_fact;
+  SBG::LIB::MapAF map_fact(set_fact);
+  SBG::LIB::UnordPWMapAF pw_fact(map_fact);
+  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  for (unsigned int k = 0; k < map_sz; k++) {
+    SBG::LIB::LExp le1(1, k);
+    SBG::LIB::Set s1 = set_fact.createSet();
+    int map_offset = k * inter_sz * set_sz;
+    for (unsigned int j = 0; j < set_sz; j++) {
+      SBG::LIB::Interval i(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      s1.emplaceBack(SBG::LIB::SetPiece(i));
+    }
+    pw.emplaceBack(map_fact.createMap(s1, SBG::LIB::Exp(le1)));
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  pw=pw-pw;
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "PWL UNORDERED MAP MINUS TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+
+TEST(PWMapPerf, OrdMinus)
+{
+  unsigned int inter_sz = 100000;
+  unsigned int set_sz = 100;
+  unsigned int map_sz = 100;
+
+  SBG::LIB::OrdAF set_fact;
+  SBG::LIB::MapAF map_fact(set_fact);
+  SBG::LIB::OrdPWMapAF pw_fact(map_fact);
+  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  for (unsigned int k = 0; k < map_sz; k++) {
+    SBG::LIB::LExp le1(1, k);
+    SBG::LIB::Set s1 = set_fact.createSet();
+    int map_offset = k * inter_sz * set_sz;
+    for (unsigned int j = 0; j < set_sz; j++) {
+      SBG::LIB::Interval i(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      s1.emplaceBack(SBG::LIB::SetPiece(i));
+    }
+    pw.emplaceBack(map_fact.createMap(s1, SBG::LIB::Exp(le1)));
+  }
+  
+
+  
+  auto start = std::chrono::high_resolution_clock::now();
+  pw=pw-pw;
+  
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "PWL ORDERED MAP MINUS TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+
+TEST(PWMapPerf, minAdj)
+{
+  unsigned int inter_sz = 100000;
+  unsigned int set_sz = 100;
+  unsigned int map_sz = 100;
+
+  SBG::LIB::OrdDenseAF set_fact;
+  SBG::LIB::MapAF map_fact(set_fact);
+  SBG::LIB::UnordPWMapAF pw_fact(map_fact);
+  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  for (unsigned int k = 0; k < map_sz; k++) {
+    SBG::LIB::LExp le1(1, k);
+    SBG::LIB::Set s1 = set_fact.createSet();
+    int map_offset = k * inter_sz * set_sz;
+    for (unsigned int j = 0; j < set_sz; j++) {
+      SBG::LIB::Interval i(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      s1.emplaceBack(SBG::LIB::SetPiece(i));
+    }
+    pw.emplaceBack(map_fact.createMap(s1, SBG::LIB::Exp(le1)));
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  pw.minAdjMap(pw);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "PWL MAP COMPOSITION TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
 TEST(PWMapPerf, MapInf) {
   int N = 300;
   int sz = 1000;

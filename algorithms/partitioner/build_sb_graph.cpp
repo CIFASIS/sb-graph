@@ -33,7 +33,7 @@
 #include "build_sb_graph.hpp"
 #include "weighted_sb_graph.hpp"
 
-#define CHECK_1_N_REL 1
+#define CHECK_1_N_REL 0
 
 
 using namespace rapidjson;
@@ -391,7 +391,7 @@ Set get_edge_domain(Set image_intersection_set, Set& edge_set, int& max_value)
   // we know it only has one dimension, so we take the first one
   auto image_intersection_first_set_piece = *image_intersection_set.begin();
   auto image_intersection_first_interval = image_intersection_first_set_piece[0];
-  auto domain_offset = image_intersection_first_interval.begin();
+  auto domain_offset = image_intersection_first_interval.end() - image_intersection_first_interval.begin();
 
   Interval edge_domain;
   edge_domain = Interval(max_value, 1, max_value + domain_offset);
@@ -580,7 +580,11 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(
 /// @brief  Add documentation
 /// @param nodes 
 /// @return 
-SBG::LIB::WeightedSBGraph create_sb_graph(const std::map<int, Node>& nodes)
+SBG::LIB::SBG create_sb_graph(
+  const std::map<int, Node>& nodes,
+  SBG::LIB::UnordAF& set_fact,
+  SBG::LIB::MapAF& map_fact,
+  SBG::LIB::UnordPWMapAF& pw_fact)
 {
   int max_value = 0;  // We track the max value, so we avoid domain collision between edges and nodes
   map<int, int> node_offsets;
@@ -589,19 +593,11 @@ SBG::LIB::WeightedSBGraph create_sb_graph(const std::map<int, Node>& nodes)
   auto [node_set, weights] = create_set_of_nodes(nodes, node_offsets, max_value);
   cout << "node_set " << node_set << endl;
 
-  // Now, let's build a graph!
-  SBG::LIB::UnordAF set_fact;
-  SBG::LIB::MapAF map_fact(set_fact);
-  SBG::LIB::UnordPWMapAF pw_fact(map_fact);
-
-
-  // Then, create edges and maps.
+  // Create edges and maps.
   auto [edge_set, left_maps, right_maps, costs] = create_graph_edges(nodes, node_offsets, max_value);
 
-  // Noe, let's create a graph
-  SBG::LIB::SBG g = SBG::LIB::SBG(pw_fact, node_set, pw_fact.createPWMap(), left_maps, right_maps, pw_fact.createPWMap(), pw_fact.createPWMap());
-  SBG::LIB::WeightedSBGraph graph(g); // This will be our graph
-
+  // Now, let's create a graph
+  SBG::LIB::SBG graph(pw_fact, node_set, pw_fact.createPWMap(), left_maps, right_maps, pw_fact.createPWMap(), pw_fact.createPWMap()); // This will be our graph
 
   return graph;
 }
@@ -644,7 +640,10 @@ pair<SetPiece, SetPiece> cut_interval(const SetPiece &interval, int cut_value)
 }
 
 
-SBG::LIB::WeightedSBGraph build_sb_graph(const string& filename)
+SBG::LIB::SBG build_sb_graph(const string& filename, // create needed factories
+  SBG::LIB::UnordAF& set_fact,
+  SBG::LIB::MapAF& map_fact,
+  SBG::LIB::UnordPWMapAF& pw_fact)
 {
   cout << "Reading " << filename << "..." << endl;
 
@@ -658,7 +657,7 @@ SBG::LIB::WeightedSBGraph build_sb_graph(const string& filename)
   auto nodes = create_node_objects_from_json(document);
 
   // Now, let's get our graph
-  auto graph = create_sb_graph(nodes);
+  auto graph = create_sb_graph(nodes, set_fact, map_fact, pw_fact);
 
   SBG_LOG << graph;
 

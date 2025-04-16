@@ -150,7 +150,11 @@ int main(int argc, char** argv)
   if (output_sb_graph) {
     s = "";
   }
-  auto sb_graph = build_sb_graph(filename->c_str());
+
+  SBG::LIB::UnordAF set_fact;
+  SBG::LIB::MapAF map_fact(set_fact);
+  SBG::LIB::UnordPWMapAF pw_fact(map_fact);
+  auto sb_graph = build_sb_graph(filename->c_str(), set_fact, map_fact, pw_fact);
 
   cout << sb_graph << endl;
 

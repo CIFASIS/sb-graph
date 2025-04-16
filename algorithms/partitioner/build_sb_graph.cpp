@@ -31,7 +31,6 @@
 #include <util/logger.hpp>
 
 #include "build_sb_graph.hpp"
-// #include "sbg_partitioner_log.hpp"
 #include "weighted_sb_graph.hpp"
 
 #define CHECK_1_N_REL 1
@@ -274,7 +273,6 @@ tuple<Set, NodeWeight> create_set_of_nodes(const map<int, Node>& nodes, map<int,
       }
     }
     node_set.emplaceBack(array_of_nodes);
-    // weights.insert({array_of_nodes, node.weight});
   }
 
   // We save max value so edge domain will not collide with node domain
@@ -362,9 +360,6 @@ SBG::LIB::Map create_set_edge_map(const SetAF &set_fact, const Set& pre_image, c
 
   map = map_fact.createMap(edge_domain, map_exps);
 
-  // useful for debugging
-  // cout << "edge_domain " << edge_domain << ": " << image(map) << endl;
-
   return map;
 }
 
@@ -392,9 +387,6 @@ Set get_edge_domain(Set image_intersection_set, Set& edge_set, int& max_value)
 
   UnordAF set_af;
   Set edge_domain_set = set_af.createSet();
-
-  // for (size_t i = 0; i < image_intersection_set.size(); i++) {
-  // Edge domain will be from the current max value and will have the quantity as the intersection
 
   // we know it only has one dimension, so we take the first one
   auto image_intersection_first_set_piece = *image_intersection_set.begin();
@@ -493,7 +485,6 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(
           if (node_candidate_exps.exps()[0].slope() == 0) {
             cout << "This should be 1-N " << node_candidate_domain << endl;
             auto node_size = get_set_size(node_candidate_domain);
-            // image_intersection_set[0] = Interval(image_intersection_set[0].begin(), 1, image_intersection_set[0].begin() + node_size);
 
             Set edge_domain_set = get_edge_domain(image_intersection_set, edge_set, max_value);
             SetPiece edge_domain_set_first_interval = *edge_domain_set.begin();
@@ -675,18 +666,6 @@ SBG::LIB::WeightedSBGraph build_sb_graph(const string& filename)
 }
 
 
-// Set get_adjacents(const SBG::LIB::SBG& graph, const Set& node)
-// {
-//   auto set_fact = UnordAF();
-//   Set adjacents = set_fact.createSet();
-
-//   add_adjacent_nodes(graph.map1(), graph.map2(), node, adjacents);
-//   add_adjacent_nodes(graph.map2(), graph.map1(), node, adjacents);
-
-//   return adjacents;
-// }
-
-
 Set get_adjacents(const SBG::LIB::SBG& graph, const Set& node)
 {
   auto set_fact = UnordAF();
@@ -781,40 +760,13 @@ pair<Set, Set> cut_interval_by_dimension(Set& set_piece, const NodeWeight& node_
       auto i1 = *set_piece.begin();
       tie(p_1, p_2) = cut_interval(i1.intervals().front(), i1.intervals().front().begin() + actual_size - 1);
       return make_pair(set_fact.createSet(p_1), set_fact.createSet(p_2));
-
-    // in the future, deal with multiple dimensions
-    // if (set_piece.pieces().begin()->intervals().size() == 2) {
-    //     OrdSet cut_node;
-    //     OrdSet remaining_node = set_piece;
-    //     for (const auto& piece : set_piece.pieces()) {
-    //       size_t pice_size = get_node_size(piece, node_weight);
-    //       size_t size_to_cut = min(pice_size, actual_size);
-    //       OrdSet cut_node_piece, remaining_node_piece;
-    //       tie(cut_node_piece, remaining_node_piece) = cut_bidimensional_interval(piece, size_to_cut);
-    //       cut_node = cup(cut_node, cut_node_piece);
-    //       remaining_node = difference(remaining_node, cut_node);
-
-    //       if (remaining_node.pieces().empty()) {
-    //         return make_pair(cut_node, remaining_node);
-    //       }
-    //     }
-
-    //     return make_pair(cut_node, remaining_node);
-    // }
-
-    // cout << "Unexpected dimension: " << set_piece.pieces().begin()->intervals().size() << endl;
-
-    // throw 1;
 }
 
 
 unsigned get_node_size(const SetPiece& node, const NodeWeight& node_weight)
 {
-    // if (node.size() == 0) {
-    //     return 0;
-    // }
     auto set_fact = UnordAF();
-    int weight = 1;//get_set_cost(node, node_weight);
+    int weight = 1; // currently, all nodes have weight 1
 
     unsigned acc = node.intervals().front().end() - node.intervals().front().begin() + 1;
 
@@ -850,7 +802,7 @@ unsigned get_edge_set_cost(const SBG::LIB::SetPiece& node, const EdgeCost& edge_
         return 0;
     }
 
-    int weight = 1;//get_set_cost(node, edge_cost);
+    int weight = 1; // currently, all edges have cost 1
 
     unsigned acc = node.intervals().front().end() - node.intervals().front().begin() + 1;
 
@@ -890,7 +842,7 @@ void flatten_set(OrderedDenseSet &set, const SBG::LIB::SBG& graph)
         return;
     }
 
-    OrderedDenseSet new_partition;
+    // OrderedDenseSet new_partition;
     // for (const auto& v : graph.V()) {
     //     MDInterOrdSet set_piece_this_node_vector;
     //     for (auto& set_piece : set.pieces()) {
@@ -907,7 +859,10 @@ void flatten_set(OrderedDenseSet &set, const SBG::LIB::SBG& graph)
     // auto diff = difference(set, new_partition);
     // assert(isEmpty(diff));
 
-    set = new_partition;
+    // set = new_partition;
+
+    cerr << "flatten_set is not implemented" << endl;
+    throw 1;
 }
 
 

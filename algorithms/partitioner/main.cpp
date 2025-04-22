@@ -145,7 +145,6 @@ int main(int argc, char** argv)
   cout << "filename is " << *filename << endl;
   cout << "number of partitions is " << *number_of_partitions << endl;
 
-  auto start = chrono::high_resolution_clock::now();
   optional<string> s;
   if (output_sb_graph) {
     s = "";

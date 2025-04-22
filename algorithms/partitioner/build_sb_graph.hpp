@@ -55,11 +55,11 @@ SBG::LIB::Set get_adjacents(const SBG::LIB::SBG& graph, const SBG::LIB::Set& nod
 /// {[1:10], [1:10]} has 100 elements.
 /// @param node input set we want to calculate the size.
 /// @return the number of elements
-unsigned get_node_size(const SBG::LIB::SetPiece& node, const SBG::LIB::NodeWeight& node_weight);
+unsigned get_node_size(const SBG::LIB::SetPiece& node, const SBG::LIB::NodeWeight& node_weight, SBG::LIB::SetAF& set_fact);
 
 
 /// Takes each set piece and calculates its size, then adds them
-unsigned get_node_size(const SBG::LIB::Set& node, const SBG::LIB::NodeWeight& node_weight);
+unsigned get_node_size(const SBG::LIB::Set& node, const SBG::LIB::NodeWeight& node_weight, SBG::LIB::SetAF& set_fact);
 
 
 unsigned get_edge_set_cost(const SBG::LIB::Set& node, const SBG::LIB::EdgeCost& edge_cost);

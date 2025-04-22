@@ -22,6 +22,7 @@
 /test/eval/bin/*
 /test/performance/obj/*
 /test/performance/bin/*
+test/partitioner/bin/*
 
 # Doc files.
 /doc/*

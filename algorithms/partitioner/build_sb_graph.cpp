@@ -233,7 +233,7 @@ map<int, Node> create_node_objects_from_json(const Document& document)
 
 /// Creates a set of nodes, taking into accout the offset of each one to avoid collisions.
 tuple<Set, NodeWeight> create_set_of_nodes(const map<int, Node>& nodes, map<int, int>& node_offsets, int& max_value,
-  SBG::LIB::UnordAF& set_fact)
+  SBG::LIB::SetAF& set_fact)
 {
   // We start to build out set of intervals from 0
   int current_max = 0;
@@ -406,9 +406,9 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(
         const std::map<int, Node>& nodes,
         const map<int, int>& node_offsets,
         int& max_value,
-        SBG::LIB::UnordAF& set_fact,
+        SBG::LIB::SetAF& set_fact,
         SBG::LIB::MapAF& map_fact,
-        SBG::LIB::UnordPWMapAF& pw_fact)
+        SBG::LIB::PWMapAF& pw_fact)
 {
   Set edge_set = set_fact.createSet();  // Our set of edges
   PWMap rhs_maps = pw_fact.createPWMap();  // Map object of one of the sides
@@ -580,9 +580,9 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(
 /// @return 
 SBG::LIB::SBG create_sb_graph(
   const std::map<int, Node>& nodes,
-  SBG::LIB::UnordAF& set_fact,
+  SBG::LIB::SetAF& set_fact,
   SBG::LIB::MapAF& map_fact,
-  SBG::LIB::UnordPWMapAF& pw_fact)
+  SBG::LIB::PWMapAF& pw_fact)
 {
   int max_value = 0;  // We track the max value, so we avoid domain collision between edges and nodes
   map<int, int> node_offsets;
@@ -639,9 +639,9 @@ pair<SetPiece, SetPiece> cut_interval(const SetPiece &interval, int cut_value)
 
 
 SBG::LIB::SBG build_sb_graph(const string& filename, // create needed factories
-  SBG::LIB::UnordAF& set_fact,
+  SBG::LIB::SetAF& set_fact,
   SBG::LIB::MapAF& map_fact,
-  SBG::LIB::UnordPWMapAF& pw_fact)
+  SBG::LIB::PWMapAF& pw_fact)
 {
   cout << "Reading " << filename << "..." << endl;
 

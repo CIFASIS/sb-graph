@@ -39,17 +39,13 @@ class PartitionerTests : public testing::TestWithParam<const char*> {
 TEST(testing_test, PartitionerTests)
 {
     // create needed factories
-    SBG::LIB::UnordAF set_fact_graph;
-    SBG::LIB::MapAF map_fact_graph(set_fact_graph);
-    SBG::LIB::UnordPWMapAF pw_fact_graph(map_fact_graph);
-
-    auto sb_graph = sbg_partitioner::build_sb_graph("data/air_conditioners_1000.json", set_fact_graph, map_fact_graph, pw_fact_graph);
-    std::cout << sb_graph << std::endl;
-
-    // create nodes of the expected graph
     SBG::LIB::UnordAF set_fact;
     SBG::LIB::MapAF map_fact(set_fact);
     SBG::LIB::UnordPWMapAF pw_fact(map_fact);
+
+    auto sb_graph = sbg_partitioner::build_sb_graph("data/air_conditioners_1000.json", set_fact, map_fact, pw_fact);
+
+    // create nodes of the expected graph
     auto expected_nodes = set_fact.createSet();
     expected_nodes.emplaceBack(Interval(0, 1, 999));
     expected_nodes.emplaceBack(Interval(1000, 1, 1999));

@@ -119,7 +119,7 @@ struct Node {
 }
 
 
-size_t get_set_size(const Set& set)
+[[maybe_unused]] size_t get_set_size(const Set& set)
 {
   size_t size = 0;
 
@@ -232,12 +232,12 @@ map<int, Node> create_node_objects_from_json(const Document& document)
 
 
 /// Creates a set of nodes, taking into accout the offset of each one to avoid collisions.
-tuple<Set, NodeWeight> create_set_of_nodes(const map<int, Node>& nodes, map<int, int>& node_offsets, int& max_value)
+tuple<Set, NodeWeight> create_set_of_nodes(const map<int, Node>& nodes, map<int, int>& node_offsets, int& max_value,
+  SBG::LIB::UnordAF& set_fact)
 {
   // We start to build out set of intervals from 0
   int current_max = 0;
-  UnordAF set_af;
-  Set node_set = set_af.createSet();
+  Set node_set = set_fact.createSet();
   NodeWeight weights;
 
   for (const auto& [id, node] : nodes) {
@@ -330,7 +330,6 @@ SBG::LIB::Map create_set_edge_map(const SetAF &set_fact, const Set& pre_image, c
         offset += set_offset;
       }
 
-      LExp lexp = LExp(RATIONAL(0), RATIONAL(offset, 1));
       map_exps.emplaceBack(map_exp);
       i++;
 
@@ -406,12 +405,11 @@ Set get_edge_domain(Set image_intersection_set, Set& edge_set, int& max_value)
 tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(
         const std::map<int, Node>& nodes,
         const map<int, int>& node_offsets,
-        int& max_value)
+        int& max_value,
+        SBG::LIB::UnordAF& set_fact,
+        SBG::LIB::MapAF& map_fact,
+        SBG::LIB::UnordPWMapAF& pw_fact)
 {
-  SBG::LIB::UnordAF set_fact;
-  SBG::LIB::MapAF map_fact(set_fact);
-  SBG::LIB::UnordPWMapAF pw_fact(map_fact);
-
   Set edge_set = set_fact.createSet();  // Our set of edges
   PWMap rhs_maps = pw_fact.createPWMap();  // Map object of one of the sides
   PWMap lhs_maps = pw_fact.createPWMap(); // Map object of one of the other side
@@ -590,11 +588,11 @@ SBG::LIB::SBG create_sb_graph(
   map<int, int> node_offsets;
 
   // Now, we create our set of nodes.
-  auto [node_set, weights] = create_set_of_nodes(nodes, node_offsets, max_value);
+  auto [node_set, weights] = create_set_of_nodes(nodes, node_offsets, max_value, set_fact);
   cout << "node_set " << node_set << endl;
 
   // Create edges and maps.
-  auto [edge_set, left_maps, right_maps, costs] = create_graph_edges(nodes, node_offsets, max_value);
+  auto [edge_set, left_maps, right_maps, costs] = create_graph_edges(nodes, node_offsets, max_value, set_fact, map_fact, pw_fact);
 
   // Now, let's create a graph
   SBG::LIB::SBG graph(pw_fact, node_set, pw_fact.createPWMap(), left_maps, right_maps, pw_fact.createPWMap(), pw_fact.createPWMap()); // This will be our graph

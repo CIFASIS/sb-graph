@@ -89,8 +89,11 @@ std::shared_ptr<PWMapDelegate::Iterator> UnordPWMap::end() const
 
 void UnordPWMap::emplaceBack(const Map &m)
 {
-  if (!m.dom().isEmpty())
-    pieces_.push_back(m);
+  if (!m.dom().isEmpty()) {
+    LIB::Exp e = m.exp();
+    for (const SetPiece &mdi : m.dom())
+      pieces_.push_back(fact_.createMap(mdi, e));
+  }
 }
 
 bool UnordPWMap::operator==(const PWMapDelegate &other) const 

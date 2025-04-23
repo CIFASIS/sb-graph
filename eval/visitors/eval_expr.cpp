@@ -808,8 +808,12 @@ ExprBaseType EvalExpression::operator()(AST::PWLMap v) const
 {
   LIB::PWMap res = fact_.createPWMap();
 
-  for (const AST::Expr &e : v.maps())
-    res.emplaceBack(eval<LIB::Map>(*this, e));
+  for (const AST::Expr &e : v.maps()) {
+    LIB::Map m = eval<LIB::Map>(*this, e);
+    LIB::Exp expr = m.exp();
+    for (const LIB::SetPiece &mdi : m.dom())
+      res.emplaceBack(fact_.createMap(fact_.createSet(mdi), expr));
+  }
 
   Util::ERROR_UNLESS(res.arity() == nmbr_dims_ || res.arity() == 0
     , "EvalExpr[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "

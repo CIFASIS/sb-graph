@@ -31,6 +31,7 @@
 #define SBG_PWMAP_HPP
 
 #include "sbg/af_map.hpp"
+#include <chrono>
 
 namespace SBG {
 
@@ -433,9 +434,12 @@ struct OrdPWMap : public PWMapDelegate {
   
   private:
   
+  bool operator<(const PWMapDelegate &other) const;
+  
   PWMapDelegPtr merge(const PWMapDelegate &other) const;
   
-  void emplace(const Map &m);
+  unsigned int emplaceHint(const Map &m,unsigned int hint);
+  unsigned int advanceHint(const MD_NAT crit,unsigned int hint);
   
   void processMinus(
   const Map &m1, 

@@ -1166,7 +1166,7 @@ SetDelegPtr OrderedSet::interForCompl(const SetDelegate &other, const SetPiece &
 
       auto liPrev = longIndices.before_begin();
       auto liCurr = longIndices.begin();
-      //unsigned int posLocal = posGlobal;
+
       bool doInt = (!(elementMax.menorThan(mdi.minElem())) && !(mdi.maxElem().menorThan(elementMin)));
  
       while (liCurr != longIndices.end()) {
@@ -1176,7 +1176,7 @@ SetDelegPtr OrderedSet::interForCompl(const SetDelegate &other, const SetPiece &
           const auto longElemMax = longElem.maxElem();
           const auto longElemMin0 = longElemMin[0];
           const auto longElemMax0 = longElemMax[0];
-          //posLocal = posGlobal;
+
 
           if (longElemMax0 < elementMin0) {
               liCurr = longIndices.erase_after(liPrev);
@@ -1190,14 +1190,14 @@ SetDelegPtr OrderedSet::interForCompl(const SetDelegate &other, const SetPiece &
               auto interRes = element.intersection(longElem);
               if (!interRes.isEmpty()) {
                   auto it = inter.begin();
-                  //std::advance(it, posLocal);
+
                   std::advance(it, posGlobal);
 
                   while (it != inter.end() && *it < interRes) {
                       if (*it < element)
                           ++posGlobal;
                       ++it;
-                      //++posLocal;
+
                   }
 
                   inter.insert(it, std::move(interRes));
@@ -1210,7 +1210,6 @@ SetDelegPtr OrderedSet::interForCompl(const SetDelegate &other, const SetPiece &
       
       if(!doInt){
           auto it = inter.begin();
-          //std::advance(it, posLocal);
           std::advance(it, posGlobal);
           while (it != inter.end() && *it < element) {
                   if (*it < element)

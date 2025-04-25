@@ -60,3 +60,20 @@ if [[ -z "$1" || "$1" == "eval" ]]; then
   (cd eval && ./bin/eval-test)
   echo "Done"
 fi
+
+if [[ -z "$1" || "$1" == "partitioner" ]]; then
+  SRC_FILES="../main.cpp ../partitioner_test.cpp"
+  GTEST_INCLUDE="-I../../../3rd-party/gtest/usr/include -I../../../"
+  LD_FLAGS="-L../../../3rd-party/gtest/usr/lib -L../../../lib -lsbgraph -lgtest -lgmock -lpthread"
+  COMPILE=("g++" "${GTEST_INCLUDE}" "-std=c++17" "${SRC_FILES}" 
+    "-o partitioner-test" "${LD_FLAGS}")
+
+  echo "BUILDING PARTITIONER SYSTEM TESTS"
+  (cd partitioner && mkdir -p bin && rm -rf test_data && mkdir -p test_data)
+  (cd partitioner/bin && ${COMPILE[@]})
+  echo "Done"
+
+  echo "RUNNING PARTITIONER SYSTEM TESTS"
+  (cd partitioner && ./bin/partitioner-test)
+  echo "Done"
+fi

@@ -30,7 +30,7 @@ namespace sbg_partitioner {
 /// a node for each access to a variable and an edge for each connection
 /// between variables.
 /// If a variable appears on the left and on the right side, an edge is created.
-SBG::LIB::SBG build_sb_graph(const std::string& filename, SBG::LIB::SetAF& set_fact,
+SBG::LIB::WeightedSBGraph build_sb_graph(const std::string& filename, SBG::LIB::SetAF& set_fact,
     SBG::LIB::MapAF& map_fact, SBG::LIB::PWMapAF& pw_map_fact);
 
 
@@ -68,7 +68,7 @@ unsigned get_edge_set_cost(const SBG::LIB::Set& node, const SBG::LIB::EdgeCost& 
 unsigned get_edge_set_cost(const SBG::LIB::SetPiece& node, const SBG::LIB::EdgeCost& edge_cost);
 
 
-void flatten_set(SBG::LIB::OrderedDenseSet &set, const SBG::LIB::SBG& graph);
+void flatten_set(SBG::LIB::Set &set, const SBG::LIB::SBG& graph);
 
 
 SBG::LIB::WeightedSBGraph create_air_conditioners_graph();
@@ -79,20 +79,8 @@ SBG::LIB::WeightedSBGraph create_air_conditioners_graph();
 /// @param set input set we want to know the cost or weight/
 /// @param costs hashtable with set/costs.
 /// @return the cost of set.
-template<typename T>
-T get_set_cost(const SBG::LIB::SetPiece& set, const std::map<SBG::LIB::Set, T>& costs)
-{
-    T weight = 1;
-    SBG::LIB::Set ordset = SBG::LIB::Set(set);
-    for (const auto& [cost_set, w] : costs) {
-        if (intersection(ordset, cost_set).size() > 0) {
-            weight = costs.at(cost_set);
-        }
-    }
-
-    return weight;
-}
+int get_set_cost(const SBG::LIB::SetPiece& set, const SBG::LIB::NodeWeight& costs, SBG::LIB::SetAF& set_af);
 
 
-std::pair<SBG::LIB::Set, SBG::LIB::Set> cut_interval_by_dimension(SBG::LIB::Set& set_piece, const SBG::LIB::NodeWeight& node_weight, std::size_t size);
+std::pair<SBG::LIB::Set, SBG::LIB::Set> cut_interval_by_dimension(SBG::LIB::Set& set_piece, const SBG::LIB::NodeWeight& node_weight, std::size_t size, SBG::LIB::SetAF& set_fact);
 }

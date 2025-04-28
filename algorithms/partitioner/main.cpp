@@ -150,8 +150,6 @@ int main(int argc, char** argv)
   auto sb_graph = build_sb_graph(filename->c_str(), set_fact, map_fact, pw_fact);
   cout << sb_graph << endl;
 
-  cout << sb_graph.V() << ", " << sb_graph.V().size() << ", " << sb_graph.V().arity() << endl;
-
   auto partitions = best_initial_partition(sb_graph, *number_of_partitions, set_fact);
   cout << partitions << endl;
 

@@ -67,7 +67,7 @@ Set get_communication_edges(Set partition, const PWMap& map_1, const PWMap& map_
   return size;
 }
 
-constexpr bool using_many_initial_partitions = false;
+constexpr bool using_many_initial_partitions = TRY_MULTIPLE_STRATEGIES;
 }  // namespace
 
 vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, unsigned number_of_partitions, SetAF& set_fact)
@@ -121,27 +121,24 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
 {
   std::vector<sbg_partitioner::PartitionMap> partition_maps = make_initial_partitions(graph, number_of_partitions, set_fact);
 
-  // auto& best_initial_partitions = partition_maps.front();
-  // if (using_many_initial_partitions) {
-  //     size_t best_communication_set_cardinality = get_partition_communication(graph, best_initial_partitions, set_fact);
+  auto& best_initial_partitions = partition_maps.front();
+  if (using_many_initial_partitions) {
+    size_t best_communication_set_cardinality = get_partition_communication(graph, best_initial_partitions, set_fact);
 
-  //     for (size_t i = 1; i < partition_maps.size(); i++) {
+    for (size_t i = 1; i < partition_maps.size(); i++) {
+      auto temp_intial_partitions = partition_maps[i];
+      size_t temp_partition_comm_size = get_partition_communication(graph, temp_intial_partitions, set_fact);
 
-  //         auto temp_intial_partitions = partition_maps[i];
-  //         size_t temp_partition_comm_size = get_partition_communication(graph, temp_intial_partitions, set_fact);
+      if (temp_partition_comm_size < best_communication_set_cardinality) {
+        best_initial_partitions = std::move(temp_intial_partitions);
+        best_communication_set_cardinality = temp_partition_comm_size;
+      }
+    }
 
-  //         if (temp_partition_comm_size < best_communication_set_cardinality) {
-  //             best_initial_partitions = std::move(temp_intial_partitions);
-  //             best_communication_set_cardinality = temp_partition_comm_size;
-  //         }
-  //     }
+    cout << "Best is " << best_initial_partitions << " with communication " << best_communication_set_cardinality << endl;
+  }
 
-  //     // logging::sbg_log << "Best is " << best_initial_partitions << " with communication " << best_communication_set_cardinality <<
-  //     endl;
-  // }
-
-  // return best_initial_partitions;
-  return partition_maps.at(0);
+  return best_initial_partitions;
 }
 
 Set get_connectivity_set(SBG::LIB::SBG& graph, const PartitionMap& partitions, size_t partition_index, SetAF& set_fact)

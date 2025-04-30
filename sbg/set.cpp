@@ -929,14 +929,33 @@ MD_NAT OrderedSet::maxElem() const
 
 
 SetDelegPtr OrderedSet::intersection(const SetDelegate &other) const {
+    
+    //std::cout << "Interseccion\n";
+    
+
+            
+    
+    
     OrdSetCRef othr = static_cast<OrdSetCRef>(other);
+    
+        //std::cout << "interseccion\n";
+    //std::cout << "this\n";
+     //print(std::cout);
+      //std::cout << "\n";
+     //std::cout << "other\n";
+      // othr.print(std::cout);
+      //std::cout << "\n";
+    
     MDIOrdSet inter;
 
-    if (isEmpty() || other.isEmpty())
-        return std::make_unique<OrderedSet>(inter);
+    if (isEmpty() || other.isEmpty()){
+      //std::cout << "Interseccion salimos\n";
+        return std::make_unique<OrderedSet>(inter);}
 
-    if (pieces_ == othr.pieces_)
-        return std::make_unique<OrderedSet>(pieces_);
+    if (pieces_ == othr.pieces_){
+    //std::cout << "Interseccion salimos\n";
+        return std::make_unique<OrderedSet>(pieces_);}
+  
 
     const OrderedSet *shortSet = this;
     const OrderedSet *longSet  = &othr;
@@ -955,7 +974,7 @@ SetDelegPtr OrderedSet::intersection(const SetDelegate &other) const {
 
     auto longBegin = longSet->pieces_.begin();
     unsigned int posGlobal = 0;
-
+    //std::cout << "entramos en el for\n";
     for (const auto &element : shortSet->pieces_) {
         const auto elementMin  = element.minElem();
         const auto elementMax  = element.maxElem();
@@ -966,73 +985,93 @@ SetDelegPtr OrderedSet::intersection(const SetDelegate &other) const {
         auto liCurr = longIndices.begin();
 
         //unsigned int posLocal = posGlobal;
-
+        
+        //std::cout << "entramos en el while\n";
         while (liCurr != longIndices.end()) {
+            //std::cout << "punteros\n";
             size_t idx = *liCurr;
             const SetPiece &longElem = *(longBegin + idx);
             const auto longElemMin  = longElem.minElem();
             const auto longElemMax  = longElem.maxElem();
             const auto longElemMin0 = longElemMin[0];
             const auto longElemMax0 = longElemMax[0];
-
+            
+            //std::cout << "bucleamos\n";
+             //std::cout << "mdiB\n";
+             //std::cout <<  longElem;
+              //std::cout << "\n";
+             // std::cout << "mdiA\n";
+             //std::cout <<  element;
+              //std::cout << "\n";
+            
             //posLocal = posGlobal;
 
             if (longElemMax0 < elementMin0) {
+                 //std::cout << "caso continue\n";
                 liCurr = longIndices.erase_after(liPrev);
                 continue;
             }
 
-            if (elementMax0 < longElemMin0)
-                break;
+            if (elementMax0 < longElemMin0){
+                //std::cout << "caso break\n";
+                break;}
 
             if (!(longElemMax.menorThan(elementMin)) &&
                 !(elementMax.menorThan(longElemMin))) {
-
+                //std::cout << "caso inter\n";
                 auto interRes = element.intersection(longElem);
-
+                //std::cout << "despues dela interseccion\n";
                 if (!interRes.isEmpty()) {
                     auto it = inter.begin();
                     std::advance(it,posGlobal);
-
+                    
+                    //std::cout << "entramos al while interno\n";
                     while (it != inter.end() && *it < interRes) {
                         if (*it < element) {
                             ++posGlobal;
                         }
                         ++it;
                     }
-
+                    //std::cout << "salimos al while interno\n";
                     inter.insert(it, std::move(interRes));
                 }
             }
-
+            //std::cout << "bucle\n";
             ++liPrev;
             ++liCurr;
-        }
 
+        }
+        //std::cout << "salimos del while\n";
         if (longIndices.empty())
             break;
     }
-
+    //std::cout << "salimos del for\n";
+    //std::cout << "Interseccion salimos\n";
+    
     return std::make_unique<OrderedSet>(inter);
 }
 
 
 SetDelegPtr OrderedSet::cup(const SetDelegate &other) const
 {
+  //std::cout << "Union\n";
+
    OrdSetCRef othr = static_cast<OrdSetCRef>(other);
 
-  if (isEmpty()) 
-    return std::make_unique<OrderedSet>(othr.pieces_);
+  if (isEmpty()) {
+  //std::cout << "Union salimos\n";
+    return std::make_unique<OrderedSet>(othr.pieces_);}
 
-  if (other.isEmpty() || pieces_ == othr.pieces_)
-    return std::make_unique<OrderedSet>(pieces_);
+  if (other.isEmpty() || pieces_ == othr.pieces_){
+    //std::cout << "Union salimos\n";
+    return std::make_unique<OrderedSet>(pieces_);}
 
   if (maxElem() < othr.minElem()) {
     MDIOrdSet un(pieces_.begin(), pieces_.end());
 
     for (const SetPiece &mdi : othr.pieces_) 
       un.push_back(mdi);
-
+    //std::cout << "Union salimos\n";
     return std::make_unique<OrderedSet>(un);
   }
 
@@ -1041,7 +1080,7 @@ SetDelegPtr OrderedSet::cup(const SetDelegate &other) const
 
     for (const SetPiece &mdi : pieces_) 
       un.push_back(mdi);
-
+    //std::cout << "Union salimos\n";
     return std::make_unique<OrderedSet>(un);
   }
 
@@ -1216,6 +1255,7 @@ SetDelegPtr OrderedSet::interForCompl(const SetDelegate &other, const SetPiece &
                       ++posGlobal;
                   ++it;
           }
+          inter.insert(it, std::move(element));
 
       }
       if (longIndices.empty())
@@ -1278,7 +1318,8 @@ SetDelegPtr OrderedSet::disjointCup(const SetDelegate &other) const
 {
   OrdSetCRef othr = static_cast<OrdSetCRef>(other);
   MDIOrdSet cup = traverse(othr.pieces_);
-
+  
+  //std::cout << "Union salimos\n";
   return std::make_unique<OrderedSet>(cup);
 }
 

@@ -119,6 +119,12 @@ Map &Map::operator=(const Map &other)
   return *this;
 }
 
+bool Map::operator<(const Map &other) const
+{
+  return dom_.minElem() < other.dom_.minElem();
+}
+
+
 Map Map::operator+(const Map &other) const
 {
   Set res_dom = dom_.intersection(other.dom());

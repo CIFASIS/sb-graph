@@ -434,12 +434,19 @@ struct OrdPWMap : public PWMapDelegate {
   
   private:
   
-  bool operator<(const PWMapDelegate &other) const;
+  void isOrdered() const;
   
-  PWMapDelegPtr merge(const PWMapDelegate &other) const;
-  
+
   unsigned int emplaceHint(const Map &m,unsigned int hint);
   unsigned int advanceHint(const MD_NAT crit,unsigned int hint);
+  
+  void processMinAdjMap(
+  const Map &m1, 
+  const Map &m2, 
+  Set &set, 
+  PWMapDelegate  &ordpwmap,
+  unsigned int*posGlobal) const;
+  
   
   void processMinus(
   const Map &m1, 

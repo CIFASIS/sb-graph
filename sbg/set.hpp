@@ -378,13 +378,6 @@ struct OrderedSet : public SetDelegate {
 
   private:
 
-  /**
-   * @brief Performs operation f between a piece of s1 and a piece of s2. At the
-   * start begins with both minimum elements, and advances the iterator of the
-   * set with the piece that has the minimum end. This is repeated until one of
-   * the two collections is consumed. Then, all the remaining pieces of the
-   * other set are also inserted.
-   */
   MDIOrdSet traverse(const MDIOrdSet &other) const;
     
   SetDelegPtr complementAtom() const;

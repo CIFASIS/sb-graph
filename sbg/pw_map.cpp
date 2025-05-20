@@ -203,7 +203,7 @@ PWMapDelegPtr UnordPWMap::operator-(const PWMapDelegate &other) const
                 end_neg = begin_pos - 1;
               else {
                 begin_neg = 1;
-                begin_pos = 0;
+                end_neg = 0;
               }
             }
           }

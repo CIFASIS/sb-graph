@@ -434,12 +434,12 @@ auto cut_visitor_ = Overload {
 ////////////////////////////////////////////////////////////////////////////////
 
 template<typename T>
-T eval(const EvalExpression &visit, AST::Expr e)
+T eval(const EvalExpression &visit, AST::Expr e, std::string t = "UNDEF")
 {
   ExprBaseType visited = boost::apply_visitor(visit, e);
 
   Util::ERROR_UNLESS(std::holds_alternative<T>(visited)
-    , "EvalExpr: expression ", e, " is not ???\n");
+    , "EvalExpr: expression ", e, " is not of type ", t, "\n");
 
   return std::get<T>(visited);
 }
@@ -743,7 +743,7 @@ ExprBaseType EvalExpression::operator()(AST::MultiDimInter v) const
   LIB::SetPiece res;
 
   for (const AST::Expr &e : v.intervals()) 
-    res.emplaceBack(eval<LIB::Interval>(*this, e));
+    res.emplaceBack(eval<LIB::Interval>(*this, e, "Interval"));
 
   Util::ERROR_UNLESS(res.arity() == nmbr_dims_ || res.arity() == 0
     , "EvalMDI[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
@@ -758,7 +758,7 @@ ExprBaseType EvalExpression::operator()(AST::Set v) const
   LIB::Set res = fact_.createSet();
 
   for (const AST::Expr &e : v.pieces())
-    res.emplaceBack(eval<LIB::SetPiece>(*this, e));
+    res.emplaceBack(eval<LIB::SetPiece>(*this, e, "SetPiece"));
 
   Util::ERROR_UNLESS(res.arity() == nmbr_dims_ || res.arity() == 0
     , "EvalExpr[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
@@ -792,8 +792,8 @@ ExprBaseType EvalExpression::operator()(AST::MDLExp v) const
 
 ExprBaseType EvalExpression::operator()(AST::LinearMap v) const
 {
-  LIB::Set d = eval<LIB::Set>(*this, v.dom());
-  LIB::Exp e = eval<LIB::Exp>(*this, v.lexp());
+  LIB::Set d = eval<LIB::Set>(*this, v.dom(), "Set");
+  LIB::Exp e = eval<LIB::Exp>(*this, v.lexp(), "Exp");
 
   LIB::Map res = fact_.createMap(d, e);
 
@@ -809,7 +809,7 @@ ExprBaseType EvalExpression::operator()(AST::PWLMap v) const
   LIB::PWMap res = fact_.createPWMap();
 
   for (const AST::Expr &e : v.maps())
-    res.emplaceBack(eval<LIB::Map>(*this, e));
+    res.emplaceBack(eval<LIB::Map>(*this, e, "Map"));
 
   Util::ERROR_UNLESS(res.arity() == nmbr_dims_ || res.arity() == 0
     , "EvalExpr[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
@@ -820,12 +820,12 @@ ExprBaseType EvalExpression::operator()(AST::PWLMap v) const
 
 ExprBaseType EvalExpression::operator()(AST::SBG v) const
 {
-  LIB::Set V = eval<LIB::Set>(*this, v.V());
-  LIB::PWMap Vmap = eval<LIB::PWMap>(*this, v.Vmap());
-  LIB::PWMap map1 = eval<LIB::PWMap>(*this, v.map1());
-  LIB::PWMap map2 = eval<LIB::PWMap>(*this, v.map2());
-  LIB::PWMap Emap = eval<LIB::PWMap>(*this, v.Emap());
-  LIB::PWMap subE = eval<LIB::PWMap>(*this, v.subE_map());
+  LIB::Set V = eval<LIB::Set>(*this, v.V(), "Set");
+  LIB::PWMap Vmap = eval<LIB::PWMap>(*this, v.Vmap(), "PWMap");
+  LIB::PWMap map1 = eval<LIB::PWMap>(*this, v.map1(), "PWMap");
+  LIB::PWMap map2 = eval<LIB::PWMap>(*this, v.map2(), "PWMap");
+  LIB::PWMap Emap = eval<LIB::PWMap>(*this, v.Emap(), "PWMap");
+  LIB::PWMap subE = eval<LIB::PWMap>(*this, v.subE_map(), "PWMap");
 
   if (subE.dom().isEmpty() && !Emap.dom().isEmpty()) {
     unsigned int j = 1;
@@ -844,12 +844,12 @@ ExprBaseType EvalExpression::operator()(AST::SBG v) const
 
 ExprBaseType EvalExpression::operator()(AST::DSBG v) const
 {
-  LIB::Set V = eval<LIB::Set>(*this, v.V());
-  LIB::PWMap Vmap = eval<LIB::PWMap>(*this, v.Vmap());
-  LIB::PWMap mapB = eval<LIB::PWMap>(*this, v.mapB());
-  LIB::PWMap mapD = eval<LIB::PWMap>(*this, v.mapD());
-  LIB::PWMap Emap = eval<LIB::PWMap>(*this, v.Emap());
-  LIB::PWMap subE = eval<LIB::PWMap>(*this, v.subE_map());
+  LIB::Set V = eval<LIB::Set>(*this, v.V(), "PWMap");
+  LIB::PWMap Vmap = eval<LIB::PWMap>(*this, v.Vmap(), "PWMap");
+  LIB::PWMap mapB = eval<LIB::PWMap>(*this, v.mapB(), "PWMap");
+  LIB::PWMap mapD = eval<LIB::PWMap>(*this, v.mapD(), "PWMap");
+  LIB::PWMap Emap = eval<LIB::PWMap>(*this, v.Emap(), "PWMap");
+  LIB::PWMap subE = eval<LIB::PWMap>(*this, v.subE_map(), "PWMap");
 
   if (subE.dom().isEmpty() && !Emap.dom().isEmpty()) {
     unsigned int j = 1;

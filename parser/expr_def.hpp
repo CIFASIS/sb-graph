@@ -181,7 +181,6 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   , MAPB("mapB:")
   , MAPD("mapD:")
 {
-  // Take out "x" as identifier to preserve it for linear expressions
   ident = qi::lexeme[qi::char_("a-xy-zA-XY-Z")
     >> *(qi::alnum | qi::char_('_'))]
     | qi::lexeme[qi::char_("x") >> +(qi::alnum | qi::char_('_'))];
@@ -232,7 +231,7 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
 
   interval = (OBRACKET 
     >> nat_expr >> COLON 
-    >> nat_expr >> COLON 
+    >> ((nat_expr >> COLON) | qi::attr(phx::construct<AST::Expr>(1))) 
     >> nat_expr >> CBRACKET)
     [qi::_val = phx::construct<AST::Interval>(qi::_1, qi::_2, qi::_3)];
 

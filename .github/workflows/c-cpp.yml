@@ -12,6 +12,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Compiler.
+      run: cc --version
     - name: Install deps.
       run: | 
         sudo add-apt-repository ppa:mhier/libboost-latest

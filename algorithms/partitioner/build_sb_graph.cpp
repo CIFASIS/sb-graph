@@ -312,6 +312,7 @@ Map create_set_edge_map(const SetAF& set_fact, const Set& pre_image, const Set& 
         offset += set_offset;
       }
 
+      map_exp.offset_ref() = offset;  // this works like `map_exp.set_offset(offset);`
       map_exps.emplaceBack(map_exp);
       i++;
 

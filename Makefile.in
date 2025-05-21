@@ -9,9 +9,8 @@ GTEST_CODE    := $(GTEST_DIR).tar.gz
 OBJ_DIR       := $(ROOT)/obj
 BUILD_DIR    	:= $(OBJ_DIR)/release
 AST_DIR    	  := $(ROOT)/ast
-TEST_DIR    	:= $(ROOT)/test
 BIN_DIR    	  := $(ROOT)/bin
-ifeq ($(MODE), Debug)
+ifeq ($(MODE),Debug)
 BUILD_DIR    	:= $(OBJ_DIR)/debug
 endif
 prefix 			  ?= /usr/local
@@ -20,52 +19,37 @@ includedir    ?= $(prefix)/include
 libdir        ?= $(exec_prefix)/lib
 boost_libdir  ?= $(prefix)
 
-.PHONY: doc clean create-folders install install-folders lib-gtest test
-
-#///////////////////////////////////////////////////////////////////////////////
-# Compilation ------------------------------------------------------------------
-#///////////////////////////////////////////////////////////////////////////////
-
 # Flags, Libraries and Includes
 INCLUDES := -I. -I$(boost_libdir)/include
-CXXFLAGS := -std=c++17 -Wno-reorder -O3
+CXXFLAGS := -std=c++17 -Wall -Werror -Wno-reorder -O3 -D BOOST_PHOENIX_STL_TUPLE_H_ -D BOOST_MPL_LIMIT_LIST_SIZE=30 -D BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
 ifeq ($(MODE),Debug)
-CXXFLAGS 	+= -ggdb -Wall -Werror 
+CXXFLAGS 	+= -ggdb  
 endif
 LIB_SBGRAPH = lib/libsbgraph.a
 
 all: $(LIB_SBGRAPH)
 
-include util/Makefile.include
 include sbg/Makefile.include
 include parser/Makefile.include
 include eval/Makefile.include
-include algorithms/partitioner/Makefile.include
+include test/Makefile.include
 
-create-folders::
-	@mkdir -p $(ROOT)/lib
-	@mkdir -p $(OBJ_DIR)
-	@mkdir -p $(BUILD_DIR)
-	@mkdir -p $(BUILD_DIR)/$(AST_DIR)
-	@mkdir -p $(BIN_DIR)
-
-$(BUILD_DIR)/%.o : %.cpp | create-folders
+$(BUILD_DIR)/%.o : %.cpp
 	$(CC) $(INCLUDES) $(CXXFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<
 	$(CC) $(INCLUDES) -c $< -o $@ $(CXXFLAGS)
 
-LIB_SRC := $(shell find ast parser sbg eval util algorithms/partitioner -type f -name "*.cpp" ! -name "main.cpp")
-LIB_OBJ = $(addprefix $(BUILD_DIR)/, $(LIB_SRC:.cpp=.o))
+$(LIB_SBGRAPH): create-folders $(SBG_OBJ) $(UTIL_OBJ) $(PARSER_OBJ) $(EVAL_OBJ)
+	$(AR) rcs $(LIB_SBGRAPH) $(SBG_OBJ) $(UTIL_OBJ) $(PARSER_OBJ) $(EVAL_OBJ)
 
-$(LIB_SBGRAPH): create-folders $(LIB_OBJ)
-	$(AR) rcs $(LIB_SBGRAPH) $(LIB_OBJ)
-
-DEPS = $(addprefix $(BUILD_DIR)/, $(LIB_SRC:.cpp=.d))
-
--include $(DEPS)
-
-#///////////////////////////////////////////////////////////////////////////////
-# Library Installation ---------------------------------------------------------
-#///////////////////////////////////////////////////////////////////////////////
+lib-gtest: | create-folders 
+ifeq ("$(wildcard $(3RD_PARTY_DIR)/gtest/usr/lib)","")
+	cd $(3RD_PARTY_DIR)/gtest; tar xvzf $(GTEST_CODE)
+	mkdir -p $(3RD_PARTY_DIR)/gtest/build
+	cd $(3RD_PARTY_DIR)/gtest/build; cmake ../$(GTEST_DIR) -DCMAKE_INSTALL_PREFIX=../usr  
+	cd $(3RD_PARTY_DIR)/gtest/build; make install 
+	rm -rf $(3RD_PARTY_DIR)/gtest/$(GTEST_DIR)
+	rm -rf $(3RD_PARTY_DIR)/gtest/build
+endif
 
 install: | install-folders
 	@echo "Installing SBG library headers."
@@ -87,26 +71,14 @@ install-folders:
 	@mkdir -p $(includedir)/parser
 	@mkdir -p $(includedir)/eval
 
-#///////////////////////////////////////////////////////////////////////////////
-# Testing ----------------------------------------------------------------------
-#///////////////////////////////////////////////////////////////////////////////
+create-folders::
+	@mkdir -p $(ROOT)/lib
+	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)/$(AST_DIR)
+	@mkdir -p $(BIN_DIR)
 
-lib-gtest: | create-folders 
-ifeq ("$(wildcard $(3RD_PARTY_DIR)/gtest/usr/lib)","")
-	cd $(3RD_PARTY_DIR)/gtest; tar xvzf $(GTEST_CODE)
-	mkdir -p $(3RD_PARTY_DIR)/gtest/build
-	cd $(3RD_PARTY_DIR)/gtest/build; cmake ../$(GTEST_DIR) -DCMAKE_INSTALL_PREFIX=../usr  
-	cd $(3RD_PARTY_DIR)/gtest/build; make install 
-	rm -rf $(3RD_PARTY_DIR)/gtest/$(GTEST_DIR)
-	rm -rf $(3RD_PARTY_DIR)/gtest/build
-endif
-
-test: lib-gtest
-	@cd $(TEST_DIR) && ./compile_run_tests.sh
-
-#///////////////////////////////////////////////////////////////////////////////
-# Documentation ----------------------------------------------------------------
-#///////////////////////////////////////////////////////////////////////////////
+.PHONY: doc
 
 doc:
 	@mkdir -p $(ROOT)/doc
@@ -116,12 +88,10 @@ doc:
 	doxygen sbg/SBG.doxyfile
 	doxygen util/UTIL.doxyfile
 
-#///////////////////////////////////////////////////////////////////////////////
-# Cleaning ---------------------------------------------------------------------
-#///////////////////////////////////////////////////////////////////////////////
+test: lib-gtest $(SBG_TEST)
 
-TEST_DIRS := test/parser test/performance test/performance/boost test/eval
-
+TEST_DIRS         := test/parser test/performance test/performance/boost test/eval
+ 
 clean:
 	$(RM) -rf $(BIN_DIR) $(OBJ_DIR) $(LIB_SBGRAPH) $(ROOT)/lib $(ROOT)/include $(3RD_PARTY_DIR)/gtest/usr
 	for dir in $(TEST_DIRS); do \
@@ -130,15 +100,11 @@ clean:
     $(RM) -rf $$dir/test_data; \
   done
 
-#///////////////////////////////////////////////////////////////////////////////
-# Help -------------------------------------------------------------------------
-#///////////////////////////////////////////////////////////////////////////////
-
 help:
 	@echo "make MODE=<Debug|Release> prefix=<PATH> exec_prefix=<PATH> includedir=<PATH> libdir=<PATH> boost_libdir=<PATH>"
 	@echo "Default values:"
 	@echo ""
-	@echo "MODE=Release"
+	@echo "MODE=Debug"
 	@echo "prefix=/usr/local"
 	@echo "exec_prefix=/usr/local"
 	@echo "includedir=/usr/local/include"

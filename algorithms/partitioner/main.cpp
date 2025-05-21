@@ -25,7 +25,7 @@
 #include <string>
 
 #include "build_sb_graph.hpp"
-
+#include "partition_graph.hpp"
 
 using namespace std;
 
@@ -36,7 +36,8 @@ static void usage()
   cout << "Usage sbg-partitioner" << endl;
   cout << endl;
   cout << "-f, --filename   Path to the input file, a json file that represents "
-          "the model we want to partitionate." << endl;
+          "the model we want to partitionate."
+       << endl;
   cout << "-p, --partitions Number of partitions." << endl;
   cout << "-h, --help       Display this information and exit." << endl;
   cout << "-v, --version    Display version information and exit." << endl;
@@ -54,7 +55,6 @@ static void version()
   cout << "There is NO WARRANTY, to the extent permitted by law." << endl;
 }
 
-
 int main(int argc, char** argv)
 {
   int opt;
@@ -65,15 +65,9 @@ int main(int argc, char** argv)
   optional<float> epsilon = nullopt;
 
   while (true) {
-
-    static struct option long_options[] = {
-      {"filename", required_argument, 0, 'f'},
-      {"partitions", required_argument, 0, 'p'},
-      {"output-file", required_argument, 0, 'g'},
-      {"output-graph", required_argument, 0, 'o'},
-      {"version", no_argument, 0, 'v'},
-      {"help", no_argument, 0, 'h'}
-    };
+    static struct option long_options[] = {{"filename", required_argument, 0, 'f'},    {"partitions", required_argument, 0, 'p'},
+                                           {"output-file", required_argument, 0, 'g'}, {"output-graph", required_argument, 0, 'o'},
+                                           {"version", no_argument, 0, 'v'},           {"help", no_argument, 0, 'h'}};
 
     int option_index = 0;
     opt = getopt_long(argc, argv, "f:p:e:o:g:vh:", long_options, &option_index);
@@ -93,22 +87,22 @@ int main(int argc, char** argv)
       break;
 
     case 'o':
-    if (optarg) {
-      output_sb_graph = string(optarg);
-    }
-    break;
+      if (optarg) {
+        output_sb_graph = string(optarg);
+      }
+      break;
 
     case 'g':
-    if (optarg){
-      output_file = string(optarg);
-    }
-    break;
+      if (optarg) {
+        output_file = string(optarg);
+      }
+      break;
 
     case 'e':
-    if (optarg) {
-      epsilon = atof(optarg);
-    }
-    break;
+      if (optarg) {
+        epsilon = atof(optarg);
+      }
+      break;
 
     case 'v':
       version();
@@ -154,8 +148,10 @@ int main(int argc, char** argv)
   SBG::LIB::MapAF map_fact(set_fact);
   SBG::LIB::UnordPWMapAF pw_fact(map_fact);
   auto sb_graph = build_sb_graph(filename->c_str(), set_fact, map_fact, pw_fact);
-
   cout << sb_graph << endl;
+
+  auto partitions = best_initial_partition(sb_graph, *number_of_partitions, set_fact);
+  cout << partitions << endl;
 
   return 0;
 }

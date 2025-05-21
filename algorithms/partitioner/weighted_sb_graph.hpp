@@ -41,7 +41,6 @@ using NodeWeight = std::map<Set, int, setCompare>;
 struct WeightedSBGraph : public SBG
 {
 public:
-    WeightedSBGraph() = default;
     WeightedSBGraph(SBG& graph) : SBG(graph) {}
     WeightedSBGraph(SBG&& graph) : SBG(graph) {}
     WeightedSBGraph(const PWMapAF &fact, const Set &V, const PWMap &Vmap

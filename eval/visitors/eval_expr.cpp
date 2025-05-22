@@ -123,30 +123,30 @@ auto mult_visitor_ = Overload {
 };
 
 auto eq_visitor_ = Overload {
-  [](LIB::MD_NAT a, LIB::MD_NAT b) { return Boolean(a == b); },
-  [](LIB::RATIONAL a, LIB::RATIONAL b) { return Boolean(a == b); },
-  [](LIB::Interval a, LIB::Interval b) { return Boolean(a == b); },
-  [](LIB::SetPiece a, LIB::SetPiece b) { return Boolean(a == b); },
-  [](LIB::Set a, LIB::Set b) { return Boolean(a == b); },
-  [](LIB::Exp a, LIB::Exp b) { return Boolean(a == b); },
-  [](LIB::Map a, LIB::Map b) { return Boolean(a == b); },
-  [](LIB::PWMap a, LIB::PWMap b) { return Boolean(a == b); },
+  [](LIB::MD_NAT a, LIB::MD_NAT b) { return a == b; },
+  [](LIB::RATIONAL a, LIB::RATIONAL b) { return a == b; },
+  [](LIB::Interval a, LIB::Interval b) { return a == b; },
+  [](LIB::SetPiece a, LIB::SetPiece b) { return a == b; },
+  [](LIB::Set a, LIB::Set b) { return a == b; },
+  [](LIB::Exp a, LIB::Exp b) { return a == b; },
+  [](LIB::Map a, LIB::Map b) { return a == b; },
+  [](LIB::PWMap a, LIB::PWMap b) { return a == b; },
   [](auto a, auto b) {
     Util::ERROR("eq_visitor_: wrong arguments ", a, ", ", b
       , " for operator==\n");
-    return Boolean();
+    return false;
   }
 };
 
 auto less_visitor_ = Overload {
-  [](LIB::MD_NAT a, LIB::MD_NAT b) { return Boolean(a < b); },
-  [](LIB::RATIONAL a, LIB::RATIONAL b) { return Boolean(a < b); },
-  [](LIB::Interval a, LIB::Interval b) { return Boolean(a < b); },
-  [](LIB::SetPiece a, LIB::SetPiece b) { return Boolean(a < b); },
+  [](LIB::MD_NAT a, LIB::MD_NAT b) { return a < b; },
+  [](LIB::RATIONAL a, LIB::RATIONAL b) { return a < b; },
+  [](LIB::Interval a, LIB::Interval b) { return a < b; },
+  [](LIB::SetPiece a, LIB::SetPiece b) { return a < b; },
   [](auto a, auto b) { 
     Util::ERROR("less_visitor_: wrong arguments ", a, ", ", b
       , " for operator<\n"); 
-    return Boolean();
+    return false;
   }
 };
 
@@ -184,12 +184,12 @@ auto diff_visitor_ = Overload{
 };
 
 auto empty_visitor_ = Overload {
-  [](LIB::Interval a) { return Boolean(a.isEmpty()); },
-  [](LIB::MultiDimInter a) { return Boolean(a.isEmpty()); },
-  [](LIB::Set a) { return Boolean(a.isEmpty()); },
+  [](LIB::Interval a) { return a.isEmpty(); },
+  [](LIB::MultiDimInter a) { return a.isEmpty(); },
+  [](LIB::Set a) { return a.isEmpty(); },
   [](auto a) { 
     Util::ERROR("empty_visitor_: wrong argument ", a, " for isEmpty\n"); 
-    return Boolean();
+    return false;
   }
 };
 
@@ -830,8 +830,7 @@ ExprBaseType EvalExpression::operator()(AST::SBG v) const
   if (subE.dom().isEmpty() && !Emap.dom().isEmpty()) {
     unsigned int j = 1;
     for (const LIB::Map &m : Emap) {
-      LIB::Set dom = m.dom();
-      for (const LIB::SetPiece &mdi : dom) {
+      for (const LIB::SetPiece &mdi : m.dom()) {
         LIB::Exp off(LIB::MD_NAT(mdi.arity(), j));
         subE.emplaceBack(fact_.createMap(fact_.createSet(mdi), off)); 
         ++j;
@@ -853,9 +852,8 @@ ExprBaseType EvalExpression::operator()(AST::DSBG v) const
 
   if (subE.dom().isEmpty() && !Emap.dom().isEmpty()) {
     unsigned int j = 1;
-    for (const LIB::Map &sbgmap : Emap) {
-      LIB::Set dom = sbgmap.dom();
-      for (const LIB::SetPiece &mdi : dom) {
+    for (const LIB::Map &m : Emap) {
+      for (const LIB::SetPiece &mdi : m.dom()) {
         LIB::Exp off(LIB::MD_NAT(mdi.arity(), j));
         subE.emplaceBack(fact_.createMap(fact_.createSet(mdi), off)); 
         ++j;

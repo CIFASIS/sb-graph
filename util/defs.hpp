@@ -43,21 +43,17 @@ namespace Util {
  *
  * It will define the following:
  *  + A member variable called: @c Y_
- *  + An constant getter method: @c Y()
- *  + A setter method: @c set_Y()
- *  + A getter ref method @c Y_ref()
+ *  + A constant ref getter method: @c Y()
  *
  */
 #define member_class(X, Y) \
   private:                 \
   X Y##_;                  \
   public:                  \
-  X Y() const;             \
-  X &Y##_ref();
+  const X &Y() const;
 
 #define member_imp(C, X, Y)          \
-  X C::Y() const { return Y##_; }    \
-  X &C::Y##_ref() { return Y##_; }
+  const X &C::Y() const { return Y##_; }
 
 } // namespace Util
 

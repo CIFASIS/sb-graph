@@ -198,7 +198,7 @@ PWMapDelegPtr UnordPWMap::operator-(const PWMapDelegate &other) const
           else if (m > 0) {
             RATIONAL cross = -h / m;
             if (cross > 0 || cross == 0) {
-              begin_pos = boost::rational_cast<NAT>(cross.value());
+              begin_pos = boost::rational_cast<NAT>(cross.value()) + 1;
               if (begin_pos > 0)
                 end_neg = begin_pos - 1;
               else {
@@ -527,13 +527,21 @@ PWMapDelegPtr UnordPWMap::minMap(const PWMapDelegate &other) const
     return std::make_unique<UnordPWMap>(fact_);
 
   PWMapDelegPtr aux1 = restrict(other.dom()), aux2 = other.restrict(dom());
-  Set zero = fact_.createSet(SetPiece(arity(), Interval(0, 1, 0)));
-  Set to_zero = (*aux1 - *aux2)->preImage(zero);
-  Set not_zero = aux2->dom().difference(to_zero);
-  aux1 = aux1->restrict(to_zero);
-  aux2 = aux2->restrict(not_zero);
 
-  return aux1->combine(*aux2);
+  Set min_in_pw1 = fact_.createSet();
+  PWMapDelegPtr off1 = aux1->offsetImage(MD_NAT(arity(), 1)); 
+  PWMapDelegPtr subt = (*off1 - *aux2);
+  SetPiece im(arity(), Interval(0, 1, Inf));
+  for (unsigned int k = 0; k < arity(); ++k) {
+    im[k] = Interval(0, 1, 0);
+    if (k > 0)
+      im[k-1] = Interval(1, 1, 1);
+
+    Set kth = subt->preImage(fact_.createSet(im));
+    min_in_pw1 = min_in_pw1.disjointCup(kth);
+  }
+
+  return aux1->restrict(min_in_pw1)->combine(*aux2);
 }
 
 PWMapDelegPtr UnordPWMap::minAdjMap(const PWMapDelegate &other) const

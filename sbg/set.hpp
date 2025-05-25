@@ -37,6 +37,7 @@
 #include <iostream>
 #include <forward_list>
 #include <algorithm>
+#include <chrono>
 
 namespace SBG {
 
@@ -377,18 +378,16 @@ struct OrderedSet : public SetDelegate {
   SetDelegPtr compact() const override;
 
   private:
-
-  MDIOrdSet traverse(const MDIOrdSet &other) const;
     
   SetDelegPtr complementAtom() const;
   
-  SetDelegPtr interForCompl(const SetDelegate &other,const SetPiece &mdi,unsigned int* last) const;
+  SetDelegPtr intersectionComp(const SetDelegate &other,const SetPiece &mdi, SetDelegate &rem) const;
   
     
 };
 
 typedef const OrderedSet &OrdSetCRef;
-
+typedef OrderedSet &OrdSetRef;
 
 
 ////////////////////////////////////////////////////////////////////////////////

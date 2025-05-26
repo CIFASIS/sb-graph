@@ -92,7 +92,8 @@ vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, u
   for (const auto& partition : partitions) {
     PartitionMap partition_set;
     for (const auto& [id, set] : partition) {
-      Set set_piece = set_fact.createSet();
+      Set one_partition_set = set_fact.createSet();
+      Partition p;
       for (auto& s : set) {
         SetPiece intervals;
         if (not s.intervals().empty()) {
@@ -101,9 +102,9 @@ vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, u
             intervals.emplaceBack(interv);
           }
         }
-        set_piece.emplaceBack(intervals);
+        p.emplace_back(intervals);
       }
-      partition_set.insert(make_pair(id, set_piece));
+      partition_set.insert(make_pair(id, p));
     }
 
     partitions_sets.push_back(move(partition_set));
@@ -143,7 +144,9 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
 
 Set get_connectivity_set(SBG::LIB::SBG& graph, const PartitionMap& partitions, size_t partition_index, SetAF& set_fact)
 {
-  const auto& partition = partitions.at(partition_index);
+  const auto& partition_vector = partitions.at(partition_index);
+  Set partition = set_fact.createSet();
+  for_each(partition_vector.cbegin(), partition_vector.cend(), [&partition] (auto s) { partition.emplaceBack(s); });
 
   Set edges = set_fact.createSet();
 
@@ -198,57 +201,64 @@ void sanity_check(const WeightedSBGraph& graph, PartitionMap& partitions_set, un
 #endif  // PARTITION_SANITY_CHECK
 }
 
-string get_output(const PartitionMap& partition_map)
+// string get_output(const PartitionMap& partition_map)
+// {
+//   rapidjson::Document json_doc;
+//   rapidjson::Document::AllocatorType& allocator = json_doc.GetAllocator();
+//   json_doc.SetObject();
+
+//   rapidjson::Value obj_partitions(rapidjson::kArrayType);
+//   for (size_t i = 0; i < partition_map.size(); i++) {
+//     rapidjson::Value obj_partition(rapidjson::kArrayType);
+//     const auto& partition = partition_map.at(i);
+//     for (auto it = partition.begin(); it != partition.end(); ++it) {
+//       const SetPiece& set_piece = *it;
+//       rapidjson::Value obj_intervals(rapidjson::kArrayType);
+//       obj_intervals.SetArray();
+//       for (const Interval& interval : set_piece.intervals()) {
+//         rapidjson::Value obj_interval(rapidjson::kArrayType);
+//         rapidjson::Value begin(rapidjson::kNumberType);
+//         begin.SetUint(interval.begin());
+//         obj_interval.PushBack(begin, allocator);
+//         rapidjson::Value end(rapidjson::kNumberType);
+//         end.SetUint(interval.end());
+//         obj_interval.PushBack(end, allocator);
+
+//         obj_intervals.PushBack(obj_interval, allocator);
+//       }
+
+//       obj_partition.PushBack(obj_intervals, allocator);
+//     }
+
+//     rapidjson::Value obj_nodes(rapidjson::kObjectType);
+//     obj_nodes.AddMember("nodes", obj_partition, allocator);
+
+//     obj_partitions.PushBack(obj_nodes, allocator);
+//   }
+
+//   json_doc.AddMember("partitions", obj_partitions, allocator);
+
+//   // Write the JSON data to the file
+//   rapidjson::StringBuffer s;
+//   rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+//   json_doc.Accept(writer);
+//   string json_data = string(s.GetString());
+
+//   return json_data;
+// }
+
+
+ostream& operator<<(ostream& os, const Partition& partition)
 {
-  rapidjson::Document json_doc;
-  rapidjson::Document::AllocatorType& allocator = json_doc.GetAllocator();
-  json_doc.SetObject();
+    for_each(partition.cbegin(), partition.cend(), [&os] (const auto& p) { os << p << " "; });
 
-  rapidjson::Value obj_partitions(rapidjson::kArrayType);
-  for (size_t i = 0; i < partition_map.size(); i++) {
-    rapidjson::Value obj_partition(rapidjson::kArrayType);
-    const auto& partition = partition_map.at(i);
-    for (auto it = partition.begin(); it != partition.end(); ++it) {
-      const SetPiece& set_piece = *it;
-      rapidjson::Value obj_intervals(rapidjson::kArrayType);
-      obj_intervals.SetArray();
-      for (const Interval& interval : set_piece.intervals()) {
-        rapidjson::Value obj_interval(rapidjson::kArrayType);
-        rapidjson::Value begin(rapidjson::kNumberType);
-        begin.SetUint(interval.begin());
-        obj_interval.PushBack(begin, allocator);
-        rapidjson::Value end(rapidjson::kNumberType);
-        end.SetUint(interval.end());
-        obj_interval.PushBack(end, allocator);
-
-        obj_intervals.PushBack(obj_interval, allocator);
-      }
-
-      obj_partition.PushBack(obj_intervals, allocator);
-    }
-
-    rapidjson::Value obj_nodes(rapidjson::kObjectType);
-    obj_nodes.AddMember("nodes", obj_partition, allocator);
-
-    obj_partitions.PushBack(obj_nodes, allocator);
-  }
-
-  json_doc.AddMember("partitions", obj_partitions, allocator);
-
-  // Write the JSON data to the file
-  rapidjson::StringBuffer s;
-  rapidjson::Writer<rapidjson::StringBuffer> writer(s);
-  json_doc.Accept(writer);
-  string json_data = string(s.GetString());
-
-  return json_data;
+    return os;
 }
+
 
 ostream& operator<<(ostream& os, const PartitionMap& partitions)
 {
-  for (const auto& [i, p] : partitions) {
-    os << i << ", " << p << endl;
-  }
+  for_each(partitions.cbegin(), partitions.cend(), [&os] (const auto& p) { os << p.first << ", " << p.second << " "; });
 
   return os;
 }

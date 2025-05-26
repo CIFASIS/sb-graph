@@ -30,8 +30,9 @@
 
 namespace sbg_partitioner {
 
-// cambiar a vector
-typedef std::map<unsigned, SBG::LIB::Set> PartitionMap;
+typedef std::vector<SBG::LIB::SetPiece> Partition;
+
+typedef std::map<unsigned, Partition> PartitionMap;
 
 enum PartitionAlgorithm
 {
@@ -74,6 +75,8 @@ std::string get_output(const PartitionMap& partition_map);
 
 void sanity_check(const SBG::LIB::WeightedSBGraph& graph, PartitionMap& partitions_set, unsigned number_of_partitions);
 
+
+std::ostream& operator<<(std::ostream& os, const Partition& partitions);
 
 std::ostream& operator<<(std::ostream& os, const PartitionMap& partitions);
 

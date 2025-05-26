@@ -181,7 +181,7 @@ void DFS::add_partition_strategy(PartitionStrategy& strategy, bool pre_order)
 void DFS::fill_current_node_stack()
 {
   node_identifier id = _partially_visited.back();
-  for (const node_identifier adj_node : _adjacent[id]) {
+  for (const node_identifier& adj_node : _adjacent[id]) {
     if (not was_partially_visited(adj_node) and not was_visited(adj_node) and not already_added(adj_node)) {
       _stack.push_back(adj_node);
     }

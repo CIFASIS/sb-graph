@@ -32,13 +32,21 @@ namespace sbg_partitioner {
 
 typedef std::vector<SBG::LIB::SetPiece> Partition;
 
-typedef std::map<unsigned, Partition> PartitionMap;
+typedef std::vector<Partition> PartitionMap;
 
 enum PartitionAlgorithm
 {
     GREEDY = 0,
     DISTRIBUTED = 1
 };
+
+
+/// @brief Converts a Partition element into a Set
+/// @param partition - A list of SetPiece elements.
+/// @param set_fact - Factory to create sets.
+/// @return A SBG::LIB::Set representation of the Partition element.
+SBG::LIB::Set to_vector(const Partition& partition, SBG::LIB::SetAF& set_fact);
+
 
 // I wish this was a separate function, not part of PartitionGraph but there were a lot of
 // compile problems if partitions map object is created locally and OrdSet objects are added.

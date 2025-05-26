@@ -56,7 +56,7 @@ Set get_communication_edges(Set partition, const PWMap& map_1, const PWMap& map_
 [[maybe_unused]] size_t get_partition_communication(WeightedSBGraph& graph, const PartitionMap& partitions, SetAF& set_fact)
 {
   Set s = set_fact.createSet();
-  for (auto& [i, _] : partitions) {
+  for (size_t i = 0; i < partitions.size(); i++) {
     auto ss = get_connectivity_set(graph, partitions, i, set_fact);
     s = ss.cup(s);
     // logging::sbg_log << "current connectivity set " << s << ", cardinality " << get_OrdSet_size(s) << ", partition " << i << endl;
@@ -69,6 +69,18 @@ Set get_communication_edges(Set partition, const PWMap& map_1, const PWMap& map_
 
 constexpr bool using_many_initial_partitions = TRY_MULTIPLE_STRATEGIES;
 }  // namespace
+
+
+// we could cache solutions here
+Set to_vector(const Partition& partition, SetAF& set_fact) {
+    Set partition_set = set_fact.createSet();
+    for (size_t i = 0; i < partition.size(); i++) {
+        partition_set.emplace(partition[i]);
+    }
+
+    return partition_set;
+}
+
 
 vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, unsigned number_of_partitions, SetAF& set_fact)
 {
@@ -104,7 +116,7 @@ vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, u
         }
         p.emplace_back(intervals);
       }
-      partition_set.insert(make_pair(id, p));
+      partition_set.push_back(p);
     }
 
     partitions_sets.push_back(move(partition_set));
@@ -148,14 +160,11 @@ Set get_connectivity_set(SBG::LIB::SBG& graph, const PartitionMap& partitions, s
     Set partition = set_fact.createSet();
     for_each(partition_vector.cbegin(), partition_vector.cend(), [&partition] (auto s) { partition.emplaceBack(s); });
 
-    Set edges = set_fact.createSet();
-
     auto comm_edges_1 = get_communication_edges(partition, graph.map1(), graph.map2());
     auto comm_edges_2 = get_communication_edges(partition, graph.map2(), graph.map1());
     auto comm_edges = comm_edges_1.cup(comm_edges_2);
-    edges = edges.cup(comm_edges);
 
-      return edges;
+    return comm_edges;
 }
 
 size_t get_OrdSet_size(const Set& set)
@@ -195,51 +204,51 @@ void sanity_check(const WeightedSBGraph& graph, PartitionMap& partitions_set, un
 #endif  // PARTITION_SANITY_CHECK
 }
 
-// string get_output(const PartitionMap& partition_map)
-// {
-//   rapidjson::Document json_doc;
-//   rapidjson::Document::AllocatorType& allocator = json_doc.GetAllocator();
-//   json_doc.SetObject();
+string get_output(const PartitionMap& partition_map)
+{
+  rapidjson::Document json_doc;
+  rapidjson::Document::AllocatorType& allocator = json_doc.GetAllocator();
+  json_doc.SetObject();
 
-//   rapidjson::Value obj_partitions(rapidjson::kArrayType);
-//   for (size_t i = 0; i < partition_map.size(); i++) {
-//     rapidjson::Value obj_partition(rapidjson::kArrayType);
-//     const auto& partition = partition_map.at(i);
-//     for (auto it = partition.begin(); it != partition.end(); ++it) {
-//       const SetPiece& set_piece = *it;
-//       rapidjson::Value obj_intervals(rapidjson::kArrayType);
-//       obj_intervals.SetArray();
-//       for (const Interval& interval : set_piece.intervals()) {
-//         rapidjson::Value obj_interval(rapidjson::kArrayType);
-//         rapidjson::Value begin(rapidjson::kNumberType);
-//         begin.SetUint(interval.begin());
-//         obj_interval.PushBack(begin, allocator);
-//         rapidjson::Value end(rapidjson::kNumberType);
-//         end.SetUint(interval.end());
-//         obj_interval.PushBack(end, allocator);
+  rapidjson::Value obj_partitions(rapidjson::kArrayType);
+  for (size_t i = 0; i < partition_map.size(); i++) {
+    rapidjson::Value obj_partition(rapidjson::kArrayType);
+    const auto& partition = partition_map.at(i);
+    for (auto it = partition.begin(); it != partition.end(); ++it) {
+      const SetPiece& set_piece = *it;
+      rapidjson::Value obj_intervals(rapidjson::kArrayType);
+      obj_intervals.SetArray();
+      for (const Interval& interval : set_piece.intervals()) {
+        rapidjson::Value obj_interval(rapidjson::kArrayType);
+        rapidjson::Value begin(rapidjson::kNumberType);
+        begin.SetUint(interval.begin());
+        obj_interval.PushBack(begin, allocator);
+        rapidjson::Value end(rapidjson::kNumberType);
+        end.SetUint(interval.end());
+        obj_interval.PushBack(end, allocator);
 
-//         obj_intervals.PushBack(obj_interval, allocator);
-//       }
+        obj_intervals.PushBack(obj_interval, allocator);
+      }
 
-//       obj_partition.PushBack(obj_intervals, allocator);
-//     }
+      obj_partition.PushBack(obj_intervals, allocator);
+    }
 
-//     rapidjson::Value obj_nodes(rapidjson::kObjectType);
-//     obj_nodes.AddMember("nodes", obj_partition, allocator);
+    rapidjson::Value obj_nodes(rapidjson::kObjectType);
+    obj_nodes.AddMember("nodes", obj_partition, allocator);
 
-//     obj_partitions.PushBack(obj_nodes, allocator);
-//   }
+    obj_partitions.PushBack(obj_nodes, allocator);
+  }
 
-//   json_doc.AddMember("partitions", obj_partitions, allocator);
+  json_doc.AddMember("partitions", obj_partitions, allocator);
 
-//   // Write the JSON data to the file
-//   rapidjson::StringBuffer s;
-//   rapidjson::Writer<rapidjson::StringBuffer> writer(s);
-//   json_doc.Accept(writer);
-//   string json_data = string(s.GetString());
+  // Write the JSON data to the file
+  rapidjson::StringBuffer s;
+  rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+  json_doc.Accept(writer);
+  string json_data = string(s.GetString());
 
-//   return json_data;
-// }
+  return json_data;
+}
 
 
 ostream& operator<<(ostream& os, const Partition& partition)
@@ -252,7 +261,9 @@ ostream& operator<<(ostream& os, const Partition& partition)
 
 ostream& operator<<(ostream& os, const PartitionMap& partitions)
 {
-  for_each(partitions.cbegin(), partitions.cend(), [&os] (const auto& p) { os << p.first << ", " << p.second << " "; });
+  for (size_t i = 0; i < partitions.size(); i++) {
+    os << i << " " << partitions[i] << " ";
+  }
 
   return os;
 }

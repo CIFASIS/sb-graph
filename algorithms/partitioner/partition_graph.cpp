@@ -144,24 +144,18 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
 
 Set get_connectivity_set(SBG::LIB::SBG& graph, const PartitionMap& partitions, size_t partition_index, SetAF& set_fact)
 {
-  const auto& partition_vector = partitions.at(partition_index);
-  Set partition = set_fact.createSet();
-  for_each(partition_vector.cbegin(), partition_vector.cend(), [&partition] (auto s) { partition.emplaceBack(s); });
+    const auto& partition_vector = partitions.at(partition_index);
+    Set partition = set_fact.createSet();
+    for_each(partition_vector.cbegin(), partition_vector.cend(), [&partition] (auto s) { partition.emplaceBack(s); });
 
-  Set edges = set_fact.createSet();
-
-  for (const auto& [i, p] : partitions) {
-    if (i == partition_index) {
-      continue;
-    }
+    Set edges = set_fact.createSet();
 
     auto comm_edges_1 = get_communication_edges(partition, graph.map1(), graph.map2());
     auto comm_edges_2 = get_communication_edges(partition, graph.map2(), graph.map1());
     auto comm_edges = comm_edges_1.cup(comm_edges_2);
     edges = edges.cup(comm_edges);
-  }
 
-  return edges;
+      return edges;
 }
 
 size_t get_OrdSet_size(const Set& set)

@@ -38,6 +38,18 @@ class PartitionerTests : public testing::TestWithParam<const char*> {
 };
 
 
+/**
+ * @brief It creates a set based graph out of `filename` and compare its content
+ * with the arguments. The purpose of this function is mainly to avoid code
+ * repetation while testing the creation of different sb graphs.
+ *
+ * @param filename the algorithm input, used to build the sb graph.
+ * @param node_intervals the domain intervals.
+ * @param lhs_map_domain lhs map domain.
+ * @param lhs_map_exps lhs map expresions.
+ * @param rhs_map_domain rhs map domain.
+ * @param rhs_map_exps rhs map expresions.
+ */
 static void test_create_sb_graph(
     const std::string& filename,
     const std::vector<Interval>& node_intervals,

@@ -31,6 +31,7 @@ INCLUDES := -I. -I$(boost_libdir)/include
 CXXFLAGS := -std=c++17 -Wno-reorder -O3
 ifeq ($(MODE),Debug)
 CXXFLAGS 	+= -ggdb -Wall -Werror 
+CXXFLAGS 	+= -D SBG_PARTITIONER_LOGGING
 endif
 LIB_SBGRAPH = lib/libsbgraph.a
 

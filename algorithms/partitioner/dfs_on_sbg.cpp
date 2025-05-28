@@ -20,7 +20,7 @@
 #include <iostream>
 
 #include "dfs_on_sbg.hpp"
-// #include "sbg_partitioner_log.hpp"
+#include "sbg_partitioner_log.hpp"
 #include "weighted_sb_graph.hpp"
 
 using namespace std;

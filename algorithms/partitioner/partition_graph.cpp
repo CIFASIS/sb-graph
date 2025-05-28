@@ -27,7 +27,7 @@
 #include "build_sb_graph.hpp"
 #include "dfs_on_sbg.hpp"
 #include "partition_graph.hpp"
-// #include "sbg_partitioner_log.hpp"
+#include "sbg_partitioner_log.hpp"
 
 #define TRY_MULTIPLE_STRATEGIES 1
 
@@ -123,7 +123,7 @@ vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, u
   }
 
   for_each(partitions_sets.begin(), partitions_sets.end(), [&graph, number_of_partitions](PartitionMap& p) {
-    cout << p << endl;
+    logging::sbg_log << p << endl;
     sanity_check(graph, p, number_of_partitions);
   });
 
@@ -148,7 +148,7 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
       }
     }
 
-    cout << "Best is " << best_initial_partitions << " with communication " << best_communication_set_cardinality << endl;
+    logging::sbg_log << "Best is " << best_initial_partitions << " with communication " << best_communication_set_cardinality << endl;
   }
 
   return best_initial_partitions;

@@ -312,6 +312,7 @@ Map create_set_edge_map(const SetAF& set_fact, const Set& pre_image, const Set& 
         offset += set_offset;
       }
 
+      map_exp.offset_ref() = offset;  // this works like `map_exp.set_offset(offset);`
       map_exps.emplaceBack(map_exp);
       i++;
 
@@ -529,7 +530,7 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
           auto im_map = map_fact.createMap(pre_image_current_node, exp);
           auto im = im_map.dom();
           auto current_node_map = create_set_edge_map(set_fact, im, edge_domain_set, exp, node_offsets.at(id), map_fact, pw_fact);
-          auto current_node_map_image = current_node_map.dom();
+          auto current_node_map_image = current_node_map.image();
           cout << "map is " << current_node_map << endl;
           cout << "image: " << current_node_map_image << endl;
 

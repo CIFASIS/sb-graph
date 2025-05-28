@@ -37,46 +37,81 @@ using namespace SBG::LIB;
 class PartitionerTests : public testing::TestWithParam<const char*> {
 };
 
-TEST(create_sb_grpah, PartitionerTests)
+
+/**
+ * @brief It creates a set based graph out of `filename` and compare its content
+ * with the arguments. The purpose of this function is mainly to avoid code
+ * repetation while testing the creation of different sb graphs.
+ *
+ * @param filename the algorithm input, used to build the sb graph.
+ * @param node_intervals the domain intervals.
+ * @param lhs_map_domain lhs map domain.
+ * @param lhs_map_exps lhs map expresions.
+ * @param rhs_map_domain rhs map domain.
+ * @param rhs_map_exps rhs map expresions.
+ */
+static void test_create_sb_graph(
+    const std::string& filename,
+    const std::vector<Interval>& node_intervals,
+    const std::vector<Interval>& lhs_map_domain,
+    const std::vector<Exp>& lhs_map_exps,
+    const std::vector<Interval>& rhs_map_domain,
+    const std::vector<Exp>& rhs_map_exps)
 {
-  // create needed factories
-  SBG::LIB::UnordAF set_fact;
-  SBG::LIB::MapAF map_fact(set_fact);
-  SBG::LIB::UnordPWMapAF pw_fact(map_fact);
+    // create needed factories
+    SBG::LIB::UnordAF set_fact;
+    SBG::LIB::MapAF map_fact(set_fact);
+    SBG::LIB::UnordPWMapAF pw_fact(map_fact);
 
-  auto sb_graph = sbg_partitioner::build_sb_graph("data/air_conditioners_1000.json", set_fact, map_fact, pw_fact);
+    auto sb_graph = sbg_partitioner::build_sb_graph(filename, set_fact, map_fact, pw_fact);
 
-  // create nodes of the expected graph
-  auto expected_nodes = set_fact.createSet();
-  expected_nodes.emplaceBack(Interval(0, 1, 999));
-  expected_nodes.emplaceBack(Interval(1000, 1, 1999));
-  expected_nodes.emplaceBack(Interval(2000, 1, 2999));
-  expected_nodes.emplaceBack(Interval(3000, 1, 3999));
-  EXPECT_EQ(expected_nodes, sb_graph.V());
+    // create nodes of the expected graph
+    auto expected_nodes = set_fact.createSet();
+    for (const auto& n : node_intervals) {
+        expected_nodes.emplaceBack(n);
+    }
+    EXPECT_EQ(expected_nodes, sb_graph.V());
 
-  // create edges of the expected graph through its maps
-  PWMap lhs_maps = pw_fact.createPWMap();
-  PWMap rhs_maps = pw_fact.createPWMap();
+    // create edges of the expected graph through its maps
+    PWMap lhs_maps = pw_fact.createPWMap();
+    for (size_t i = 0; i < lhs_map_domain.size(); i++) {
+       lhs_maps.emplaceBack(map_fact.createMap(lhs_map_domain[i], lhs_map_exps[i]));
+    }
 
-  lhs_maps.emplaceBack(map_fact.createMap(Interval(4000, 1, 4999), Exp(LExp(1, RATIONAL(-3000, 1)))));
-  rhs_maps.emplaceBack(map_fact.createMap(Interval(4000, 1, 4999), Exp(LExp(1, RATIONAL(-4000, 1)))));
+    PWMap rhs_maps = pw_fact.createPWMap();
+    for (size_t i = 0; i < rhs_map_domain.size(); i++) {
+       rhs_maps.emplaceBack(map_fact.createMap(rhs_map_domain[i], rhs_map_exps[i]));
+    }
 
-  lhs_maps.emplaceBack(map_fact.createMap(Interval(5000, 1, 5999), Exp(LExp(1, RATIONAL(-2000, 1)))));
-  rhs_maps.emplaceBack(map_fact.createMap(Interval(5000, 1, 5999), Exp(LExp(1, RATIONAL(-5000, 1)))));
+    // test edges are correct
+    EXPECT_EQ(lhs_maps.dom(), sb_graph.E());
+    EXPECT_EQ(rhs_maps.dom(), sb_graph.E());
 
-  lhs_maps.emplaceBack(map_fact.createMap(Interval(6000, 1, 6999), Exp(LExp(1, RATIONAL(-6000, 1)))));
-  rhs_maps.emplaceBack(map_fact.createMap(Interval(6000, 1, 6999), Exp(LExp(1, RATIONAL(-5000, 1)))));
+    // test that maps are as expected
+    EXPECT_EQ(lhs_maps, sb_graph.map1());
+    EXPECT_EQ(rhs_maps, sb_graph.map2());
+}
 
-  lhs_maps.emplaceBack(map_fact.createMap(Interval(7000, 1, 7999), Exp(LExp(1, RATIONAL(-5000, 1)))));
-  rhs_maps.emplaceBack(map_fact.createMap(Interval(7000, 1, 7999), Exp(LExp(1, RATIONAL(-6000, 1)))));
 
-  // test edges are correct
-  EXPECT_EQ(lhs_maps.dom(), sb_graph.E());
-  EXPECT_EQ(rhs_maps.dom(), sb_graph.E());
+TEST(create_sb_graph, PartitionerTests)
+{
+    test_create_sb_graph(
+        "data/air_conditioners_1000.json",
+        { Interval(0, 1, 999), Interval(1000, 1, 1999), Interval(2000, 1, 2999), Interval(3000, 1, 3999) },
+        { Interval(4000, 1, 4999), Interval(5000, 1, 5999), Interval(6000, 1, 6999), Interval(7000, 1, 7999) },
+        { Exp(LExp(1, RATIONAL(-3000, 1))), Exp(LExp(1, RATIONAL(-2000, 1))), Exp(LExp(1, RATIONAL(-6000, 1))), Exp(LExp(1, RATIONAL(-5000, 1))) },
+        { Interval(4000, 1, 4999), Interval(5000, 1, 5999), Interval(6000, 1, 6999), Interval(7000, 1, 7999) },
+        { Exp(LExp(1, RATIONAL(-4000, 1))), Exp(LExp(1, RATIONAL(-5000, 1))), Exp(LExp(1, RATIONAL(-5000, 1))), Exp(LExp(1, RATIONAL(-6000, 1))) }
+    );
 
-  // test that maps are as expected
-  EXPECT_EQ(lhs_maps, sb_graph.map1());
-  EXPECT_EQ(rhs_maps, sb_graph.map2());
+    test_create_sb_graph(
+        "data/advection.json",
+        { Interval(0, 1, 0), Interval(1, 1, 99) },
+        { Interval(100, 1, 100), Interval(101, 1, 198) },
+        { Exp(LExp(0, 0)),  Exp(LExp(1, RATIONAL(-100, 1))) },
+        { Interval(100, 1, 100), Interval(101, 1, 198) },
+        { Exp(LExp(1, RATIONAL(-99, 1))), Exp(LExp(1, RATIONAL(-99, 1))) }
+    );
 }
 
 TEST(initial_partition, PartitionerTests)

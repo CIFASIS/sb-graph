@@ -168,6 +168,45 @@ struct SBGSCC {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+// Tearing ---------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+struct SBGTearing {
+  private:
+  const PWMapAF &fact_;
+
+  //*** SBG info, constant
+  member_class(DSBG, dsbg);
+
+  member_class(Set, V);
+  member_class(PWMap, Vmap);
+
+  member_class(PWMap, Emap);
+  member_class(PWMap, subEmap);
+
+  //-----------------------------
+  member_class(Set, E); // Edges in the same SCC in each step
+  member_class(Set, Ediff); // Edges between different SCC in each step
+
+  member_class(PWMap, mapB);
+  member_class(PWMap, mapD);
+ 
+  member_class(PWMap, rmap);
+
+  member_class(bool, debug);
+
+  public:
+  SBGTearing(const DSBG &dsbg, bool debug);
+
+  PWMap calculate();
+
+  const PWMapAF &fact() const;
+
+  private:
+  PWMap sccMinReach(const DSBG &dg) const;
+  PWMap sccStep();
+};
+////////////////////////////////////////////////////////////////////////////////
 // Topological sort ------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 

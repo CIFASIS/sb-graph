@@ -636,25 +636,25 @@ SBG::LIB::WeightedSBGraph build_sb_graph(const string& filename,  // create need
 
 Set get_adjacents(const SBG::LIB::SBG& graph, const Set& node, SetAF& set_fact, MapAF& map_fact)
 {
-  Set adjacents = set_fact.createSet();
+    Set adjacents = set_fact.createSet();
 
-  // Fill adjacents
-  unsigned acc = 0;
-  for (auto it1 = graph.map1().begin(), it2 = graph.map2().begin(); it1 != graph.map1().end() and it2 != graph.map2().end(); ++it1, ++it2) {
-    const auto map1 = *it1;
-    const auto map2 = *it2;
+    // Fill adjacents
+    unsigned acc = 0;
+    for (auto it1 = graph.map1().begin(), it2 = graph.map2().begin(); it1 != graph.map1().end() and it2 != graph.map2().end(); ++it1, ++it2) {
+        const auto map1 = *it1;
+        const auto map2 = *it2;
 
-    acc += add_adjacent_nodes(map1, map2, node, adjacents, set_fact);
+        acc += add_adjacent_nodes(map1, map2, node, adjacents, set_fact);
 
-    auto map2_minus_map1_dom = map2.dom().difference(map1.dom());
-    if (not map2_minus_map1_dom.isEmpty()) {
-      Map map2_ = map_fact.createMap(map2_minus_map1_dom, map2.exp());
+        auto map2_minus_map1_dom = map2.dom().difference(map1.dom());
+        if (not map2_minus_map1_dom.isEmpty()) {
+            Map map2_ = map_fact.createMap(map2_minus_map1_dom, map2.exp());
 
-      acc += add_adjacent_nodes(map2_, map1, node, adjacents, set_fact);
+            acc += add_adjacent_nodes(map2_, map1, node, adjacents, set_fact);
+        }
     }
-  }
 
-  return adjacents;
+    return adjacents;
 }
 
 pair<Set, Set> cut_bidimensional_interval(const SetPiece& set_piece, size_t s, SetAF& set_fact)
@@ -800,21 +800,13 @@ void flatten_set(Set& set, const WeightedSBGraph& graph, SetAF& set_fact)
         return;
     }
 
-        struct compare_intervals
-    {
-        inline bool operator() (const SetPiece& s1, const SetPiece& s2)
-        {
-            return s1[0].begin() < s2[0].begin();
-        }
-    };
-
     auto canonize = [](vector<SetPiece>& set_vector)
     {
         if (set_vector.empty()) {
             return set_vector;
         }
 
-        sort(set_vector.begin(), set_vector.end(), compare_intervals());
+        sort_partition_intervals(set_vector);
         vector<SetPiece> new_set_vector = {*set_vector.begin()};
         for (size_t new_set_vector_idx = 0, set_vector_idx = 1; set_vector_idx < set_vector.size(); set_vector_idx++) {
             if (new_set_vector[new_set_vector_idx][0].end() + 1 == set_vector[set_vector_idx][0].begin()) {
@@ -940,5 +932,6 @@ SBG::LIB::WeightedSBGraph create_air_conditioners_graph()
 
   return graph;
 }
+
 
 }  // namespace sbg_partitioner

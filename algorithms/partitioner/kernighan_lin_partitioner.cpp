@@ -1033,38 +1033,12 @@ string partitionate_nodes(
 
     string output = get_output(partitions);
 
-    struct compare_intervals
-    {
-        inline bool operator() (const SetPiece& s1, const SetPiece& s2)
-        {
-            return s1[0].begin() < s2[0].begin();
-        }
-    };
-
     for (auto& p : partitions) {
-        sort(p.begin(), p.end(), compare_intervals());
+        sort_partition_intervals(p);
     }
 
     return output;
 }
 
-
-// pair<WeightedSBGraph, PartitionMap> partitionate_nodes_for_metrics(
-//     const string& filename,
-//     const unsigned number_of_partitions,
-//     const float epsilon)
-// {
-//     auto sb_graph = build_sb_graph(filename.c_str());
-//     // auto sb_graph = create_air_conditioners_graph();
-
-//     logging::sbg_log << sb_graph << endl;
-//     logging::sbg_log << "sb graph created!" << endl;
-
-//     auto partitions = best_initial_partition(sb_graph, number_of_partitions);
-
-//     kl_sbg_imbalance_partitioner(sb_graph, partitions, epsilon);
-
-//     return {sb_graph, partitions};
-// }
 
 }

@@ -80,6 +80,9 @@ SBG::LIB::Set get_connectivity_set(
     SBG::LIB::SetAF& set_fact);
 
 
+void sort_partition_intervals(Partition& p);
+
+
 /// This function returns the cardinality of a OrdSet.
 size_t get_OrdSet_size(const SBG::LIB::Set& set);
 

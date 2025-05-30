@@ -262,6 +262,16 @@ string get_output(const PartitionMap& partition_map)
 }
 
 
+void sort_partition_intervals(Partition& p)
+{
+    constexpr auto compare_intervals = [](const SBG::LIB::SetPiece& s1, const SBG::LIB::SetPiece& s2) {
+        return s1[0].begin() < s2[0].begin();
+    };
+
+    sort(p.begin(), p.end(), compare_intervals);
+}
+
+
 ostream& operator<<(ostream& os, const Partition& partition)
 {
     for_each(partition.cbegin(), partition.cend(), [&os] (const auto& p) { os << p << " "; });

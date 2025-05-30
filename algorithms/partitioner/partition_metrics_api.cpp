@@ -132,7 +132,7 @@ int communication_volume_one_dim(const PartitionMap& partitions, const SetPiece&
 
 void write_node_by_partition(const PartitionMap& partitions, const WeightedSBGraph& sb_graph, SetAF& set_fact)
 {
-    vector<SetPiece> nodes;
+    Partition nodes;
     nodes.reserve(sb_graph.V().size());
     for (auto v : sb_graph.V()) {
         nodes.push_back(v);
@@ -143,7 +143,7 @@ void write_node_by_partition(const PartitionMap& partitions, const WeightedSBGra
         return a.intervals()[0].end() < b.intervals()[0].end();
     };
 
-    sort(nodes.begin(), nodes.end(), f_sort);
+    sort_partition_intervals(nodes);
 
     // expand it and write it
     vector<unsigned> partition_by_node;

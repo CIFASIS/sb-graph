@@ -47,8 +47,7 @@ SBG::LIB::Interval get_pre_image(const SBG::LIB::Interval& image_interval, const
 /// @param graph the graph where we are looking for connections.
 /// @param node set of nodes we want to know its connections.
 /// @return a set of nodes connected to the function parameter.
-SBG::LIB::Set get_adjacents(const SBG::LIB::SBG& graph, const SBG::LIB::SetPiece& node);
-SBG::LIB::Set get_adjacents(const SBG::LIB::SBG& graph, const SBG::LIB::Set& node);
+SBG::LIB::Set get_adjacents(const SBG::LIB::SBG& graph, const SBG::LIB::Set& node, SBG::LIB::SetAF& set_fact, SBG::LIB::MapAF& map_fact);
 
 
 /// Takes a set piece and calculate its size of the intervals. E.g [1:10] has 10 elements,
@@ -58,8 +57,12 @@ SBG::LIB::Set get_adjacents(const SBG::LIB::SBG& graph, const SBG::LIB::Set& nod
 unsigned get_node_size(const SBG::LIB::SetPiece& node, const SBG::LIB::NodeWeight& node_weight, SBG::LIB::SetAF& set_fact);
 
 
-/// Takes each set piece and calculates its size, then adds them
+/// Takes each set piece and calculates its size, it returns the sum of them
 unsigned get_node_size(const SBG::LIB::Set& node, const SBG::LIB::NodeWeight& node_weight, SBG::LIB::SetAF& set_fact);
+
+
+/// Takes each set piece of the partition and calculates its size, it returns the sum of them
+unsigned get_partition_size(const std::vector<SBG::LIB::SetPiece>& node, const SBG::LIB::NodeWeight& node_weight, SBG::LIB::SetAF& set_fact);
 
 
 unsigned get_edge_set_cost(const SBG::LIB::Set& node, const SBG::LIB::EdgeCost& edge_cost);
@@ -68,7 +71,7 @@ unsigned get_edge_set_cost(const SBG::LIB::Set& node, const SBG::LIB::EdgeCost& 
 unsigned get_edge_set_cost(const SBG::LIB::SetPiece& node, const SBG::LIB::EdgeCost& edge_cost);
 
 
-void flatten_set(SBG::LIB::Set &set, const SBG::LIB::SBG& graph);
+void flatten_set(SBG::LIB::Set &set, const SBG::LIB::WeightedSBGraph& graph, SBG::LIB::SetAF& set_fact);
 
 
 SBG::LIB::WeightedSBGraph create_air_conditioners_graph();

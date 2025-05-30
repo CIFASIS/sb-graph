@@ -25,11 +25,13 @@
 #include <string>
 
 #include "build_sb_graph.hpp"
+#include "kernighan_lin_partitioner.hpp"
 #include "partition_graph.hpp"
 
 using namespace std;
 
 using namespace sbg_partitioner;
+
 
 static void usage()
 {
@@ -47,6 +49,7 @@ static void usage()
   cout << "SBG Partitioner home page: https://github.com/CIFASIS/sbg-partitioner " << endl;
 }
 
+
 static void version()
 {
   cout << "SBG Partitioner 1.0.0" << endl;
@@ -55,103 +58,142 @@ static void version()
   cout << "There is NO WARRANTY, to the extent permitted by law." << endl;
 }
 
+
+void sort_before_print(PartitionMap partitions, const SBG::LIB::WeightedSBGraph& sb_graph, SBG::LIB::SetAF& set_fact)
+{
+    struct compare_intervals
+    {
+        inline bool operator() (const SBG::LIB::SetPiece& s1, const SBG::LIB::SetPiece& s2)
+        {
+            return s1[0].begin() < s2[0].begin();
+        }
+    };
+
+    for (auto& p : partitions) {
+        sort(p.begin(), p.end(), compare_intervals());
+    }
+    cout << "partitions: " << partitions << endl;
+}
+
+
 int main(int argc, char** argv)
 {
-  int opt;
-  optional<string> filename = nullopt;
-  optional<unsigned> number_of_partitions = nullopt;
-  optional<string> output_file;
-  optional<string> output_sb_graph = nullopt;
-  optional<float> epsilon = nullopt;
+    int opt;
+    optional<string> filename = nullopt;
+    optional<unsigned> number_of_partitions = nullopt;
+    optional<string> output_file;
+    optional<string> output_sb_graph = nullopt;
+    optional<float> epsilon = nullopt;
 
-  while (true) {
-    static struct option long_options[] = {{"filename", required_argument, 0, 'f'},    {"partitions", required_argument, 0, 'p'},
-                                           {"output-file", required_argument, 0, 'g'}, {"output-graph", required_argument, 0, 'o'},
-                                           {"version", no_argument, 0, 'v'},           {"help", no_argument, 0, 'h'}};
+    while (true) {
+        static struct option long_options[] = {{"filename", required_argument, 0, 'f'},    {"partitions", required_argument, 0, 'p'},
+                                            {"output-file", required_argument, 0, 'g'}, {"output-graph", required_argument, 0, 'o'},
+                                            {"version", no_argument, 0, 'v'},           {"help", no_argument, 0, 'h'}};
 
-    int option_index = 0;
-    opt = getopt_long(argc, argv, "f:p:e:o:g:vh:", long_options, &option_index);
-    if (opt == EOF) break;
+        int option_index = 0;
+        opt = getopt_long(argc, argv, "f:p:e:o:g:vh:", long_options, &option_index);
+        if (opt == EOF) break;
 
-    switch (opt) {
-    case 'f':
-      if (optarg) {
-        filename = string(optarg);
-      }
-      break;
+        switch (opt) {
+        case 'f':
+        if (optarg) {
+            filename = string(optarg);
+        }
+        break;
 
-    case 'p':
-      if (optarg) {
-        number_of_partitions = atoi(optarg);
-      }
-      break;
+        case 'p':
+        if (optarg) {
+            number_of_partitions = atoi(optarg);
+        }
+        break;
 
-    case 'o':
-      if (optarg) {
-        output_sb_graph = string(optarg);
-      }
-      break;
+        case 'o':
+        if (optarg) {
+            output_sb_graph = string(optarg);
+        }
+        break;
 
-    case 'g':
-      if (optarg) {
-        output_file = string(optarg);
-      }
-      break;
+        case 'g':
+        if (optarg) {
+            output_file = string(optarg);
+        }
+        break;
 
-    case 'e':
-      if (optarg) {
-        epsilon = atof(optarg);
-      }
-      break;
+        case 'e':
+        if (optarg) {
+            epsilon = atof(optarg);
+        }
+        break;
 
-    case 'v':
-      version();
-      exit(0);
+        case 'v':
+        version();
+        exit(0);
 
-    case 'h':
-      usage();
-      exit(0);
+        case 'h':
+        usage();
+        exit(0);
 
-    case '?':
-      usage();
-      exit(-1);
-      break;
+        case '?':
+        usage();
+        exit(-1);
+        break;
 
-    default:
-      abort();
+        default:
+        abort();
+        }
     }
-  }
 
-  if (not filename or not number_of_partitions) {
-    usage();
-    exit(1);
-  }
+    if (not filename or not number_of_partitions) {
+        usage();
+        exit(1);
+    }
 
-  if (not epsilon) {
-    epsilon = 0.0;
-  }
+    if (not epsilon) {
+        epsilon = 0.0;
+    }
 
-  if (*epsilon < 0 or *epsilon > 1) {
-    usage();
-    exit(1);
-  }
+    if (*epsilon < 0 or *epsilon > 1) {
+        usage();
+        exit(1);
+    }
 
-  cout << "filename is " << *filename << endl;
-  cout << "number of partitions is " << *number_of_partitions << endl;
+    cout << "filename is " << *filename << endl;
+    cout << "number of partitions is " << *number_of_partitions << endl;
 
-  optional<string> s;
-  if (output_sb_graph) {
-    s = "";
-  }
+    optional<string> s;
+    if (output_sb_graph) {
+        s = "";
+    }
 
-  SBG::LIB::UnordAF set_fact;
-  SBG::LIB::MapAF map_fact(set_fact);
-  SBG::LIB::UnordPWMapAF pw_fact(map_fact);
-  auto sb_graph = build_sb_graph(filename->c_str(), set_fact, map_fact, pw_fact);
-  cout << sb_graph << endl;
+    SBG::LIB::UnordAF set_fact;
+    SBG::LIB::MapAF map_fact(set_fact);
+    SBG::LIB::UnordPWMapAF pw_fact(map_fact);
 
-  auto partitions = best_initial_partition(sb_graph, *number_of_partitions, set_fact);
-  cout << partitions << endl;
+    auto start_build_graph = chrono::high_resolution_clock::now();
+    auto sb_graph = build_sb_graph(filename->c_str(), set_fact, map_fact, pw_fact);
+    auto end_build_graph = chrono::high_resolution_clock::now();
+    auto time_to_build_graph = chrono::duration<double, std::milli>(end_build_graph - start_build_graph).count();
+
+    auto start_partitionate = chrono::high_resolution_clock::now();
+    auto partitions = best_initial_partition(sb_graph, *number_of_partitions, set_fact);
+    kl_sbg_imbalance_partitioner(sb_graph, partitions, *epsilon, set_fact, map_fact);
+    auto end_partitionate = chrono::high_resolution_clock::now();
+    auto time_to_partitionate = chrono::duration<double, std::milli>(end_partitionate - start_partitionate).count();
+
+    cout << "time_to_build_graph = " << time_to_build_graph << " ms" << endl;
+    cout << "time_to_partitionate = " << time_to_partitionate << " ms" << endl;
+
+    sanity_check(sb_graph, partitions, *number_of_partitions);
+
+    if (s){
+        s = get_pretty_sb_graph(sb_graph);
+    }
+
+    sort_before_print(partitions, sb_graph, set_fact);
+
+    string output = get_output(partitions);
+
+    
 
   return 0;
 }

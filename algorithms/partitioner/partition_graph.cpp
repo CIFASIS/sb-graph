@@ -72,7 +72,7 @@ constexpr bool using_many_initial_partitions = TRY_MULTIPLE_STRATEGIES;
 
 
 // we could cache solutions here
-Set to_vector(const Partition& partition, SetAF& set_fact) {
+Set from_vector(const Partition& partition, SetAF& set_fact) {
     Set partition_set = set_fact.createSet();
     for (size_t i = 0; i < partition.size(); i++) {
         partition_set.emplace(partition[i]);

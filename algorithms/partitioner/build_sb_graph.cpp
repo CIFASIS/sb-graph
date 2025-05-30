@@ -30,6 +30,7 @@
 #include <util/logger.hpp>
 
 #include "build_sb_graph.hpp"
+#include "partition_graph.hpp"
 #include "sbg_partitioner_log.hpp"
 #include "weighted_sb_graph.hpp"
 
@@ -748,6 +749,16 @@ unsigned get_node_size(const Set& node, const NodeWeight& node_weight, SetAF& se
   return size;
 }
 
+unsigned get_partition_size(const vector<SetPiece>& node, const NodeWeight& node_weight, SetAF& set_fact)
+{
+  unsigned size = 0;
+  for (const auto& set_piece : node) {
+    size += get_node_size(set_piece, node_weight, set_fact);
+  }
+
+  return size;
+}
+
 unsigned get_edge_set_cost(const SBG::LIB::SetPiece& node, const EdgeCost& edge_cost)
 {
   if (node.isEmpty()) {
@@ -782,34 +793,61 @@ unsigned get_edge_set_cost(const SBG::LIB::Set& node, const EdgeCost& edge_cost)
   return size;
 }
 
-void flatten_set(Set& set, const SBG::LIB::SBG& graph)
+void flatten_set(Set& set, const WeightedSBGraph& graph, SetAF& set_fact)
 {
-  if ((not set.isEmpty()) and set.arity() > 1) {
-    logging::sbg_log << "flatten_set for sets with " << set.arity() << " is not implemented" << endl;
-    return;
-  }
+    if ((not set.isEmpty()) and set.arity() > 1) {
+        logging::sbg_log << "flatten_set for sets with " << set.arity() << " is not implemented" << endl;
+        return;
+    }
 
-  // Set new_partition;
-  // for (const auto& v : graph.V()) {
-  //     MDInterOrdSet set_piece_this_node_vector;
-  //     for (auto& set_piece : set.pieces()) {
+        struct compare_intervals
+    {
+        inline bool operator() (const SetPiece& s1, const SetPiece& s2)
+        {
+            return s1[0].begin() < s2[0].begin();
+        }
+    };
 
-  //         if (not isEmpty(intersection(v, set_piece))) {
-  //             set_piece_this_node_vector.emplace(set_piece);
-  //         }
-  //     }
+    auto canonize = [](vector<SetPiece>& set_vector)
+    {
+        if (set_vector.empty()) {
+            return set_vector;
+        }
 
-  //     set_piece_this_node_vector = canonize(set_piece_this_node_vector);
-  //     new_partition = cup(new_partition, set_piece_this_node_vector);
-  // }
+        sort(set_vector.begin(), set_vector.end(), compare_intervals());
+        vector<SetPiece> new_set_vector = {*set_vector.begin()};
+        for (size_t new_set_vector_idx = 0, set_vector_idx = 1; set_vector_idx < set_vector.size(); set_vector_idx++) {
+            if (new_set_vector[new_set_vector_idx][0].end() + 1 == set_vector[set_vector_idx][0].begin()) {
+                new_set_vector[new_set_vector_idx] = 
+                Interval(new_set_vector[new_set_vector_idx][0].begin(), 1, set_vector[set_vector_idx][0].end());
+            } else {
+                new_set_vector.emplace_back(set_vector[set_vector_idx]);
+                new_set_vector_idx++;
+            }
+        }
 
-  // auto diff = difference(set, new_partition);
-  // assert(isEmpty(diff));
+        return new_set_vector;
+    };
 
-  // set = new_partition;
+    Set new_partition = set_fact.createSet();
+    for (const auto& v : graph.V()) {
+        vector<SetPiece> set_piece_this_node_vector;
+        for (auto set_piece : set) {
 
-  cerr << "flatten_set is not implemented" << endl;
-  throw 1;
+            if (not v.intersection(set_piece).isEmpty()) {
+                set_piece_this_node_vector.emplace_back(set_piece);
+            }
+        }
+
+        set_piece_this_node_vector = canonize(set_piece_this_node_vector);
+        new_partition = new_partition.cup(from_vector(set_piece_this_node_vector, set_fact));
+    }
+
+    auto diff = set.difference(new_partition);
+    assert(diff.isEmpty());
+
+    set = new_partition;
+
 }
 
 int get_set_cost(const SetPiece& set, const NodeWeight& costs, SetAF& set_af)

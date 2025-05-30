@@ -41,11 +41,17 @@ enum PartitionAlgorithm
 };
 
 
-/// @brief Converts a Partition element into a Set
+/// @brief Converts a Partition element into a Set.
 /// @param partition - A list of SetPiece elements.
 /// @param set_fact - Factory to create sets.
 /// @return A SBG::LIB::Set representation of the Partition element.
 SBG::LIB::Set from_vector(const Partition& partition, SBG::LIB::SetAF& set_fact);
+
+
+/// @brief Converts a set into a Partition element.
+/// @param partition - The set we want to convert set.
+/// @return A Partition representation of the set.
+Partition to_vector(const SBG::LIB::Set& partition);
 
 
 // I wish this was a separate function, not part of PartitionGraph but there were a lot of

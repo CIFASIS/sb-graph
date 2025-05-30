@@ -82,6 +82,17 @@ Set from_vector(const Partition& partition, SetAF& set_fact) {
 }
 
 
+Partition to_vector(const Set& partition_set)
+{
+    Partition partition;
+    for (auto set_piece : partition_set) {
+        partition.push_back(move(set_piece));
+    }
+
+    return partition;
+}
+
+
 vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, unsigned number_of_partitions, SetAF& set_fact)
 {
   vector<PartitionMap> partitions_sets;
@@ -262,7 +273,7 @@ ostream& operator<<(ostream& os, const Partition& partition)
 ostream& operator<<(ostream& os, const PartitionMap& partitions)
 {
   for (size_t i = 0; i < partitions.size(); i++) {
-    os << i << " " << partitions[i] << " ";
+    os << i << " " << partitions[i] << endl;
   }
 
   return os;

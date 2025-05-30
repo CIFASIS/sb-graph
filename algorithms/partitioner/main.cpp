@@ -27,6 +27,8 @@
 #include "build_sb_graph.hpp"
 #include "kernighan_lin_partitioner.hpp"
 #include "partition_graph.hpp"
+#include "partition_metrics_api.hpp"
+
 
 using namespace std;
 
@@ -84,14 +86,16 @@ int main(int argc, char** argv)
     optional<string> output_file;
     optional<string> output_sb_graph = nullopt;
     optional<float> epsilon = nullopt;
+    bool compute_metrics = false;
 
     while (true) {
         static struct option long_options[] = {{"filename", required_argument, 0, 'f'},    {"partitions", required_argument, 0, 'p'},
-                                            {"output-file", required_argument, 0, 'g'}, {"output-graph", required_argument, 0, 'o'},
-                                            {"version", no_argument, 0, 'v'},           {"help", no_argument, 0, 'h'}};
+                                               {"output-file", required_argument, 0, 'g'}, {"output-graph", required_argument, 0, 'o'},
+                                               {"compute-metrics", no_argument, 0, 'm'}, {"version", no_argument, 0, 'v'},
+                                               {"help", no_argument, 0, 'h'}};
 
         int option_index = 0;
-        opt = getopt_long(argc, argv, "f:p:e:o:g:vh:", long_options, &option_index);
+        opt = getopt_long(argc, argv, "f:p:e:o:g:m:vh:", long_options, &option_index);
         if (opt == EOF) break;
 
         switch (opt) {
@@ -125,6 +129,10 @@ int main(int argc, char** argv)
         }
         break;
 
+        case 'm':
+        compute_metrics = true;
+        break;
+
         case 'v':
         version();
         exit(0);
@@ -139,6 +147,7 @@ int main(int argc, char** argv)
         break;
 
         default:
+        cout << "opt " << opt << endl;
         abort();
         }
     }
@@ -180,6 +189,26 @@ int main(int argc, char** argv)
     auto end_partitionate = chrono::high_resolution_clock::now();
     auto time_to_partitionate = chrono::duration<double, std::milli>(end_partitionate - start_partitionate).count();
 
+    if (compute_metrics) {
+        map<string, metrics::communication_metrics> metrics;
+
+        int edge_cut = metrics::edge_cut(partitions, sb_graph, set_fact);
+        cout << edge_cut << endl;
+
+        auto [comm_volume, max_comm_volume] = metrics::communication_volume(partitions, sb_graph, set_fact, map_fact);
+
+        cout << comm_volume << ", " << max_comm_volume << endl;
+
+        auto max_imb = metrics::maximum_imbalance(partitions, sb_graph, set_fact);
+
+        metrics::communication_metrics comm_metrics = metrics::communication_metrics{ edge_cut, comm_volume, max_comm_volume, max_imb };
+        metrics["sbg-partitioner"] = comm_metrics;
+
+        for (const auto& [f, m] : metrics) {
+            cout << f << ": " << m << endl;
+        }
+    }
+
     cout << "time_to_build_graph = " << time_to_build_graph << " ms" << endl;
     cout << "time_to_partitionate = " << time_to_partitionate << " ms" << endl;
 
@@ -193,7 +222,5 @@ int main(int argc, char** argv)
 
     string output = get_output(partitions);
 
-    
-
-  return 0;
+    return 0;
 }

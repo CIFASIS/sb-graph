@@ -18,6 +18,7 @@
  ******************************************************************************/
 
 #include <chrono>
+#include <filesystem>
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
@@ -39,14 +40,17 @@ static void usage()
 {
   cout << "Usage sbg-partitioner" << endl;
   cout << endl;
-  cout << "-f, --filename   Path to the input file, a json file that represents "
+  cout << "-f, --filename          Path to the input file, a json file that represents "
           "the model we want to partitionate."
        << endl;
-  cout << "-p, --partitions Number of partitions." << endl;
-  cout << "-h, --help       Display this information and exit." << endl;
-  cout << "-v, --version    Display version information and exit." << endl;
-  cout << "-g               Output file path." << endl;
-  cout << "-e               Imbalance epsilon, a value between 0 and 1." << endl;
+  cout << "-p, --partitions        Number of partitions." << endl;
+  cout << "-h, --help              Display this information and exit." << endl;
+  cout << "-v, --version           Display version information and exit." << endl;
+  cout << "-g                      Output file path." << endl;
+  cout << "-e                      Imbalance epsilon, a value between 0 and 1." << endl;
+  cout << "-m, --compute-metrics   If enabled, computes partition quality metrics." << endl;
+  cout << "-d, --directory         Directory with partitions obtianed by other partitioners, "
+          "we want to run quality metrics against them." << endl;
   cout << endl;
   cout << "SBG Partitioner home page: https://github.com/CIFASIS/sbg-partitioner " << endl;
 }
@@ -63,18 +67,23 @@ static void version()
 
 void sort_before_print(PartitionMap partitions, const SBG::LIB::WeightedSBGraph& sb_graph, SBG::LIB::SetAF& set_fact)
 {
-    struct compare_intervals
-    {
-        inline bool operator() (const SBG::LIB::SetPiece& s1, const SBG::LIB::SetPiece& s2)
-        {
-            return s1[0].begin() < s2[0].begin();
-        }
-    };
-
     for (auto& p : partitions) {
-        sort(p.begin(), p.end(), compare_intervals());
+        sort_partition_intervals(p);
     }
     cout << "partitions: " << partitions << endl;
+}
+
+
+void read_directory(const std::string& name, std::vector<std::string>& v)
+{
+    auto path_leaf_string = [](const std::filesystem::directory_entry& entry) {
+        return entry.path().string();
+    };
+
+    std::filesystem::path p(name);
+    std::filesystem::directory_iterator start(p);
+    std::filesystem::directory_iterator end;
+    std::transform(start, end, std::back_inserter(v), path_leaf_string);
 }
 
 
@@ -82,6 +91,7 @@ int main(int argc, char** argv)
 {
     int opt;
     optional<string> filename = nullopt;
+    optional<string> directory = nullopt;
     optional<unsigned> number_of_partitions = nullopt;
     optional<string> output_file;
     optional<string> output_sb_graph = nullopt;
@@ -91,11 +101,11 @@ int main(int argc, char** argv)
     while (true) {
         static struct option long_options[] = {{"filename", required_argument, 0, 'f'},    {"partitions", required_argument, 0, 'p'},
                                                {"output-file", required_argument, 0, 'g'}, {"output-graph", required_argument, 0, 'o'},
-                                               {"compute-metrics", no_argument, 0, 'm'}, {"version", no_argument, 0, 'v'},
-                                               {"help", no_argument, 0, 'h'}};
+                                               {"compute-metrics", no_argument, 0, 'm'}, {"directory", required_argument, 0, 'd'}, 
+                                               {"version", no_argument, 0, 'v'}, {"help", no_argument, 0, 'h'}};
 
         int option_index = 0;
-        opt = getopt_long(argc, argv, "f:p:e:o:g:m:vh:", long_options, &option_index);
+        opt = getopt_long(argc, argv, "f:p:e:o:g:d:mvh:", long_options, &option_index);
         if (opt == EOF) break;
 
         switch (opt) {
@@ -131,6 +141,12 @@ int main(int argc, char** argv)
 
         case 'm':
         compute_metrics = true;
+        break;
+
+        case 'd':
+        if (optarg) {
+            directory = string(optarg);
+        }
         break;
 
         case 'v':
@@ -206,6 +222,24 @@ int main(int argc, char** argv)
 
         for (const auto& [f, m] : metrics) {
             cout << f << ": " << m << endl;
+        }
+
+        if (compute_metrics and directory) {
+            std::vector<std::string> dir_files;
+            read_directory(*directory, dir_files);
+
+            for (const auto& f : dir_files) {
+                auto partition_from_file = metrics::read_partition_from_file(f, sb_graph, set_fact);
+
+                int edge_cut = metrics::edge_cut(partition_from_file, sb_graph, set_fact);
+
+                auto [comm_volume, max_comm_volume] = metrics::communication_volume(partition_from_file, sb_graph, set_fact, map_fact);
+
+                auto max_imb = metrics::maximum_imbalance(partition_from_file, sb_graph, set_fact);
+
+                metrics::communication_metrics comm_metrics = metrics::communication_metrics{ edge_cut, comm_volume, max_comm_volume, max_imb };
+                metrics[std::filesystem::path(f).filename().string()] = comm_metrics;
+            }
         }
     }
 

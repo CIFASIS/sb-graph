@@ -38,6 +38,7 @@ all: $(LIB_SBGRAPH)
 
 include util/Makefile.include
 include sbg/Makefile.include
+include ast/Makefile.include
 include parser/Makefile.include
 include eval/Makefile.include
 include algorithms/partitioner/Makefile.include
@@ -46,15 +47,9 @@ create-folders::
 	@mkdir -p $(ROOT)/lib
 	@mkdir -p $(OBJ_DIR)
 	@mkdir -p $(BUILD_DIR)
-	@mkdir -p $(BUILD_DIR)/$(AST_DIR)
 	@mkdir -p $(BIN_DIR)
 
-$(BUILD_DIR)/%.o : %.cpp | create-folders
-	$(CC) $(INCLUDES) $(CXXFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<
-	$(CC) $(INCLUDES) -c $< -o $@ $(CXXFLAGS)
-
-LIB_SRC := $(shell find ast parser sbg eval util algorithms/partitioner -type f -name "*.cpp" ! -name "main.cpp")
-LIB_OBJ = $(addprefix $(BUILD_DIR)/, $(LIB_SRC:.cpp=.o))
+LIB_OBJ = $(UTIL_OBJ) $(SBG_OBJ) $(AST_OBJ) $(PARSER_OBJ) $(EVAL_OBJ) $(ALG_OBJ)
 
 $(LIB_SBGRAPH): create-folders $(LIB_OBJ)
 	$(AR) rcs $(LIB_SBGRAPH) $(LIB_OBJ)

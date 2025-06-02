@@ -31,6 +31,8 @@
 #ifndef SBG_INTERVAL_HPP
 #define SBG_INTERVAL_HPP
 
+#include <optional>
+
 #include "sbg/natural.hpp"
 
 namespace SBG {

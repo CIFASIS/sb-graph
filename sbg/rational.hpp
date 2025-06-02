@@ -48,7 +48,7 @@ typedef boost::rational<INT> RatType;
 /**
  * @brief Used as coefficients and slopes in linear expressions.
  */
-struct RATIONAL{
+struct RATIONAL {
   member_class(RatType, value);
 
   /**

@@ -1,54 +1,39 @@
-# The Directories, Source, Includes, Objects, Binary 
-AST_DIR     := ast
+# Directories 
 EVAL_DIR    := eval
 VISIT_DIR   := $(EVAL_DIR)/visitors
-SBG_DIR     := sbg
-UTIL_DIR    := util
-PARSER_DIR  := parser
-EVAL        := bin/sbg-eval
 
-all: $(EVAL)
-
-EVAL_SRC := \
-	$(EVAL_DIR)/main.cpp \
-  $(VISIT_DIR)/program_visitor.cpp \
-  $(VISIT_DIR)/autom_impl_visitor.cpp \
-  $(VISIT_DIR)/stm_visitor.cpp \
-  $(VISIT_DIR)/eval_expr.cpp \
-  $(VISIT_DIR)/eval_le.cpp \
-  $(VISIT_DIR)/eval_rat.cpp \
-  $(VISIT_DIR)/eval_int.cpp \
-  $(VISIT_DIR)/eval_nat.cpp \
-  $(EVAL_DIR)/defs.cpp \
-  $(SBG_DIR)/sbg_algorithms.cpp \
-  $(SBG_DIR)/sbg.cpp \
-  $(SBG_DIR)/af_pwmap.cpp \
-  $(SBG_DIR)/pw_map.cpp \
-  $(SBG_DIR)/af_map.cpp \
-  $(SBG_DIR)/map.cpp \
-  $(SBG_DIR)/multidim_lexp.cpp \
-  $(SBG_DIR)/lexp.cpp \
-  $(SBG_DIR)/af_set.cpp \
-  $(SBG_DIR)/set.cpp \
-  $(SBG_DIR)/multidim_inter.cpp \
-  $(SBG_DIR)/interval.cpp \
-  $(SBG_DIR)/rational.cpp \
-  $(SBG_DIR)/natural.cpp \
-  $(PARSER_DIR)/sbg_program.cpp \
-  $(PARSER_DIR)/statement.cpp \
-  $(PARSER_DIR)/expr.cpp \
-  $(PARSER_DIR)/skipper.cpp \
-  $(AST_DIR)/sbg_program.cpp \
-  $(AST_DIR)/statement.cpp \
-  $(AST_DIR)/expr.cpp \
-  $(UTIL_DIR)/logger.cpp
-
+# Build folders
 create-folders::
 	@mkdir -p $(BUILD_DIR)/$(EVAL_DIR)
 	@mkdir -p $(BUILD_DIR)/$(EVAL_DIR)/visitors
 
+# Sources
+EVAL_SRC := \
+	$(VISIT_DIR)/program_visitor.cpp \
+	$(VISIT_DIR)/autom_impl_visitor.cpp \
+	$(VISIT_DIR)/stm_visitor.cpp \
+	$(VISIT_DIR)/eval_expr.cpp \
+	$(VISIT_DIR)/eval_le.cpp \
+	$(VISIT_DIR)/eval_rat.cpp \
+	$(VISIT_DIR)/eval_int.cpp \
+	$(VISIT_DIR)/eval_nat.cpp \
+	$(EVAL_DIR)/defs.cpp
+
 # Objects
 EVAL_OBJ=$(addprefix $(BUILD_DIR)/, $(EVAL_SRC:.cpp=.o))
 
-$(EVAL): $(EVAL_OBJ)
-	$(CXX) $(INCLUDES) -o $(EVAL) $(EVAL_OBJ) $(CXXFLAGS)
+# Compilation
+$(BUILD_DIR)/%.o: %.cpp | create-folders
+	$(CC) $(INCLUDES) $(CXXFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<
+	$(CC) $(INCLUDES) -c $< -o $@ $(CXXFLAGS)
+
+# Binary
+EVAL_BIN := $(BIN_DIR)/sbg-eval
+
+# Binary compilation
+EVAL_BIN_FLAGS := -Llib/ -lsbgraph
+
+$(EVAL_BIN): $(LIB_SBGRAPH)
+	$(CXX) $(CXXFLAGS) -o $(EVAL_BIN) $(INCLUDES) $(EVAL_DIR)/main.cpp $(EVAL_BIN_FLAGS)
+
+all: $(EVAL_BIN)

@@ -1,22 +1,30 @@
-# The Directories, Source, Includes, Objects, Binary 
+# Directories
 ALG_DIR := algorithms/partitioner
-SBG_PARTITIONER := bin/sbg-partitioner
-PARTITIONER_FLAGS := $(CXXFLAGS) -Llib/ -lsbgraph -lstdc++ -lm
 
-
-all: $(SBG_PARTITIONER)
+# Build folders
+create-folders::
+	@mkdir -p $(BUILD_DIR)/$(ALG_DIR)
 
 # Sources
 ALG_SRC := \
   $(ALG_DIR)/weighted_sb_graph.cpp \
   $(ALG_DIR)/build_sb_graph.cpp
 
-create-folders::
-	@mkdir -p $(BUILD_DIR)/$(ALG_DIR)
-
 # Objects
 ALG_OBJ=$(addprefix $(BUILD_DIR)/, $(ALG_SRC:.cpp=.o))
 
+# Compilation
+$(BUILD_DIR)/%.o: %.cpp | create-folders
+	$(CC) $(INCLUDES) $(CXXFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<
+	$(CC) $(INCLUDES) -c $< -o $@ $(CXXFLAGS)
 
-$(SBG_PARTITIONER): $(ALG_OBJ) $(LIB_SBGRAPH)
+# Binary
+SBG_PARTITIONER := bin/sbg-partitioner
+
+# Binary compilation
+PARTITIONER_FLAGS := $(CXXFLAGS) -Llib/ -lsbgraph -lstdc++ -lm
+
+$(SBG_PARTITIONER): $(LIB_SBGRAPH)
 	$(CXX) -o $(SBG_PARTITIONER) $(INCLUDES) $(ALG_DIR)/main.cpp $(PARTITIONER_FLAGS)
+
+all: $(SBG_PARTITIONER)

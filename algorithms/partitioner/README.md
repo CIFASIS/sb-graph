@@ -105,7 +105,7 @@ where each `node` object is a set of intervals, that represents a set of nodes f
 
 ## Test suites
 
-Test cases were implemented in [test/partitioner/](test/partitioner/) folder, which intends to test different modules of code (like the creationg of computational graphs, initial partitions, among others).
+Test cases were implemented in [test/partitioner/](/test/partitioner/) folder, which intends to test different modules of code (like the creationg of computational graphs, initial partitions, among others).
 
 To execute them you have to run `$make test`. You have to run `make` since the test suite uses `sb-graph` library
 

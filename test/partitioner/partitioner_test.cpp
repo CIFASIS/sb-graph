@@ -23,9 +23,11 @@
 #include <iostream>
 
 #include <algorithms/partitioner/build_sb_graph.hpp>
+#include <algorithms/partitioner/kernighan_lin_partitioner.hpp>
 #include <algorithms/partitioner/partition_graph.hpp>
 #include <sbg/af_map.hpp>
 #include <sbg/af_set.hpp>
+
 
 /// @file parser_test.cpp
 ///
@@ -157,4 +159,34 @@ TEST(initial_partition, PartitionerTests)
   Set partition_3 = sbg_partitioner::from_vector(partition.at(3), set_fact);
   EXPECT_EQ(expected_distributed_pre_order_3, partition_3);
 }
+
+
+static void test_partitioning(const std::string& filename, int number_of_partitions)
+{
+    UnordAF set_fact;
+    MapAF map_fact(set_fact);
+    UnordPWMapAF pw_fact(map_fact);
+
+    auto sb_graph = sbg_partitioner::build_sb_graph(filename, set_fact, map_fact, pw_fact);
+    auto partitions = sbg_partitioner::best_initial_partition(sb_graph, number_of_partitions, set_fact);
+    sbg_partitioner::kl_sbg_imbalance_partitioner(sb_graph, partitions, 0.0, set_fact, map_fact);
+
+    sbg_partitioner::sanity_check(sb_graph, partitions, number_of_partitions, set_fact);
+}
+
+
+TEST(partitioning, PartitionerTests)
+{
+    test_partitioning("data/advection.json", 2);
+    test_partitioning("data/advection.json", 4);
+    test_partitioning("data/advection.json", 8);
+
+    test_partitioning("data/air_conditioners_1000.json", 2);
+    test_partitioning("data/air_conditioners_1000.json", 4);
+    test_partitioning("data/air_conditioners_1000.json", 8);
+
+    test_partitioning("data/air_conditioners_cont_4_1000.json", 4);
+}
+
+
 /// @}

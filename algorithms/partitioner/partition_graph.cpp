@@ -133,9 +133,11 @@ vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, u
     partitions_sets.push_back(move(partition_set));
   }
 
-  for_each(partitions_sets.begin(), partitions_sets.end(), [&graph, number_of_partitions](PartitionMap& p) {
+  for_each(partitions_sets.begin(), partitions_sets.end(), [&graph, &set_fact, number_of_partitions](PartitionMap& p) {
     logging::sbg_log << p << endl;
-    sanity_check(graph, p, number_of_partitions);
+    if (sanity_check_enabled) {
+      sanity_check(graph, p, number_of_partitions, set_fact);
+    }
   });
 
   return partitions_sets;
@@ -179,28 +181,26 @@ Set get_connectivity_set(SBG::LIB::SBG& graph, const PartitionMap& partitions, s
 }
 
 
-void sanity_check(const WeightedSBGraph& graph, PartitionMap& partitions_set, unsigned number_of_partitions)
+void sanity_check(const WeightedSBGraph& graph, PartitionMap& partitions_set, unsigned number_of_partitions, SetAF& set_fact)
 {
-#ifdef PARTITION_SANITY_CHECK
   // This is just a sanity check
-  OrdSet nodes_to_check;
+  Set nodes_to_check = set_fact.createSet();
   for (unsigned i = 0; i < number_of_partitions; i++) {
-    nodes_to_check = cup(nodes_to_check, partitions_set[i]);
+    nodes_to_check = nodes_to_check.cup(from_vector(partitions_set[i], set_fact));
   }
-  OrdSet diff_1 = difference(graph.V(), nodes_to_check);
-  OrdSet diff_2 = difference(nodes_to_check, graph.V());
-  assert(get_node_size(diff_1, graph.get_node_weights()) == 0 and "The intial partition has less elements than the graph");
-  assert(get_node_size(diff_2, graph.get_node_weights()) == 0 and "The intial partition has more elements than the graph");
+
+  Set diff = nodes_to_check.difference(graph.V());
+  assert(get_node_size(diff, graph.get_node_weights(), set_fact) == 0 and "The intial partition has less elements than the graph");
+
   for (unsigned i = 0; i < number_of_partitions; i++) {
     for (unsigned j = i + 1; j < number_of_partitions; j++) {
-      auto p_1 = partitions_set[i];
-      auto p_2 = partitions_set[j];
+      auto p_1 = from_vector(partitions_set[i], set_fact);
+      auto p_2 = from_vector(partitions_set[j], set_fact);
       stringstream error_msg;
       error_msg << "Intersection between " << i << " and " << j << " is not empty." << endl;
-      assert(intersection(p_1, p_2).pieces().empty() and error_msg.str().c_str());
+      assert(p_1.intersection(p_2).isEmpty() and error_msg.str().c_str());
     }
   }
-#endif  // PARTITION_SANITY_CHECK
 }
 
 string get_output(const PartitionMap& partition_map)

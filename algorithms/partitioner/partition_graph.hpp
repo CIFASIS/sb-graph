@@ -30,6 +30,8 @@
 
 namespace sbg_partitioner {
 
+constexpr bool sanity_check_enabled = false;
+
 typedef std::vector<SBG::LIB::SetPiece> Partition;
 
 typedef std::vector<Partition> PartitionMap;
@@ -86,7 +88,7 @@ void sort_partition_intervals(Partition& p);
 std::string get_output(const PartitionMap& partition_map);
 
 
-void sanity_check(const SBG::LIB::WeightedSBGraph& graph, PartitionMap& partitions_set, unsigned number_of_partitions);
+void sanity_check(const SBG::LIB::WeightedSBGraph& graph, PartitionMap& partitions_set, unsigned number_of_partitions, SBG::LIB::SetAF& set_fact);
 
 
 std::ostream& operator<<(std::ostream& os, const Partition& partitions);

@@ -246,7 +246,9 @@ int main(int argc, char** argv)
     cout << "time_to_build_graph = " << time_to_build_graph << " ms" << endl;
     cout << "time_to_partitionate = " << time_to_partitionate << " ms" << endl;
 
-    sanity_check(sb_graph, partitions, *number_of_partitions);
+    if (sanity_check_enabled) {
+        sanity_check(sb_graph, partitions, *number_of_partitions, set_fact);
+    }
 
     if (s){
         s = get_pretty_sb_graph(sb_graph);

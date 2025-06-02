@@ -2,22 +2,7 @@
 
 The goal of this sub-project is to implement a load balancing algorithm to simulate discrete event systems in parallel using set based graphs.
 
-
-## How to compile
-
-`$ make all` or just `$make` compiles this collection of files, adding the implementation to the `sb-graph`. Also it outputs the `sbg-partitioner` binary. To run, it takes these arguments:
-
-* `-f` path to the input file, a json file that represents the model we want to partitionate.
-* `-p` number of partitions.
-* `-g` [optional argument] output file path.
-* `-o` [optional argument] output the sb graph.
-* `-e` [optional argument] imbalance epsilon, a value between 0 and 1.
-
-You can run `make MODE=Debug` to display debug messages. They will be useful to
-understand how the graph is initially partitioned, and then how those partiions
-are improved.
-
-## How to run
+## How to run it
 
 The input file must be a json file with the following format:
 

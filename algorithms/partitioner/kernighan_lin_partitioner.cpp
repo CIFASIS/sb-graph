@@ -80,8 +80,12 @@ struct kl_sbg_partitioner_result
     Partition B;
 };
 
+// This seems to be a bit odd to me, but if this function is not declared as well (even when)
+// it is declared in `partition_graph.hpp`, this file does not compile.
+ostream& operator<<(std::ostream& os, const Partition& partitions);
 
-[[maybe_unused]]ostream& operator<<(ostream& os, const kl_sbg_partitioner_result& result)
+
+ostream& operator<<(ostream& os, const kl_sbg_partitioner_result& result)
 {
     os << "{ partition results: "
        << result.i
@@ -90,9 +94,9 @@ struct kl_sbg_partitioner_result
        << ", "
        << result.gain
        << ", A: "
-    //    << result.A
+       << result.A
        << ", B: "
-    //    << result.B
+       << result.B
        << "}";
 
     return os;
@@ -115,9 +119,9 @@ using GainObjectImbalanceComparator = GainObjectComparatorTemplate<GainObjectImb
 using CostMatrixImbalance = std::set<GainObjectImbalance, GainObjectImbalanceComparator>;
 
 
-[[maybe_unused]]ostream& operator<<(ostream& os, const KLBipartResult& result)
+ostream& operator<<(ostream& os, const KLBipartResult& result)
 {
-    // os << "{ gain: " << result.gain << ", A: " << result.A << ", B: " << result.B << "}";
+    os << "{ gain: " << result.gain << ", A: " << result.A << ", B: " << result.B << "}";
 
     return os;
 }
@@ -283,8 +287,6 @@ GainObjectImbalance get_gain(
     Set ec_nodes_b = set_fact.createSet(), ic_nodes_b = set_fact.createSet();
     ec_nodes_b = ec_nodes_b_1.cup(ec_nodes_b_2);
     ic_nodes_b = ic_nodes_b_1.cup(ic_nodes_b_2);
-
-    // logging::sbg_log << "Node: " << idx_b << ", " << nodes_b << " ec: " << ec_nodes_b << " and ic: " << ic_nodes_b << endl;
 
     size_t ec_b = get_edge_set_cost(ec_nodes_b, graph.get_edge_costs());
     size_t ic_b = get_edge_set_cost(ic_nodes_b, graph.get_edge_costs());
@@ -566,8 +568,7 @@ void update_diff(
 
 
 // auto return type we’ll let the compiler deduce what the return type should be from the return statement
-template<typename M>
-auto max_diff(M& cost_matrix)
+auto max_diff(CostMatrixImbalance& cost_matrix)
 {
     // cost_matrix is sort by gain, so the first is the maximum gain
     auto g = cost_matrix.begin();
@@ -981,64 +982,6 @@ void kl_sbg_imbalance_partitioner(
             break;
         }
     }
-
-    // for (size_t i = 0; i < partitions.size(); i++) {
-    //     SBG_LOG << i << ": " << partitions.at(i) << endl;
-    // }
 }
-
-
-// std::string partitionate_nodes(
-//     const std::string& filename,
-//     const unsigned number_of_partitions,
-//     const float epsilon,
-//     std::optional<std::string>& graph_str)
-// {
-//     long double time_to_build_graph;
-//     long double time_to_partitionate;
-//     return partitionate_nodes(filename, number_of_partitions, epsilon, graph_str, time_to_build_graph, time_to_partitionate);
-// }
-
-string partitionate_nodes(
-    const std::string& filename,
-    const unsigned number_of_partitions,
-    const float epsilon,
-    optional<string>& graph_str)
-{
-    SBG::LIB::UnordAF set_fact;
-    SBG::LIB::MapAF map_fact(set_fact);
-    SBG::LIB::UnordPWMapAF pw_fact(map_fact);
-    // auto start_build_graph = chrono::high_resolution_clock::now();
-    auto sb_graph = build_sb_graph(filename.c_str(), set_fact, map_fact, pw_fact);
-    // auto end_build_graph = chrono::high_resolution_clock::now();
-    // time_to_build_graph = chrono::duration<double, std::milli>(end_build_graph - start_build_graph).count();
-
-    logging::sbg_log << sb_graph << endl;
-    logging::sbg_log << "sb graph created!" << endl;
-
-    // auto start_partitionate = chrono::high_resolution_clock::now();
-
-    auto partitions = best_initial_partition(sb_graph, number_of_partitions, set_fact);
-
-    kl_sbg_imbalance_partitioner(sb_graph, partitions, epsilon, set_fact, map_fact);
-
-    // auto end_partitionate = chrono::high_resolution_clock::now();
-    // time_to_partitionate = chrono::duration<double, std::milli>(end_partitionate - start_partitionate).count();
-
-    sanity_check(sb_graph, partitions, number_of_partitions);
-
-    if (graph_str){
-        graph_str = get_pretty_sb_graph(sb_graph);
-    }
-
-    string output = get_output(partitions);
-
-    for (auto& p : partitions) {
-        sort_partition_intervals(p);
-    }
-
-    return output;
-}
-
 
 }

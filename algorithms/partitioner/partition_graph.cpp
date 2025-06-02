@@ -53,16 +53,16 @@ Set get_communication_edges(Set partition, const PWMap& map_1, const PWMap& map_
   return comm_edges;
 }
 
+
 [[maybe_unused]] size_t get_partition_communication(WeightedSBGraph& graph, const PartitionMap& partitions, SetAF& set_fact)
 {
   Set s = set_fact.createSet();
   for (size_t i = 0; i < partitions.size(); i++) {
     auto ss = get_connectivity_set(graph, partitions, i, set_fact);
     s = ss.cup(s);
-    // logging::sbg_log << "current connectivity set " << s << ", cardinality " << get_OrdSet_size(s) << ", partition " << i << endl;
   }
 
-  size_t size = get_OrdSet_size(s);
+  size_t size = get_set_size(s);
 
   return size;
 }
@@ -178,18 +178,6 @@ Set get_connectivity_set(SBG::LIB::SBG& graph, const PartitionMap& partitions, s
     return comm_edges;
 }
 
-size_t get_OrdSet_size(const Set& set)
-{
-  size_t acc = 0;
-  for (auto it = set.begin(); it != set.end(); ++it) {
-    const auto& set_piece = *it;
-    for (auto& interval : set_piece.intervals()) {
-      acc += (interval.end() - interval.begin() + 1);
-    }
-  }
-
-  return acc;
-}
 
 void sanity_check(const WeightedSBGraph& graph, PartitionMap& partitions_set, unsigned number_of_partitions)
 {

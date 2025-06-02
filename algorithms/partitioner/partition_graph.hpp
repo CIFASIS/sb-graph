@@ -19,8 +19,8 @@
 
 #pragma once
 
-#include <map>
 #include <unordered_set>
+#include <vector>
 
 #include <sbg/interval.hpp>
 #include <sbg/sbg.hpp>
@@ -81,10 +81,6 @@ SBG::LIB::Set get_connectivity_set(
 
 
 void sort_partition_intervals(Partition& p);
-
-
-/// This function returns the cardinality of a OrdSet.
-size_t get_OrdSet_size(const SBG::LIB::Set& set);
 
 
 std::string get_output(const PartitionMap& partition_map);

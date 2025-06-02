@@ -111,19 +111,6 @@ struct Node {
   return os;
 }
 
-[[maybe_unused]] size_t get_set_size(const Set& set)
-{
-  size_t size = 0;
-
-  for (auto s : set) {
-    for (size_t i = 0; i < s.arity(); i++) {
-      auto sp = s[i];
-      size += sp.end() - sp.begin() + 1;
-    }
-  }
-
-  return size;
-}
 
 /// This funcion takes a json array and returns a list of parsed variable objects (Var)
 vector<Var> read_var_object(const rapidjson::Value& var_array)
@@ -612,6 +599,22 @@ pair<SetPiece, SetPiece> cut_interval(const SetPiece& interval, int cut_value)
 
 }  // namespace
 
+
+size_t get_set_size(const Set& set)
+{
+  size_t size = 0;
+
+  for (auto s : set) {
+    for (size_t i = 0; i < s.arity(); i++) {
+      auto sp = s[i];
+      size += sp.end() - sp.begin() + 1;
+    }
+  }
+
+  return size;
+}
+
+
 SBG::LIB::WeightedSBGraph build_sb_graph(const string& filename,  // create needed factories
                                          SBG::LIB::SetAF& set_fact, SBG::LIB::MapAF& map_fact, SBG::LIB::PWMapAF& pw_fact)
 {
@@ -711,7 +714,7 @@ pair<Set, Set> cut_interval_by_dimension(Set& set_piece, const NodeWeight& node_
     return make_pair(set_fact.createSet(), set_piece);
   }
 
-  size_t actual_size = size / 1;  // unsigned(get_set_cost(*set_piece.begin(), node_weight));
+  size_t actual_size = size / unsigned(get_set_cost(*set_piece.begin(), node_weight, set_fact));
 
   SetPiece p_1, p_2;
   auto i1 = *set_piece.begin();
@@ -721,7 +724,7 @@ pair<Set, Set> cut_interval_by_dimension(Set& set_piece, const NodeWeight& node_
 
 unsigned get_node_size(const SetPiece& node, const NodeWeight& node_weight, SetAF& set_fact)
 {
-  int weight = 1;  // currently, all nodes have weight 1
+  int weight = get_set_cost(node, node_weight, set_fact);
 
   unsigned acc = node.intervals().front().end() - node.intervals().front().begin() + 1;
 
@@ -765,7 +768,8 @@ unsigned get_edge_set_cost(const SBG::LIB::SetPiece& node, const EdgeCost& edge_
     return 0;
   }
 
-  int weight = 1;  // currently, all edges have cost 1
+  UnordAF set_fact;
+  int weight = get_set_cost(node, edge_cost, set_fact);  // currently, all edges have cost 1
 
   unsigned acc = node.intervals().front().end() - node.intervals().front().begin() + 1;
 
@@ -842,18 +846,6 @@ void flatten_set(Set& set, const WeightedSBGraph& graph, SetAF& set_fact)
 
 }
 
-int get_set_cost(const SetPiece& set, const NodeWeight& costs, SetAF& set_af)
-{
-  int weight = 1;
-  SBG::LIB::Set ordset = set_af.createSet(set);
-  for (const auto& [cost_set, w] : costs) {
-    if (ordset.intersection(cost_set).size() > 0) {
-      weight = costs.at(cost_set);
-    }
-  }
-
-  return weight;
-}
 
 SBG::LIB::WeightedSBGraph create_air_conditioners_graph()
 {

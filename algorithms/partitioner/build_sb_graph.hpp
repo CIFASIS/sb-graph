@@ -82,7 +82,22 @@ SBG::LIB::WeightedSBGraph create_air_conditioners_graph();
 /// @param set input set we want to know the cost or weight/
 /// @param costs hashtable with set/costs.
 /// @return the cost of set.
-int get_set_cost(const SBG::LIB::SetPiece& set, const SBG::LIB::NodeWeight& costs, SBG::LIB::SetAF& set_af);
+template<typename T>
+int get_set_cost(const SBG::LIB::SetPiece& set_piece, const T& costs, SBG::LIB::SetAF& set_fact)
+{
+  int weight = 1;
+  auto set = set_fact.createSet(set_piece);
+  for (const auto& [cost_set, w] : costs) {
+    if (set.intersection(cost_set).size() > 0) {
+      weight = costs.at(cost_set);
+    }
+  }
+
+  return weight;
+}
+
+
+size_t get_set_size(const SBG::LIB::Set& set);
 
 
 std::pair<SBG::LIB::Set, SBG::LIB::Set> cut_interval_by_dimension(SBG::LIB::Set& set_piece, const SBG::LIB::NodeWeight& node_weight, std::size_t size, SBG::LIB::SetAF& set_fact);

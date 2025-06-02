@@ -96,40 +96,6 @@ int communication_volume_one_dim(const PartitionMap& partitions, const SetPiece&
 }
 
 
-// int communication_volume_two_dim(const PartitionMap& partitions, const SetPiece& v, const WeightedSBGraph& sb_graph, unsigned i)
-// {
-//     int acc = 0;
-//     for (unsigned v_0 = v.intervals()[0].begin(); v_0 <= v.intervals()[0].end(); v_0 += v.intervals()[0].step()) {
-//         int local_total_vol = 0;
-//         Interval interval_0 = Interval(v_0, v.intervals()[0].step(), v_0);
-//         for (unsigned v_1 = v.intervals()[1].begin(); v_1 <= v.intervals()[1].end(); v_1 += v.intervals()[1].step()) {
-//             Interval interval_1 = Interval(v_1, v.intervals()[1].step(), v_1);
-
-//             SetPiece set_piece;
-//             set_piece.emplaceBack(interval_0);
-//             set_piece.emplaceBack(interval_1);
-
-//             const OrdSet adjacents = get_adjacents(sb_graph, set_piece);
-
-//             for (unsigned j = 0; j < partitions.size(); j++) {
-//                 if (i == j) {
-//                     continue;
-//                 }
-
-//                 const auto& p_set = partitions.at(j);
-//                 if (not isEmpty(intersection(adjacents, p_set))) {
-//                     local_total_vol += 1;
-//                 }
-//             }
-
-//             acc += local_total_vol;
-//         }
-//     }
-
-//     return acc;
-// }
-
-
 void write_node_by_partition(const PartitionMap& partitions, const WeightedSBGraph& sb_graph, SetAF& set_fact)
 {
     Partition nodes;

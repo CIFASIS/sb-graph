@@ -24,14 +24,6 @@
 
 namespace sbg_partitioner {
 
-
-std::string partitionate_nodes(
-    const std::string& filename,
-    const unsigned number_of_partitions,
-    const float epsilon,
-    std::optional<std::string>& graph_str);
-
-
 void kl_sbg_imbalance_partitioner(
     const SBG::LIB::WeightedSBGraph& graph,
     PartitionMap& partitions,
@@ -41,20 +33,5 @@ void kl_sbg_imbalance_partitioner(
 
 
 std::string get_pretty_sb_graph(const SBG::LIB::SBG& g);
-
-
-// std::string partitionate_nodes(
-//     const std::string& filename,
-//     const unsigned number_of_partitions,
-//     const float epsilon,
-//     std::optional<std::string>& graph_str,
-//     long double& time_to_build_graph,
-//     long double& time_to_partitionate);
-
-
-// std::pair<WeightedSBGraph, PartitionMap> partitionate_nodes_for_metrics(
-//     const std::string& filename,
-//     const unsigned number_of_partitions,
-//     const float epsilon);
 
 }

@@ -51,6 +51,8 @@ struct Map {
   public:
   member_class(Set, dom);
   member_class(Exp, exp);
+  member_class(MD_NAT, minPer);
+  member_class(MD_NAT, maxPer);
 
   ~Map();
 
@@ -86,7 +88,10 @@ struct Map {
   bool operator!=(const Map &other) const;
   Map &operator=(const Map &other);
   bool operator<(const Map &other) const;
-
+  /*
+  MD_NAT minPerimeter() const;
+  MD_NAT maxPerimeter() const;
+  */
   /**
    * @brief Calculates the sum of both maps for elements that belong to both
    * domains.

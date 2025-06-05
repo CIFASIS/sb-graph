@@ -31,7 +31,10 @@
 #define SBG_PWMAP_HPP
 
 #include "sbg/af_map.hpp"
+#include <exception>
 #include <chrono>
+#include <forward_list>
+#include <boost/container/flat_set.hpp>
 
 namespace SBG {
 
@@ -434,7 +437,7 @@ struct OrdPWMap : public PWMapDelegate {
   
   private:
   
-  void isOrdered() const;
+  bool isOrdered() const;
   
 
   unsigned int emplaceHint(const Map &m,unsigned int hint);
@@ -481,7 +484,8 @@ struct OrdPWMap : public PWMapDelegate {
     const PWMapDelegate &other,
     Set &set,
     PWMapDelegate &ordmap,
-    ProcessFunc process
+    ProcessFunc process,
+    bool orderMts
   ) const;
 };
 
@@ -489,6 +493,156 @@ struct OrdPWMap : public PWMapDelegate {
 typedef const OrdPWMap &OrdPWMapCRef;
 typedef OrdPWMap &OrdPWMapRef;
 typedef std::unique_ptr<OrdPWMap> OrdPWMapPtr;
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Hybrid PWMap Implementation (concrete delegate) ----------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+typedef boost::container::flat_set<Map> MapCollection;
+//typedef std::vector<Map> MapCollection;
+
+struct HybridPWMap : public PWMapDelegate {
+
+  member_class(MapCollection, pieces);
+
+  ~HybridPWMap() = default;
+  HybridPWMap(const MapAF &fact);
+  HybridPWMap(const MapAF &fact, const Set &s);
+  HybridPWMap(const MapAF &fact, const Map &m);
+  HybridPWMap(const MapAF &fact, const MapCollection &pieces);
+  HybridPWMap(const HybridPWMap &pw);
+
+  PWMapDelegPtr clone() const override;
+
+  struct Iterator : public PWMapDelegate::Iterator {
+    member_class(MapCollection::const_iterator, it);
+
+    Iterator(MapCollection::const_iterator it);
+    void operator++() override;
+    bool operator!=(const PWMapDelegate::Iterator &other) const override;
+    const Map &operator*() const override;
+  };
+
+  std::shared_ptr<PWMapDelegate::Iterator> begin() const override;
+  std::shared_ptr<PWMapDelegate::Iterator> end() const override;
+
+  void emplaceBack(const Map &m) override;
+
+  bool operator==(const PWMapDelegate &other) const override;
+  bool operator!=(const PWMapDelegate &other) const override;
+  HybridPWMap &operator=(HybridPWMap &&other);
+  std::ostream &print(std::ostream &out) const override;
+
+  PWMapDelegPtr operator+(const PWMapDelegate &other) const override;
+  PWMapDelegPtr operator-(const PWMapDelegate &other) const override;
+
+  // Traditional map operations ------------------------------------------------
+
+  std::size_t arity() const override;
+  bool isEmpty() const override;
+  Set dom() const override;
+  PWMapDelegPtr restrict(const Set &subdom) const override;
+  Set image() const override;
+  Set image(const Set &subdom) const override;
+  Set preImage(const Set &subcodom) const override;
+  PWMapDelegPtr inverse() const override;
+  PWMapDelegPtr composition(const PWMapDelegate &pw2) const override;
+
+  PWMapDelegPtr mapInf(unsigned int n) const override;
+  PWMapDelegPtr mapInf() const override;
+
+  // Extra operations ----------------------------------------------------------
+
+  PWMapDelegPtr concatenation(const PWMapDelegate &other) const override;
+  PWMapDelegPtr combine(const PWMapDelegate &other) const override;
+  PWMapDelegPtr reduce(const Interval &i, const LExp &e) const override;
+  PWMapDelegPtr reduce(const Map &sbgmap) const override;
+  PWMapDelegPtr reduce() const override;
+
+  PWMapDelegPtr minMap(const PWMapDelegate &other) const override;
+  PWMapDelegPtr minAdjMap(const PWMapDelegate &other) const override;
+
+  PWMapDelegPtr firstInv(const Set &subdom) const override;
+  PWMapDelegPtr firstInv() const override;
+
+  PWMapDelegPtr filterMap(bool (*f)(const Map &)) const override;
+
+  Set equalImage(const PWMapDelegate &other) const override;
+  Set sharedImage() const override;
+
+  PWMapDelegPtr offsetDom(const MD_NAT &off) const override;
+  PWMapDelegPtr offsetDom(const PWMapDelegate &off) const override;
+  PWMapDelegPtr offsetImage(const MD_NAT &off) const override;
+  PWMapDelegPtr offsetImage(const Exp &off) const override;
+
+  PWMapDelegPtr compact() const override;
+  
+  private:
+  
+  //bool isOrdered() const;
+  
+
+  unsigned int emplaceHint(const Map &m,unsigned int hint);
+  unsigned int advanceHint(const MD_NAT crit,unsigned int hint);
+  
+  
+  void processComp(
+  const Map &m1, 
+  const Map &m2, 
+  Set &set, 
+  PWMapDelegate  &ordpwmap,
+  unsigned int*posGlobal) const;
+  
+  void processMinAdjMap(
+  const Map &m1, 
+  const Map &m2, 
+  Set &set, 
+  PWMapDelegate  &ordpwmap,
+  unsigned int*posGlobal) const;
+  
+  
+  void processMinus(
+  const Map &m1, 
+  const Map &m2, 
+  Set &set, 
+  PWMapDelegate  &ordpwmap,
+  unsigned int*posGlobal) const; 
+  
+  
+  void processAdd(
+  const Map &m1, 
+  const Map &m2, 
+  Set &set, 
+  PWMapDelegate  &ordpwmap,
+  unsigned int*posGlobal) const; 
+  
+  
+  void processEqualImage(
+  const Map &m1, 
+  const Map &m2, 
+  Set &set, 
+  PWMapDelegate &ordpwmap,
+  unsigned int*posGlobal) const; 
+  
+  using ProcessFunc = void (HybridPWMap::*)(
+  const Map &, const Map &, 
+  Set &, PWMapDelegate &, 
+  unsigned int*
+  ) const;
+  
+  void processMapsOrd(
+    const PWMapDelegate &other,
+    Set &set,
+    PWMapDelegate &ordmap,
+    ProcessFunc process
+  ) const;
+};
+
+
+typedef const HybridPWMap &HybridPWMapCRef;
+typedef HybridPWMap &HybridPWMapRef;
+typedef std::unique_ptr<HybridPWMap> HybridPWMapPtr;
 
 ////////////////////////////////////////////////////////////////////////////////
 // PWMap Implementation (delegator) --------------------------------------------

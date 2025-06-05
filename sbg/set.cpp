@@ -1133,7 +1133,7 @@ SetDelegPtr OrderedSet::intersectionComp(const SetDelegate &other, const SetPiec
 
   unsigned int pos = 0;
   auto itn = pieces_.begin();
-  while (itn != pieces_.end() && itn->maxElem()[0] < mdi.minElem()[0]) {
+  while (itn != pieces_.end() && itn->maxElem().menorThan(mdi.minElem())) {
       remnant.emplaceBack(*itn);
       ++pos;
       ++itn;

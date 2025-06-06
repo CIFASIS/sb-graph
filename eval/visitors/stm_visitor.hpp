@@ -27,7 +27,7 @@
 #define AST_VISITOR_STATEMENT 
 
 #include "ast/statement.hpp"
-#include "eval/visitors/eval_expr.hpp"
+#include "eval/defs.hpp"
 
 namespace SBG {
 

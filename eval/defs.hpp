@@ -30,15 +30,7 @@
 #include <variant>
 
 #include "ast/expr.hpp"
-#include "ast/statement.hpp"
-#include "sbg/af_pwmap.hpp"
-#include "algorithms/cc/cc.hpp"
 #include "algorithms/matching/matching.hpp"
-#include "algorithms/scc/scc.hpp"
-#include "algorithms/cutvertex/cut_vertex.hpp"
-#include "algorithms/toposort/topo_sort.hpp"
-#include "algorithms/misc/causalization_builders.hpp"
-#include "algorithms/misc/causalization_json.hpp"
 
 namespace SBG {
 

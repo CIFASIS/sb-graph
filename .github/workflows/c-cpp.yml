@@ -27,7 +27,7 @@ jobs:
       run: |
         autoconf
         ./configure 
-        make MODE=Release
+        make compile MODE=Release
 
     - name: Tests
       working-directory: ./

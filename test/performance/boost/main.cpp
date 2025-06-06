@@ -35,9 +35,12 @@
 #include <boost/graph/topological_sort.hpp>
 #include <gtest/gtest.h>
 
-#include <eval/visitors/program_visitor.hpp>
-#include <parser/sbg_program.hpp>
-#include <test/performance/boost/ordinary_graph_builder.hpp>
+#include "algorithms/misc/causalization_builders.hpp"
+#include "algorithms/scc/scc.hpp"
+#include "algorithms/toposort/topo_sort.hpp"
+#include "eval/visitors/program_visitor.hpp"
+#include "parser/sbg_program.hpp"
+#include "test/performance/boost/ordinary_graph_builder.hpp"
 
 template<class... Ts> struct Overload : Ts... { using Ts::operator()...; };
 template<class... Ts> Overload(Ts...) -> Overload<Ts...>;

@@ -24,8 +24,7 @@
 #ifndef AST_VISITOR_EVALLE
 #define AST_VISITOR_EVALLE
 
-#include "eval/visitors/eval_nat.hpp"
-#include "eval/visitors/eval_rat.hpp"
+#include "eval/defs.hpp"
 #include "sbg/lexp.hpp"
 
 namespace SBG {

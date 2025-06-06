@@ -24,8 +24,8 @@
 #ifndef AST_VISITOR_EVALRAT
 #define AST_VISITOR_EVALRAT
 
-#include "eval/defs.hpp"
 #include "eval/visitors/eval_int.hpp"
+#include "sbg/rational.hpp"
 
 namespace SBG {
 

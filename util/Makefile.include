@@ -1,17 +1,12 @@
 # Directories
 UTIL_DIR := util
 
-# Build folders
-create-folders::
-	@mkdir -p $(BUILD_DIR)/$(UTIL_DIR)
-
 # Sources
 UTIL_SRC := $(UTIL_DIR)/logger.cpp
 
 # Objects
 UTIL_OBJ := $(addprefix $(BUILD_DIR)/, $(UTIL_SRC:.cpp=.o))
 
-# Compilation
-$(BUILD_DIR)/%.o : %.cpp | create-folders
-	$(CC) $(INCLUDES) $(CXXFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<
-	$(CC) $(INCLUDES) -c $< -o $@ $(CXXFLAGS)
+# Build folders
+create-folders::
+	@mkdir -p $(BUILD_DIR)/$(UTIL_DIR)

@@ -1,11 +1,7 @@
 # Directories 
-EVAL_DIR    := eval
-VISIT_DIR   := $(EVAL_DIR)/visitors
-
-# Build folders
-create-folders::
-	@mkdir -p $(BUILD_DIR)/$(EVAL_DIR)
-	@mkdir -p $(BUILD_DIR)/$(EVAL_DIR)/visitors
+EVAL_DIR     := eval
+VISIT_DIR    := $(EVAL_DIR)/visitors
+MISC_OBJ_DIR := $(BUILD_DIR)/algorithms/misc
 
 # Sources
 EVAL_SRC := \
@@ -20,20 +16,23 @@ EVAL_SRC := \
 	$(EVAL_DIR)/defs.cpp
 
 # Objects
-EVAL_OBJ=$(addprefix $(BUILD_DIR)/, $(EVAL_SRC:.cpp=.o))
-
-# Compilation
-$(BUILD_DIR)/%.o: %.cpp | create-folders
-	$(CC) $(INCLUDES) $(CXXFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<
-	$(CC) $(INCLUDES) -c $< -o $@ $(CXXFLAGS)
+EVAL_OBJ = $(addprefix $(BUILD_DIR)/, $(EVAL_SRC:.cpp=.o))
 
 # Binary
 EVAL_BIN := $(BIN_DIR)/sbg-eval
 
+EVAL_BIN_OBJ := $(MISC_OBJ_DIR)/causalization_builders.o \
+  $(MISC_OBJ_DIR)/causalization_json.o
+
 # Binary compilation
 EVAL_BIN_FLAGS := -Llib/ -lsbgraph
 
-$(EVAL_BIN): $(LIB_SBGRAPH)
-	$(CXX) $(CXXFLAGS) -o $(EVAL_BIN) $(INCLUDES) $(EVAL_DIR)/main.cpp $(EVAL_BIN_FLAGS)
+# Build folders
+create-folders::
+	@mkdir -p $(BUILD_DIR)/$(EVAL_DIR)
+	@mkdir -p $(BUILD_DIR)/$(EVAL_DIR)/visitors
 
-all: $(EVAL_BIN)
+# Binary compilation
+$(EVAL_BIN): $(LIB_SBGRAPH) $(MISC_OBJ)
+	$(CXX) $(CXXFLAGS) $(EVAL_BIN_OBJ) -o $(EVAL_BIN) $(INCLUDES) \
+  $(EVAL_DIR)/main.cpp $(EVAL_BIN_FLAGS)

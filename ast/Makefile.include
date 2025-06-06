@@ -1,10 +1,6 @@
 # Directories
 AST_DIR := ast
 
-# Build folders
-create-folders::
-	@mkdir -p $(BUILD_DIR)/$(AST_DIR)
-
 # Sources
 AST_SRC := $(AST_DIR)/sbg_program.cpp \
 	$(AST_DIR)/statement.cpp \
@@ -13,7 +9,6 @@ AST_SRC := $(AST_DIR)/sbg_program.cpp \
 # Objects
 AST_OBJ := $(addprefix $(BUILD_DIR)/, $(AST_SRC:.cpp=.o))
 
-# Compilation
-$(BUILD_DIR)/%.o : %.cpp | create-folders
-	$(CC) $(INCLUDES) $(CXXFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<
-	$(CC) $(INCLUDES) -c $< -o $@ $(CXXFLAGS)
+# Build folders
+create-folders::
+	@mkdir -p $(BUILD_DIR)/$(AST_DIR)

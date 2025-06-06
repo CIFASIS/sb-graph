@@ -1,6 +1,6 @@
-/** @file sbg_algorithms.hpp
+/** @file matching.hpp
 
- @brief <b>SBG algorithms implementation</b>
+ @brief <b>Matching SBG implementation</b>
 
  <hr>
 
@@ -21,26 +21,14 @@
 
  ******************************************************************************/
 
-#ifndef SBG_SBGALGO_HPP
-#define SBG_SBGALGO_HPP
+#ifndef SBG_MATCH_HPP
+#define SBG_MATCH_HPP
 
-#include <chrono>
-
-#include "rapidjson/document.h"
-#include "rapidjson/filewritestream.h"
-#include "rapidjson/prettywriter.h"
 #include "sbg/sbg.hpp"
-#include "util/logger.hpp"
 
 namespace SBG {
 
 namespace LIB {
-
-////////////////////////////////////////////////////////////////////////////////
-// Connected components --------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-PWMap connectedComponents(SBG g);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Matching --------------------------------------------------------------------
@@ -56,7 +44,7 @@ struct MatchInfo {
 };
 std::ostream &operator<<(std::ostream &out, const MatchInfo &m_info);
 
-struct SBGMatching {
+struct BFSMatching {
   private:
   const PWMapAF &fact_;
 
@@ -100,7 +88,7 @@ struct SBGMatching {
   member_class(bool, debug);
 
   public:
-  SBGMatching(const SBG &sbg, bool debug);
+  BFSMatching(const SBG &sbg, bool debug);
 
   MatchInfo calculate();
 
@@ -127,113 +115,8 @@ struct SBGMatching {
   void updateOffset();
 };
 
-////////////////////////////////////////////////////////////////////////////////
-// SCC -------------------------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-struct SBGSCC {
-  private:
-  const PWMapAF &fact_;
-
-  //*** SBG info, constant
-  member_class(DSBG, dsbg);
-
-  member_class(Set, V);
-  member_class(PWMap, Vmap);
-
-  member_class(PWMap, Emap);
-  member_class(PWMap, subEmap);
-
-  //-----------------------------
-  member_class(Set, E); // Edges in the same SCC in each step
-  member_class(Set, Ediff); // Edges between different SCC in each step
-
-  member_class(PWMap, mapB);
-  member_class(PWMap, mapD);
- 
-  member_class(PWMap, rmap);
-
-  member_class(bool, debug);
-
-  public:
-  SBGSCC(const DSBG &dsbg, bool debug);
-
-  PWMap calculate();
-
-  const PWMapAF &fact() const;
-
-  private:
-  PWMap sccMinReach(const DSBG &dg) const;
-  PWMap sccStep();
-};
-
-////////////////////////////////////////////////////////////////////////////////
-// Topological sort ------------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-struct SBGTopSort {
-  private:
-  const PWMapAF &fact_;
-
-  //*** SBG info, constant
-  member_class(DSBG, dsbg);
-
-  //-----------------------------
-  member_class(bool, debug);
-
-  public:
-  SBGTopSort(const DSBG &dsbg, bool debug);
-
-  PWMap calculate(); 
-
-  const PWMapAF &fact() const;
-
-  private:
-  Exp calculateExp(const MD_NAT &from, const MD_NAT &to);
-};
-
-///////////////////////////////////////////////////////////////////////////////
-// Cut-set algorithm ----------------------------------------------------------
-///////////////////////////////////////////////////////////////////////////////
-
-/**
-* @brief Aims to calculate a minimum cut-set of vertices, that is, a set of
-* vertices such that if these vertices are taken out, the resulting graph has no
-* SCC left. Since this is a NP-hard problem, heuristics are used, and thus is
-* not guaranteed that the set is actually minimum.
-*/
-
-struct SBGCutSet {
-  private:
-  const PWMapAF &fact_;
-
-  //*** SBG info, constant
-  member_class(DSBG, dsbg);
-
-  //-----------------------------
-  member_class(bool, debug);
-
-  public:
-  SBGCutSet(const DSBG &dsbg, bool debug);
-
-  Set calculate(); 
-
-  private:
-  PWMap getDegMap(const DSBG &dsbg);
-};
-
-///////////////////////////////////////////////////////////////////////////////
-// Additional operations ------------------------------------------------------
-///////////////////////////////////////////////////////////////////////////////
-
-DSBG buildSCCFromMatching(const SBGMatching &match);
-
-DSBG buildSortFromSCC(const SBGSCC &scc, const PWMap &rmap);
-
-void buildJson(const Set &matching, const PWMap &scc, const PWMap &order);
-
 } // namespace LIB
 
-}  // namespace SBG
+} // namespace SBG
 
 #endif

@@ -1,0 +1,13 @@
+# Directories
+MATCH_DIR := algorithms/matching
+
+# Sources
+MATCH_SRC := $(MATCH_DIR)/matching.cpp
+ALG_SRC += $(MATCH_SRC)
+
+# Objects
+ALG_OBJ += $(addprefix $(BUILD_DIR)/, $(MATCH_SRC:.cpp=.o))
+
+# Build folders
+create-folders::
+	@mkdir -p $(BUILD_DIR)/$(MATCH_DIR)

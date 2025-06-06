@@ -38,7 +38,6 @@
 #include <eval/visitors/program_visitor.hpp>
 #include <parser/sbg_program.hpp>
 #include <test/performance/boost/ordinary_graph_builder.hpp>
-#include <util/defs.hpp>
 
 template<class... Ts> struct Overload : Ts... { using Ts::operator()...; };
 template<class... Ts> Overload(Ts...) -> Overload<Ts...>;
@@ -93,7 +92,7 @@ void computeTS(OG::DGraph graph)
 
 void algorithmEvaluator(int alg, SBG::LIB::SBG g)
 {
-  SBG::LIB::SBGMatching match(g, false);
+  SBG::LIB::BFSMatching match(g, false);
   match.calculate();
 
   if (alg == 0) {
@@ -102,7 +101,7 @@ void algorithmEvaluator(int alg, SBG::LIB::SBG g)
     computeMaxCardinalityMatching(graph);
   }
 
-  SBG::LIB::SBGSCC scc(buildSCCFromMatching(match), false);
+  SBG::LIB::SCC scc(MISC::buildSCCFromMatching(match), false);
   SBG::LIB::PWMap scc_res = scc.calculate();
  
   if (alg == 1) {
@@ -111,7 +110,7 @@ void algorithmEvaluator(int alg, SBG::LIB::SBG g)
     computeSCC(dgraph);
   }
 
-  SBG::LIB::SBGTopSort ts(buildSortFromSCC(scc, scc_res), false);
+  SBG::LIB::TopoSort ts(MISC::buildSortFromSCC(scc, scc_res), false);
 
   if (alg == 2) {
     OG::OrdinaryDGraphBuilder ordinary_dgraph_builder(ts.dsbg());

@@ -1,10 +1,6 @@
 # Directories
 PARSER_DIR  := parser
 
-# Build folders
-create-folders::
-	@mkdir -p $(BUILD_DIR)/$(PARSER_DIR)
-
 # Sources
 PARSER_SRC := \
 	$(PARSER_DIR)/parser.cpp \
@@ -16,18 +12,17 @@ PARSER_SRC := \
 # Objects
 PARSER_OBJ = $(addprefix $(BUILD_DIR)/, $(PARSER_SRC:.cpp=.o))
 
-# Compilation
-$(BUILD_DIR)/%.o: %.cpp | create-folders
-	$(CC) $(INCLUDES) $(CXXFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<
-	$(CC) $(INCLUDES) -c $< -o $@ $(CXXFLAGS)
-
 # Binary
 PARSER_BIN := $(BIN_DIR)/sbg-parser
 
 # Binary compilation
 PARSER_BIN_FLAGS := -Llib/ -lsbgraph 
 
-$(PARSER_BIN): $(LIB_SBGRAPH)
-	$(CXX) $(CXXFLAGS) -o $(PARSER_BIN) $(INCLUDES) $(PARSER_DIR)/main.cpp $(PARSER_BIN_FLAGS)
+# Build folders
+create-folders::
+	@mkdir -p $(BUILD_DIR)/$(PARSER_DIR)
 
-all: $(PARSER_BIN)
+# Binary compilation
+$(PARSER_BIN): $(LIB_SBGRAPH)
+	$(CXX) $(CXXFLAGS) -o $(PARSER_BIN) $(INCLUDES) $(PARSER_DIR)/main.cpp \
+  $(PARSER_BIN_FLAGS)

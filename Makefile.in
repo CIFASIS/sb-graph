@@ -1,7 +1,11 @@
-# Target variables
+#///////////////////////////////////////////////////////////////////////////////
+# Variables --------------------------------------------------------------------
+#///////////////////////////////////////////////////////////////////////////////
+
+# Configuration
 MODE ?= Release
 
-# The Directories, Source, Includes, Objects, Binary 
+# Directories
 ROOT   	      := .
 3RD_PARTY_DIR := $(ROOT)/3rd-party
 GTEST_DIR     := googletest-release-1.12.1
@@ -14,11 +18,28 @@ BIN_DIR    	  := $(ROOT)/bin
 ifeq ($(MODE), Debug)
 BUILD_DIR    	:= $(OBJ_DIR)/debug
 endif
+PERF_DIR      := test/performance
+
+# Installation paths
 prefix 			  ?= /usr/local
 exec_prefix   ?= $(prefix)
 includedir    ?= $(prefix)/include
 libdir        ?= $(exec_prefix)/lib
 boost_libdir  ?= $(prefix)
+
+# Flags and includes
+INCLUDES := -I. -I$(boost_libdir)/include
+CXXFLAGS := -std=c++17 -Wno-reorder -O3
+ifeq ($(MODE),Debug)
+CXXFLAGS += -ggdb -Wall -Werror 
+endif
+
+# Target
+LIB_SBGRAPH = lib/libsbgraph.a
+
+#///////////////////////////////////////////////////////////////////////////////
+# PHONY ------------------------------------------------------------------------
+#///////////////////////////////////////////////////////////////////////////////
 
 .PHONY: doc clean create-folders install install-folders lib-gtest test
 
@@ -26,22 +47,29 @@ boost_libdir  ?= $(prefix)
 # Compilation ------------------------------------------------------------------
 #///////////////////////////////////////////////////////////////////////////////
 
-# Flags, Libraries and Includes
-INCLUDES := -I. -I$(boost_libdir)/include
-CXXFLAGS := -std=c++17 -Wno-reorder -O3
-ifeq ($(MODE),Debug)
-CXXFLAGS 	+= -ggdb -Wall -Werror 
-endif
-LIB_SBGRAPH = lib/libsbgraph.a
-
-all: $(LIB_SBGRAPH)
-
 include util/Makefile.include
 include sbg/Makefile.include
 include ast/Makefile.include
 include parser/Makefile.include
-include eval/Makefile.include
+include algorithms/cc/Makefile.include
+include algorithms/matching/Makefile.include
+include algorithms/scc/Makefile.include
+include algorithms/cutvertex/Makefile.include
+include algorithms/toposort/Makefile.include
 include algorithms/partitioner/Makefile.include
+include algorithms/misc/Makefile.include
+include eval/Makefile.include
+include test/performance/Makefile.include
+
+LIB_SRC = $(UTIL_SRC) $(SBG_SRC) $(AST_SRC) $(PARSER_SRC) $(EVAL_SRC) $(ALG_SRC)
+
+LIB_OBJ = $(UTIL_OBJ) $(SBG_OBJ) $(AST_OBJ) $(PARSER_OBJ) $(EVAL_OBJ) $(ALG_OBJ)
+
+# Objects compilation
+$(LIB_SRC:%.cpp=$(BUILD_DIR)/%.o): $(BUILD_DIR)/%.o: %.cpp | create-folders
+	$(CXX) -c $< $(INCLUDES) -MMD -MP $(CXXFLAGS) -o $@
+
+compile: $(LIB_SBGRAPH) $(PARSER_BIN) $(EVAL_BIN) $(PARTITIONER_BIN)
 
 create-folders::
 	@mkdir -p $(ROOT)/lib
@@ -49,14 +77,14 @@ create-folders::
 	@mkdir -p $(BUILD_DIR)
 	@mkdir -p $(BIN_DIR)
 
-LIB_OBJ = $(UTIL_OBJ) $(SBG_OBJ) $(AST_OBJ) $(PARSER_OBJ) $(EVAL_OBJ) $(ALG_OBJ)
-
-$(LIB_SBGRAPH): create-folders $(LIB_OBJ)
+$(LIB_SBGRAPH): $(LIB_OBJ) | create-folders
 	$(AR) rcs $(LIB_SBGRAPH) $(LIB_OBJ)
 
-DEPS = $(addprefix $(BUILD_DIR)/, $(LIB_SRC:.cpp=.d))
+#///////////////////////////////////////////////////////////////////////////////
+# Dependencies -----------------------------------------------------------------
+#///////////////////////////////////////////////////////////////////////////////
 
--include $(DEPS)
+-include $(LIB_OBJ:.o=.d)
 
 #///////////////////////////////////////////////////////////////////////////////
 # Library Installation ---------------------------------------------------------
@@ -96,7 +124,8 @@ ifeq ("$(wildcard $(3RD_PARTY_DIR)/gtest/usr/lib)","")
 	rm -rf $(3RD_PARTY_DIR)/gtest/build
 endif
 
-test: lib-gtest
+test: compile lib-gtest perf-compile
+	@./bin/sbg-performance
 	@cd $(TEST_DIR) && ./compile_run_tests.sh
 
 #///////////////////////////////////////////////////////////////////////////////
@@ -118,7 +147,8 @@ doc:
 TEST_DIRS := test/parser test/performance test/performance/boost test/eval
 
 clean:
-	$(RM) -rf $(BIN_DIR) $(OBJ_DIR) $(LIB_SBGRAPH) $(ROOT)/lib $(ROOT)/include $(3RD_PARTY_DIR)/gtest/usr
+	$(RM) -rf $(BIN_DIR) $(OBJ_DIR) $(LIB_SBGRAPH) $(ROOT)/lib $(ROOT)/include \
+	$(3RD_PARTY_DIR)/gtest/usr
 	for dir in $(TEST_DIRS); do \
     $(RM) -rf $$dir/bin; \
     $(RM) -rf $$dir/obj; \

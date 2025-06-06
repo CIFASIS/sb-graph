@@ -1,13 +1,8 @@
 # Directories
 SBG_DIR  := sbg
 
-# Build folders
-create-folders::
-	@mkdir -p $(BUILD_DIR)/$(SBG_DIR)
-
 # Sources
 SBG_SRC := \
-	$(SBG_DIR)/sbg_algorithms.cpp \
 	$(SBG_DIR)/sbg.cpp \
 	$(SBG_DIR)/af_pwmap.cpp \
 	$(SBG_DIR)/pw_map.cpp \
@@ -25,7 +20,6 @@ SBG_SRC := \
 # Objects
 SBG_OBJ := $(addprefix $(BUILD_DIR)/, $(SBG_SRC:.cpp=.o))
 
-# Compilation
-$(BUILD_DIR)/%.o: %.cpp | create-folders
-	$(CC) $(INCLUDES) $(CXXFLAGS) -MM -MT $@ -MF $(patsubst %.o,%.d,$@) $<
-	$(CC) $(INCLUDES) -c $< -o $@ $(CXXFLAGS)
+# Build folders
+create-folders::
+	@mkdir -p $(BUILD_DIR)/$(SBG_DIR)

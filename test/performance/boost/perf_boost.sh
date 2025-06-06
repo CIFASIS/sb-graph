@@ -38,11 +38,11 @@ echo > test_values
 echo > builder_values
 
 while read line; do
-    if  echo "$line" | grep -q "N = "; then 
-        echo $line > eval; awk -v s=$size '{print "N = " s}' eval >> test_file; start=true;
-    else
-        echo $line >> test_file
-    fi
+  if echo "$line" | grep -q "N = "; then 
+    echo $line > eval; awk -v s=$size '{print "N = " s}' eval >> test_file; start=true;
+  else
+    echo $line >> test_file
+  fi
 done < aux_file
 
 

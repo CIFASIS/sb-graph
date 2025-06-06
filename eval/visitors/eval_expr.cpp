@@ -334,11 +334,11 @@ auto connected_visitor_ = Overload {
 
 auto matching_visitor_ = Overload {
   [](LIB::SBG a, LIB::NAT b, bool c) { 
-    LIB::SBGMatching match(a.copy(b), c);
+    LIB::BFSMatching match(a.copy(b), c);
     return ExprBaseType(match.calculate());
   },
   [](LIB::SBG a, LIB::MD_NAT b, bool c) { 
-    LIB::SBGMatching match(a.copy(b[0]), c);
+    LIB::BFSMatching match(a.copy(b[0]), c);
     return ExprBaseType(match.calculate());
   },
   [](auto a, auto b, auto c) {
@@ -350,7 +350,7 @@ auto matching_visitor_ = Overload {
 
 auto scc_visitor_ = Overload {
   [](LIB::DSBG a, bool b) { 
-    LIB::SBGSCC scc(a, b);
+    LIB::SCC scc(a, b);
     return ExprBaseType(scc.calculate());
   },
   [](auto a, auto b) {
@@ -361,7 +361,7 @@ auto scc_visitor_ = Overload {
 
 auto ts_visitor_ = Overload {
   [](LIB::DSBG a, bool b) { 
-    LIB::SBGTopSort ts(a, b);
+    LIB::TopoSort ts(a, b);
     return ExprBaseType(ts.calculate()); 
   },
   [](auto a, auto b) {
@@ -372,15 +372,15 @@ auto ts_visitor_ = Overload {
 
 auto match_scc_visitor_ = Overload {
   [](LIB::SBG a, LIB::NAT b, bool c) { 
-    LIB::SBGMatching match(a.copy(b), c);
+    LIB::BFSMatching match(a.copy(b), c);
     match.calculate();
-    LIB::SBGSCC scc(buildSCCFromMatching(match), c);
+    LIB::SCC scc(MISC::buildSCCFromMatching(match), c);
     return ExprBaseType(scc.calculate());
   },
   [](LIB::SBG a, LIB::MD_NAT b, bool c) { 
-    LIB::SBGMatching match(a.copy(b[0]), c);
+    LIB::BFSMatching match(a.copy(b[0]), c);
     match.calculate();
-    LIB::SBGSCC scc(buildSCCFromMatching(match), c);
+    LIB::SCC scc(MISC::buildSCCFromMatching(match), c);
     return ExprBaseType(scc.calculate());
   },
   [](auto a, auto b, auto c) {
@@ -392,23 +392,23 @@ auto match_scc_visitor_ = Overload {
 
 auto match_scc_ts_visitor_ = Overload {
   [](LIB::SBG a, LIB::NAT b, bool c) { 
-    LIB::SBGMatching match(a.copy(b), c);
+    LIB::BFSMatching match(a.copy(b), c);
     LIB::Set match_res = match.calculate().matched_edges();
-    LIB::SBGSCC scc(buildSCCFromMatching(match), c);
+    LIB::SCC scc(MISC::buildSCCFromMatching(match), c);
     LIB::PWMap scc_res = scc.calculate();
-    LIB::SBGTopSort ts(buildSortFromSCC(scc, scc_res), c);
+    LIB::TopoSort ts(MISC::buildSortFromSCC(scc, scc_res), c);
     LIB::PWMap ts_res = ts.calculate(); 
-    buildJson(match_res, scc_res, ts_res);
+    MISC::buildJson(match_res, scc_res, ts_res);
     return ExprBaseType(ts_res);
   },
   [](LIB::SBG a, LIB::MD_NAT b, bool c) { 
-    LIB::SBGMatching match(a.copy(b[0]), c);
+    LIB::BFSMatching match(a.copy(b[0]), c);
     LIB::Set match_res = match.calculate().matched_edges();
-    LIB::SBGSCC scc(buildSCCFromMatching(match), c);
+    LIB::SCC scc(MISC::buildSCCFromMatching(match), c);
     LIB::PWMap scc_res = scc.calculate();
-    LIB::SBGTopSort ts(buildSortFromSCC(scc, scc_res), c);
+    LIB::TopoSort ts(MISC::buildSortFromSCC(scc, scc_res), c);
     LIB::PWMap ts_res = ts.calculate(); 
-    buildJson(match_res, scc_res, ts_res);
+    MISC::buildJson(match_res, scc_res, ts_res);
     return ExprBaseType(ts_res);
   },
   [](auto a, auto b, auto c) {
@@ -420,7 +420,7 @@ auto match_scc_ts_visitor_ = Overload {
 
 auto cut_visitor_ = Overload {
   [](LIB::DSBG a, bool b) { 
-    LIB::SBGCutSet cut_set(a, b);
+    LIB::CutVertex cut_set(a, b);
     return ExprBaseType(cut_set.calculate());
   },
   [](auto a, auto b) {

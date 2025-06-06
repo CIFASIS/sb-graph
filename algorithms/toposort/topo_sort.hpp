@@ -1,8 +1,6 @@
-/** @file defs.hpp
+/** @file topo_sort.hpp
 
- @brief <b>Common definitions for all SBG modules</b>
- 
- This file provides helpful definitions that will be used by all SBG modules.
+ @brief <b>Topological Sort SBG implementation</b>
 
  <hr>
 
@@ -23,39 +21,41 @@
 
  ******************************************************************************/
 
-#ifndef SBG_DEFS_HPP
-#define SBG_DEFS_HPP
+#ifndef SBG_TOPSORT_HPP
+#define SBG_TOPSORT_HPP
+
+#include "sbg/sbg.hpp"
 
 namespace SBG {
 
-namespace Util {
+namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Helpful macros --------------------------------------------------------------
+// Topological sort ------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-/**
- * @brief Define a variable member of a class and the getters and setters.
- *
- * The macro takes two parameters:
- *  + The variable type @c X.
- *  + The name of the variable @c Y.
- *
- * It will define the following:
- *  + A member variable called: @c Y_
- *  + A constant ref getter method: @c Y()
- *
- */
-#define member_class(X, Y) \
-  private:                 \
-  X Y##_;                  \
-  public:                  \
-  const X &Y() const;
+struct TopoSort {
+  private:
+  const PWMapAF &fact_;
 
-#define member_imp(C, X, Y)          \
-  const X &C::Y() const { return Y##_; }
+  //*** SBG info, constant
+  member_class(DSBG, dsbg);
 
-} // namespace Util
+  //-----------------------------
+  member_class(bool, debug);
+
+  public:
+  TopoSort(const DSBG &dsbg, bool debug);
+
+  PWMap calculate(); 
+
+  const PWMapAF &fact() const;
+
+  private:
+  Exp calculateExp(const MD_NAT &from, const MD_NAT &to);
+};
+
+} // namespace LIB
 
 } // namespace SBG
 

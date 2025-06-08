@@ -1391,24 +1391,42 @@ PWMapDelegPtr OrdPWMap::composition(const PWMapDelegate &other) const {
   for (const Map &mO : othr.pieces_) {
     const auto &img = mO.image();
     
+    //std::cout << "perimetro\n";
     OrdAF fact;
     Map imgMap(fact,img,Exp(img.arity(),LExp(0,0)));
     const auto mOMin = imgMap.minPer();
     const auto mOMax = imgMap.maxPer();
+    //std::cout << "perimetro fin\n";
     
+    //std::cout << "advance\n";
     posGlobal = res.advanceHint(mO.minPer(), posGlobal);
-
+    //std::cout << "advance fin\n";
     for (const Map &mT : pieces_) {
+      //std::cout << "perimetro 2 \n";
       const auto mTMin = mT.minPer();
       const auto mTMax = mT.maxPer();
-
-      if (mTMax[0] < mOMin[0]) continue;
-      if (mOMax[0] < mTMin[0]) break;
-
+      //std::cout << "perimetro 2 fin\n";
+      
+      //std::cout << "comparizon \n";
+      //std::cout << mT <<"mapathis\n";
+      //std::cout << mTMin <<"minpthis\n";
+      //std::cout << mTMax <<"maxpthis\n";
+      //std::cout << mO <<"mapao\n";
+      //std::cout << mOMin <<"minpo\n";
+      //std::cout << mOMax <<"maxpo\n";
+      if (mTMax[0] < mOMin[0]){
+      //std::cout << "comparizon in 1 \n";
+      continue;}
+      if (mOMax[0] < mTMin[0]){ 
+      //std::cout << "comparizon in 2 \n";
+      break;}
+      //std::cout << "comparizon fin \n";
       if (!(mTMax.menorThan(mOMin)) && !(mOMax.menorThan(mTMin))) {
         auto resCom = mT.composition(mO);
         if (!resCom.dom().isEmpty()) {
+          //std::cout << "empleace \n";
           res.emplaceHint(resCom, posGlobal);
+          //std::cout << "empleace fin \n";
         }
       }
     }
@@ -1423,7 +1441,7 @@ PWMapDelegPtr OrdPWMap::mapInf(unsigned int n) const
   
   PWMapDelegPtr res = std::make_unique<OrdPWMap>(*this);
   PWMapDelegPtr old_res = std::make_unique<OrdPWMap>(fact_);
-   std::cout << "valor de n\n" << n;
+   //std::cout << "valor de n\n" << n;
   if (!dom().isEmpty()) {
     for (unsigned int j = 0; old_res != res && j < n; ++j) {
       OrdPWMap *rs = static_cast<OrdPWMap *>(res.get());
@@ -1444,9 +1462,12 @@ PWMapDelegPtr OrdPWMap::mapInf(unsigned int n) const
     do {
       OrdPWMap *rs = static_cast<OrdPWMap *>(res.get());
       old_res = std::make_unique<OrdPWMap>(*rs);
-
+      
+      
       PWMapDelegPtr new_res = res->composition(*res);
+      
       new_res = new_res->reduce();
+      
       res = std::move(new_res);
     } while (*old_res != *res);
   }

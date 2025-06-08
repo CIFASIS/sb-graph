@@ -76,23 +76,6 @@ SetPiece image(SetPiece mdi, Exp mdle)
 }
 
 
-std::pair<MD_NAT, MD_NAT> calcularMinMaxPer(const Set dom) {
-    MD_NAT maximo(dom.arity(), 0);
-    MD_NAT minimo(dom.arity(), Inf); 
-    
-    for (const SetPiece &mdi : dom) {
-      MD_NAT candidatoMax = mdi.maxElem();
-      MD_NAT candidatoMin = mdi.minElem();
-      
-      for (std::size_t i = 0; i < maximo.arity(); ++i) {
-          maximo[i] = std::max(maximo[i], candidatoMax[i]);
-          minimo[i] = std::min(minimo[i], candidatoMin[i]);
-      }
-    }
-    
-    return { minimo, maximo };
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Map Implementation ----------------------------------------------------------
@@ -100,33 +83,20 @@ std::pair<MD_NAT, MD_NAT> calcularMinMaxPer(const Set dom) {
 
 member_move_imp(Map, Set, dom);
 member_move_imp(Map, Exp, exp);
-member_move_imp(Map, MD_NAT, minPer);
-member_move_imp(Map, MD_NAT, maxPer);
+
 
 
 
 Map::~Map() {}
-Map::Map(const SetAF &fact) : fact_(fact), dom_(fact.createSet()) {}
+Map::Map(const SetAF &fact) : fact_(fact), dom_(fact.createSet()){}
 Map::Map(const SetAF &fact, MD_NAT x, Exp exp)
-  : fact_(fact), dom_(fact.createSet(x)), exp_(exp), minPer_(), maxPer_()
-{
- std::tie(minPer_, maxPer_) = calcularMinMaxPer(dom_);
-}
+  : fact_(fact), dom_(fact.createSet(x)), exp_(exp){}
 Map::Map(const SetAF &fact, Interval i, LExp le)
-  : fact_(fact), dom_(fact.createSet(i)), exp_(Exp(le)),  minPer_(), maxPer_() 
-{
-  std::tie(minPer_, maxPer_) = calcularMinMaxPer(dom_);
-}
+  : fact_(fact), dom_(fact.createSet(i)), exp_(Exp(le)){}
 Map::Map(const SetAF &fact, SetPiece mdi, Exp exp)
-  : fact_(fact), dom_(fact.createSet(mdi)), exp_(exp), minPer_(), maxPer_()
-{
-  std::tie(minPer_, maxPer_) = calcularMinMaxPer(dom_);
-}
+  : fact_(fact), dom_(fact.createSet(mdi)), exp_(exp){}
 Map::Map(const SetAF &fact, Set s, Exp exp)
-  : fact_(fact), dom_(std::move(s)), exp_(exp), minPer_(), maxPer_()
-{
- std::tie(minPer_, maxPer_) = calcularMinMaxPer(dom_);
-}
+  : fact_(fact), dom_(std::move(s)), exp_(exp){}
 
 bool Map::operator==(const Map &other) const
 {
@@ -150,8 +120,6 @@ Map &Map::operator=(const Map &other)
 {
   dom_ = other.dom_;
   exp_ = other.exp_;
-  minPer_ = other.minPer_;
-  maxPer_ = other.maxPer_;
 
   return *this;
 }
@@ -159,19 +127,17 @@ Map &Map::operator=(const Map &other)
 bool Map::operator<(const Map &other) const
 { 
 
-  return minPer_ < other.minPer_;
+  return minPer() < other.minPer();
 }
 
-/*
-MD_NAT Map::minPerimeter() const
+
+
+MD_NAT Map::minPer() const
 {
     MD_NAT minimo(dom_.arity(), Inf);
-   
  
-    
     if (dom_.isEmpty()) 
         return minimo; 
-  
     
     for (const SetPiece &mdi : dom_) {
         MD_NAT candidato = mdi.minElem();
@@ -180,16 +146,17 @@ MD_NAT Map::minPerimeter() const
             minimo[i] = std::min(minimo[i], candidato[i]);
         }
     }
-
+    
     return minimo;
 }
 
-MD_NAT Map::maxPerimeter() const 
+MD_NAT Map::maxPer() const
 {
     MD_NAT maximo(dom_.arity(), 0);
     
     if (dom_.isEmpty()) 
         return maximo; 
+        
     
     for (const SetPiece &mdi : dom_) {
         MD_NAT candidato = mdi.maxElem();
@@ -198,10 +165,10 @@ MD_NAT Map::maxPerimeter() const
             maximo[i] = std::max(maximo[i], candidato[i]);
         }
     }
-
+  
     return maximo;
 }
-*/
+
 
 Map Map::operator+(const Map &other) const
 {
@@ -332,6 +299,25 @@ MaybeMap Map::compact(const Map &other) const
 
   return {};
 }
+
+/*
+void Map::calcularMinMaxPer() {
+    MD_NAT maximo(dom_.arity(), 0);
+    MD_NAT minimo(dom_.arity(), Inf); 
+    
+    for (const SetPiece &mdi : dom_) {
+      MD_NAT candidatoMax = mdi.maxElem();
+      MD_NAT candidatoMin = mdi.minElem();
+      
+      for (std::size_t i = 0; i < maximo.arity(); ++i) {
+          maximo[i] = std::max(maximo[i], candidatoMax[i]);
+          minimo[i] = std::min(minimo[i], candidatoMin[i]);
+      }
+    }
+    
+    minPer_ = minimo;
+    maxPer_ = maximo;
+}*/
 
 } // namespace LIB
 

@@ -19,8 +19,8 @@
 
 #pragma once
 
-#include <map>
 #include <unordered_set>
+#include <vector>
 
 #include <sbg/interval.hpp>
 #include <sbg/sbg.hpp>
@@ -30,14 +30,31 @@
 
 namespace sbg_partitioner {
 
-// cambiar a vector
-typedef std::map<unsigned, SBG::LIB::Set> PartitionMap;
+constexpr bool sanity_check_enabled = false;
+
+typedef std::vector<SBG::LIB::SetPiece> Partition;
+
+typedef std::vector<Partition> PartitionMap;
 
 enum PartitionAlgorithm
 {
     GREEDY = 0,
     DISTRIBUTED = 1
 };
+
+
+/// @brief Converts a Partition element into a Set.
+/// @param partition - A list of SetPiece elements.
+/// @param set_fact - Factory to create sets.
+/// @return A SBG::LIB::Set representation of the Partition element.
+SBG::LIB::Set from_vector(const Partition& partition, SBG::LIB::SetAF& set_fact);
+
+
+/// @brief Converts a set into a Partition element.
+/// @param partition - The set we want to convert set.
+/// @return A Partition representation of the set.
+Partition to_vector(const SBG::LIB::Set& partition);
+
 
 // I wish this was a separate function, not part of PartitionGraph but there were a lot of
 // compile problems if partitions map object is created locally and OrdSet objects are added.
@@ -65,15 +82,16 @@ SBG::LIB::Set get_connectivity_set(
     SBG::LIB::SetAF& set_fact);
 
 
-/// This function returns the cardinality of a OrdSet.
-size_t get_OrdSet_size(const SBG::LIB::Set& set);
+void sort_partition_intervals(Partition& p);
 
 
 std::string get_output(const PartitionMap& partition_map);
 
 
-void sanity_check(const SBG::LIB::WeightedSBGraph& graph, PartitionMap& partitions_set, unsigned number_of_partitions);
+void sanity_check(const SBG::LIB::WeightedSBGraph& graph, PartitionMap& partitions_set, unsigned number_of_partitions, SBG::LIB::SetAF& set_fact);
 
+
+std::ostream& operator<<(std::ostream& os, const Partition& partitions);
 
 std::ostream& operator<<(std::ostream& os, const PartitionMap& partitions);
 

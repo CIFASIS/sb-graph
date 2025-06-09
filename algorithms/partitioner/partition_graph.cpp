@@ -27,7 +27,7 @@
 #include "build_sb_graph.hpp"
 #include "dfs_on_sbg.hpp"
 #include "partition_graph.hpp"
-// #include "sbg_partitioner_log.hpp"
+#include "sbg_partitioner_log.hpp"
 
 #define TRY_MULTIPLE_STRATEGIES 1
 
@@ -53,22 +53,45 @@ Set get_communication_edges(Set partition, const PWMap& map_1, const PWMap& map_
   return comm_edges;
 }
 
+
 [[maybe_unused]] size_t get_partition_communication(WeightedSBGraph& graph, const PartitionMap& partitions, SetAF& set_fact)
 {
   Set s = set_fact.createSet();
-  for (auto& [i, _] : partitions) {
+  for (size_t i = 0; i < partitions.size(); i++) {
     auto ss = get_connectivity_set(graph, partitions, i, set_fact);
     s = ss.cup(s);
-    // logging::sbg_log << "current connectivity set " << s << ", cardinality " << get_OrdSet_size(s) << ", partition " << i << endl;
   }
 
-  size_t size = get_OrdSet_size(s);
+  size_t size = get_set_size(s);
 
   return size;
 }
 
 constexpr bool using_many_initial_partitions = TRY_MULTIPLE_STRATEGIES;
 }  // namespace
+
+
+// we could cache solutions here
+Set from_vector(const Partition& partition, SetAF& set_fact) {
+    Set partition_set = set_fact.createSet();
+    for (size_t i = 0; i < partition.size(); i++) {
+        partition_set.emplace(partition[i]);
+    }
+
+    return partition_set;
+}
+
+
+Partition to_vector(const Set& partition_set)
+{
+    Partition partition;
+    for (auto set_piece : partition_set) {
+        partition.push_back(move(set_piece));
+    }
+
+    return partition;
+}
+
 
 vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, unsigned number_of_partitions, SetAF& set_fact)
 {
@@ -92,7 +115,8 @@ vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, u
   for (const auto& partition : partitions) {
     PartitionMap partition_set;
     for (const auto& [id, set] : partition) {
-      Set set_piece = set_fact.createSet();
+      Set one_partition_set = set_fact.createSet();
+      Partition p;
       for (auto& s : set) {
         SetPiece intervals;
         if (not s.intervals().empty()) {
@@ -101,17 +125,19 @@ vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, u
             intervals.emplaceBack(interv);
           }
         }
-        set_piece.emplaceBack(intervals);
+        p.emplace_back(intervals);
       }
-      partition_set.insert(make_pair(id, set_piece));
+      partition_set.push_back(p);
     }
 
     partitions_sets.push_back(move(partition_set));
   }
 
-  for_each(partitions_sets.begin(), partitions_sets.end(), [&graph, number_of_partitions](PartitionMap& p) {
-    cout << p << endl;
-    sanity_check(graph, p, number_of_partitions);
+  for_each(partitions_sets.begin(), partitions_sets.end(), [&graph, &set_fact, number_of_partitions](PartitionMap& p) {
+    logging::sbg_log << p << endl;
+    if (sanity_check_enabled) {
+      sanity_check(graph, p, number_of_partitions, set_fact);
+    }
   });
 
   return partitions_sets;
@@ -135,7 +161,7 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
       }
     }
 
-    cout << "Best is " << best_initial_partitions << " with communication " << best_communication_set_cardinality << endl;
+    logging::sbg_log << "Best is " << best_initial_partitions << " with communication " << best_communication_set_cardinality << endl;
   }
 
   return best_initial_partitions;
@@ -143,59 +169,38 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
 
 Set get_connectivity_set(SBG::LIB::SBG& graph, const PartitionMap& partitions, size_t partition_index, SetAF& set_fact)
 {
-  const auto& partition = partitions.at(partition_index);
-
-  Set edges = set_fact.createSet();
-
-  for (const auto& [i, p] : partitions) {
-    if (i == partition_index) {
-      continue;
-    }
+    const auto& partition_vector = partitions.at(partition_index);
+    Set partition = set_fact.createSet();
+    for_each(partition_vector.cbegin(), partition_vector.cend(), [&partition] (auto s) { partition.emplaceBack(s); });
 
     auto comm_edges_1 = get_communication_edges(partition, graph.map1(), graph.map2());
     auto comm_edges_2 = get_communication_edges(partition, graph.map2(), graph.map1());
     auto comm_edges = comm_edges_1.cup(comm_edges_2);
-    edges = edges.cup(comm_edges);
-  }
 
-  return edges;
+    return comm_edges;
 }
 
-size_t get_OrdSet_size(const Set& set)
-{
-  size_t acc = 0;
-  for (auto it = set.begin(); it != set.end(); ++it) {
-    const auto& set_piece = *it;
-    for (auto& interval : set_piece.intervals()) {
-      acc += (interval.end() - interval.begin() + 1);
-    }
-  }
 
-  return acc;
-}
-
-void sanity_check(const WeightedSBGraph& graph, PartitionMap& partitions_set, unsigned number_of_partitions)
+void sanity_check(const WeightedSBGraph& graph, PartitionMap& partitions_set, unsigned number_of_partitions, SetAF& set_fact)
 {
-#ifdef PARTITION_SANITY_CHECK
   // This is just a sanity check
-  OrdSet nodes_to_check;
+  Set nodes_to_check = set_fact.createSet();
   for (unsigned i = 0; i < number_of_partitions; i++) {
-    nodes_to_check = cup(nodes_to_check, partitions_set[i]);
+    nodes_to_check = nodes_to_check.cup(from_vector(partitions_set[i], set_fact));
   }
-  OrdSet diff_1 = difference(graph.V(), nodes_to_check);
-  OrdSet diff_2 = difference(nodes_to_check, graph.V());
-  assert(get_node_size(diff_1, graph.get_node_weights()) == 0 and "The intial partition has less elements than the graph");
-  assert(get_node_size(diff_2, graph.get_node_weights()) == 0 and "The intial partition has more elements than the graph");
+
+  Set diff = nodes_to_check.difference(graph.V());
+  assert(get_node_size(diff, graph.get_node_weights(), set_fact) == 0 and "The intial partition has less elements than the graph");
+
   for (unsigned i = 0; i < number_of_partitions; i++) {
     for (unsigned j = i + 1; j < number_of_partitions; j++) {
-      auto p_1 = partitions_set[i];
-      auto p_2 = partitions_set[j];
+      auto p_1 = from_vector(partitions_set[i], set_fact);
+      auto p_2 = from_vector(partitions_set[j], set_fact);
       stringstream error_msg;
       error_msg << "Intersection between " << i << " and " << j << " is not empty." << endl;
-      assert(intersection(p_1, p_2).pieces().empty() and error_msg.str().c_str());
+      assert(p_1.intersection(p_2).isEmpty() and error_msg.str().c_str());
     }
   }
-#endif  // PARTITION_SANITY_CHECK
 }
 
 string get_output(const PartitionMap& partition_map)
@@ -244,10 +249,29 @@ string get_output(const PartitionMap& partition_map)
   return json_data;
 }
 
+
+void sort_partition_intervals(Partition& p)
+{
+    constexpr auto compare_intervals = [](const SBG::LIB::SetPiece& s1, const SBG::LIB::SetPiece& s2) {
+        return s1[0].begin() < s2[0].begin();
+    };
+
+    sort(p.begin(), p.end(), compare_intervals);
+}
+
+
+ostream& operator<<(ostream& os, const Partition& partition)
+{
+    for_each(partition.cbegin(), partition.cend(), [&os] (const auto& p) { os << p << " "; });
+
+    return os;
+}
+
+
 ostream& operator<<(ostream& os, const PartitionMap& partitions)
 {
-  for (const auto& [i, p] : partitions) {
-    os << i << ", " << p << endl;
+  for (size_t i = 0; i < partitions.size(); i++) {
+    os << i << " " << partitions[i] << endl;
   }
 
   return os;

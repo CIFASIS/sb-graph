@@ -23,9 +23,11 @@
 #include <iostream>
 
 #include <algorithms/partitioner/build_sb_graph.hpp>
+#include <algorithms/partitioner/kernighan_lin_partitioner.hpp>
 #include <algorithms/partitioner/partition_graph.hpp>
 #include <sbg/af_map.hpp>
 #include <sbg/af_set.hpp>
+
 
 /// @file parser_test.cpp
 ///
@@ -130,27 +132,61 @@ TEST(initial_partition, PartitionerTests)
   expected_distributed_pre_order_0.emplaceBack(Interval(1000, 1, 1249));
   expected_distributed_pre_order_0.emplaceBack(Interval(2000, 1, 2249));
   expected_distributed_pre_order_0.emplaceBack(Interval(3000, 1, 3249));
-  EXPECT_EQ(expected_distributed_pre_order_0, partition.at(0));
+  Set partition_0 = sbg_partitioner::from_vector(partition.at(0), set_fact);
+  EXPECT_EQ(expected_distributed_pre_order_0, partition_0);
 
   auto expected_distributed_pre_order_1 = set_fact.createSet();
   expected_distributed_pre_order_1.emplaceBack(Interval(250, 1, 499));
   expected_distributed_pre_order_1.emplaceBack(Interval(1250, 1, 1499));
   expected_distributed_pre_order_1.emplaceBack(Interval(2250, 1, 2499));
   expected_distributed_pre_order_1.emplaceBack(Interval(3250, 1, 3499));
-  EXPECT_EQ(expected_distributed_pre_order_1, partition.at(1));
+  Set partition_1 = sbg_partitioner::from_vector(partition.at(1), set_fact);
+  EXPECT_EQ(expected_distributed_pre_order_1, partition_1);
 
   auto expected_distributed_pre_order_2 = set_fact.createSet();
   expected_distributed_pre_order_2.emplaceBack(Interval(500, 1, 749));
   expected_distributed_pre_order_2.emplaceBack(Interval(1500, 1, 1749));
   expected_distributed_pre_order_2.emplaceBack(Interval(2500, 1, 2749));
   expected_distributed_pre_order_2.emplaceBack(Interval(3500, 1, 3749));
-  EXPECT_EQ(expected_distributed_pre_order_2, partition.at(2));
+  Set partition_2 = sbg_partitioner::from_vector(partition.at(2), set_fact);
+  EXPECT_EQ(expected_distributed_pre_order_2, partition_2);
 
   auto expected_distributed_pre_order_3 = set_fact.createSet();
   expected_distributed_pre_order_3.emplaceBack(Interval(750, 1, 999));
   expected_distributed_pre_order_3.emplaceBack(Interval(1750, 1, 1999));
   expected_distributed_pre_order_3.emplaceBack(Interval(2750, 1, 2999));
   expected_distributed_pre_order_3.emplaceBack(Interval(3750, 1, 3999));
-  EXPECT_EQ(expected_distributed_pre_order_3, partition.at(3));
+  Set partition_3 = sbg_partitioner::from_vector(partition.at(3), set_fact);
+  EXPECT_EQ(expected_distributed_pre_order_3, partition_3);
 }
+
+
+static void test_partitioning(const std::string& filename, int number_of_partitions)
+{
+    UnordAF set_fact;
+    MapAF map_fact(set_fact);
+    UnordPWMapAF pw_fact(map_fact);
+
+    auto sb_graph = sbg_partitioner::build_sb_graph(filename, set_fact, map_fact, pw_fact);
+    auto partitions = sbg_partitioner::best_initial_partition(sb_graph, number_of_partitions, set_fact);
+    sbg_partitioner::kl_sbg_imbalance_partitioner(sb_graph, partitions, 0.0, set_fact, map_fact);
+
+    sbg_partitioner::sanity_check(sb_graph, partitions, number_of_partitions, set_fact);
+}
+
+
+TEST(partitioning, PartitionerTests)
+{
+    test_partitioning("data/advection.json", 2);
+    test_partitioning("data/advection.json", 4);
+    test_partitioning("data/advection.json", 8);
+
+    test_partitioning("data/air_conditioners_1000.json", 2);
+    test_partitioning("data/air_conditioners_1000.json", 4);
+    test_partitioning("data/air_conditioners_1000.json", 8);
+
+    test_partitioning("data/air_conditioners_cont_4_1000.json", 4);
+}
+
+
 /// @}

@@ -21,7 +21,7 @@
 
 #include "build_sb_graph.hpp"
 #include "partition_strategy.hpp"
-// #include "sbg_partitioner_log.hpp"
+#include "sbg_partitioner_log.hpp"
 
 #define DEBUG_PARTITION_STRATEGY_ENABLED 0
 

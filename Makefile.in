@@ -31,7 +31,8 @@ boost_libdir  ?= $(prefix)
 INCLUDES := -I. -I$(boost_libdir)/include
 CXXFLAGS := -std=c++17 -Wno-reorder -O3
 ifeq ($(MODE),Debug)
-CXXFLAGS += -ggdb -Wall -Werror 
+CXXFLAGS 	+= -ggdb -Wall -Werror 
+CXXFLAGS 	+= -D SBG_PARTITIONER_LOGGING
 endif
 
 # Target

@@ -80,6 +80,8 @@ struct SetDelegate {
     virtual ~Iterator() = default;
     virtual void operator++() = 0;
     virtual bool operator!=(const Iterator &other) const = 0;
+    virtual bool operator==(const Iterator &other) const = 0;
+    virtual bool operator<(const Iterator &other) const = 0;
     virtual const SetPiece &operator*() const = 0;
   };
 
@@ -191,6 +193,8 @@ struct UnorderedSet : public SetDelegate {
     Iterator(MDIUnordSet::const_iterator it);
     void operator++() override;
     bool operator!=(const SetDelegate::Iterator &other) const override;
+    bool operator==(const SetDelegate::Iterator &other) const override;
+    bool operator<(const SetDelegate::Iterator& other) const override;
     const SetPiece &operator*() const override;
   };
 
@@ -257,6 +261,8 @@ struct OrderedDenseSet : public SetDelegate {
     Iterator(MDIOrdSet::const_iterator it);
     void operator++() override;
     bool operator!=(const SetDelegate::Iterator &other) const override;
+    bool operator==(const SetDelegate::Iterator &other) const override;
+    bool operator<(const SetDelegate::Iterator &other) const override;
     const SetPiece &operator*() const override;
   };
 
@@ -333,6 +339,8 @@ struct Set {
     Iterator(std::shared_ptr<SetDelegate::Iterator> it);
     void operator++();
     bool operator!=(const Iterator& other) const;
+    bool operator==(const Iterator& other) const;
+    bool operator<(const Iterator& other) const;
     SetPiece operator*() const;
   };
 

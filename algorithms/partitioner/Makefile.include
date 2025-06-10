@@ -3,8 +3,13 @@ PARTITIONER_DIR := algorithms/partitioner
 
 # Sources
 PARTITIONER_SRC := \
-  $(PARTITIONER_DIR)/weighted_sb_graph.cpp \
-  $(PARTITIONER_DIR)/build_sb_graph.cpp
+  $(PARTITIONER_DIR)/build_sb_graph.cpp \
+  $(PARTITIONER_DIR)/dfs_on_sbg.cpp \
+  $(PARTITIONER_DIR)/kernighan_lin_partitioner.cpp \
+  $(PARTITIONER_DIR)/partition_graph.cpp \
+  $(PARTITIONER_DIR)/partition_metrics_api.cpp \
+  $(PARTITIONER_DIR)/partition_strategy.cpp \
+  $(PARTITIONER_DIR)/weighted_sb_graph.cpp
 ALG_SRC += $(PARTITIONER_SRC)
 
 # Objects

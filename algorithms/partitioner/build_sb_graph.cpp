@@ -295,13 +295,12 @@ Map create_set_edge_map(const SetAF& set_fact, const Set& pre_image, const Set& 
     // If the slope is 0, we just return the expression.
     if (var_exp.slope() == 0) {
       logging::sbg_log << "Creating constant interval" << endl;
-      LExp map_exp = var_exp;
       INT offset = var_exp.offset().numerator();
       if (i == 0) {
         offset += set_offset;
       }
 
-      map_exp.offset_ref() = offset;  // this works like `map_exp.set_offset(offset);`
+      LExp map_exp(var_exp.slope(), offset);
       map_exps.emplaceBack(map_exp);
       i++;
 

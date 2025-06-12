@@ -94,22 +94,9 @@ $(LIB_SBGRAPH): $(LIB_OBJ) | create-folders
 install: | install-folders
 	@echo "Installing SBG library headers."
 	@echo ${prefix}
-	@install $(ROOT)/ast/*.hpp $(includedir)/ast
-	@install $(ROOT)/sbg/*.hpp $(includedir)/sbg
-	@install $(ROOT)/util/*.hpp $(includedir)/util
-	@install $(ROOT)/parser/*.hpp $(includedir)/parser
-	@install $(ROOT)/eval/*.hpp $(includedir)/eval
-	@install $(ROOT)/lib/libsbgraph.a $(libdir)/
+	@find $(ROOT) -name '*.hpp' -printf '%P\n' | xargs -I % install -D $(ROOT)/% \
+	$(includedir)/%
 	@echo "Done."
-
-install-folders:
-	@mkdir -p $(libdir)
-	@mkdir -p $(includedir)
-	@mkdir -p $(includedir)/ast
-	@mkdir -p $(includedir)/sbg
-	@mkdir -p $(includedir)/util
-	@mkdir -p $(includedir)/parser
-	@mkdir -p $(includedir)/eval
 
 #///////////////////////////////////////////////////////////////////////////////
 # Testing ----------------------------------------------------------------------

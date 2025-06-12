@@ -50,7 +50,7 @@ The simplest way to compile this package is:
   
   2. Type `./configure` to run the configuration script. 
       
-  3. Type `make` to compile the library `libsbgraph.a`
+  3. Type `make compile` to compile the library `libsbgraph.a`.
 
   4. Type `sudo make install` to install the library and header files in the 
     default installation folders.

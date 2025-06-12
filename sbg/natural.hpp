@@ -90,7 +90,6 @@ struct MD_NAT {
    * i for which x1[i] < x2[i] and for every j < i, x1[j] == x2[j]. 
    */ 
   bool operator<(const MD_NAT &other) const;
-  bool menorThan(const MD_NAT &other) const;
 
   bool operator<=(const MD_NAT &other) const;
 

@@ -62,16 +62,25 @@ void parseEvalProgramFromFile(std::string fname, Impl impl, bool debug)
     std::cout << "Parsing succeeded\n";
     std::cout << "-------------------------\n";
     std::cout << ">>>>>> Eval result <<<<<<\n";
-    std::cout << "-------------------------\n\n";
+    std::cout << "-------------------------\n";
 
     std::shared_ptr<SBG::LIB::SetAF> set_fact 
       = std::make_shared<SBG::LIB::UnordAF>();
-
     switch (impl.set_impl_) {
+      case 1:
+        std::cout << ">>>>>> Ordered Sets <<<<<<\n";
+        std::cout << "-------------------------\n\n";
+        set_fact = std::make_shared<SBG::LIB::OrdAF>();
+        break;
       case 2:
+        std::cout << ">>>>>> Ordered Dense Sets <<<<<<\n";
+        std::cout << "-------------------------\n\n";
         set_fact = std::make_shared<SBG::LIB::OrdDenseAF>();
+        break;
 
       default:
+        std::cout << ">>>>>> Unordered Sets <<<<<<\n";
+        std::cout << "-------------------------\n\n";
         break;
     }
 
@@ -79,6 +88,11 @@ void parseEvalProgramFromFile(std::string fname, Impl impl, bool debug)
     std::shared_ptr<SBG::LIB::PWMapAF> fact
       = std::make_shared<SBG::LIB::UnordPWMapAF>(map_fact);
     switch (impl.pw_impl_) {
+      case 1:
+        std::cout << ">>>>>> Ordered PWMaps <<<<<<\n";
+        std::cout << "-------------------------\n\n";
+        fact = std::make_shared<SBG::LIB::OrdPWMapAF>(map_fact);
+        break;
       default:
         break;
     }
@@ -106,6 +120,8 @@ void usage()
   std::cout << "-f, --file      SBG program file used as input\n";
   std::cout << "-s, --set_impl  Choose set implementation: 0 unordered sets,\n";
   std::cout << "                1 ordered sets, 2 ordered dense sets.\n";
+  std::cout << "-p, --pwmap_impl  Choose pwmap implementation: 0 unordered,\n";
+  std::cout << "                1 ordered.\n";
   std::cout << "-h, --help      Display this information and exit\n";
   std::cout << "-d, --debug     Activate debug info\n";
   std::cout << "-v, --version   Display version information and exit\n\n";
@@ -232,18 +248,19 @@ void version()
 int main(int argc, char**argv)
 {
   std::string filename;
-  int opt, set_impl = 0, pw_impl = 0;
+  int opt, set_impl = 0, pwmap_impl = 0;
   extern char* optarg;
   bool debug = false;
 
   while (true) {
     static struct option long_options[] = {{"file", required_argument, 0, 'f'}
                                            , {"set_impl", required_argument, 0, 's'}
+                                           , {"pwmap_impl", required_argument, 0, 'p'}
                                            , {"help", no_argument, 0, 'h'}
                                            , {"debug", no_argument, 0, 'd'}
                                            , {"version", no_argument, 0, 'v'}
                                            , {0, 0, 0, 0}};
-    opt = getopt_long(argc, argv, "f:s:hdv", long_options, nullptr);
+    opt = getopt_long(argc, argv, "f:s:p:hdv", long_options, nullptr);
     if (opt == EOF) 
       break;
     switch (opt) {
@@ -252,6 +269,9 @@ int main(int argc, char**argv)
         break;
       case 's':
         set_impl = std::stoi(optarg);
+        break;
+      case 'p':
+        pwmap_impl = std::stoi(optarg);
         break;
       case 'h':
         usage();
@@ -272,7 +292,7 @@ int main(int argc, char**argv)
   }
 
   if (!filename.empty())
-    parseEvalProgramFromFile(filename, Impl(set_impl, pw_impl), debug);
+    parseEvalProgramFromFile(filename, Impl(set_impl, pwmap_impl), debug);
   else
     SBG::Util::ERROR("A filename should be provided\n");
 

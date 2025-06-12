@@ -63,14 +63,6 @@ bool MD_NAT::operator<(const MD_NAT &other) const
   return false;
 }
 
-bool MD_NAT::menorThan(const MD_NAT &other) const
-{
-  for (unsigned int j = 0; j < arity(); ++j){
-    if (operator[](j) < other[j])
-      return true;
-  }
-  return false;
-}
 
 bool MD_NAT::operator<=(const MD_NAT &other) const
 {

@@ -32,12 +32,11 @@
 #define SBG_SET_HPP
 
 #include <memory>
-
-#include "sbg/multidim_inter.hpp"
-#include <iostream>
 #include <forward_list>
 #include <algorithm>
-#include <chrono>
+#include "sbg/multidim_inter.hpp"
+
+
 
 namespace SBG {
 
@@ -323,9 +322,6 @@ typedef const OrderedDenseSet &OrdDenseSetCRef;
 // Ordered Set Implementation (concrete delegate) ------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-
-
-
 struct OrderedSet : public SetDelegate {
   member_class(MDIOrdSet, pieces);
 
@@ -378,8 +374,18 @@ struct OrderedSet : public SetDelegate {
   SetDelegPtr compact() const override;
 
   private:
-    
+  
+  /**
+   *Calculates the complement of an ordered set with a single piece.
+  **/
+  
   SetDelegPtr complementAtom() const;
+  
+  /**
+   *Computes the accumulated complement between an ordered set (this), 
+   *which represents the complement of an ordered set, 
+   *and an ordered set (other), which represents the complement of an atomic ordered set.
+  **/
   
   SetDelegPtr intersectionComp(const SetDelegate &other,const SetPiece &mdi, SetDelegate &rem) const;
   

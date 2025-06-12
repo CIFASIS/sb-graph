@@ -143,16 +143,21 @@ Interval Interval::least(const Interval &other) const
 MaybeInterval Interval::compact(const Interval &other) const
 {
   if (step_ == other.step_) {
-    if (end_+step_ == other.begin_)
+    if (end_ + step_ == other.begin_) 
       return Interval(begin_, step_, other.end_);
-
-    else if (other.end_+step_ == begin_)
+    
+    else if (other.end_ + step_ == begin_) 
       return Interval(other.begin_, step_, end_);
-
-    else if (!intersection(other).isEmpty()) {
-      NAT new_b = std::min(begin_, other.begin_);
-      NAT new_e = std::max(end_, other.end_);
-      return Interval(new_b, step_, new_e);
+    
+    else {
+      Interval inter = intersection(other);
+      if (!inter.isEmpty()) {
+        if (inter == other)
+          return {};
+        NAT new_b = std::min(begin_, other.begin_);
+        NAT new_e = std::max(end_, other.end_);
+        return Interval(new_b, step_, new_e);
+      }
     }
   }
 

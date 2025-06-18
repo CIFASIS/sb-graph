@@ -17,7 +17,6 @@
 
  ******************************************************************************/
 
-#include <iostream>
 #include "sbg/multidim_inter.hpp"
 
 namespace SBG {

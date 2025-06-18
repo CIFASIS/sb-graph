@@ -26,8 +26,6 @@ namespace MISC {
 
 using namespace SBG::LIB;
 
-bool eqId(const Map &sbgmap) { return sbgmap.isId(); }
-
 DSBG buildSCCFromMatching(const BFSMatching &match)
 {
   const PWMapAF &fact = match.fact();
@@ -74,9 +72,7 @@ DSBG buildSortFromSCC(const SCC &scc, const PWMap &rmap)
   mapD = mapD.compact();
 
   PWMap aux_rmap = rmap.compact();
-  PWMap reps_rmap = aux_rmap.filterMap([](const Map &sbgmap) {
-    return eqId(sbgmap);
-  });
+  PWMap reps_rmap = aux_rmap.restrict(aux_rmap.fixedPoints());
   Set V = reps_rmap.dom();
 
   PWMap Vmap = dsbg.Vmap().restrict(V);

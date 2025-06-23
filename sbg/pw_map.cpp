@@ -166,8 +166,7 @@ PWMapDelegPtr UnordPWMap::operator-(const PWMapDelegate &other) const
   if (isEmpty() || other.isEmpty())
     return res;
 
-  Interval all(0, 1, Inf);
-  Set univ = fact_.createSet(SetPiece(arity(), all));
+  Set univ = fact_.createSet(SetPiece(arity(), Interval(0, 1, Inf)));
 
   UnordPWMapCRef othr = static_cast<UnordPWMapCRef>(other);
   for (const Map &m1 : pieces_) {
@@ -385,6 +384,16 @@ PWMapDelegPtr UnordPWMap::mapInf(unsigned int n) const
 }
 
 PWMapDelegPtr UnordPWMap::mapInf() const { return mapInf(0); }
+
+Set UnordPWMap::fixedPoints() const
+{
+  Set res = fact_.createSet();
+
+  for (const Map &m : pieces_)
+    res = res.disjointCup(m.fixedPoints());
+
+  return res;
+}
 
 // Extra operations ------------------------------------------------------------
 
@@ -837,6 +846,8 @@ PWMap PWMap::composition(const PWMap &other) const
 PWMap PWMap::mapInf(unsigned int n) const { return delegate_->mapInf(n); }
 
 PWMap PWMap::mapInf() const { return delegate_->mapInf(); }
+
+Set PWMap::fixedPoints() const { return delegate_->fixedPoints(); }
 
 PWMap PWMap::concatenation(const PWMap &other) const
 {

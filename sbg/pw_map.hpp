@@ -163,6 +163,11 @@ struct PWMapDelegate {
    */
   virtual PWMapDelegPtr mapInf() const = 0;
 
+  /**
+   * @brief Calculates the set of elements in the domain such that f(x) = x.
+   */
+  virtual Set fixedPoints() const = 0;
+
   // Extra operations ----------------------------------------------------------
 
   /** 
@@ -317,6 +322,7 @@ struct UnordPWMap : public PWMapDelegate {
 
   PWMapDelegPtr mapInf(unsigned int n) const override;
   PWMapDelegPtr mapInf() const override;
+  Set fixedPoints() const override;
 
   // Extra operations ----------------------------------------------------------
 
@@ -399,6 +405,7 @@ struct PWMap {
 
   PWMap mapInf(unsigned int n) const;
   PWMap mapInf() const;
+  Set fixedPoints() const;
 
   // Extra operations ----------------------------------------------------------
 

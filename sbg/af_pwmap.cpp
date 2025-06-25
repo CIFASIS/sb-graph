@@ -51,6 +51,11 @@ PWMap UnordPWMapAF::createPWMap(const Map &m) const
   return PWMap(std::make_unique<UnordPWMap>(map_fact_, m));
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+// OrdPWMap AF -----------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
 OrdPWMapAF::OrdPWMapAF(const MapAF &map_fact) : PWMapAF(map_fact) {}
 
 PWMap OrdPWMapAF::createPWMap() const
@@ -67,6 +72,7 @@ PWMap OrdPWMapAF::createPWMap(const Map &m) const
 {
   return PWMap(std::make_unique<OrdPWMap>(map_fact_, m));
 }
+
 
 } // namespace LIB
 

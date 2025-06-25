@@ -385,28 +385,40 @@ SetDelegPtr UnorderedSet::offset(const MD_NAT &off) const
 
 SetDelegPtr UnorderedSet::compact() const
 {
-  // New idea TODO
-  //MDIUnordSet old_compact = pieces_, compact = old_compact;
-  //SetPiece ith(compact.begin());
-  //do {
-  //  for (const SetPiece &mdi : compact) {
-  //    auto ith_compact = ith.compact(mdi);
-  //    if (ith_compact) 
-  //      ith = ith_compact.value();
-  //  }
-  //  MDIUnordSet aux_compact = compact;
-  //  for (const SetPiece &mdi : aux_compact) {
-  //    if (!ith.intersection(mdi).isEmpty())
-  //      compact.erase(mdi);
-  //  }
-  //  compact.emplace(ith);
-  //} while (old_compact != compact);
+  MDIUnordSet res;
 
-  //std::shared_ptr<UnorderedSet> res = std::make_shared<UnorderedSet>();
-  //res->pieces_ = pieces_.compact();
+  if (!isEmpty()) {
+    std::set<SetPiece> prev(pieces_.begin(), pieces_.end()), actual = prev;
+    do {
+      prev = actual;
+      actual = std::set<SetPiece>();
 
-  return std::make_unique<UnorderedSet>(pieces_);
+      std::set<SetPiece>::iterator ith = prev.begin(), last = prev.end();
+      std::set<SetPiece> to_erase;
+      for (; ith != last; ++ith) {
+        SetPiece ith_compact = *ith;
+        std::set<SetPiece>::iterator next = ith;
+        ++next;
+        for (; next != last; ++next) {
+          MaybeMDI new_compact = ith_compact.compact(*next);
+          if (new_compact) {
+            ith_compact = new_compact.value();
+            to_erase.insert(*next);
+          }
+        }
+
+        if (to_erase.find(ith_compact) == to_erase.end())
+          actual.insert(ith_compact);
+      }
+    } while (actual != prev);
+
+    for (const SetPiece &mdi : actual)
+      res.push_back(mdi);
+  }
+
+  return std::make_unique<UnorderedSet>(res);
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Ordered Set Implementation (1 dimension, dense intervals) -------------------
@@ -923,7 +935,7 @@ void OrderedSet::emplaceBack(const SetPiece &mdi)
 }
 
 bool OrderedSet::operator==(const SetDelegate &other) const
-{
+{ 
   SetDelegPtr this_comp = compact();
   OrdSetCRef ths = static_cast<OrdSetCRef>(*this_comp);
   SetDelegPtr other_comp = other.compact();
@@ -932,7 +944,7 @@ bool OrderedSet::operator==(const SetDelegate &other) const
   if(ths.pieces_ == othr.pieces_)
     return true;
   else
-    return static_cast<OrdSetCRef>(*(ths.difference(othr))).isEmpty();
+    return (ths.difference(othr))->isEmpty() && (othr.difference(ths))->isEmpty();
 }
 
 bool OrderedSet::operator!=(const SetDelegate &other) const
@@ -1220,8 +1232,7 @@ SetDelegPtr OrderedSet::intersectionComp(const SetDelegate &other, const SetPiec
     // doIntersection prevents the creation of additional partitions
     bool doIntersection = doInt(elem,mdi);
     
-    if(doIntersection)
-      globalPos = advanceHint(inter, elem, globalPos);
+    globalPos = advanceHint(inter, elem, globalPos);
     
     while (doIntersection && liCurr != indexes.end()) {
       size_t idx = *liCurr;
@@ -1286,7 +1297,7 @@ SetDelegPtr OrderedSet::complement() const
 }
 
 SetDelegPtr OrderedSet::difference(const SetDelegate &other) const
-{
+{ 
   OrdSetCRef othr = static_cast<OrdSetCRef>(other);
   
   // Special cases
@@ -1382,27 +1393,38 @@ SetDelegPtr OrderedSet::compact() const
 {
   MDIOrdSet res;
 
-  if (isEmpty())
-    return std::make_unique<OrderedSet>(res);
+  if (!isEmpty()) {
+    std::set<SetPiece> prev(pieces_.begin(), pieces_.end()), actual = prev;
+    do {
+      prev = actual;
+      actual = std::set<SetPiece>();
 
-  auto next_it = pieces_.begin();
-  ++next_it;
-  SetPiece compacted = *pieces_.begin();
-  for (auto it = pieces_.begin(); next_it != pieces_.end(); ++it) {
-    MaybeMDI ith = compacted.compact(*next_it);
-    if (!ith) {
-      res.push_back(compacted);
-      compacted = *next_it;
-    }
-    else
-      compacted = ith.value();
+      std::set<SetPiece>::iterator ith = prev.begin(), last = prev.end();
+      std::set<SetPiece> to_erase;
+      for (; ith != last; ++ith) {
+        SetPiece ith_compact = *ith;
+        std::set<SetPiece>::iterator next = ith;
+        ++next;
+        for (; next != last; ++next) {
+          MaybeMDI new_compact = ith_compact.compact(*next);
+          if (new_compact) {
+            ith_compact = new_compact.value();
+            to_erase.insert(*next);
+          }
+        }
 
-    ++next_it;
+        if (to_erase.find(ith_compact) == to_erase.end())
+          actual.insert(ith_compact);
+      }
+    } while (actual != prev);
+
+    for (const SetPiece &mdi : actual)
+      res.push_back(mdi);
   }
-  res.push_back(compacted);
 
   return std::make_unique<OrderedSet>(res);
 }
+
 
 
 

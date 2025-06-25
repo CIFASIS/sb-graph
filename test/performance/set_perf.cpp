@@ -538,7 +538,7 @@ TEST(SetPerf, OrdComplementThreeDims)
 
 TEST(SetPerf, OrdDisjointUnionThreeDims)
 {
-  int N = 20000;
+  int N = 40000;
 
   SBG::LIB::OrdAF fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
@@ -684,7 +684,7 @@ TEST(SetPerf, UnordUnionThreeDims)
 
 TEST(SetPerf, UnordComplementThreeDims)
 {
-  int N = 1000;
+  int N = 1000 ;
 
   SBG::LIB::UnordAF fact;
   SBG::LIB::Set s1 = fact.createSet();
@@ -716,7 +716,7 @@ TEST(SetPerf, UnordComplementThreeDims)
 
 TEST(SetPerf, UnordDisjointUnionThreeDims)
 {
-  int N = 20000;
+  int N = 40000;
 
   SBG::LIB::UnordAF fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
@@ -745,3 +745,4 @@ TEST(SetPerf, UnordDisjointUnionThreeDims)
 
   SUCCEED();
 }
+

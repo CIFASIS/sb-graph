@@ -33,6 +33,7 @@
 
 #include <memory>
 #include <forward_list>
+#include <set>
 #include <algorithm>
 #include "sbg/multidim_inter.hpp"
 

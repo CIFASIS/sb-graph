@@ -85,10 +85,6 @@ struct Map {
   bool operator==(const Map &other) const;
   bool operator!=(const Map &other) const;
   Map &operator=(const Map &other);
-  bool operator<(const Map &other) const;
-
-  MD_NAT minPer() const;
-  MD_NAT maxPer() const;
   
   /**
    * @brief Calculates the sum of both maps for elements that belong to both
@@ -153,7 +149,6 @@ struct Map {
    */
   MaybeMap compact(const Map &other) const;
   
-  //void calcularMinMaxPer();
 };
 std::ostream &operator<<(std::ostream &out, const Map &s);
 

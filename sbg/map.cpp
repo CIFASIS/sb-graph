@@ -84,9 +84,6 @@ SetPiece image(SetPiece mdi, Exp mdle)
 member_move_imp(Map, Set, dom);
 member_move_imp(Map, Exp, exp);
 
-
-
-
 Map::~Map() {}
 Map::Map(const SetAF &fact) : fact_(fact), dom_(fact.createSet()){}
 Map::Map(const SetAF &fact, MD_NAT x, Exp exp)
@@ -122,51 +119,6 @@ Map &Map::operator=(const Map &other)
   exp_ = other.exp_;
 
   return *this;
-}
-
-bool Map::operator<(const Map &other) const
-{ 
-
-  return minPer() < other.minPer();
-}
-
-
-
-MD_NAT Map::minPer() const
-{
-    MD_NAT minimo(dom_.arity(), Inf);
- 
-    if (dom_.isEmpty()) 
-        return minimo; 
-    
-    for (const SetPiece &mdi : dom_) {
-        MD_NAT candidato = mdi.minElem();
-        
-        for (std::size_t i = 0; i < minimo.arity(); ++i) {
-            minimo[i] = std::min(minimo[i], candidato[i]);
-        }
-    }
-    
-    return minimo;
-}
-
-MD_NAT Map::maxPer() const
-{
-    MD_NAT maximo(dom_.arity(), 0);
-    
-    if (dom_.isEmpty()) 
-        return maximo; 
-        
-    
-    for (const SetPiece &mdi : dom_) {
-        MD_NAT candidato = mdi.maxElem();
-        
-        for (std::size_t i = 0; i < maximo.arity(); ++i) {
-            maximo[i] = std::max(maximo[i], candidato[i]);
-        }
-    }
-  
-    return maximo;
 }
 
 
@@ -299,25 +251,6 @@ MaybeMap Map::compact(const Map &other) const
 
   return {};
 }
-
-/*
-void Map::calcularMinMaxPer() {
-    MD_NAT maximo(dom_.arity(), 0);
-    MD_NAT minimo(dom_.arity(), Inf); 
-    
-    for (const SetPiece &mdi : dom_) {
-      MD_NAT candidatoMax = mdi.maxElem();
-      MD_NAT candidatoMin = mdi.minElem();
-      
-      for (std::size_t i = 0; i < maximo.arity(); ++i) {
-          maximo[i] = std::max(maximo[i], candidatoMax[i]);
-          minimo[i] = std::min(minimo[i], candidatoMin[i]);
-      }
-    }
-    
-    minPer_ = minimo;
-    maxPer_ = maximo;
-}*/
 
 } // namespace LIB
 

@@ -21,6 +21,16 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-reorder")
 endif()
 
+# Output directories
+set(BIN_DIR ${PROJECT_SOURCE_DIR}/bin)
+set(LIB_DIR ${PROJECT_SOURCE_DIR}/lib)
+
+# Create output directories
+file(MAKE_DIRECTORY
+      ${BIN_DIR}
+      ${LIB_DIR}
+)
+
 # sbgraph-library
 add_library(sbgraph STATIC)
 

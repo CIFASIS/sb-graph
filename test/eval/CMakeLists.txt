@@ -1,11 +1,6 @@
 # Output directories
 set(TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test_data)
 
-# Create output directories
-file(MAKE_DIRECTORY
-      ${TEST_DATA_DIR}
-)
-
 # Add executable
 add_executable(
     eval-test
@@ -40,7 +35,8 @@ set_target_properties(eval-test PROPERTIES
 
 add_custom_target(run-eval-test
       COMMAND echo "Running Eval tests."
-      COMMAND cd ${TEST_DATA_DIR} && rm -rf *
+      COMMAND rm -rf ${TEST_DATA_DIR}
+      COMMAND mkdir -p ${TEST_DATA_DIR}
       COMMAND cd ${BIN_DIR} && ./eval-test
 )
 

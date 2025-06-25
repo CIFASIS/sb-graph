@@ -50,6 +50,13 @@ TEST_P(EvalTests, Eval)
 
   const std::string RESULT_FILE = EVAL_TEST_ROOT + "/test_data/" + NAME + "/" + NAME + ".passed";
   std::ifstream result(RESULT_FILE.c_str());
+  
+  const std::string FAILED_RESULT_FILE = EVAL_TEST_ROOT + "/test_data/" + NAME + "/" + NAME + ".log.failed";
+  std::ifstream failed_test(FAILED_RESULT_FILE.c_str());
+  if (failed_test.good()) {
+    const std::string CAT_CMD = "cat " + FAILED_RESULT_FILE;
+    std::system(CAT_CMD.c_str());
+  }
   EXPECT_TRUE(result.good());
 }
 

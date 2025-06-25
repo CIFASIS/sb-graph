@@ -35,6 +35,11 @@ jobs:
       run: |
         make
 
+    - name: Install
+      working-directory: ./build
+      run: |
+        make install
+
     - name: Tests
       working-directory: ./build
       run: make test

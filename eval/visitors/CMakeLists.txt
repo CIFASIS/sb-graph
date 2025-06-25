@@ -1,0 +1,12 @@
+target_sources(
+    sbg-eval-lib
+    PRIVATE
+        program_visitor.cpp
+        autom_impl_visitor.cpp
+        stm_visitor.cpp
+        eval_expr.cpp
+        eval_le.cpp
+        eval_rat.cpp
+        eval_int.cpp
+        eval_nat.cpp
+)

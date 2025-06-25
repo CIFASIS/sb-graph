@@ -1,6 +1,5 @@
 # Output directories
-set(SYSTEM_DIR ${CMAKE_CURRENT_SOURCE_DIR}/system)
-set(TEST_DATA_DIR ${SYSTEM_DIR}/test_data)
+set(TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test_data)
 
 # Create output directories
 file(MAKE_DIRECTORY

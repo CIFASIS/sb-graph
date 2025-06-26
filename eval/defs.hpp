@@ -30,9 +30,7 @@
 #include <variant>
 
 #include "ast/expr.hpp"
-#include "ast/statement.hpp"
-#include "sbg/af_pwmap.hpp"
-#include "sbg/sbg_algorithms.hpp"
+#include "algorithms/matching/matching.hpp"
 
 namespace SBG {
 
@@ -40,15 +38,7 @@ namespace Eval {
 
 // Type definitions ------------------------------------------------------------
 
-struct Boolean {
-  bool b_;
-
-  Boolean();
-  Boolean(bool b);
-};
-std::ostream &operator<<(std::ostream &out, const Boolean &b);
-
-typedef std::variant<Boolean
+typedef std::variant<bool
   , LIB::NAT
   , LIB::MD_NAT
   , LIB::RATIONAL

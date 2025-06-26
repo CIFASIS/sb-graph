@@ -25,7 +25,6 @@
 #define PARSER_STATEMENT_AST_HPP
 
 #include "ast/expr.hpp"
-#include "sbg/natural.hpp"
 #include "util/debug.hpp"
 
 namespace SBG {

@@ -25,8 +25,8 @@
 #define SBG_NAT_HPP
 
 #include <cmath>
+#include <limits>
 #include <numeric>
-#include <optional>
 #include <ostream>
 #include <vector>
 
@@ -41,6 +41,7 @@ namespace LIB {
 ////////////////////////////////////////////////////////////////////////////////
 
 typedef long long unsigned int NAT;
+const NAT Inf = std::numeric_limits<NAT>::max();
 
 typedef std::vector<NAT> VNAT;
 struct MD_NAT {
@@ -102,8 +103,6 @@ struct MD_NAT {
   std::size_t arity() const;
 };
 std::ostream &operator<<(std::ostream &out, const MD_NAT &md);
-
-const NAT Inf = std::numeric_limits<NAT>::max();
 
 } // namespace LIB
 

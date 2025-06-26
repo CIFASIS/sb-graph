@@ -30,6 +30,8 @@
 #include <util/logger.hpp>
 
 #include "build_sb_graph.hpp"
+#include "partition_graph.hpp"
+#include "sbg_partitioner_log.hpp"
 #include "weighted_sb_graph.hpp"
 
 #define CHECK_1_N_REL 0
@@ -109,19 +111,6 @@ struct Node {
   return os;
 }
 
-[[maybe_unused]] size_t get_set_size(const Set& set)
-{
-  size_t size = 0;
-
-  for (auto s : set) {
-    for (size_t i = 0; i < s.arity(); i++) {
-      auto sp = s[i];
-      size += sp.end() - sp.begin() + 1;
-    }
-  }
-
-  return size;
-}
 
 /// This funcion takes a json array and returns a list of parsed variable objects (Var)
 vector<Var> read_var_object(const rapidjson::Value& var_array)
@@ -210,9 +199,9 @@ map<int, Node> create_node_objects_from_json(const Document& document)
   }
 
   for (const auto& [i, n] : nodes) {
-    cout << n << endl;
+    logging::sbg_log << n << endl;
   }
-  cout << endl;
+  logging::sbg_log << endl;
 
   return nodes;
 }
@@ -227,7 +216,7 @@ tuple<Set, NodeWeight> create_set_of_nodes(const map<int, Node>& nodes, map<int,
   NodeWeight weights;
 
   for (const auto& [id, node] : nodes) {
-    cout << "Defining interval for node " << id << " ";
+    logging::sbg_log << "Defining interval for node " << id << " ";
 
     // Define the interval and add it to the node set taking into account the current offset
     // Create an offset for each equation node. We want that each equation has its
@@ -247,7 +236,7 @@ tuple<Set, NodeWeight> create_set_of_nodes(const map<int, Node>& nodes, map<int,
       Interval interval = Interval(interval_begin, 1, interval_end);
 
       array_of_nodes.emplaceBack(interval);
-      cout << interval << endl;
+      logging::sbg_log << interval << endl;
 
       // set this node offset, the difference between the interval and the original one
       node_offsets[id] = interval_begin - node_interval.first;
@@ -305,13 +294,13 @@ Map create_set_edge_map(const SetAF& set_fact, const Set& pre_image, const Set& 
   for (const auto& var_exp : var_exps.exps()) {
     // If the slope is 0, we just return the expression.
     if (var_exp.slope() == 0) {
-      cout << "Creating constant interval" << endl;
-      LExp map_exp = var_exp;
+      logging::sbg_log << "Creating constant interval" << endl;
       INT offset = var_exp.offset().numerator();
       if (i == 0) {
         offset += set_offset;
       }
 
+      LExp map_exp(var_exp.slope(), offset);
       map_exps.emplaceBack(map_exp);
       i++;
 
@@ -337,7 +326,7 @@ Map create_set_edge_map(const SetAF& set_fact, const Set& pre_image, const Set& 
 
     i++;
   }
-  cout << "created " << i << " maps out of " << var_exps << endl;
+  logging::sbg_log << "created " << i << " maps out of " << var_exps << endl;
 
   map = map_fact.createMap(edge_domain, map_exps);
 
@@ -361,7 +350,7 @@ Set get_node_domain(Node node, SetAF& set_fact)
 
 Set get_edge_domain(Set image_intersection_set, Set& edge_set, int& max_value, SetAF& set_af)
 {
-  cout << "get_edge_domain " << image_intersection_set << ", " << edge_set << endl;
+  logging::sbg_log << "get_edge_domain " << image_intersection_set << ", " << edge_set << endl;
 
   Set edge_domain_set = set_af.createSet();
 
@@ -388,7 +377,7 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
   EdgeCost costs;                          // Weight of edges
 
   for (const auto& [id, node] : nodes) {
-    cout << "Looking for connections with " << id << endl;
+    logging::sbg_log << "Looking for connections with " << id << endl;
 
     // Define the equation intervals (without offsets)
     Set current_node_domain = set_fact.createSet();
@@ -419,7 +408,7 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
       // Definitions of this variable are on defs field. We want to check if
       // intersects with any node
       for (int i : right_var.defs) {
-        cout << "Is it connected to " << i << "?" << endl;
+        logging::sbg_log << "Is it connected to " << i << "?" << endl;
         auto node_candidate = nodes.at(i);
 
         // Domain of the node candidate
@@ -439,10 +428,10 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
           // we want to see if the intersection of the images is not empty
           auto candidate_image_intersection = node_candidate_image.intersection(used_node_image);
           if (candidate_image_intersection.isEmpty()) {
-            cout << "No, it is not" << endl;
+            logging::sbg_log << "No, it is not" << endl;
             continue;
           }
-          cout << "Yes, it is: " << candidate_image_intersection << endl;
+          logging::sbg_log << "Yes, it is: " << candidate_image_intersection << endl;
 
           // Now we need to create both maps, let's create their domain.
           auto image_intersection_set = candidate_image_intersection;
@@ -453,7 +442,7 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
 #if CHECK_1_N_REL
           // we have to use the first map of candidate node
           if (node_candidate_exps.exps()[0].slope() == 0) {
-            cout << "This should be 1-N " << node_candidate_domain << endl;
+            logging::sbg_log << "This should be 1-N " << node_candidate_domain << endl;
             auto node_size = get_set_size(node_candidate_domain);
 
             Set edge_domain_set = get_edge_domain(image_intersection_set, edge_set, max_value);
@@ -461,25 +450,25 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
 
             SetPiece first_interval = *node_candidate_domain.begin();
             int offset = first_interval[0].begin() + node_offsets.at(i) - edge_domain_set_first_interval[0].begin();
-            cout << "node offset " << node_offsets.at(i) << ", " << edge_domain_set << " so offset is " << offset << endl;
+            logging::sbg_log << "node offset " << node_offsets.at(i) << ", " << edge_domain_set << " so offset is " << offset << endl;
             Map to_node_candidate = map_fact.createMap(edge_domain_set, LExp(1, RATIONAL(offset, 1)));
-            cout << "to_node_candidate " << to_node_candidate << endl;
+            logging::sbg_log << "to_node_candidate " << to_node_candidate << endl;
 
-            cout << to_node_candidate << endl;
+            logging::sbg_log << to_node_candidate << endl;
 
             auto im = Interval(node_candidate_exps.exps()[0].offset().numerator(), 1, node_candidate_exps.exps()[0].offset().numerator());
             auto im_set = set_fact.createSet(im);
 
             Map to_current_node = create_set_edge_map(set_fact, im_set, edge_domain_set,
                                                       Exp(LExp(0, node_candidate_exps.exps()[0].offset())), node_offsets.at(id));
-            cout << "to_current_node " << to_current_node << endl;
+            logging::sbg_log << "to_current_node " << to_current_node << endl;
 
             lhs_maps.emplaceBack(to_current_node);
             rhs_maps.emplaceBack(to_node_candidate);
 
             continue;
           } else if (exp.exps()[0].slope() == 0) {
-            cout << "This should be N-1" << endl;
+            logging::sbg_log << "This should be N-1" << endl;
             auto first_interval_current_node_domain = *current_node_domain.begin();
             auto node_size = first_interval_current_node_domain[0].end() - first_interval_current_node_domain[0].begin();
 
@@ -493,13 +482,13 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
 
             int offset = first_interval_current_node_domain[0].begin() + node_offsets.at(id) - edge_domain_set_first_interval[0].begin();
             Map to_current_node = map_fact.createMap(edge_domain_set, LExp(1, RATIONAL(offset, 1)));
-            cout << "to_current_node " << to_current_node << endl;
+            logging::sbg_log << "to_current_node " << to_current_node << endl;
 
             auto im = Interval(exp.exps()[0].offset().numerator(), 1, exp.exps()[0].offset().numerator());
             auto im_set = set_fact.createSet(im);
             Map to_node_candidate = create_set_edge_map(set_fact, im_set, edge_domain_set,
                                                         Exp(LExp(0, node_candidate_exps.exps()[0].offset())), node_offsets.at(i));
-            cout << "to_node_candidate " << to_node_candidate << endl;
+            logging::sbg_log << "to_node_candidate " << to_node_candidate << endl;
 
             lhs_maps.emplaceBack(to_current_node);
             rhs_maps.emplaceBack(to_node_candidate);
@@ -516,12 +505,12 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
           auto first_lhs_node_candidate =
               Exp(LExp(RATIONAL(node_candidate.lhs[0].exps[0].first, 1), RATIONAL(node_candidate.lhs[0].exps[0].second, 1)));
           auto pre_ima_candidate = node_candidate_CanonMap.dom();
-          cout << "pre_ima_candidate " << pre_ima_candidate << " from " << node_candidate_CanonMap << endl;
+          logging::sbg_log << "pre_ima_candidate " << pre_ima_candidate << " from " << node_candidate_CanonMap << endl;
           auto node_candidate_map = create_set_edge_map(set_fact, pre_ima_candidate, edge_domain_set, first_lhs_node_candidate,
                                                         node_offsets.at(i), map_fact, pw_fact);
           auto node_candidate_map_image = node_candidate_map.image();
-          cout << "map is " << node_candidate_map << endl;
-          cout << "image: " << node_candidate_map_image << endl;
+          logging::sbg_log << "map is " << node_candidate_map << endl;
+          logging::sbg_log << "image: " << node_candidate_map_image << endl;
 
           // Create map to current node
           auto pre_image_current_node = rhs_map.preImage(image_intersection_set);
@@ -529,9 +518,9 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
           auto im_map = map_fact.createMap(pre_image_current_node, exp);
           auto im = im_map.dom();
           auto current_node_map = create_set_edge_map(set_fact, im, edge_domain_set, exp, node_offsets.at(id), map_fact, pw_fact);
-          auto current_node_map_image = current_node_map.dom();
-          cout << "map is " << current_node_map << endl;
-          cout << "image: " << current_node_map_image << endl;
+          auto current_node_map_image = current_node_map.image();
+          logging::sbg_log << "map is " << current_node_map << endl;
+          logging::sbg_log << "image: " << current_node_map_image << endl;
 
           if (not(current_node_map_image == node_candidate_map_image)) {
             lhs_maps.emplaceBack(current_node_map);
@@ -539,9 +528,9 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
             edge_set = edge_set_copy;
             max_value = max_value_copy;
           } else {
-            cout << "ignoring it since it's a reflexive conexion" << endl;
+            logging::sbg_log << "ignoring it since it's a reflexive conexion" << endl;
           }
-          cout << "----" << endl;
+          logging::sbg_log << "----" << endl;
 
           costs.insert({edge_domain_set, var.cost});
         }
@@ -563,7 +552,7 @@ SBG::LIB::WeightedSBGraph create_sb_graph(const std::map<int, Node>& nodes, SBG:
 
   // Now, we create our set of nodes.
   auto [node_set, weights] = create_set_of_nodes(nodes, node_offsets, max_value, set_fact);
-  cout << "node_set " << node_set << endl;
+  logging::sbg_log << "node_set " << node_set << endl;
 
   // Create edges and maps.
   auto [edge_set, left_maps, right_maps, costs] = create_graph_edges(nodes, node_offsets, max_value, set_fact, map_fact, pw_fact);
@@ -609,10 +598,26 @@ pair<SetPiece, SetPiece> cut_interval(const SetPiece& interval, int cut_value)
 
 }  // namespace
 
+
+size_t get_set_size(const Set& set)
+{
+  size_t size = 0;
+
+  for (auto s : set) {
+    for (size_t i = 0; i < s.arity(); i++) {
+      auto sp = s[i];
+      size += sp.end() - sp.begin() + 1;
+    }
+  }
+
+  return size;
+}
+
+
 SBG::LIB::WeightedSBGraph build_sb_graph(const string& filename,  // create needed factories
                                          SBG::LIB::SetAF& set_fact, SBG::LIB::MapAF& map_fact, SBG::LIB::PWMapAF& pw_fact)
 {
-  cout << "Reading " << filename << "..." << endl;
+  logging::sbg_log << "Reading " << filename << "..." << endl;
 
   // Parse json document
   Document document;
@@ -633,30 +638,30 @@ SBG::LIB::WeightedSBGraph build_sb_graph(const string& filename,  // create need
 
 Set get_adjacents(const SBG::LIB::SBG& graph, const Set& node, SetAF& set_fact, MapAF& map_fact)
 {
-  Set adjacents = set_fact.createSet();
+    Set adjacents = set_fact.createSet();
 
-  // Fill adjacents
-  unsigned acc = 0;
-  for (auto it1 = graph.map1().begin(), it2 = graph.map2().begin(); it1 != graph.map1().end() and it2 != graph.map2().end(); ++it1, ++it2) {
-    const auto map1 = *it1;
-    const auto map2 = *it2;
+    // Fill adjacents
+    unsigned acc = 0;
+    for (auto it1 = graph.map1().begin(), it2 = graph.map2().begin(); it1 != graph.map1().end() and it2 != graph.map2().end(); ++it1, ++it2) {
+        const auto map1 = *it1;
+        const auto map2 = *it2;
 
-    acc += add_adjacent_nodes(map1, map2, node, adjacents, set_fact);
+        acc += add_adjacent_nodes(map1, map2, node, adjacents, set_fact);
 
-    auto map2_minus_map1_dom = map2.dom().difference(map1.dom());
-    if (not map2_minus_map1_dom.isEmpty()) {
-      Map map2_ = map_fact.createMap(map2_minus_map1_dom, map2.exp());
+        auto map2_minus_map1_dom = map2.dom().difference(map1.dom());
+        if (not map2_minus_map1_dom.isEmpty()) {
+            Map map2_ = map_fact.createMap(map2_minus_map1_dom, map2.exp());
 
-      acc += add_adjacent_nodes(map2_, map1, node, adjacents, set_fact);
+            acc += add_adjacent_nodes(map2_, map1, node, adjacents, set_fact);
+        }
     }
-  }
 
-  return adjacents;
+    return adjacents;
 }
 
 pair<Set, Set> cut_bidimensional_interval(const SetPiece& set_piece, size_t s, SetAF& set_fact)
 {
-  cout << "cutting interval " << set_piece << ", " << s << endl;
+  logging::sbg_log << "cutting interval " << set_piece << ", " << s << endl;
 
   auto size_node_2 = get_node_size(SetPiece(set_piece.intervals()[1]), NodeWeight(), set_fact);
 
@@ -664,7 +669,7 @@ pair<Set, Set> cut_bidimensional_interval(const SetPiece& set_piece, size_t s, S
 
   unsigned rest = s % size_node_2;
 
-  cout << "Ammount of rows " << ammount_of_rows << endl;
+  logging::sbg_log << "Ammount of rows " << ammount_of_rows << endl;
 
   Set OrdSet_ret = set_fact.createSet();
   SetPiece interval_2 = *set_piece.intervals().begin();
@@ -672,7 +677,7 @@ pair<Set, Set> cut_bidimensional_interval(const SetPiece& set_piece, size_t s, S
   if (ammount_of_rows > 0) {
     SetPiece interval_1;
     tie(interval_1, interval_2) = cut_interval(set_piece.intervals().front(), set_piece.intervals().front().begin() + ammount_of_rows - 1);
-    cout << "Interval cut in " << ammount_of_rows << ": " << interval_1 << ", " << interval_2 << endl;
+    logging::sbg_log << "Interval cut in " << ammount_of_rows << ": " << interval_1 << ", " << interval_2 << endl;
     if (interval_2.arity() == 0 and rest > 0) {
       interval_2 = Interval(interval_1.intervals().front().end(), 1, interval_1.intervals().front().end());
     }
@@ -693,7 +698,7 @@ pair<Set, Set> cut_bidimensional_interval(const SetPiece& set_piece, size_t s, S
   Set set = set_fact.createSet(set_piece);
   Set remaining = set.difference(OrdSet_ret);
 
-  cout << "original " << set_piece << ", " << OrdSet_ret << ", " << remaining << endl;
+  logging::sbg_log << "original " << set_piece << ", " << OrdSet_ret << ", " << remaining << endl;
 
   return make_pair(OrdSet_ret, remaining);
 }
@@ -708,7 +713,7 @@ pair<Set, Set> cut_interval_by_dimension(Set& set_piece, const NodeWeight& node_
     return make_pair(set_fact.createSet(), set_piece);
   }
 
-  size_t actual_size = size / 1;  // unsigned(get_set_cost(*set_piece.begin(), node_weight));
+  size_t actual_size = size / unsigned(get_set_cost(*set_piece.begin(), node_weight, set_fact));
 
   SetPiece p_1, p_2;
   auto i1 = *set_piece.begin();
@@ -718,7 +723,7 @@ pair<Set, Set> cut_interval_by_dimension(Set& set_piece, const NodeWeight& node_
 
 unsigned get_node_size(const SetPiece& node, const NodeWeight& node_weight, SetAF& set_fact)
 {
-  int weight = 1;  // currently, all nodes have weight 1
+  int weight = get_set_cost(node, node_weight, set_fact);
 
   unsigned acc = node.intervals().front().end() - node.intervals().front().begin() + 1;
 
@@ -746,13 +751,24 @@ unsigned get_node_size(const Set& node, const NodeWeight& node_weight, SetAF& se
   return size;
 }
 
+unsigned get_partition_size(const vector<SetPiece>& node, const NodeWeight& node_weight, SetAF& set_fact)
+{
+  unsigned size = 0;
+  for (const auto& set_piece : node) {
+    size += get_node_size(set_piece, node_weight, set_fact);
+  }
+
+  return size;
+}
+
 unsigned get_edge_set_cost(const SBG::LIB::SetPiece& node, const EdgeCost& edge_cost)
 {
   if (node.isEmpty()) {
     return 0;
   }
 
-  int weight = 1;  // currently, all edges have cost 1
+  UnordAF set_fact;
+  int weight = get_set_cost(node, edge_cost, set_fact);  // currently, all edges have cost 1
 
   unsigned acc = node.intervals().front().end() - node.intervals().front().begin() + 1;
 
@@ -780,48 +796,55 @@ unsigned get_edge_set_cost(const SBG::LIB::Set& node, const EdgeCost& edge_cost)
   return size;
 }
 
-void flatten_set(Set& set, const SBG::LIB::SBG& graph)
+void flatten_set(Set& set, const WeightedSBGraph& graph, SetAF& set_fact)
 {
-  if ((not set.isEmpty()) and set.arity() > 1) {
-    cout << "flatten_set for sets with " << set.arity() << " is not implemented" << endl;
-    return;
-  }
-
-  // Set new_partition;
-  // for (const auto& v : graph.V()) {
-  //     MDInterOrdSet set_piece_this_node_vector;
-  //     for (auto& set_piece : set.pieces()) {
-
-  //         if (not isEmpty(intersection(v, set_piece))) {
-  //             set_piece_this_node_vector.emplace(set_piece);
-  //         }
-  //     }
-
-  //     set_piece_this_node_vector = canonize(set_piece_this_node_vector);
-  //     new_partition = cup(new_partition, set_piece_this_node_vector);
-  // }
-
-  // auto diff = difference(set, new_partition);
-  // assert(isEmpty(diff));
-
-  // set = new_partition;
-
-  cerr << "flatten_set is not implemented" << endl;
-  throw 1;
-}
-
-int get_set_cost(const SetPiece& set, const NodeWeight& costs, SetAF& set_af)
-{
-  int weight = 1;
-  SBG::LIB::Set ordset = set_af.createSet(set);
-  for (const auto& [cost_set, w] : costs) {
-    if (ordset.intersection(cost_set).size() > 0) {
-      weight = costs.at(cost_set);
+    if ((not set.isEmpty()) and set.arity() > 1) {
+        logging::sbg_log << "flatten_set for sets with " << set.arity() << " is not implemented" << endl;
+        return;
     }
-  }
 
-  return weight;
+    auto canonize = [](vector<SetPiece>& set_vector)
+    {
+        if (set_vector.empty()) {
+            return set_vector;
+        }
+
+        sort_partition_intervals(set_vector);
+        vector<SetPiece> new_set_vector = {*set_vector.begin()};
+        for (size_t new_set_vector_idx = 0, set_vector_idx = 1; set_vector_idx < set_vector.size(); set_vector_idx++) {
+            if (new_set_vector[new_set_vector_idx][0].end() + 1 == set_vector[set_vector_idx][0].begin()) {
+                new_set_vector[new_set_vector_idx] = 
+                Interval(new_set_vector[new_set_vector_idx][0].begin(), 1, set_vector[set_vector_idx][0].end());
+            } else {
+                new_set_vector.emplace_back(set_vector[set_vector_idx]);
+                new_set_vector_idx++;
+            }
+        }
+
+        return new_set_vector;
+    };
+
+    Set new_partition = set_fact.createSet();
+    for (const auto& v : graph.V()) {
+        vector<SetPiece> set_piece_this_node_vector;
+        for (auto set_piece : set) {
+
+            if (not v.intersection(set_piece).isEmpty()) {
+                set_piece_this_node_vector.emplace_back(set_piece);
+            }
+        }
+
+        set_piece_this_node_vector = canonize(set_piece_this_node_vector);
+        new_partition = new_partition.cup(from_vector(set_piece_this_node_vector, set_fact));
+    }
+
+    auto diff = set.difference(new_partition);
+    assert(diff.isEmpty());
+
+    set = new_partition;
+
 }
+
 
 SBG::LIB::WeightedSBGraph create_air_conditioners_graph()
 {
@@ -900,5 +923,6 @@ SBG::LIB::WeightedSBGraph create_air_conditioners_graph()
 
   return graph;
 }
+
 
 }  // namespace sbg_partitioner

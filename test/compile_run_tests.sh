@@ -17,16 +17,6 @@
 #===============================================================================
 set -e
 
-if [[ -z "$1" || "$1" == "performance" ]]; then
-  echo "BUILDING PERFORMANCE SYSTEM TESTS"
-  (cd performance && make)
-  echo "Done"
-
-  echo "RUNNING PERFORMANCE SYSTEM TESTS"
-  ./performance/bin/sbg-performance
-  echo "Done"
-fi
-
 if [[ -z "$1" || "$1" == "parser" ]]; then
   SRC_FILES="../main.cpp ../parser_test.cpp"
   GTEST_INCLUDE="-I../../../3rd-party/gtest/usr/include"

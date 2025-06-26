@@ -1,0 +1,74 @@
+#///////////////////////////////////////////////////////////////////////////////
+# Variables --------------------------------------------------------------------
+#///////////////////////////////////////////////////////////////////////////////
+
+# Directories
+PERF_DIR    = test/performance
+BOOST_DIR   = $(PERF_DIR)/boost
+
+# GTest
+GOOGLE_TEST_INSTALL = $(ROOT)/3rd-party/gtest
+GOOGLE_TEST_LIB = gtest
+GOOGLE_MOCK_LIB = gmock
+GOOGLE_TEST_INCLUDE = $(GOOGLE_TEST_INSTALL)/usr/include
+
+# Flags and includes
+PERF_INCLUDES := -I$(ROOT) -I$(boost_libdir)/include -I$(GOOGLE_TEST_INCLUDE)
+LD_FLAGS := -L$(ROOT)/lib -lsbgraph -L$(GOOGLE_TEST_INSTALL)/usr/lib \
+	-l$(GOOGLE_TEST_LIB) -l$(GOOGLE_MOCK_LIB) -lpthread
+
+# SBG performance sources
+PERF_SRC := $(PERF_DIR)/set_perf.cpp \
+	$(PERF_DIR)/pw_map_perf.cpp
+
+# SBG performance objects
+PERF_OBJ := $(addprefix $(BUILD_DIR)/, $(PERF_SRC:.cpp=.o))
+
+# SBG performance binary
+PERF_BIN := $(BIN_DIR)/sbg-performance
+
+# Boost performance sources
+BOOST_SRC := $(BOOST_DIR)/ordinary_graph_builder.cpp \
+	$(BOOST_DIR)/ordinary_graph.cpp
+
+# Boost performance objects
+BOOST_OBJ := $(addprefix $(BUILD_DIR)/, $(BOOST_SRC:.cpp=.o))
+
+# Boost performance binary
+BOOST_BIN := $(BIN_DIR)/boost-perf
+
+#///////////////////////////////////////////////////////////////////////////////
+# Rules ------------------------------------------------------------------------
+#///////////////////////////////////////////////////////////////////////////////
+
+.PHONY: all create-folders clean
+
+# Main rule
+perf-compile: create-folders $(PERF_BIN) $(BOOST_BIN)
+
+# Build folders
+create-folders::
+	@mkdir -p $(BUILD_DIR)/$(PERF_DIR) $(BUILD_DIR)/$(BOOST_DIR)
+
+# Objects compilation
+$(PERF_SRC:%.cpp=$(BUILD_DIR)/%.o): $(BUILD_DIR)/%.o: %.cpp | create-folders
+	$(CXX) -c $< $(PERF_INCLUDES) -MMD -MP $(CXXFLAGS) $(LD_FLAGS) -o $@
+
+# SBG performance binary compilation
+$(PERF_BIN): $(PERF_OBJ)
+	$(CXX) $(PERF_DIR)/main.cpp $(PERF_OBJ) $(PERF_INCLUDES) $(CXXFLAGS) \
+	$(LD_FLAGS) -o $@
+
+$(BOOST_SRC:%.cpp=$(BUILD_DIR)/%.o): $(BUILD_DIR)/%.o: %.cpp | create-folders
+	$(CXX) -c $< $(PERF_INCLUDES) -MMD -MP $(CXXFLAGS) $(LD_FLAGS) -o $@
+
+# Boost performance binary compilation
+$(BOOST_BIN): $(BOOST_OBJ)
+	$(CXX) $(BOOST_DIR)/main.cpp $(BOOST_OBJ) $(MISC_OBJ) $(PERF_INCLUDES) \
+	$(CXXFLAGS) $(LD_FLAGS) -o $@
+
+#///////////////////////////////////////////////////////////////////////////////
+# Dependencies -----------------------------------------------------------------
+#///////////////////////////////////////////////////////////////////////////////
+
+-include $(PERF_OBJ:.o=.d) $(BOOST_OBJ:.o=.d)

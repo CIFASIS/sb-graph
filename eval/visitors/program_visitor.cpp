@@ -17,6 +17,7 @@
 
  ******************************************************************************/
 
+#include "eval/visitors/eval_expr.hpp"
 #include "eval/visitors/program_visitor.hpp"
 
 namespace SBG {

@@ -17,6 +17,8 @@
 
  ******************************************************************************/
 
+#include <set>
+
 #include "sbg/set.hpp"
 
 namespace SBG {
@@ -234,8 +236,8 @@ SetDelegPtr UnorderedSet::complementAtom() const
   for (const Interval &i : mdi) dense_mdi.emplaceBack(Interval(i.begin(), 1, i.end()));
   SetPiece during_mdi = dense_mdi;
 
-  Interval univ(0, 1, Inf);
-  SetPiece all(mdi.arity(), univ);
+  Interval univ_one_dim(0, 1, Inf);
+  SetPiece univ(mdi.arity(), univ_one_dim);
 
   unsigned int dim = 0;
   for (const Interval &i : mdi) {
@@ -245,9 +247,9 @@ SetDelegPtr UnorderedSet::complementAtom() const
     if (i.begin() != 0) {
       Interval i_res(0, 1, i.begin() - 1);
       if (!i_res.isEmpty()) {
-        all[dim] = i_res;
-        c.push_back(all);
-        all[dim] = univ;
+        univ[dim] = i_res;
+        c.push_back(univ);
+        univ[dim] = univ_one_dim;
       }
     }
 
@@ -268,12 +270,12 @@ SetDelegPtr UnorderedSet::complementAtom() const
     if (i.end() < Inf) {
       Interval i_res(i.end() + 1, 1, Inf);
       if (!i_res.isEmpty()) {
-        all[dim] = i_res;
-        c.push_back(all);
-        all[dim] = univ;
+        univ[dim] = i_res;
+        c.push_back(univ);
+        univ[dim] = univ_one_dim;
       }
     }
-    all[dim] = dense_mdi[dim];
+    univ[dim] = dense_mdi[dim];
     during_mdi[dim] = i;
 
     // Insert results of current dim
@@ -289,15 +291,17 @@ SetDelegPtr UnorderedSet::complement() const
 {
   SetDelegPtr res = std::make_unique<UnorderedSet>(MDIUnordSet());
 
-  auto first_it = pieces_.begin();
-  SetPiece first = *first_it;
-  res = std::move(UnorderedSet(first).complementAtom());
+  if (!isEmpty()) {
+    auto first_it = pieces_.begin();
+    SetPiece first = *first_it;
+    res = std::move(UnorderedSet(first).complementAtom());
 
-  ++first_it;
-  MDIUnordSet second(first_it, pieces_.end());
-  for (const SetPiece &mdi : second) {
-    SetDelegPtr c = UnorderedSet(mdi).complementAtom();
-    res = std::move(res->intersection(*c));
+    ++first_it;
+    MDIUnordSet second(first_it, pieces_.end());
+    for (const SetPiece &mdi : second) {
+      SetDelegPtr c = UnorderedSet(mdi).complementAtom();
+      res = std::move(res->intersection(*c));
+    }
   }
 
   return res;
@@ -355,27 +359,38 @@ SetDelegPtr UnorderedSet::offset(const MD_NAT &off) const
 
 SetDelegPtr UnorderedSet::compact() const
 {
-  // New idea TODO
-  // MDIUnordSet old_compact = pieces_, compact = old_compact;
-  // SetPiece ith(compact.begin());
-  // do {
-  //  for (const SetPiece &mdi : compact) {
-  //    auto ith_compact = ith.compact(mdi);
-  //    if (ith_compact)
-  //      ith = ith_compact.value();
-  //  }
-  //  MDIUnordSet aux_compact = compact;
-  //  for (const SetPiece &mdi : aux_compact) {
-  //    if (!ith.intersection(mdi).isEmpty())
-  //      compact.erase(mdi);
-  //  }
-  //  compact.emplace(ith);
-  //} while (old_compact != compact);
+  MDIUnordSet res;
 
-  // std::shared_ptr<UnorderedSet> res = std::make_shared<UnorderedSet>();
-  // res->pieces_ = pieces_.compact();
+  if (!isEmpty()) {
+    std::set<SetPiece> prev(pieces_.begin(), pieces_.end()), actual = prev;
+    do {
+      prev = actual;
+      actual = std::set<SetPiece>();
 
-  return std::make_unique<UnorderedSet>(pieces_);
+      std::set<SetPiece>::iterator ith = prev.begin(), last = prev.end();
+      std::set<SetPiece> to_erase;
+      for (; ith != last; ++ith) {
+        SetPiece ith_compact = *ith;
+        std::set<SetPiece>::iterator next = ith;
+        ++next;
+        for (; next != last; ++next) {
+          MaybeMDI new_compact = ith_compact.compact(*next);
+          if (new_compact) {
+            ith_compact = new_compact.value();
+            to_erase.insert(*next);
+          }
+        }
+
+        if (to_erase.find(ith_compact) == to_erase.end())
+          actual.insert(ith_compact);
+      }
+    } while (actual != prev);
+
+    for (const SetPiece &mdi : actual)
+      res.push_back(mdi);
+  }
+
+  return std::make_unique<UnorderedSet>(res);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

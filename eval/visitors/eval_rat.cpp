@@ -72,11 +72,11 @@ LIB::RATIONAL EvalRat::operator()(AST::UnaryOp v) const
       return -result;
 
     default:
-      Util::ERROR("EvalExpression: UnaryOp ", v.op(), " unsupported\n");
+      Util::ERROR("EvalRat: UnaryOp ", v.op(), " unsupported\n");
       return 0;
   }
 
-  Util::ERROR("EvalExpression: UnaryOp ", v.op(), " unsupported\n");
+  Util::ERROR("EvalRat: UnaryOp ", v.op(), " unsupported\n");
   return 0;
 }
 
@@ -99,7 +99,7 @@ LIB::RATIONAL EvalRat::operator()(AST::BinOp v) const
       return LIB::RATIONAL(0, 1);
   }
 
-  Util::ERROR("EvalExpression: BinOp ", v.op(), " unsupported\n");
+  Util::ERROR("EvalRat: BinOp ", v.op(), " unsupported\n");
   return 0;
 }
 

@@ -17,6 +17,12 @@
 
  ******************************************************************************/
 
+#include "algorithms/cc/cc.hpp"
+#include "algorithms/cutvertex/cut_vertex.hpp"
+#include "algorithms/scc/scc.hpp"
+#include "algorithms/toposort/topo_sort.hpp"
+#include "algorithms/misc/causalization_builders.hpp"
+#include "algorithms/misc/causalization_json.hpp"
 #include "eval/visitors/eval_expr.hpp"
 
 namespace SBG {
@@ -123,30 +129,30 @@ auto mult_visitor_ = Overload {
 };
 
 auto eq_visitor_ = Overload {
-  [](LIB::MD_NAT a, LIB::MD_NAT b) { return Boolean(a == b); },
-  [](LIB::RATIONAL a, LIB::RATIONAL b) { return Boolean(a == b); },
-  [](LIB::Interval a, LIB::Interval b) { return Boolean(a == b); },
-  [](LIB::SetPiece a, LIB::SetPiece b) { return Boolean(a == b); },
-  [](LIB::Set a, LIB::Set b) { return Boolean(a == b); },
-  [](LIB::Exp a, LIB::Exp b) { return Boolean(a == b); },
-  [](LIB::Map a, LIB::Map b) { return Boolean(a == b); },
-  [](LIB::PWMap a, LIB::PWMap b) { return Boolean(a == b); },
+  [](LIB::MD_NAT a, LIB::MD_NAT b) { return a == b; },
+  [](LIB::RATIONAL a, LIB::RATIONAL b) { return a == b; },
+  [](LIB::Interval a, LIB::Interval b) { return a == b; },
+  [](LIB::SetPiece a, LIB::SetPiece b) { return a == b; },
+  [](LIB::Set a, LIB::Set b) { return a == b; },
+  [](LIB::Exp a, LIB::Exp b) { return a == b; },
+  [](LIB::Map a, LIB::Map b) { return a == b; },
+  [](LIB::PWMap a, LIB::PWMap b) { return a == b; },
   [](auto a, auto b) {
     Util::ERROR("eq_visitor_: wrong arguments ", a, ", ", b
       , " for operator==\n");
-    return Boolean();
+    return false;
   }
 };
 
 auto less_visitor_ = Overload {
-  [](LIB::MD_NAT a, LIB::MD_NAT b) { return Boolean(a < b); },
-  [](LIB::RATIONAL a, LIB::RATIONAL b) { return Boolean(a < b); },
-  [](LIB::Interval a, LIB::Interval b) { return Boolean(a < b); },
-  [](LIB::SetPiece a, LIB::SetPiece b) { return Boolean(a < b); },
+  [](LIB::MD_NAT a, LIB::MD_NAT b) { return a < b; },
+  [](LIB::RATIONAL a, LIB::RATIONAL b) { return a < b; },
+  [](LIB::Interval a, LIB::Interval b) { return a < b; },
+  [](LIB::SetPiece a, LIB::SetPiece b) { return a < b; },
   [](auto a, auto b) { 
     Util::ERROR("less_visitor_: wrong arguments ", a, ", ", b
       , " for operator<\n"); 
-    return Boolean();
+    return false;
   }
 };
 
@@ -184,12 +190,12 @@ auto diff_visitor_ = Overload{
 };
 
 auto empty_visitor_ = Overload {
-  [](LIB::Interval a) { return Boolean(a.isEmpty()); },
-  [](LIB::MultiDimInter a) { return Boolean(a.isEmpty()); },
-  [](LIB::Set a) { return Boolean(a.isEmpty()); },
+  [](LIB::Interval a) { return a.isEmpty(); },
+  [](LIB::MultiDimInter a) { return a.isEmpty(); },
+  [](LIB::Set a) { return a.isEmpty(); },
   [](auto a) { 
     Util::ERROR("empty_visitor_: wrong argument ", a, " for isEmpty\n"); 
-    return Boolean();
+    return false;
   }
 };
 
@@ -334,11 +340,11 @@ auto connected_visitor_ = Overload {
 
 auto matching_visitor_ = Overload {
   [](LIB::SBG a, LIB::NAT b, bool c) { 
-    LIB::SBGMatching match(a.copy(b), c);
+    LIB::BFSMatching match(a.copy(b), c);
     return ExprBaseType(match.calculate());
   },
   [](LIB::SBG a, LIB::MD_NAT b, bool c) { 
-    LIB::SBGMatching match(a.copy(b[0]), c);
+    LIB::BFSMatching match(a.copy(b[0]), c);
     return ExprBaseType(match.calculate());
   },
   [](auto a, auto b, auto c) {
@@ -350,7 +356,7 @@ auto matching_visitor_ = Overload {
 
 auto scc_visitor_ = Overload {
   [](LIB::DSBG a, bool b) { 
-    LIB::SBGSCC scc(a, b);
+    LIB::SCC scc(a, b);
     return ExprBaseType(scc.calculate());
   },
   [](auto a, auto b) {
@@ -361,7 +367,7 @@ auto scc_visitor_ = Overload {
 
 auto ts_visitor_ = Overload {
   [](LIB::DSBG a, bool b) { 
-    LIB::SBGTopSort ts(a, b);
+    LIB::TopoSort ts(a, b);
     return ExprBaseType(ts.calculate()); 
   },
   [](auto a, auto b) {
@@ -372,15 +378,15 @@ auto ts_visitor_ = Overload {
 
 auto match_scc_visitor_ = Overload {
   [](LIB::SBG a, LIB::NAT b, bool c) { 
-    LIB::SBGMatching match(a.copy(b), c);
+    LIB::BFSMatching match(a.copy(b), c);
     match.calculate();
-    LIB::SBGSCC scc(buildSCCFromMatching(match), c);
+    LIB::SCC scc(MISC::buildSCCFromMatching(match), c);
     return ExprBaseType(scc.calculate());
   },
   [](LIB::SBG a, LIB::MD_NAT b, bool c) { 
-    LIB::SBGMatching match(a.copy(b[0]), c);
+    LIB::BFSMatching match(a.copy(b[0]), c);
     match.calculate();
-    LIB::SBGSCC scc(buildSCCFromMatching(match), c);
+    LIB::SCC scc(MISC::buildSCCFromMatching(match), c);
     return ExprBaseType(scc.calculate());
   },
   [](auto a, auto b, auto c) {
@@ -392,23 +398,23 @@ auto match_scc_visitor_ = Overload {
 
 auto match_scc_ts_visitor_ = Overload {
   [](LIB::SBG a, LIB::NAT b, bool c) { 
-    LIB::SBGMatching match(a.copy(b), c);
+    LIB::BFSMatching match(a.copy(b), c);
     LIB::Set match_res = match.calculate().matched_edges();
-    LIB::SBGSCC scc(buildSCCFromMatching(match), c);
+    LIB::SCC scc(MISC::buildSCCFromMatching(match), c);
     LIB::PWMap scc_res = scc.calculate();
-    LIB::SBGTopSort ts(buildSortFromSCC(scc, scc_res), c);
+    LIB::TopoSort ts(MISC::buildSortFromSCC(scc, scc_res), c);
     LIB::PWMap ts_res = ts.calculate(); 
-    buildJson(match_res, scc_res, ts_res);
+    MISC::buildJson(match_res, scc_res, ts_res);
     return ExprBaseType(ts_res);
   },
   [](LIB::SBG a, LIB::MD_NAT b, bool c) { 
-    LIB::SBGMatching match(a.copy(b[0]), c);
+    LIB::BFSMatching match(a.copy(b[0]), c);
     LIB::Set match_res = match.calculate().matched_edges();
-    LIB::SBGSCC scc(buildSCCFromMatching(match), c);
+    LIB::SCC scc(MISC::buildSCCFromMatching(match), c);
     LIB::PWMap scc_res = scc.calculate();
-    LIB::SBGTopSort ts(buildSortFromSCC(scc, scc_res), c);
+    LIB::TopoSort ts(MISC::buildSortFromSCC(scc, scc_res), c);
     LIB::PWMap ts_res = ts.calculate(); 
-    buildJson(match_res, scc_res, ts_res);
+    MISC::buildJson(match_res, scc_res, ts_res);
     return ExprBaseType(ts_res);
   },
   [](auto a, auto b, auto c) {
@@ -420,7 +426,7 @@ auto match_scc_ts_visitor_ = Overload {
 
 auto cut_visitor_ = Overload {
   [](LIB::DSBG a, bool b) { 
-    LIB::SBGCutSet cut_set(a, b);
+    LIB::CutVertex cut_set(a, b);
     return ExprBaseType(cut_set.calculate());
   },
   [](auto a, auto b) {
@@ -434,12 +440,12 @@ auto cut_visitor_ = Overload {
 ////////////////////////////////////////////////////////////////////////////////
 
 template<typename T>
-T eval(const EvalExpression &visit, AST::Expr e)
+T eval(const EvalExpression &visit, AST::Expr e, std::string t = "UNDEF")
 {
   ExprBaseType visited = boost::apply_visitor(visit, e);
 
   Util::ERROR_UNLESS(std::holds_alternative<T>(visited)
-    , "EvalExpr: expression ", e, " is not ???\n");
+    , "EvalExpr: expression ", e, " is not of type ", t, "\n");
 
   return std::get<T>(visited);
 }
@@ -743,7 +749,7 @@ ExprBaseType EvalExpression::operator()(AST::MultiDimInter v) const
   LIB::SetPiece res;
 
   for (const AST::Expr &e : v.intervals()) 
-    res.emplaceBack(eval<LIB::Interval>(*this, e));
+    res.emplaceBack(eval<LIB::Interval>(*this, e, "Interval"));
 
   Util::ERROR_UNLESS(res.arity() == nmbr_dims_ || res.arity() == 0
     , "EvalMDI[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
@@ -758,7 +764,7 @@ ExprBaseType EvalExpression::operator()(AST::Set v) const
   LIB::Set res = fact_.createSet();
 
   for (const AST::Expr &e : v.pieces())
-    res.emplaceBack(eval<LIB::SetPiece>(*this, e));
+    res.emplaceBack(eval<LIB::SetPiece>(*this, e, "SetPiece"));
 
   Util::ERROR_UNLESS(res.arity() == nmbr_dims_ || res.arity() == 0
     , "EvalExpr[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
@@ -792,8 +798,8 @@ ExprBaseType EvalExpression::operator()(AST::MDLExp v) const
 
 ExprBaseType EvalExpression::operator()(AST::LinearMap v) const
 {
-  LIB::Set d = eval<LIB::Set>(*this, v.dom());
-  LIB::Exp e = eval<LIB::Exp>(*this, v.lexp());
+  LIB::Set d = eval<LIB::Set>(*this, v.dom(), "Set");
+  LIB::Exp e = eval<LIB::Exp>(*this, v.lexp(), "Exp");
 
   LIB::Map res = fact_.createMap(d, e);
 
@@ -809,7 +815,7 @@ ExprBaseType EvalExpression::operator()(AST::PWLMap v) const
   LIB::PWMap res = fact_.createPWMap();
 
   for (const AST::Expr &e : v.maps())
-    res.emplaceBack(eval<LIB::Map>(*this, e));
+    res.emplaceBack(eval<LIB::Map>(*this, e, "Map"));
 
   Util::ERROR_UNLESS(res.arity() == nmbr_dims_ || res.arity() == 0
     , "EvalExpr[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
@@ -820,18 +826,17 @@ ExprBaseType EvalExpression::operator()(AST::PWLMap v) const
 
 ExprBaseType EvalExpression::operator()(AST::SBG v) const
 {
-  LIB::Set V = eval<LIB::Set>(*this, v.V());
-  LIB::PWMap Vmap = eval<LIB::PWMap>(*this, v.Vmap());
-  LIB::PWMap map1 = eval<LIB::PWMap>(*this, v.map1());
-  LIB::PWMap map2 = eval<LIB::PWMap>(*this, v.map2());
-  LIB::PWMap Emap = eval<LIB::PWMap>(*this, v.Emap());
-  LIB::PWMap subE = eval<LIB::PWMap>(*this, v.subE_map());
+  LIB::Set V = eval<LIB::Set>(*this, v.V(), "Set");
+  LIB::PWMap Vmap = eval<LIB::PWMap>(*this, v.Vmap(), "PWMap");
+  LIB::PWMap map1 = eval<LIB::PWMap>(*this, v.map1(), "PWMap");
+  LIB::PWMap map2 = eval<LIB::PWMap>(*this, v.map2(), "PWMap");
+  LIB::PWMap Emap = eval<LIB::PWMap>(*this, v.Emap(), "PWMap");
+  LIB::PWMap subE = eval<LIB::PWMap>(*this, v.subE_map(), "PWMap");
 
   if (subE.dom().isEmpty() && !Emap.dom().isEmpty()) {
     unsigned int j = 1;
     for (const LIB::Map &m : Emap) {
-      LIB::Set dom = m.dom();
-      for (const LIB::SetPiece &mdi : dom) {
+      for (const LIB::SetPiece &mdi : m.dom()) {
         LIB::Exp off(LIB::MD_NAT(mdi.arity(), j));
         subE.emplaceBack(fact_.createMap(fact_.createSet(mdi), off)); 
         ++j;
@@ -844,18 +849,17 @@ ExprBaseType EvalExpression::operator()(AST::SBG v) const
 
 ExprBaseType EvalExpression::operator()(AST::DSBG v) const
 {
-  LIB::Set V = eval<LIB::Set>(*this, v.V());
-  LIB::PWMap Vmap = eval<LIB::PWMap>(*this, v.Vmap());
-  LIB::PWMap mapB = eval<LIB::PWMap>(*this, v.mapB());
-  LIB::PWMap mapD = eval<LIB::PWMap>(*this, v.mapD());
-  LIB::PWMap Emap = eval<LIB::PWMap>(*this, v.Emap());
-  LIB::PWMap subE = eval<LIB::PWMap>(*this, v.subE_map());
+  LIB::Set V = eval<LIB::Set>(*this, v.V(), "PWMap");
+  LIB::PWMap Vmap = eval<LIB::PWMap>(*this, v.Vmap(), "PWMap");
+  LIB::PWMap mapB = eval<LIB::PWMap>(*this, v.mapB(), "PWMap");
+  LIB::PWMap mapD = eval<LIB::PWMap>(*this, v.mapD(), "PWMap");
+  LIB::PWMap Emap = eval<LIB::PWMap>(*this, v.Emap(), "PWMap");
+  LIB::PWMap subE = eval<LIB::PWMap>(*this, v.subE_map(), "PWMap");
 
   if (subE.dom().isEmpty() && !Emap.dom().isEmpty()) {
     unsigned int j = 1;
-    for (const LIB::Map &sbgmap : Emap) {
-      LIB::Set dom = sbgmap.dom();
-      for (const LIB::SetPiece &mdi : dom) {
+    for (const LIB::Map &m : Emap) {
+      for (const LIB::SetPiece &mdi : m.dom()) {
         LIB::Exp off(LIB::MD_NAT(mdi.arity(), j));
         subE.emplaceBack(fact_.createMap(fact_.createSet(mdi), off)); 
         ++j;

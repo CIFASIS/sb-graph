@@ -1,0 +1,13 @@
+# Directories
+TS_DIR := algorithms/toposort
+
+# Sources
+TS_SRC := $(TS_DIR)/topo_sort.cpp
+ALG_SRC += $(TS_SRC)
+
+# Objects
+ALG_OBJ += $(addprefix $(BUILD_DIR)/, $(TS_SRC:.cpp=.o))
+
+# Build folders
+create-folders::
+	@mkdir -p $(BUILD_DIR)/$(TS_DIR)

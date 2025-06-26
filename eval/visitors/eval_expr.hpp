@@ -27,6 +27,7 @@
 #include "eval/visitors/eval_nat.hpp"
 #include "eval/visitors/eval_rat.hpp"
 #include "eval/visitors/eval_le.hpp"
+#include "sbg/af_pwmap.hpp"
 
 namespace SBG {
 

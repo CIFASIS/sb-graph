@@ -1,22 +1,31 @@
-# The Directories, Source, Includes, Objects, Binary 
-ALG_DIR := algorithms/partitioner
-SBG_PARTITIONER := bin/sbg-partitioner
-PARTITIONER_FLAGS := $(CXXFLAGS) -Llib/ -lsbgraph -lstdc++ -lm
-
-
-all: $(SBG_PARTITIONER)
+# Directories
+PARTITIONER_DIR := algorithms/partitioner
 
 # Sources
-ALG_SRC := \
-  $(ALG_DIR)/weighted_sb_graph.cpp \
-  $(ALG_DIR)/build_sb_graph.cpp
-
-create-folders::
-	@mkdir -p $(BUILD_DIR)/$(ALG_DIR)
+PARTITIONER_SRC := \
+  $(PARTITIONER_DIR)/build_sb_graph.cpp \
+  $(PARTITIONER_DIR)/dfs_on_sbg.cpp \
+  $(PARTITIONER_DIR)/kernighan_lin_partitioner.cpp \
+  $(PARTITIONER_DIR)/partition_graph.cpp \
+  $(PARTITIONER_DIR)/partition_metrics_api.cpp \
+  $(PARTITIONER_DIR)/partition_strategy.cpp \
+  $(PARTITIONER_DIR)/weighted_sb_graph.cpp
+ALG_SRC += $(PARTITIONER_SRC)
 
 # Objects
-ALG_OBJ=$(addprefix $(BUILD_DIR)/, $(ALG_SRC:.cpp=.o))
+ALG_OBJ += $(addprefix $(BUILD_DIR)/, $(PARTITIONER_SRC:.cpp=.o))
 
+# Binary
+PARTITIONER_BIN := bin/sbg-partitioner
 
-$(SBG_PARTITIONER): $(ALG_OBJ) $(LIB_SBGRAPH)
-	$(CXX) -o $(SBG_PARTITIONER) $(INCLUDES) $(ALG_DIR)/main.cpp $(PARTITIONER_FLAGS)
+# Binary flags
+PARTITIONER_FLAGS := $(CXXFLAGS) -Llib/ -lsbgraph -lstdc++ -lm
+
+# Build folders
+create-folders::
+	@mkdir -p $(BUILD_DIR)/$(PARTITIONER_DIR)
+
+# Binary compilation
+$(PARTITIONER_BIN): $(LIB_SBGRAPH)
+	$(CXX) -o $(PARTITIONER_BIN) $(INCLUDES) $(PARTITIONER_DIR)/main.cpp \
+  $(PARTITIONER_FLAGS)

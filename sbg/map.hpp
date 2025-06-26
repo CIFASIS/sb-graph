@@ -131,6 +131,11 @@ struct Map {
    */
   Map composition(const Map &other) const;
 
+  /**
+   * @brief Calculates the set of elements in the domain such that f(x) = x.
+   */
+  Set fixedPoints() const;
+
   // Extra operations ----------------------------------------------------------
 
   /**

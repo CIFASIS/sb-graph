@@ -18,6 +18,8 @@
  ******************************************************************************/
 
 #include "eval/visitors/eval_le.hpp"
+#include "eval/visitors/eval_nat.hpp"
+#include "eval/visitors/eval_rat.hpp"
 
 namespace SBG {
 

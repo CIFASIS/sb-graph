@@ -2,7 +2,7 @@
 
  @brief <b>SBG program evaluator</b>
 
- This modules allows the user to test the SBG modules. To do so the user should
+ These modules allows the user to test the SBG modules. To do so the user should
  provide a SBG program file. The file will be parser, and next the visitors
  will be used to return a result.
 
@@ -30,15 +30,10 @@
 
 #include "parser/sbg_program.hpp"
 #include "eval/visitors/program_visitor.hpp"
+#include "eval/visitors/autom_impl_visitor.hpp"
 
-struct Impl {
-  int set_impl_;
-  int pw_impl_;
-
-  Impl(int set_impl, int pw_impl) : set_impl_(set_impl), pw_impl_(pw_impl) {};
-};
-
-void parseEvalProgramFromFile(std::string fname, Impl impl, bool debug)
+void parseEvalProgramFromFile(std::string fname, SBG::Eval::Impl impl
+  , bool debug)
 {
   std::ifstream in(fname.c_str());
   if (in.fail()) 
@@ -64,10 +59,17 @@ void parseEvalProgramFromFile(std::string fname, Impl impl, bool debug)
     std::cout << ">>>>>> Eval result <<<<<<\n";
     std::cout << "-------------------------\n\n";
 
+    SBG::Eval::AutomImplVisitor impl_visit(impl);
+    SBG::Eval::Impl autom_impl
+      = boost::apply_visitor(impl_visit, parser_result);
+
     std::shared_ptr<SBG::LIB::SetAF> set_fact 
       = std::make_shared<SBG::LIB::UnordAF>();
 
-    switch (impl.set_impl_) {
+    switch (autom_impl.set_impl()) {
+      case 0:
+        break;
+
       case 2:
         set_fact = std::make_shared<SBG::LIB::OrdDenseAF>();
 
@@ -78,7 +80,7 @@ void parseEvalProgramFromFile(std::string fname, Impl impl, bool debug)
     SBG::LIB::MapAF map_fact(*set_fact);
     std::shared_ptr<SBG::LIB::PWMapAF> fact
       = std::make_shared<SBG::LIB::UnordPWMapAF>(map_fact);
-    switch (impl.pw_impl_) {
+    switch (autom_impl.pw_impl()) {
       default:
         break;
     }
@@ -105,7 +107,9 @@ void usage()
   std::cout << "Parses and evaluates a SBG program.\n\n";
   std::cout << "-f, --file      SBG program file used as input\n";
   std::cout << "-s, --set_impl  Choose set implementation: 0 unordered sets,\n";
-  std::cout << "                1 ordered sets, 2 ordered dense sets.\n";
+  std::cout << "                1 ordered sets, 2 ordered dense sets. If no\n";
+  std::cout << "                option is selected, the evaluator decides\n";
+  std::cout << "                automatically\n";
   std::cout << "-h, --help      Display this information and exit\n";
   std::cout << "-d, --debug     Activate debug info\n";
   std::cout << "-v, --version   Display version information and exit\n\n";
@@ -241,8 +245,10 @@ void version()
 
 int main(int argc, char**argv)
 {
+  std::cout << std::boolalpha;
+
   std::string filename;
-  int opt, set_impl = 0, pw_impl = 0;
+  int opt, set_impl = -1, pw_impl = -1;
   extern char* optarg;
   bool debug = false;
 
@@ -282,7 +288,8 @@ int main(int argc, char**argv)
   }
 
   if (!filename.empty())
-    parseEvalProgramFromFile(filename, Impl(set_impl, pw_impl), debug);
+    parseEvalProgramFromFile(filename, SBG::Eval::Impl(set_impl, pw_impl)
+      , debug);
   else
     SBG::Util::ERROR("A filename should be provided\n");
 

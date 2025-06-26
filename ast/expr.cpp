@@ -90,7 +90,7 @@ std::ostream &operator<<(std::ostream &out, const MultiDimInter &mdi)
   int sz = aux.intervals().size();
 
   if (sz > 0) {
-    auto it = aux.intervals_ref().begin();
+    auto it = aux.intervals().begin();
     for (int i = 0; i < sz - 1; ++i) {
       out << *it << " x "; 
       ++it;
@@ -120,7 +120,7 @@ std::ostream &operator<<(std::ostream &out, const Set &s)
 
   out << "{";
   if (sz > 0) {
-    auto it = aux.pieces_ref().begin();
+    auto it = aux.pieces().begin();
     for (int i = 0; i < sz - 1; ++i) {
       out << *it << ", "; 
       ++it;
@@ -171,7 +171,7 @@ std::ostream &operator<<(std::ostream &out, const MDLExp &le)
   int sz = aux.exps().size();
 
   if (sz > 0) {
-    auto it = aux.exps_ref().begin();
+    auto it = aux.exps().begin();
     for (int i = 0; i < sz - 1; ++i) {
       out << *it << "|";
       ++it;
@@ -217,11 +217,11 @@ bool PWLMap::operator==(const PWLMap &other) const
 std::ostream &operator<<(std::ostream &out, const PWLMap &pwl)
 {
   PWLMap aux = pwl;
-  unsigned int sz = aux.maps_ref().size();
+  unsigned int sz = aux.maps().size();
  
   out << "<<";
   if (sz > 0) {
-    auto it = aux.maps_ref().begin();
+    auto it = aux.maps().begin();
     for (unsigned int i = 0; i < sz - 1; ++i) {
       out << *it << ", ";
       ++it;
@@ -419,7 +419,7 @@ std::ostream &operator<<(std::ostream &out, const BinOp &bop)
 Call::Call() : name_(), args_() {}
 Call::Call(Name name, ExprList args) : name_(name), args_(args) {}
 Call::Call(Name name, Expr args) : name_(name), args_() {
-  args_ref().push_back(args);
+  args_.push_back(args);
 }
 
 member_imp(Call, Name, name);

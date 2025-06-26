@@ -205,6 +205,7 @@ struct SBGTearing {
   private:
   PWMap sccMinReach(const DSBG &dg) const;
   PWMap sccStep();
+  void restoreSBG();
 };
 ////////////////////////////////////////////////////////////////////////////////
 // Topological sort ------------------------------------------------------------

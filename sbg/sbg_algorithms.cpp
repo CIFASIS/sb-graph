@@ -640,7 +640,7 @@ PWMap SBGSCC::calculate()
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(
     end - begin
   );
-  Util::SBG_LOG << "Total SCC exec time: " << total.count() << " [μs]\n\n"; 
+  Util::SBG_LOG << "Total SCC exec time: " << total.count() << " [μs]\n\n";
 
   if (debug())
     Util::SBG_LOG << "SCC result: " << rmap.compact() << "\n\n";
@@ -829,31 +829,56 @@ PWMap SBGTearing::sccStep()
   return new_rmap;
 }
 
+void SBGTearing::restoreSBG() 
+{
+  V_ = dsbg_.V();
+  Vmap_ = dsbg_.Vmap();
+
+  E_ = dsbg_.E();
+  Emap_ = dsbg_.Emap();
+  subEmap_ = dsbg_.subEmap();
+
+  mapB_ = dsbg_.mapB();
+  mapD_ = dsbg_.mapD();
+}
+
 PWMap SBGTearing::calculate()
 {
-  if (debug()) Util::SBG_LOG << "SCC dsbg: \n" << dsbg() << "\n\n";
+  if (debug()) Util::SBG_LOG << "Tearing dsbg: \n" << dsbg() << "\n\n";
 
   auto begin = std::chrono::high_resolution_clock::now();
   PWMap rmap = sccStep();
   Set vrem = fact_.createSet();
+  Set e_scc = fact_.createSet();
   do {
+    // SCC
     do {
       rmap = sccStep();
     } while (Ediff() != fact_.createSet());
-
+    //
+    e_scc = E();
     if (E() != fact_.createSet()) {
       Set erem_b = mapB().preImage(rmap.image());
       Set erem_d = mapD().preImage(rmap.image());
       vrem = vrem.cup(mapB().image(erem_b)).cup(mapD().image(erem_d));
-      std::cout <<  erem_b.cup(erem_d) << std::endl;
       E_ = E().difference(erem_b.cup(erem_d));
     }
     rmap_ = rmap.compact();
   } while (E() != fact_.createSet());
+  restoreSBG();
+  Set e_notscc = E().difference(e_scc);
+  Set e_to_R = mapD().preImage(rmap.image());
+  PWMap mapD_notscc = mapD().restrict(e_to_R);
+  
+  Set erem = e_scc.intersection(mapB().preImage(vrem));
+  Set mapD_aux = mapD().image(erem);
+
   auto end = std::chrono::high_resolution_clock::now();
 
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
-  Util::SBG_LOG << "Total SCC exec time: " << total.count() << " [μs]\n\n";
+  Util::SBG_LOG << "Total Tearing exec time: " << total.count() << " [μs]\n\n";
+  std::cout << vrem << std::endl;
+  std::cout << dsbg().E() << std::endl;
 
   if (debug()) {
     Util::SBG_LOG << "Tearing result: " << rmap.compact() << "\n\n";

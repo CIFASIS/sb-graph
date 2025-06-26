@@ -55,6 +55,7 @@ include parser/Makefile.include
 include algorithms/cc/Makefile.include
 include algorithms/matching/Makefile.include
 include algorithms/scc/Makefile.include
+include algorithms/tearing/Makefile.include
 include algorithms/cutvertex/Makefile.include
 include algorithms/toposort/Makefile.include
 include algorithms/partitioner/Makefile.include

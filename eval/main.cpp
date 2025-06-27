@@ -72,6 +72,19 @@ void parseEvalProgramFromFile(std::string fname, SBG::Eval::Impl impl
 
       case 2:
         set_fact = std::make_shared<SBG::LIB::OrdDenseAF>();
+        break;
+
+      default:
+        break;
+    }
+
+    switch (impl.set_impl()) {
+      case 0:
+        break;
+
+      case 2:
+        set_fact = std::make_shared<SBG::LIB::OrdDenseAF>();
+        break;
 
       default:
         break;

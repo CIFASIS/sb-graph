@@ -19,7 +19,7 @@ ALG_OBJ += $(addprefix $(BUILD_DIR)/, $(PARTITIONER_SRC:.cpp=.o))
 PARTITIONER_BIN := bin/sbg-partitioner
 
 # Binary flags
-PARTITIONER_FLAGS := $(CXXFLAGS) -Llib/ -lsbgraph -lstdc++ -lm
+PARTITIONER_FLAGS := $(CXXFLAGS) -Llib -lsbgraph -lpthread -lstdc++ -lm
 
 # Build folders
 create-folders::

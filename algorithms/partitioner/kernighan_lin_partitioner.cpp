@@ -16,18 +16,14 @@
 
  ******************************************************************************/
 
-#include <algorithm>
-#include <chrono>
 #include <future>
-#include <map>
+#include <bitset>
 #include <rapidjson/document.h>
-#include <rapidjson/filewritestream.h>
-#include <rapidjson/prettywriter.h>
 #include <rapidjson/writer.h>
-#include <set>
-#include <util/logger.hpp>
+#include <unordered_map>
 
 #include "build_sb_graph.hpp"
+#include "cost.hpp"
 #include "kernighan_lin_partitioner.hpp"
 #include "sbg_partitioner_log.hpp"
 
@@ -46,116 +42,13 @@ using namespace SBG::Util;
 
 namespace sbg_partitioner {
 
-// Using unnamed namespace to define functions with internal linkage
-namespace {
-
-constexpr bool multithreading_enabled = true;
-
-struct GainObjectImbalance {
-    size_t i;
-    size_t j;
-    int gain;
-    Set ec_nodes_i;
-    Set ic_nodes_i;
-    size_t size_i;
-    Set ec_nodes_j;
-    Set ic_nodes_j;
-    size_t size_j;
-};
-
-
-struct KLBipartResult {
-    Partition A;
-    Partition B;
-    int gain;
-};
-
-
-struct kl_sbg_partitioner_result
-{
-    size_t i;
-    size_t j;
-    int gain;
-    Partition A;
-    Partition B;
-};
-
-// This seems to be a bit odd to me, but if this function is not declared as well (even when)
-// it is declared in `partition_graph.hpp`, this file does not compile.
-ostream& operator<<(std::ostream& os, const Partition& partitions);
-
-
-ostream& operator<<(ostream& os, const kl_sbg_partitioner_result& result)
-{
-    os << "{ partition results: "
-       << result.i
-       << ", "
-       << result.j
-       << ", "
-       << result.gain
-       << ", A: "
-       << result.A
-       << ", B: "
-       << result.B
-       << "}";
-
-    return os;
-}
-
-
-template<typename G>
-struct GainObjectComparatorTemplate {
-    bool operator()(const G& gain_1, const G& gain_2) const
-    {
-        return gain_1.gain >= gain_2.gain;
-    }
-};
-
 
 using ec_ic = std::pair<Set , Set>;
 
-using GainObjectImbalanceComparator = GainObjectComparatorTemplate<GainObjectImbalance>;
+// Using unnamed namespace to define functions with internal linkage
+namespace {
 
-using CostMatrixImbalance = std::set<GainObjectImbalance, GainObjectImbalanceComparator>;
-
-
-ostream& operator<<(ostream& os, const KLBipartResult& result)
-{
-    os << "{ gain: " << result.gain << ", A: " << result.A << ", B: " << result.B << "}";
-
-    return os;
-}
-
-
-ostream& operator<<(ostream& os, const GainObjectImbalance& gain)
-{
-    os << "< Node: "
-       << gain.i
-       << ", size: "
-       << gain.size_i
-       << " - Node: "
-       << gain.j
-       << ", size: "
-       << gain.size_j
-       << ", gain: "
-       << gain.gain
-       << " >";
-
-    return os;
-}
-
-
-[[maybe_unused]] ostream& operator<<(ostream& os, const CostMatrixImbalance& cost_matrix)
-{
-    os << "{\n";
-    for (const auto& o : cost_matrix) {
-        os << "\t" << o << "\n";
-    }
-    os << "}";
-
-    return os;
-}
-
+constexpr bool multithreading_enabled = false;
 
 pair<unsigned, unsigned>
 compute_lmin_lmax(const WeightedSBGraph& graph, unsigned number_of_partitions, const float imbalance_epsilon, SetAF& set_fact)
@@ -288,6 +181,8 @@ GainObjectImbalance get_gain(
     ec_nodes_b = ec_nodes_b_1.cup(ec_nodes_b_2);
     ic_nodes_b = ic_nodes_b_1.cup(ic_nodes_b_2);
 
+    logging::sbg_log << "Node " << idx_b << ", " << nodes_b << " ec: " << ec_nodes_b << " and ic: " << ic_nodes_b << endl;
+
     size_t ec_b = get_edge_set_cost(ec_nodes_b, graph.get_edge_costs());
     size_t ic_b = get_edge_set_cost(ic_nodes_b, graph.get_edge_costs());
     int d_b = ec_b - ic_b;
@@ -361,25 +256,71 @@ void compute_exchange(unsigned i, unsigned j, Partition& partition_a, unsigned c
 
 CostMatrixImbalance generate_gain_matrix(
     const WeightedSBGraph& graph,
-    const NodeWeight& node_weight,
+    CostMatrix& cost_matrix,
+    unsigned partition_a_id,
     Partition& partition_a,
+    unsigned partition_b_id,
     Partition& partition_b,
     unsigned LMin,
     unsigned LMax,
     SetAF& set_fact)
 {
-    CostMatrixImbalance cost_matrix;
+    CostMatrixImbalance local_cost_matrix;
 
-    unsigned p_size_a = get_partition_size(partition_a, graph.get_node_weights(), set_fact);
-    unsigned p_size_b = get_partition_size(partition_b, graph.get_node_weights(), set_fact);
+    // unsigned p_size_a = get_partition_size(partition_a, graph.get_node_weights(), set_fact);
+    // unsigned p_size_b = get_partition_size(partition_b, graph.get_node_weights(), set_fact);
+
+    cout << "computing in the new way" << endl;
 
     for (size_t i = 0; i < partition_a.size(); i++) {
         for (size_t j = 0; j < partition_b.size(); j++) {
-            compute_exchange(i, j, partition_a, p_size_a, partition_b, p_size_b, graph, node_weight, LMin, LMax, cost_matrix, set_fact);
+            auto set_i_a = partition_a.at(i);
+            auto set_j_b = partition_b.at(j);
+            if (set_i_a.cardinal() != set_j_b.cardinal()) {
+                unsigned size = min(set_j_b.cardinal(), set_i_a.cardinal());
+                set_i_a = cut_interval(set_i_a, set_i_a.begin()->begin() + size - 1).first;
+                set_j_b = cut_interval(set_j_b, set_j_b.begin()->begin() + size - 1).first;
+            }
+
+            auto ic_i_a = cost_matrix.get_ic_by_interval(partition_a_id, set_i_a);
+            auto ec_i_a = cost_matrix.get_ec_by_interval(partition_a_id, set_i_a);
+            ec_i_a = ec_i_a.intersection(cost_matrix.get_ec_by_partition_id(partition_b_id));
+
+            logging::sbg_log << "Node " << i << ", " << set_i_a << " ec: " << ec_i_a << " and ic: " << ic_i_a << endl;
+
+            auto ic_j_b = cost_matrix.get_ic_by_interval(partition_b_id, set_j_b);
+            auto ec_j_b = cost_matrix.get_ec_by_interval(partition_b_id, set_j_b);
+            ec_j_b = ec_j_b.intersection(cost_matrix.get_ec_by_partition_id(partition_a_id));
+
+            logging::sbg_log << "Node " << j << ", " << set_j_b << " ec: " << ec_j_b << " and ic: " << ic_j_b << endl;
+
+            auto ec_edges = ec_i_a.cup(ec_j_b).difference(ec_i_a.intersection(ec_j_b)); // disjointCup does not seem to be working
+            auto ic_edges = ic_i_a.cup(ic_j_b);
+
+            int gain = ec_edges.cardinal() - ic_edges.cardinal();
+            auto gain_object = GainObjectImbalance{ i, j, gain, ec_i_a, ic_i_a, set_i_a.cardinal(), ec_j_b, ic_j_b, set_j_b.cardinal() };
+            local_cost_matrix.insert(gain_object);
         }
     }
 
-    return cost_matrix;
+    // /////
+
+    // cout << "now, classic" << endl;
+
+    // CostMatrixImbalance cost_matrix1;
+
+    // unsigned p_size_a = get_partition_size(partition_a, graph.get_node_weights(), set_fact);
+    // unsigned p_size_b = get_partition_size(partition_b, graph.get_node_weights(), set_fact);
+
+    // for (size_t i = 0; i < partition_a.size(); i++) {
+    //     for (size_t j = 0; j < partition_b.size(); j++) {
+    //         compute_exchange(i, j, partition_a, p_size_a, partition_b, p_size_b, graph, NodeWeight(), LMin, LMax, cost_matrix1, set_fact);
+    //     }
+    // }
+
+    // return cost_matrix1;
+
+    return local_cost_matrix;
 }
 
 
@@ -439,7 +380,7 @@ pair<pair<Set, Set>, pair<Set, Set>> update_sets(
 }
 
 
-void update_diff(
+[[maybe_unused]]void update_diff(
     CostMatrixImbalance& cost_matrix,
     Partition& remaining_partition_a,
     Set& moved_from_partition_a,
@@ -603,7 +544,10 @@ void update_sum(
 
 int kl_sbg_imbalance(
     const WeightedSBGraph& graph,
+    CostMatrix& cost_matrix,
+    unsigned partition_a_id,
     Partition& partition_a,
+    unsigned partition_b_id,
     Partition& partition_b,
     unsigned LMin,
     unsigned LMax,
@@ -621,7 +565,12 @@ int kl_sbg_imbalance(
     Set b_v = set_fact.createSet();
     const auto node_weights = graph.get_node_weights();
 
-    CostMatrixImbalance gm = generate_gain_matrix(graph, node_weights, partition_a, partition_b, LMin, LMax, set_fact);
+    auto start_generate_gain_matrix = chrono::high_resolution_clock::now();
+    CostMatrixImbalance gm = generate_gain_matrix(graph, cost_matrix, partition_a_id, partition_a, partition_b_id, partition_b, LMin, LMax, set_fact);
+    auto end_generate_gain_matrix = chrono::high_resolution_clock::now();
+    auto time_to_generate_gain_matrix = chrono::duration<double, std::milli>(end_generate_gain_matrix - start_generate_gain_matrix).count();
+    cout << "time_to_generate_gain_matrix: " << time_to_generate_gain_matrix << endl;
+
 
 #if PARTITION_IMBALANCE_DEBUG
         logging::sbg_log << LMin << ", "
@@ -630,14 +579,22 @@ int kl_sbg_imbalance(
 #endif
 
     while ((not a_c.empty()) and (not b_c.empty())) {
-        logging::sbg_log << "inside the while " << a_c << b_c << endl;
+        logging::sbg_log << "inside the while " << a_c << ", " << b_c << " ";
+        logging::sbg_log << get_partition_size(a_c, node_weights, set_fact) << ", " << get_partition_size(b_c, node_weights, set_fact) << endl;
         logging::sbg_log << gm << endl;
+        assert(not gm.empty());
         GainObjectImbalance g = max_diff(gm);
         logging::sbg_log << g << endl;
         pair<Set, Set> a_ = {set_fact.createSet(), set_fact.createSet()}, b_ = {set_fact.createSet(), set_fact.createSet()};
         tie(a_, b_) = update_sets(a_c, b_c, a_v, b_v, g, graph, set_fact);
+        auto start_update_diff = chrono::high_resolution_clock::now();
         update_diff(gm, a_c, a_v, a_, b_c, b_v, b_, graph, node_weights, g, LMin, LMax, set_fact);
+        auto end_update_diff = chrono::high_resolution_clock::now();
+        auto time_to_update_diff = chrono::duration<double, std::milli>(end_update_diff - start_update_diff).count();
+        cout << "time_to_update_diff: " << time_to_update_diff << endl;
         update_sum(par_sum, g.gain, max_par_sum, max_par_sum_set, a_v, b_v);
+        // cost_matrix.update_partition(partition_a_id, a_c);
+        // cost_matrix.update_partition(partition_b_id, b_c);
     }
 
     if (max_par_sum > 0) {
@@ -664,10 +621,10 @@ int kl_sbg_imbalance(
 }
 
 
-KLBipartResult kl_sbg_bipart_imbalance(const WeightedSBGraph& graph, Partition& partition_a,
-    Partition& partition_b, unsigned LMin, unsigned LMax, SetAF& set_fact)
+KLBipartResult kl_sbg_bipart_imbalance(const WeightedSBGraph& graph, CostMatrix cost_matrix, unsigned partition_a_id,
+    Partition& partition_a, unsigned partition_b_id, Partition& partition_b, unsigned LMin, unsigned LMax, SetAF& set_fact)
 {
-    int gain = kl_sbg_imbalance(graph, partition_a, partition_b, LMin, LMax, set_fact);
+    int gain = kl_sbg_imbalance(graph, cost_matrix, partition_a_id, partition_a, partition_b_id, partition_b, LMin, LMax, set_fact);
 
 #if PARTITION_IMBALANCE_DEBUG
     logging::sbg_log << "Final: " << partition_a << ", " << partition_b << endl;
@@ -678,7 +635,7 @@ KLBipartResult kl_sbg_bipart_imbalance(const WeightedSBGraph& graph, Partition& 
 
 
 kl_sbg_partitioner_result kl_sbg_partitioner_function(
-    const WeightedSBGraph& graph, PartitionMap& partitions, unsigned LMin, unsigned LMax,
+    const WeightedSBGraph& graph, PartitionMap& partitions, CostMatrix& cost_matrix, unsigned LMin, unsigned LMax,
     vector<kl_sbg_partitioner_result>& gains, SetAF& set_fact, MapAF& map_fact)
 {
     // avoid repeating this
@@ -699,7 +656,6 @@ kl_sbg_partitioner_result kl_sbg_partitioner_function(
     map<size_t, Set> adjacents;
     kl_sbg_partitioner_result best_gain = kl_sbg_partitioner_result{ 0, 0, -1, {}, {}};
     for (size_t i = 0; i < partitions.size(); i++) {
-
         if (adjacents.find(i) == adjacents.end()) {
             adjacents.insert_or_assign(i, look_for_adjacents(from_vector(partitions.at(i), set_fact), graph.map1(), graph.map2()));
         }
@@ -723,7 +679,7 @@ kl_sbg_partitioner_result kl_sbg_partitioner_function(
 
             auto p_1_copy = partitions.at(i);
             auto p_2_copy = partitions.at(j);
-            KLBipartResult current_gain = kl_sbg_bipart_imbalance(graph, p_1_copy, p_2_copy, LMin, LMax, set_fact);
+            KLBipartResult current_gain = kl_sbg_bipart_imbalance(graph, cost_matrix, i, p_1_copy, j, p_2_copy, LMin, LMax, set_fact);
     #if PARTITION_IMBALANCE_DEBUG
             logging::sbg_log << "current_gain " << current_gain << endl;
     #endif
@@ -746,73 +702,130 @@ kl_sbg_partitioner_result kl_sbg_partitioner_multithreading(
     vector<kl_sbg_partitioner_result>& gains, SetAF& set_fact)
 {
         // avoid repeating this
-    auto look_for_adjacents = [&set_fact](const Set& nodes, const PWMap& map1, const PWMap& map2) {
-        auto involved_edges1 = map1.preImage(nodes);
-        auto arrival_nodes1 = map2.image(involved_edges1);
-        arrival_nodes1 = arrival_nodes1.difference(nodes);
+    // auto look_for_adjacents = [&set_fact](const Set& nodes, const PWMap& map1, const PWMap& map2) {
+    //     auto involved_edges1 = map1.preImage(nodes);
+    //     auto arrival_nodes1 = map2.image(involved_edges1);
+    //     arrival_nodes1 = arrival_nodes1.difference(nodes);
 
-        auto involved_edges2 = map2.preImage(nodes);
-        auto arrival_nodes2 = map1.image(involved_edges2);
-        arrival_nodes2 = arrival_nodes2.difference(nodes);
+    //     auto involved_edges2 = map2.preImage(nodes);
+    //     auto arrival_nodes2 = map1.image(involved_edges2);
+    //     arrival_nodes2 = arrival_nodes2.difference(nodes);
 
-        auto arrival_nodes = arrival_nodes1.cup(arrival_nodes2);
+    //     auto arrival_nodes = arrival_nodes1.cup(arrival_nodes2);
 
-        return arrival_nodes;
-    };
+    //     return arrival_nodes;
+    // };
 
 
     kl_sbg_partitioner_result best_gain = kl_sbg_partitioner_result{ 0, 0, -1, {}, {}};
-    vector<future<kl_sbg_partitioner_result>> workers;
-    map<size_t, Set> adjacents;
-    for (size_t i = 0; i < partitions.size(); i++) {
+    // vector<future<kl_sbg_partitioner_result>> workers;
+    // map<size_t, Set> adjacents;
+    // for (size_t i = 0; i < partitions.size(); i++) {
 
-        if (adjacents.find(i) == adjacents.end()) {
-            adjacents.insert_or_assign(i, look_for_adjacents(from_vector(partitions.at(i), set_fact), graph.map1(), graph.map2()));
-        }
+    //     if (adjacents.find(i) == adjacents.end()) {
+    //         adjacents.insert_or_assign(i, look_for_adjacents(from_vector(partitions.at(i), set_fact), graph.map1(), graph.map2()));
+    //     }
 
-        for (size_t j = i + 1; j < partitions.size(); j++) {
+    //     for (size_t j = i + 1; j < partitions.size(); j++) {
 
-            if (adjacents.at(i).intersection(from_vector(partitions.at(j), set_fact)).isEmpty()) {
-                logging::sbg_log << "No connections between " << partitions[i] << " and " << partitions[j] << " is empty" << endl;
-                continue;
-            }
+    //         if (adjacents.at(i).intersection(from_vector(partitions.at(j), set_fact)).isEmpty()) {
+    //             logging::sbg_log << "No connections between " << partitions[i] << " and " << partitions[j] << " is empty" << endl;
+    //             continue;
+    //         }
 
-            auto gain_comp = [i, j] (const kl_sbg_partitioner_result& g) {
-                return (g.i == i and g.j == j) or (g.i == j and g.j == i);
-            };
+    //         auto gain_comp = [i, j] (const kl_sbg_partitioner_result& g) {
+    //             return (g.i == i and g.j == j) or (g.i == j and g.j == i);
+    //         };
 
-            auto gain_it = find_if(gains.begin(), gains.end(), gain_comp);
-            if (gain_it != gains.end()) {
-                logging::sbg_log << "Between " << i << " and " << j << " was already computed, " << *gain_it  << endl;
-                continue;
-            }
+    //         auto gain_it = find_if(gains.begin(), gains.end(), gain_comp);
+    //         if (gain_it != gains.end()) {
+    //             logging::sbg_log << "Between " << i << " and " << j << " was already computed, " << *gain_it  << endl;
+    //             continue;
+    //         }
 
-            auto th = async([&graph, &partitions, i, j, LMin, LMax, &set_fact] () {
-                auto p_1_copy = partitions.at(i);
-                auto p_2_copy = partitions.at(j);
-                KLBipartResult results = kl_sbg_bipart_imbalance(graph, p_1_copy, p_2_copy, LMin, LMax, set_fact);
-                return kl_sbg_partitioner_result{i, j, results.gain, results.A, results.B};
-            });
-            workers.push_back(move(th));
-        }
-    }
+    //         auto th = async([&graph, &partitions, i, j, LMin, LMax, &set_fact] () {
+    //             auto p_1_copy = partitions.at(i);
+    //             auto p_2_copy = partitions.at(j);
+    //             KLBipartResult results = kl_sbg_bipart_imbalance(graph, p_1_copy, p_2_copy, LMin, LMax, set_fact);
+    //             return kl_sbg_partitioner_result{i, j, results.gain, results.A, results.B};
+    //         });
+    //         workers.push_back(move(th));
+    //     }
+    // }
 
-    for_each(workers.begin(), workers.end(), [&best_gain, &gains] (future<kl_sbg_partitioner_result>& th) {
-        // here we wait for each thread to finish and get its results
-        auto current_gain = th.get();
-        gains.emplace_back(current_gain);
-    });
+    // for_each(workers.begin(), workers.end(), [&best_gain, &gains] (future<kl_sbg_partitioner_result>& th) {
+    //     // here we wait for each thread to finish and get its results
+    //     auto current_gain = th.get();
+    //     gains.emplace_back(current_gain);
+    // });
 
-    for_each(gains.begin(), gains.end(), [&best_gain] (const kl_sbg_partitioner_result& current_gain) {
-        if (current_gain.gain > best_gain.gain) {
-            best_gain = current_gain;
-        }
-    });
+    // for_each(gains.begin(), gains.end(), [&best_gain] (const kl_sbg_partitioner_result& current_gain) {
+    //     if (current_gain.gain > best_gain.gain) {
+    //         best_gain = current_gain;
+    //     }
+    // });
 
     return best_gain;
 }
 
 
+}
+
+
+ostream& operator<<(ostream& os, const KLBipartResult& result)
+{
+    os << "{ gain: " << result.gain << ", A: " << result.A << ", B: " << result.B << "}";
+
+    return os;
+}
+
+
+ostream& operator<<(ostream& os, const GainObjectImbalance& gain)
+{
+    os << "< Node: "
+       << gain.i
+       << ", size: "
+       << gain.size_i
+       << " - Node: "
+       << gain.j
+       << ", size: "
+       << gain.size_j
+       << ", gain: "
+       << gain.gain
+       << " >";
+
+    return os;
+}
+
+
+
+ostream& operator<<(ostream& os, const CostMatrixImbalance& cost_matrix)
+{
+    os << "{\n";
+    for (const auto& o : cost_matrix) {
+        os << "\t" << o << "\n";
+    }
+    os << "}";
+
+    return os;
+}
+
+
+ostream& operator<<(ostream& os, const kl_sbg_partitioner_result& result)
+{
+    os << "{ partition results: "
+       << result.i
+       << ", "
+       << result.j
+       << ", "
+       << result.gain
+       << ", A: "
+       << result.A
+       << ", B: "
+       << result.B
+       << "}";
+
+    return os;
 }
 
 
@@ -913,6 +926,7 @@ void kl_sbg_imbalance_partitioner(
     bool change = true;
     int counter = 0;
 
+    CostMatrix cost_matrix = CostMatrix(graph, partitions, set_fact);
     vector<kl_sbg_partitioner_result> gains;
     while (change) {
         cout << "*****ITERATION NUMBER " << counter++ << endl;
@@ -922,7 +936,7 @@ void kl_sbg_imbalance_partitioner(
         if (multithreading_enabled) {
             best_gain = kl_sbg_partitioner_multithreading(graph, partitions, LMin, LMax, gains, set_fact);
         } else {
-            best_gain = kl_sbg_partitioner_function(graph, partitions, LMin, LMax, gains, set_fact, map_fact);
+            best_gain = kl_sbg_partitioner_function(graph, partitions, cost_matrix, LMin, LMax, gains, set_fact, map_fact);
         }
 
         logging::sbg_log << "Best gain results is: " << best_gain << endl;
@@ -979,6 +993,7 @@ void kl_sbg_imbalance_partitioner(
                 }
             }
 
+            cost_matrix.update_partitions(partitions);
             break;
         }
     }

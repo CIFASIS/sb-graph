@@ -199,6 +199,8 @@ int main(int argc, char** argv)
     auto end_build_graph = chrono::high_resolution_clock::now();
     auto time_to_build_graph = chrono::duration<double, std::milli>(end_build_graph - start_build_graph).count();
 
+    cout << "sb_graph: " << sb_graph << endl;
+
     auto start_partitionate = chrono::high_resolution_clock::now();
     auto partitions = best_initial_partition(sb_graph, *number_of_partitions, set_fact);
     kl_sbg_imbalance_partitioner(sb_graph, partitions, *epsilon, set_fact, map_fact);

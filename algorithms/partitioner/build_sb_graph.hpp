@@ -101,4 +101,6 @@ size_t get_set_size(const SBG::LIB::Set& set);
 
 
 std::pair<SBG::LIB::Set, SBG::LIB::Set> cut_interval_by_dimension(SBG::LIB::Set& set_piece, const SBG::LIB::NodeWeight& node_weight, std::size_t size, SBG::LIB::SetAF& set_fact);
+
+std::pair<SBG::LIB::SetPiece, SBG::LIB::SetPiece> cut_interval(const SBG::LIB::SetPiece& interval, int cut_value);
 }

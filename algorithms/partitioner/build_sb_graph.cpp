@@ -580,6 +580,8 @@ unsigned add_adjacent_nodes(const Map& incoming_map, const Map& arrival_map, con
   return qty;
 }
 
+}  // namespace
+
 pair<SetPiece, SetPiece> cut_interval(const SetPiece& interval, int cut_value)
 {
   int interval_begin = interval.intervals().front().begin();
@@ -595,9 +597,6 @@ pair<SetPiece, SetPiece> cut_interval(const SetPiece& interval, int cut_value)
 
   return make_pair(set_1, set_2);
 }
-
-}  // namespace
-
 
 size_t get_set_size(const Set& set)
 {
@@ -755,7 +754,7 @@ unsigned get_partition_size(const vector<SetPiece>& node, const NodeWeight& node
 {
   unsigned size = 0;
   for (const auto& set_piece : node) {
-    size += get_node_size(set_piece, node_weight, set_fact);
+    size += set_piece.cardinal();
   }
 
   return size;

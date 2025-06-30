@@ -47,7 +47,7 @@ enum PartitionAlgorithm
 /// @param partition - A list of SetPiece elements.
 /// @param set_fact - Factory to create sets.
 /// @return A SBG::LIB::Set representation of the Partition element.
-SBG::LIB::Set from_vector(const Partition& partition, SBG::LIB::SetAF& set_fact);
+SBG::LIB::Set from_vector(const Partition& partition, const SBG::LIB::SetAF& set_fact);
 
 
 /// @brief Converts a set into a Partition element.

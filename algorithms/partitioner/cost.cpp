@@ -89,9 +89,6 @@ void CostMatrix::initialize()
 
         _cost_by_partition.emplace_back(make_pair(_set_fact.createSet(), _set_fact.createSet()));
         for (const auto& node : _partitions.at(i)) {
-            for (const auto& s : node) {
-                cout << s << endl;
-            }
             auto [ec, ic] = internal::compute_EC_IC(_partitions.at(i), node, _graph.map1(), _graph.map2(), _set_fact);
 
             _cost_by_partition.back() = {  _cost_by_partition.back().first.cup(ec), _cost_by_partition.back().second.cup(ic) };

@@ -50,22 +50,8 @@ target_link_libraries(
         sbg-part-lib
         stdc++ 
         m
+        pthread
 )
-
-# # Add custom target for documentation
-# add_custom_target(mmoc-doc
-#   COMMAND doxygen ${PROJECT_SOURCE_DIR}/MMOCompiler.doxyfile
-#   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-#   COMMENT "Generating API documentation with Doxygen"
-# )
-
-# # Add test target
-# add_custom_target(mmoc-test
-#   COMMAND ${CMAKE_COMMAND} --build . --target mmoc
-#   COMMAND ${CMAKE_COMMAND} -E chdir tests ${CMAKE_MAKE_PROGRAM} test
-#   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-#   COMMENT "Building and running tests"
-# )
 
 
 # install

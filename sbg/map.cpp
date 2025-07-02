@@ -136,13 +136,7 @@ std::ostream &operator<<(std::ostream &out, const Map &m)
 
 // Map operations --------------------------------------------------------------
 
-std::size_t Map::arity() const
-{
-  if (dom_.isEmpty())
-    return 0;
-
-  return dom_.arity();
-}
+std::size_t Map::arity() const { return exp_.arity(); }
 
 bool Map::isEmpty() const { return dom_.isEmpty(); }
 
@@ -215,6 +209,26 @@ Map Map::composition(const Map &other) const
   Exp res_exp = exp_.composition(other.exp_);
 
   return Map(fact_, res_dom, res_exp);
+}
+
+Set Map::fixedPoints() const
+{
+  Interval univ_one_dim(0, 1, Inf);
+  SetPiece allowed;
+  for (unsigned int j = 0; j < arity(); ++j) {
+    LExp jth = exp_[j];
+
+    if (jth.isId())
+      allowed.emplaceBack(univ_one_dim);
+
+    else if (jth.isConstant())
+      allowed.emplaceBack(Interval(jth.offset().toNat()));
+ 
+    else
+      return fact_.createSet();
+  }
+
+  return dom_.intersection(fact_.createSet(allowed));
 }
 
 // Extra operations ------------------------------------------------------------

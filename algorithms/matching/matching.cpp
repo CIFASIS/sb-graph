@@ -214,8 +214,6 @@ void BFSMatching::minReachable()
 
 // Matching --------------------------------------------------------------------
 
-bool notEqId(const Map &sbgmap) { return !(sbgmap.isId()); }
-
 MatchInfo::MatchInfo(Set matched_edges, bool fully_matchedU) 
   : matched_edges_(matched_edges), fully_matchedU_(fully_matchedU) {}
 
@@ -309,10 +307,9 @@ member_imp(BFSMatching, bool, debug);
 
 Set BFSMatching::edgesInPaths() const
 {
-  // Vertices that are successor of other vertices in a path
-  Set succs = smap().filterMap([](const Map &sbgmap) {
-    return notEqId(sbgmap);
-  }).image();
+  // Vertices that are successors of other vertices in a path
+  Set not_fixed = smap().dom().difference(smap().fixedPoints());
+  Set succs = smap().restrict(not_fixed).image();
   // Edges whose endings are successors 
   Set ending_edges = mapD().preImage(succs);
   // Map from a 'successor' edge to its start
@@ -325,13 +322,12 @@ Set BFSMatching::edgesInPaths() const
 
 Set BFSMatching::edgesSameRepLR(const PWMap &rmaprmapd) const
 {
-  PWMap rmap_neq_id = rmap().filterMap([](const Map &sbgmap) {
-    return notEqId(sbgmap);
-  });
+  Set not_fixed = rmap().dom().difference(rmap().fixedPoints());
+  PWMap rmap_neq_id = rmap().restrict(not_fixed);
   PWMap rmapb = rmap_neq_id.composition(mapB());
-  PWMap rmaprmapd_neq_id = rmaprmapd.filterMap([](const Map &sbgmap) {
-    return notEqId(sbgmap);
-  }); 
+
+  not_fixed = rmaprmapd.dom().difference(rmaprmapd.fixedPoints());
+  PWMap rmaprmapd_neq_id = rmaprmapd.restrict(not_fixed);
   PWMap rmaprmapdb = rmaprmapd_neq_id.composition(mapB());
   
   return rmapb.equalImage(rmaprmapdb);

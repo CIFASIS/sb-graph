@@ -185,17 +185,19 @@ MaybeMDI MultiDimInter::compact(const MultiDimInter &other) const
   unsigned int j = 0;
   for (; j < arity(); ++j) {
     auto ith = operator[](j).compact(other[j]);
-    if (ith) {
-      res.emplaceBack(ith.value());
-      ++j;
-      break;
-    }
-
-    else if (operator[](j) != other[j])
-      return {};
-
-    else
+    if (operator[](j) == other[j])
       res.emplaceBack(operator[](j));
+
+    else {
+      if (ith) {
+        res.emplaceBack(ith.value());
+        ++j;
+        break;
+      }
+
+      else
+        return {};
+    }
   }
 
   for (; j < arity(); ++j) {

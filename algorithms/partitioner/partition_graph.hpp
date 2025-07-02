@@ -30,7 +30,7 @@
 
 namespace sbg_partitioner {
 
-constexpr bool sanity_check_enabled = false;
+constexpr bool sanity_check_enabled = true;
 
 typedef std::vector<SBG::LIB::SetPiece> Partition;
 

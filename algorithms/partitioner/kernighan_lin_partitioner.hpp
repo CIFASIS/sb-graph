@@ -46,15 +46,15 @@ std::ostream& operator<<(std::ostream& os, const KLBipartResult& result);
 
 
 struct GainObjectImbalance {
-    size_t i;
-    size_t j;
+    size_t a_idx;
+    size_t b_idx;
     int gain;
-    SBG::LIB::Set ec_nodes_i;
-    SBG::LIB::Set ic_nodes_i;
-    size_t size_i;
-    SBG::LIB::Set ec_nodes_j;
-    SBG::LIB::Set ic_nodes_j;
-    size_t size_j;
+    SBG::LIB::Set ec_nodes_a;
+    SBG::LIB::Set ic_nodes_a;
+    size_t size_a;
+    SBG::LIB::Set ec_nodes_b;
+    SBG::LIB::Set ic_nodes_b;
+    size_t size_b;
 };
 
 std::ostream& operator<<(std::ostream& os, const GainObjectImbalance& gain);

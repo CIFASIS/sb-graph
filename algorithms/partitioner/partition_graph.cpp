@@ -29,7 +29,7 @@
 #include "partition_graph.hpp"
 #include "sbg_partitioner_log.hpp"
 
-#define TRY_MULTIPLE_STRATEGIES 0
+#define TRY_MULTIPLE_STRATEGIES 1
 
 using namespace std;
 
@@ -53,6 +53,7 @@ Set get_communication_edges(Set partition, const PWMap& map_1, const PWMap& map_
   return comm_edges;
 }
 
+
 [[maybe_unused]] size_t get_partition_communication(WeightedSBGraph& graph, const PartitionMap& partitions, SetAF& set_fact)
 {
   Set s = set_fact.createSet();
@@ -69,26 +70,28 @@ Set get_communication_edges(Set partition, const PWMap& map_1, const PWMap& map_
 constexpr bool using_many_initial_partitions = TRY_MULTIPLE_STRATEGIES;
 }  // namespace
 
-// we could cache solutions here
-Set from_vector(const Partition& partition, const SetAF& set_fact)
-{
-  Set partition_set = set_fact.createSet();
-  for (size_t i = 0; i < partition.size(); i++) {
-    partition_set.emplace(partition[i]);
-  }
 
-  return partition_set;
+// we could cache solutions here
+Set from_vector(const Partition& partition, const SetAF& set_fact) {
+    Set partition_set = set_fact.createSet();
+    for (size_t i = 0; i < partition.size(); i++) {
+        partition_set.emplace(partition[i]);
+    }
+
+    return partition_set;
 }
+
 
 Partition to_vector(const Set& partition_set)
 {
-  Partition partition;
-  for (auto set_piece : partition_set) {
-    partition.push_back(move(set_piece));
-  }
+    Partition partition;
+    for (auto set_piece : partition_set) {
+        partition.push_back(move(set_piece));
+    }
 
-  return partition;
+    return partition;
 }
+
 
 vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, unsigned number_of_partitions, SetAF& set_fact)
 {
@@ -166,16 +169,17 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
 
 Set get_connectivity_set(SBG::LIB::SBG& graph, const PartitionMap& partitions, size_t partition_index, SetAF& set_fact)
 {
-  const auto& partition_vector = partitions.at(partition_index);
-  Set partition = set_fact.createSet();
-  for_each(partition_vector.cbegin(), partition_vector.cend(), [&partition](auto s) { partition.emplaceBack(s); });
+    const auto& partition_vector = partitions.at(partition_index);
+    Set partition = set_fact.createSet();
+    for_each(partition_vector.cbegin(), partition_vector.cend(), [&partition] (auto s) { partition.emplaceBack(s); });
 
-  auto comm_edges_1 = get_communication_edges(partition, graph.map1(), graph.map2());
-  auto comm_edges_2 = get_communication_edges(partition, graph.map2(), graph.map1());
-  auto comm_edges = comm_edges_1.cup(comm_edges_2);
+    auto comm_edges_1 = get_communication_edges(partition, graph.map1(), graph.map2());
+    auto comm_edges_2 = get_communication_edges(partition, graph.map2(), graph.map1());
+    auto comm_edges = comm_edges_1.cup(comm_edges_2);
 
-  return comm_edges;
+    return comm_edges;
 }
+
 
 void sanity_check(const WeightedSBGraph& graph, PartitionMap& partitions_set, unsigned number_of_partitions, SetAF& set_fact)
 {
@@ -245,21 +249,24 @@ string get_output(const PartitionMap& partition_map)
   return json_data;
 }
 
+
 void sort_partition_intervals(Partition& p)
 {
-  constexpr auto compare_intervals = [](const SBG::LIB::SetPiece& s1, const SBG::LIB::SetPiece& s2) {
-    return s1[0].begin() < s2[0].begin();
-  };
+    constexpr auto compare_intervals = [](const SBG::LIB::SetPiece& s1, const SBG::LIB::SetPiece& s2) {
+        return s1[0].begin() < s2[0].begin();
+    };
 
-  sort(p.begin(), p.end(), compare_intervals);
+    sort(p.begin(), p.end(), compare_intervals);
 }
+
 
 ostream& operator<<(ostream& os, const Partition& partition)
 {
-  for_each(partition.cbegin(), partition.cend(), [&os](const auto& p) { os << p << " "; });
+    for_each(partition.cbegin(), partition.cend(), [&os] (const auto& p) { os << p << " "; });
 
-  return os;
+    return os;
 }
+
 
 ostream& operator<<(ostream& os, const PartitionMap& partitions)
 {

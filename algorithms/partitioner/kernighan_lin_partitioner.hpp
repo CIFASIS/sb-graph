@@ -55,6 +55,19 @@ struct GainObjectImbalance {
     SBG::LIB::Set ec_nodes_j;
     SBG::LIB::Set ic_nodes_j;
     size_t size_j;
+
+    bool operator==(const GainObjectImbalance& gain_2) const
+    {
+        return i == gain_2.i
+            and j == gain_2.j
+            and gain == gain_2.gain
+            and ec_nodes_i == gain_2.ec_nodes_i
+            and ic_nodes_i == gain_2.ic_nodes_i
+            and size_i == gain_2.size_i
+            and ec_nodes_j == gain_2.ec_nodes_j
+            and ec_nodes_j == gain_2.ec_nodes_j
+            and size_j == gain_2.size_j;
+    }
 };
 
 std::ostream& operator<<(std::ostream& os, const GainObjectImbalance& gain);

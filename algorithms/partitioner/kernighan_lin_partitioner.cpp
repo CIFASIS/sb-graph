@@ -267,11 +267,6 @@ CostMatrixImbalance generate_gain_matrix(
 {
     CostMatrixImbalance local_cost_matrix;
 
-    // unsigned p_size_a = get_partition_size(partition_a, graph.get_node_weights(), set_fact);
-    // unsigned p_size_b = get_partition_size(partition_b, graph.get_node_weights(), set_fact);
-
-    cout << "computing in the new way" << endl;
-
     for (size_t i = 0; i < partition_a.size(); i++) {
         for (size_t j = 0; j < partition_b.size(); j++) {
             auto set_i_a = partition_a.at(i);
@@ -302,23 +297,6 @@ CostMatrixImbalance generate_gain_matrix(
             local_cost_matrix.insert(gain_object);
         }
     }
-
-    // /////
-
-    // cout << "now, classic" << endl;
-
-    // CostMatrixImbalance cost_matrix1;
-
-    // unsigned p_size_a = get_partition_size(partition_a, graph.get_node_weights(), set_fact);
-    // unsigned p_size_b = get_partition_size(partition_b, graph.get_node_weights(), set_fact);
-
-    // for (size_t i = 0; i < partition_a.size(); i++) {
-    //     for (size_t j = 0; j < partition_b.size(); j++) {
-    //         compute_exchange(i, j, partition_a, p_size_a, partition_b, p_size_b, graph, NodeWeight(), LMin, LMax, cost_matrix1, set_fact);
-    //     }
-    // }
-
-    // return cost_matrix1;
 
     return local_cost_matrix;
 }
@@ -638,32 +616,13 @@ kl_sbg_partitioner_result kl_sbg_partitioner_function(
     const WeightedSBGraph& graph, PartitionMap& partitions, CostMatrix& cost_matrix, unsigned LMin, unsigned LMax,
     vector<kl_sbg_partitioner_result>& gains, SetAF& set_fact, MapAF& map_fact)
 {
-    // avoid repeating this
-    auto look_for_adjacents = [&set_fact](const Set& nodes, const PWMap& map1, const PWMap& map2) {
-        auto involved_edges1 = map1.preImage(nodes);
-        auto arrival_nodes1 = map2.image(involved_edges1);
-        arrival_nodes1 = arrival_nodes1.difference(nodes);
-
-        auto involved_edges2 = map2.preImage(nodes);
-        auto arrival_nodes2 = map1.image(involved_edges2);
-        arrival_nodes2 = arrival_nodes2.difference(nodes);
-
-        auto arrival_nodes = arrival_nodes1.cup(arrival_nodes2);
-
-        return arrival_nodes;
-    };
-
-    map<size_t, Set> adjacents;
     kl_sbg_partitioner_result best_gain = kl_sbg_partitioner_result{ 0, 0, -1, {}, {}};
     for (size_t i = 0; i < partitions.size(); i++) {
-        if (adjacents.find(i) == adjacents.end()) {
-            adjacents.insert_or_assign(i, look_for_adjacents(from_vector(partitions.at(i), set_fact), graph.map1(), graph.map2()));
-        }
-
+        const auto ec_partition_i = cost_matrix.get_ec_by_partition_id(i);
         for (size_t j = i + 1; j < partitions.size(); j++) {
 
-            if (adjacents.at(i).intersection(from_vector(partitions.at(j), set_fact)).isEmpty()) {
-                logging::sbg_log << "No connections between " << partitions.at(i) << " and " << partitions.at(j) << " is empty" << endl;
+            if (ec_partition_i.intersection(cost_matrix.get_ec_by_partition_id(j)).isEmpty()) {
+                logging::sbg_log << "No connections between " << partitions.at(i) << " and " << partitions.at(j) << endl;
                 continue;
             }
 

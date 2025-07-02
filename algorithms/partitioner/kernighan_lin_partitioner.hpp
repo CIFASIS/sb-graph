@@ -46,27 +46,27 @@ std::ostream& operator<<(std::ostream& os, const KLBipartResult& result);
 
 
 struct GainObjectImbalance {
-    size_t i;
-    size_t j;
+    size_t a_idx;
+    size_t b_idx;
     int gain;
-    SBG::LIB::Set ec_nodes_i;
-    SBG::LIB::Set ic_nodes_i;
-    size_t size_i;
-    SBG::LIB::Set ec_nodes_j;
-    SBG::LIB::Set ic_nodes_j;
-    size_t size_j;
+    SBG::LIB::Set ec_nodes_a;
+    SBG::LIB::Set ic_nodes_a;
+    size_t size_a;
+    SBG::LIB::Set ec_nodes_b;
+    SBG::LIB::Set ic_nodes_b;
+    size_t size_b;
 
     bool operator==(const GainObjectImbalance& gain_2) const
     {
-        return i == gain_2.i
-            and j == gain_2.j
+        return a_idx == gain_2.a_idx
+            and b_idx == gain_2.b_idx
             and gain == gain_2.gain
-            and ec_nodes_i == gain_2.ec_nodes_i
-            and ic_nodes_i == gain_2.ic_nodes_i
-            and size_i == gain_2.size_i
-            and ec_nodes_j == gain_2.ec_nodes_j
-            and ec_nodes_j == gain_2.ec_nodes_j
-            and size_j == gain_2.size_j;
+            and ec_nodes_a == gain_2.ec_nodes_a
+            and ic_nodes_a == gain_2.ic_nodes_a
+            and size_a == gain_2.size_a
+            and ec_nodes_b == gain_2.ec_nodes_b
+            and ec_nodes_b == gain_2.ec_nodes_b
+            and size_b == gain_2.size_b;
     }
 };
 

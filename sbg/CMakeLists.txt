@@ -7,19 +7,19 @@ target_include_directories(sbg-dev PUBLIC ${PROJECT_SOURCE_DIR})
 target_sources(
     sbg-dev
     PRIVATE
-        af_map.cpp
-        af_pwmap.cpp
-        af_set.cpp
-        interval.cpp
-        lexp.cpp
-        map.cpp
-        multidim_inter.cpp
-        multidim_lexp.cpp
-        natural.cpp
-        pw_map.cpp
-        rational.cpp
-        sbg.cpp
-        set.cpp
+    af_map.cpp
+    af_pwmap.cpp
+    af_set.cpp
+    interval.cpp
+    lexp.cpp
+    map.cpp
+    multidim_inter.cpp
+    multidim_lexp.cpp
+    natural.cpp
+    pw_map.cpp
+    rational.cpp
+    sbg.cpp
+    set.cpp
 )
 
 add_custom_target(sbg-doc
@@ -35,14 +35,16 @@ install(
     RUNTIME DESTINATION lib
     COMPONENT sbg-dev
     LIBRARY
-        DESTINATION lib
-        PERMISSIONS
-            OWNER_READ
-            OWNER_WRITE
-            OWNER_EXECUTE
-            GROUP_READ
-            GROUP_EXECUTE
-            WORLD_READ
-            WORLD_EXECUTE
+    DESTINATION lib
+    PERMISSIONS
+    OWNER_READ
+    OWNER_WRITE
+    OWNER_EXECUTE
+    GROUP_READ
+    GROUP_EXECUTE
+    WORLD_READ
+    WORLD_EXECUTE
     COMPONENT sbg-dev
 )
+
+install_lib_headers("${CMAKE_CURRENT_SOURCE_DIR}")

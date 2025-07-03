@@ -7,7 +7,7 @@ target_include_directories(sbg-util-lib PUBLIC ${PROJECT_SOURCE_DIR})
 target_sources(
     sbg-util-lib
     PRIVATE
-        logger.cpp
+    logger.cpp
 )
 
 add_custom_target(util-doc
@@ -24,3 +24,5 @@ install(
     TARGETS sbg-util-lib
     RUNTIME DESTINATION lib
 )
+
+install_lib_headers("${CMAKE_CURRENT_SOURCE_DIR}")

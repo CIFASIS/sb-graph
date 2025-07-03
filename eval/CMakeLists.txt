@@ -67,3 +67,5 @@ install(
             WORLD_EXECUTE
     COMPONENT sbg-eval
 )
+
+install_lib_headers("${CMAKE_CURRENT_SOURCE_DIR}")

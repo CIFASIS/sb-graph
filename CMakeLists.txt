@@ -31,6 +31,7 @@ file(MAKE_DIRECTORY
   ${LIB_DIR}
 )
 
+# Define install rules for library headers.
 function(install_lib_headers headers_dir)
   file(GLOB_RECURSE PROJECT_HEADERS
     "${headers_dir}/*.hpp"

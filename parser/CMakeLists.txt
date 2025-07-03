@@ -7,11 +7,11 @@ target_include_directories(sbg-parser-lib PUBLIC ${PROJECT_SOURCE_DIR})
 target_sources(
     sbg-parser-lib
     PRIVATE
-        parser.cpp
-        statement.cpp
-        expr.cpp
-        sbg_program.cpp
-        skipper.cpp
+    parser.cpp
+    statement.cpp
+    expr.cpp
+    sbg_program.cpp
+    skipper.cpp
 )
 
 add_dependencies(sbg-parser-lib sbg-dev)
@@ -19,9 +19,8 @@ add_dependencies(sbg-parser-lib sbg-dev)
 target_link_libraries(
     sbg-eval-lib
     PRIVATE
-        sbg-dev
+    sbg-dev
 )
-
 
 # Add executable
 add_executable(
@@ -31,13 +30,13 @@ add_executable(
 target_sources(
     sbg-parser
     PRIVATE
-        main.cpp
+    main.cpp
 )
 
 target_link_libraries(
     sbg-parser
     PRIVATE
-        sbg-parser-lib
+    sbg-parser-lib
 )
 
 # install
@@ -46,14 +45,16 @@ install(
     RUNTIME DESTINATION bin
     COMPONENT sbg-parser
     LIBRARY
-        DESTINATION lib
-        PERMISSIONS
-            OWNER_READ
-            OWNER_WRITE
-            OWNER_EXECUTE
-            GROUP_READ
-            GROUP_EXECUTE
-            WORLD_READ
-            WORLD_EXECUTE
+    DESTINATION lib
+    PERMISSIONS
+    OWNER_READ
+    OWNER_WRITE
+    OWNER_EXECUTE
+    GROUP_READ
+    GROUP_EXECUTE
+    WORLD_READ
+    WORLD_EXECUTE
     COMPONENT sbg-parser
 )
+
+install_lib_headers("${CMAKE_CURRENT_SOURCE_DIR}")

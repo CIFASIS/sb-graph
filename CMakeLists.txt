@@ -16,20 +16,33 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Build mode flags
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   add_compile_definitions(SBG_PARTITIONER_LOGGING)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -Wall ") #-Werror  
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -Wall ") # -Werror
 else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-reorder")
 endif()
 
 # Output directories
-set(BIN_DIR ${PROJECT_SOURCE_DIR}/bin)
-set(LIB_DIR ${PROJECT_SOURCE_DIR}/lib)
+set(BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin)
+set(LIB_DIR ${CMAKE_INSTALL_PREFIX}/lib)
 
 # Create output directories
 file(MAKE_DIRECTORY
-      ${BIN_DIR}
-      ${LIB_DIR}
+  ${BIN_DIR}
+  ${LIB_DIR}
 )
+
+function(install_lib_headers headers_dir)
+  file(GLOB_RECURSE PROJECT_HEADERS
+    "${headers_dir}/*.hpp"
+  )
+
+  get_filename_component(CURRENT_DIR_BASENAME "${headers_dir}" NAME)
+
+  install(FILES
+    ${PROJECT_HEADERS}
+    DESTINATION "include/${CURRENT_DIR_BASENAME}"
+  )
+endfunction()
 
 # sbgraph-library
 add_library(sbgraph STATIC)
@@ -51,24 +64,24 @@ add_dependencies(sbgraph sbg-dev)
 
 # install
 install(
-    TARGETS sbgraph
-    RUNTIME DESTINATION lib
-    COMPONENT sbgraph
-    LIBRARY
-        DESTINATION lib
-        PERMISSIONS
-            OWNER_READ
-            OWNER_WRITE
-            OWNER_EXECUTE
-            GROUP_READ
-            GROUP_EXECUTE
-            WORLD_READ
-            WORLD_EXECUTE
-    COMPONENT sbgraph
+  TARGETS sbgraph
+  RUNTIME DESTINATION lib
+  COMPONENT sbgraph
+  LIBRARY
+  DESTINATION lib
+  PERMISSIONS
+  OWNER_READ
+  OWNER_WRITE
+  OWNER_EXECUTE
+  GROUP_READ
+  GROUP_EXECUTE
+  WORLD_READ
+  WORLD_EXECUTE
+  COMPONENT sbgraph
 )
 
 add_custom_target(doc
-      COMMAND echo "Generating Project documentation."
+  COMMAND echo "Generating Project documentation."
 )
 
 add_dependencies(doc eval-doc sbg-doc util-doc)

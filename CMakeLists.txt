@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 project(SBG)
 
-set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
+set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/install)
 
 # Set default build type to Debug if not specified
 if(NOT CMAKE_BUILD_TYPE)

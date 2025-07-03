@@ -1,11 +1,5 @@
-# Compiled objects.
-/obj
-
-# Generated library.
-/lib
-
-# Binary files
-/bin
+# Install folder..
+/install
 
 # Build folder.
 /build

@@ -42,7 +42,7 @@ TEST_P(EvalTests, Eval)
   const std::string TEST_DIR = EVAL_TEST_ROOT + "/test_data/" + NAME;
   const std::string DIR_CMD = "mkdir -p " + TEST_DIR;
   std::system(DIR_CMD.c_str());
-  const std::string EVAL_CMD = TEST_ROOT + "/../bin/sbg-eval -f " + TEST_ROOT + "/" + NAME
+  const std::string EVAL_CMD = TEST_ROOT + "/../build/eval/sbg-eval -f " + TEST_ROOT + "/" + NAME
     + ".test > " + TEST_DIR + "/" + NAME + ".log 2>&1";
   std::system(EVAL_CMD.c_str());
   const std::string TEST_CMD = EVAL_TEST_ROOT + "/results.sh " + NAME + " " + EVAL_TEST_ROOT;

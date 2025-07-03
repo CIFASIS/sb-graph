@@ -43,7 +43,7 @@ TEST_P(ParserTests, Parser)
   const std::string TEST_DIR = PARSER_TEST_ROOT + "/test_data/" + NAME;
   const std::string DIR_CMD = "mkdir -p " + TEST_DIR;
   std::system(DIR_CMD.c_str());
-  const std::string PARSER_CMD = TEST_ROOT + "/../bin/sbg-parser -f " + TEST_ROOT + "/" + NAME
+  const std::string PARSER_CMD = TEST_ROOT + "/../build/parser/sbg-parser -f " + TEST_ROOT + "/" + NAME
     + ".test > " + TEST_DIR + "/" + NAME + ".log 2>&1";
   std::system(PARSER_CMD.c_str());
   const std::string TEST_CMD = PARSER_TEST_ROOT + "/results.sh " + NAME + " " + PARSER_TEST_ROOT;

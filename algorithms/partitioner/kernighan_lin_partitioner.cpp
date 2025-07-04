@@ -16,16 +16,9 @@
 
  ******************************************************************************/
 
-#include <algorithm>
-#include <chrono>
 #include <future>
-#include <map>
 #include <rapidjson/document.h>
-#include <rapidjson/filewritestream.h>
-#include <rapidjson/prettywriter.h>
 #include <rapidjson/writer.h>
-#include <set>
-#include <util/logger.hpp>
 
 #include "build_sb_graph.hpp"
 #include "kernighan_lin_partitioner.hpp"
@@ -46,116 +39,13 @@ using namespace SBG::Util;
 
 namespace sbg_partitioner {
 
+
+using ec_ic = std::pair<Set , Set>;
+
 // Using unnamed namespace to define functions with internal linkage
 namespace {
 
 constexpr bool multithreading_enabled = true;
-
-struct GainObjectImbalance {
-    size_t i;
-    size_t j;
-    int gain;
-    Set ec_nodes_i;
-    Set ic_nodes_i;
-    size_t size_i;
-    Set ec_nodes_j;
-    Set ic_nodes_j;
-    size_t size_j;
-};
-
-
-struct KLBipartResult {
-    Partition A;
-    Partition B;
-    int gain;
-};
-
-
-struct kl_sbg_partitioner_result
-{
-    size_t i;
-    size_t j;
-    int gain;
-    Partition A;
-    Partition B;
-};
-
-// This seems to be a bit odd to me, but if this function is not declared as well (even when)
-// it is declared in `partition_graph.hpp`, this file does not compile.
-ostream& operator<<(std::ostream& os, const Partition& partitions);
-
-
-ostream& operator<<(ostream& os, const kl_sbg_partitioner_result& result)
-{
-    os << "{ partition results: "
-       << result.i
-       << ", "
-       << result.j
-       << ", "
-       << result.gain
-       << ", A: "
-       << result.A
-       << ", B: "
-       << result.B
-       << "}";
-
-    return os;
-}
-
-
-template<typename G>
-struct GainObjectComparatorTemplate {
-    bool operator()(const G& gain_1, const G& gain_2) const
-    {
-        return gain_1.gain >= gain_2.gain;
-    }
-};
-
-
-using ec_ic = std::pair<Set , Set>;
-
-using GainObjectImbalanceComparator = GainObjectComparatorTemplate<GainObjectImbalance>;
-
-using CostMatrixImbalance = std::set<GainObjectImbalance, GainObjectImbalanceComparator>;
-
-
-ostream& operator<<(ostream& os, const KLBipartResult& result)
-{
-    os << "{ gain: " << result.gain << ", A: " << result.A << ", B: " << result.B << "}";
-
-    return os;
-}
-
-
-ostream& operator<<(ostream& os, const GainObjectImbalance& gain)
-{
-    os << "< Node: "
-       << gain.i
-       << ", size: "
-       << gain.size_i
-       << " - Node: "
-       << gain.j
-       << ", size: "
-       << gain.size_j
-       << ", gain: "
-       << gain.gain
-       << " >";
-
-    return os;
-}
-
-
-[[maybe_unused]] ostream& operator<<(ostream& os, const CostMatrixImbalance& cost_matrix)
-{
-    os << "{\n";
-    for (const auto& o : cost_matrix) {
-        os << "\t" << o << "\n";
-    }
-    os << "}";
-
-    return os;
-}
-
 
 pair<unsigned, unsigned>
 compute_lmin_lmax(const WeightedSBGraph& graph, unsigned number_of_partitions, const float imbalance_epsilon, SetAF& set_fact)
@@ -813,6 +703,63 @@ kl_sbg_partitioner_result kl_sbg_partitioner_multithreading(
 }
 
 
+}
+
+
+ostream& operator<<(ostream& os, const KLBipartResult& result)
+{
+    os << "{ gain: " << result.gain << ", A: " << result.A << ", B: " << result.B << "}";
+
+    return os;
+}
+
+
+ostream& operator<<(ostream& os, const GainObjectImbalance& gain)
+{
+    os << "< Node: "
+       << gain.i
+       << ", size: "
+       << gain.size_i
+       << " - Node: "
+       << gain.j
+       << ", size: "
+       << gain.size_j
+       << ", gain: "
+       << gain.gain
+       << " >";
+
+    return os;
+}
+
+
+
+ostream& operator<<(ostream& os, const CostMatrixImbalance& cost_matrix)
+{
+    os << "{\n";
+    for (const auto& o : cost_matrix) {
+        os << "\t" << o << "\n";
+    }
+    os << "}";
+
+    return os;
+}
+
+
+ostream& operator<<(ostream& os, const kl_sbg_partitioner_result& result)
+{
+    os << "{ partition results: "
+       << result.i
+       << ", "
+       << result.j
+       << ", "
+       << result.gain
+       << ", A: "
+       << result.A
+       << ", B: "
+       << result.B
+       << "}";
+
+    return os;
 }
 
 

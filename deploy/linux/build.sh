@@ -9,102 +9,160 @@
 #
 #    PARAMETERS: ---
 #       OPTIONS: ---
-#  REQUIREMENTS: ---
+#  REQUIREMENTS: git, cmake, dpkg, lsb_release
 #         NOTES: --- 
 #        AUTHOR: Joaquin Fernandez, joaquin.f.fernandez@gmail.com
 #       PROJECT: Set Based Graph Library
 #       VERSION: 4.0.0
 #===================================================================================
 
-LIB_NAME=sb-graph-lib
+set -euo pipefail
 
-rm -rf $LIB_NAME-*.deb
+LIB_NAME="sb-graph-lib"
+ORIGINAL_DIR="$(pwd)"
 
-cd ../../
-ARCH=`uname -m`
-echo "Retrieving latest from Git";
-git pull
+function check_command() {
+  local cmd="$1"
+  if ! command -v "$cmd" &> /dev/null; then
+    echo "Error: Required command '$cmd' not found. Please install it and retry."
+    exit 1
+  fi
+}
 
-# Set library version
-VER=`cat ./deploy/linux/version`
+function update_git_repo() {
+  echo "Retrieving latest from Git..."
+  git pull
+}
 
-# Set OS config files.
-CONTROL_FILE="control.amd64"
-PACKAGE_NAME=$LIB_NAME-$VER
-SYSTEM_VERSION=`lsb_release -d`
-if [[ "$SYSTEM_VERSION" == *"22.04"* ]]; then
-  CONTROL_FILE="control.amd64.u22"
-  PACKAGE_NAME=$PACKAGE_NAME-u22
-fi
+function build_binaries() {
+  echo "Building SB Graph binaries..."
+  rm -rf build install
+  mkdir -p build
+  cd build
+  cmake .. -DCMAKE_BUILD_TYPE=Release
+  make
+  make install
+  cd ..
+}
 
-# Set solver branch
-BRANCH=`git rev-parse --abbrev-ref HEAD`
+function prepare_temp_dirs() {
+  echo "Creating temp folders..."
+  rm -rf tmp_deb tmp
+  mkdir -p tmp_deb tmp
+  echo "Done."
+}
 
-# If build from development branch, update package name to unstable.
-if [ "$BRANCH" != "sb-graph-release" ]; then
-  PACKAGE_NAME=$PACKAGE_NAME-unstable
-fi
+function export_repo_files() {
+  echo "Exporting repo to temp folder..."
+  local checkout_path="./tmp/"
+  mkdir -p "$checkout_path"
+  git checkout-index -a -f --prefix="$checkout_path"
+  echo "Done."
+}
 
-PACKAGE_NAME=$PACKAGE_NAME.deb
+function prepare_deb_structure() {
+  echo "Preparing deb package structure..."
+  local user_folder="usr"
+  local install_folder="$user_folder/local"
+  local include="include"
+  local lib="lib"
+  local bin="bin"
 
-echo "Building SB Graph DEB package for $ARCH version $VER";
-echo "Building Binaries";
-autoconf
-./configure
-make clean
-make 
+  cp -r ./deploy/linux/deb/* ./tmp_deb/
+  chmod 0755 tmp_deb/DEBIAN/post*
 
-echo "Creating temp folders..."
-rm -rf tmp_deb
-rm -rf tmp
-mkdir tmp_deb
-mkdir tmp
-echo "Done."
+  mkdir -p ./tmp_deb/"$user_folder"
+  mkdir -p ./tmp_deb/"$install_folder"/"$bin"
+  mkdir -p ./tmp_deb/"$install_folder"/"$include"/sb-graph
+  mkdir -p ./tmp_deb/"$install_folder"/"$lib"
+}
 
-echo "Export repo to temp folder..."
-CHECKOUT_PATH=./tmp/
-mkdir -p $CHECKOUT_PATH
-git checkout-index -a -f --prefix=$CHECKOUT_PATH 
-echo "Done."
+function copy_files_to_deb() {
+  echo "Copying files to deb package structure..."
+  local user_folder="usr"
+  local install_folder="$user_folder/local"
+  local include="include"
+  local lib="lib"
+  local bin="bin"
 
-echo "Export tmp files to deb container..."
+  cp ./install/bin/* ./tmp_deb/"$install_folder"/"$bin"
+  cp ./install/lib/* ./tmp_deb/"$install_folder"/"$lib"
+  cp -r ./install/include/* ./tmp_deb/"$install_folder"/"$include"/sb-graph/
 
-USER_FOLDER=usr
-INSTALL_FOLDER=$USER_FOLDER/local
-INCLUDE=include 
-LIB=lib
-BIN=bin
+  chmod 0644 $(find tmp_deb/ -iname '*.hpp')
+  chmod 0755 $(find tmp_deb/ -type d)
+}
 
-cp -r ./deploy/linux/deb/* ./tmp_deb/
-chmod 0755 tmp_deb/DEBIAN/post*
-mkdir ./tmp_deb/$USER_FOLDER
-mkdir ./tmp_deb/$INSTALL_FOLDER
-mkdir ./tmp_deb/$INSTALL_FOLDER/$BIN
-mkdir ./tmp_deb/$INSTALL_FOLDER/$INCLUDE
-mkdir ./tmp_deb/$INSTALL_FOLDER/$INCLUDE/sb-graph
-mkdir ./tmp_deb/$INSTALL_FOLDER/$INCLUDE/sb-graph/ast
-mkdir ./tmp_deb/$INSTALL_FOLDER/$INCLUDE/sb-graph/eval
-mkdir ./tmp_deb/$INSTALL_FOLDER/$INCLUDE/sb-graph/parser
-mkdir ./tmp_deb/$INSTALL_FOLDER/$INCLUDE/sb-graph/sbg
-mkdir ./tmp_deb/$INSTALL_FOLDER/$INCLUDE/sb-graph/util
-mkdir ./tmp_deb/$INSTALL_FOLDER/$LIB
+function build_deb_package() {
+  echo "Building DEB package..."
+  local lib_name="$1"
+  local package_name="$2"
+  local control_file="$3"
+  local version="$4"
 
-cat ./tmp_deb/DEBIAN/$CONTROL_FILE | awk -v VERSION="$VER" '{ if(index($0,"Version:")>=1) print "Version: " VERSION ; else print $0;}' >  ./tmp_deb/DEBIAN/control
-rm ./tmp_deb/DEBIAN/$CONTROL_FILE 
+  # Replace version in control file
+  awk -v VERSION="$version" '{ if(index($0,"Version:")>=1) print "Version: " VERSION ; else print $0;}' ./tmp_deb/DEBIAN/"$control_file" > ./tmp_deb/DEBIAN/control
+  rm ./tmp_deb/DEBIAN/"$control_file"
 
-cp bin/sbg-eval  ./tmp_deb/$INSTALL_FOLDER/$BIN
-cp bin/sbg-parser  ./tmp_deb/$INSTALL_FOLDER/$BIN
-cp lib/libsbgraph.a  ./tmp_deb/$INSTALL_FOLDER/$LIB
-cp -r ./tmp/ast/*.hpp ./tmp_deb/$INSTALL_FOLDER/$INCLUDE/sb-graph/ast
-cp -r ./tmp/eval/*.hpp ./tmp_deb/$INSTALL_FOLDER/$INCLUDE/sb-graph/eval
-cp -r ./tmp/parser/*.hpp ./tmp_deb/$INSTALL_FOLDER/$INCLUDE/sb-graph/parser
-cp -r ./tmp/sbg/*.hpp ./tmp_deb/$INSTALL_FOLDER/$INCLUDE/sb-graph/sbg
-cp -r ./tmp/util/*.hpp ./tmp_deb/$INSTALL_FOLDER/$INCLUDE/sb-graph/util
+  fakeroot dpkg -b tmp_deb "$lib_name.deb"
+  mv "$lib_name.deb" ./deploy/linux/"$package_name"
+}
 
-chmod 0644 `find tmp_deb/ -iname *.hpp`
-chmod 0755 `find tmp_deb/ -type d`
-fakeroot dpkg -b tmp_deb $LIB_NAME.deb
-mv $LIB_NAME.deb ./deploy/linux/$PACKAGE_NAME
-rm -rf tmp_deb
-rm -rf tmp
-cd deploy/linux
+function cleanup() {
+  echo "Cleaning up temporary files..."
+  rm -rf tmp_deb tmp
+  cd "$ORIGINAL_DIR"
+  echo "Done."
+}
+
+function main() {
+  check_command git
+  check_command cmake
+  check_command dpkg
+  check_command lsb_release
+
+  echo "Starting build process..."
+
+  rm -rf "$LIB_NAME"-*.deb
+
+  cd ../../
+
+  ARCH=$(uname -m)
+  update_git_repo
+
+  local ver
+  ver=$(cat ./deploy/linux/version)
+
+  local control_file="control.amd64"
+  local package_name="$LIB_NAME-$ver"
+  local system_version
+  system_version=$(lsb_release -d)
+
+  if [[ "$system_version" == *"22.04"* ]]; then
+    control_file="control.amd64.u22"
+    package_name="${package_name}-u22"
+  fi
+
+  local branch
+  branch=$(git rev-parse --abbrev-ref HEAD)
+
+  if [[ "$branch" != "sb-graph-release" ]]; then
+    package_name="${package_name}-unstable"
+  fi
+
+  package_name="${package_name}.deb"
+
+  echo "Building SB Graph DEB package for $ARCH version $ver"
+
+  build_binaries
+  prepare_temp_dirs
+  export_repo_files
+  prepare_deb_structure
+  copy_files_to_deb
+  build_deb_package "$LIB_NAME" "$package_name" "$control_file" "$ver"
+  cleanup
+
+  echo "Build process completed successfully."
+}
+
+main "$@"

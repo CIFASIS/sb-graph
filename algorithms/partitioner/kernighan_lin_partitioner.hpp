@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <set>
 #include <string>
 
 #include "partition_graph.hpp"
@@ -33,5 +34,56 @@ void kl_sbg_imbalance_partitioner(
 
 
 std::string get_pretty_sb_graph(const SBG::LIB::SBG& g);
+
+
+struct KLBipartResult {
+    Partition A;
+    Partition B;
+    int gain;
+};
+
+std::ostream& operator<<(std::ostream& os, const KLBipartResult& result);
+
+
+struct GainObjectImbalance {
+    size_t i;
+    size_t j;
+    int gain;
+    SBG::LIB::Set ec_nodes_i;
+    SBG::LIB::Set ic_nodes_i;
+    size_t size_i;
+    SBG::LIB::Set ec_nodes_j;
+    SBG::LIB::Set ic_nodes_j;
+    size_t size_j;
+};
+
+std::ostream& operator<<(std::ostream& os, const GainObjectImbalance& gain);
+
+
+template<typename G>
+struct GainObjectComparatorTemplate {
+    bool operator()(const G& gain_1, const G& gain_2) const
+    {
+        return gain_1.gain >= gain_2.gain;
+    }
+};
+
+using GainObjectImbalanceComparator = GainObjectComparatorTemplate<GainObjectImbalance>;
+
+using CostMatrixImbalance = std::set<GainObjectImbalance, GainObjectImbalanceComparator>;
+
+std::ostream& operator<<(std::ostream& os, const CostMatrixImbalance& cost_matrix);
+
+
+struct kl_sbg_partitioner_result
+{
+    size_t i;
+    size_t j;
+    int gain;
+    Partition A;
+    Partition B;
+};
+
+std::ostream& operator<<(std::ostream& os, const kl_sbg_partitioner_result& result);
 
 }

@@ -50,7 +50,7 @@ The simplest way to compile this package is to run the following commands from t
       
   3. `cmake ..`
 
-      Note that by default the biuld type is set to `Debug`, to make a release build, add `-DCMAKE_BUILD_TYPE=Release`
+      Note that by default the biuld type is set to `Release`, to make a debug build, add `-DCMAKE_BUILD_TYPE=Debug`
 
   4. `make` 
   

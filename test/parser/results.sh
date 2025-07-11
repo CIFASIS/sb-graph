@@ -20,8 +20,10 @@
 #===============================================================================
 
 MODEL=$1
-GT_MODEL="./gt_data/"${MODEL}
-TEST_MODEL="./test_data/"${MODEL}
+TEST_ROOT_DIR=$2
+
+GT_MODEL=${TEST_ROOT_DIR}"/gt_data/"${MODEL}
+TEST_MODEL=${TEST_ROOT_DIR}"/test_data/"${MODEL}
 
 test_results () 
 {

@@ -17,7 +17,6 @@
  ******************************************************************************/
 
 #include <future>
-#include <bitset>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <unordered_map>

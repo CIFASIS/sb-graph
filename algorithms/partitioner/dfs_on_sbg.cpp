@@ -58,7 +58,7 @@ vector<map<unsigned, set<SetPiece>>> partitionate()
 DFS::DFS() : _nodes(SBG::LIB::UnordAF().createSet()) {}
 
 DFS::DFS(SBG::LIB::WeightedSBGraph& graph, unsigned number_of_partitions, SetAF& set_fact)
-    : _number_of_partitions(number_of_partitions), _graph(&graph), _set_fact(&set_fact), _nodes(graph.V()), _root_node_idx(nullopt)
+    : _number_of_partitions(number_of_partitions), _root_node_idx(nullopt), _graph(&graph), _set_fact(&set_fact), _nodes(graph.V())
 {
   initialize_adjacents();
 }

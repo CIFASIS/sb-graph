@@ -73,6 +73,7 @@ ec_ic compute_EC_IC(
 
 }
 
+
 CostMatrix::CostMatrix(const WeightedSBGraph& graph, PartitionMap& partitions, const SetAF& set_fact)
     : _graph(graph),
     _partitions(partitions),
@@ -80,6 +81,7 @@ CostMatrix::CostMatrix(const WeightedSBGraph& graph, PartitionMap& partitions, c
 {
     initialize();
 }
+
 
 void CostMatrix::initialize()
 {
@@ -98,14 +100,10 @@ void CostMatrix::initialize()
     }
 }
 
-void CostMatrix::update_partition(unsigned i, const Partition& partition)
-{
-    _partitions[i] = partition;
-
-}
 
 void CostMatrix::update_partitions(PartitionMap& partitions)
 {
+    // improve this!
     _partitions = partitions;
     _cost_by_partition.clear();
     _ec_cost_by_interval.clear();
@@ -113,10 +111,12 @@ void CostMatrix::update_partitions(PartitionMap& partitions)
     initialize();
 }
 
+
 Set CostMatrix::get_ec_by_partition_id(unsigned partition_id)
 {
     return _cost_by_partition[partition_id].first;
 }
+
 
 Set CostMatrix::get_ec_by_interval(unsigned partition_id, const SetPiece& nodes)
 {
@@ -130,6 +130,7 @@ Set CostMatrix::get_ec_by_interval(unsigned partition_id, const SetPiece& nodes)
 
     return cost.first;
 }
+
 
 Set CostMatrix::get_ic_by_interval(unsigned partition_id, const SetPiece& nodes)
 {

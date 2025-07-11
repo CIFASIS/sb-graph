@@ -43,7 +43,6 @@ public:
     CostMatrix(const SBG::LIB::WeightedSBGraph& graph, PartitionMap& partitions, const SBG::LIB::SetAF& set_fact);
 
     PartitionMap partitions() const;
-    void update_partition(unsigned i, const Partition& partition);
     void update_partitions(PartitionMap& partitions);
 
     SBG::LIB::Set get_ec_by_partition_id(unsigned partition_id); // non-const since _cost_by_partition may be updated

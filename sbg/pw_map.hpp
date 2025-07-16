@@ -32,6 +32,7 @@
 
 
 #include <forward_list>
+#include <iostream>
 #include "sbg/af_map.hpp"
 
 namespace SBG {
@@ -438,50 +439,55 @@ struct OrdPWMap : public PWMapDelegate {
   PWMapDelegPtr compact() const override;
   
   private:
-  
-  unsigned int emplaceHint(const Map &m,unsigned int hint);
-  unsigned int advanceHint(const MD_NAT crit,unsigned int hint);
+  void pushBack(const MapEntry &m);
+  void emplaceHint(const Map &m,unsigned int hint);
+  void advanceHint(const MD_NAT crit,unsigned int &hint);
   
   void processMinAdjMap(
   const Map &m1, 
   const Map &m2, 
-  Set &set, 
-  PWMapDelegate  &ordpwmap,
-  unsigned int*posGlobal) const;
+  Set &set_in,
+  Set &set_out, 
+  PWMapDelegate  &ord_map,
+  unsigned int &global_pos) const;
   
   void processMinus(
   const Map &m1, 
   const Map &m2, 
-  Set &set, 
-  PWMapDelegate  &ordpwmap,
-  unsigned int*posGlobal) const; 
+  Set &set_in,
+  Set &set_out, 
+  PWMapDelegate  &ord_map,
+  unsigned int &global_pos) const; 
   
   void processAdd(
   const Map &m1, 
   const Map &m2, 
-  Set &set, 
-  PWMapDelegate  &ordpwmap,
-  unsigned int*posGlobal) const; 
+  Set &set_in,
+  Set &set_out, 
+  PWMapDelegate  &ord_map,
+  unsigned int &global_pos) const; 
   
   void processEqualImage(
   const Map &m1, 
   const Map &m2, 
-  Set &set, 
-  PWMapDelegate &ordpwmap,
-  unsigned int*posGlobal) const; 
+  Set &set_in,
+  Set &set_out,
+  PWMapDelegate &ord_map,
+  unsigned int &global_pos) const; 
   
   using ProcessFunc = void (OrdPWMap::*)(
   const Map &, const Map &, 
-  Set &, PWMapDelegate &, 
-  unsigned int*
+  Set &, Set &, PWMapDelegate &, 
+  unsigned int&
   ) const;
   
   void processMapsOrd(
     const PWMapDelegate &other,
-    Set &set,
-    PWMapDelegate &ordmap,
+    Set &set_in,
+    Set &set_out,
+    PWMapDelegate &ord_map,
     ProcessFunc process,
-    bool orderMts
+    bool order_mts
   ) const;
 };
 

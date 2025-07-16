@@ -1021,65 +1021,65 @@ SetDelegPtr OrderedSet::intersection(const SetDelegate &other) const
     return std::make_unique<OrderedSet>(inter);
   
   // General case
-  const OrderedSet* shortSet = this;
-  const OrderedSet* longSet  = &othr;
+  const OrderedSet* short_set = this;
+  const OrderedSet* long_set  = &othr;
 
   if (othr.pieces_.size() < pieces_.size()) {
-     shortSet = &othr;
-     longSet  = this;
+     short_set = &othr;
+     long_set  = this;
   }
   
-  std::forward_list<size_t> shortIndexes;
-  auto liIt = shortIndexes.before_begin();
-  const size_t shortSize = shortSet->pieces_.size();
-  for (size_t i = 0; i < shortSize; ++i)
-    liIt = shortIndexes.insert_after(liIt, i);
+  std::forward_list<size_t> short_indexes;
+  auto li_it = short_indexes.before_begin();
+  const size_t short_size = short_set->pieces_.size();
+  for (size_t i = 0; i < short_size; ++i)
+    li_it = short_indexes.insert_after(li_it, i);
 
-  const auto& longPieces = longSet->pieces_;
-  const auto& shortPieces = shortSet->pieces_;
+  const auto &long_pieces = long_set->pieces_;
+  auto short_begin = short_set->pieces_.begin();
 
-  unsigned int globalPos = 0;
+  unsigned int global_pos = 0;
 
-  for (const auto& longElem : longPieces) {
-    const auto& longMin = longElem.minElem();
-    const auto& longMax = longElem.maxElem();
-    const auto longMinX = longMin[0];
-    const auto longMaxX = longMax[0];
+  for (const auto& long_elem : long_pieces) {
+    const auto long_min = long_elem.minElem();
+    const auto long_max = long_elem.maxElem();
+    const auto long_min_x = long_min[0];
+    const auto long_max_x = long_max[0];
 
-    auto liPrev = shortIndexes.before_begin();
-    auto liCurr = shortIndexes.begin();
+    auto li_prev = short_indexes.before_begin();
+    auto li_curr = short_indexes.begin();
     
-    globalPos = advanceHint(inter, longElem, globalPos);
+    global_pos = advanceHint(inter, long_elem, global_pos);
 
-    while (liCurr != shortIndexes.end()) {
-      const size_t idx = *liCurr;
-      const auto& shortElem = shortPieces[idx];
+    while (li_curr != short_indexes.end()) {
+      const size_t idx = *li_curr;
+      const SetPiece short_elem = *(short_begin + idx);
 
-      const auto& shortMin = shortElem.minElem();
-      const auto& shortMax = shortElem.maxElem();
-      const auto shortMinX = shortMin[0];
-      const auto shortMaxX = shortMax[0];
+      const auto short_min = short_elem.minElem();
+      const auto short_max = short_elem.maxElem();
+      const auto short_min_x = short_min[0];
+      const auto short_max_x = short_max[0];
 
-      if (shortMaxX < longMinX) {
-        liCurr = shortIndexes.erase_after(liPrev);
+      if (short_max_x < long_min_x) {
+        li_curr = short_indexes.erase_after(li_prev);
         continue;
       }
 
-      if (longMaxX < shortMinX)
+      if (long_max_x < short_min_x)
         break;
 
-      if (doInt(shortElem,longElem)) {
-        const auto interRes = longElem.intersection(shortElem);
-        if (!interRes.isEmpty()) 
-          emplaceHint(inter, interRes, globalPos);
+      if (doInt(short_elem,long_elem)) {
+        const auto inter_res = long_elem.intersection(short_elem);
+        if (!inter_res.isEmpty()) 
+          emplaceHint(inter, inter_res, global_pos);
           
       }
 
-      ++liPrev;
-      ++liCurr;
+      ++li_prev;
+      ++li_curr;
     }
 
-    if (shortIndexes.empty())
+    if (short_indexes.empty())
         break;
   }
 
@@ -1140,18 +1140,18 @@ SetDelegPtr OrderedSet::complementAtom() const
   SetPiece all(mdi.arity(), univ);
 
   unsigned int dim = 0;
-  int globalPos = 0;
+  int global_pos = 0;
 
   for (const Interval& i : mdi) {
-    int localPos = globalPos;
+    int local_pos = global_pos;
 
     if (i.begin() != 0) {
       Interval i_res(0, 1, i.begin() - 1);
       if (!i_res.isEmpty()) {
         all[dim] = i_res;
-        res.insert(res.end() - localPos, all);
-        ++localPos;
-        ++globalPos;
+        res.insert(res.begin() + local_pos, all);
+        ++local_pos;
+        ++global_pos;
         all[dim] = univ;
       }
     }
@@ -1161,8 +1161,8 @@ SetDelegPtr OrderedSet::complementAtom() const
         Interval i_res(i.begin() + j + 1, i.step(), i.end());
         if (!i_res.isEmpty()) {
           during_mdi[dim] = i_res;
-          res.insert(res.end() - localPos, during_mdi);
-          ++localPos;
+          res.insert(res.begin() + local_pos, during_mdi);
+          ++local_pos;
         }
       }
     }
@@ -1171,8 +1171,8 @@ SetDelegPtr OrderedSet::complementAtom() const
       Interval i_res(i.end() + 1, 1, Inf);
       if (!i_res.isEmpty()) {
         all[dim] = i_res;
-        res.insert(res.end() - localPos, all);
-        ++localPos;
+        res.insert(res.begin() + local_pos, all);
+        ++local_pos;
         all[dim] = univ;
       }
     }
@@ -1181,8 +1181,7 @@ SetDelegPtr OrderedSet::complementAtom() const
     during_mdi[dim] = i;
     ++dim;
   }
-
-  std::reverse(res.begin(), res.end());
+  
   return std::make_unique<OrderedSet>(res);
 }
 
@@ -1209,60 +1208,60 @@ SetDelegPtr OrderedSet::intersectionComp(const SetDelegate &other, const SetPiec
   } 
 
   std::forward_list<size_t> indexes;
-  auto liIt = indexes.before_begin();
-  const size_t idxSize = othr.pieces_.size();
-  for (size_t i = 0; i < idxSize; ++i)
-    liIt = indexes.insert_after(liIt, i);
+  auto li_it = indexes.before_begin();
+  const size_t idx_size = othr.pieces_.size();
+  for (size_t i = 0; i < idx_size; ++i)
+    li_it = indexes.insert_after(li_it, i);
 
-  auto othrBegin = othr.pieces_.begin();
+  auto othr_begin = othr.pieces_.begin();
   auto end = pieces_.end();
   auto current = pieces_.begin() + pos;
-  unsigned int globalPos = 0;
+  unsigned int global_pos = 0;
 
   while (current != end) {
     const SetPiece &elem = *current;
-    const auto elemMin = elem.minElem();
-    const auto elemMax = elem.maxElem();
-    const auto elemMinX = elemMin[0];
-    const auto elemMaxX = elemMax[0];
+    const auto elem_min = elem.minElem();
+    const auto elem_max = elem.maxElem();
+    const auto elem_min_x = elem_min[0];
+    const auto elem_max_x = elem_max[0];
 
-    auto liPrev = indexes.before_begin();
-    auto liCurr = indexes.begin();
+    auto li_prev = indexes.before_begin();
+    auto li_curr = indexes.begin();
     
     // doIntersection prevents the creation of additional partitions
-    bool doIntersection = doInt(elem,mdi);
+    bool do_intersection = doInt(elem,mdi);
     
-    globalPos = advanceHint(inter, elem, globalPos);
+    global_pos = advanceHint(inter, elem, global_pos);
     
-    while (doIntersection && liCurr != indexes.end()) {
-      size_t idx = *liCurr;
-      const SetPiece &othrElem = *(othrBegin + idx);
-      const auto othrElemMin = othrElem.minElem();
-      const auto othrElemMax = othrElem.maxElem();
-      const auto othrElemMinX = othrElemMin[0];
-      const auto othrElemMaxX = othrElemMax[0];
+    while (do_intersection && li_curr != indexes.end()) {
+      size_t idx = *li_curr;
+      const SetPiece &othr_elem = *(othr_begin + idx);
+      const auto othr_min = othr_elem.minElem();
+      const auto othr_max = othr_elem.maxElem();
+      const auto othr_min_x = othr_min[0];
+      const auto othr_max_x = othr_max[0];
 
 
-      if (othrElemMaxX < elemMinX) {
-        liCurr = indexes.erase_after(liPrev);
+      if (othr_max_x < elem_min_x) {
+        li_curr = indexes.erase_after(li_prev);
         continue;
       }
 
-      if (elemMaxX < othrElemMinX)
+      if (elem_max_x < othr_min_x)
         break;
 
-      if (doInt(othrElem, elem)) {
-        auto interRes = elem.intersection(othrElem);
-        if (!interRes.isEmpty())
-          emplaceHint(inter, interRes, globalPos);
+      if (doInt(othr_elem, elem)) {
+        auto inter_res = elem.intersection(othr_elem);
+        if (!inter_res.isEmpty())
+          emplaceHint(inter, inter_res, global_pos);
       }
 
-      ++liPrev;
-      ++liCurr;
+      ++li_prev;
+      ++li_curr;
     }
     
-    if(!doIntersection)
-      emplaceHint(inter, elem, globalPos);
+    if(!do_intersection)
+      emplaceHint(inter, elem, global_pos);
 
     if (indexes.empty())
       break;

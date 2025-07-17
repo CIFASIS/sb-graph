@@ -19,6 +19,7 @@
 
 #include "eval/visitors/eval_expr.hpp"
 #include "eval/visitors/program_visitor.hpp"
+#include "util/logger.hpp"
 
 namespace SBG {
 
@@ -32,6 +33,9 @@ ProgramIO ProgramVisitor::operator()(AST::Program p) const
   LIB::NAT dims = 1;
   StmEvalList stms;
   ExprEvalList exprs;
+
+  if (debug_)
+    Util::SBGLogger::instance().setLevel(Util::LogLevel::Debug);
 
   AST::IsConfig cfg_visit;
   if (!p.stms().empty()) {

@@ -43,7 +43,7 @@ public:
     CostMatrix(const SBG::LIB::WeightedSBGraph& graph, PartitionMap& partitions, const SBG::LIB::SetAF& set_fact);
 
     PartitionMap partitions() const;
-    void update_partitions(PartitionMap& partitions);
+    void update_partitions(PartitionMap& partitions, std::optional<std::vector<size_t>> modified_partitions = std::nullopt);
 
     SBG::LIB::Set get_ec_by_partition_id(unsigned partition_id); // non-const since _cost_by_partition may be updated
 
@@ -56,8 +56,8 @@ private:
     const SBG::LIB::SetAF& _set_fact;
 
     std::vector<std::pair<SBG::LIB::Set, SBG::LIB::Set>> _cost_by_partition;
-    std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SBG::LIB::SetPieceHash> _ec_cost_by_interval;
-    std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SBG::LIB::SetPieceHash> _ic_cost_by_interval;
+    std::vector<std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SBG::LIB::SetPieceHash>> _ec_cost_by_interval;
+    std::vector<std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SBG::LIB::SetPieceHash>> _ic_cost_by_interval;
 
     void initialize();
 

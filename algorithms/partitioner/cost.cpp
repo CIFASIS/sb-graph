@@ -87,28 +87,48 @@ void CostMatrix::initialize()
 {
     // compute cost by interval and partitions
     _cost_by_partition.reserve(_partitions.size());
+    _ec_cost_by_interval.reserve(_partitions.size());
+    _ic_cost_by_interval.reserve(_partitions.size());
     for (size_t i = 0; i < _partitions.size(); i++) {
 
         _cost_by_partition.emplace_back(make_pair(_set_fact.createSet(), _set_fact.createSet()));
+        _ec_cost_by_interval.emplace_back();
+        _ic_cost_by_interval.emplace_back();
         for (const auto& node : _partitions.at(i)) {
             auto [ec, ic] = internal::compute_EC_IC(_partitions.at(i), node, _graph.map1(), _graph.map2(), _set_fact);
 
             _cost_by_partition.back() = {  _cost_by_partition.back().first.cup(ec), _cost_by_partition.back().second.cup(ic) };
-            _ec_cost_by_interval.insert({node, ec});
-            _ic_cost_by_interval.insert({node, ic});
+            _ec_cost_by_interval.back().insert({node, ec});
+            _ic_cost_by_interval.back().insert({node, ic});
         }
     }
 }
 
 
-void CostMatrix::update_partitions(PartitionMap& partitions)
+void CostMatrix::update_partitions(PartitionMap& partitions, optional<vector<size_t>> modified_partitions)
 {
-    // improve this!
     _partitions = partitions;
-    _cost_by_partition.clear();
-    _ec_cost_by_interval.clear();
-    _ic_cost_by_interval.clear();
-    initialize();
+    if (modified_partitions) {
+        Set update_nodes = _set_fact.createSet();
+        for (size_t i : *modified_partitions) {
+            _ec_cost_by_interval[i].clear();
+            _ic_cost_by_interval[i].clear();
+            update_nodes = update_nodes.cup(from_vector(_partitions.at(i), _set_fact));
+            _cost_by_partition[i] = make_pair(_set_fact.createSet(), _set_fact.createSet());
+            for (const auto& node : _partitions.at(i)) {
+                auto [ec, ic] = internal::compute_EC_IC(_partitions.at(i), node, _graph.map1(), _graph.map2(), _set_fact);
+
+                _cost_by_partition[i] = {  _cost_by_partition.at(i).first.cup(ec), _cost_by_partition.at(i).second.cup(ic) };
+                _ec_cost_by_interval[i].insert_or_assign(node, ec);
+                _ic_cost_by_interval[i].insert_or_assign(node, ic);
+            }
+        }        
+    } else {
+        _cost_by_partition.clear();
+        _ec_cost_by_interval.clear();
+        _ic_cost_by_interval.clear();
+        initialize();
+    }
 }
 
 
@@ -120,13 +140,13 @@ Set CostMatrix::get_ec_by_partition_id(unsigned partition_id)
 
 Set CostMatrix::get_ec_by_interval(unsigned partition_id, const SetPiece& nodes)
 {
-    if (_ec_cost_by_interval.find(nodes) != _ec_cost_by_interval.end()) {
-        return _ec_cost_by_interval.at(nodes);
+    if (_ec_cost_by_interval[partition_id].find(nodes) != _ec_cost_by_interval[partition_id].end()) {
+        return _ec_cost_by_interval[partition_id].at(nodes);
     }
 
     auto cost = internal::compute_EC_IC(_partitions.at(partition_id), nodes, _graph.map1(), _graph.map2(), _set_fact);
-    _ec_cost_by_interval.insert({nodes, cost.first});
-    _ic_cost_by_interval.insert({nodes, cost.second});
+    _ec_cost_by_interval[partition_id].insert({nodes, cost.first});
+    _ic_cost_by_interval[partition_id].insert({nodes, cost.second});
 
     return cost.first;
 }
@@ -134,13 +154,13 @@ Set CostMatrix::get_ec_by_interval(unsigned partition_id, const SetPiece& nodes)
 
 Set CostMatrix::get_ic_by_interval(unsigned partition_id, const SetPiece& nodes)
 {
-    if (_ic_cost_by_interval.find(nodes) != _ic_cost_by_interval.end()) {
-        return _ic_cost_by_interval.at(nodes);
+    if (_ic_cost_by_interval[partition_id].find(nodes) != _ic_cost_by_interval[partition_id].end()) {
+        return _ic_cost_by_interval[partition_id].at(nodes);
     }
 
     auto cost = internal::compute_EC_IC(_partitions.at(partition_id), nodes, _graph.map1(), _graph.map2(), _set_fact);
-    _ec_cost_by_interval.insert({nodes, cost.first});
-    _ic_cost_by_interval.insert({nodes, cost.second});
+    _ec_cost_by_interval[partition_id].insert({nodes, cost.first});
+    _ic_cost_by_interval[partition_id].insert({nodes, cost.second});
 
     return cost.second;
 }

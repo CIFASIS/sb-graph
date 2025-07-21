@@ -715,19 +715,24 @@ void kl_sbg_imbalance_partitioner(
         default:
 
             int it_counter = 0;
+            vector<size_t> modified_partitions = {};
             while (not gains.empty() and best_gain.gain > 0) {
                 logging::sbg_log << "change number " << it_counter << " changing " << best_gain.i << ", " << best_gain.j << endl;
                 it_counter++;
                 change = true;
                 partitions[best_gain.i] = best_gain.A;
                 partitions[best_gain.j] = best_gain.B;
+                modified_partitions.emplace_back(best_gain.i);
+                modified_partitions.emplace_back(best_gain.j);
 
                 gains.erase(std::remove_if(gains.begin(), gains.end(), gain_comp), gains.end());
 
                 logging::sbg_log << "best gain is " << best_gain << endl;
                 logging::sbg_log << "and vector is ";
                 #ifdef SBG_PARTITIONER_LOGGING
-                for_each(gains.begin(), gains.end(), [](const kl_sbg_partitioner_result& g) { logging::sbg_log << g << " "; });
+                for_each(gains.begin(), gains.end(), [](const kl_sbg_partitioner_result& g) {
+                    logging::sbg_log << g << " ";
+                });
                 #endif
                 logging::sbg_log << endl;
 
@@ -744,7 +749,7 @@ void kl_sbg_imbalance_partitioner(
                 }
             }
 
-            cost_matrix.update_partitions(partitions);
+            cost_matrix.update_partitions(partitions, modified_partitions);
             break;
         }
     }

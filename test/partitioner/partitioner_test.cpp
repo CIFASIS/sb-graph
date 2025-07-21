@@ -39,11 +39,18 @@ using namespace SBG::LIB;
 class PartitionerTests : public testing::TestWithParam<const char*> {
 };
 
+static const std::string PARTITIONER_DATA_DIR = "../../partitioner/data/";
+
+const std::string get_full_file_name(const std::string json_file)
+{
+    const std::string FULL_FILE_NAME = PARTITIONER_DATA_DIR + json_file;
+    return FULL_FILE_NAME;
+}
 
 /**
  * @brief It creates a set based graph out of `filename` and compare its content
  * with the arguments. The purpose of this function is mainly to avoid code
- * repetation while testing the creation of different sb graphs.
+ * repetition while testing the creation of different sb graphs.
  *
  * @param filename the algorithm input, used to build the sb graph.
  * @param node_intervals the domain intervals.
@@ -98,7 +105,7 @@ static void test_create_sb_graph(
 TEST(create_sb_graph, PartitionerTests)
 {
     test_create_sb_graph(
-        "data/air_conditioners_1000.json",
+        get_full_file_name("air_conditioners_1000.json"),
         { Interval(0, 1, 999), Interval(1000, 1, 1999), Interval(2000, 1, 2999), Interval(3000, 1, 3999) },
         { Interval(4000, 1, 4999), Interval(5000, 1, 5999), Interval(6000, 1, 6999), Interval(7000, 1, 7999) },
         { Exp(LExp(1, RATIONAL(-3000, 1))), Exp(LExp(1, RATIONAL(-2000, 1))), Exp(LExp(1, RATIONAL(-6000, 1))), Exp(LExp(1, RATIONAL(-5000, 1))) },
@@ -107,7 +114,7 @@ TEST(create_sb_graph, PartitionerTests)
     );
 
     test_create_sb_graph(
-        "data/advection.json",
+        get_full_file_name("advection.json"),
         { Interval(0, 1, 0), Interval(1, 1, 99) },
         { Interval(100, 1, 100), Interval(101, 1, 198) },
         { Exp(LExp(0, 0)),  Exp(LExp(1, RATIONAL(-100, 1))) },
@@ -123,7 +130,7 @@ TEST(initial_partition, PartitionerTests)
   SBG::LIB::MapAF map_fact(set_fact);
   SBG::LIB::UnordPWMapAF pw_fact(map_fact);
 
-  auto sb_graph = sbg_partitioner::build_sb_graph("data/air_conditioners_1000.json", set_fact, map_fact, pw_fact);
+  auto sb_graph = sbg_partitioner::build_sb_graph(get_full_file_name("air_conditioners_1000.json"), set_fact, map_fact, pw_fact);
 
   sbg_partitioner::PartitionMap partition = sbg_partitioner::best_initial_partition(sb_graph, 4, set_fact);
 
@@ -177,15 +184,15 @@ static void test_partitioning(const std::string& filename, int number_of_partiti
 
 TEST(partitioning, PartitionerTests)
 {
-    test_partitioning("data/advection.json", 2);
-    test_partitioning("data/advection.json", 4);
-    test_partitioning("data/advection.json", 8);
+    test_partitioning(get_full_file_name("advection.json"), 2);
+    test_partitioning(get_full_file_name("advection.json"), 4);
+    test_partitioning(get_full_file_name("advection.json"), 8);
 
-    test_partitioning("data/air_conditioners_1000.json", 2);
-    test_partitioning("data/air_conditioners_1000.json", 4);
-    test_partitioning("data/air_conditioners_1000.json", 8);
+    test_partitioning(get_full_file_name("air_conditioners_1000.json"), 2);
+    test_partitioning(get_full_file_name("air_conditioners_1000.json"), 4);
+    test_partitioning(get_full_file_name("air_conditioners_1000.json"), 8);
 
-    test_partitioning("data/air_conditioners_cont_4_1000.json", 4);
+    test_partitioning(get_full_file_name("air_conditioners_cont_4_1000.json"), 4);
 }
 
 

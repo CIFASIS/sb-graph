@@ -33,7 +33,6 @@ These are generic installation instructions.
 In order to be able to install and compile SBG Library, 
 the following  dependencies must be installed: 
 
-  * autoconf 2.69 (avoid 2.71)
   * boost1.81 (or later)
   * cmake
   * g++
@@ -43,39 +42,28 @@ the following  dependencies must be installed:
 
 ## Basic Installation
 
-The simplest way to compile this package is:
+The simplest way to compile this package is to run the following commands from the library root directory (`${SBG_ROOT_DIR}`):
 
-  1. `cd` to the directory containing the package's source code and type
-     `autoconf` to generate the configuration scripts.
+  1. `mkdir build`
   
-  2. Type `./configure` to run the configuration script. 
+  2. `cd build` 
       
-  3. Type `make compile` to compile the library `libsbgraph.a`.
+  3. `cmake ..`
 
-  4. Type `sudo make install` to install the library and header files in the 
-    default installation folders.
-    The default installation folders are:
-      * prefix=/usr/local
-      * includedir=/usr/local/include
-      * libdir=/usr/local/lib
+      Note that by default the biuld type is set to `Release`, to make a debug build, add `-DCMAKE_BUILD_TYPE=Debug`
 
-  5. You can remove the generated library and object files from the
+  4. `make` 
+  
+  5. `make install`
+
+      The default installation folders are:
+        * `${SBG_ROOT_DIR}`/install/bin
+        * `${SBG_ROOT_DIR}`/install/include
+        * `${SBG_ROOT_DIR}`/install/lib
+      to modify the default installation directory, set `-DCMAKE_INSTALL_PREFIX={install-prefix}`.
+  
+  6. You can remove the generated library and object files from the
      source code directory by typing `make clean`.  
-
-## Makefile options
-
-The makefile script accepts the following options:
-
-  * MODE = <Debug|Release>  When set to Debug, adds the compiler's debug flags. Set to Release
-    by default.
-
-  * prefix = <Installation prefix path> 	Set the prefix installation path, default: /usr/local.
-
-  * exec_prefix = <Binaries installation path> 	Set the binaries installation path, default: /usr/local.
-
-  * includedir = <Headers installation path> 	Set the header installation path, default: /usr/local/incldue.
-
-  * libdir = <Library installation path> 	Set the library installation path, default: /usr/local/lib.
 
 ## Makefile targets
 
@@ -84,6 +72,8 @@ The makefile script accepts the following targets:
   * test: 		Builds and run integration and unit tests.
 
   * doc:      Builds the documentation.
+
+To list all the target available run `make help`.
 
 ## SBG library
 

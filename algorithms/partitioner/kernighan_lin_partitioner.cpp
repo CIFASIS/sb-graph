@@ -27,7 +27,7 @@
 #include "sbg_partitioner_log.hpp"
 
 
-#define PARTITION_IMBALANCE_DEBUG 1
+#define PARTITION_IMBALANCE_DEBUG 0
 #define PARTITION_IMBALANCE_PROFILE 0
 
 
@@ -336,7 +336,9 @@ int kl_sbg_imbalance(
     CostMatrixImbalance gm = generate_gain_matrix(graph, cost_matrix, partition_a_id, partition_a, partition_b_id, partition_b, LMin, LMax, set_fact);
     auto end_generate_gain_matrix = chrono::high_resolution_clock::now();
     auto time_to_generate_gain_matrix = chrono::duration<double, std::milli>(end_generate_gain_matrix - start_generate_gain_matrix).count();
+#if PARTITION_IMBALANCE_PROFILE
     cout << "time_to_generate_gain_matrix: " << time_to_generate_gain_matrix << endl;
+#endif
 
 
 #if PARTITION_IMBALANCE_DEBUG
@@ -345,6 +347,7 @@ int kl_sbg_imbalance(
              << gm << endl;
 #endif
 
+    double time_to_update_diff = 0.;
     while ((not a_c.empty()) and (not b_c.empty())) {
         logging::sbg_log << "inside the while " << a_c << ", " << b_c << " ";
         logging::sbg_log << get_partition_size(a_c, node_weights, set_fact) << ", " << get_partition_size(b_c, node_weights, set_fact) << endl;
@@ -357,10 +360,12 @@ int kl_sbg_imbalance(
         auto start_update_diff = chrono::high_resolution_clock::now();
         update_diff(gm, a_c, a_v, a_, b_c, b_v, b_, graph, node_weights, g, LMin, LMax, set_fact);
         auto end_update_diff = chrono::high_resolution_clock::now();
-        auto time_to_update_diff = chrono::duration<double, std::milli>(end_update_diff - start_update_diff).count();
-        cout << "time_to_update_diff: " << time_to_update_diff << endl;
+        time_to_update_diff += chrono::duration<double, std::milli>(end_update_diff - start_update_diff).count();
         update_sum(par_sum, g.gain, max_par_sum, max_par_sum_set, a_v, b_v);
     }
+#if PARTITION_IMBALANCE_PROFILE
+    cout << "time_to_update_diff: " << time_to_update_diff << endl;
+#endif
 
     if (max_par_sum > 0) {
         

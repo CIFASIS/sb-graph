@@ -538,6 +538,9 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
     }
   }
 
+  rhs_maps = rhs_maps.compact();
+  lhs_maps = lhs_maps.compact();
+
   return {edge_set, rhs_maps, lhs_maps, costs};
 }
 

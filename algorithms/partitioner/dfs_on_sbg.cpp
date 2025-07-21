@@ -72,20 +72,18 @@ void DFS::initialize_adjacents()
     auto incoming_node_set = _set_fact->createSet(incoming_node);
 
     auto pre_im_1 = _graph->map1().preImage(incoming_node_set);
-    auto im_1 = _graph->map2().preImage(pre_im_1);
-    auto adjacent_nodes_1 = im_1.difference(incoming_node_set);
+    auto adjacent_nodes_1 = _graph->map2().image(pre_im_1);
 
     auto pre_im_2 = _graph->map2().preImage(incoming_node_set);
-    auto im_2 = _graph->map1().image(pre_im_2);
-    auto adjacent_nodes_2 = im_2.difference(incoming_node_set);
+    auto adjacent_nodes_2 = _graph->map1().image(pre_im_2);
 
-    auto adjacent_nodes = adjacent_nodes_1.cup(adjacent_nodes_2);
+    auto adjacent_nodes = adjacent_nodes_1.cup(adjacent_nodes_2).difference(incoming_node_set);
 
     for (auto it_2 = _nodes.begin(); it_2 != _nodes.end(); ++it_2) {
       if (it_2 != it) {
         const auto potential_arriving_node = *it_2;
         const auto potential_arriving_node_set = _set_fact->createSet(potential_arriving_node);
-        if (potential_arriving_node_set.intersection(adjacent_nodes) == potential_arriving_node_set) {
+        if (not potential_arriving_node_set.intersection(adjacent_nodes).isEmpty()) {
           _adjacent[it].insert(it_2);
         }
       }

@@ -18,7 +18,8 @@
 
 #include <unordered_map>
 
- #include "cost.hpp"
+ #include "communication_cost.hpp"
+ #include "partition_graph.hpp"
 
 
 using namespace std;
@@ -28,6 +29,9 @@ using namespace SBG::LIB;
 namespace sbg_partitioner {
 
 namespace internal {
+
+
+static CommunicationCost* cost_matrix = nullptr;
 
 
 namespace {
@@ -59,12 +63,10 @@ ec_ic compute_EC_IC_from_map_1_to_map_2(
 ec_ic compute_EC_IC(
     const Partition& partition,
     const SetPiece& nodes,
-    const PWMap& map_1,
-    const PWMap& map_2,
-    const SetAF& set_fact)
+    const SBG::LIB::WeightedSBGraph& graph)
 {
-    ec_ic cost1 = compute_EC_IC_from_map_1_to_map_2(partition, nodes, map_1, map_2, set_fact);
-    ec_ic cost2 = compute_EC_IC_from_map_1_to_map_2(partition, nodes, map_2, map_1, set_fact);
+    ec_ic cost1 = compute_EC_IC_from_map_1_to_map_2(partition, nodes, graph.map1(), graph.map2(), graph.fact());
+    ec_ic cost2 = compute_EC_IC_from_map_1_to_map_2(partition, nodes, graph.map2(), graph.map1(), graph.fact());
 
     ec_ic cost = ec_ic(cost1.first.cup(cost2.first), cost1.second.cup(cost2.second));
 
@@ -74,16 +76,15 @@ ec_ic compute_EC_IC(
 }
 
 
-CostMatrix::CostMatrix(const WeightedSBGraph& graph, PartitionMap& partitions, const SetAF& set_fact)
+CommunicationCost::CommunicationCost(const WeightedSBGraph& graph, PartitionMap partitions)
     : _graph(graph),
-    _partitions(partitions),
-    _set_fact(set_fact)
+    _partitions(partitions)    
 {
     initialize();
 }
 
 
-void CostMatrix::initialize()
+void CommunicationCost::initialize()
 {
     // compute cost by interval and partitions
     _cost_by_partition.reserve(_partitions.size());
@@ -91,11 +92,11 @@ void CostMatrix::initialize()
     _ic_cost_by_interval.reserve(_partitions.size());
     for (size_t i = 0; i < _partitions.size(); i++) {
 
-        _cost_by_partition.emplace_back(make_pair(_set_fact.createSet(), _set_fact.createSet()));
+        _cost_by_partition.emplace_back(make_pair(_graph.fact().createSet(), _graph.fact().createSet()));
         _ec_cost_by_interval.emplace_back();
         _ic_cost_by_interval.emplace_back();
         for (const auto& node : _partitions.at(i)) {
-            auto [ec, ic] = internal::compute_EC_IC(_partitions.at(i), node, _graph.map1(), _graph.map2(), _set_fact);
+            auto [ec, ic] = internal::compute_EC_IC(_partitions.at(i), node, _graph);
 
             _cost_by_partition.back() = {  _cost_by_partition.back().first.cup(ec), _cost_by_partition.back().second.cup(ic) };
             _ec_cost_by_interval.back().insert({node, ec});
@@ -105,18 +106,19 @@ void CostMatrix::initialize()
 }
 
 
-void CostMatrix::update_partitions(PartitionMap& partitions, optional<vector<size_t>> modified_partitions)
+void CommunicationCost::update_partitions(PartitionMap& partitions, optional<vector<size_t>> modified_partitions)
 {
     _partitions = partitions;
     if (modified_partitions) {
-        Set update_nodes = _set_fact.createSet();
+        Set update_nodes = _graph.fact().createSet();
+        // now, update communication for partitions that were updated
         for (size_t i : *modified_partitions) {
             _ec_cost_by_interval[i].clear();
             _ic_cost_by_interval[i].clear();
-            update_nodes = update_nodes.cup(from_vector(_partitions.at(i), _set_fact));
-            _cost_by_partition[i] = make_pair(_set_fact.createSet(), _set_fact.createSet());
+            update_nodes = update_nodes.cup(from_vector(_partitions.at(i), _graph.fact()));
+            _cost_by_partition[i] = make_pair(_graph.fact().createSet(), _graph.fact().createSet());
             for (const auto& node : _partitions.at(i)) {
-                auto [ec, ic] = internal::compute_EC_IC(_partitions.at(i), node, _graph.map1(), _graph.map2(), _set_fact);
+                auto [ec, ic] = internal::compute_EC_IC(_partitions.at(i), node, _graph);
 
                 _cost_by_partition[i] = {  _cost_by_partition.at(i).first.cup(ec), _cost_by_partition.at(i).second.cup(ic) };
                 _ec_cost_by_interval[i].insert_or_assign(node, ec);
@@ -124,6 +126,7 @@ void CostMatrix::update_partitions(PartitionMap& partitions, optional<vector<siz
             }
         }        
     } else {
+        // if modified partitions was not provided, update everything
         _cost_by_partition.clear();
         _ec_cost_by_interval.clear();
         _ic_cost_by_interval.clear();
@@ -132,19 +135,19 @@ void CostMatrix::update_partitions(PartitionMap& partitions, optional<vector<siz
 }
 
 
-Set CostMatrix::get_ec_by_partition_id(unsigned partition_id)
+Set CommunicationCost::get_ec_by_partition_id(unsigned partition_id)
 {
     return _cost_by_partition[partition_id].first;
 }
 
 
-Set CostMatrix::get_ec_by_interval(unsigned partition_id, const SetPiece& nodes)
+Set CommunicationCost::get_ec_by_interval(unsigned partition_id, const SetPiece& nodes)
 {
     if (_ec_cost_by_interval[partition_id].find(nodes) != _ec_cost_by_interval[partition_id].end()) {
         return _ec_cost_by_interval[partition_id].at(nodes);
     }
 
-    auto cost = internal::compute_EC_IC(_partitions.at(partition_id), nodes, _graph.map1(), _graph.map2(), _set_fact);
+    auto cost = internal::compute_EC_IC(_partitions.at(partition_id), nodes, _graph);
     _ec_cost_by_interval[partition_id].insert({nodes, cost.first});
     _ic_cost_by_interval[partition_id].insert({nodes, cost.second});
 
@@ -152,18 +155,29 @@ Set CostMatrix::get_ec_by_interval(unsigned partition_id, const SetPiece& nodes)
 }
 
 
-Set CostMatrix::get_ic_by_interval(unsigned partition_id, const SetPiece& nodes)
+Set CommunicationCost::get_ic_by_interval(unsigned partition_id, const SetPiece& nodes)
 {
     if (_ic_cost_by_interval[partition_id].find(nodes) != _ic_cost_by_interval[partition_id].end()) {
         return _ic_cost_by_interval[partition_id].at(nodes);
     }
 
-    auto cost = internal::compute_EC_IC(_partitions.at(partition_id), nodes, _graph.map1(), _graph.map2(), _set_fact);
+    auto cost = internal::compute_EC_IC(_partitions.at(partition_id), nodes, _graph);
     _ec_cost_by_interval[partition_id].insert({nodes, cost.first});
     _ic_cost_by_interval[partition_id].insert({nodes, cost.second});
 
     return cost.second;
 }
 
+
+void set_communication_cost(CommunicationCost& cost_matrix)
+{
+    internal::cost_matrix = new CommunicationCost(cost_matrix);
+}
+
+CommunicationCost& get_communication_cost()
+{
+    assert(internal::cost_matrix);
+    return *internal::cost_matrix;
+}
 
 }

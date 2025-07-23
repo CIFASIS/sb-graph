@@ -211,11 +211,8 @@ int main(int argc, char** argv)
         map<string, metrics::communication_metrics> metrics;
 
         int edge_cut = metrics::edge_cut(partitions, sb_graph, set_fact);
-        cout << edge_cut << endl;
 
         auto [comm_volume, max_comm_volume] = metrics::communication_volume(partitions, sb_graph, set_fact, map_fact);
-
-        cout << comm_volume << ", " << max_comm_volume << endl;
 
         auto max_imb = metrics::maximum_imbalance(partitions, sb_graph, set_fact);
 

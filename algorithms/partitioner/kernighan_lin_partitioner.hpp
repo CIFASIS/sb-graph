@@ -25,12 +25,24 @@
 
 namespace sbg_partitioner {
 
+/**
+ * @brief Entry point of the algorithm. It takes a graph, an initial partition
+ * and the imbalance epsilon which indicates the allowed disbalance. It will run
+ * Kernighan-Lin algorithm heuristic to the given partitions.
+ * 
+ * @param graph - the provided weighted sb graph.
+ * @param partitions - the initial partition.
+ * @param imbalance_epsilon - float between 0 and 1  that indicates the allowed disbalance (0 means no disbalance).
+ */
 void kl_sbg_imbalance_partitioner(
     const SBG::LIB::WeightedSBGraph& graph,
     PartitionMap& partitions,
     const float imbalance_epsilon);
 
 
+/**
+ * @brief pretty print for a sb graph.
+ */
 std::string get_pretty_sb_graph(const SBG::LIB::SBG& g);
 
 

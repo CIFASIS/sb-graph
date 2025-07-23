@@ -28,9 +28,7 @@ namespace sbg_partitioner {
 void kl_sbg_imbalance_partitioner(
     const SBG::LIB::WeightedSBGraph& graph,
     PartitionMap& partitions,
-    const float imbalance_epsilon,
-    SBG::LIB::SetAF& set_fact,
-    SBG::LIB::MapAF& map_fact);
+    const float imbalance_epsilon);
 
 
 std::string get_pretty_sb_graph(const SBG::LIB::SBG& g);

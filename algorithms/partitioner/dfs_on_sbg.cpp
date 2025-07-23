@@ -35,10 +35,10 @@ namespace search {
 static bool initialized = false;
 static DFS sort_object;
 
-void initialize_partitioning(SBG::LIB::WeightedSBGraph& graph, unsigned number_of_partitions, SetAF& set_fact)
+void initialize_partitioning(SBG::LIB::WeightedSBGraph& graph, unsigned number_of_partitions)
 {
   initialized = true;
-  sort_object = DFS(graph, number_of_partitions, set_fact);
+  sort_object = DFS(graph, number_of_partitions);
 }
 
 void add_strategy(PartitionStrategy& strategy, bool pre_order) { sort_object.add_partition_strategy(strategy, pre_order); }
@@ -57,8 +57,8 @@ vector<map<unsigned, set<SetPiece>>> partitionate()
 // This is just a dirty trick to create an empty object
 DFS::DFS() : _nodes(SBG::LIB::UnordAF().createSet()) {}
 
-DFS::DFS(SBG::LIB::WeightedSBGraph& graph, unsigned number_of_partitions, SetAF& set_fact)
-    : _number_of_partitions(number_of_partitions), _root_node_idx(nullopt), _graph(&graph), _set_fact(&set_fact), _nodes(graph.V())
+DFS::DFS(SBG::LIB::WeightedSBGraph& graph, unsigned number_of_partitions)
+    : _number_of_partitions(number_of_partitions), _root_node_idx(nullopt), _graph(&graph), _nodes(graph.V())
 {
   initialize_adjacents();
 }
@@ -69,7 +69,7 @@ void DFS::initialize_adjacents()
   for (auto it = _nodes.begin(); it != _nodes.end(); ++it) {
     const auto incoming_node = *it;
 
-    auto incoming_node_set = _set_fact->createSet(incoming_node);
+    auto incoming_node_set = _graph->fact().createSet(incoming_node);
 
     auto pre_im_1 = _graph->map1().preImage(incoming_node_set);
     auto adjacent_nodes_1 = _graph->map2().image(pre_im_1);
@@ -82,7 +82,7 @@ void DFS::initialize_adjacents()
     for (auto it_2 = _nodes.begin(); it_2 != _nodes.end(); ++it_2) {
       if (it_2 != it) {
         const auto potential_arriving_node = *it_2;
-        const auto potential_arriving_node_set = _set_fact->createSet(potential_arriving_node);
+        const auto potential_arriving_node_set = _graph->fact().createSet(potential_arriving_node);
         if (not potential_arriving_node_set.intersection(adjacent_nodes).isEmpty()) {
           _adjacent[it].insert(it_2);
         }
@@ -115,7 +115,7 @@ void DFS::add_adjacent_nodes(const node_identifier id, const PWMap& map, const S
     for (auto it = _nodes.begin(); it != _nodes.end(); ++it) {
       if (it != id) {
         const auto potential_arriving_node = *it;
-        const auto potential_arriving_node_set = _set_fact->createSet(potential_arriving_node);
+        const auto potential_arriving_node_set = _graph->fact().createSet(potential_arriving_node);
         if (potential_arriving_node_set.intersection(map_image) == potential_arriving_node_set) {
           _adjacent[id].insert(it);
         }

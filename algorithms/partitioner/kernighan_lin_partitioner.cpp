@@ -50,7 +50,7 @@ namespace {
 constexpr bool multithreading_enabled = false;
 
 pair<unsigned, unsigned>
-compute_lmin_lmax(const WeightedSBGraph& graph, unsigned number_of_partitions, const float imbalance_epsilon, SetAF& set_fact)
+compute_lmin_lmax(const WeightedSBGraph& graph, unsigned number_of_partitions, const float imbalance_epsilon, const SetAF& set_fact)
 {
     unsigned w_v = get_node_size(graph.V(), graph.get_node_weights(), set_fact);
     unsigned B = ceil(w_v / number_of_partitions);
@@ -70,8 +70,7 @@ CostMatrixImbalance generate_gain_matrix(
     unsigned partition_b_id,
     Partition& partition_b,
     unsigned LMin,
-    unsigned LMax,
-    SetAF& set_fact)
+    unsigned LMax)
 {
     CostMatrixImbalance local_cost_matrix;
 
@@ -117,30 +116,29 @@ pair<pair<Set, Set>, pair<Set, Set>> update_sets(
     Set& current_moved_partition_a,
     Set& current_moved_partition_b,
     const GainObjectImbalance& gain_object,
-    const WeightedSBGraph& graph,
-    SetAF& set_fact)
+    const WeightedSBGraph& graph)
 {
-    auto node_a = set_fact.createSet(partition_a[gain_object.a_idx]);
-    size_t partition_size_a = get_node_size(node_a, graph.get_node_weights(), set_fact);
+    auto node_a = graph.fact().createSet(partition_a[gain_object.a_idx]);
+    size_t partition_size_a = get_node_size(node_a, graph.get_node_weights(), graph.fact());
     bool node_a_is_fully_used = partition_size_a == gain_object.size_a;
-    Set rest_a = set_fact.createSet();
+    Set rest_a = graph.fact().createSet();
     if (not node_a_is_fully_used) {
-        tie(node_a, rest_a) = cut_interval_by_dimension(node_a, graph.get_node_weights(), gain_object.size_a, set_fact);
+        tie(node_a, rest_a) = cut_interval_by_dimension(node_a, graph.get_node_weights(), gain_object.size_a, graph.fact());
         logging::sbg_log << "cut_interval_by_dimension " << gain_object.size_a << ": " << node_a << rest_a << endl;
     }
 
-    auto node_b = set_fact.createSet(partition_b[gain_object.b_idx]);
-    size_t partition_size_b = get_node_size(node_b, graph.get_node_weights(), set_fact);
+    auto node_b = graph.fact().createSet(partition_b[gain_object.b_idx]);
+    size_t partition_size_b = get_node_size(node_b, graph.get_node_weights(), graph.fact());
     bool node_b_is_fully_used = partition_size_b == gain_object.size_b;
-    Set rest_b = set_fact.createSet();
+    Set rest_b = graph.fact().createSet();
     if (not node_b_is_fully_used) {
-        tie(node_b, rest_b) = cut_interval_by_dimension(node_b, graph.get_node_weights(), gain_object.size_b, set_fact);
+        tie(node_b, rest_b) = cut_interval_by_dimension(node_b, graph.get_node_weights(), gain_object.size_b, graph.fact());
         logging::sbg_log << "cut_interval_by_dimension " << gain_object.size_b << ": " << node_b << rest_b << endl;
     }
 
-    auto update_partition = [&set_fact](Partition& partition, const Set& set) {
+    auto update_partition = [&graph](Partition& partition, const Set& set) {
         for (Partition::iterator it = partition.begin(); it != partition.end(); ++it) {
-            auto set_p = set_fact.createSet(*it);
+            auto set_p = graph.fact().createSet(*it);
             if (not set_p.intersection(set).isEmpty()) {
                 set_p = set_p.difference(set);
                 if (set_p.isEmpty()) {
@@ -178,24 +176,23 @@ void update_diff(
     const NodeWeight& node_weight,
     const GainObjectImbalance& gain_object,
     unsigned LMin,
-    unsigned LMax,
-    SetAF& set_fact)
+    unsigned LMax)
 {
     logging::sbg_log << affected_node_a.first << ", " << affected_node_a.second << endl;
     logging::sbg_log << affected_node_b.first << ", " << affected_node_b.second << endl;
 
     // Firstly, check if indexes need fixing. Three possible causes.
-    size_t affected_node_a_size = get_node_size(affected_node_a.second, node_weight, set_fact);
+    size_t affected_node_a_size = get_node_size(affected_node_a.second, node_weight, graph.fact());
     bool node_a_fully_used = affected_node_a_size == 0;
 
-    size_t affected_node_b_size = get_node_size(affected_node_b.second, node_weight, set_fact);
+    size_t affected_node_b_size = get_node_size(affected_node_b.second, node_weight, graph.fact());
     bool node_b_fully_used = affected_node_b_size == 0;
 
-    unsigned size_a = get_partition_size(remaining_partition_a, node_weight, set_fact);
-    size_a += get_node_size(moved_from_partition_b, node_weight, set_fact);
+    unsigned size_a = get_partition_size(remaining_partition_a, node_weight, graph.fact());
+    size_a += get_node_size(moved_from_partition_b, node_weight, graph.fact());
 
-    unsigned size_b = get_partition_size(remaining_partition_b, node_weight, set_fact);
-    size_b += get_node_size(moved_from_partition_a, node_weight, set_fact);
+    unsigned size_b = get_partition_size(remaining_partition_b, node_weight, graph.fact());
+    size_b += get_node_size(moved_from_partition_a, node_weight, graph.fact());
 
     // all the interval was used
     // fix indexes:
@@ -317,8 +314,7 @@ int kl_sbg_imbalance(
     unsigned partition_b_id,
     Partition& partition_b,
     unsigned LMin,
-    unsigned LMax,
-    SetAF& set_fact)
+    unsigned LMax)
 {
 #if PARTITION_IMBALANCE_DEBUG
     logging::sbg_log << "Algorithm starts with " << partition_a << ", " << partition_b << endl;
@@ -326,14 +322,14 @@ int kl_sbg_imbalance(
     auto a_c = partition_a;
     auto b_c = partition_b;
     int max_par_sum = 0;
-    auto max_par_sum_set = make_pair(set_fact.createSet(), set_fact.createSet());
+    auto max_par_sum_set = make_pair(graph.fact().createSet(), graph.fact().createSet());
     int par_sum = 0;
-    Set a_v = set_fact.createSet();
-    Set b_v = set_fact.createSet();
+    Set a_v = graph.fact().createSet();
+    Set b_v = graph.fact().createSet();
     const auto node_weights = graph.get_node_weights();
 
     auto start_generate_gain_matrix = chrono::high_resolution_clock::now();
-    CostMatrixImbalance gm = generate_gain_matrix(graph, cost_matrix, partition_a_id, partition_a, partition_b_id, partition_b, LMin, LMax, set_fact);
+    CostMatrixImbalance gm = generate_gain_matrix(graph, cost_matrix, partition_a_id, partition_a, partition_b_id, partition_b, LMin, LMax);
     auto end_generate_gain_matrix = chrono::high_resolution_clock::now();
     auto time_to_generate_gain_matrix = chrono::duration<double, std::milli>(end_generate_gain_matrix - start_generate_gain_matrix).count();
 #if PARTITION_IMBALANCE_PROFILE
@@ -350,15 +346,15 @@ int kl_sbg_imbalance(
     double time_to_update_diff = 0.;
     while ((not a_c.empty()) and (not b_c.empty())) {
         logging::sbg_log << "inside the while " << a_c << ", " << b_c << " ";
-        logging::sbg_log << get_partition_size(a_c, node_weights, set_fact) << ", " << get_partition_size(b_c, node_weights, set_fact) << endl;
+        logging::sbg_log << get_partition_size(a_c, node_weights, graph.fact()) << ", " << get_partition_size(b_c, node_weights, graph.fact()) << endl;
         logging::sbg_log << gm << endl;
         assert(not gm.empty());
         GainObjectImbalance g = max_diff(gm);
         logging::sbg_log << g << endl;
-        pair<Set, Set> a_ = {set_fact.createSet(), set_fact.createSet()}, b_ = {set_fact.createSet(), set_fact.createSet()};
-        tie(a_, b_) = update_sets(a_c, b_c, a_v, b_v, g, graph, set_fact);
+        pair<Set, Set> a_ = {graph.fact().createSet(), graph.fact().createSet()}, b_ = {graph.fact().createSet(), graph.fact().createSet()};
+        tie(a_, b_) = update_sets(a_c, b_c, a_v, b_v, g, graph);
         auto start_update_diff = chrono::high_resolution_clock::now();
-        update_diff(gm, a_c, a_v, a_, b_c, b_v, b_, graph, node_weights, g, LMin, LMax, set_fact);
+        update_diff(gm, a_c, a_v, a_, b_c, b_v, b_, graph, node_weights, g, LMin, LMax);
         auto end_update_diff = chrono::high_resolution_clock::now();
         time_to_update_diff += chrono::duration<double, std::milli>(end_update_diff - start_update_diff).count();
         update_sum(par_sum, g.gain, max_par_sum, max_par_sum_set, a_v, b_v);
@@ -369,14 +365,14 @@ int kl_sbg_imbalance(
 
     if (max_par_sum > 0) {
         
-        auto partition_a_set = from_vector(partition_a, set_fact);
+        auto partition_a_set = from_vector(partition_a, graph.fact());
         partition_a_set = partition_a_set.difference(max_par_sum_set.first);
         partition_a_set = partition_a_set.cup(max_par_sum_set.second);
         flatten_set(partition_a_set, graph);
         partition_a.clear();
         for_each(partition_a_set.begin(), partition_a_set.end(), [&partition_a](auto s) { partition_a.push_back(s); });
 
-        auto partition_b_set = from_vector(partition_b, set_fact);
+        auto partition_b_set = from_vector(partition_b, graph.fact());
         partition_b_set = partition_b_set.difference(max_par_sum_set.second);
         partition_b_set = partition_b_set.cup(max_par_sum_set.first);
         flatten_set(partition_b_set, graph);
@@ -392,9 +388,9 @@ int kl_sbg_imbalance(
 
 
 KLBipartResult kl_sbg_bipart_imbalance(const WeightedSBGraph& graph, CommunicationCost& cost_matrix, unsigned partition_a_id,
-    Partition& partition_a, unsigned partition_b_id, Partition& partition_b, unsigned LMin, unsigned LMax, SetAF& set_fact)
+    Partition& partition_a, unsigned partition_b_id, Partition& partition_b, unsigned LMin, unsigned LMax)
 {
-    int gain = kl_sbg_imbalance(graph, cost_matrix, partition_a_id, partition_a, partition_b_id, partition_b, LMin, LMax, set_fact);
+    int gain = kl_sbg_imbalance(graph, cost_matrix, partition_a_id, partition_a, partition_b_id, partition_b, LMin, LMax);
 
 #if PARTITION_IMBALANCE_DEBUG
     logging::sbg_log << "Final: " << partition_a << ", " << partition_b << endl;
@@ -406,7 +402,7 @@ KLBipartResult kl_sbg_bipart_imbalance(const WeightedSBGraph& graph, Communicati
 
 kl_sbg_partitioner_result kl_sbg_partitioner_function(
     const WeightedSBGraph& graph, PartitionMap& partitions, CommunicationCost& cost_matrix, unsigned LMin, unsigned LMax,
-    vector<kl_sbg_partitioner_result>& gains, SetAF& set_fact, MapAF& map_fact)
+    vector<kl_sbg_partitioner_result>& gains)
 {
     kl_sbg_partitioner_result best_gain = kl_sbg_partitioner_result{ 0, 0, -1, {}, {}};
     for (size_t i = 0; i < partitions.size(); i++) {
@@ -430,7 +426,7 @@ kl_sbg_partitioner_result kl_sbg_partitioner_function(
 
             auto p_1_copy = partitions.at(i);
             auto p_2_copy = partitions.at(j);
-            KLBipartResult current_gain = kl_sbg_bipart_imbalance(graph, cost_matrix, i, p_1_copy, j, p_2_copy, LMin, LMax, set_fact);
+            KLBipartResult current_gain = kl_sbg_bipart_imbalance(graph, cost_matrix, i, p_1_copy, j, p_2_copy, LMin, LMax);
     #if PARTITION_IMBALANCE_DEBUG
             logging::sbg_log << "current_gain " << current_gain << endl;
     #endif
@@ -450,7 +446,7 @@ kl_sbg_partitioner_result kl_sbg_partitioner_function(
 
 kl_sbg_partitioner_result kl_sbg_partitioner_multithreading(
     const WeightedSBGraph& graph, PartitionMap& partitions, unsigned LMin, unsigned LMax,
-    vector<kl_sbg_partitioner_result>& gains, SetAF& set_fact)
+    vector<kl_sbg_partitioner_result>& gains)
 {
         // avoid repeating this
     // auto look_for_adjacents = [&set_fact](const Set& nodes, const PWMap& map1, const PWMap& map2) {
@@ -671,14 +667,13 @@ string get_pretty_sb_graph(const SBG::LIB::SBG& g)
 
 
 void kl_sbg_imbalance_partitioner(
-    const WeightedSBGraph& graph, PartitionMap& partitions, const float imbalance_epsilon, SetAF& set_fact, MapAF& map_fact)
+    const WeightedSBGraph& graph, PartitionMap& partitions, const float imbalance_epsilon)
 {
-    auto [LMin, LMax] = imbalance_epsilon > 0.0 ? compute_lmin_lmax(graph, partitions.size(), imbalance_epsilon, set_fact) : make_pair<unsigned, unsigned>(0, 0);
+    auto [LMin, LMax] = imbalance_epsilon > 0.0 ? compute_lmin_lmax(graph, partitions.size(), imbalance_epsilon, graph.fact()) : make_pair<unsigned, unsigned>(0, 0);
     bool change = true;
     int counter = 0;
 
     CommunicationCost& cost_matrix = get_communication_cost();
-    cout << "cost matrix address in kl_sbg_imbalance_partitioner " << &cost_matrix << endl;
     vector<kl_sbg_partitioner_result> gains;
     while (change) {
         cout << "*****ITERATION NUMBER " << counter++ << endl;
@@ -686,9 +681,9 @@ void kl_sbg_imbalance_partitioner(
 
         kl_sbg_partitioner_result best_gain;
         if (multithreading_enabled) {
-            best_gain = kl_sbg_partitioner_multithreading(graph, partitions, LMin, LMax, gains, set_fact);
+            best_gain = kl_sbg_partitioner_multithreading(graph, partitions, LMin, LMax, gains);
         } else {
-            best_gain = kl_sbg_partitioner_function(graph, partitions, cost_matrix, LMin, LMax, gains, set_fact, map_fact);
+            best_gain = kl_sbg_partitioner_function(graph, partitions, cost_matrix, LMin, LMax, gains);
         }
 
         logging::sbg_log << "Best gain results is: " << best_gain << endl;

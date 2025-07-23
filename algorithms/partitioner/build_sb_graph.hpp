@@ -47,7 +47,7 @@ SBG::LIB::Interval get_pre_image(const SBG::LIB::Interval& image_interval, const
 /// @param graph the graph where we are looking for connections.
 /// @param node set of nodes we want to know its connections.
 /// @return a set of nodes connected to the function parameter.
-SBG::LIB::Set get_adjacents(const SBG::LIB::SBG& graph, const SBG::LIB::Set& node, SBG::LIB::SetAF& set_fact, SBG::LIB::MapAF& map_fact);
+SBG::LIB::Set get_adjacents(const SBG::LIB::SBG& graph, const SBG::LIB::Set& node);
 
 
 /// Takes a set piece and calculate its size of the intervals. E.g [1:10] has 10 elements,
@@ -62,7 +62,7 @@ unsigned get_node_size(const SBG::LIB::Set& node, const SBG::LIB::NodeWeight& no
 
 
 /// Takes each set piece of the partition and calculates its size, it returns the sum of them
-unsigned get_partition_size(const std::vector<SBG::LIB::SetPiece>& node, const SBG::LIB::NodeWeight& node_weight, SBG::LIB::SetAF& set_fact);
+unsigned get_partition_size(const std::vector<SBG::LIB::SetPiece>& node, const SBG::LIB::NodeWeight& node_weight, const SBG::LIB::SetAF& set_fact);
 
 
 /// Takes a set of edges and compute its cost.
@@ -109,7 +109,11 @@ int get_set_cost(const SBG::LIB::SetPiece& set_piece, const T& costs, const SBG:
 size_t get_set_size(const SBG::LIB::Set& set);
 
 
-std::pair<SBG::LIB::Set, SBG::LIB::Set> cut_interval_by_dimension(SBG::LIB::Set& set_piece, const SBG::LIB::NodeWeight& node_weight, std::size_t size, SBG::LIB::SetAF& set_fact);
+std::pair<SBG::LIB::Set, SBG::LIB::Set> cut_interval_by_dimension(
+    SBG::LIB::Set& set_piece,
+    const SBG::LIB::NodeWeight& node_weight,
+    std::size_t size,
+    const SBG::LIB::SetAF& set_fact);
 
 std::pair<SBG::LIB::SetPiece, SBG::LIB::SetPiece> cut_interval(const SBG::LIB::SetPiece& interval, int cut_value);
 }

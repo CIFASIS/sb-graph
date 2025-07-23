@@ -52,15 +52,13 @@ Partition to_vector(const SBG::LIB::Set& partition);
 std::vector<PartitionMap>
 make_initial_partitions(
     SBG::LIB::WeightedSBGraph& graph,
-    unsigned number_of_partitions,
-    SBG::LIB::SetAF& set_fact);
+    unsigned number_of_partitions);
 
 
 PartitionMap
 best_initial_partition(
     SBG::LIB::WeightedSBGraph& graph,
-    unsigned number_of_partitions,
-    SBG::LIB::SetAF& set_fact);
+    unsigned number_of_partitions);
 
 
 /// Returns the connectivity set of a set of edges contained in map1 and map2 of
@@ -69,8 +67,7 @@ best_initial_partition(
 SBG::LIB::Set get_connectivity_set(
     SBG::LIB::SBG& graph,
     const PartitionMap& partitions,
-    size_t edge_index,
-    SBG::LIB::SetAF& set_fact);
+    size_t edge_index);
 
 
 /// @brief It sorts intervals from smallest to largest from a given partition partition.

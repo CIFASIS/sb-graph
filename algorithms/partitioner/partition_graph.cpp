@@ -55,11 +55,11 @@ Set get_communication_edges(Set partition, const PWMap& map_1, const PWMap& map_
 }
 
 
-[[maybe_unused]] size_t get_partition_communication(WeightedSBGraph& graph, const PartitionMap& partitions, SetAF& set_fact)
+[[maybe_unused]] size_t get_partition_communication(WeightedSBGraph& graph, const PartitionMap& partitions)
 {
-  Set s = set_fact.createSet();
+  Set s = graph.fact().createSet();
   for (size_t i = 0; i < partitions.size(); i++) {
-    auto ss = get_connectivity_set(graph, partitions, i, set_fact);
+    auto ss = get_connectivity_set(graph, partitions, i);
     s = ss.cup(s);
   }
 
@@ -94,20 +94,20 @@ Partition to_vector(const Set& partition_set)
 }
 
 
-vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, unsigned number_of_partitions, SetAF& set_fact)
+vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, unsigned number_of_partitions)
 {
   vector<PartitionMap> partitions_sets;
-  initialize_partitioning(graph, number_of_partitions, set_fact);
+  initialize_partitioning(graph, number_of_partitions);
 
   constexpr bool pre_order = true;
-  auto s1 = PartitionStrategyDistributive(number_of_partitions, graph, set_fact);
+  auto s1 = PartitionStrategyDistributive(number_of_partitions, graph);
   add_strategy(s1, pre_order);
 #if TRY_MULTIPLE_STRATEGIES
-  auto s2 = PartitionStrategyDistributive(number_of_partitions, graph, set_fact);
+  auto s2 = PartitionStrategyDistributive(number_of_partitions, graph);
   add_strategy(s2, not pre_order);
-  auto s3 = PartitionStrategyGreedy(number_of_partitions, graph, set_fact);
+  auto s3 = PartitionStrategyGreedy(number_of_partitions, graph);
   add_strategy(s3, pre_order);
-  auto s4 = PartitionStrategyGreedy(number_of_partitions, graph, set_fact);
+  auto s4 = PartitionStrategyGreedy(number_of_partitions, graph);
   add_strategy(s4, not pre_order);
 #endif
 
@@ -116,7 +116,7 @@ vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, u
   for (const auto& partition : partitions) {
     PartitionMap partition_set;
     for (const auto& [id, set] : partition) {
-      Set one_partition_set = set_fact.createSet();
+      Set one_partition_set = graph.fact().createSet();
       Partition p;
       for (auto& s : set) {
         SetPiece intervals;
@@ -134,7 +134,7 @@ vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, u
     partitions_sets.push_back(move(partition_set));
   }
 
-  for_each(partitions_sets.begin(), partitions_sets.end(), [&graph, &set_fact, number_of_partitions](PartitionMap& p) {
+  for_each(partitions_sets.begin(), partitions_sets.end(), [&graph, number_of_partitions](PartitionMap& p) {
     logging::sbg_log << p << endl;
     if (sanity_check_enabled) {
       sanity_check(graph, p, number_of_partitions);
@@ -144,9 +144,9 @@ vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, u
   return partitions_sets;
 }
 
-PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_partitions, SetAF& set_fact)
+PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_partitions)
 {
-  std::vector<sbg_partitioner::PartitionMap> partition_maps = make_initial_partitions(graph, number_of_partitions, set_fact);
+  std::vector<sbg_partitioner::PartitionMap> partition_maps = make_initial_partitions(graph, number_of_partitions);
 
   auto& best_initial_partitions = partition_maps.front();
   CommunicationCost comm_cost = CommunicationCost(graph, best_initial_partitions);
@@ -173,10 +173,10 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
   return best_initial_partitions;
 }
 
-Set get_connectivity_set(SBG::LIB::SBG& graph, const PartitionMap& partitions, size_t partition_index, SetAF& set_fact)
+Set get_connectivity_set(SBG::LIB::SBG& graph, const PartitionMap& partitions, size_t partition_index)
 {
     const auto& partition_vector = partitions.at(partition_index);
-    Set partition = set_fact.createSet();
+    Set partition = graph.fact().createSet();
     for_each(partition_vector.cbegin(), partition_vector.cend(), [&partition] (auto s) { partition.emplaceBack(s); });
 
     auto comm_edges_1 = get_communication_edges(partition, graph.map1(), graph.map2());

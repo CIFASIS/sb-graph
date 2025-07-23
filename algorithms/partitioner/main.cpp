@@ -249,7 +249,7 @@ int main(int argc, char** argv)
     cout << "time_to_partitionate = " << time_to_partitionate << " ms" << endl;
 
     if (sanity_check_enabled) {
-        sanity_check(sb_graph, partitions, *number_of_partitions, set_fact);
+        sanity_check(sb_graph, partitions, *number_of_partitions);
     }
 
     if (s){

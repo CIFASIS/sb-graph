@@ -24,11 +24,11 @@
 #include "build_sb_graph.hpp"
 #include "communication_cost.hpp"
 #include "kernighan_lin_partitioner.hpp"
+#include "time_profiler.hpp"
 #include "sbg_partitioner_log.hpp"
 
 
 #define PARTITION_IMBALANCE_DEBUG 0
-#define PARTITION_IMBALANCE_PROFILE 0
 
 
 // This code is based on https://github.com/CIFASIS/sbg-partitioner/discussions/17
@@ -72,6 +72,7 @@ CostMatrixImbalance generate_gain_matrix(
     unsigned LMin,
     unsigned LMax)
 {
+    internal::TimeProfiler profiler("generate_gain_matrix");
     CostMatrixImbalance local_cost_matrix;
 
     for (size_t i = 0; i < partition_a.size(); i++) {
@@ -178,6 +179,7 @@ void update_diff(
     unsigned LMin,
     unsigned LMax)
 {
+    internal::TimeProfiler profiler("update_diff");
     logging::sbg_log << affected_node_a.first << ", " << affected_node_a.second << endl;
     logging::sbg_log << affected_node_b.first << ", " << affected_node_b.second << endl;
 
@@ -328,14 +330,7 @@ int kl_sbg_imbalance(
     Set b_v = graph.fact().createSet();
     const auto node_weights = graph.get_node_weights();
 
-    auto start_generate_gain_matrix = chrono::high_resolution_clock::now();
     CostMatrixImbalance gm = generate_gain_matrix(graph, cost_matrix, partition_a_id, partition_a, partition_b_id, partition_b, LMin, LMax);
-    auto end_generate_gain_matrix = chrono::high_resolution_clock::now();
-    auto time_to_generate_gain_matrix = chrono::duration<double, std::milli>(end_generate_gain_matrix - start_generate_gain_matrix).count();
-#if PARTITION_IMBALANCE_PROFILE
-    cout << "time_to_generate_gain_matrix: " << time_to_generate_gain_matrix << endl;
-#endif
-
 
 #if PARTITION_IMBALANCE_DEBUG
         logging::sbg_log << LMin << ", "
@@ -343,7 +338,6 @@ int kl_sbg_imbalance(
              << gm << endl;
 #endif
 
-    double time_to_update_diff = 0.;
     while ((not a_c.empty()) and (not b_c.empty())) {
         logging::sbg_log << "inside the while " << a_c << ", " << b_c << " ";
         logging::sbg_log << get_partition_size(a_c, node_weights, graph.fact()) << ", " << get_partition_size(b_c, node_weights, graph.fact()) << endl;
@@ -353,15 +347,9 @@ int kl_sbg_imbalance(
         logging::sbg_log << g << endl;
         pair<Set, Set> a_ = {graph.fact().createSet(), graph.fact().createSet()}, b_ = {graph.fact().createSet(), graph.fact().createSet()};
         tie(a_, b_) = update_sets(a_c, b_c, a_v, b_v, g, graph);
-        auto start_update_diff = chrono::high_resolution_clock::now();
         update_diff(gm, a_c, a_v, a_, b_c, b_v, b_, graph, node_weights, g, LMin, LMax);
-        auto end_update_diff = chrono::high_resolution_clock::now();
-        time_to_update_diff += chrono::duration<double, std::milli>(end_update_diff - start_update_diff).count();
         update_sum(par_sum, g.gain, max_par_sum, max_par_sum_set, a_v, b_v);
     }
-#if PARTITION_IMBALANCE_PROFILE
-    cout << "time_to_update_diff: " << time_to_update_diff << endl;
-#endif
 
     if (max_par_sum > 0) {
         

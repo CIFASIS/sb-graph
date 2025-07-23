@@ -14,6 +14,7 @@ target_sources(
         partition_graph.cpp
         partition_metrics_api.cpp
         partition_strategy.cpp
+        time_profiler.cpp
         weighted_sb_graph.cpp
 )
 

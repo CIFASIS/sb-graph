@@ -22,7 +22,7 @@
 #include <unordered_map>
 
 #include "build_sb_graph.hpp"
-#include "cost.hpp"
+#include "communication_cost.hpp"
 #include "kernighan_lin_partitioner.hpp"
 #include "sbg_partitioner_log.hpp"
 
@@ -64,7 +64,7 @@ compute_lmin_lmax(const WeightedSBGraph& graph, unsigned number_of_partitions, c
 
 CostMatrixImbalance generate_gain_matrix(
     const WeightedSBGraph& graph,
-    CostMatrix& cost_matrix,
+    CommunicationCost& cost_matrix,
     unsigned partition_a_id,
     Partition& partition_a,
     unsigned partition_b_id,
@@ -311,7 +311,7 @@ void update_sum(
 
 int kl_sbg_imbalance(
     const WeightedSBGraph& graph,
-    CostMatrix& cost_matrix,
+    CommunicationCost& cost_matrix,
     unsigned partition_a_id,
     Partition& partition_a,
     unsigned partition_b_id,
@@ -372,14 +372,14 @@ int kl_sbg_imbalance(
         auto partition_a_set = from_vector(partition_a, set_fact);
         partition_a_set = partition_a_set.difference(max_par_sum_set.first);
         partition_a_set = partition_a_set.cup(max_par_sum_set.second);
-        flatten_set(partition_a_set, graph, set_fact);
+        flatten_set(partition_a_set, graph);
         partition_a.clear();
         for_each(partition_a_set.begin(), partition_a_set.end(), [&partition_a](auto s) { partition_a.push_back(s); });
 
         auto partition_b_set = from_vector(partition_b, set_fact);
         partition_b_set = partition_b_set.difference(max_par_sum_set.second);
         partition_b_set = partition_b_set.cup(max_par_sum_set.first);
-        flatten_set(partition_b_set, graph, set_fact);
+        flatten_set(partition_b_set, graph);
         partition_b.clear();
         for_each(partition_b_set.begin(), partition_b_set.end(), [&partition_b](auto s) { partition_b.push_back(s); });
     }
@@ -391,7 +391,7 @@ int kl_sbg_imbalance(
 }
 
 
-KLBipartResult kl_sbg_bipart_imbalance(const WeightedSBGraph& graph, CostMatrix& cost_matrix, unsigned partition_a_id,
+KLBipartResult kl_sbg_bipart_imbalance(const WeightedSBGraph& graph, CommunicationCost& cost_matrix, unsigned partition_a_id,
     Partition& partition_a, unsigned partition_b_id, Partition& partition_b, unsigned LMin, unsigned LMax, SetAF& set_fact)
 {
     int gain = kl_sbg_imbalance(graph, cost_matrix, partition_a_id, partition_a, partition_b_id, partition_b, LMin, LMax, set_fact);
@@ -405,7 +405,7 @@ KLBipartResult kl_sbg_bipart_imbalance(const WeightedSBGraph& graph, CostMatrix&
 
 
 kl_sbg_partitioner_result kl_sbg_partitioner_function(
-    const WeightedSBGraph& graph, PartitionMap& partitions, CostMatrix& cost_matrix, unsigned LMin, unsigned LMax,
+    const WeightedSBGraph& graph, PartitionMap& partitions, CommunicationCost& cost_matrix, unsigned LMin, unsigned LMax,
     vector<kl_sbg_partitioner_result>& gains, SetAF& set_fact, MapAF& map_fact)
 {
     kl_sbg_partitioner_result best_gain = kl_sbg_partitioner_result{ 0, 0, -1, {}, {}};
@@ -677,7 +677,8 @@ void kl_sbg_imbalance_partitioner(
     bool change = true;
     int counter = 0;
 
-    CostMatrix cost_matrix = CostMatrix(graph, partitions, set_fact);
+    CommunicationCost& cost_matrix = get_communication_cost();
+    cout << "cost matrix address in kl_sbg_imbalance_partitioner " << &cost_matrix << endl;
     vector<kl_sbg_partitioner_result> gains;
     while (change) {
         cout << "*****ITERATION NUMBER " << counter++ << endl;

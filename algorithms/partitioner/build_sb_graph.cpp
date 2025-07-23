@@ -723,7 +723,7 @@ pair<Set, Set> cut_interval_by_dimension(Set& set_piece, const NodeWeight& node_
   return make_pair(set_fact.createSet(p_1), set_fact.createSet(p_2));
 }
 
-unsigned get_node_size(const SetPiece& node, const NodeWeight& node_weight, SetAF& set_fact)
+unsigned get_node_size(const SetPiece& node, const NodeWeight& node_weight, const SetAF& set_fact)
 {
   int weight = get_set_cost(node, node_weight, set_fact);
 
@@ -739,7 +739,7 @@ unsigned get_node_size(const SetPiece& node, const NodeWeight& node_weight, SetA
   return acc;
 }
 
-unsigned get_node_size(const Set& node, const NodeWeight& node_weight, SetAF& set_fact)
+unsigned get_node_size(const Set& node, const NodeWeight& node_weight, const SetAF& set_fact)
 {
   if (node.isEmpty()) {
     return 0;
@@ -763,19 +763,19 @@ unsigned get_partition_size(const vector<SetPiece>& node, const NodeWeight& node
   return size;
 }
 
-unsigned get_edge_set_cost(const SBG::LIB::SetPiece& node, const EdgeCost& edge_cost)
+unsigned get_edge_set_cost(const SBG::LIB::SetPiece& edges, const EdgeCost& edge_cost)
 {
-  if (node.isEmpty()) {
+  if (edges.isEmpty()) {
     return 0;
   }
 
   UnordAF set_fact;
-  int weight = get_set_cost(node, edge_cost, set_fact);  // currently, all edges have cost 1
+  int weight = get_set_cost(edges, edge_cost, set_fact);  // currently, all edges have cost 1
 
-  unsigned acc = node.intervals().front().end() - node.intervals().front().begin() + 1;
+  unsigned acc = edges.intervals().front().end() - edges.intervals().front().begin() + 1;
 
-  for (size_t i = 1; i < node.intervals().size(); i++) {
-    auto interval = node.intervals()[i];
+  for (size_t i = 1; i < edges.intervals().size(); i++) {
+    auto interval = edges.intervals()[i];
     acc = acc * (interval.end() - interval.begin() + 1);
   }
 
@@ -784,21 +784,21 @@ unsigned get_edge_set_cost(const SBG::LIB::SetPiece& node, const EdgeCost& edge_
   return acc;
 }
 
-unsigned get_edge_set_cost(const SBG::LIB::Set& node, const EdgeCost& edge_cost)
+unsigned get_edge_set_cost(const SBG::LIB::Set& edges, const EdgeCost& edge_cost)
 {
-  if (node.isEmpty()) {
+  if (edges.isEmpty()) {
     return 0;
   }
 
   unsigned size = 0;
-  for (const auto& set_piece : node) {
+  for (const auto& set_piece : edges) {
     size += get_edge_set_cost(set_piece, edge_cost);
   }
 
   return size;
 }
 
-void flatten_set(Set& set, const WeightedSBGraph& graph, SetAF& set_fact)
+void flatten_set(Set& set, const WeightedSBGraph& graph)
 {
     if ((not set.isEmpty()) and set.arity() > 1) {
         logging::sbg_log << "flatten_set for sets with " << set.arity() << " is not implemented" << endl;
@@ -826,7 +826,7 @@ void flatten_set(Set& set, const WeightedSBGraph& graph, SetAF& set_fact)
         return new_set_vector;
     };
 
-    Set new_partition = set_fact.createSet();
+    Set new_partition = graph.fact().createSet();
     for (const auto& v : graph.V()) {
         vector<SetPiece> set_piece_this_node_vector;
         for (auto set_piece : set) {
@@ -837,7 +837,7 @@ void flatten_set(Set& set, const WeightedSBGraph& graph, SetAF& set_fact)
         }
 
         set_piece_this_node_vector = canonize(set_piece_this_node_vector);
-        new_partition = new_partition.cup(from_vector(set_piece_this_node_vector, set_fact));
+        new_partition = new_partition.cup(from_vector(set_piece_this_node_vector, graph.fact()));
     }
 
     auto diff = set.difference(new_partition);

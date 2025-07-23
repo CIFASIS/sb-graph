@@ -8,7 +8,7 @@ target_sources(
     sbg-part-lib
     PRIVATE
         build_sb_graph.cpp
-        cost.cpp
+        communication_cost.cpp
         dfs_on_sbg.cpp
         kernighan_lin_partitioner.cpp
         partition_graph.cpp

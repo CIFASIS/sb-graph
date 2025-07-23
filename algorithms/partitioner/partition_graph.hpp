@@ -25,22 +25,13 @@
 #include <sbg/interval.hpp>
 #include <sbg/sbg.hpp>
 
+#include "sbg_partitioner_types.hpp"
 #include "weighted_sb_graph.hpp"
 
 
 namespace sbg_partitioner {
 
 constexpr bool sanity_check_enabled = false;
-
-typedef std::vector<SBG::LIB::SetPiece> Partition;
-
-typedef std::vector<Partition> PartitionMap;
-
-enum PartitionAlgorithm
-{
-    GREEDY = 0,
-    DISTRIBUTED = 1
-};
 
 
 /// @brief Converts a Partition element into a Set.
@@ -82,17 +73,32 @@ SBG::LIB::Set get_connectivity_set(
     SBG::LIB::SetAF& set_fact);
 
 
+/// @brief It sorts intervals from smallest to largest from a given partition partition.
+/// @param p - partition to be sorted.
 void sort_partition_intervals(Partition& p);
 
 
+/// @brief Pretty print for a given partition.
+/// @param partition_map - partition to be written to a string.
+/// @return a string that represents the partition as string.
 std::string get_output(const PartitionMap& partition_map);
 
 
-void sanity_check(const SBG::LIB::WeightedSBGraph& graph, PartitionMap& partitions_set, unsigned number_of_partitions, SBG::LIB::SetAF& set_fact);
+/// @brief It checks if a given partition is valid in terms of:
+///
+///     1. The partition is a set of disjoint nodes.
+///     2. The union of elements is the nodes of the graph.
+/// @param graph The graph that have been partitioned.
+/// @param partitions_set The obtained partition.
+/// @param number_of_partitions The number of partitions
+void sanity_check(const SBG::LIB::WeightedSBGraph& graph, PartitionMap& partitions_set, unsigned number_of_partitions);
 
 
+/// @brief Overloading operator `<<` to print `Partition` objects
 std::ostream& operator<<(std::ostream& os, const Partition& partitions);
 
+
+/// @brief Overloading operator `<<` to print `PartitionMap` objects
 std::ostream& operator<<(std::ostream& os, const PartitionMap& partitions);
 
 }

@@ -202,7 +202,7 @@ PartitionMap read_partition_from_file(const string& name, const WeightedSBGraph&
 
         for (auto& s: partitions) {
             auto s_set = from_vector(s, set_fact);
-            flatten_set(s_set, sb_graph, set_fact);
+            flatten_set(s_set, sb_graph);
             s = to_vector(s_set);
         }
 

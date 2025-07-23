@@ -54,24 +54,33 @@ SBG::LIB::Set get_adjacents(const SBG::LIB::SBG& graph, const SBG::LIB::Set& nod
 /// {[1:10], [1:10]} has 100 elements.
 /// @param node input set we want to calculate the size.
 /// @return the number of elements
-unsigned get_node_size(const SBG::LIB::SetPiece& node, const SBG::LIB::NodeWeight& node_weight, SBG::LIB::SetAF& set_fact);
+unsigned get_node_size(const SBG::LIB::SetPiece& node, const SBG::LIB::NodeWeight& node_weight, const SBG::LIB::SetAF& set_fact);
 
 
 /// Takes each set piece and calculates its size, it returns the sum of them
-unsigned get_node_size(const SBG::LIB::Set& node, const SBG::LIB::NodeWeight& node_weight, SBG::LIB::SetAF& set_fact);
+unsigned get_node_size(const SBG::LIB::Set& node, const SBG::LIB::NodeWeight& node_weight, const SBG::LIB::SetAF& set_fact);
 
 
 /// Takes each set piece of the partition and calculates its size, it returns the sum of them
 unsigned get_partition_size(const std::vector<SBG::LIB::SetPiece>& node, const SBG::LIB::NodeWeight& node_weight, SBG::LIB::SetAF& set_fact);
 
 
-unsigned get_edge_set_cost(const SBG::LIB::Set& node, const SBG::LIB::EdgeCost& edge_cost);
+/// Takes a set of edges and compute its cost.
+/// @param edges - input set edges we want to calculate the size.
+/// @return the cost of edges (number of elements * communication cost).
+unsigned get_edge_set_cost(const SBG::LIB::Set& edges, const SBG::LIB::EdgeCost& edge_cost);
 
 
+/// Takes a set piece of edges and compute its cost.
+/// @param edges - input set piece edges we want to calculate the size.
+/// @return the cost of edges (number of elements * communication cost).
 unsigned get_edge_set_cost(const SBG::LIB::SetPiece& node, const SBG::LIB::EdgeCost& edge_cost);
 
 
-void flatten_set(SBG::LIB::Set &set, const SBG::LIB::WeightedSBGraph& graph, SBG::LIB::SetAF& set_fact);
+/// Flattens a set of nodes according to the graph nodes.
+/// @param edges - input set edges we want to calculate the size.
+/// @return the cost of edges (number of elements * communication cost).
+void flatten_set(SBG::LIB::Set &set, const SBG::LIB::WeightedSBGraph& graph);
 
 
 SBG::LIB::WeightedSBGraph create_air_conditioners_graph();
@@ -83,7 +92,7 @@ SBG::LIB::WeightedSBGraph create_air_conditioners_graph();
 /// @param costs hashtable with set/costs.
 /// @return the cost of set.
 template<typename T>
-int get_set_cost(const SBG::LIB::SetPiece& set_piece, const T& costs, SBG::LIB::SetAF& set_fact)
+int get_set_cost(const SBG::LIB::SetPiece& set_piece, const T& costs, const SBG::LIB::SetAF& set_fact)
 {
   int weight = 1;
   auto set = set_fact.createSet(set_piece);

@@ -36,8 +36,8 @@
 #include <gtest/gtest.h>
 
 #include "algorithms/misc/causalization_builders.hpp"
-#include "algorithms/scc/scc.hpp"
-#include "algorithms/toposort/topo_sort.hpp"
+#include "algorithms/scc/af_scc.hpp"
+#include "algorithms/toposort/af_ts.hpp"
 #include "eval/visitors/program_visitor.hpp"
 #include "parser/sbg_program.hpp"
 #include "test/performance/boost/ordinary_graph_builder.hpp"
@@ -93,7 +93,7 @@ void computeTS(OG::DGraph graph)
     << total.count() << " [μs]" << std::endl;
 }
 
-void algorithmEvaluator(int alg, SBG::LIB::SBG g)
+void algorithmEvaluator(int alg, SBG::LIB::SBG g, const SBG::LIB::PWMapAF &fact)
 {
   SBG::LIB::BFSMatching match(g, false);
   match.calculate();
@@ -104,19 +104,21 @@ void algorithmEvaluator(int alg, SBG::LIB::SBG g)
     computeMaxCardinalityMatching(graph);
   }
 
-  SBG::LIB::SCC scc(MISC::buildSCCFromMatching(match), false);
-  SBG::LIB::PWMap scc_res = scc.calculate();
+  SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match); 
+  SBG::LIB::SCC scc = SBG::LIB::MinReachSCCAF().createSCCAlgorithm(fact);
+  SBG::LIB::SCCData scc_res = scc.calculate(scc_dsbg);
  
   if (alg == 1) {
-    OG::OrdinaryDGraphBuilder ordinary_dgraph_builder(scc.dsbg());
+    OG::OrdinaryDGraphBuilder ordinary_dgraph_builder(scc_dsbg);
     OG::DGraph dgraph = ordinary_dgraph_builder.build();
     computeSCC(dgraph);
   }
 
-  SBG::LIB::TopoSort ts(MISC::buildSortFromSCC(scc, scc_res), false);
+  SBG::LIB::DSBG ts_dsbg = MISC::buildSortFromSCC(scc_res);
+  SBG::LIB::TopoSort ts = SBG::LIB::MinVertexTSAF().createTSAlgorithm(fact);
 
   if (alg == 2) {
-    OG::OrdinaryDGraphBuilder ordinary_dgraph_builder(ts.dsbg());
+    OG::OrdinaryDGraphBuilder ordinary_dgraph_builder(ts_dsbg);
     OG::DGraph dgraph = ordinary_dgraph_builder.build();
     computeTS(dgraph);
   }
@@ -155,7 +157,7 @@ void parseEvalProgramFromFile(int alg, std::string fname, int copies)
     for (const SBG::Eval::ExprEval &ev : visit_result.exprs()) {
       SBG::Eval::ExprBaseType e = std::get<1>(ev);
       if (std::holds_alternative<SBG::LIB::SBG>(e))
-        algorithmEvaluator(alg, std::get<SBG::LIB::SBG>(e));
+        algorithmEvaluator(alg, std::get<SBG::LIB::SBG>(e), fact);
     }
   }
   else {

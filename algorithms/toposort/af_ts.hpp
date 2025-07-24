@@ -1,10 +1,6 @@
-/** @file causalization_builders.hpp
+/** @file af_ts.hpp
 
- @brief <b>Causalization SBG builders</b>
-
- These builders are not part of the library per se, but are included here to
- test faster the causalization of Modelica models using the SBG approach. In
- the future it should belong to ModelicaCC instead.
+ @brief <b>Topological Sort Algorithm Abstract Factory</b>
 
  <hr>
 
@@ -25,18 +21,32 @@
 
  ******************************************************************************/
 
-#ifndef MISC_CAUSALIZATION_BUILDERS_HPP
-#define MISC_CAUSALIZATION_BUILDERS_HPP
+#ifndef SBG_AF_TS_HPP
+#define SBG_AF_TS_HPP
 
-#include "algorithms/matching/matching.hpp"
-#include "algorithms/scc/scc.hpp"
+#include "topo_sort.hpp"
 
-namespace MISC {
+namespace SBG {
 
-SBG::LIB::DSBG buildSCCFromMatching(const SBG::LIB::BFSMatching &match);
+namespace LIB {
 
-SBG::LIB::DSBG buildSortFromSCC(const SBG::LIB::SCCData &data);
+struct TSAF {
+  public:
+  virtual ~TSAF() = default;
+  TSAF() = default;
 
-}  // namespace MISC
+  virtual TopoSort createTSAlgorithm(const PWMapAF &fact) const = 0;
+};
+
+struct MinVertexTSAF : public TSAF {
+  public:
+  MinVertexTSAF() = default;
+
+  TopoSort createTSAlgorithm(const PWMapAF &fact) const override;
+};
+
+} // namespace LIB
+
+}  // namespace SBG
 
 #endif

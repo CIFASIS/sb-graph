@@ -61,11 +61,14 @@ DSBG buildSCCFromMatching(const BFSMatching &match)
   return res;
 }
 
-DSBG buildSortFromSCC(const SCC &scc, const PWMap &rmap)
+DSBG buildSortFromSCC(const SCCData &data)
 {
   auto start = std::chrono::high_resolution_clock::now();
-  DSBG dsbg = scc.dsbg();
-  Set Ediff = dsbg.E().difference(scc.E());
+
+  const DSBG &dsbg = data.dsbg();
+  PWMap rmap = data.rmap();
+  Set Ediff = data.Ediff();
+
   PWMap mapB = rmap.composition(dsbg.mapB().restrict(Ediff));
   mapB = mapB.compact();
   PWMap mapD = rmap.composition(dsbg.mapD().restrict(Ediff));

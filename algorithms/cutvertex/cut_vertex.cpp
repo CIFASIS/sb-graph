@@ -28,23 +28,27 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Cut-set algorithm -----------------------------------------------------------
+// Vertex Cut Set Algorithm Delegate Constructors ------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-CutVertex::CutVertex(const DSBG &dsbg, bool debug) 
-  : fact_(dsbg.fact()), dsbg_(dsbg), debug_(debug) {}
+CVDelegate::CVDelegate(const PWMapAF &pw_fact, const SCCAF &scc_fact)
+  : pw_fact_(pw_fact), scc_fact_(scc_fact) {}
 
-member_imp(CutVertex, DSBG, dsbg);
-member_imp(CutVertex, bool, debug);
+////////////////////////////////////////////////////////////////////////////////
+// Maximum Degree Vertex Cut Set Algorithm -------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
-PWMap CutVertex::getDegMap(const DSBG &dsbg)
+MaxDegCutVertex::MaxDegCutVertex(const PWMapAF &pw_fact, const SCCAF &scc_fact)
+  : CVDelegate(pw_fact, scc_fact) {}
+
+PWMap MaxDegCutVertex::getDegMap(const DSBG &dsbg) const
 {
   Set V = dsbg.V();
   PWMap mapB = dsbg.mapB(), mapD = dsbg.mapD();
 
   auto dims = V.arity();
   MD_NAT zero(dims, 0), one(dims, 1);
-  PWMap dmap = fact_.createPWMap(fact_.createMap(V, Exp(zero))); 
+  PWMap dmap = pw_fact_.createPWMap(pw_fact_.createMap(V, Exp(zero))); 
 
   for (const Map &SE : dsbg.subEmap()) {
     Set dom = SE.dom();
@@ -71,28 +75,28 @@ PWMap CutVertex::getDegMap(const DSBG &dsbg)
   return dmap;
 }
 
-Set CutVertex::calculate()
+Set MaxDegCutVertex::calculate(const DSBG &dsbg) const
 {
-  auto begin = std::chrono::high_resolution_clock::now();
-  DSBG dg = dsbg();
-  PWMap Vmap = dg.Vmap(), mapB = dg.mapB(), mapD = dg.mapD();
-  PWMap rmap = SCC(dg, debug()).calculate();
-  Set newD = fact_.createSet(), oldD = newD, visitedV = newD, V = dg.V();
-  if (debug())
-    Util::SBG_LOG << "initial dg vertex cut set:\n" << dg << "\n";
+  auto start = std::chrono::high_resolution_clock::now();
 
-  PWMap dmap = getDegMap(dg);
+  DSBG dg = dsbg;
+  PWMap Vmap = dg.Vmap(), mapB = dg.mapB(), mapD = dg.mapD();
+  PWMap rmap = scc_fact_.createSCCAlgorithm(pw_fact_).calculate(dg).rmap();
+  Set newD = pw_fact_.createSet(), oldD = newD, visitedV = newD, V = dg.V();
+
+  Util::DEBUG_LOG << "initial dg vertex cut set:\n" << dg << "\n";
+
   // Degree map
-  if (debug())
-    Util::SBG_LOG << "initial dmap: " << dmap << "\n\n";
+  PWMap dmap = getDegMap(dg);
+  Util::DEBUG_LOG << "initial dmap: " << dmap << "\n\n";
 
   while (rmap.dom() != rmap.image()) {
     oldD = newD;
  
     MD_NAT aux = dmap.image().maxElem();
-    MD_NAT vmax = dmap.preImage(fact_.createSet(aux)).minElem();
-    Set vmaxSV = Vmap.image(fact_.createSet(vmax));
-    newD = newD.cup(fact_.createSet(vmax));
+    MD_NAT vmax = dmap.preImage(pw_fact_.createSet(aux)).minElem();
+    Set vmaxSV = Vmap.image(pw_fact_.createSet(vmax));
+    newD = newD.cup(pw_fact_.createSet(vmax));
 
     if (!visitedV.intersection(vmaxSV).isEmpty()) {
       MD_NAT vmaxD = newD.intersection(Vmap.preImage(vmaxSV)).minElem();
@@ -108,12 +112,12 @@ Set CutVertex::calculate()
         else
           mdi.emplaceBack(Interval(vmaxD[j], vmax[j] - vmaxD[j], Inf));    
       }
-      if (debug()) {
-        Util::SBG_LOG << "vmax: " << vmax << "\n"; 
-        Util::SBG_LOG << "vmaxD: " << vmaxD << "\n"; 
-        Util::SBG_LOG << "mdi: " << mdi << "\n\n";
-      }
-      Set mdi_set = fact_.createSet(mdi);
+
+      Util::DEBUG_LOG << "vmax: " << vmax << "\n"; 
+      Util::DEBUG_LOG << "vmaxD: " << vmaxD << "\n"; 
+      Util::DEBUG_LOG << "mdi: " << mdi << "\n\n";
+
+      Set mdi_set = pw_fact_.createSet(mdi);
       newD = newD.cup(mdi_set.intersection(Vmap.preImage(vmaxSV)));
     }
 
@@ -128,24 +132,33 @@ Set CutVertex::calculate()
     dmap = getDegMap(dg);
 
     // Resulting SCC from induced graph
-    rmap = SCC(dg, debug()).calculate();
+    rmap = scc_fact_.createSCCAlgorithm(pw_fact_).calculate(dg).rmap();
 
-    if (debug()) {
-      Util::SBG_LOG << "oldD: " << oldD << "\n";
-      Util::SBG_LOG << "newD: " << newD << "\n";
-      Util::SBG_LOG << "resulting graph:\n" << dg << "\n";
-      Util::SBG_LOG << "new degree map: " << dmap << "\n";
-      Util::SBG_LOG << "new rmap: " << rmap << "\n\n";
-    }
+    Util::DEBUG_LOG << "oldD: " << oldD << "\n";
+    Util::DEBUG_LOG << "newD: " << newD << "\n";
+    Util::DEBUG_LOG << "resulting graph:\n" << dg << "\n";
+    Util::DEBUG_LOG << "new degree map: " << dmap << "\n";
+    Util::DEBUG_LOG << "new rmap: " << rmap << "\n\n";
   }
   auto end = std::chrono::high_resolution_clock::now();
 
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(
-    end - begin
+    end - start
   );
   Util::SBG_LOG << "Total vertex cut set exec time: " << total.count() << " [μs]\n\n"; 
 
   return newD.compact();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Vertex Cut Set Algorithm Implementation ------------------------------------- 
+////////////////////////////////////////////////////////////////////////////////
+
+CutVertex::CutVertex(CVDelegPtr deleg) : delegate_(std::move(deleg)) {}
+
+Set CutVertex::calculate(const DSBG &dsbg) const
+{
+  return delegate_->calculate(dsbg);
 }
 
 } // namespace LIB

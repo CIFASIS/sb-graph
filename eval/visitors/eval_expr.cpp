@@ -18,9 +18,9 @@
  ******************************************************************************/
 
 #include "algorithms/cc/cc.hpp"
-#include "algorithms/cutvertex/cut_vertex.hpp"
-#include "algorithms/scc/scc.hpp"
-#include "algorithms/toposort/topo_sort.hpp"
+#include "algorithms/cutvertex/af_cv.hpp"
+#include "algorithms/scc/af_scc.hpp"
+#include "algorithms/toposort/af_ts.hpp"
 #include "algorithms/misc/causalization_builders.hpp"
 #include "algorithms/misc/causalization_json.hpp"
 #include "eval/visitors/eval_expr.hpp"
@@ -354,42 +354,33 @@ auto matching_visitor_ = Overload {
   }
 };
 
-auto scc_visitor_ = Overload {
-  [](LIB::DSBG a, bool b) { 
-    LIB::SCC scc(a, b);
-    return ExprBaseType(scc.calculate());
-  },
-  [](auto a, auto b) {
-    Util::ERROR("scc_visitor_: wrong argument ", a, " for scc\n"); 
-    return ExprBaseType();
-  }
-};
 
 auto ts_visitor_ = Overload {
-  [](LIB::DSBG a, bool b) { 
-    LIB::TopoSort ts(a, b);
-    return ExprBaseType(ts.calculate()); 
+  [](LIB::DSBG a) { 
+    LIB::TopoSort ts = LIB::MinVertexTSAF().createTSAlgorithm(a.fact());
+    return ExprBaseType(ts.calculate(a));
   },
-  [](auto a, auto b) {
+  [](auto a) {
     Util::ERROR("ts_visitor_: wrong argument ", a, " for sort\n"); 
     return ExprBaseType();
   }
 };
 
+/*
 auto match_scc_visitor_ = Overload {
-  [](LIB::SBG a, LIB::NAT b, bool c) { 
-    LIB::BFSMatching match(a.copy(b), c);
+  [](LIB::SBG a, LIB::NAT b, LIB::SCC c, bool d) { 
+    LIB::BFSMatching match(a.copy(b), d);
     match.calculate();
-    LIB::SCC scc(MISC::buildSCCFromMatching(match), c);
-    return ExprBaseType(scc.calculate());
+    LIB::DSBG dsbg = MISC::buildSCCFromMatching(match);
+    return ExprBaseType(c.calculate(dsbg).rmap());
   },
-  [](LIB::SBG a, LIB::MD_NAT b, bool c) { 
-    LIB::BFSMatching match(a.copy(b[0]), c);
+  [](LIB::SBG a, LIB::MD_NAT b, LIB::SCC c, bool d) { 
+    LIB::BFSMatching match(a.copy(b[0]), d);
     match.calculate();
-    LIB::SCC scc(MISC::buildSCCFromMatching(match), c);
-    return ExprBaseType(scc.calculate());
+    LIB::DSBG dsbg = MISC::buildSCCFromMatching(match);
+    return ExprBaseType(c.calculate(dsbg).rmap());
   },
-  [](auto a, auto b, auto c) {
+  [](auto a, auto b, auto c, auto d) {
     Util::ERROR("match_scc_visitor_: wrong arguments ", a, ", ", b
       , " for matchSCC\n"); 
     return ExprBaseType();
@@ -402,7 +393,8 @@ auto match_scc_ts_visitor_ = Overload {
     LIB::Set match_res = match.calculate().matched_edges();
     LIB::SCC scc(MISC::buildSCCFromMatching(match), c);
     LIB::PWMap scc_res = scc.calculate();
-    LIB::TopoSort ts(MISC::buildSortFromSCC(scc, scc_res), c);
+    LIB::DSBG ts_dsbg = MISC::buildSortFromSCC(scc, scc_res);
+    LIB::TopoSort ts = LIB::MinVertexTSAF().createTSAlgorithm(ts_dsbg);
     LIB::PWMap ts_res = ts.calculate(); 
     MISC::buildJson(match_res, scc_res, ts_res);
     return ExprBaseType(ts_res);
@@ -412,7 +404,8 @@ auto match_scc_ts_visitor_ = Overload {
     LIB::Set match_res = match.calculate().matched_edges();
     LIB::SCC scc(MISC::buildSCCFromMatching(match), c);
     LIB::PWMap scc_res = scc.calculate();
-    LIB::TopoSort ts(MISC::buildSortFromSCC(scc, scc_res), c);
+    LIB::DSBG ts_dsbg = MISC::buildSortFromSCC(scc, scc_res);
+    LIB::TopoSort ts = LIB::MinVertexTSAF().createTSAlgorithm(ts_dsbg);
     LIB::PWMap ts_res = ts.calculate(); 
     MISC::buildJson(match_res, scc_res, ts_res);
     return ExprBaseType(ts_res);
@@ -423,13 +416,15 @@ auto match_scc_ts_visitor_ = Overload {
     return ExprBaseType();
   }
 };
+*/
 
 auto cut_visitor_ = Overload {
-  [](LIB::DSBG a, bool b) { 
-    LIB::CutVertex cut_set(a, b);
-    return ExprBaseType(cut_set.calculate());
+  [](LIB::DSBG a) { 
+    LIB::MinReachSCCAF scc_fact = LIB::MinReachSCCAF();
+    LIB::CutVertex cv = LIB::MaxDegCVAF().createCVAlgorithm(a.fact(), scc_fact);
+    return ExprBaseType(cv.calculate(a));
   },
-  [](auto a, auto b) {
+  [](auto a) {
     Util::ERROR("cut_visitor_: wrong argument ", a, " for cut\n"); 
     return ExprBaseType();
   }
@@ -679,8 +674,18 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
       case Eval::Func::scc:
         if (eval_args.size() == 1) {
           arity_ok = true;
-          return std::visit(scc_visitor_, eval_args[0]
-            , std::variant<bool>(debug_));
+
+          LIB::SCC scc = LIB::MinReachSCCAF().createSCCAlgorithm(fact_);
+          auto scc_visitor_ = Overload {
+            [&scc](LIB::DSBG a) { 
+              return ExprBaseType(scc.calculate(a).rmap());
+            },
+            [](auto a) {
+              Util::ERROR("scc_visitor_: wrong argument ", a, " for scc\n"); 
+              return ExprBaseType();
+            }
+          };
+          return std::visit(scc_visitor_, eval_args[0]);
         }
         break;
 
@@ -688,15 +693,16 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
       case Eval::Func::ts:
         if (eval_args.size() == 1) {
           arity_ok = true;
-          return std::visit(ts_visitor_, eval_args[0]
-            , std::variant<bool>(debug_));
+          return std::visit(ts_visitor_, eval_args[0]);
         }
         break;
 
+      /*
       case Eval::Func::match_scc:
         if (eval_args.size() == 2) {
           arity_ok = true;
           return std::visit(match_scc_visitor_, eval_args[0], eval_args[1]
+            , LIB::MinReachSCCAF().createSCCAlgorithm(fact_)
             , std::variant<bool>(debug_));
         }
         break;
@@ -708,12 +714,12 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
             , std::variant<bool>(debug_));
         }
         break;
+      */
 
       case Eval::Func::cut_set:
         if (eval_args.size() == 1) {
           arity_ok = true;
-          return std::visit(cut_visitor_, eval_args[0]
-            , std::variant<bool>(debug_));
+          return std::visit(cut_visitor_, eval_args[0]);
         }
         break;
 

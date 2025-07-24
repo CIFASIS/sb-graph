@@ -1,6 +1,6 @@
 /** @file scc.hpp
 
- @brief <b>SCC SBG implementation</b>
+ @brief <b>SBG SCC Algorithm implementation</b>
 
  <hr>
 
@@ -31,43 +31,81 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// SCC -------------------------------------------------------------------------
+// Auxiliary structures --------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct SCC {
-  private:
+/**
+ * @brief Saves input and output data from a SCC algorithm run.
+ */
+struct SCCData {
+  member_class(DSBG, dsbg); // Original input directed SBG
+  member_class(PWMap, rmap); // Resulting SCCs
+  member_class(Set, Ediff); // Edges connecting vertices in different SCC
+
+  SCCData(DSBG dsbg, PWMap rmap, Set Ediff);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// SCC Algorithm Abstract Delegate ---------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+struct SCCDelegate;
+
+typedef std::unique_ptr<SCCDelegate> SCCDelegPtr;
+
+struct SCCDelegate {
+  protected:
   const PWMapAF &fact_;
 
-  //*** SBG info, constant
-  member_class(DSBG, dsbg);
+  public:
+  virtual ~SCCDelegate() = default;
 
-  member_class(Set, V);
-  member_class(PWMap, Vmap);
+  SCCDelegate(const PWMapAF &fact);
 
-  member_class(PWMap, Emap);
-  member_class(PWMap, subEmap);
+  virtual SCCData calculate(const DSBG &dsbg) = 0;
+};
 
-  //-----------------------------
-  member_class(Set, E); // Edges in the same SCC in each step
-  member_class(Set, Ediff); // Edges between different SCC in each step
+////////////////////////////////////////////////////////////////////////////////
+// SCC Algorithm Implementation (concrete delegate) ----------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+struct MinReachSCC : public SCCDelegate {
+  private:
+  /**
+   * @brief Edges with the same MRV in both endings, in each step.
+   */
+  member_class(Set, E);
+  /**
+   * @brief Edges with different MRV in each ending, in each step.
+   */
+  member_class(Set, Ediff);
 
   member_class(PWMap, mapB);
   member_class(PWMap, mapD);
  
-  member_class(PWMap, rmap);
-
-  member_class(bool, debug);
-
   public:
-  SCC(const DSBG &dsbg, bool debug);
+  MinReachSCC(const PWMapAF &fact);
 
-  PWMap calculate();
-
-  const PWMapAF &fact() const;
+  SCCData calculate(const DSBG &dsbg) override;
 
   private:
-  PWMap sccMinReach(const DSBG &dg) const;
-  PWMap sccStep();
+  void init(const DSBG &dsbg);
+  PWMap sccMinReach(const DSBG &dsbg) const;
+  PWMap sccStep(const DSBG &dsbg);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// SCC Algorithm Implementation (delegator) ------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+struct SCC {
+  private:
+  SCCDelegPtr delegate_;
+
+  public:
+  SCC(SCCDelegPtr deleg);
+
+  SCCData calculate(const DSBG &dsbg);
 };
 
 } // namespace LIB

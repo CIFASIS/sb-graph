@@ -1,6 +1,6 @@
 /** @file map.hpp
 
- @brief <b>Map delegate pattern</b>
+ @brief <b>SBG Map</b>
 
  A SBG map dom -> exp is an entity composed by a set (domain) and a law.
  Currently only linear expressions are supported. Both the domain and law should

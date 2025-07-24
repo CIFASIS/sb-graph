@@ -1,6 +1,6 @@
 /** @file topo_sort.hpp
 
- @brief <b>Topological Sort SBG implementation</b>
+ @brief <b>SBG Topological Sort Algorithm implementation</b>
 
  <hr>
 
@@ -31,28 +31,50 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Topological sort ------------------------------------------------------------
+// Topological Sort Algorithm Abstract Delegate --------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+struct TSDelegate;
+
+typedef std::unique_ptr<TSDelegate> TSDelegPtr;
+
+struct TSDelegate {
+  protected:
+  const PWMapAF &fact_;
+
+  public:
+  virtual ~TSDelegate() = default;
+
+  TSDelegate(const PWMapAF &fact);
+
+  virtual PWMap calculate(const DSBG &dsbg) const = 0;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Minimum Vertex Topological Sort Algorithm Implementation (concrete delegate)
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief In each step takes out the minimum vertex without dependencies.
+ */
+struct MinVertexTopoSort : public TSDelegate {
+  MinVertexTopoSort(const PWMapAF &fact);
+
+  PWMap calculate(const DSBG &dsbg) const override; 
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Topological Sort Algorithm Implementation (delegator) -----------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 struct TopoSort {
   private:
-  const PWMapAF &fact_;
-
-  //*** SBG info, constant
-  member_class(DSBG, dsbg);
-
-  //-----------------------------
-  member_class(bool, debug);
+  TSDelegPtr delegate_;
 
   public:
-  TopoSort(const DSBG &dsbg, bool debug);
+  TopoSort(TSDelegPtr deleg);
 
-  PWMap calculate(); 
-
-  const PWMapAF &fact() const;
-
-  private:
-  Exp calculateExp(const MD_NAT &from, const MD_NAT &to);
+  PWMap calculate(const DSBG &dsbg) const;
 };
 
 } // namespace LIB

@@ -1,12 +1,4 @@
-/** @file causalization_builders.hpp
-
- @brief <b>Causalization SBG builders</b>
-
- These builders are not part of the library per se, but are included here to
- test faster the causalization of Modelica models using the SBG approach. In
- the future it should belong to ModelicaCC instead.
-
- <hr>
+/*******************************************************************************
 
  This file is part of Set--Based Graph Library.
 
@@ -25,18 +17,21 @@
 
  ******************************************************************************/
 
-#ifndef MISC_CAUSALIZATION_BUILDERS_HPP
-#define MISC_CAUSALIZATION_BUILDERS_HPP
+#include "algorithms/scc/af_scc.hpp"
 
-#include "algorithms/matching/matching.hpp"
-#include "algorithms/scc/scc.hpp"
+namespace SBG {
 
-namespace MISC {
+namespace LIB {
 
-SBG::LIB::DSBG buildSCCFromMatching(const SBG::LIB::BFSMatching &match);
+////////////////////////////////////////////////////////////////////////////////
+// Minimum Reachable SCC AF ----------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
-SBG::LIB::DSBG buildSortFromSCC(const SBG::LIB::SCCData &data);
+SCC MinReachSCCAF::createSCCAlgorithm(const PWMapAF &fact) const
+{
+  return SCC(std::make_unique<MinReachSCC>(fact));
+}
 
-}  // namespace MISC
+} // namespace LIB
 
-#endif
+} // namespace SBG

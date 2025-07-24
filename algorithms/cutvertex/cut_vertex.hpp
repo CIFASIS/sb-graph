@@ -1,6 +1,6 @@
 /** @file cut_vertex.hpp
 
- @brief <b>Cut Vertex Set SBG implementation</b>
+ @brief <b>SBG Vertex Cut Set Algorithm implementation</b>
 
  <hr>
 
@@ -24,40 +24,67 @@
 #ifndef SBG_CUTVERTEX_HPP
 #define SBG_CUTVERTEX_HPP
 
-#include "sbg/sbg.hpp"
+#include "algorithms/scc/af_scc.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Cut-set algorithm ----------------------------------------------------------
+// Vertex Cut Set Algorithm Abstract Delegate ---------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
+struct CVDelegate;
+
+typedef std::unique_ptr<CVDelegate> CVDelegPtr;
+
 /**
-* @brief Aims to calculate a minimum cut-set of vertices, that is, a set of
+* @brief Aims to calculate a minimum cut set of vertices, that is, a set of
 * vertices such that if these vertices are taken out, the resulting graph has no
 * SCC left. Since this is a NP-hard problem, heuristics are used, and thus is
 * not guaranteed that the set is actually minimum.
 */
+struct CVDelegate {
+  protected:
+  const PWMapAF &pw_fact_;
+  const SCCAF &scc_fact_;
+
+  public:
+  virtual ~CVDelegate() = default;
+
+  CVDelegate(const PWMapAF &pw_fact, const SCCAF &scc_fact);
+
+  virtual Set calculate(const DSBG &dsbg) const = 0;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// Maximum Degree Vertex Cut Set Algorithm Implementation (concrete delegate) -
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief In each step takes out the vertex of maximum degree.
+ */
+struct MaxDegCutVertex : public CVDelegate {
+  MaxDegCutVertex(const PWMapAF &pw_fact, const SCCAF &scc_fact);
+
+  Set calculate(const DSBG &dsbg) const override;
+
+  private:
+  PWMap getDegMap(const DSBG &dsbg) const;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// Vertex Cut Set Algorithm Implementation (delegator) ------------------------ 
+///////////////////////////////////////////////////////////////////////////////
 
 struct CutVertex {
   private:
-  const PWMapAF &fact_;
-
-  //*** SBG info, constant
-  member_class(DSBG, dsbg);
-
-  //-----------------------------
-  member_class(bool, debug);
+  CVDelegPtr delegate_;
 
   public:
-  CutVertex(const DSBG &dsbg, bool debug);
+  CutVertex(CVDelegPtr deleg);
 
-  Set calculate(); 
-
-  private:
-  PWMap getDegMap(const DSBG &dsbg);
+  Set calculate(const DSBG &dsbg) const;
 };
 
 } // namespace LIB

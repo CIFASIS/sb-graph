@@ -27,57 +27,43 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// SCC -------------------------------------------------------------------------
+// Auxiliary structures --------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-bool sccNotEqId(const Map &sbgmap) { return !(sbgmap.isId()); }
+member_imp(SCCData, DSBG, dsbg);
+member_imp(SCCData, PWMap, rmap);
+member_imp(SCCData, Set, Ediff);
 
-SCC::SCC(const DSBG &dsbg, bool debug)
-  : fact_(dsbg.fact()), dsbg_(dsbg), V_(fact_.createSet())
-    , Vmap_(fact_.createPWMap()), Emap_(fact_.createPWMap())
-    , subEmap_(fact_.createPWMap()), E_(fact_.createSet())
-    , Ediff_(fact_.createSet()), mapB_(fact_.createPWMap())
-    , mapD_(fact_.createPWMap()), rmap_(fact_.createPWMap())
-    , debug_(debug) {
-  DSBG dg = dsbg;
-  dsbg_ = dg;
+SCCData::SCCData(DSBG dsbg, PWMap rmap, Set Ediff)
+  : dsbg_(dsbg), rmap_(rmap), Ediff_(Ediff) {}
 
-  V_ = dg.V();
-  Vmap_ = dg.Vmap();
-  
-  E_ = dg.E();
-  Emap_ = dg.Emap();
-  subEmap_ = dg.subEmap();
+////////////////////////////////////////////////////////////////////////////////
+// SCC Algorithm Delegate Constructors -----------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
-  mapB_ = dg.mapB();
-  mapD_ = dg.mapD(); 
+SCCDelegate::SCCDelegate(const PWMapAF &fact) : fact_(std::move(fact)) {}
 
-  rmap_ = fact_.createPWMap(V_);
-}
+////////////////////////////////////////////////////////////////////////////////
+// Minimum Reachable SCC Algorithm ---------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
-member_imp(SCC, DSBG, dsbg);
-member_imp(SCC, Set, V);
-member_imp(SCC, PWMap, Vmap);
-member_imp(SCC, Set, E);
-member_imp(SCC, PWMap, Emap);
-member_imp(SCC, PWMap, subEmap);
+MinReachSCC::MinReachSCC(const PWMapAF &fact)
+  : SCCDelegate(fact), E_(fact_.createSet()), Ediff_(fact_.createSet())
+    , mapB_(fact_.createPWMap()), mapD_(fact_.createPWMap()) {}
 
-member_imp(SCC, PWMap, mapB);
-member_imp(SCC, PWMap, mapD);
+member_imp(MinReachSCC, Set, E);
 
-member_imp(SCC, Set, Ediff);
+member_imp(MinReachSCC, PWMap, mapB);
+member_imp(MinReachSCC, PWMap, mapD);
 
-member_imp(SCC, PWMap, rmap);
+member_imp(MinReachSCC, Set, Ediff);
 
-member_imp(SCC, bool, debug);
-
-PWMap SCC::sccMinReach(const DSBG &dg) const
+PWMap MinReachSCC::sccMinReach(const DSBG &dsbg) const
 {
-  if (debug())
-    Util::SBG_LOG << "Min reach graph:\n" << dg << "\n\n";
+  Util::DEBUG_LOG << "Min reach graph:\n" << dsbg << "\n\n";
 
-  Set V = dg.V(), E = dg.E();
-  PWMap mapB = dg.mapB(), mapD = dg.mapD(), subEmap = dg.subEmap();
+  Set V = dsbg.V(), E = dsbg.E();
+  PWMap mapB = dsbg.mapB(), mapD = dsbg.mapD(), subEmap = dsbg.subEmap();
   if (!V.isEmpty()) {
     unsigned int copies = V.arity();
     PWMap rmap = fact_.createPWMap(V), old_rmap = fact_.createPWMap();
@@ -93,23 +79,20 @@ PWMap SCC::sccMinReach(const DSBG &dg) const
 
       PWMap new_rmap = mapB.minAdjMap(ermapD);
       rmap = rmap.minMap(new_rmap).combine(rmap);
-      if (debug())
-        Util::SBG_LOG << "rmap before rec: " << rmap << "\n\n";
+      Util::DEBUG_LOG << "rmap before rec: " << rmap << "\n\n";
 
       Set positive = fact_.createSet(SetPiece(copies, Interval(1, 1, Inf)));
       PWMap rec_rmap = fact_.createPWMap();
       Vc = V.difference(old_rmap.equalImage(rmap));
       if (!Vc.isEmpty()) {
-        for (const Map &subv : dg.Vmap()) {
+        // If the mrv is in the same SV, the algorithm would detect a false
+        // recursion, i.e. if we have a cycle 1 -> 2 -> ... -> 10 -> 1,
+        // where SV = [1:10], then it detects a recursion when mrv(10) = 1
+        // (false recursion). So we take self mrvs out.
+        Set other_rep = V.difference(rmap.fixedPoints());
+        for (const Map &subv : dsbg.Vmap()) {
           Set vs = subv.dom();
           if (!vs.intersection(Vc).isEmpty()) {
-            // If the mrv is in the same SV, the algorithm would detect a false
-            // recursion, i.e. if we have a cycle 1 -> 2 -> ... -> 10 -> 1,
-            // where SV = [1:10], then it detects a recursion when mrv(10)
-            // becomes "1" (false recursion). So we take self mrvs out.
-            auto other_rep = rmap.filterMap([](const Map &sbgmap) {
-              return sccNotEqId(sbgmap);
-            }).dom();
             // Vertices in the set-vertex that share its rep with other vertex
             // in the set-vertex
             Set VR = rmap.restrict(vs.intersection(other_rep)).sharedImage();
@@ -152,16 +135,14 @@ PWMap SCC::sccMinReach(const DSBG &dg) const
                 // Update rmap for recursion, and leave the rest unchanged
                 rec_rmap = smap_plus.combine(rec_rmap).compact();
 
-                if (debug()) {
-                  Util::SBG_LOG << "VR: " << VR << "\n";
-                  Util::SBG_LOG << "repV: " << repV << "\n";
-                  Util::SBG_LOG << "ER: " << ER << "\n";
-                  Util::SBG_LOG << "dmap: " << dmap << "\n";
-                  Util::SBG_LOG << "not_cycle_edges: " << not_cycle_edges << "\n";
-                  Util::SBG_LOG << "ER_plus: " << ER_plus << "\n";
-                  Util::SBG_LOG << "smap_plus: " << smap_plus << "\n";
-                  Util::SBG_LOG << "rec_rmap: " << rec_rmap << "\n\n";
-                }
+                Util::DEBUG_LOG << "VR: " << VR << "\n";
+                Util::DEBUG_LOG << "repV: " << repV << "\n";
+                Util::DEBUG_LOG << "ER: " << ER << "\n";
+                Util::DEBUG_LOG << "dmap: " << dmap << "\n";
+                Util::DEBUG_LOG << "not_cycle_edges: " << not_cycle_edges << "\n";
+                Util::DEBUG_LOG << "ER_plus: " << ER_plus << "\n";
+                Util::DEBUG_LOG << "smap_plus: " << smap_plus << "\n";
+                Util::DEBUG_LOG << "rec_rmap: " << rec_rmap << "\n\n";
               }
             }
           }
@@ -170,8 +151,7 @@ PWMap SCC::sccMinReach(const DSBG &dg) const
         rmap_plus = rmap_plus.mapInf();
         rmap = rmap.minMap(rmap_plus).compact();
 
-        if (debug())
-          Util::SBG_LOG << "rmap after rec: " << rmap << "\n\n";
+        Util::DEBUG_LOG << "rmap after rec: " << rmap << "\n\n";
       }
     } while (!Vc.isEmpty()); 
 
@@ -181,62 +161,79 @@ PWMap SCC::sccMinReach(const DSBG &dg) const
   return fact_.createPWMap();
 }
 
-PWMap SCC::sccStep()
+PWMap MinReachSCC::sccStep(const DSBG &dsbg)
 {
-  PWMap id_V = fact_.createPWMap(V());
+  Set V = dsbg.V();
+  PWMap Vmap = dsbg.Vmap(), Emap = dsbg.Emap(), subEmap = dsbg.subEmap();
+
+  PWMap id_V = fact_.createPWMap(V);
 
   DSBG aux_dsbg(
-    fact_, V(), Vmap()
-    , mapB().restrict(E()), mapD().restrict(E()), Emap().restrict(E()).compact()
-    , subEmap().restrict(E())
+    fact_, V, Vmap
+    , mapB().restrict(E_), mapD().restrict(E_), Emap.restrict(E_).compact()
+    , subEmap.restrict(E_)
   );
   PWMap new_rmap = sccMinReach(aux_dsbg);
-  if (debug())
-    Util::SBG_LOG << "SCC new_rmap: " << new_rmap << "\n";
+  Util::DEBUG_LOG << "MinReachSCC new_rmap: " << new_rmap << "\n";
 
-  PWMap rmap_B = new_rmap.composition(mapB());
-  PWMap rmap_D = new_rmap.composition(mapD());
-  Set Esame = rmap_B.equalImage(rmap_D); // Edges in the same SCC
+  PWMap rmapB = new_rmap.composition(mapB());
+  PWMap rmapD = new_rmap.composition(mapD());
+  Set Esame = rmapB.equalImage(rmapD); // Edges in the same MinReachSCC
   
-  // Leave edges in the same SCC
+  // Leave edges in the same MinReachSCC
   Ediff_ = E().difference(Esame);
   E_ = Esame;
-  if (debug())
-    Util::SBG_LOG << "SCC erased edges: " << Ediff() << "\n\n";
+  Util::DEBUG_LOG << "MinReachSCC erased edges: " << Ediff_ << "\n\n";
 
   // Swap directions
-  PWMap aux_B = mapB();
-  mapB_ = mapD();
+  PWMap aux_B = mapB_;
+  mapB_ = mapD_;
   mapD_ = aux_B;
 
   return new_rmap;
 }
 
-PWMap SCC::calculate()
+void MinReachSCC::init(const DSBG &dsbg)
 {
-  if (debug())
-    Util::SBG_LOG << "SCC dsbg: \n" << dsbg() << "\n\n";
+  E_ = dsbg.E();
+  mapB_ = dsbg.mapB();
+  mapB_ = dsbg.mapB();
+}
+
+SCCData MinReachSCC::calculate(const DSBG &dsbg)
+{
+  Util::DEBUG_LOG << "MinReachSCC dsbg: \n" << dsbg << "\n\n";
+
+  init(dsbg);
 
   auto begin = std::chrono::high_resolution_clock::now();
-  PWMap rmap = sccStep();
+  PWMap rmap = sccStep(dsbg);
   do {
-    rmap = sccStep();
-  } while (Ediff() != fact_.createSet());
-  rmap_ = rmap.compact();
+    rmap = sccStep(dsbg);
+  } while (Ediff_ != fact_.createSet());
+  rmap = rmap.compact();
   auto end = std::chrono::high_resolution_clock::now();
 
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(
     end - begin
   );
-  Util::SBG_LOG << "Total SCC exec time: " << total.count() << " [μs]\n\n"; 
+  Util::SBG_LOG << "Total MinReachSCC exec time: " << total.count() << " [μs]\n\n"; 
 
-  if (debug())
-    Util::SBG_LOG << "SCC result: " << rmap.compact() << "\n\n";
+  Util::DEBUG_LOG << "MinReachSCC result: " << rmap << "\n\n";
 
-  return rmap.compact();
+  return SCCData(dsbg, rmap, dsbg.E().difference(E_));
 }
 
-const PWMapAF &SCC::fact() const { return fact_; }
+////////////////////////////////////////////////////////////////////////////////
+// SCC Algorithm Implementation ------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+SCC::SCC(SCCDelegPtr deleg) : delegate_(std::move(deleg)) {}
+
+SCCData SCC::calculate(const DSBG &dsbg)
+{
+  return delegate_->calculate(dsbg);
+}
 
 } // namespace LIB
 

@@ -396,7 +396,6 @@ kl_sbg_partitioner_result kl_sbg_partitioner_function(
     for (size_t i = 0; i < partitions.size(); i++) {
         const auto ec_partition_i = cost_matrix.get_ec_by_partition_id(i);
         for (size_t j = i + 1; j < partitions.size(); j++) {
-
             if (ec_partition_i.intersection(cost_matrix.get_ec_by_partition_id(j)).isEmpty()) {
                 logging::sbg_log << "No connections between " << partitions.at(i) << " and " << partitions.at(j) << endl;
                 continue;
@@ -433,72 +432,52 @@ kl_sbg_partitioner_result kl_sbg_partitioner_function(
 
 
 kl_sbg_partitioner_result kl_sbg_partitioner_multithreading(
-    const WeightedSBGraph& graph, PartitionMap& partitions, unsigned LMin, unsigned LMax,
-    vector<kl_sbg_partitioner_result>& gains)
+    const WeightedSBGraph& graph, PartitionMap& partitions, CommunicationCost& cost_matrix, 
+    unsigned LMin, unsigned LMax, vector<kl_sbg_partitioner_result>& gains)
 {
-        // avoid repeating this
-    // auto look_for_adjacents = [&set_fact](const Set& nodes, const PWMap& map1, const PWMap& map2) {
-    //     auto involved_edges1 = map1.preImage(nodes);
-    //     auto arrival_nodes1 = map2.image(involved_edges1);
-    //     arrival_nodes1 = arrival_nodes1.difference(nodes);
-
-    //     auto involved_edges2 = map2.preImage(nodes);
-    //     auto arrival_nodes2 = map1.image(involved_edges2);
-    //     arrival_nodes2 = arrival_nodes2.difference(nodes);
-
-    //     auto arrival_nodes = arrival_nodes1.cup(arrival_nodes2);
-
-    //     return arrival_nodes;
-    // };
-
-
+    vector<future<kl_sbg_partitioner_result>> workers;
     kl_sbg_partitioner_result best_gain = kl_sbg_partitioner_result{ 0, 0, -1, {}, {}};
-    // vector<future<kl_sbg_partitioner_result>> workers;
-    // map<size_t, Set> adjacents;
-    // for (size_t i = 0; i < partitions.size(); i++) {
+    for (size_t i = 0; i < partitions.size(); i++) {
+        const auto ec_partition_i = cost_matrix.get_ec_by_partition_id(i);
+        for (size_t j = i + 1; j < partitions.size(); j++) {
+            if (ec_partition_i.intersection(cost_matrix.get_ec_by_partition_id(j)).isEmpty()) {
+                logging::sbg_log << "No connections between " << partitions.at(i) << " and " << partitions.at(j) << endl;
+                continue;
+            }
 
-    //     if (adjacents.find(i) == adjacents.end()) {
-    //         adjacents.insert_or_assign(i, look_for_adjacents(from_vector(partitions.at(i), set_fact), graph.map1(), graph.map2()));
-    //     }
+            auto gain_comp = [i, j] (const kl_sbg_partitioner_result& g) {
+                return (g.i == i and g.j == j) or (g.i == j and g.j == i);
+            };
 
-    //     for (size_t j = i + 1; j < partitions.size(); j++) {
+            auto gain_it = find_if(gains.begin(), gains.end(), gain_comp);
+            if (gain_it != gains.end()) {
+                logging::sbg_log << "Between " << i << " and " << j << " was already computed, " << *gain_it  << endl;
+                continue;
+            }
 
-    //         if (adjacents.at(i).intersection(from_vector(partitions.at(j), set_fact)).isEmpty()) {
-    //             logging::sbg_log << "No connections between " << partitions[i] << " and " << partitions[j] << " is empty" << endl;
-    //             continue;
-    //         }
+            auto p_1_copy = partitions.at(i);
+            auto p_2_copy = partitions.at(j);
+            auto th = async([&graph, &cost_matrix, &partitions, i, j, LMin, LMax] () {
+                auto p_1_copy = partitions.at(i);
+                auto p_2_copy = partitions.at(j);
+                KLBipartResult results = kl_sbg_bipart_imbalance(graph, cost_matrix, i, p_1_copy, j, p_2_copy, LMin, LMax);
+                return kl_sbg_partitioner_result{i, j, results.gain, results.A, results.B};
+            });
+            workers.push_back(move(th));
+        }
+    }
 
-    //         auto gain_comp = [i, j] (const kl_sbg_partitioner_result& g) {
-    //             return (g.i == i and g.j == j) or (g.i == j and g.j == i);
-    //         };
+    for_each(workers.begin(), workers.end(), [&best_gain, &gains] (future<kl_sbg_partitioner_result>& th) {
+        // here we wait for each thread to finish and get its results
+        auto current_gain = th.get();
+        gains.emplace_back(current_gain);
+    });
 
-    //         auto gain_it = find_if(gains.begin(), gains.end(), gain_comp);
-    //         if (gain_it != gains.end()) {
-    //             logging::sbg_log << "Between " << i << " and " << j << " was already computed, " << *gain_it  << endl;
-    //             continue;
-    //         }
-
-    //         auto th = async([&graph, &partitions, i, j, LMin, LMax, &set_fact] () {
-    //             auto p_1_copy = partitions.at(i);
-    //             auto p_2_copy = partitions.at(j);
-    //             KLBipartResult results = kl_sbg_bipart_imbalance(graph, p_1_copy, p_2_copy, LMin, LMax, set_fact);
-    //             return kl_sbg_partitioner_result{i, j, results.gain, results.A, results.B};
-    //         });
-    //         workers.push_back(move(th));
-    //     }
-    // }
-
-    // for_each(workers.begin(), workers.end(), [&best_gain, &gains] (future<kl_sbg_partitioner_result>& th) {
-    //     // here we wait for each thread to finish and get its results
-    //     auto current_gain = th.get();
-    //     gains.emplace_back(current_gain);
-    // });
-
-    // for_each(gains.begin(), gains.end(), [&best_gain] (const kl_sbg_partitioner_result& current_gain) {
-    //     if (current_gain.gain > best_gain.gain) {
-    //         best_gain = current_gain;
-    //     }
-    // });
+    for_each(gains.begin(), gains.end(), [&best_gain](const kl_sbg_partitioner_result& current_gain) {
+        if (current_gain.gain > best_gain.gain) {
+            best_gain = current_gain;
+        }
+    });
 
     return best_gain;
 }
@@ -669,7 +648,7 @@ void kl_sbg_imbalance_partitioner(
 
         kl_sbg_partitioner_result best_gain;
         if (multithreading_enabled) {
-            best_gain = kl_sbg_partitioner_multithreading(graph, partitions, LMin, LMax, gains);
+            best_gain = kl_sbg_partitioner_multithreading(graph, partitions, cost_matrix, LMin, LMax, gains);
         } else {
             best_gain = kl_sbg_partitioner_function(graph, partitions, cost_matrix, LMin, LMax, gains);
         }

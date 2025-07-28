@@ -90,12 +90,4 @@ std::string get_output(const PartitionMap& partition_map);
 /// @param number_of_partitions The number of partitions
 void sanity_check(const SBG::LIB::WeightedSBGraph& graph, PartitionMap& partitions_set, unsigned number_of_partitions);
 
-
-/// @brief Overloading operator `<<` to print `Partition` objects
-std::ostream& operator<<(std::ostream& os, const Partition& partitions);
-
-
-/// @brief Overloading operator `<<` to print `PartitionMap` objects
-std::ostream& operator<<(std::ostream& os, const PartitionMap& partitions);
-
 }

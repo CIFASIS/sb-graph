@@ -30,4 +30,10 @@ typedef std::vector<SBG::LIB::SetPiece> Partition;
 
 typedef std::vector<Partition> PartitionMap;
 
+/// @brief Overloading operator `<<` to print `Partition` objects
+std::ostream& operator<<(std::ostream& os, const Partition& partitions);
+
+/// @brief Overloading operator `<<` to print `PartitionMap` objects
+std::ostream& operator<<(std::ostream& os, const PartitionMap& partitions);
+
 }

@@ -25,11 +25,12 @@
 #include <optional>
 #include <string>
 
+#include <util/time_profiler.hpp>
+
 #include "build_sb_graph.hpp"
 #include "kernighan_lin_partitioner.hpp"
 #include "partition_graph.hpp"
 #include "partition_metrics_api.hpp"
-#include "time_profiler.hpp"
 
 
 using namespace std;
@@ -244,7 +245,7 @@ int main(int argc, char** argv)
     }
 
     // print profiler results if they are enabled
-    sbg_partitioner::time_profiler_results();
+    SBG::Util::time_profiler_results();
 
     cout << "time_to_build_graph = " << time_to_build_graph << " ms" << endl;
     cout << "time_to_partitionate = " << time_to_partitionate << " ms" << endl;

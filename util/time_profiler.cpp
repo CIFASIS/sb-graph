@@ -16,17 +16,21 @@
 
  ******************************************************************************/
 
- #include "time_profiler.hpp"
+#include "defs.hpp"
+#include "time_profiler.hpp"
 
-namespace sbg_partitioner {
+namespace SBG {
+
+namespace Util {
+
 
 void time_profiler_results()
 {
-    internal::TimeProfiler::print_execution_time();
+    Internal::TimeProfiler::print_execution_time();
 }
 
 
-namespace internal{
+namespace Internal{
 
 std::unordered_map<std::string, double> TimeProfiler::_execution_time = {};
 
@@ -58,6 +62,8 @@ void TimeProfiler::print_execution_time() {
             std::cout << pair.first << ": " << pair.second << " ms" << std::endl;
         }
     }
+}
+
 }
 
 }

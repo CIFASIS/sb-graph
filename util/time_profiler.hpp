@@ -16,21 +16,26 @@
 
  ******************************************************************************/
 
- #include <chrono>
- #include <iostream>
- #include <string>
- #include <unordered_map>
+#include <chrono>
+#include <iostream>
+#include <string>
+#include <unordered_map>
 
- #pragma once
+#pragma once
 
-namespace sbg_partitioner {
+namespace SBG {
 
-constexpr bool time_profiler_enabled = false;
+namespace Util {
 
-void time_profiler_results();
+namespace Internal {
 
-namespace internal {
-
+/**
+ * @brief This is an internal class to measure the accumulated execution time of
+ * several selected functions.
+ * @note This class is internal for the library and should not be included and/or
+ * used by users. The user should be able to call `time_profiler_results` but not
+ * defining TimeProfiler objects.
+ */
 struct TimeProfiler {
     TimeProfiler(std::string&& function_name);
 
@@ -43,6 +48,8 @@ private:
     std::chrono::_V2::system_clock::time_point _start;
     static std::unordered_map<std::string, double> _execution_time;
 };
+
+}
 
 }
 

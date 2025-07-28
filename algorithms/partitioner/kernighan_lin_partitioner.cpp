@@ -21,10 +21,11 @@
 #include <rapidjson/writer.h>
 #include <unordered_map>
 
+#include <util/time_profiler.hpp>
+
 #include "build_sb_graph.hpp"
 #include "communication_cost.hpp"
 #include "kernighan_lin_partitioner.hpp"
-#include "time_profiler.hpp"
 #include "sbg_partitioner_log.hpp"
 
 
@@ -72,7 +73,7 @@ CostMatrixImbalance generate_gain_matrix(
     unsigned LMin,
     unsigned LMax)
 {
-    internal::TimeProfiler profiler("generate_gain_matrix");
+    SBG::Util::Internal::TimeProfiler profiler("generate_gain_matrix");
     CostMatrixImbalance local_cost_matrix;
 
     for (size_t i = 0; i < partition_a.size(); i++) {
@@ -180,7 +181,7 @@ void update_diff(
     unsigned LMin,
     unsigned LMax)
 {
-    internal::TimeProfiler profiler("update_diff");
+    SBG::Util::Internal::TimeProfiler profiler("update_diff");
     logging::sbg_log << affected_node_a.first << ", " << affected_node_a.second << endl;
     logging::sbg_log << affected_node_b.first << ", " << affected_node_b.second << endl;
 

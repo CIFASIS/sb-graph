@@ -74,7 +74,7 @@ public:
     SBG::LIB::Set get_ec_by_partition_id(unsigned partition_id); // non-const since _cost_by_partition may be updated
 
     /**
-     * It returns the edges that communicat the set piece nodes in partition `partition_id` with other partitions.
+     * It returns the edges that communicate the set piece nodes in partition `partition_id` with other partitions.
      * 
      * @param partition_id - id or index of a partition.
      * @param nodes - the set piece of `partition_id` that we want to compute external edges.
@@ -86,7 +86,7 @@ public:
     SBG::LIB::Set get_ec_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes);
 
     /**
-     * It returns the edges that communicat the set piece nodes with other nodes in partition `partition_id`.
+     * It returns the edges that communicate the set piece nodes with other nodes in partition `partition_id`.
      * 
      * @param partition_id - id or index of a partition.
      * @param nodes - the set piece of `partition_id` that we want to compute internal edges.

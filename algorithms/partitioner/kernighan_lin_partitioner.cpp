@@ -393,11 +393,11 @@ KLBipartResult kl_sbg_bipart_imbalance(const WeightedSBGraph& graph, Communicati
 }
 
 
-kl_sbg_partitioner_result kl_sbg_partitioner_function(
+KLSbgPartitionerResult kl_sbg_partitioner_function(
     const WeightedSBGraph& graph, PartitionMap& partitions, CommunicationCost& cost_matrix, unsigned LMin, unsigned LMax,
-    vector<kl_sbg_partitioner_result>& gains)
+    vector<KLSbgPartitionerResult>& gains)
 {
-    kl_sbg_partitioner_result best_gain = kl_sbg_partitioner_result{ 0, 0, -1, {}, {}};
+    KLSbgPartitionerResult best_gain = KLSbgPartitionerResult{ 0, 0, -1, {}, {}};
     for (size_t i = 0; i < partitions.size(); i++) {
         const auto ec_partition_i = cost_matrix.get_ec_by_partition_id(i);
         for (size_t j = i + 1; j < partitions.size(); j++) {
@@ -406,7 +406,7 @@ kl_sbg_partitioner_result kl_sbg_partitioner_function(
                 continue;
             }
 
-            auto gain_comp = [i, j] (const kl_sbg_partitioner_result& g) {
+            auto gain_comp = [i, j] (const KLSbgPartitionerResult& g) {
                 return (g.i == i and g.j == j) or (g.i == j and g.j == i);
             };
 
@@ -422,11 +422,11 @@ kl_sbg_partitioner_result kl_sbg_partitioner_function(
     #if PARTITION_IMBALANCE_DEBUG
             logging::sbg_log << "current_gain " << current_gain << endl;
     #endif
-            gains.emplace_back(kl_sbg_partitioner_result{ i, j, current_gain.gain, current_gain.A, current_gain.B });
+            gains.emplace_back(KLSbgPartitionerResult{ i, j, current_gain.gain, current_gain.A, current_gain.B });
         }
     }
 
-    for_each(gains.begin(), gains.end(), [&best_gain](const kl_sbg_partitioner_result& current_gain) {
+    for_each(gains.begin(), gains.end(), [&best_gain](const KLSbgPartitionerResult& current_gain) {
         if (current_gain.gain > best_gain.gain) {
             best_gain = current_gain;
         }
@@ -436,12 +436,12 @@ kl_sbg_partitioner_result kl_sbg_partitioner_function(
 }
 
 
-kl_sbg_partitioner_result kl_sbg_partitioner_multithreading(
+KLSbgPartitionerResult kl_sbg_partitioner_multithreading(
     const WeightedSBGraph& graph, PartitionMap& partitions, CommunicationCost& cost_matrix, 
-    unsigned LMin, unsigned LMax, vector<kl_sbg_partitioner_result>& gains)
+    unsigned LMin, unsigned LMax, vector<KLSbgPartitionerResult>& gains)
 {
-    vector<future<kl_sbg_partitioner_result>> workers;
-    kl_sbg_partitioner_result best_gain = kl_sbg_partitioner_result{ 0, 0, -1, {}, {}};
+    vector<future<KLSbgPartitionerResult>> workers;
+    KLSbgPartitionerResult best_gain = KLSbgPartitionerResult{ 0, 0, -1, {}, {}};
     for (size_t i = 0; i < partitions.size(); i++) {
         const auto ec_partition_i = cost_matrix.get_ec_by_partition_id(i);
         for (size_t j = i + 1; j < partitions.size(); j++) {
@@ -450,7 +450,7 @@ kl_sbg_partitioner_result kl_sbg_partitioner_multithreading(
                 continue;
             }
 
-            auto gain_comp = [i, j] (const kl_sbg_partitioner_result& g) {
+            auto gain_comp = [i, j] (const KLSbgPartitionerResult& g) {
                 return (g.i == i and g.j == j) or (g.i == j and g.j == i);
             };
 
@@ -466,19 +466,19 @@ kl_sbg_partitioner_result kl_sbg_partitioner_multithreading(
                 auto p_1_copy = partitions.at(i);
                 auto p_2_copy = partitions.at(j);
                 KLBipartResult results = kl_sbg_bipart_imbalance(graph, cost_matrix, i, p_1_copy, j, p_2_copy, LMin, LMax);
-                return kl_sbg_partitioner_result{i, j, results.gain, results.A, results.B};
+                return KLSbgPartitionerResult{i, j, results.gain, results.A, results.B};
             });
             workers.push_back(move(th));
         }
     }
 
-    for_each(workers.begin(), workers.end(), [&best_gain, &gains] (future<kl_sbg_partitioner_result>& th) {
+    for_each(workers.begin(), workers.end(), [&best_gain, &gains] (future<KLSbgPartitionerResult>& th) {
         // here we wait for each thread to finish and get its results
         auto current_gain = th.get();
         gains.emplace_back(current_gain);
     });
 
-    for_each(gains.begin(), gains.end(), [&best_gain](const kl_sbg_partitioner_result& current_gain) {
+    for_each(gains.begin(), gains.end(), [&best_gain](const KLSbgPartitionerResult& current_gain) {
         if (current_gain.gain > best_gain.gain) {
             best_gain = current_gain;
         }
@@ -530,7 +530,7 @@ ostream& operator<<(ostream& os, const CostMatrixImbalance& cost_matrix)
 }
 
 
-ostream& operator<<(ostream& os, const kl_sbg_partitioner_result& result)
+ostream& operator<<(ostream& os, const KLSbgPartitionerResult& result)
 {
     os << "{ partition results: "
        << result.i
@@ -646,12 +646,12 @@ void kl_sbg_imbalance_partitioner(
     int counter = 0;
 
     CommunicationCost& cost_matrix = get_communication_cost();
-    vector<kl_sbg_partitioner_result> gains;
+    vector<KLSbgPartitionerResult> gains;
     while (change) {
         cout << "*****ITERATION NUMBER " << counter++ << endl;
         change = false;
 
-        kl_sbg_partitioner_result best_gain;
+        KLSbgPartitionerResult best_gain;
         if (multithreading_enabled) {
             best_gain = kl_sbg_partitioner_multithreading(graph, partitions, cost_matrix, LMin, LMax, gains);
         } else {
@@ -660,7 +660,7 @@ void kl_sbg_imbalance_partitioner(
 
         logging::sbg_log << "Best gain results is: " << best_gain << endl;
 
-        auto gain_comp = [&best_gain](const kl_sbg_partitioner_result& g) {
+        auto gain_comp = [&best_gain](const KLSbgPartitionerResult& g) {
             return g.i == best_gain.i or g.j == best_gain.j
                 or g.i == best_gain.j or g.j == best_gain.i;
         };
@@ -706,13 +706,13 @@ void kl_sbg_imbalance_partitioner(
 
                 if (not gains.empty()){
                     auto max_gain_it = max_element(gains.begin(), gains.end(),
-                        [] (const kl_sbg_partitioner_result& a, const kl_sbg_partitioner_result& b) {
+                        [] (const KLSbgPartitionerResult& a, const KLSbgPartitionerResult& b) {
                             return a.gain < b.gain;
                         });
                     if (max_gain_it != gains.end()) {
                         best_gain = *max_gain_it;
                     } else {
-                        best_gain = kl_sbg_partitioner_result{ 0, 0, -Inf, {}, {}} ;
+                        best_gain = KLSbgPartitionerResult{ 0, 0, -Inf, {}, {}} ;
                     }
                 }
             }

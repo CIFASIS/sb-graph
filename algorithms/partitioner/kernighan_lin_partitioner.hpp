@@ -98,7 +98,7 @@ using CostMatrixImbalance = std::set<GainObjectImbalance, GainObjectImbalanceCom
 std::ostream& operator<<(std::ostream& os, const CostMatrixImbalance& cost_matrix);
 
 
-struct kl_sbg_partitioner_result
+struct KLSbgPartitionerResult
 {
     size_t i;
     size_t j;
@@ -107,6 +107,6 @@ struct kl_sbg_partitioner_result
     Partition B;
 };
 
-std::ostream& operator<<(std::ostream& os, const kl_sbg_partitioner_result& result);
+std::ostream& operator<<(std::ostream& os, const KLSbgPartitionerResult& result);
 
 }

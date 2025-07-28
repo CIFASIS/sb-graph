@@ -39,10 +39,7 @@ using ec_ic = std::pair<SBG::LIB::Set , SBG::LIB::Set>;
  * 
  * @param partition - partition of graph nodes.
  * @param nodes - set piece of the graph nodes.
- * @param map_1 - map1 of sb graph.
- * @param map_2 - map2 of sb graph.
- * @param set_fact - set factory of the system.
- */
+ * @param graph - set based graph that is being partitioned. */
 ec_ic compute_EC_IC(
     const Partition& partition,
     const SBG::LIB::SetPiece& nodes,

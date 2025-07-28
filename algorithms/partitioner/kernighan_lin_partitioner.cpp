@@ -119,27 +119,28 @@ pair<pair<Set, Set>, pair<Set, Set>> update_sets(
     const GainObjectImbalance& gain_object,
     const WeightedSBGraph& graph)
 {
-    auto node_a = graph.fact().createSet(partition_a[gain_object.a_idx]);
-    size_t partition_size_a = get_node_size(node_a, graph.get_node_weights(), graph.fact());
+    const SetAF& set_factory = graph.fact();
+    auto node_a = set_factory.createSet(partition_a[gain_object.a_idx]);
+    size_t partition_size_a = get_node_size(node_a, graph.get_node_weights(), set_factory);
     bool node_a_is_fully_used = partition_size_a == gain_object.size_a;
-    Set rest_a = graph.fact().createSet();
+    Set rest_a = set_factory.createSet();
     if (not node_a_is_fully_used) {
-        tie(node_a, rest_a) = cut_interval_by_dimension(node_a, graph.get_node_weights(), gain_object.size_a, graph.fact());
+        tie(node_a, rest_a) = cut_interval_by_dimension(node_a, graph.get_node_weights(), gain_object.size_a, set_factory);
         logging::sbg_log << "cut_interval_by_dimension " << gain_object.size_a << ": " << node_a << rest_a << endl;
     }
 
-    auto node_b = graph.fact().createSet(partition_b[gain_object.b_idx]);
-    size_t partition_size_b = get_node_size(node_b, graph.get_node_weights(), graph.fact());
+    auto node_b = set_factory.createSet(partition_b[gain_object.b_idx]);
+    size_t partition_size_b = get_node_size(node_b, graph.get_node_weights(), set_factory);
     bool node_b_is_fully_used = partition_size_b == gain_object.size_b;
-    Set rest_b = graph.fact().createSet();
+    Set rest_b = set_factory.createSet();
     if (not node_b_is_fully_used) {
-        tie(node_b, rest_b) = cut_interval_by_dimension(node_b, graph.get_node_weights(), gain_object.size_b, graph.fact());
+        tie(node_b, rest_b) = cut_interval_by_dimension(node_b, graph.get_node_weights(), gain_object.size_b, set_factory);
         logging::sbg_log << "cut_interval_by_dimension " << gain_object.size_b << ": " << node_b << rest_b << endl;
     }
 
-    auto update_partition = [&graph](Partition& partition, const Set& set) {
+    auto update_partition = [&set_factory](Partition& partition, const Set& set) {
         for (Partition::iterator it = partition.begin(); it != partition.end(); ++it) {
-            auto set_p = graph.fact().createSet(*it);
+            auto set_p = set_factory.createSet(*it);
             if (not set_p.intersection(set).isEmpty()) {
                 set_p = set_p.difference(set);
                 if (set_p.isEmpty()) {
@@ -183,18 +184,20 @@ void update_diff(
     logging::sbg_log << affected_node_a.first << ", " << affected_node_a.second << endl;
     logging::sbg_log << affected_node_b.first << ", " << affected_node_b.second << endl;
 
+    const SetAF& set_factory = graph.fact();
+
     // Firstly, check if indexes need fixing. Three possible causes.
-    size_t affected_node_a_size = get_node_size(affected_node_a.second, node_weight, graph.fact());
+    size_t affected_node_a_size = get_node_size(affected_node_a.second, node_weight, set_factory);
     bool node_a_fully_used = affected_node_a_size == 0;
 
-    size_t affected_node_b_size = get_node_size(affected_node_b.second, node_weight, graph.fact());
+    size_t affected_node_b_size = get_node_size(affected_node_b.second, node_weight, set_factory);
     bool node_b_fully_used = affected_node_b_size == 0;
 
-    unsigned size_a = get_partition_size(remaining_partition_a, node_weight, graph.fact());
-    size_a += get_node_size(moved_from_partition_b, node_weight, graph.fact());
+    unsigned size_a = get_partition_size(remaining_partition_a, node_weight, set_factory);
+    size_a += get_node_size(moved_from_partition_b, node_weight, set_factory);
 
-    unsigned size_b = get_partition_size(remaining_partition_b, node_weight, graph.fact());
-    size_b += get_node_size(moved_from_partition_a, node_weight, graph.fact());
+    unsigned size_b = get_partition_size(remaining_partition_b, node_weight, set_factory);
+    size_b += get_node_size(moved_from_partition_a, node_weight, set_factory);
 
     // all the interval was used
     // fix indexes:
@@ -324,10 +327,11 @@ int kl_sbg_imbalance(
     auto a_c = partition_a;
     auto b_c = partition_b;
     int max_par_sum = 0;
-    auto max_par_sum_set = make_pair(graph.fact().createSet(), graph.fact().createSet());
+    const SetAF& set_fact = graph.fact();
+    auto max_par_sum_set = make_pair(set_fact.createSet(), set_fact.createSet());
     int par_sum = 0;
-    Set a_v = graph.fact().createSet();
-    Set b_v = graph.fact().createSet();
+    Set a_v = set_fact.createSet();
+    Set b_v = set_fact.createSet();
     const auto node_weights = graph.get_node_weights();
 
     CostMatrixImbalance gm = generate_gain_matrix(graph, cost_matrix, partition_a_id, partition_a, partition_b_id, partition_b, LMin, LMax);
@@ -340,12 +344,12 @@ int kl_sbg_imbalance(
 
     while ((not a_c.empty()) and (not b_c.empty())) {
         logging::sbg_log << "inside the while " << a_c << ", " << b_c << " ";
-        logging::sbg_log << get_partition_size(a_c, node_weights, graph.fact()) << ", " << get_partition_size(b_c, node_weights, graph.fact()) << endl;
+        logging::sbg_log << get_partition_size(a_c, node_weights, set_fact) << ", " << get_partition_size(b_c, node_weights, set_fact) << endl;
         logging::sbg_log << gm << endl;
         assert(not gm.empty());
         GainObjectImbalance g = max_diff(gm);
         logging::sbg_log << g << endl;
-        pair<Set, Set> a_ = {graph.fact().createSet(), graph.fact().createSet()}, b_ = {graph.fact().createSet(), graph.fact().createSet()};
+        pair<Set, Set> a_ = {set_fact.createSet(), set_fact.createSet()}, b_ = {set_fact.createSet(), set_fact.createSet()};
         tie(a_, b_) = update_sets(a_c, b_c, a_v, b_v, g, graph);
         update_diff(gm, a_c, a_v, a_, b_c, b_v, b_, graph, node_weights, g, LMin, LMax);
         update_sum(par_sum, g.gain, max_par_sum, max_par_sum_set, a_v, b_v);
@@ -353,14 +357,14 @@ int kl_sbg_imbalance(
 
     if (max_par_sum > 0) {
         
-        auto partition_a_set = from_vector(partition_a, graph.fact());
+        auto partition_a_set = from_vector(partition_a, set_fact);
         partition_a_set = partition_a_set.difference(max_par_sum_set.first);
         partition_a_set = partition_a_set.cup(max_par_sum_set.second);
         flatten_set(partition_a_set, graph);
         partition_a.clear();
         for_each(partition_a_set.begin(), partition_a_set.end(), [&partition_a](auto s) { partition_a.push_back(s); });
 
-        auto partition_b_set = from_vector(partition_b, graph.fact());
+        auto partition_b_set = from_vector(partition_b, set_fact);
         partition_b_set = partition_b_set.difference(max_par_sum_set.second);
         partition_b_set = partition_b_set.cup(max_par_sum_set.first);
         flatten_set(partition_b_set, graph);

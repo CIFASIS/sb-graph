@@ -538,8 +538,8 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
     }
   }
 
-  rhs_maps = rhs_maps.compact();
-  lhs_maps = lhs_maps.compact();
+  // rhs_maps = rhs_maps.compact();
+  // lhs_maps = lhs_maps.compact();
 
   return {edge_set, rhs_maps, lhs_maps, costs};
 }
@@ -924,6 +924,66 @@ SBG::LIB::WeightedSBGraph create_air_conditioners_graph()
   SBG::LIB::WeightedSBGraph graph(pw_fact, nodes, vmap, rhs_maps, lhs_maps, emap, vsap);  // This will be our graph
 
   return graph;
+}
+
+
+SBG::LIB::WeightedSBGraph jaiio(SBG::LIB::UnordAF& set_fact, SBG::LIB::MapAF& map_fact, SBG::LIB::UnordPWMapAF& pw_fact)
+{
+    Set nodes = set_fact.createSet();
+    nodes.emplaceBack(Interval(0, 1, 8));
+
+    // maps
+    PWMap lhs_maps = pw_fact.createPWMap();
+    PWMap rhs_maps = pw_fact.createPWMap();
+
+
+    lhs_maps.emplaceBack(map_fact.createMap(Interval(9, 1, 9), Exp(LExp(0, 0))));
+    rhs_maps.emplaceBack(map_fact.createMap(Interval(9, 1, 9), Exp(LExp(0, 4))));
+
+    lhs_maps.emplaceBack(map_fact.createMap(Interval(10, 1, 10), Exp(LExp(0, 0))));
+    rhs_maps.emplaceBack(map_fact.createMap(Interval(10, 1, 10), Exp(LExp(0, 6))));
+
+    lhs_maps.emplaceBack(map_fact.createMap(Interval(11, 1, 11), Exp(LExp(0, 0))));
+    rhs_maps.emplaceBack(map_fact.createMap(Interval(11, 1, 11), Exp(LExp(0, 1))));
+
+    lhs_maps.emplaceBack(map_fact.createMap(Interval(12, 1, 12), Exp(LExp(0, 1))));
+    rhs_maps.emplaceBack(map_fact.createMap(Interval(12, 1, 12), Exp(LExp(0, 4))));
+
+    lhs_maps.emplaceBack(map_fact.createMap(Interval(13, 1, 13), Exp(LExp(0, 1))));
+    rhs_maps.emplaceBack(map_fact.createMap(Interval(13, 1, 13), Exp(LExp(0, 3))));
+
+    lhs_maps.emplaceBack(map_fact.createMap(Interval(14, 1, 14), Exp(LExp(0, 1))));
+    rhs_maps.emplaceBack(map_fact.createMap(Interval(14, 1, 14), Exp(LExp(0, 2))));
+
+    lhs_maps.emplaceBack(map_fact.createMap(Interval(15, 1, 15), Exp(LExp(0, 3))));
+    rhs_maps.emplaceBack(map_fact.createMap(Interval(15, 1, 15), Exp(LExp(0, 4))));
+
+    lhs_maps.emplaceBack(map_fact.createMap(Interval(16, 1, 16), Exp(LExp(0, 1))));
+    rhs_maps.emplaceBack(map_fact.createMap(Interval(16, 1, 16), Exp(LExp(0, 2))));
+
+    lhs_maps.emplaceBack(map_fact.createMap(Interval(17, 1, 17), Exp(LExp(0, 2))));
+    rhs_maps.emplaceBack(map_fact.createMap(Interval(17, 1, 17), Exp(LExp(0, 5))));
+
+    lhs_maps.emplaceBack(map_fact.createMap(Interval(18, 1, 18), Exp(LExp(0, 2))));
+    rhs_maps.emplaceBack(map_fact.createMap(Interval(18, 1, 18), Exp(LExp(0, 6))));
+
+    lhs_maps.emplaceBack(map_fact.createMap(Interval(19, 1, 19), Exp(LExp(0, 3))));
+    rhs_maps.emplaceBack(map_fact.createMap(Interval(19, 1, 19), Exp(LExp(0, 6))));
+
+    lhs_maps.emplaceBack(map_fact.createMap(Interval(20, 1, 20), Exp(LExp(0, 4))));
+    rhs_maps.emplaceBack(map_fact.createMap(Interval(20, 1, 20), Exp(LExp(0, 6))));
+
+    lhs_maps.emplaceBack(map_fact.createMap(Interval(21, 1, 21), Exp(LExp(0, 5))));
+    rhs_maps.emplaceBack(map_fact.createMap(Interval(21, 1, 21), Exp(LExp(0, 7))));
+
+    auto vmap = pw_fact.createPWMap();
+    auto vsap = pw_fact.createPWMap();
+    auto emap = pw_fact.createPWMap();
+
+    // Now, let's build a graph!
+    SBG::LIB::WeightedSBGraph graph(pw_fact, nodes, vmap, rhs_maps, lhs_maps, emap, vsap);  // This will be our graph
+
+    return graph;
 }
 
 

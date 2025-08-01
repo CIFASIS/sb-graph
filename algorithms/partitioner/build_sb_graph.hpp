@@ -116,4 +116,6 @@ std::pair<SBG::LIB::Set, SBG::LIB::Set> cut_interval_by_dimension(
     const SBG::LIB::SetAF& set_fact);
 
 std::pair<SBG::LIB::SetPiece, SBG::LIB::SetPiece> cut_interval(const SBG::LIB::SetPiece& interval, int cut_value);
+
+SBG::LIB::WeightedSBGraph jaiio(SBG::LIB::UnordAF& set_fact, SBG::LIB::MapAF& map_fact, SBG::LIB::UnordPWMapAF& pw_fact);
 }

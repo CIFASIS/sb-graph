@@ -698,7 +698,7 @@ void kl_sbg_imbalance_partitioner(
                 logging::sbg_log << "best gain is " << best_gain << endl;
                 logging::sbg_log << "and vector is ";
                 #ifdef SBG_PARTITIONER_LOGGING
-                for_each(gains.begin(), gains.end(), [](const kl_sbg_partitioner_result& g) {
+                for_each(gains.begin(), gains.end(), [](const KLSbgPartitionerResult& g) {
                     logging::sbg_log << g << " ";
                 });
                 #endif

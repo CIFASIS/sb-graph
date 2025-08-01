@@ -25,9 +25,11 @@
 #include <optional>
 #include <string>
 
+#include <sbg/sbg.hpp>
 #include <util/time_profiler.hpp>
 
 #include "build_sb_graph.hpp"
+#include "communication_cost.hpp"
 #include "kernighan_lin_partitioner.hpp"
 #include "partition_graph.hpp"
 #include "partition_metrics_api.hpp"
@@ -195,6 +197,21 @@ int main(int argc, char** argv)
     SBG::LIB::UnordAF set_fact;
     SBG::LIB::MapAF map_fact(set_fact);
     SBG::LIB::UnordPWMapAF pw_fact(map_fact);
+
+    auto graph = jaiio(set_fact, map_fact, pw_fact);
+    cout << graph << endl;
+
+    // auto partitions1 = best_initial_partition(graph, *number_of_partitions);
+    PartitionMap ps = { {SBG::LIB::Interval(0, 1, 3), SBG::LIB::Interval(4, 1, 7)} };
+    auto cost = CommunicationCost(graph, ps);
+    set_communication_cost(cost);
+    kl_sbg_imbalance_partitioner(graph, ps, *epsilon);
+    cout << ps << endl;
+    return 0;
+
+
+
+    
 
     auto start_build_graph = chrono::high_resolution_clock::now();
     auto sb_graph = build_sb_graph(filename->c_str(), set_fact, map_fact, pw_fact);

@@ -36,6 +36,8 @@ namespace LIB {
 
 /**
  * @brief Saves input and output data from a matching algorithm run.
+ * The condition `full_match` is met if all right vertices (i.e. images of
+ * map2) are saturated.
  */
 struct MatchData {
   public:
@@ -73,6 +75,17 @@ class MatchDelegate {
 // BFS Matching Algorithm Implementation (concrete delegate) -------------------
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * @brief BFS Matching implementation for SBG. It starts orientating free edges
+ * from map2 (right vertices) to map1 (left vertices) and matched edges
+ * (initially this set is empty) from map1 to map2. This way, augmenting paths
+ * in the original SBG are paths from right vertices to left vertices in the
+ * resulting DSBG.
+ * In each iteration augmenting paths are detected, and the direction of edges
+ * in such paths are swapped.
+ * The algorithms stops once a full match is calculate (i.e. one that saturates
+ * all right vertices), or when no more augmenting paths are found.
+ */
 struct BFSMatching : public MatchDelegate {
   public:
   BFSMatching(const PWMapAF &fact);
@@ -80,6 +93,10 @@ struct BFSMatching : public MatchDelegate {
   MatchData calculate(const SBG &sbg) override;
 
   private:
+  /**
+   * @brief Auxiliary struct to represent the exit condition of the algorithm
+   * loop.
+   */
   struct ExitCondition {
     public:
     ExitCondition(bool full_match, bool found_paths_);
@@ -95,17 +112,20 @@ struct BFSMatching : public MatchDelegate {
   };
 
   /**
-   * @brief Performs an iteration of the algorithm. It looks up augmenting paths
-   * using some implementation of Paths. Then it swaps the direction of edges
-   * belonging to such paths. Finally, it swaps the direction of all edges of
-   * the DSBG. 
+   * @brief Performs an iteration of the algorithm. It looks up alternating
+   * paths that reach unmatched left vertices. Then it swaps t
    * @return Returns the status of the two exit conditions: a) All unknowns are
    * saturated and b) New paths weren't found. This is calculated here instead
    * of the main loop to avoid recalculation of certain values. 
    */
   ExitCondition step();
 
-  PWMap directedStep(const Set &E);
+  /**
+   * @brief Computes alternating paths in a certain direction.
+   * @return Edges belonging to alternating paths that reach unmatched vertices
+   * in the aforementioned direction. 
+   */
+  Set directedStep(const Set &E);
 
   /**
    * @brief Modifies the `dsbg_` member, swapping mapB and mapD for elements of
@@ -113,8 +133,17 @@ struct BFSMatching : public MatchDelegate {
    */
   void swapEdgesDirection(const Set &E);
 
+  /**
+   * @brief Separates in different subset-edges matched and unmatched edges
+   * belonging to the same subset-edge in `dsbg_`.
+   */
   PWMap partitionSubsetEdges() const;
 
+  /**
+   * @brief Returns edges in `E` that belong to the paths described by the
+   * successor map `smap`. 
+   * @param E Argument used for efficiency.
+   */
   Set edgesInPaths(const PWMap &smap, const Set &E) const;
 
   DSBG dsbg_;

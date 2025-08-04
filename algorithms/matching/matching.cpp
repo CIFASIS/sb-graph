@@ -133,12 +133,12 @@ Set BFSMatching::edgesInPaths(const PWMap &smap, const Set &E) const
   return map_succs.equalImage(mapD);
 }
 
-PWMap BFSMatching::directedStep(const Set &E)
+Set BFSMatching::directedStep(const Set &E)
 {
-  PWMap mapB = dsbg_.mapB().restrict(E);
-  PWMap mapD = dsbg_.mapD().restrict(E);
-  PWMap Emap = dsbg_.Emap().restrict(E);
-  PWMap subEmap = partitionSubsetEdges().restrict(E);
+  PWMap mapB = dsbg_.mapB().restrict(E).compact();
+  PWMap mapD = dsbg_.mapD().restrict(E).compact();
+  PWMap Emap = dsbg_.Emap().restrict(E).compact();
+  PWMap subEmap = partitionSubsetEdges().restrict(E).compact();
 
   Set forward_vertices = dsbg_.V().difference(U_);
   Set matched_forward_vertices = mapB.image(M_);
@@ -153,30 +153,36 @@ PWMap BFSMatching::directedStep(const Set &E)
     , Emap, subEmap);
   PWMap smap = paths.calculate(restricted_dsbg, unmatched_forward_vertices);
 
-  return smap;
+  Set paths_edges = edgesInPaths(smap, E);
+  PWMap rmap = smap.mapInf();
+  Set reach_unmatched = rmap.preImage(unmatched_forward_vertices);
+  paths_edges = paths_edges.intersection(mapD.preImage(reach_unmatched));
+
+  Util::DEBUG_LOG << "paths_edges: " << paths_edges << "\n";
+
+  return paths_edges;
 }
 
 BFSMatching::ExitCondition BFSMatching::step()
 {
   Set E = dsbg_.E();
 
-  PWMap smapD = directedStep(E);
-  Set paths_edgesD = edgesInPaths(smapD, E);
+  Set paths_edgesD = directedStep(E);
 
   swapEdgesDirection(E);
   forward_ = false;
-  PWMap smapB = directedStep(paths_edgesD);
-  Set paths_edgesB = edgesInPaths(smapB, paths_edgesD);
+  Set paths_edgesB = directedStep(paths_edgesD);
 
-  M_ = paths_edgesB.intersection(paths_edgesD);
-  Util::DEBUG_LOG << "M: " << M_ << "\n";
+  Set paths_edges = paths_edgesB.intersection(paths_edgesD);
+  Util::DEBUG_LOG << "paths_edges: " << paths_edges << "\n";
 
   // Swap direction in edges in augmenting paths
-  swapEdgesDirection(M_);
+  swapEdgesDirection(paths_edges);
 
   // Swap directions
   swapEdgesDirection(E);
   forward_ = true;
+  M_ = dsbg_.mapD().preImage(U_);
 
   // Calculate exit conditions
   Set matchedU = dsbg_.mapD().image(M_);
@@ -193,8 +199,8 @@ bool BFSMatching::ExitCondition::isSatisfied()
 
 DSBG initDSBG(const SBG &sbg)
 {
-  return DSBG(sbg.fact(), sbg.V(), sbg.Vmap(), sbg.map2(), sbg.map1()
-    , sbg.Emap(), sbg.subEmap());
+  return DSBG(sbg.fact(), sbg.V().compact(), sbg.Vmap().compact(), sbg.map2()
+    , sbg.map1().compact(), sbg.Emap().compact(), sbg.subEmap().compact());
 }
 
 MatchData BFSMatching::calculate(const SBG &sbg)
@@ -210,10 +216,9 @@ MatchData BFSMatching::calculate(const SBG &sbg)
     exit_cond = step();
   } while (!exit_cond.isSatisfied());
   auto end = std::chrono::high_resolution_clock::now();
-
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(
     end - begin);
-  Util::SBG_LOG << "Total match exec time: " << total.count() << " [μs]\n";
+  Util::SBG_LOG << "Total matching exec time: " << total.count() << " [μs]\n";
 
   MatchData result(sbg, M_.compact(), exit_cond.full_match());
   Util::SBG_LOG << result << "\n\n";

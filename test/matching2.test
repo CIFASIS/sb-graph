@@ -13,8 +13,8 @@ equation
 end matching2;
 */
 
-N = 100;
-N2 = 50;
+N = 100000;
+N2 = 50000;
 
 V1 = 1;
 V2 = N-1+V1;

@@ -50,8 +50,6 @@ PWMap BFSPaths::impl(const DSBG &dsbg, const Set &endings)
   PWMap dsbgD = dsbg.mapD();
   PWMap subEmap = dsbg.subEmap();
 
-  Util::DEBUG_LOG << "\nsucc dsbg:\n" << dsbg << "\n\n";
-
   // Unmatched vertices in forward direction
   PWMap res = fact_.createPWMap(endings);
 
@@ -76,6 +74,7 @@ PWMap BFSPaths::impl(const DSBG &dsbg, const Set &endings)
     if (!Erec.isEmpty()) {
       Set Eplus = subEmap.preImage(Erec);
       PWMap rec_smap = dsbgB.restrict(Eplus).minAdjMap(dsbgD.restrict(Eplus)); 
+      Util::DEBUG_LOG << "rec_smap: " << rec_smap << "\n";
       ith_smap = ith_smap.combine(rec_smap);
     }
     res = ith_smap.combine(res);

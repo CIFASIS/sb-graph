@@ -95,8 +95,8 @@ void computeTS(OG::DGraph graph)
 
 void algorithmEvaluator(int alg, SBG::LIB::SBG g, const SBG::LIB::PWMapAF &fact)
 {
-  SBG::LIB::BFSMatching match(g, false);
-  match.calculate();
+  SBG::LIB::BFSMatching match(fact);
+  SBG::LIB::MatchData match_result = match.calculate(g);
 
   if (alg == 0) {
     OG::OrdinaryGraphBuilder ordinary_graph_builder(g);
@@ -104,7 +104,7 @@ void algorithmEvaluator(int alg, SBG::LIB::SBG g, const SBG::LIB::PWMapAF &fact)
     computeMaxCardinalityMatching(graph);
   }
 
-  SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match); 
+  SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
   SBG::LIB::SCC scc = SBG::LIB::MinReachSCCAF().createSCCAlgorithm(fact);
   SBG::LIB::SCCData scc_res = scc.calculate(scc_dsbg);
  

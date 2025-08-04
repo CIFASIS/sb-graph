@@ -24,34 +24,38 @@
 
 namespace MISC {
 
-using namespace SBG::LIB;
-
-DSBG buildSCCFromMatching(const BFSMatching &match)
+SBG::LIB::DSBG buildSCCFromMatching(const SBG::LIB::MatchData &data)
 {
-  const PWMapAF &fact = match.fact();
 
   auto start = std::chrono::high_resolution_clock::now();
-  Set matched_edges = match.matched_E(), unmatched_edges = match.unmatched_E();
 
-  Set V = matched_edges.compact();
-  PWMap auxVmap = match.sbg().subEmap().restrict(matched_edges);
-  PWMap Vmap = fact.createPWMap();
-  for (const Map &map : auxVmap) 
+  const SBG::LIB::SBG &sbg = data.sbg();
+  const SBG::LIB::PWMapAF &fact = sbg.fact();
+  SBG::LIB::Set M = data.M();
+  SBG::LIB::Set free_edges = sbg.E().difference(M);
+
+  SBG::LIB::Set V = M.compact();
+  SBG::LIB::PWMap auxVmap = data.sbg().subEmap().restrict(M);
+  SBG::LIB::PWMap Vmap = fact.createPWMap();
+  for (const SBG::LIB::Map &map : auxVmap) 
     Vmap.emplaceBack(fact.createMap(map.dom().compact(), map.exp()));
 
-  PWMap matchedF_inv = match.mapF().restrict(matched_edges).inverse();
-  PWMap unmatchedF = match.mapF().restrict(unmatched_edges);
-  PWMap mapB = matchedF_inv.composition(unmatchedF);
+  SBG::LIB::PWMap mapF = sbg.map1();
+  SBG::LIB::PWMap mapU = sbg.map2();
+
+  SBG::LIB::PWMap matchedF_inv = mapF.restrict(M).inverse();
+  SBG::LIB::PWMap unmatchedF = mapF.restrict(free_edges);
+  SBG::LIB::PWMap mapB = matchedF_inv.composition(unmatchedF);
   mapB = mapB.compact();
-  PWMap matchedU_inv = match.mapU().restrict(matched_edges).inverse();
-  PWMap unmatchedU = match.mapU().restrict(unmatched_edges);
-  PWMap mapD = matchedU_inv.composition(unmatchedU);
+  SBG::LIB::PWMap matchedU_inv = mapU.restrict(M).inverse();
+  SBG::LIB::PWMap unmatchedU = mapU.restrict(free_edges);
+  SBG::LIB::PWMap mapD = matchedU_inv.composition(unmatchedU);
   mapD = mapD.compact();
 
-  PWMap Emap = match.Emap().restrict(unmatched_edges);
-  PWMap subEmap = match.subEmap().restrict(unmatched_edges);
+  SBG::LIB::PWMap Emap = sbg.Emap().restrict(free_edges);
+  SBG::LIB::PWMap subEmap = sbg.subEmap().restrict(free_edges);
 
-  DSBG res(fact, V, Vmap, mapB, mapD, Emap, subEmap);
+  SBG::LIB::DSBG res(fact, V, Vmap, mapB, mapD, Emap, subEmap);
   auto end = std::chrono::high_resolution_clock::now();
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(
     end - start 
@@ -61,29 +65,29 @@ DSBG buildSCCFromMatching(const BFSMatching &match)
   return res;
 }
 
-DSBG buildSortFromSCC(const SCCData &data)
+SBG::LIB::DSBG buildSortFromSCC(const SBG::LIB::SCCData &data)
 {
   auto start = std::chrono::high_resolution_clock::now();
 
-  const DSBG &dsbg = data.dsbg();
-  PWMap rmap = data.rmap();
-  Set Ediff = data.Ediff();
+  const SBG::LIB::DSBG &dsbg = data.dsbg();
+  SBG::LIB::PWMap rmap = data.rmap();
+  SBG::LIB::Set Ediff = data.Ediff();
 
-  PWMap mapB = rmap.composition(dsbg.mapB().restrict(Ediff));
+  SBG::LIB::PWMap mapB = rmap.composition(dsbg.mapB().restrict(Ediff));
   mapB = mapB.compact();
-  PWMap mapD = rmap.composition(dsbg.mapD().restrict(Ediff));
+  SBG::LIB::PWMap mapD = rmap.composition(dsbg.mapD().restrict(Ediff));
   mapD = mapD.compact();
 
-  PWMap aux_rmap = rmap.compact();
-  PWMap reps_rmap = aux_rmap.restrict(aux_rmap.fixedPoints());
-  Set V = reps_rmap.dom();
+  SBG::LIB::PWMap aux_rmap = rmap.compact();
+  SBG::LIB::PWMap reps_rmap = aux_rmap.restrict(aux_rmap.fixedPoints());
+  SBG::LIB::Set V = reps_rmap.dom();
 
-  PWMap Vmap = dsbg.Vmap().restrict(V);
+  SBG::LIB::PWMap Vmap = dsbg.Vmap().restrict(V);
 
-  PWMap Emap = dsbg.Emap().restrict(Ediff);
-  PWMap subEmap = dsbg.subEmap().restrict(Ediff);
+  SBG::LIB::PWMap Emap = dsbg.Emap().restrict(Ediff);
+  SBG::LIB::PWMap subEmap = dsbg.subEmap().restrict(Ediff);
 
-  DSBG res(dsbg.fact(), V, Vmap, mapB, mapD, Emap, subEmap);
+  SBG::LIB::DSBG res(dsbg.fact(), V, Vmap, mapB, mapD, Emap, subEmap);
   auto end = std::chrono::high_resolution_clock::now();
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(
     end - start 

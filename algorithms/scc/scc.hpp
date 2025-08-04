@@ -66,7 +66,7 @@ struct SCCDelegate {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// SCC Algorithm Implementation (concrete delegate) ----------------------------
+// Minimum Reachable SCC Algorithm Implementation (concrete delegate) ----------
 ////////////////////////////////////////////////////////////////////////////////
 
 struct MinReachSCC : public SCCDelegate {

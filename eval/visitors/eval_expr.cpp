@@ -19,6 +19,7 @@
 
 #include "algorithms/cc/cc.hpp"
 #include "algorithms/cutvertex/af_cv.hpp"
+#include "algorithms/matching/af_matching.hpp"
 #include "algorithms/scc/af_scc.hpp"
 #include "algorithms/toposort/af_ts.hpp"
 #include "algorithms/misc/causalization_builders.hpp"
@@ -339,15 +340,15 @@ auto connected_visitor_ = Overload {
 };
 
 auto matching_visitor_ = Overload {
-  [](LIB::SBG a, LIB::NAT b, bool c) { 
-    LIB::BFSMatching match(a.copy(b), c);
-    return ExprBaseType(match.calculate());
+  [](LIB::SBG a, LIB::NAT b) { 
+    LIB::BFSMatching match(a.fact());
+    return ExprBaseType(match.calculate(a.copy(b)));
   },
-  [](LIB::SBG a, LIB::MD_NAT b, bool c) { 
-    LIB::BFSMatching match(a.copy(b[0]), c);
-    return ExprBaseType(match.calculate());
+  [](LIB::SBG a, LIB::MD_NAT b) { 
+    LIB::BFSMatching match(a.fact());
+    return ExprBaseType(match.calculate(a.copy(b[0])));
   },
-  [](auto a, auto b, auto c) {
+  [](auto a, auto b) {
     Util::ERROR("matching_visitor_: wrong arguments ", a, ", ", b
       , " for matching\n"); 
     return ExprBaseType();
@@ -666,8 +667,23 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
       case Eval::Func::matching:
         if (eval_args.size() == 2) {
           arity_ok = true;
-          return std::visit(matching_visitor_, eval_args[0], eval_args[1]
-            , std::variant<bool>(debug_));
+
+          LIB::Matching match
+            = LIB::BFSMatchingAF().createMatchAlgorithm(fact_);
+          auto matching_visitor_ = Overload {
+            [&match](LIB::SBG a, LIB::NAT b) {
+              return ExprBaseType(match.calculate(a.copy(b)));
+            },
+            [&match](LIB::SBG a, LIB::MD_NAT b) {
+              return ExprBaseType(match.calculate(a.copy(b[0])));
+            },
+            [](auto a, auto b) {
+              Util::ERROR("matching_visitor_: wrong argument ", a
+                , " for matching\n");
+              return ExprBaseType();
+            }
+          };
+          return std::visit(matching_visitor_, eval_args[0], eval_args[1]);
         }
         break;
 

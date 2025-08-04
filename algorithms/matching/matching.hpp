@@ -1,6 +1,6 @@
 /** @file matching.hpp
 
- @brief <b>Matching SBG implementation</b>
+ @brief <b>SBG Matching Algorithm implementation</b>
 
  <hr>
 
@@ -31,88 +31,110 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Matching --------------------------------------------------------------------
+// Auxiliary structures --------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-enum Direction { forward, backward };
-
-struct MatchInfo {
-  member_class(Set, matched_edges);
-  member_class(bool, fully_matchedU);
-
-  MatchInfo(Set matched_edges, bool fully_matchedU);
-};
-std::ostream &operator<<(std::ostream &out, const MatchInfo &m_info);
-
-struct BFSMatching {
-  private:
-  const PWMapAF &fact_;
-
-  //*** SBG info, constant
-  member_class(SBG, sbg);
-
-  member_class(Set, V);
-  member_class(PWMap, Vmap);
-
-  member_class(Set, E);
-  member_class(PWMap, Emap);
-  member_class(PWMap, subEmap);
-
-  //-----------------------------
-  member_class(PWMap, smap); // Successors map
-  member_class(PWMap, rmap); // Representatives map
-
-  member_class(PWMap, omap); // Offset map
-  member_class(MD_NAT, max_V); // Current maximum value
-
-  member_class(Set, F); // Left vertices, constant
-  member_class(Set, U); // Right vertices, constant
-  member_class(PWMap, mapF); // Left map, constant
-  member_class(PWMap, mapU); // Right map, constant
-
-  member_class(PWMap, mapB); // Backward map, mutable
-  member_class(PWMap, mapD); // Forward map, mutable
-
-  member_class(Set, paths_edges); // Available edges in each step to find paths, mutable
-  member_class(Set, matched_E); // Matched edges, mutable
-  member_class(Set, unmatched_E); // Unmatched edges, mutable
-
-  member_class(Set, matched_V); // All matched vertices, mutable
-  member_class(Set, unmatched_V); // All matched vertices, mutable
-  member_class(Set, unmatched_F); // Left unmatched vertices, mutable
-  member_class(Set, matched_U); // Right matched vertices, mutable
-  member_class(Set, unmatched_U); // Right unmatched vertices, mutable
-
-  member_class(Set, cycle_edges);
-
-  member_class(bool, debug);
-
+/**
+ * @brief Saves input and output data from a matching algorithm run.
+ */
+struct MatchData {
   public:
-  BFSMatching(const SBG &sbg, bool debug);
-
-  MatchInfo calculate();
-
-  const PWMapAF &fact() const;
+  MatchData(SBG sbg, Set M, bool full_match);
 
   private:
-  void selectSucc(DSBG dsbg);
+  member_class(SBG, sbg);
+  member_class(Set, M);
+  member_class(bool, full_match);
+};
+std::ostream &operator<<(std::ostream &out, const MatchData &data);
 
-  PWMap directedOffset(const PWMap &dir_map) const;
-  DSBG offsetGraph(const PWMap &dir_omap) const;
-  void directedMinReach(const PWMap &dir_map);
-  void minReachableStep();
-  void minReachable();  
+////////////////////////////////////////////////////////////////////////////////
+// Matching Algorithm Abstract Delegate ----------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
-  Set edgesInPaths() const; // Calculate edges used by paths
-  // Several vertices can share the same left representant "vl", through paths
-  // p1, p2, ..., pk. When vl chooses its right representant "vr" through path
-  // pj all the other paths should be discarded. This function discards all
-  // the edges in paths p1, ..., pj-1, pj+1, ..., pk.
-  Set edgesSameRepLR(const PWMap &rmapd) const; 
-  bool fullyMatchedU() const;
-  void offsetVertices();
-  void updatePaths();
-  void updateOffset();
+class MatchDelegate;
+
+typedef std::unique_ptr<MatchDelegate> MatchDelegPtr;
+
+class MatchDelegate {
+  public:
+  virtual ~MatchDelegate() = default;
+
+  MatchDelegate(const PWMapAF &fact);
+
+  virtual MatchData calculate(const SBG &sbg) = 0;
+
+  protected:
+  const PWMapAF &fact_;
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+// BFS Matching Algorithm Implementation (concrete delegate) -------------------
+////////////////////////////////////////////////////////////////////////////////
+
+struct BFSMatching : public MatchDelegate {
+  public:
+  BFSMatching(const PWMapAF &fact);
+
+  MatchData calculate(const SBG &sbg) override;
+
+  private:
+  struct ExitCondition {
+    public:
+    ExitCondition(bool full_match, bool found_paths_);
+
+    bool full_match();
+    bool found_paths();
+
+    bool isSatisfied();
+  
+    private:
+    bool full_match_;
+    bool found_paths_; 
+  };
+
+  /**
+   * @brief Performs an iteration of the algorithm. It looks up augmenting paths
+   * using some implementation of Paths. Then it swaps the direction of edges
+   * belonging to such paths. Finally, it swaps the direction of all edges of
+   * the DSBG. 
+   * @return Returns the status of the two exit conditions: a) All unknowns are
+   * saturated and b) New paths weren't found. This is calculated here instead
+   * of the main loop to avoid recalculation of certain values. 
+   */
+  ExitCondition step();
+
+  PWMap directedStep(const Set &E);
+
+  /**
+   * @brief Modifies the `dsbg_` member, swapping mapB and mapD for elements of
+   * the domain that belong to `E`.
+   */
+  void swapEdgesDirection(const Set &E);
+
+  PWMap partitionSubsetEdges() const;
+
+  Set edgesInPaths(const PWMap &smap, const Set &E) const;
+
+  DSBG dsbg_;
+  Set M_;
+  Set U_;
+  bool forward_;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Matching Algorithm Implementation (delegator) -------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+class Matching {
+  public:
+  Matching(MatchDelegPtr deleg);
+
+  MatchData calculate(const SBG &sbg);
+
+  private:
+  MatchDelegPtr delegate_;
 };
 
 } // namespace LIB

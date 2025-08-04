@@ -50,7 +50,7 @@ typedef std::variant<bool
   , LIB::PWMap
   , LIB::SBG
   , LIB::DSBG
-  , LIB::MatchInfo> ExprBaseType;
+  , LIB::MatchData> ExprBaseType;
 typedef std::optional<ExprBaseType> MaybeEBT;
 
 // Environments ----------------------------------------------------------------

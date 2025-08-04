@@ -1,10 +1,6 @@
-/** @file causalization_builders.hpp
+/** @file af_matching.hpp
 
- @brief <b>Causalization SBG builders</b>
-
- These builders are not part of the library per se, but are included here to
- test faster the causalization of Modelica models using the SBG approach. In
- the future it should belong to ModelicaCC instead.
+ @brief <b>Matching Algorithm Abstract Factory</b>
 
  <hr>
 
@@ -25,18 +21,32 @@
 
  ******************************************************************************/
 
-#ifndef MISC_CAUSALIZATION_BUILDERS_HPP
-#define MISC_CAUSALIZATION_BUILDERS_HPP
+#ifndef SBG_AF_MATCHING_HPP
+#define SBG_AF_MATCHING_HPP
 
-#include "algorithms/matching/matching.hpp"
-#include "algorithms/scc/scc.hpp"
+#include "matching.hpp"
 
-namespace MISC {
+namespace SBG {
 
-SBG::LIB::DSBG buildSCCFromMatching(const SBG::LIB::MatchData &data);
+namespace LIB {
 
-SBG::LIB::DSBG buildSortFromSCC(const SBG::LIB::SCCData &data);
+struct MatchingAF {
+  public:
+  virtual ~MatchingAF() = default;
+  MatchingAF() = default;
 
-}  // namespace MISC
+  virtual Matching createMatchAlgorithm(const PWMapAF &fact) const = 0;
+};
+
+struct BFSMatchingAF : public MatchingAF {
+  public:
+  BFSMatchingAF() = default;
+
+  Matching createMatchAlgorithm(const PWMapAF &fact) const override;
+};
+
+} // namespace LIB
+
+}  // namespace SBG
 
 #endif

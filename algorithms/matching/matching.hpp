@@ -34,6 +34,8 @@ namespace LIB {
 // Auxiliary structures --------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
+enum class Direction { kForward, kBackward };
+
 /**
  * @brief Saves input and output data from a matching algorithm run.
  * The condition `full_match` is met if all right vertices (i.e. images of
@@ -113,7 +115,10 @@ struct BFSMatching : public MatchDelegate {
 
   /**
    * @brief Performs an iteration of the algorithm. It looks up alternating
-   * paths that reach unmatched left vertices. Then it swaps t
+   * paths that reach unmatched left vertices. Then it swaps the direction of
+   * all edges of the DSBG, and performs the same operation. Edges present
+   * in paths in both directions belong to augmenting paths, so their direction
+   * is swapped, transforming unmatched edges into matched ones and viceversa.
    * @return Returns the status of the two exit conditions: a) All unknowns are
    * saturated and b) New paths weren't found. This is calculated here instead
    * of the main loop to avoid recalculation of certain values. 
@@ -148,8 +153,8 @@ struct BFSMatching : public MatchDelegate {
 
   DSBG dsbg_;
   Set M_;
-  Set U_;
-  bool forward_;
+  Set right_vertices_;
+  Direction direction_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

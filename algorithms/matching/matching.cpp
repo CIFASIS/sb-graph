@@ -75,7 +75,7 @@ DSBG createEmptyDSBG(const PWMapAF &fact)
 
 BFSMatching::BFSMatching(const PWMapAF &fact)
   : MatchDelegate(fact), M_(fact.createSet()), dsbg_(createEmptyDSBG(fact))
-    , U_(fact.createSet()), forward_(true) {}
+    , right_vertices_(fact.createSet()), direction_(Direction::kForward) {}
 
 void BFSMatching::swapEdgesDirection(const Set &E)
 {
@@ -140,10 +140,10 @@ Set BFSMatching::directedStep(const Set &E)
   PWMap Emap = dsbg_.Emap().restrict(E).compact();
   PWMap subEmap = partitionSubsetEdges().restrict(E).compact();
 
-  Set forward_vertices = dsbg_.V().difference(U_);
+  Set forward_vertices = dsbg_.V().difference(right_vertices_);
   Set matched_forward_vertices = mapB.image(M_);
-  if (!forward_) {
-    forward_vertices = U_;
+  if (direction_ == Direction::kBackward) {
+    forward_vertices = right_vertices_;
   }
   Set unmatched_forward_vertices
     = forward_vertices.difference(matched_forward_vertices);
@@ -170,7 +170,7 @@ BFSMatching::ExitCondition BFSMatching::step()
   Set paths_edgesD = directedStep(E);
 
   swapEdgesDirection(E);
-  forward_ = false;
+  direction_ = Direction::kBackward;
   Set paths_edgesB = directedStep(paths_edgesD);
 
   Set paths_edges = paths_edgesB.intersection(paths_edgesD);
@@ -181,12 +181,12 @@ BFSMatching::ExitCondition BFSMatching::step()
 
   // Swap directions
   swapEdgesDirection(E);
-  forward_ = true;
-  M_ = dsbg_.mapD().preImage(U_);
+  direction_ = Direction::kForward;
+  M_ = dsbg_.mapD().preImage(right_vertices_);
 
   // Calculate exit conditions
   Set matchedU = dsbg_.mapD().image(M_);
-  bool full_match = U_.difference(matchedU).isEmpty();
+  bool full_match = right_vertices_.difference(matchedU).isEmpty();
   bool found_paths = !M_.isEmpty();
 
   return ExitCondition(full_match, found_paths);
@@ -209,7 +209,7 @@ MatchData BFSMatching::calculate(const SBG &sbg)
 
   auto begin = std::chrono::high_resolution_clock::now();
   dsbg_ = initDSBG(sbg);
-  U_ = dsbg_.mapB().image();
+  right_vertices_ = dsbg_.mapB().image();
 
   ExitCondition exit_cond(false, false);
   do {

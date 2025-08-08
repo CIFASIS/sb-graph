@@ -38,11 +38,17 @@ namespace LIB {
  * @brief Saves input and output data from a SCC algorithm run.
  */
 struct SCCData {
-  member_class(DSBG, dsbg); // Original input directed SBG
-  member_class(PWMap, rmap); // Resulting SCCs
-  member_class(Set, Ediff); // Edges connecting vertices in different SCC
-
+  public:
   SCCData(DSBG dsbg, PWMap rmap, Set Ediff);
+
+  const DSBG& dsbg() const;
+  const PWMap& rmap() const;
+  const Set& Ediff() const;
+
+  private:
+  DSBG dsbg_;  ///< Original input directed SBG
+  PWMap rmap_; ///< Resulting SCCs
+  Set Ediff_;  ///< Edges connecting vertices in different SCC
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -54,44 +60,60 @@ struct SCCDelegate;
 typedef std::unique_ptr<SCCDelegate> SCCDelegPtr;
 
 struct SCCDelegate {
-  protected:
-  const PWMapAF &fact_;
-
   public:
   virtual ~SCCDelegate() = default;
 
-  SCCDelegate(const PWMapAF &fact);
+  SCCDelegate(const PWMapAF& fact);
 
-  virtual SCCData calculate(const DSBG &dsbg) = 0;
+  virtual SCCData calculate(const DSBG& dsbg) = 0;
+
+  protected:
+  const PWMapAF& fact_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 // Minimum Reachable SCC Algorithm Implementation (concrete delegate) ----------
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * @brief Minimum Reachable SCC implementation. In each step it identifies edges
+ * with different MRV (Minimum Reachable Vertex) in their endings, that are
+ * edges connecting different SCC. Then, it swaps the direction of edges, and
+ * perform the same calculations. This is repeated all edges between different
+ * SCC are deleted. When this process ends each SCC is identified by its
+ * minimum vertex.
+ */
 struct MinReachSCC : public SCCDelegate {
-  private:
-  /**
-   * @brief Edges with the same MRV in both endings, in each step.
-   */
-  member_class(Set, E);
-  /**
-   * @brief Edges with different MRV in each ending, in each step.
-   */
-  member_class(Set, Ediff);
-
-  member_class(PWMap, mapB);
-  member_class(PWMap, mapD);
- 
   public:
-  MinReachSCC(const PWMapAF &fact);
+  MinReachSCC(const PWMapAF& fact);
 
-  SCCData calculate(const DSBG &dsbg) override;
+  SCCData calculate(const DSBG& dsbg) override;
 
   private:
-  void init(const DSBG &dsbg);
-  PWMap sccMinReach(const DSBG &dsbg) const;
-  PWMap sccStep(const DSBG &dsbg);
+  /**
+   * @brief Initializes data members determined by the input SBG.
+   */
+  void init(const DSBG& dsbg);
+
+  /**
+   * @brief Performs a step of the algorithm in a certain direction, detecting
+   * and erasing edges that belong to different SCC.
+   */
+  PWMap sccStep();
+
+  /**
+   * @brief Modifies the `dsbg_` member, restricting the domain of edges maps
+   * to `E`, and swaps mapB and mapD for elements also in `E`.
+   */
+  void swapEdgesDirection(const Set& E);
+
+  /**
+   * @brief Calculates the MRV for every vertex in DSBG.
+   */
+  PWMap sccMinReach(const DSBG& dsbg) const;
+
+  DSBG dsbg_; ///< Input DSBG
+  Set E_;     ///< Edges with both endings in the same SCC
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -99,13 +121,13 @@ struct MinReachSCC : public SCCDelegate {
 ////////////////////////////////////////////////////////////////////////////////
 
 struct SCC {
-  private:
-  SCCDelegPtr delegate_;
-
   public:
   SCC(SCCDelegPtr deleg);
 
-  SCCData calculate(const DSBG &dsbg);
+  SCCData calculate(const DSBG& dsbg);
+
+  private:
+  SCCDelegPtr delegate_;
 };
 
 } // namespace LIB

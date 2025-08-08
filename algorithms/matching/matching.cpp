@@ -31,14 +31,28 @@ namespace LIB {
 // Auxiliary structures --------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
+std::ostream& operator<<(std::ostream& out, const Direction& direction)
+{
+  switch (direction) {
+    case Direction::kForward:
+      out << "forward";
+      break;
+    case Direction::kBackward:
+      out << "backward";
+      break;
+  }
+
+  return out;
+}
+
 MatchData::MatchData(SBG sbg, Set M, bool full_match)
   : sbg_(sbg), M_(M), full_match_(full_match) {}
 
-member_imp(MatchData, SBG, sbg);
-member_imp(MatchData, Set, M);
-member_imp(MatchData, bool, full_match);
+const SBG& MatchData::sbg() const { return sbg_; }
+const Set& MatchData::M() const { return M_; }
+const bool& MatchData::full_match() const { return full_match_; }
 
-std::ostream &operator<<(std::ostream &out, const MatchData &data)
+std::ostream& operator<<(std::ostream& out, const MatchData& data)
 {
   out << data.M();
   if (data.full_match())
@@ -53,7 +67,7 @@ std::ostream &operator<<(std::ostream &out, const MatchData &data)
 // Matching Algorithm Delegate Constructors ------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-MatchDelegate::MatchDelegate(const PWMapAF &fact) : fact_(std::move(fact)) {}
+MatchDelegate::MatchDelegate(const PWMapAF& fact) : fact_(std::move(fact)) {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // BFS Matching Algorithm ------------------------------------------------------
@@ -66,18 +80,11 @@ bool BFSMatching::ExitCondition::full_match() { return full_match_; }
 
 bool BFSMatching::ExitCondition::found_paths() { return found_paths_; }
 
-DSBG createEmptyDSBG(const PWMapAF &fact)
-{
-  Set empty_set = fact.createSet();
-  PWMap empty_pw = fact.createPWMap();
-  return DSBG(fact, empty_set, empty_pw, empty_pw, empty_pw, empty_pw, empty_pw);
-}
-
-BFSMatching::BFSMatching(const PWMapAF &fact)
-  : MatchDelegate(fact), M_(fact.createSet()), dsbg_(createEmptyDSBG(fact))
+BFSMatching::BFSMatching(const PWMapAF& fact)
+  : MatchDelegate(fact), M_(fact.createSet()), dsbg_(DSBG(fact))
     , right_vertices_(fact.createSet()), direction_(Direction::kForward) {}
 
-void BFSMatching::swapEdgesDirection(const Set &E)
+void BFSMatching::swapEdgesDirection(const Set& E)
 {
   PWMap mapB = dsbg_.mapB();
   PWMap mapD = dsbg_.mapD();
@@ -99,7 +106,7 @@ PWMap BFSMatching::partitionSubsetEdges() const
   Set free_edges = dsbg_.E().difference(M_);
   unsigned int dims = free_edges.arity();
   unsigned int j = 1;
-  for (const Map &subset_edge : dsbg_.subEmap()) {
+  for (const Map& subset_edge : dsbg_.subEmap()) {
     Set dom = subset_edge.dom();
     Exp matched_exp(MD_NAT(dims, j));
     Map matched_map = fact_.createMap(M_.intersection(dom), matched_exp);
@@ -115,7 +122,7 @@ PWMap BFSMatching::partitionSubsetEdges() const
   return result;
 }
 
-Set BFSMatching::edgesInPaths(const PWMap &smap, const Set &E) const
+Set BFSMatching::edgesInPaths(const PWMap& smap, const Set& E) const
 {
   PWMap mapB = dsbg_.mapB().restrict(E);
   PWMap mapD = dsbg_.mapD().restrict(E);
@@ -133,13 +140,15 @@ Set BFSMatching::edgesInPaths(const PWMap &smap, const Set &E) const
   return map_succs.equalImage(mapD);
 }
 
-Set BFSMatching::directedStep(const Set &E)
+Set BFSMatching::directedStep(const Set& E)
 {
   PWMap mapB = dsbg_.mapB().restrict(E).compact();
   PWMap mapD = dsbg_.mapD().restrict(E).compact();
   PWMap Emap = dsbg_.Emap().restrict(E).compact();
   PWMap subEmap = partitionSubsetEdges().restrict(E).compact();
 
+  // Calculate unmatched vertices in the side determined by the current
+  // direction of edges
   Set forward_vertices = dsbg_.V().difference(right_vertices_);
   Set matched_forward_vertices = mapB.image(M_);
   if (direction_ == Direction::kBackward) {
@@ -148,17 +157,20 @@ Set BFSMatching::directedStep(const Set &E)
   Set unmatched_forward_vertices
     = forward_vertices.difference(matched_forward_vertices);
 
+  // Detect paths leading to unmatched_forward_vertices
   BFSPaths paths(fact_);
   DSBG restricted_dsbg(fact_, dsbg_.V(), dsbg_.Vmap(), mapB, mapD
     , Emap, subEmap);
   PWMap smap = paths.calculate(restricted_dsbg, unmatched_forward_vertices);
 
+  // Keep edges
   Set paths_edges = edgesInPaths(smap, E);
   PWMap rmap = smap.mapInf();
   Set reach_unmatched = rmap.preImage(unmatched_forward_vertices);
   paths_edges = paths_edges.intersection(mapD.preImage(reach_unmatched));
 
-  Util::DEBUG_LOG << "paths_edges: " << paths_edges << "\n";
+  Util::DEBUG_LOG << "paths_edges in " << direction_ << " direction: "
+    << paths_edges << "\n";
 
   return paths_edges;
 }
@@ -167,21 +179,24 @@ BFSMatching::ExitCondition BFSMatching::step()
 {
   Set E = dsbg_.E();
 
+  // Forward direction
   Set paths_edgesD = directedStep(E);
 
+  // Backward direction
   swapEdgesDirection(E);
   direction_ = Direction::kBackward;
   Set paths_edgesB = directedStep(paths_edgesD);
 
-  Set paths_edges = paths_edgesB.intersection(paths_edgesD);
-  Util::DEBUG_LOG << "paths_edges: " << paths_edges << "\n";
+  // Calculate augmenting paths and swap edges in these paths
+  Set augmenting_edges = paths_edgesB.intersection(paths_edgesD);
+  Util::DEBUG_LOG << "augmenting paths: " << augmenting_edges << "\n";
+  swapEdgesDirection(augmenting_edges);
 
-  // Swap direction in edges in augmenting paths
-  swapEdgesDirection(paths_edges);
-
-  // Swap directions
+  // Swap directions in all graph
   swapEdgesDirection(E);
   direction_ = Direction::kForward;
+
+  // Calculate new matched edges
   M_ = dsbg_.mapD().preImage(right_vertices_);
 
   // Calculate exit conditions
@@ -197,19 +212,21 @@ bool BFSMatching::ExitCondition::isSatisfied()
   return full_match_ || !found_paths_;
 }
 
-DSBG initDSBG(const SBG &sbg)
+void BFSMatching::init(const SBG& sbg)
 {
-  return DSBG(sbg.fact(), sbg.V().compact(), sbg.Vmap().compact(), sbg.map2()
+  dsbg_ = DSBG(sbg.fact(), sbg.V().compact(), sbg.Vmap().compact(), sbg.map2()
     , sbg.map1().compact(), sbg.Emap().compact(), sbg.subEmap().compact());
+  right_vertices_ = dsbg_.mapB().image();
+
+  return;
 }
 
-MatchData BFSMatching::calculate(const SBG &sbg)
+MatchData BFSMatching::calculate(const SBG& sbg)
 {
   Util::DEBUG_LOG << "Matching sbg: \n" << sbg << "\n\n";
 
   auto begin = std::chrono::high_resolution_clock::now();
-  dsbg_ = initDSBG(sbg);
-  right_vertices_ = dsbg_.mapB().image();
+  init(sbg);
 
   ExitCondition exit_cond(false, false);
   do {
@@ -232,7 +249,7 @@ MatchData BFSMatching::calculate(const SBG &sbg)
 
 Matching::Matching(MatchDelegPtr deleg) : delegate_(std::move(deleg)) {}
 
-MatchData Matching::calculate(const SBG &sbg)
+MatchData Matching::calculate(const SBG& sbg)
 {
   return delegate_->calculate(sbg);
 }

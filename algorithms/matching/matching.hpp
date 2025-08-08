@@ -35,22 +35,25 @@ namespace LIB {
 ////////////////////////////////////////////////////////////////////////////////
 
 enum class Direction { kForward, kBackward };
+std::ostream& operator<<(std::ostream& out, const Direction& direction);
 
 /**
  * @brief Saves input and output data from a matching algorithm run.
- * The condition `full_match` is met if all right vertices (i.e. images of
- * map2) are saturated.
  */
 struct MatchData {
   public:
   MatchData(SBG sbg, Set M, bool full_match);
 
+  const SBG& sbg() const;
+  const Set& M() const;
+  const bool& full_match() const;
+
   private:
-  member_class(SBG, sbg);
-  member_class(Set, M);
-  member_class(bool, full_match);
+  SBG sbg_;         ///< Original input for the algorithm
+  Set M_;           ///< Matched edges
+  bool full_match_; ///< Returns true if all right vertices are saturated
 };
-std::ostream &operator<<(std::ostream &out, const MatchData &data);
+std::ostream& operator<<(std::ostream& out, const MatchData& data);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Matching Algorithm Abstract Delegate ----------------------------------------
@@ -64,12 +67,12 @@ class MatchDelegate {
   public:
   virtual ~MatchDelegate() = default;
 
-  MatchDelegate(const PWMapAF &fact);
+  MatchDelegate(const PWMapAF& fact);
 
-  virtual MatchData calculate(const SBG &sbg) = 0;
+  virtual MatchData calculate(const SBG& sbg) = 0;
 
   protected:
-  const PWMapAF &fact_;
+  const PWMapAF& fact_;
 };
 
 
@@ -90,9 +93,9 @@ class MatchDelegate {
  */
 struct BFSMatching : public MatchDelegate {
   public:
-  BFSMatching(const PWMapAF &fact);
+  BFSMatching(const PWMapAF& fact);
 
-  MatchData calculate(const SBG &sbg) override;
+  MatchData calculate(const SBG& sbg) override;
 
   private:
   /**
@@ -114,6 +117,11 @@ struct BFSMatching : public MatchDelegate {
   };
 
   /**
+   * @brief Initializes data members determined by the input SBG.
+   */
+  void init(const SBG& sbg);
+
+  /**
    * @brief Performs an iteration of the algorithm. It looks up alternating
    * paths that reach unmatched left vertices. Then it swaps the direction of
    * all edges of the DSBG, and performs the same operation. Edges present
@@ -130,13 +138,13 @@ struct BFSMatching : public MatchDelegate {
    * @return Edges belonging to alternating paths that reach unmatched vertices
    * in the aforementioned direction. 
    */
-  Set directedStep(const Set &E);
+  Set directedStep(const Set& E);
 
   /**
    * @brief Modifies the `dsbg_` member, swapping mapB and mapD for elements of
    * the domain that belong to `E`.
    */
-  void swapEdgesDirection(const Set &E);
+  void swapEdgesDirection(const Set& E);
 
   /**
    * @brief Separates in different subset-edges matched and unmatched edges
@@ -147,13 +155,12 @@ struct BFSMatching : public MatchDelegate {
   /**
    * @brief Returns edges in `E` that belong to the paths described by the
    * successor map `smap`. 
-   * @param E Argument used for efficiency.
    */
-  Set edgesInPaths(const PWMap &smap, const Set &E) const;
+  Set edgesInPaths(const PWMap& smap, const Set& E) const;
 
-  DSBG dsbg_;
-  Set M_;
-  Set right_vertices_;
+  DSBG dsbg_; ///< Input DSBG
+  Set M_;     ///< Matched edges
+  Set right_vertices_; 
   Direction direction_;
 };
 
@@ -165,7 +172,7 @@ class Matching {
   public:
   Matching(MatchDelegPtr deleg);
 
-  MatchData calculate(const SBG &sbg);
+  MatchData calculate(const SBG& sbg);
 
   private:
   MatchDelegPtr delegate_;

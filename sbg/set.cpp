@@ -826,10 +826,8 @@ void emplaceHint(MDIOrdSet &set, const SetPiece &mdi ,unsigned int hint)
   
   //Finding the position for mdi
   while (it != end) { 
-    if (*it < mdi){
+    if (*it < mdi)
       ++it;
-      ++hint;
-    }
     else
       break;
   }
@@ -840,7 +838,7 @@ void emplaceHint(MDIOrdSet &set, const SetPiece &mdi ,unsigned int hint)
 }
 
 
-unsigned int advanceHint(MDIOrdSet &set, const SetPiece &mdi, unsigned int hint)
+void advanceHint(MDIOrdSet &set, const SetPiece &mdi, unsigned int &hint)
 { 
   auto end = set.end();
   auto it = set.begin();
@@ -856,7 +854,7 @@ unsigned int advanceHint(MDIOrdSet &set, const SetPiece &mdi, unsigned int hint)
       break;
   }
   
-  return hint;
+  return;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1049,7 +1047,7 @@ SetDelegPtr OrderedSet::intersection(const SetDelegate &other) const
     auto li_prev = short_indexes.before_begin();
     auto li_curr = short_indexes.begin();
     
-    global_pos = advanceHint(inter, long_elem, global_pos);
+    advanceHint(inter, long_elem, global_pos);
 
     while (li_curr != short_indexes.end()) {
       const size_t idx = *li_curr;
@@ -1231,7 +1229,7 @@ SetDelegPtr OrderedSet::intersectionComp(const SetDelegate &other, const SetPiec
     // doIntersection prevents the creation of additional partitions
     bool do_intersection = doInt(elem,mdi);
     
-    global_pos = advanceHint(inter, elem, global_pos);
+    advanceHint(inter, elem, global_pos);
     
     while (do_intersection && li_curr != indexes.end()) {
       size_t idx = *li_curr;
@@ -1262,9 +1260,6 @@ SetDelegPtr OrderedSet::intersectionComp(const SetDelegate &other, const SetPiec
     
     if(!do_intersection)
       emplaceHint(inter, elem, global_pos);
-
-    if (indexes.empty())
-      break;
 
     ++current;
   }

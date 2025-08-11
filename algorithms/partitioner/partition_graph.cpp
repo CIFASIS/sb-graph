@@ -151,7 +151,7 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
   auto& best_initial_partitions = partition_maps.front();
   CommunicationCost comm_cost = CommunicationCost(graph, best_initial_partitions);
   if (using_many_initial_partitions) {
-    size_t best_communication_set_cardinality = 0;//get_partition_communication(graph, best_initial_partitions, set_fact);
+    size_t best_communication_set_cardinality = get_partition_communication(graph, best_initial_partitions);
     for (unsigned i = 0; i < number_of_partitions; i++) {
         best_communication_set_cardinality += get_set_size(comm_cost.get_ec_by_partition_id(i));
     }
@@ -159,7 +159,7 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
     for (size_t i = 1; i < partition_maps.size(); i++) {
         auto temp_intial_partitions = partition_maps[i];
         CommunicationCost temp_comm_cost = CommunicationCost(graph, temp_intial_partitions);
-        size_t temp_partition_comm_size = 0;//get_partition_communication(graph, temp_intial_partitions, set_fact);
+        size_t temp_partition_comm_size = get_partition_communication(graph, temp_intial_partitions);
         for (unsigned i = 0; i < number_of_partitions; i++) {
             temp_partition_comm_size += get_set_size(comm_cost.get_ec_by_partition_id(i));
         }

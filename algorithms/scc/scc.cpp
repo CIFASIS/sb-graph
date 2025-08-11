@@ -106,10 +106,12 @@ SCCData MinReachSCC::calculate(const DSBG& dsbg)
 
   auto begin = std::chrono::high_resolution_clock::now();
   PWMap rmap = fact_.createPWMap();
-  Set Ediff = dsbg.E().difference(E_);
+  Set Ediff = fact_.createSet();
+  Set oldE = dsbg.E();
   do {
+    oldE = dsbg_.E();
     rmap = sccStep();
-    Ediff = dsbg.E().difference(E_);
+    Ediff = oldE.difference(dsbg_.E());
   } while (Ediff != fact_.createSet());
   rmap = rmap.compact();
   auto end = std::chrono::high_resolution_clock::now();

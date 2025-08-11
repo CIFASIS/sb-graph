@@ -73,11 +73,10 @@ class MinAdjMRV : public MRV<MinAdjMRV> {
   PWMap impl(const DSBG& dsbg);
 
   private:
-  PWMap recursivePaths(const PWMap& rmap) const;
+  PWMap recursivePaths(const Set& Vc, const Set& VR) const;
 
   DSBG dsbg_;
-  Set Vc_;
-  Set VR_;
+  PWMap rmap_;
 };
 
 } // namespace LIB

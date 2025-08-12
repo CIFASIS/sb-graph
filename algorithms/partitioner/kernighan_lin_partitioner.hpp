@@ -25,14 +25,24 @@
 
 namespace sbg_partitioner {
 
+/**
+ * @brief Entry point of the algorithm. It takes a graph, an initial partition
+ * and the imbalance epsilon which indicates the allowed disbalance. It will run
+ * Kernighan-Lin algorithm heuristic to the given partitions.
+ * 
+ * @param graph - the provided weighted sb graph.
+ * @param partitions - the initial partition.
+ * @param imbalance_epsilon - float between 0 and 1  that indicates the allowed disbalance (0 means no disbalance).
+ */
 void kl_sbg_imbalance_partitioner(
     const SBG::LIB::WeightedSBGraph& graph,
     PartitionMap& partitions,
-    const float imbalance_epsilon,
-    SBG::LIB::SetAF& set_fact,
-    SBG::LIB::MapAF& map_fact);
+    const float imbalance_epsilon);
 
 
+/**
+ * @brief pretty print for a sb graph.
+ */
 std::string get_pretty_sb_graph(const SBG::LIB::SBG& g);
 
 
@@ -46,15 +56,28 @@ std::ostream& operator<<(std::ostream& os, const KLBipartResult& result);
 
 
 struct GainObjectImbalance {
-    size_t i;
-    size_t j;
+    size_t a_idx;
+    size_t b_idx;
     int gain;
-    SBG::LIB::Set ec_nodes_i;
-    SBG::LIB::Set ic_nodes_i;
-    size_t size_i;
-    SBG::LIB::Set ec_nodes_j;
-    SBG::LIB::Set ic_nodes_j;
-    size_t size_j;
+    SBG::LIB::Set ec_nodes_a;
+    SBG::LIB::Set ic_nodes_a;
+    size_t size_a;
+    SBG::LIB::Set ec_nodes_b;
+    SBG::LIB::Set ic_nodes_b;
+    size_t size_b;
+
+    bool operator==(const GainObjectImbalance& gain_2) const
+    {
+        return a_idx == gain_2.a_idx
+            and b_idx == gain_2.b_idx
+            and gain == gain_2.gain
+            and ec_nodes_a == gain_2.ec_nodes_a
+            and ic_nodes_a == gain_2.ic_nodes_a
+            and size_a == gain_2.size_a
+            and ec_nodes_b == gain_2.ec_nodes_b
+            and ec_nodes_b == gain_2.ec_nodes_b
+            and size_b == gain_2.size_b;
+    }
 };
 
 std::ostream& operator<<(std::ostream& os, const GainObjectImbalance& gain);
@@ -75,7 +98,7 @@ using CostMatrixImbalance = std::set<GainObjectImbalance, GainObjectImbalanceCom
 std::ostream& operator<<(std::ostream& os, const CostMatrixImbalance& cost_matrix);
 
 
-struct kl_sbg_partitioner_result
+struct KLSbgPartitionerResult
 {
     size_t i;
     size_t j;
@@ -84,6 +107,6 @@ struct kl_sbg_partitioner_result
     Partition B;
 };
 
-std::ostream& operator<<(std::ostream& os, const kl_sbg_partitioner_result& result);
+std::ostream& operator<<(std::ostream& os, const KLSbgPartitionerResult& result);
 
 }

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <set>
+#include <list>
 #include <string>
 
 #include "partition_graph.hpp"
@@ -66,6 +66,12 @@ struct GainObjectImbalance {
     SBG::LIB::Set ic_nodes_b;
     size_t size_b;
 
+    GainObjectImbalance(size_t a_idx, size_t b_idx, int gain, SBG::LIB::Set ec_nodes_a, SBG::LIB::Set ic_nodes_a,
+                        size_t size_a, SBG::LIB::Set ec_nodes_b, SBG::LIB::Set ic_nodes_b, size_t size_b)
+        : a_idx(a_idx), b_idx(b_idx), gain(gain), ec_nodes_a(ec_nodes_a), ic_nodes_a(ic_nodes_a),
+          size_a(size_a), ec_nodes_b(ec_nodes_b), ic_nodes_b(ic_nodes_b), size_b(size_b)
+    {}
+
     bool operator==(const GainObjectImbalance& gain_2) const
     {
         return a_idx == gain_2.a_idx
@@ -91,9 +97,7 @@ struct GainObjectComparatorTemplate {
     }
 };
 
-using GainObjectImbalanceComparator = GainObjectComparatorTemplate<GainObjectImbalance>;
-
-using CostMatrixImbalance = std::set<GainObjectImbalance, GainObjectImbalanceComparator>;
+using CostMatrixImbalance = std::list<GainObjectImbalance>;
 
 std::ostream& operator<<(std::ostream& os, const CostMatrixImbalance& cost_matrix);
 

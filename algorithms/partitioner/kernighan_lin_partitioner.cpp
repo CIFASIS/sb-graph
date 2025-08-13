@@ -58,11 +58,24 @@ pair<unsigned, unsigned> compute_lmin_lmax(const WeightedSBGraph& graph, unsigne
   return make_pair(LMin, LMax);
 }
 
-CostMatrixImbalance generate_gain_matrix(const WeightedSBGraph& graph, CommunicationCost& cost_matrix, unsigned partition_a_id,
+pair<GainObjectImbalance, CostMatrixImbalance> generate_gain_matrix(const WeightedSBGraph& graph, CommunicationCost& cost_matrix, unsigned partition_a_id,
                                          Partition& partition_a, unsigned partition_b_id, Partition& partition_b, unsigned LMin,
                                          unsigned LMax)
 {
   SBG::Util::Internal::TimeProfiler profiler("generate_gain_matrix");
+  const auto& fact = graph.fact();
+  // create the max_gain object with a dummy initialization, any gain will be greater than -infinity
+  GainObjectImbalance max_gain = GainObjectImbalance{
+    numeric_limits<size_t>::infinity(),
+    numeric_limits<size_t>::infinity(),
+    -numeric_limits<size_t>::infinity(),
+    fact.createSet(),
+    fact.createSet(),
+    0,
+    fact.createSet(),
+    fact.createSet(),
+    0
+  };
   CostMatrixImbalance local_cost_matrix;
 
   for (size_t i = 0; i < partition_a.size(); i++) {
@@ -91,12 +104,15 @@ CostMatrixImbalance generate_gain_matrix(const WeightedSBGraph& graph, Communica
       auto ic_edges = ic_i_a.cup(ic_j_b);
 
       int gain = ec_edges.cardinal() - ic_edges.cardinal();
-      auto gain_object = GainObjectImbalance{i, j, gain, ec_i_a, ic_i_a, set_i_a.cardinal(), ec_j_b, ic_j_b, set_j_b.cardinal()};
-      local_cost_matrix.insert(gain_object);
+      local_cost_matrix.emplace_back(i, j, gain, ec_i_a, ic_i_a, set_i_a.cardinal(), ec_j_b, ic_j_b, set_j_b.cardinal());
+
+      if (local_cost_matrix.back().gain > max_gain.gain) {
+            max_gain = local_cost_matrix.back();
+      }
     }
   }
 
-  return local_cost_matrix;
+  return { max_gain, local_cost_matrix };
 }
 
 // Partition a and b (A_c and B_c in the definition) are the remining nodes to be visited, not the actual partitions
@@ -150,7 +166,7 @@ pair<pair<Set, Set>, pair<Set, Set>> update_sets(Partition& partition_a, Partiti
   return make_pair(make_pair(node_a, rest_a), make_pair(node_b, rest_b));
 }
 
-void update_diff(CostMatrixImbalance& cost_matrix, Partition& remaining_partition_a, Set& moved_from_partition_a,
+GainObjectImbalance update_diff(CostMatrixImbalance& cost_matrix, Partition& remaining_partition_a, Set& moved_from_partition_a,
                  pair<Set, Set> affected_node_a, Partition& remaining_partition_b, Set& moved_from_partition_b,
                  pair<Set, Set> affected_node_b, const WeightedSBGraph& graph, const NodeWeight& node_weight,
                  const GainObjectImbalance& gain_object, unsigned LMin, unsigned LMax)
@@ -158,6 +174,11 @@ void update_diff(CostMatrixImbalance& cost_matrix, Partition& remaining_partitio
   SBG::Util::Internal::TimeProfiler profiler("update_diff");
   logging::sbg_log << affected_node_a.first << ", " << affected_node_a.second << endl;
   logging::sbg_log << affected_node_b.first << ", " << affected_node_b.second << endl;
+
+  if (cost_matrix.empty()) {
+    logging::sbg_log << "Cost matrix is empty, nothing to update." << endl;
+    return gain_object;
+  }
 
   const SetAF& set_factory = graph.fact();
 
@@ -195,7 +216,7 @@ void update_diff(CostMatrixImbalance& cost_matrix, Partition& remaining_partitio
         g.b_idx--;
       }
 
-      new_cost_matrix.insert(g);
+      new_cost_matrix.push_back(move(g));
     }
     cost_matrix = new_cost_matrix;
   }
@@ -204,6 +225,14 @@ void update_diff(CostMatrixImbalance& cost_matrix, Partition& remaining_partitio
   auto affected_nodes = affected_node_a.first.cup(affected_node_b.first);
   auto discarded_edges = graph.map1().preImage(affected_nodes).cup(graph.map2().preImage(affected_nodes));
   CostMatrixImbalance new_cost_matrix;
+
+  if (cost_matrix.empty()) {
+    logging::sbg_log << "After updating cost matrix is empty, nothing to update." << endl;
+    return gain_object;
+  }
+
+  // using a reference to copy the element only once when returning
+  GainObjectImbalance& max_gain_object = cost_matrix.front();
   for (auto g : cost_matrix) {
     bool change = false;
 
@@ -242,13 +271,19 @@ void update_diff(CostMatrixImbalance& cost_matrix, Partition& remaining_partitio
       g.gain = gain;
     }
 
-    new_cost_matrix.insert(g);
+    new_cost_matrix.push_back(move(g));
+
+    if (new_cost_matrix.back().gain > max_gain_object.gain) {
+      max_gain_object = new_cost_matrix.back();
+    }
   }
   cost_matrix = new_cost_matrix;
 
 #if PARTITION_IMBALANCE_DEBUG
   logging::sbg_log << remaining_partition_a << ", " << remaining_partition_b << ", " << gain_object << ", " << cost_matrix << endl;
 #endif
+
+    return max_gain_object;
 }
 
 // auto return type we’ll let the compiler deduce what the return type should be from the return statement
@@ -293,7 +328,7 @@ int kl_sbg_imbalance(const WeightedSBGraph& graph, CommunicationCost& cost_matri
   Set b_v = set_fact.createSet();
   const auto node_weights = graph.get_node_weights();
 
-  CostMatrixImbalance gm = generate_gain_matrix(graph, cost_matrix, partition_a_id, partition_a, partition_b_id, partition_b, LMin, LMax);
+  auto [g, gm] = generate_gain_matrix(graph, cost_matrix, partition_a_id, partition_a, partition_b_id, partition_b, LMin, LMax);
 
 #if PARTITION_IMBALANCE_DEBUG
   logging::sbg_log << LMin << ", " << LMax << gm << endl;
@@ -303,13 +338,16 @@ int kl_sbg_imbalance(const WeightedSBGraph& graph, CommunicationCost& cost_matri
     logging::sbg_log << "inside the while " << a_c << ", " << b_c << " ";
     logging::sbg_log << get_partition_size(a_c, node_weights, set_fact) << ", " << get_partition_size(b_c, node_weights, set_fact) << endl;
     logging::sbg_log << gm << endl;
+
     assert(not gm.empty());
-    GainObjectImbalance g = max_diff(gm);
+
     logging::sbg_log << g << endl;
+
     pair<Set, Set> a_ = {set_fact.createSet(), set_fact.createSet()}, b_ = {set_fact.createSet(), set_fact.createSet()};
     tie(a_, b_) = update_sets(a_c, b_c, a_v, b_v, g, graph);
-    update_diff(gm, a_c, a_v, a_, b_c, b_v, b_, graph, node_weights, g, LMin, LMax);
+    auto new_max_gain = update_diff(gm, a_c, a_v, a_, b_c, b_v, b_, graph, node_weights, g, LMin, LMax);
     update_sum(par_sum, g.gain, max_par_sum, max_par_sum_set, a_v, b_v);
+    g = move(new_max_gain);
   }
 
   if (max_par_sum > 0) {

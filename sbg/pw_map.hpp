@@ -446,7 +446,7 @@ struct OrdPWMap : public PWMapDelegate {
   Set &set_in,
   Set &set_out, 
   OrdMapCollection  &ord_pwmap,
-  unsigned int &global_pos) const;
+  NAT &global_pos) const;
   
   void processMinus(
   const Map &m1, 
@@ -454,7 +454,7 @@ struct OrdPWMap : public PWMapDelegate {
   Set &set_in,
   Set &set_out, 
   OrdMapCollection  &ord_pwmap,
-  unsigned int &global_pos) const; 
+  NAT &global_pos) const; 
   
   void processAdd(
   const Map &m1, 
@@ -462,7 +462,7 @@ struct OrdPWMap : public PWMapDelegate {
   Set &set_in,
   Set &set_out, 
   OrdMapCollection  &ord_pwmap,
-  unsigned int &global_pos) const; 
+  NAT &global_pos) const; 
   
   void processEqualImage(
   const Map &m1, 
@@ -470,12 +470,12 @@ struct OrdPWMap : public PWMapDelegate {
   Set &set_in,
   Set &set_out,
   OrdMapCollection  &ord_pwmap,
-  unsigned int &global_pos) const; 
+  NAT &global_pos) const; 
   
   using ProcessFunc = void (OrdPWMap::*)(
   const Map &, const Map &, 
   Set &, Set &, OrdMapCollection &, 
-  unsigned int&
+  NAT&
   ) const;
   
   void processMapsOrd(

@@ -818,7 +818,7 @@ bool doInt(const SetPiece &mdi1, const SetPiece &mdi2)
 }
 
 
-void emplaceHint(MDIOrdSet &set, const SetPiece &mdi ,unsigned int hint)
+void emplaceHint(MDIOrdSet &set, const SetPiece &mdi, NAT hint)
 {
   auto end = set.end();
   auto it = set.begin();
@@ -838,7 +838,7 @@ void emplaceHint(MDIOrdSet &set, const SetPiece &mdi ,unsigned int hint)
 }
 
 
-void advanceHint(MDIOrdSet &set, const SetPiece &mdi, unsigned int &hint)
+void advanceHint(MDIOrdSet &set, const SetPiece &mdi, NAT &hint)
 { 
   auto end = set.end();
   auto it = set.begin();
@@ -1036,7 +1036,7 @@ SetDelegPtr OrderedSet::intersection(const SetDelegate &other) const
   const auto &long_pieces = long_set->pieces_;
   auto short_begin = short_set->pieces_.begin();
 
-  unsigned int global_pos = 0;
+  NAT global_pos = 0;
 
   for (const auto& long_elem : long_pieces) {
     const auto long_min = long_elem.minElem();
@@ -1214,7 +1214,7 @@ SetDelegPtr OrderedSet::intersectionComp(const SetDelegate &other, const SetPiec
   auto othr_begin = othr.pieces_.begin();
   auto end = pieces_.end();
   auto current = pieces_.begin() + pos;
-  unsigned int global_pos = 0;
+  NAT global_pos = 0;
 
   while (current != end) {
     const SetPiece &elem = *current;

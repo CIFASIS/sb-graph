@@ -1,6 +1,6 @@
 /* Matching + SCC test of the following model:
 
-model Circuit
+model TestRL1
   constant Integer N = 100000;
   Real iL[N], Ua[N], Uc[N];
   parameter Real Ra = 1, Rb = 1, Rc = 1, L = 1;
@@ -17,7 +17,7 @@ equation
   end for;
   iL[N] = Ua[N]/Ra + Uc[N]/Rc; // Uc[N]
   Ua[N] = Uc[N]*Rb/Rc; // Ua[N]
-end Circuit;
+end TestRL1;
 */
 
 N = 100000;

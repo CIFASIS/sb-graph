@@ -433,7 +433,7 @@ PWMapDelegPtr UnordPWMap::combine(const PWMapDelegate &other) const
 
 PWMapDelegPtr UnordPWMap::reduce(const Interval &i, const LExp &le) const
 {
-  UnordPWMap res(fact_);
+  UnordMapCollection res;
 
   if (!i.isEmpty()) {
     RATIONAL zero(0, 1);
@@ -445,20 +445,19 @@ PWMapDelegPtr UnordPWMap::reduce(const Interval &i, const LExp &le) const
         NAT hi = i.end();
         RATIONAL const_expr(hi + st, 1);
         if (st < Inf - hi)
-          res = UnordPWMap(fact_, fact_.createMap(i, LExp(zero, const_expr)));
+          pushBack(res, fact_.createMap(i, LExp(zero, const_expr)));
       }
 
       else if (h == (INT) -st) {
         NAT lo = i.begin();
         RATIONAL const_expr(lo - st, 1);
         if (lo >= st)
-          res = UnordPWMap(fact_, fact_.createMap(i, LExp(zero, const_expr)));
+          pushBack(res, fact_.createMap(i, LExp(zero, const_expr)));
       }
 
       else if (h % (INT) st == 0) {
         // Is convenient the partition of the piece?
         if ((INT) i.cardinal() > h*h) {
-          res = UnordPWMap(fact_);
           INT absh = std::abs(h);
 
           for (int k = 1; k <= absh; ++k) {
@@ -481,12 +480,12 @@ PWMapDelegPtr UnordPWMap::reduce(const Interval &i, const LExp &le) const
       pushBack(res, fact_.createMap(i, le));
   }
 
-  return std::make_unique<UnordPWMap>(res);
+  return std::make_unique<UnordPWMap>(fact_, res);
 }
 
 PWMapDelegPtr UnordPWMap::reduce(const Map &map) const
 {
-  UnordPWMap res(fact_);
+  UnordMapCollection res;
 
   Set not_reduced = fact_.createSet();
   Exp e = map.exp();
@@ -518,7 +517,7 @@ PWMapDelegPtr UnordPWMap::reduce(const Map &map) const
 
   pushBack(res, fact_.createMap(not_reduced, e)); // Add unreduced subpieces
 
-  return std::make_unique<UnordPWMap>(res);
+  return std::make_unique<UnordPWMap>(fact_, res);
 }
 
 PWMapDelegPtr UnordPWMap::reduce() const
@@ -531,7 +530,7 @@ PWMapDelegPtr UnordPWMap::reduce() const
       pushBack(res, mi); 
   }
       
-  return td::make_unique<UnordPWMap>(res);
+  return std::make_unique<UnordPWMap>(fact_, res);
 }
 
 PWMapDelegPtr UnordPWMap::minMap(const PWMapDelegate &other) const
@@ -599,7 +598,7 @@ PWMapDelegPtr UnordPWMap::minAdjMap(const PWMapDelegate &other) const
 
 PWMapDelegPtr UnordPWMap::firstInv(const Set &subdom) const
 {
-  UnordPWMap res(fact_);
+  UnordMapCollection res;
 
   Set visited = fact_.createSet();
   for (const Map &m : pieces_) {
@@ -612,7 +611,7 @@ PWMapDelegPtr UnordPWMap::firstInv(const Set &subdom) const
     }
   }
 
-  return std::make_unique<UnordPWMap>(res);
+  return std::make_unique<UnordPWMap>(fact_, res);
 }
 
 PWMapDelegPtr UnordPWMap::firstInv() const { return firstInv(dom()); }
@@ -663,7 +662,7 @@ PWMapDelegPtr UnordPWMap::offsetDom(const MD_NAT &off) const
   for (const Map &m : pieces_)
     pushBack(res, fact_.createMap(m.dom().offset(off), m.exp()));
 
-  return std::make_unique<UnordPWMap>(res);
+  return std::make_unique<UnordPWMap>(fact_, res);
 }
 
 PWMapDelegPtr UnordPWMap::offsetDom(const PWMapDelegate &off) const
@@ -692,7 +691,7 @@ PWMapDelegPtr UnordPWMap::offsetImage(const MD_NAT &off) const
     pushBack(res, fact_.createMap(m.dom(), res_e));
   }
 
-  return std::make_unique<UnordPWMap>(res);
+  return std::make_unique<UnordPWMap>(fact_, res);
 }
 
 PWMapDelegPtr UnordPWMap::offsetImage(const Exp &off) const
@@ -702,7 +701,7 @@ PWMapDelegPtr UnordPWMap::offsetImage(const Exp &off) const
   for (const Map &m : pieces_) 
     pushBack(res, fact_.createMap(m.dom(), off + m.exp()));
 
-  return std::make_unique<UnordPWMap>(res);
+  return std::make_unique<UnordPWMap>(fact_, res);
 }
 
 PWMapDelegPtr UnordPWMap::compact() const
@@ -1183,14 +1182,12 @@ PWMapDelegPtr OrdPWMap::restrict(const Set &subdom) const
   NAT global_pos = 0;
   
   SetPerimeter s_sp = calculatePerimeter(subdom);
-  //auto s_min_per = s_sp.first;
   auto s_max_per = s_sp.second;
   
   for (const MapEntry &mpe : pieces_) {
     const Map &m = mpe.first;
     const SetPerimeter &m_sp = mpe.second;
     auto m_min_per = m_sp.first;
-    //auto m_max_per = m_sp.second;
     
     if (doInt(m_sp, s_sp)) {
       Map res_rest = m.restrict(subdom);
@@ -1598,9 +1595,6 @@ PWMapDelegPtr OrdPWMap::firstInv(const Set &subdom) const
     auto t_min_per = t_sp.first;
     auto t_max_per = t_sp.second;
     
-    if (t_max_per[0] < s_min_per[0]) continue;
-    if (s_max_per[0] < t_min_per[0]) break;
-
     if (doInt(t_sp, s_sp)) {
       Set img = t_m.image(subdom);
       
@@ -1623,6 +1617,7 @@ PWMapDelegPtr OrdPWMap::firstInv(const Set &subdom) const
         visited = visited.disjointCup(img);
       }
     }
+    if (s_max_per[0] < t_min_per[0]) break;
   }
 
   std::sort(res.begin(), res.end(), mapEntryComp);
@@ -1763,12 +1758,6 @@ PWMapDelegPtr OrdPWMap::offsetDom(const PWMapDelegate &off) const
     const auto m_max_per = t_sp.second;
     const auto m_min_per = t_sp.first;
     
-    if (m_max_per[0] <  o_min_per[0])
-      continue;
-    
-    if (o_max_per[0] <  m_min_per[0])
-        break;
-    
     if (doInt(t_sp, o_sp)) {
       Set ith_dom = off.image(t_m.dom());
       
@@ -1777,6 +1766,9 @@ PWMapDelegPtr OrdPWMap::offsetDom(const PWMapDelegate &off) const
           pushBack(res, createMapEntry(res_map));
       }
     }
+    
+    if (o_max_per[0] <  m_min_per[0])
+      break;
   }
 
   std::sort(res.begin(),res.end(), mapEntryComp);
@@ -2036,6 +2028,5 @@ PWMap PWMap::compact() const { return delegate_->compact(); }
 
 } // namespace LIB
 
-} // namespace SBGpieces_.push_back(m);
+} // namespace SBG;
 
-}

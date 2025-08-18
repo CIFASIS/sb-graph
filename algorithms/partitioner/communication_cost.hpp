@@ -29,24 +29,6 @@
 
 namespace sbg_partitioner {
 
-namespace internal {
-
-using ec_ic = std::pair<SBG::LIB::Set , SBG::LIB::Set>;
-
-/**
- * @brief This function computes external and internal communication
- * given a certain partition for a particular set piece.
- * 
- * @param partition - partition of graph nodes.
- * @param nodes - set piece of the graph nodes.
- * @param graph - set based graph that is being partitioned. */
-ec_ic compute_EC_IC(
-    const Partition& partition,
-    const SBG::LIB::SetPiece& nodes,
-    const SBG::LIB::WeightedSBGraph& graph);
-
-}
-
 class CommunicationCost {
 public:
     CommunicationCost(const SBG::LIB::WeightedSBGraph& graph, PartitionMap partitions);
@@ -97,6 +79,7 @@ private:
     const SBG::LIB::WeightedSBGraph& _graph; // read-only members
     PartitionMap _partitions;
 
+    std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SBG::LIB::SetPieceHash> _communication_by_set_piece;
     std::vector<std::pair<SBG::LIB::Set, SBG::LIB::Set>> _cost_by_partition;
     std::vector<std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SBG::LIB::SetPieceHash>> _ec_cost_by_interval;
     std::vector<std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SBG::LIB::SetPieceHash>> _ic_cost_by_interval;

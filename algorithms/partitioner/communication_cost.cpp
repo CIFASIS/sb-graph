@@ -14,7 +14,7 @@
  You should have received a copy of the GNU General Public License
  along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
 
- ******************************************************************************/
+******************************************************************************/
 
 #include <unordered_map>
 
@@ -36,41 +36,21 @@ static CommunicationCost* cost_matrix = nullptr;
 
 namespace {
 
-ec_ic compute_EC_IC_from_map_1_to_map_2(
-    const Partition& partition,
-    const SetPiece& nodes,
-    const PWMap& map_1,
-    const PWMap& map_2,
-    const SetAF& set_fact)
+Set set_piece_communication(const SetPiece& nodes, const WeightedSBGraph& graph)
 {
-    auto nodes_set = set_fact.createSet(nodes);
-    auto d = map_1.preImage(nodes_set);
-    auto im = map_2.image(d);
-    auto partition_set = from_vector(partition, set_fact);
-    auto ic_nodes = partition_set.intersection(im);
-    ic_nodes = ic_nodes.difference(nodes_set);
-    auto ec_nodes = im.difference(ic_nodes);
-    auto ic = map_2.preImage(ic_nodes).intersection(d);
-    auto ec = map_2.preImage(ec_nodes).intersection(d);
+    // convert nodes into a set
+    auto node_set = graph.fact().createSet(nodes);
 
-    return make_pair(ec, ic);
+    // compute preImage of map1 and map2 to get the edges that connects `nodes`
+    auto edges_map1 = graph.map1().preImage(node_set);
+    auto edges_map2 = graph.map2().preImage(node_set);
+
+    // Now compute the disjoint union to remove loop edges
+    auto communication = edges_map1.cup(edges_map2).difference(edges_map1.intersection(edges_map2));
+
+    return communication;
 }
 
-
-}
-
-
-ec_ic compute_EC_IC(
-    const Partition& partition,
-    const SetPiece& nodes,
-    const SBG::LIB::WeightedSBGraph& graph)
-{
-    ec_ic cost1 = compute_EC_IC_from_map_1_to_map_2(partition, nodes, graph.map1(), graph.map2(), graph.fact());
-    ec_ic cost2 = compute_EC_IC_from_map_1_to_map_2(partition, nodes, graph.map2(), graph.map1(), graph.fact());
-
-    ec_ic cost = ec_ic(cost1.first.cup(cost2.first), cost1.second.cup(cost2.second));
-
-    return cost;
 }
 
 }
@@ -91,17 +71,21 @@ void CommunicationCost::initialize()
     _ec_cost_by_interval.reserve(_partitions.size());
     _ic_cost_by_interval.reserve(_partitions.size());
     for (size_t i = 0; i < _partitions.size(); i++) {
+        Set partition_i_communication = _graph.fact().createSet();
+        Set internal_communication_partition_i = _graph.fact().createSet();
 
-        _cost_by_partition.emplace_back(make_pair(_graph.fact().createSet(), _graph.fact().createSet()));
-        _ec_cost_by_interval.emplace_back();
-        _ic_cost_by_interval.emplace_back();
         for (const auto& node : _partitions.at(i)) {
-            auto [ec, ic] = internal::compute_EC_IC(_partitions.at(i), node, _graph);
-
-            _cost_by_partition.back() = {  _cost_by_partition.back().first.cup(ec), _cost_by_partition.back().second.cup(ic) };
-            _ec_cost_by_interval.back().insert({node, ec});
-            _ic_cost_by_interval.back().insert({node, ic});
+            auto node_edges = internal::set_piece_communication(node, _graph);
+            _communication_by_set_piece.insert({node, node_edges});
+            internal_communication_partition_i = node_edges.intersection(partition_i_communication).cup(internal_communication_partition_i);
+            partition_i_communication = partition_i_communication.cup(node_edges);            
         }
+
+        auto ec_parition_i = partition_i_communication.difference(internal_communication_partition_i);
+        _cost_by_partition.emplace_back(make_pair(ec_parition_i, move(internal_communication_partition_i)));
+
+        _ic_cost_by_interval.emplace_back();    // save space for this, will be filled on demand
+        _ec_cost_by_interval.emplace_back();
     }
 }
 
@@ -110,21 +94,27 @@ void CommunicationCost::update_partitions(PartitionMap& partitions, optional<vec
 {
     _partitions = partitions;
     if (modified_partitions) {
-        Set update_nodes = _graph.fact().createSet();
         // now, update communication for partitions that were updated
         for (size_t i : *modified_partitions) {
-            _ec_cost_by_interval[i].clear();
-            _ic_cost_by_interval[i].clear();
-            update_nodes = update_nodes.cup(from_vector(_partitions.at(i), _graph.fact()));
-            _cost_by_partition[i] = make_pair(_graph.fact().createSet(), _graph.fact().createSet());
-            for (const auto& node : _partitions.at(i)) {
-                auto [ec, ic] = internal::compute_EC_IC(_partitions.at(i), node, _graph);
+            Set partition_i_communication = _graph.fact().createSet();
+            Set internal_communication_partition_i = _graph.fact().createSet();
 
-                _cost_by_partition[i] = {  _cost_by_partition.at(i).first.cup(ec), _cost_by_partition.at(i).second.cup(ic) };
-                _ec_cost_by_interval[i].insert_or_assign(node, ec);
-                _ic_cost_by_interval[i].insert_or_assign(node, ic);
+            for (const auto& node : _partitions.at(i)) {
+                if (_communication_by_set_piece.find(node) == _communication_by_set_piece.end()) {
+                    _communication_by_set_piece.insert({node, internal::set_piece_communication(node, _graph)});
+                }
+
+                const auto& node_edges = _communication_by_set_piece.at(node);
+                internal_communication_partition_i = node_edges.intersection(partition_i_communication).cup(internal_communication_partition_i);
+                partition_i_communication = partition_i_communication.cup(node_edges);
             }
-        }        
+
+            auto ec_parition_i = partition_i_communication.difference(internal_communication_partition_i);
+            _cost_by_partition[i] = (make_pair(ec_parition_i, move(internal_communication_partition_i)));
+
+            _ic_cost_by_interval[i].clear();
+            _ec_cost_by_interval[i].clear();
+        }
     } else {
         // if modified partitions was not provided, update everything
         _cost_by_partition.clear();
@@ -147,11 +137,18 @@ Set CommunicationCost::get_ec_by_interval(unsigned partition_id, const SetPiece&
         return _ec_cost_by_interval[partition_id].at(nodes);
     }
 
-    auto cost = internal::compute_EC_IC(_partitions.at(partition_id), nodes, _graph);
-    _ec_cost_by_interval[partition_id].insert({nodes, cost.first});
-    _ic_cost_by_interval[partition_id].insert({nodes, cost.second});
+    if (_communication_by_set_piece.find(nodes) == _communication_by_set_piece.end()) {
+        _communication_by_set_piece.insert({nodes, internal::set_piece_communication(nodes, _graph)});
+    }
 
-    return cost.first;
+    auto communication = _communication_by_set_piece.at(nodes);
+
+    auto ec = communication.intersection(_cost_by_partition[partition_id].first);
+    auto ic = communication.intersection(_cost_by_partition[partition_id].second);
+    _ec_cost_by_interval[partition_id].insert({nodes, ec});
+    _ic_cost_by_interval[partition_id].insert({nodes, ic});
+
+    return ec;
 }
 
 
@@ -161,11 +158,18 @@ Set CommunicationCost::get_ic_by_interval(unsigned partition_id, const SetPiece&
         return _ic_cost_by_interval[partition_id].at(nodes);
     }
 
-    auto cost = internal::compute_EC_IC(_partitions.at(partition_id), nodes, _graph);
-    _ec_cost_by_interval[partition_id].insert({nodes, cost.first});
-    _ic_cost_by_interval[partition_id].insert({nodes, cost.second});
+    if (_communication_by_set_piece.find(nodes) == _communication_by_set_piece.end()) {
+        _communication_by_set_piece.insert({nodes, internal::set_piece_communication(nodes, _graph)});
+    }
 
-    return cost.second;
+    auto communication = _communication_by_set_piece.at(nodes);
+    
+    auto ec = communication.intersection(_cost_by_partition[partition_id].first);
+    auto ic = communication.intersection(_cost_by_partition[partition_id].second);
+    _ec_cost_by_interval[partition_id].insert({nodes, ec});
+    _ic_cost_by_interval[partition_id].insert({nodes, ic});
+
+    return ic;
 }
 
 

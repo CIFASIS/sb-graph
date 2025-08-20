@@ -131,6 +131,23 @@ Set CommunicationCost::get_ec_by_partition_id(unsigned partition_id)
 }
 
 
+pair<Set, Set> CommunicationCost::compute_ec_ic(unsigned partition_id, const SetPiece& nodes)
+{
+    if (_communication_by_set_piece.find(nodes) == _communication_by_set_piece.end()) {
+        _communication_by_set_piece.insert({nodes, internal::set_piece_communication(nodes, _graph)});
+    }
+
+    auto communication = _communication_by_set_piece.at(nodes);
+
+    auto ec = communication.intersection(_cost_by_partition[partition_id].first);
+    auto ic = communication.difference(ec);
+    _ec_cost_by_interval[partition_id].insert({nodes, ec});
+    _ic_cost_by_interval[partition_id].insert({nodes, ic});
+
+    return { ec, ic };
+}
+
+
 Set CommunicationCost::get_ec_by_interval(unsigned partition_id, const SetPiece& nodes)
 {
     if (_ec_cost_by_interval[partition_id].find(nodes) != _ec_cost_by_interval[partition_id].end()) {
@@ -141,12 +158,7 @@ Set CommunicationCost::get_ec_by_interval(unsigned partition_id, const SetPiece&
         _communication_by_set_piece.insert({nodes, internal::set_piece_communication(nodes, _graph)});
     }
 
-    auto communication = _communication_by_set_piece.at(nodes);
-
-    auto ec = communication.intersection(_cost_by_partition[partition_id].first);
-    auto ic = communication.intersection(_cost_by_partition[partition_id].second);
-    _ec_cost_by_interval[partition_id].insert({nodes, ec});
-    _ic_cost_by_interval[partition_id].insert({nodes, ic});
+    auto [ec, _] = compute_ec_ic(partition_id, nodes);
 
     return ec;
 }
@@ -162,12 +174,7 @@ Set CommunicationCost::get_ic_by_interval(unsigned partition_id, const SetPiece&
         _communication_by_set_piece.insert({nodes, internal::set_piece_communication(nodes, _graph)});
     }
 
-    auto communication = _communication_by_set_piece.at(nodes);
-    
-    auto ec = communication.intersection(_cost_by_partition[partition_id].first);
-    auto ic = communication.intersection(_cost_by_partition[partition_id].second);
-    _ec_cost_by_interval[partition_id].insert({nodes, ec});
-    _ic_cost_by_interval[partition_id].insert({nodes, ic});
+    auto [_, ic] = compute_ec_ic(partition_id, nodes);
 
     return ic;
 }

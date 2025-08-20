@@ -86,7 +86,7 @@ private:
     std::vector<std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SBG::LIB::SetPieceHash>> _ic_cost_by_interval;
 
     void initialize();
-
+    std::pair<SBG::LIB::Set, SBG::LIB::Set> compute_ec_ic(unsigned partition_id, const SBG::LIB::SetPiece& nodes);
 };
 
 /**

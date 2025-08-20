@@ -90,12 +90,12 @@ void CommunicationCost::initialize()
 }
 
 
-void CommunicationCost::update_partitions(PartitionMap& partitions, optional<vector<size_t>> modified_partitions)
+void CommunicationCost::update_partitions(PartitionMap& partitions, optional<reference_wrapper<const list<size_t>>> modified_partitions)
 {
     _partitions = partitions;
     if (modified_partitions) {
         // now, update communication for partitions that were updated
-        for (size_t i : *modified_partitions) {
+        for (size_t i : modified_partitions->get()) {
             Set partition_i_communication = _graph.fact().createSet();
             Set internal_communication_partition_i = _graph.fact().createSet();
 

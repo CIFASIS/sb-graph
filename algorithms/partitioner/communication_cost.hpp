@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <list>
 #include <unordered_map>
 #include <vector>
 
@@ -40,7 +41,7 @@ public:
      * @param partitions - new partition of the graph nodes.
      * @param modified_partitions - [optional] partitions that were updated.
      */
-    void update_partitions(PartitionMap& partitions, std::optional<std::vector<size_t>> modified_partitions = std::nullopt);
+    void update_partitions(PartitionMap& partitions, std::optional<std::reference_wrapper<const std::list<size_t>>> modified_partitions = std::nullopt);
 
     /**
      * It returns the edges that communicate nodes in partition `partition_id` with others.

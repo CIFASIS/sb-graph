@@ -231,38 +231,39 @@ void Tearing::restoreSBG()
   mapB_ = dsbg_.mapB();
   mapD_ = dsbg_.mapD();
 }
-
+PWMap Tearing::calculateSCC() 
+{
+  PWMap rmap = sccStep();
+  do {
+    rmap = sccStep();
+  } while (Ediff() != fact_.createSet());
+  return rmap.compact();
+}
 PWMap Tearing::calculate()
 {
   if (debug()) Util::SBG_LOG << "Tearing dsbg: \n" << dsbg() << "\n\n";
 
   auto begin = std::chrono::high_resolution_clock::now();
-  PWMap rmap = sccStep();
   Set vrem = fact_.createSet();
-  Set e_scc = fact_.createSet();
-  do {
-    // SCC
-    do {
-      rmap = sccStep();
-    } while (Ediff() != fact_.createSet());
-    //
-    e_scc = E();
-    if (E() != fact_.createSet()) {
-      Set erem_b = mapB().preImage(rmap.image());
-      Set erem_d = mapD().preImage(rmap.image());
-      vrem = vrem.cup(mapB().image(erem_b)).cup(mapD().image(erem_d));
-      E_ = E().difference(erem_b.cup(erem_d));
-    }
-    rmap_ = rmap.compact();
-  } while (E() != fact_.createSet());
-  restoreSBG();
-  Set e_notscc = E().difference(e_scc);
-  Set e_to_R = mapD().preImage(rmap.image());
-  PWMap mapD_notscc = mapD().restrict(e_to_R);
-  
-  Set erem = e_scc.intersection(mapB().preImage(vrem));
-  Set mapD_aux = mapD().image(erem);
+  Set e_notscc = dsbg().E();
+  MD_NAT maxOffset = V().maxElem();
+  PWMap rmap = calculateSCC();
+  PWMap tearIOMap_ = fact_.createPWMap();
+  rmap_ = rmap;
 
+  while (!E().isEmpty())  {
+    Set e_scc = E();
+    Set e_noscc = e_notscc.difference(e_scc);
+    Set v_tear = rmap.image();
+    PWMap tearIOMap = fact_.createPWMap(v_tear).offsetImage(maxOffset);
+    tearIOMap_ = tearIOMap.combine(tearIOMap_);
+    PWMap mapB_scc = mapB().restrict(e_scc).composition(rmap);
+    PWMap mapB_noscc = mapB().restrict(e_noscc).composition(rmap).composition(tearIOMap);
+    PWMap mapD_scc = mapD().restrict(e_scc).composition(rmap).composition(tearIOMap);
+    PWMap mapD_noscc = mapD().restrict(e_noscc).composition(rmap);
+    // combine wit mapB and mapD
+    rmap = calculateSCC();
+  }
   auto end = std::chrono::high_resolution_clock::now();
 
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
@@ -275,7 +276,7 @@ PWMap Tearing::calculate()
     E().print(std::cout);
   }
 
-  return rmap.compact();
+  return rmap_;
 }
 
 const PWMapAF &Tearing::fact() const { return fact_; }

@@ -810,10 +810,11 @@ bool doInt(const SetPiece &mdi1, const SetPiece &mdi2)
 
   for (unsigned int j = 0; j < arity; ++j) {
     if (max1[j] < min2[j] || max2[j] < min1[j]) {
+      //std::cout << "false\n";
       return false;  // No intersection detected
     }
   }
-  
+  //std::cout << "true\n";
   return true;  // Intersection detected
 }
 

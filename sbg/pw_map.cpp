@@ -706,9 +706,9 @@ PWMapDelegPtr UnordPWMap::offsetImage(const Exp &off) const
 
 PWMapDelegPtr UnordPWMap::compact() const
 {
-  UnordPWMap res(fact_);
+  UnordMapCollection res;
   if (dom().isEmpty())
-    return std::make_unique<UnordPWMap>(res);
+    return std::make_unique<UnordPWMap>(fact_, res);
   
   std::forward_list<size_t> indices;
   auto liIt = indices.before_begin();
@@ -745,12 +745,12 @@ PWMapDelegPtr UnordPWMap::compact() const
         ++liCurr;
       }
       
-      res.pieces_.emplace_back(new_ith);
+      pushBack(res, new_ith);
       liPrev = indices.before_begin();
       liCurr = indices.begin();
   }
 
-  return std::make_unique<UnordPWMap>(res);
+  return std::make_unique<UnordPWMap>(fact_, res);
 }
 
 
@@ -809,6 +809,11 @@ bool mapEntryComp(const MapEntry &mpe1, const MapEntry &mpe2)
 void pushBack(OrdMapCollection &ord_pw, const MapEntry &m)
 {
   ord_pw.emplace_back(m);
+}
+
+void pushBack(OrdMapCollection &ord_pw, const Map &m)
+{
+  ord_pw.emplace_back(createMapEntry(m));
 }
 
 void emplaceHint(OrdMapCollection &ord_pw, const Map &m, NAT hint)
@@ -1238,7 +1243,7 @@ PWMapDelegPtr OrdPWMap::inverse() const
   for (const MapEntry &mpe : pieces_){
     const Map &inv = mpe.first.minInv();
     if(!inv.isEmpty())
-      pushBack(res, createMapEntry(inv));  
+      pushBack(res, inv);  
   }
   
   std::sort(res.begin(),res.end(), mapEntryComp);
@@ -1269,7 +1274,7 @@ PWMapDelegPtr OrdPWMap::composition(const PWMapDelegate &other) const
       
       if (doInt(t_sp, i_sp)) {
         auto res_com = t_m.composition(o_m);
-        if (!res_com.isEmpty()) 
+        if (!res_com.isEmpty())
           emplaceHint(res, res_com, global_pos);
         continue;
       }
@@ -1419,14 +1424,14 @@ PWMapDelegPtr OrdPWMap::reduce(const Interval &i, const LExp &le) const
         NAT hi = i.end();
         RATIONAL const_expr(hi + st, 1);
         if (st < Inf - hi)
-          pushBack(res, createMapEntry(fact_.createMap(i, LExp(zero, const_expr))));
+          pushBack(res, fact_.createMap(i, LExp(zero, const_expr)));
       }
 
       else if (h == (INT) -st) {
         NAT lo = i.begin();
         RATIONAL const_expr(lo - st, 1);
         if (lo >= st)
-          pushBack(res, createMapEntry(fact_.createMap(i, LExp(zero, const_expr))));
+          pushBack(res, fact_.createMap(i, LExp(zero, const_expr)));
       }
 
       else if (h % (INT) st == 0) {
@@ -1444,14 +1449,14 @@ PWMapDelegPtr OrdPWMap::reduce(const Interval &i, const LExp &le) const
             else
               kth_off = kth_piece.begin() + h;
               
-            pushBack(res, createMapEntry(fact_.createMap(kth_piece, LExp(0, kth_off))));
+            pushBack(res, fact_.createMap(kth_piece, LExp(0, kth_off)));
           }
         }
       }
     }
 
     else
-      pushBack(res, createMapEntry(fact_.createMap(i, le)));
+      pushBack(res, fact_.createMap(i, le));
   }
 
   return std::make_unique<OrdPWMap>(fact_, res);
@@ -1475,7 +1480,7 @@ PWMapDelegPtr OrdPWMap::reduce(const Map &map) const
         aux_piece[j] = ith_reduced.dom().begin().operator*().operator[](0);
         aux_exp[j] = ith_reduced.exp()[0];
         if (aux_piece != dom_piece || aux_exp != e) {
-          pushBack(res, createMapEntry(fact_.createMap(aux_piece, aux_exp)));
+          pushBack(res, fact_.createMap(aux_piece, aux_exp));
           was_reduced = true;
         }
 
@@ -1491,7 +1496,7 @@ PWMapDelegPtr OrdPWMap::reduce(const Map &map) const
   }
   
   if(!not_reduced.isEmpty())
-    pushBack(res, createMapEntry(fact_.createMap(not_reduced, e))); // Add unreduced subpieces
+    pushBack(res, fact_.createMap(not_reduced, e)); // Add unreduced subpieces
 
   return std::make_unique<OrdPWMap>(fact_, res);
 }
@@ -1571,7 +1576,7 @@ void OrdPWMap::processMinAdjMap(const Map &m1, const Map &m2,
         set_in = set_in.cup(ith_pw.dom());
       }
       else {
-        pushBack(ord_pwmap, createMapEntry(ith));
+        pushBack(ord_pwmap, ith);
         set_in = set_in.disjointCup(dom_res);
       }
     }
@@ -1585,7 +1590,6 @@ PWMapDelegPtr OrdPWMap::firstInv(const Set &subdom) const
     return std::make_unique<OrdPWMap>(fact_, res);
 
   SetPerimeter s_sp = calculatePerimeter(subdom);
-  auto s_min_per = s_sp.first;
   auto s_max_per = s_sp.second;
   Set visited = fact_.createSet();
   
@@ -1593,7 +1597,7 @@ PWMapDelegPtr OrdPWMap::firstInv(const Set &subdom) const
     const Map &t_m = t_mpe.first;
     const SetPerimeter &t_sp = t_mpe.second;
     auto t_min_per = t_sp.first;
-    auto t_max_per = t_sp.second;
+
     
     if (doInt(t_sp, s_sp)) {
       Set img = t_m.image(subdom);
@@ -1613,8 +1617,9 @@ PWMapDelegPtr OrdPWMap::firstInv(const Set &subdom) const
           }
         }
         Map new_map = fact_.createMap(t_m.preImage(img), t_m.exp());
-        pushBack(res, createMapEntry(new_map.minInv()));
+        pushBack(res, new_map.minInv());
         visited = visited.disjointCup(img);
+        continue;
       }
     }
     if (s_max_per[0] < t_min_per[0]) break;
@@ -1740,7 +1745,7 @@ PWMapDelegPtr OrdPWMap::offsetDom(const MD_NAT &off) const
   for (const MapEntry &mpe : pieces_){
     Map map = fact_.createMap(mpe.first.dom().offset(off), mpe.first.exp());
     if(!map.isEmpty())
-      pushBack(res, createMapEntry(map));
+      pushBack(res, map);
   }
 
   return std::make_unique<OrdPWMap>(fact_, res);
@@ -1751,11 +1756,9 @@ PWMapDelegPtr OrdPWMap::offsetDom(const PWMapDelegate &off) const
   OrdMapCollection res;
   const SetPerimeter o_sp = calculatePerimeter(off.dom());
   const auto o_max_per = o_sp.second;
-  const auto o_min_per = o_sp.first;
   for (const MapEntry &t_mpe : pieces_) {
     const Map &t_m = t_mpe.first;
     const SetPerimeter &t_sp = t_mpe.second;
-    const auto m_max_per = t_sp.second;
     const auto m_min_per = t_sp.first;
     
     if (doInt(t_sp, o_sp)) {
@@ -1763,8 +1766,9 @@ PWMapDelegPtr OrdPWMap::offsetDom(const PWMapDelegate &off) const
       
       if (!ith_dom.isEmpty()){
           Map res_map = fact_.createMap(ith_dom, t_m.exp());
-          pushBack(res, createMapEntry(res_map));
+          pushBack(res, res_map);
       }
+      continue;
     }
     
     if (o_max_per[0] <  m_min_per[0])
@@ -1788,7 +1792,7 @@ PWMapDelegPtr OrdPWMap::offsetImage(const MD_NAT &off) const
       res_e.emplaceBack(res_lexp);
     }
 
-    pushBack(res, createMapEntry(fact_.createMap(mpe.first.dom(), res_e)));
+    pushBack(res, fact_.createMap(mpe.first.dom(), res_e));
   }
 
   return std::make_unique<OrdPWMap>(fact_, res);
@@ -1799,7 +1803,7 @@ PWMapDelegPtr OrdPWMap::offsetImage(const Exp &off) const
   OrdMapCollection res;
 
   for (const MapEntry &mpe : pieces_) 
-    pushBack(res, createMapEntry(fact_.createMap(mpe.first.dom(), off + mpe.first.exp())));
+    pushBack(res, fact_.createMap(mpe.first.dom(), off + mpe.first.exp()));
 
   return std::make_unique<OrdPWMap>(fact_, res);
 }
@@ -1845,7 +1849,7 @@ PWMapDelegPtr OrdPWMap::compact() const
         ++li_curr;
       }
       
-      pushBack(res, createMapEntry(new_m));
+      pushBack(res, new_m);
       li_prev = indexes.before_begin();
       li_curr = indexes.begin();
   }

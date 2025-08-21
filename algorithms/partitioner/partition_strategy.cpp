@@ -31,13 +31,12 @@ using namespace SBG::LIB;
 
 namespace sbg_partitioner {
 
-PartitionStrategyGreedy::PartitionStrategyGreedy(unsigned number_of_partitions, const SBG::LIB::WeightedSBGraph graph,
-                                                 SBG::LIB::SetAF& set_fact)
+PartitionStrategyGreedy::PartitionStrategyGreedy(unsigned number_of_partitions, const SBG::LIB::WeightedSBGraph graph)
     : PartitionStrategy(),
       _number_of_partitions(number_of_partitions),
       _current_partition(0),
       _node_weight(graph.get_node_weights()),
-      _set_fact(&set_fact)
+      _set_fact(&graph.fact())
 {
   // get total of nodes by accumulating all interval values
   _total_of_nodes = get_node_size(graph.V(), SBG::LIB::NodeWeight(), *_set_fact);
@@ -126,12 +125,12 @@ map<unsigned, set<SetPiece>> PartitionStrategyGreedy::partitions() const { retur
 
 /* PartitionStrategyDistributive */
 
-PartitionStrategyDistributive::PartitionStrategyDistributive(unsigned number_of_partitions, const WeightedSBGraph graph, SetAF& set_fact)
+PartitionStrategyDistributive::PartitionStrategyDistributive(unsigned number_of_partitions, const WeightedSBGraph graph)
     : PartitionStrategy(),
       _number_of_partitions(number_of_partitions),
       _nodes(graph.V()),
       _node_weight(graph.get_node_weights()),
-      _set_fact(&set_fact)
+      _set_fact(&graph.fact())
 {
   for (unsigned i = 0; i < _number_of_partitions; i++) {
     auto p = make_pair(i, 0);

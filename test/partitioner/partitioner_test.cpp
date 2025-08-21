@@ -28,7 +28,6 @@
 #include <sbg/af_map.hpp>
 #include <sbg/af_set.hpp>
 
-
 /// @file parser_test.cpp
 ///
 
@@ -43,8 +42,8 @@ static const std::string PARTITIONER_DATA_DIR = "../../partitioner/data/";
 
 const std::string get_full_file_name(const std::string json_file)
 {
-    const std::string FULL_FILE_NAME = PARTITIONER_DATA_DIR + json_file;
-    return FULL_FILE_NAME;
+  const std::string FULL_FILE_NAME = PARTITIONER_DATA_DIR + json_file;
+  return FULL_FILE_NAME;
 }
 
 /**
@@ -59,68 +58,58 @@ const std::string get_full_file_name(const std::string json_file)
  * @param rhs_map_domain rhs map domain.
  * @param rhs_map_exps rhs map expresions.
  */
-static void test_create_sb_graph(
-    const std::string& filename,
-    const std::vector<Interval>& node_intervals,
-    const std::vector<Interval>& lhs_map_domain,
-    const std::vector<Exp>& lhs_map_exps,
-    const std::vector<Interval>& rhs_map_domain,
-    const std::vector<Exp>& rhs_map_exps)
+static void test_create_sb_graph(const std::string& filename, const std::vector<Interval>& node_intervals,
+                                 const std::vector<Interval>& lhs_map_domain, const std::vector<Exp>& lhs_map_exps,
+                                 const std::vector<Interval>& rhs_map_domain, const std::vector<Exp>& rhs_map_exps)
 {
-    // create needed factories
-    SBG::LIB::UnordAF set_fact;
-    SBG::LIB::MapAF map_fact(set_fact);
-    SBG::LIB::UnordPWMapAF pw_fact(map_fact);
+  // create needed factories
+  SBG::LIB::UnordAF set_fact;
+  SBG::LIB::MapAF map_fact(set_fact);
+  SBG::LIB::UnordPWMapAF pw_fact(map_fact);
 
-    auto sb_graph = sbg_partitioner::build_sb_graph(filename, set_fact, map_fact, pw_fact);
+  auto sb_graph = sbg_partitioner::build_sb_graph(filename, pw_fact);
 
-    // create nodes of the expected graph
-    auto expected_nodes = set_fact.createSet();
-    for (const auto& n : node_intervals) {
-        expected_nodes.emplaceBack(n);
-    }
-    EXPECT_EQ(expected_nodes, sb_graph.V());
+  // create nodes of the expected graph
+  auto expected_nodes = set_fact.createSet();
+  for (const auto& n : node_intervals) {
+    expected_nodes.emplaceBack(n);
+  }
+  EXPECT_EQ(expected_nodes, sb_graph.V());
 
-    // create edges of the expected graph through its maps
-    PWMap lhs_maps = pw_fact.createPWMap();
-    for (size_t i = 0; i < lhs_map_domain.size(); i++) {
-       lhs_maps.emplaceBack(map_fact.createMap(lhs_map_domain[i], lhs_map_exps[i]));
-    }
+  // create edges of the expected graph through its maps
+  PWMap lhs_maps = pw_fact.createPWMap();
+  for (size_t i = 0; i < lhs_map_domain.size(); i++) {
+    lhs_maps.emplaceBack(map_fact.createMap(lhs_map_domain[i], lhs_map_exps[i]));
+  }
 
-    PWMap rhs_maps = pw_fact.createPWMap();
-    for (size_t i = 0; i < rhs_map_domain.size(); i++) {
-       rhs_maps.emplaceBack(map_fact.createMap(rhs_map_domain[i], rhs_map_exps[i]));
-    }
+  PWMap rhs_maps = pw_fact.createPWMap();
+  for (size_t i = 0; i < rhs_map_domain.size(); i++) {
+    rhs_maps.emplaceBack(map_fact.createMap(rhs_map_domain[i], rhs_map_exps[i]));
+  }
 
-    // test edges are correct
-    EXPECT_EQ(lhs_maps.dom(), sb_graph.E());
-    EXPECT_EQ(rhs_maps.dom(), sb_graph.E());
+  // test edges are correct
+  EXPECT_EQ(lhs_maps.dom(), sb_graph.E());
+  EXPECT_EQ(rhs_maps.dom(), sb_graph.E());
 
-    // test that maps are as expected
-    EXPECT_EQ(lhs_maps, sb_graph.map1());
-    EXPECT_EQ(rhs_maps, sb_graph.map2());
+  // test that maps are as expected
+  EXPECT_EQ(lhs_maps, sb_graph.map1());
+  EXPECT_EQ(rhs_maps, sb_graph.map2());
 }
-
 
 TEST(create_sb_graph, PartitionerTests)
 {
-    test_create_sb_graph(
-        get_full_file_name("air_conditioners_1000.json"),
-        { Interval(0, 1, 999), Interval(1000, 1, 1999), Interval(2000, 1, 2999), Interval(3000, 1, 3999) },
-        { Interval(4000, 1, 4999), Interval(5000, 1, 5999), Interval(6000, 1, 6999), Interval(7000, 1, 7999) },
-        { Exp(LExp(1, RATIONAL(-3000, 1))), Exp(LExp(1, RATIONAL(-2000, 1))), Exp(LExp(1, RATIONAL(-6000, 1))), Exp(LExp(1, RATIONAL(-5000, 1))) },
-        { Interval(4000, 1, 4999), Interval(5000, 1, 5999), Interval(6000, 1, 6999), Interval(7000, 1, 7999) },
-        { Exp(LExp(1, RATIONAL(-4000, 1))), Exp(LExp(1, RATIONAL(-5000, 1))), Exp(LExp(1, RATIONAL(-5000, 1))), Exp(LExp(1, RATIONAL(-6000, 1))) }
-    );
+  test_create_sb_graph(get_full_file_name("air_conditioners_1000.json"),
+                       {Interval(0, 1, 999), Interval(1000, 1, 1999), Interval(2000, 1, 2999), Interval(3000, 1, 3999)},
+                       {Interval(4000, 1, 4999), Interval(5000, 1, 5999), Interval(6000, 1, 6999), Interval(7000, 1, 7999)},
+                       {Exp(LExp(1, RATIONAL(-3000, 1))), Exp(LExp(1, RATIONAL(-2000, 1))), Exp(LExp(1, RATIONAL(-6000, 1))),
+                        Exp(LExp(1, RATIONAL(-5000, 1)))},
+                       {Interval(4000, 1, 4999), Interval(5000, 1, 5999), Interval(6000, 1, 6999), Interval(7000, 1, 7999)},
+                       {Exp(LExp(1, RATIONAL(-4000, 1))), Exp(LExp(1, RATIONAL(-5000, 1))), Exp(LExp(1, RATIONAL(-5000, 1))),
+                        Exp(LExp(1, RATIONAL(-6000, 1)))});
 
-    test_create_sb_graph(
-        get_full_file_name("advection.json"),
-        { Interval(0, 1, 0), Interval(1, 1, 99) },
-        { Interval(100, 1, 100), Interval(101, 1, 198) },
-        { Exp(LExp(0, 0)),  Exp(LExp(1, RATIONAL(-100, 1))) },
-        { Interval(100, 1, 100), Interval(101, 1, 198) },
-        { Exp(LExp(1, RATIONAL(-99, 1))), Exp(LExp(1, RATIONAL(-99, 1))) }
-    );
+  test_create_sb_graph(get_full_file_name("advection.json"), {Interval(0, 1, 0), Interval(1, 1, 99)},
+                       {Interval(100, 1, 100), Interval(101, 1, 198)}, {Exp(LExp(0, 0)), Exp(LExp(1, RATIONAL(-100, 1)))},
+                       {Interval(100, 1, 100), Interval(101, 1, 198)}, {Exp(LExp(1, RATIONAL(-99, 1))), Exp(LExp(1, RATIONAL(-99, 1)))});
 }
 
 TEST(initial_partition, PartitionerTests)
@@ -130,9 +119,9 @@ TEST(initial_partition, PartitionerTests)
   SBG::LIB::MapAF map_fact(set_fact);
   SBG::LIB::UnordPWMapAF pw_fact(map_fact);
 
-  auto sb_graph = sbg_partitioner::build_sb_graph(get_full_file_name("air_conditioners_1000.json"), set_fact, map_fact, pw_fact);
+  auto sb_graph = sbg_partitioner::build_sb_graph(get_full_file_name("air_conditioners_1000.json"), pw_fact);
 
-  sbg_partitioner::PartitionMap partition = sbg_partitioner::best_initial_partition(sb_graph, 4, set_fact);
+  sbg_partitioner::PartitionMap partition = sbg_partitioner::best_initial_partition(sb_graph, 4);
 
   auto expected_distributed_pre_order_0 = set_fact.createSet();
   expected_distributed_pre_order_0.emplaceBack(Interval(0, 1, 249));
@@ -167,33 +156,30 @@ TEST(initial_partition, PartitionerTests)
   EXPECT_EQ(expected_distributed_pre_order_3, partition_3);
 }
 
-
 static void test_partitioning(const std::string& filename, int number_of_partitions)
 {
-    UnordAF set_fact;
-    MapAF map_fact(set_fact);
-    UnordPWMapAF pw_fact(map_fact);
+  UnordAF set_fact;
+  MapAF map_fact(set_fact);
+  UnordPWMapAF pw_fact(map_fact);
 
-    auto sb_graph = sbg_partitioner::build_sb_graph(filename, set_fact, map_fact, pw_fact);
-    auto partitions = sbg_partitioner::best_initial_partition(sb_graph, number_of_partitions, set_fact);
-    sbg_partitioner::kl_sbg_imbalance_partitioner(sb_graph, partitions, 0.0, set_fact, map_fact);
+  auto sb_graph = sbg_partitioner::build_sb_graph(filename, pw_fact);
+  auto partitions = sbg_partitioner::best_initial_partition(sb_graph, number_of_partitions);
+  sbg_partitioner::kl_sbg_imbalance_partitioner(sb_graph, partitions, 0.0);
 
-    sbg_partitioner::sanity_check(sb_graph, partitions, number_of_partitions, set_fact);
+  sbg_partitioner::sanity_check(sb_graph, partitions, number_of_partitions);
 }
-
 
 TEST(partitioning, PartitionerTests)
 {
-    test_partitioning(get_full_file_name("advection.json"), 2);
-    test_partitioning(get_full_file_name("advection.json"), 4);
-    test_partitioning(get_full_file_name("advection.json"), 8);
+  test_partitioning(get_full_file_name("advection.json"), 2);
+  test_partitioning(get_full_file_name("advection.json"), 4);
+  test_partitioning(get_full_file_name("advection.json"), 8);
 
-    test_partitioning(get_full_file_name("air_conditioners_1000.json"), 2);
-    test_partitioning(get_full_file_name("air_conditioners_1000.json"), 4);
-    test_partitioning(get_full_file_name("air_conditioners_1000.json"), 8);
+  test_partitioning(get_full_file_name("air_conditioners_1000.json"), 2);
+  test_partitioning(get_full_file_name("air_conditioners_1000.json"), 4);
+  test_partitioning(get_full_file_name("air_conditioners_1000.json"), 8);
 
-    test_partitioning(get_full_file_name("air_conditioners_cont_4_1000.json"), 4);
+  test_partitioning(get_full_file_name("air_conditioners_cont_4_1000.json"), 4);
 }
-
 
 /// @}

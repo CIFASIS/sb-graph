@@ -16,9 +16,7 @@
 
  ******************************************************************************/
 
-#include <algorithm>
 #include <fstream>
-#include <set>
 
 #include <sbg/sbg.hpp>
 
@@ -103,11 +101,6 @@ void write_node_by_partition(const PartitionMap& partitions, const WeightedSBGra
     for (auto v : sb_graph.V()) {
         nodes.push_back(v);
     }
-
-    // SORT ONE-DIMENSIONAL:
-    auto f_sort = [] (const auto& a, const auto& b) {
-        return a.intervals()[0].end() < b.intervals()[0].end();
-    };
 
     sort_partition_intervals(nodes);
 
@@ -209,7 +202,7 @@ PartitionMap read_partition_from_file(const string& name, const WeightedSBGraph&
 
         for (auto& s: partitions) {
             auto s_set = from_vector(s, set_fact);
-            flatten_set(s_set, sb_graph, set_fact);
+            flatten_set(s_set, sb_graph);
             s = to_vector(s_set);
         }
 

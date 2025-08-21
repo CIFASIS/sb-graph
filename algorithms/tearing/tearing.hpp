@@ -68,6 +68,7 @@ struct Tearing {
   private:
   PWMap sccMinReach(const DSBG &dg) const;
   PWMap sccStep();
+  PWMap calculateSCC();
   void restoreSBG();
 };
 

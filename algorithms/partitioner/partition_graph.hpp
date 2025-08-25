@@ -60,7 +60,8 @@ PartitionMap
 best_initial_partition(
     SBG::LIB::WeightedSBGraph& graph,
     unsigned number_of_partitions,
-    const InitialPartitionStrategy strategy);
+    const InitialPartitionStrategy strategy,
+    bool multithreading_enabled);
 
 
 /// Returns the connectivity set of a set of edges contained in map1 and map2 of

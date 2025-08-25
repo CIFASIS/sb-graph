@@ -33,7 +33,8 @@ unordered_map<SetPiece, Set, SetPieceHash> CommunicationCost::_communication_by_
 namespace internal {
 
 
-static CommunicationCost* cost_matrix = nullptr;
+// the only real instance
+CommunicationCostPtr cost_matrix = nullptr;
 
 
 namespace {
@@ -59,8 +60,9 @@ Set set_piece_communication(const SetPiece& nodes, const WeightedSBGraph& graph)
 
 
 CommunicationCost::CommunicationCost(const WeightedSBGraph& graph, PartitionMap partitions)
-    : _graph(graph),
-    _partitions(partitions)    
+    : ICommunicationCost(),
+    _graph(graph),
+    _partitions(partitions)
 {
     initialize();
 }
@@ -77,8 +79,11 @@ void CommunicationCost::initialize()
         Set internal_communication_partition_i = _graph.fact().createSet();
 
         for (const auto& node : _partitions.at(i)) {
-            auto node_edges = internal::set_piece_communication(node, _graph);
-            _communication_by_set_piece.insert({node, node_edges});
+            if (_communication_by_set_piece.find(node) == _communication_by_set_piece.end()) {
+                _communication_by_set_piece.insert({node, internal::set_piece_communication(node, _graph)});
+            }
+
+            const auto& node_edges = _communication_by_set_piece.at(node);
             internal_communication_partition_i = node_edges.intersection(partition_i_communication).cup(internal_communication_partition_i);
             partition_i_communication = partition_i_communication.cup(node_edges);            
         }
@@ -182,12 +187,57 @@ Set CommunicationCost::get_ic_by_interval(unsigned partition_id, const SetPiece&
 }
 
 
-void set_communication_cost(CommunicationCost& cost_matrix)
+
+CommunicationCostSync::CommunicationCostSync(const WeightedSBGraph& graph, PartitionMap partitions)
+    :ICommunicationCost(),
+    _comm_cost(graph, partitions)
+{}
+
+
+void CommunicationCostSync::update_partitions(PartitionMap& partitions, optional<reference_wrapper<const list<size_t>>> modified_partitions)
 {
-    internal::cost_matrix = new CommunicationCost(cost_matrix);
+    const lock_guard<mutex> lock(_mutex);
+    _comm_cost.update_partitions(partitions, modified_partitions);
 }
 
-CommunicationCost& get_communication_cost()
+
+Set CommunicationCostSync::get_ec_by_partition_id(unsigned partition_id)
+{
+    const lock_guard<mutex> lock(_mutex);
+    return _comm_cost.get_ec_by_partition_id(partition_id);
+}
+
+
+Set CommunicationCostSync::get_ec_by_interval(unsigned partition_id, const SetPiece& nodes)
+{
+    const lock_guard<mutex> lock(_mutex);
+    return _comm_cost.get_ec_by_interval(partition_id, nodes);
+}
+
+
+Set CommunicationCostSync::get_ic_by_interval(unsigned partition_id, const SetPiece& nodes)
+{
+    const lock_guard<mutex> lock(_mutex);
+    return _comm_cost.get_ic_by_interval(partition_id, nodes);
+}
+
+
+
+CommunicationCostPtr create_communication_cost(const WeightedSBGraph& graph, PartitionMap partitions, bool multithreading_enabled)
+{
+    if (multithreading_enabled) {
+        return make_unique<CommunicationCostSync>(graph, partitions);
+    } else {
+        return make_unique<CommunicationCost>(graph, partitions);
+    }
+}
+
+void set_communication_cost(CommunicationCostPtr&& cost_matrix)
+{
+    internal::cost_matrix = move(cost_matrix);
+}
+
+ICommunicationCost& get_communication_cost()
 {
     assert(internal::cost_matrix);
     return *internal::cost_matrix;

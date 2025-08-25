@@ -155,13 +155,13 @@ Partition to_vector(const Set& partition_set)
 
 
 PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_partitions,
-    const InitialPartitionStrategy strategy)
+    const InitialPartitionStrategy strategy, bool multithreading_enabled)
 {
   logging::sbg_log << "computing strategy number " << strategy << endl;
   std::vector<sbg_partitioner::PartitionMap> partition_maps = make_initial_partitions(graph, number_of_partitions, strategy);
 
   auto& best_initial_partitions = partition_maps.front();
-  unique_ptr<CommunicationCost> comm_cost = make_unique<CommunicationCost>(graph, best_initial_partitions);
+  CommunicationCostPtr comm_cost = create_communication_cost(graph, best_initial_partitions, multithreading_enabled);
   if (strategy == InitialPartitionStrategy::ALL) {
 
     auto best_communication_set = graph.fact().createSet();
@@ -172,7 +172,7 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
 
     for (size_t i = 1; i < partition_maps.size(); i++) {
         auto temp_intial_partitions = partition_maps[i];
-        unique_ptr<CommunicationCost> temp_comm_cost = make_unique<CommunicationCost>(graph, temp_intial_partitions);
+        CommunicationCostPtr temp_comm_cost = create_communication_cost(graph, temp_intial_partitions, multithreading_enabled);
 
         auto temp_partition_comm = graph.fact().createSet();
         for (unsigned i = 0; i < number_of_partitions; i++) {

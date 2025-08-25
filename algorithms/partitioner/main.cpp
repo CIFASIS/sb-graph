@@ -221,7 +221,7 @@ int main(int argc, char** argv)
     cout << "sb_graph: " << sb_graph << endl;
 
     auto start_partitionate = chrono::high_resolution_clock::now();
-    auto partitions = best_initial_partition(sb_graph, *number_of_partitions, initial_partition_strategy);
+    auto partitions = best_initial_partition(sb_graph, *number_of_partitions, initial_partition_strategy, enable_multithreading);
     kl_sbg_imbalance_partitioner(sb_graph, partitions, *epsilon, enable_multithreading);
     auto end_partitionate = chrono::high_resolution_clock::now();
     auto time_to_partitionate = chrono::duration<double, std::milli>(end_partitionate - start_partitionate).count();

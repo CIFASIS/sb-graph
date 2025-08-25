@@ -52,6 +52,8 @@ static void usage()
     cout << "-d, --directory                    Directory with partitions obtianed by other partitioners, "
           "we want to run quality metrics against them."
         << endl;
+    cout << "-t, --enable-multithreading          Enable multithreading during optimization. WARNING: multithreading "
+            "is in experimental stage." << endl;
     cout << "-i, --initial-partition-strategy   Choose a particular initial partition strategy. If this "
             "flag is disbaled, all strategies will be computed and the best partition will be chosen.\n"
             "\tValue\tSearching algorithm\tStrategy\tOrder\n"
@@ -101,17 +103,18 @@ int main(int argc, char** argv)
     optional<string> output_sb_graph = nullopt;
     optional<float> epsilon = nullopt;
     InitialPartitionStrategy initial_partition_strategy = InitialPartitionStrategy::ALL;
+    bool enable_multithreading = false;
     bool compute_metrics = false;
 
     while (true) {
         static struct option long_options[] = {{"filename", required_argument, 0, 'f'},    {"partitions", required_argument, 0, 'p'},
                                             {"output-file", required_argument, 0, 'g'}, {"output-graph", required_argument, 0, 'o'},
                                             {"compute-metrics", no_argument, 0, 'm'},   {"directory", required_argument, 0, 'd'},
-                                            {"initial-partition-strategy", required_argument, 0, 'i'},
-                                            {"version", no_argument, 0, 'v'},           {"help", no_argument, 0, 'h'}};
+                                            {"initial-partition-strategy", required_argument, 0, 'i'}, {"enable-multithreading", no_argument, 0, 't'},
+                                            {"version", no_argument, 0, 'v'}, {"help", no_argument, 0, 'h'}};
 
         int option_index = 0;
-        opt = getopt_long(argc, argv, "f:p:e:o:g:d:i:mvh:", long_options, &option_index);
+        opt = getopt_long(argc, argv, "f:p:e:o:g:d:i:tmvh:", long_options, &option_index);
         if (opt == EOF) break;
 
         switch (opt) {
@@ -159,6 +162,10 @@ int main(int argc, char** argv)
         if (optarg) {
             initial_partition_strategy = InitialPartitionStrategy(atoi(optarg));
         }
+        break;
+
+        case 't':
+        enable_multithreading = true;
         break;
 
         case 'v':
@@ -215,7 +222,7 @@ int main(int argc, char** argv)
 
     auto start_partitionate = chrono::high_resolution_clock::now();
     auto partitions = best_initial_partition(sb_graph, *number_of_partitions, initial_partition_strategy);
-    kl_sbg_imbalance_partitioner(sb_graph, partitions, *epsilon);
+    kl_sbg_imbalance_partitioner(sb_graph, partitions, *epsilon, enable_multithreading);
     auto end_partitionate = chrono::high_resolution_clock::now();
     auto time_to_partitionate = chrono::duration<double, std::milli>(end_partitionate - start_partitionate).count();
 

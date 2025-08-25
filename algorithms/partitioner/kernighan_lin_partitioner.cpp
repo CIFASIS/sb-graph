@@ -44,8 +44,6 @@ using ec_ic = std::pair<Set, Set>;
 // Using unnamed namespace to define functions with internal linkage
 namespace {
 
-constexpr bool multithreading_enabled = false;
-
 pair<unsigned, unsigned> compute_lmin_lmax(const WeightedSBGraph& graph, unsigned number_of_partitions, const float imbalance_epsilon,
                                            const SetAF& set_fact)
 {
@@ -582,7 +580,7 @@ string get_pretty_sb_graph(const SBG::LIB::SBG& g)
   return json_data;
 }
 
-void kl_sbg_imbalance_partitioner(const WeightedSBGraph& graph, PartitionMap& partitions, const float imbalance_epsilon)
+void kl_sbg_imbalance_partitioner(const WeightedSBGraph& graph, PartitionMap& partitions, const float imbalance_epsilon, const bool enable_multithreading)
 {
   auto [LMin, LMax] = imbalance_epsilon > 0.0 ? compute_lmin_lmax(graph, partitions.size(), imbalance_epsilon, graph.fact())
                                               : make_pair<unsigned, unsigned>(0, 0);
@@ -596,7 +594,7 @@ void kl_sbg_imbalance_partitioner(const WeightedSBGraph& graph, PartitionMap& pa
     change = false;
 
     KLSbgPartitionerResult best_gain;
-    if (multithreading_enabled) {
+    if (enable_multithreading) {
       best_gain = kl_sbg_partitioner_multithreading(graph, partitions, cost_matrix, LMin, LMax, gains);
     } else {
       best_gain = kl_sbg_partitioner_function(graph, partitions, cost_matrix, LMin, LMax, gains);

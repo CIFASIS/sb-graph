@@ -164,7 +164,8 @@ static void test_partitioning(const std::string& filename, int number_of_partiti
 
   auto sb_graph = sbg_partitioner::build_sb_graph(filename, pw_fact);
   auto partitions = sbg_partitioner::best_initial_partition(sb_graph, number_of_partitions, sbg_partitioner::InitialPartitionStrategy::ALL);
-  sbg_partitioner::kl_sbg_imbalance_partitioner(sb_graph, partitions, 0.0);
+  constexpr bool enable_multithreading = false;
+  sbg_partitioner::kl_sbg_imbalance_partitioner(sb_graph, partitions, 0.0, enable_multithreading);
 
   sbg_partitioner::sanity_check(sb_graph, partitions, number_of_partitions);
 }

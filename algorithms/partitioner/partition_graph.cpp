@@ -161,26 +161,36 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
   std::vector<sbg_partitioner::PartitionMap> partition_maps = make_initial_partitions(graph, number_of_partitions, strategy);
 
   auto& best_initial_partitions = partition_maps.front();
-  CommunicationCost comm_cost = CommunicationCost(graph, best_initial_partitions);
+  unique_ptr<CommunicationCost> comm_cost = make_unique<CommunicationCost>(graph, best_initial_partitions);
   if (strategy == InitialPartitionStrategy::ALL) {
-    size_t best_communication_set_cardinality = get_partition_communication(graph, best_initial_partitions);
+
+    auto best_communication_set = graph.fact().createSet();
     for (unsigned i = 0; i < number_of_partitions; i++) {
-        best_communication_set_cardinality += get_set_size(comm_cost.get_ec_by_partition_id(i));
+        best_communication_set = best_communication_set.cup(comm_cost->get_ec_by_partition_id(i));
     }
+    size_t best_communication_set_size = best_communication_set.cardinal();
 
     for (size_t i = 1; i < partition_maps.size(); i++) {
         auto temp_intial_partitions = partition_maps[i];
-        CommunicationCost temp_comm_cost = CommunicationCost(graph, temp_intial_partitions);
-        size_t temp_partition_comm_size = get_partition_communication(graph, temp_intial_partitions);
+        unique_ptr<CommunicationCost> temp_comm_cost = make_unique<CommunicationCost>(graph, temp_intial_partitions);
+
+        auto temp_partition_comm = graph.fact().createSet();
         for (unsigned i = 0; i < number_of_partitions; i++) {
-            temp_partition_comm_size += get_set_size(comm_cost.get_ec_by_partition_id(i));
+            temp_partition_comm = temp_partition_comm.cup(comm_cost->get_ec_by_partition_id(i));
+        }
+
+        size_t temp_intial_partitions_size = temp_partition_comm.cardinal();
+
+        if (temp_intial_partitions_size < best_communication_set_size) {
+          comm_cost = move(temp_comm_cost);
+          best_initial_partitions = move(partition_maps[i]);
         }
     }
 
-    logging::sbg_log << "Best is " << best_initial_partitions << " with communication " << best_communication_set_cardinality << endl;
+    logging::sbg_log << "Best is " << best_initial_partitions << " with communication " << best_communication_set << endl;
   }
 
-  set_communication_cost(comm_cost);
+  set_communication_cost(move(comm_cost));
 
   return best_initial_partitions;
 }

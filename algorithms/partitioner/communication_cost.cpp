@@ -28,6 +28,8 @@ using namespace SBG::LIB;
 
 namespace sbg_partitioner {
 
+unordered_map<SetPiece, Set, SetPieceHash> CommunicationCost::_communication_by_set_piece = {};
+
 namespace internal {
 
 

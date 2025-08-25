@@ -121,7 +121,7 @@ TEST(initial_partition, PartitionerTests)
 
   auto sb_graph = sbg_partitioner::build_sb_graph(get_full_file_name("air_conditioners_1000.json"), pw_fact);
 
-  sbg_partitioner::PartitionMap partition = sbg_partitioner::best_initial_partition(sb_graph, 4);
+  sbg_partitioner::PartitionMap partition = sbg_partitioner::best_initial_partition(sb_graph, 4, sbg_partitioner::InitialPartitionStrategy::ALL);
 
   auto expected_distributed_pre_order_0 = set_fact.createSet();
   expected_distributed_pre_order_0.emplaceBack(Interval(0, 1, 249));
@@ -163,7 +163,7 @@ static void test_partitioning(const std::string& filename, int number_of_partiti
   UnordPWMapAF pw_fact(map_fact);
 
   auto sb_graph = sbg_partitioner::build_sb_graph(filename, pw_fact);
-  auto partitions = sbg_partitioner::best_initial_partition(sb_graph, number_of_partitions);
+  auto partitions = sbg_partitioner::best_initial_partition(sb_graph, number_of_partitions, sbg_partitioner::InitialPartitionStrategy::ALL);
   sbg_partitioner::kl_sbg_imbalance_partitioner(sb_graph, partitions, 0.0);
 
   sbg_partitioner::sanity_check(sb_graph, partitions, number_of_partitions);

@@ -52,10 +52,9 @@ static void usage()
     cout << "-d, --directory                    Directory with partitions obtianed by other partitioners, "
           "we want to run quality metrics against them."
         << endl;
-    cout << "-t, --enable-multithreading          Enable multithreading during optimization. WARNING: multithreading "
-            "is in experimental stage." << endl;
+    cout << "-t, --enable-multithreading        Enable multithreading during optimization." << endl;
     cout << "-i, --initial-partition-strategy   Choose a particular initial partition strategy. If this "
-            "flag is disbaled, all strategies will be computed and the best partition will be chosen.\n"
+            "flag is disabaled, all strategies will be computed and the best partition will be chosen.\n"
             "\tValue\tSearching algorithm\tStrategy\tOrder\n"
             "\t0\tDepth first search\tDistributive\tpreorder\n"
             "\t1\tDepth first search\tDistributive\tpostorder\n"

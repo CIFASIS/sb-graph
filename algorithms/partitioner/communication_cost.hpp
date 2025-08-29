@@ -92,15 +92,15 @@ class CommunicationCost : public ICommunicationCost {
 public:
     CommunicationCost(const SBG::LIB::WeightedSBGraph& graph, PartitionMap partitions);
 
-    virtual ~CommunicationCost() = default;
+    ~CommunicationCost() = default;
 
-    virtual void update_partitions(PartitionMap& partitions, std::optional<std::reference_wrapper<const std::list<size_t>>> modified_partitions = std::nullopt);
+    void update_partitions(PartitionMap& partitions, std::optional<std::reference_wrapper<const std::list<size_t>>> modified_partitions = std::nullopt) override;
 
-    virtual SBG::LIB::Set get_ec_by_partition_id(unsigned partition_id); // non-const since _cost_by_partition may be updated
+    SBG::LIB::Set get_ec_by_partition_id(unsigned partition_id)  override; // non-const since _cost_by_partition may be updated
 
-    virtual SBG::LIB::Set get_ec_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes);
+    SBG::LIB::Set get_ec_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes)  override;
 
-    virtual SBG::LIB::Set get_ic_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes);
+    SBG::LIB::Set get_ic_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes) override;
 
 private:
     const SBG::LIB::WeightedSBGraph& _graph; // read-only members
@@ -124,15 +124,15 @@ class CommunicationCostSync : public ICommunicationCost {
 public:
     CommunicationCostSync(const SBG::LIB::WeightedSBGraph& graph, PartitionMap partitions);
 
-    virtual ~CommunicationCostSync() = default;
+    ~CommunicationCostSync() = default;
 
-    virtual void update_partitions(PartitionMap& partitions, std::optional<std::reference_wrapper<const std::list<size_t>>> modified_partitions = std::nullopt);
+    void update_partitions(PartitionMap& partitions, std::optional<std::reference_wrapper<const std::list<size_t>>> modified_partitions = std::nullopt) override;
 
-    virtual SBG::LIB::Set get_ec_by_partition_id(unsigned partition_id); // non-const since _cost_by_partition may be updated
+    SBG::LIB::Set get_ec_by_partition_id(unsigned partition_id) override; // non-const since _cost_by_partition may be updated
 
-    virtual SBG::LIB::Set get_ec_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes);
+    SBG::LIB::Set get_ec_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes) override;
 
-    virtual SBG::LIB::Set get_ic_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes);
+    SBG::LIB::Set get_ic_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes) override;
 
 private:
     CommunicationCost _comm_cost;

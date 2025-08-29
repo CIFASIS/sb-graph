@@ -73,10 +73,23 @@ class MinAdjMRV : public MRV<MinAdjMRV> {
   PWMap impl(const DSBG& dsbg);
 
   private:
-  PWMap recursivePaths(const Set& Vc, const Set& VR) const;
+  /**
+   * @brief Given the current state of rmap_, returns the set of edges (u, v)
+   * such that rmap_(u) > rmap_(v), which are edges leading to a new
+   * minimum MRV.
+   */
+  Set decreasingRepresentative(const PWMap& rmap) const;
+
+  Set edgesInPaths(const PWMap& smap) const;
+
+  /*
+   * @brief Calculates the MRV for recursive paths.
+   */
+  PWMap recursivePaths(const Set& paths_edges, const Set& outgoing);
 
   DSBG dsbg_;
-  PWMap rmap_;
+  PWMap smap_;
+  Set visitedSE_;
 };
 
 } // namespace LIB

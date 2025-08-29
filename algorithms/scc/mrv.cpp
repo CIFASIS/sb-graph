@@ -38,142 +38,140 @@ PWMap MRV<MRVImpl>::calculate(const DSBG& dsbg)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Path Finder BFS Implementation ----------------------------------------------
+// Minimum Adjacent MRV Implementation -----------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 MinAdjMRV::MinAdjMRV(const PWMapAF& fact) : MRV<MinAdjMRV>(fact)
-  , dsbg_(fact), rmap_(fact_.createPWMap()) {}
+  , dsbg_(fact), smap_(fact_.createPWMap()), visitedSE_(fact.createSet()) {}
 
-PWMap MinAdjMRV::recursivePaths(const Set& changedV, const Set& recursiveV) const
+Set MinAdjMRV::decreasingRepresentative(const PWMap& rmap) const
 {
-  PWMap recursion_rmap = fact_.createPWMap();
+  Set result = fact_.createSet();
 
   PWMap mapB = dsbg_.mapB();
   PWMap mapD = dsbg_.mapD();
 
-  // Vertices that reach the shared representative
-  Set repV = rmap_.preImage(rmap_.image(recursiveV));
-  Util::DEBUG_LOG << "recursiveV: " << recursiveV << "\n";
-  Util::DEBUG_LOG << "repV: " << repV << "\n";
+  if (mapB.isEmpty() || mapD.isEmpty())
+    return result;
 
-  // Edges with both endings in recursiveV (path to a minimum rep)
-  Set ERB = mapB.preImage(repV);
-  Set ERD = mapD.preImage(repV);
-  Set ER = ERB.intersection(ERD);
+  PWMap rmapB = rmap.composition(mapB);
+  PWMap rmapD = rmap.composition(mapD);
 
-  Set end = recursiveV.difference(changedV);
-  if (!end.isEmpty()&&  !ER.isEmpty()) {
-    // Distance map
-    PWMap dmap = fact_.createPWMap();
-    Set ith = end;
-    NAT dist = 0;
-    unsigned int arity = recursiveV.arity();
-    // Calculate distance for vertices in same_rep that reach reps
-    for (; dmap.dom().intersection(changedV.intersection(recursiveV)).isEmpty();) {
-      Set dom = ith.difference(dmap.dom());
-      Exp exp(MD_NAT(arity, dist));
-      dmap.emplaceBack(fact_.createMap(dom, exp));
-      // Update ith to vertices that have outgoing edges entering ith
-      ith = mapB.image(mapD.preImage(ith));
-      ++dist;
-    }
-    Util::DEBUG_LOG << "dmap: " << dmap << "\n";
-    PWMap dmapB = dmap.composition(mapB);
-    PWMap dmapD = dmap.composition(mapD);
+  unsigned int dims = rmapD.arity();
+  PWMap offD = rmapD.offsetImage(MD_NAT(dims, 1)); 
+  PWMap subt = (offD - rmapB);
+  SetPiece im(dims, Interval(0, 1, Inf));
+  Set min_in_mapD = fact_.createSet();
+  for (unsigned int k = 0; k < dims; ++k) {
+    im[k] = Interval(0, 1, 0);
+    if (k > 0)
+      im[k-1] = Interval(1, 1, 1);
 
-    // Get edges where the end is closer to the rep than the beginning
-    Set positive = fact_.createSet(SetPiece(arity, Interval(1, 1, Inf)));
-    Set not_cycle_edges = (dmapB - dmapD).preImage(positive);
-    Util::DEBUG_LOG << "not_cycle_edges: " << not_cycle_edges << "\n";
-    ER = ER.intersection(not_cycle_edges);
-    Util::DEBUG_LOG << "ER: " << ER << "\n";
-
-    // Extend to subset-edge
-    PWMap subEmap = dsbg_.subEmap();
-    Set ER_plus = subEmap.preImage(subEmap.image(ER));
-    Util::DEBUG_LOG << "ER_plus: " << ER_plus << "\n";
-
-    // Calculate a succesor
-    PWMap auxB = mapB.restrict(ER_plus);
-    PWMap auxD = mapD.restrict(ER_plus);
-    PWMap smap_plus = rmap_.restrict(recursiveV);
-    smap_plus = smap_plus.combine(auxB.minAdjMap(auxD));
-    Util::DEBUG_LOG << "smap_plus: " << smap_plus << "\n";
-
-    // Update rmap for recursion, and leave the rest unchanged
-    recursion_rmap = smap_plus.combine(recursion_rmap).compact();
-    Util::DEBUG_LOG << "recursion_rmap: " << recursion_rmap << "\n\n";
+    Set kth = subt.preImage(fact_.createSet(im));
+    min_in_mapD = min_in_mapD.disjointCup(kth);
   }
 
-  return recursion_rmap;
+  return min_in_mapD;
 }
+
+Set MinAdjMRV::edgesInPaths(const PWMap& smap) const
+{
+  PWMap mapB = dsbg_.mapB();
+  PWMap mapD = dsbg_.mapD();
+
+  // Vertices that are successors of other vertices in a path
+  Set not_fixed = smap.dom().difference(smap.fixedPoints());
+  Set succs = smap.restrict(not_fixed).image();
+  // Edges whose endings are successors 
+  Set ending_edges = mapD.preImage(succs);
+  // Map from a 'successor' edge to its start
+  PWMap auxB = mapB.restrict(ending_edges);
+  // Map from edge to the successor of its start
+  PWMap map_succs = smap.composition(auxB);
+ 
+  return map_succs.equalImage(mapD);
+}
+
+PWMap MinAdjMRV::recursivePaths(const Set& ith_paths_edges, const Set& outgoing)
+{
+  PWMap result = fact_.createPWMap();
+
+  PWMap subEmap = dsbg_.subEmap();
+  Set ithSE = subEmap.image(ith_paths_edges);
+  visitedSE_ = visitedSE_.cup(ithSE);
+  Set repeatedSE = visitedSE_.intersection(ithSE);
+  if (!repeatedSE.isEmpty()) {
+    PWMap mapB = dsbg_.mapB();
+    PWMap mapD = dsbg_.mapD();
+
+    Set ith_start = smap_.dom().difference(smap_.image());
+    Set E = fact_.createSet(); 
+    PWMap subEmap = dsbg_.subEmap();
+    bool exit_condition = true;
+    do {
+      Set ithE = mapB.preImage(ith_start).intersection(ith_paths_edges);
+      E = E.disjointCup(ithE);
+      ith_start = mapD.image(ithE);
+      exit_condition = !repeatedSE.intersection(subEmap.image(E)).isEmpty();
+    } while (!exit_condition);
+
+    Set smap_edges = edgesInPaths(smap_);
+    Set adj = mapB.preImage(mapB.image(smap_edges));
+
+    Set E_plus = subEmap.preImage(subEmap.image(E));
+    E_plus = E_plus.difference(mapB.preImage(outgoing));
+    E_plus = E_plus.difference(adj);
+    PWMap mapB_plus = dsbg_.mapB().restrict(E_plus);
+    PWMap mapD_plus = dsbg_.mapD().restrict(E_plus);
+    result = mapB_plus.minAdjMap(mapD_plus);
+  }
+
+  return result;
+}
+
 
 PWMap MinAdjMRV::impl(const DSBG& dsbg)
 {
-  Util::DEBUG_LOG << "MinAdjMRV:\n" << dsbg << "\n\n";
+  std::cout << "MinAdjMRV dsbg:\n" << dsbg << "\n\n";
 
   dsbg_ = dsbg;
-  rmap_ = fact_.createPWMap(dsbg.V());
-
-  Set V = dsbg_.V();
-  Set E = dsbg_.E();
   PWMap mapB = dsbg_.mapB();
   PWMap mapD = dsbg_.mapD();
   PWMap subEmap = dsbg_.subEmap();
+  visitedSE_ = fact_.createSet();
 
-  if (!V.isEmpty()) {
+  smap_ = fact_.createPWMap(dsbg.V());
+  PWMap rmap = smap_;
+
+  if (!dsbg_.V().isEmpty() && !dsbg_.E().isEmpty()) {
     PWMap old_rmap = fact_.createPWMap();
-
-    if (E.isEmpty())
-      return rmap_;
-
-    Set changedV = fact_.createSet();
+    Set E = fact_.createSet();
+    Set paths_edges = fact_.createSet();
     do {
-      old_rmap = rmap_;
+      old_rmap = rmap;
 
-      PWMap ermapD = rmap_.composition(mapD);
+      // Calculate successor map using edges that lead to a minor representative
+      E = decreasingRepresentative(rmap);
+      PWMap decreasingB = mapB.restrict(E);
+      PWMap decreasingD = mapD.restrict(E);
+      PWMap decreasing_smap = decreasingB.minAdjMap(decreasingD); 
+      smap_ = decreasing_smap.combine(smap_);
 
-      PWMap new_rmap = mapB.minAdjMap(ermapD);
-      rmap_ = rmap_.minMap(new_rmap).combine(rmap_);
-      Util::DEBUG_LOG << "rmap before rec: " << rmap_ << "\n\n";
+      // Recursive paths
+      Set ith_paths_edges = edgesInPaths(decreasing_smap);
+      Set outgoing = rmap.image(mapD.image(ith_paths_edges));
+      PWMap smap_plus = recursivePaths(ith_paths_edges, outgoing);
+      smap_ = smap_plus.combine(smap_);
 
-      PWMap recursion_rmap = fact_.createPWMap();
-      // Vertices that have a new representative
-      changedV = V.difference(old_rmap.equalImage(rmap_));
-      if (!changedV.isEmpty()) {
-        // If the mrv is in the same SV, the algorithm would detect a false
-        // recursion, i.e. if we have a cycle 1 -> 2 -> ... -> 10 -> 1,
-        // where SV = [1:10], then it detects a recursion when mrv(10) = 1
-        // (false recursion). So we take self mrvs out.
-        Set represented = V.difference(rmap_.fixedPoints());
-        for (const Map& subv : dsbg.Vmap()) {
-          Set vs = subv.dom();
-          if (!vs.intersection(changedV).isEmpty()) {
-            // Vertices in the set-vertex that share its rep with other vertex
-            // in the set-vertex
-            Set recursiveV
-              = rmap_.restrict(vs.intersection(represented)).sharedImage();
-            // There is a recursive vertex that changed its rep in the last step
-            // (to avoid computing again an already found recursion)
-            if (!recursiveV.intersection(changedV).isEmpty()) {
-              recursion_rmap = recursivePaths(changedV, recursiveV);
-            }
-          }
-        }
-
-        PWMap rmap_plus = recursion_rmap.combine(rmap_);
-        rmap_plus = rmap_plus.mapInf();
-        rmap_ = rmap_.minMap(rmap_plus).compact();
-
-        Util::DEBUG_LOG << "rmap after rec: " << rmap_ << "\n\n";
-      }
-    } while (!changedV.isEmpty());
-
-    return rmap_;
+      // Calculate representatives map
+      rmap = smap_.mapInf();
+      rmap = rmap.minMap(old_rmap);
+    } while (!E.isEmpty());
   }
 
-  return fact_.createPWMap();
+  return rmap;
 }
+
 
 template class MRV<MinAdjMRV>;
 

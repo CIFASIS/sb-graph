@@ -1,6 +1,6 @@
 /** @file defs.hpp
 
- @brief <b>Useful macros</b>
+ @brief <b>Useful macros and definitions</b>
  
  This file provides helpful definitions that will be used by the Eval module.
 
@@ -62,7 +62,7 @@ typedef std::map<VKey, VValue> VarEnvType;
 
 /** 
  * @brief Variable environment (with expressions already evaluated). This env
- * will be populated by StmVisitor, and used by EvalExpression.
+ * will be populated by StmEvaluator, and used by ExprEvaluator.
  */
 struct VarEnv {
   VarEnv();
@@ -80,13 +80,13 @@ typedef std::optional<FValue> MaybeFValue;
 typedef std::map<FKey, FValue> FuncEnvType;
 
 /**
- * @brief Function environment. Statically defined: SBG programs don't allow
- * the definition of new functions. This table should be updated manually each
+ * @brief Function environment. Only has built-in function: SBG programs can't
+ * define new functions. This table should be updated manually each
  * time a new operation for SBG and their structures is defined. Each function
  * is associated with a number that will be used by the EvalExpression. The
  * pairs should be inserted in the same order as the enum class. 
  */
-struct FuncEnv{
+struct FuncEnv {
   FuncEnv();
 
   MaybeFValue operator[](AST::Name) const;
@@ -104,14 +104,14 @@ typedef enum { empty, min, max, comp, inv, im, preim, dom, comb
 template<typename T, typename... Ts>
 std::ostream &operator<<(std::ostream &out, const std::variant<T, Ts...> &v);
 
-typedef std::tuple<AST::Name, ExprBaseType> StmEval;
-std::ostream &operator<<(std::ostream &out, const StmEval &e);
-typedef std::vector<StmEval> StmEvalList;
-std::ostream &operator<<(std::ostream &out, const StmEvalList &e);
-typedef std::tuple<AST::Expr, ExprBaseType> ExprEval;
-std::ostream &operator<<(std::ostream &out, const ExprEval &e);
-typedef std::vector<ExprEval> ExprEvalList; 
-std::ostream &operator<<(std::ostream &out, const ExprEvalList &ee);
+typedef std::tuple<AST::Name, ExprBaseType> StmResult;
+std::ostream &operator<<(std::ostream &out, const StmResult &e);
+typedef std::vector<StmResult> StmResultList;
+std::ostream &operator<<(std::ostream &out, const StmResultList &e);
+typedef std::tuple<AST::Expr, ExprBaseType> ExprResult;
+std::ostream &operator<<(std::ostream &out, const ExprResult &e);
+typedef std::vector<ExprResult> ExprResultList;
+std::ostream &operator<<(std::ostream &out, const ExprResultList &ee);
 
 /** 
  * @brief Class to pretty print a program and its correspondent evaluation.
@@ -121,11 +121,11 @@ std::ostream &operator<<(std::ostream &out, const ExprEvalList &ee);
  */
 struct ProgramIO {
   member_class(unsigned int, nmbr_dims);
-  member_class(StmEvalList, stms);
-  member_class(ExprEvalList, exprs);
+  member_class(StmResultList, stms);
+  member_class(ExprResultList, exprs);
  
-  ProgramIO(StmEvalList stms, ExprEvalList exprs);
-  ProgramIO(unsigned int nmbr_dims, StmEvalList stms, ExprEvalList exprs);
+  ProgramIO(StmResultList stms, ExprResultList exprs);
+  ProgramIO(unsigned int nmbr_dims, StmResultList stms, ExprResultList exprs);
 };
 std::ostream &operator<<(std::ostream &out, const ProgramIO &p);
 

@@ -53,10 +53,10 @@ Impl AutomImplVisitor::operator()(AST::Program p) const
   LIB::MapAF map_fact(set_fact);
   LIB::UnordPWMapAF pw_fact(map_fact);
 
-  StmVisitor stm_visit(dims, pw_fact);
+  StmEvaluator stm_visit(dims, pw_fact);
   for (AST::Statement s : p.stms()) {
     if (!boost::apply_visitor(cfg_visit, s))
-      StmEval se = boost::apply_visitor(stm_visit, s);
+      StmResult se = boost::apply_visitor(stm_visit, s);
   }
 
   if (user_impl_.set_impl() < 0 && dims < 2) {
@@ -106,7 +106,7 @@ bool SetImplVisitor::operator()(AST::Call v) const
 
 bool SetImplVisitor::operator()(AST::Interval v) const
 {
-  EvalNat visit_nat(env_);
+  NatEvaluator visit_nat(env_);
   return boost::apply_visitor(visit_nat, v.step()) == 1;
 }
 
@@ -132,7 +132,7 @@ bool SetImplVisitor::operator()(AST::Set v) const
 
 bool SetImplVisitor::operator()(AST::LinearExp v) const
 {
-  EvalRat visit_rat(env_);
+  RationalEvaluator visit_rat(env_);
   LIB::RATIONAL r = boost::apply_visitor(visit_rat, v.slope());
 
   return r == 0 || r == 1;

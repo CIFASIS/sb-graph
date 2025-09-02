@@ -1,10 +1,4 @@
-/** @file stm_visitor.hpp
-
- @brief <b>Statement visitor</b>
-
- Statement visitor designed to create a variable environment.
-
- <hr>
+/*******************************************************************************
 
  This file is part of Set--Based Graph Library.
 
@@ -23,32 +17,32 @@
 
  ******************************************************************************/
 
-#ifndef AST_VISITOR_STATEMENT 
-#define AST_VISITOR_STATEMENT 
-
-#include "ast/statement.hpp"
-#include "eval/defs.hpp"
+#include "eval/visitors/expr_evaluator.hpp"
+#include "eval/visitors/stm_evaluator.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-struct StmVisitor : public boost::static_visitor<StmEval> {
-  public:
-  StmVisitor(unsigned int nmbr_dims, const LIB::PWMapAF &fact);
- 
-  VarEnv env();
-  StmEval operator()(AST::Assign assgn) const;
-  StmEval operator()(AST::ConfigDims cfg) const; 
+StmEvaluator::StmEvaluator(unsigned int nmbr_dims, const LIB::PWMapAF &fact)
+  : nmbr_dims_(nmbr_dims), fact_(fact), env_() {}
 
-  private:
-  unsigned int nmbr_dims_;
-  const LIB::PWMapAF &fact_;
-  mutable VarEnv env_;
-};
+VarEnv StmEvaluator::env() { return env_; }
+
+StmResult StmEvaluator::operator()(AST::Assign assgn) const 
+{
+  ExprEvaluator eval_expr(nmbr_dims_, fact_, env_, false);
+  ExprBaseType e = boost::apply_visitor(eval_expr, assgn.r());
+  env_.insert(assgn.l(), e);
+
+  return StmResult(assgn.l(), e);
+}
+
+StmResult StmEvaluator::operator()(AST::ConfigDims cfg) const
+{
+  return StmResult("", ExprBaseType());
+}
 
 } // namespace Eval
 
 } // namespace SBG
-
-#endif

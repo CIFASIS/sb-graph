@@ -31,9 +31,9 @@
 #include <boost/variant.hpp>
 
 #include "ast/sbg_program.hpp"
-#include "eval/visitors/eval_nat.hpp"
-#include "eval/visitors/eval_rat.hpp"
-#include "eval/visitors/stm_visitor.hpp"
+#include "eval/visitors/nat_evaluator.hpp"
+#include "eval/visitors/rational_evaluator.hpp"
+#include "eval/visitors/stm_evaluator.hpp"
 
 namespace SBG {
 

@@ -1,4 +1,4 @@
-/** @file eval_expr.hpp
+/** @file expr_evaluator.hpp
 
  @brief <b>Expression evaluator</b>
 
@@ -21,22 +21,20 @@
 
  ******************************************************************************/
 
-#ifndef AST_VISITOR_EVALEXP
-#define AST_VISITOR_EVALEXP
+#ifndef EXPR_EVALUATOR 
+#define EXPR_EVALUATOR 
 
-#include "eval/visitors/eval_nat.hpp"
-#include "eval/visitors/eval_rat.hpp"
-#include "eval/visitors/eval_le.hpp"
+#include "eval/defs.hpp"
 #include "sbg/af_pwmap.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-struct EvalExpression : public boost::static_visitor<ExprBaseType> {
+struct ExprEvaluator : public boost::static_visitor<ExprBaseType> {
   public:
-  EvalExpression(VarEnv env);
-  EvalExpression(unsigned int nmbr_dims, const LIB::PWMapAF &fact
+  ExprEvaluator(VarEnv env);
+  ExprEvaluator(unsigned int nmbr_dims, const LIB::PWMapAF &fact
     , VarEnv env, bool debug);
 
   ExprBaseType operator()(AST::Natural v) const;

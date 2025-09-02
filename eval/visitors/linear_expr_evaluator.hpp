@@ -1,4 +1,4 @@
-/** @file eval_le.hpp
+/** @file le_evaluator.hpp
 
  @brief <b>Linear expression evaluator</b>
 
@@ -21,8 +21,8 @@
 
  ******************************************************************************/
 
-#ifndef AST_VISITOR_EVALLE
-#define AST_VISITOR_EVALLE
+#ifndef LE_EVALUATOR 
+#define LE_EVALUATOR 
 
 #include "eval/defs.hpp"
 #include "sbg/lexp.hpp"
@@ -31,9 +31,9 @@ namespace SBG {
 
 namespace Eval {
 
-struct EvalLE : public boost::static_visitor<LIB::LExp> {
+struct LinearExprEvaluator : public boost::static_visitor<LIB::LExp> {
   public:
-  EvalLE(VarEnv &env);
+  LinearExprEvaluator(VarEnv &env);
 
   LIB::LExp operator()(AST::Natural v) const;
   LIB::LExp operator()(AST::Rational v) const;

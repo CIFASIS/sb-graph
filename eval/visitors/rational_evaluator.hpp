@@ -1,4 +1,4 @@
-/** @file eval_rat.hpp
+/** @file rational_evaluator.hpp
 
  @brief <b>Rational expression evaluator</b>
 
@@ -21,20 +21,20 @@
 
  ******************************************************************************/
 
-#ifndef AST_VISITOR_EVALRAT
-#define AST_VISITOR_EVALRAT
+#ifndef RATIONAL_EVALUATOR 
+#define RATIONAL_EVALUATOR 
 
-#include "eval/visitors/eval_int.hpp"
+#include "eval/visitors/int_evaluator.hpp"
 #include "sbg/rational.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-struct EvalRat : public boost::static_visitor<LIB::RATIONAL> {
+struct RationalEvaluator : public boost::static_visitor<LIB::RATIONAL> {
   public:
-  EvalRat();
-  EvalRat(VarEnv &env);
+  RationalEvaluator();
+  RationalEvaluator(VarEnv &env);
 
   LIB::RATIONAL operator()(AST::Natural v) const;
   LIB::RATIONAL operator()(AST::Rational v) const;

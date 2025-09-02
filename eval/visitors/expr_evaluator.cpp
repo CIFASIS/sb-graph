@@ -19,12 +19,16 @@
 
 #include "algorithms/cc/cc.hpp"
 #include "algorithms/cutvertex/af_cv.hpp"
-#include "algorithms/matching/af_matching.hpp"
-#include "algorithms/scc/af_scc.hpp"
+#include "algorithms/matching/bfs_matching.hpp"
+#include "algorithms/matching/matching_fact.hpp"
+#include "algorithms/scc/scc_fact.hpp"
 #include "algorithms/toposort/af_ts.hpp"
 #include "algorithms/misc/causalization_builders.hpp"
 #include "algorithms/misc/causalization_json.hpp"
-#include "eval/visitors/eval_expr.hpp"
+#include "eval/visitors/expr_evaluator.hpp"
+#include "eval/visitors/linear_expr_evaluator.hpp"
+#include "eval/visitors/nat_evaluator.hpp"
+#include "eval/visitors/rational_evaluator.hpp"
 
 namespace SBG {
 
@@ -339,23 +343,6 @@ auto connected_visitor_ = Overload {
   }
 };
 
-auto matching_visitor_ = Overload {
-  [](LIB::SBG a, LIB::NAT b) { 
-    LIB::BFSMatching match(a.fact());
-    return ExprBaseType(match.calculate(a.copy(b)));
-  },
-  [](LIB::SBG a, LIB::MD_NAT b) { 
-    LIB::BFSMatching match(a.fact());
-    return ExprBaseType(match.calculate(a.copy(b[0])));
-  },
-  [](auto a, auto b) {
-    Util::ERROR("matching_visitor_: wrong arguments ", a, ", ", b
-      , " for matching\n"); 
-    return ExprBaseType();
-  }
-};
-
-
 auto ts_visitor_ = Overload {
   [](LIB::DSBG a) { 
     LIB::TopoSort ts = LIB::MinVertexTSAF().createTSAlgorithm(a.fact());
@@ -421,7 +408,7 @@ auto match_scc_ts_visitor_ = Overload {
 
 auto cut_visitor_ = Overload {
   [](LIB::DSBG a) { 
-    LIB::MinReachSCCAF scc_fact = LIB::MinReachSCCAF();
+    LIB::MinReachSCCFact scc_fact;
     LIB::CutVertex cv = LIB::MaxDegCVAF().createCVAlgorithm(a.fact(), scc_fact);
     return ExprBaseType(cv.calculate(a));
   },
@@ -436,41 +423,41 @@ auto cut_visitor_ = Overload {
 ////////////////////////////////////////////////////////////////////////////////
 
 template<typename T>
-T eval(const EvalExpression &visit, AST::Expr e, std::string t = "UNDEF")
+T eval(const ExprEvaluator &visit, AST::Expr e, std::string t = "UNDEF")
 {
   ExprBaseType visited = boost::apply_visitor(visit, e);
 
   Util::ERROR_UNLESS(std::holds_alternative<T>(visited)
-    , "EvalExpr: expression ", e, " is not of type ", t, "\n");
+    , "ExprEvaluator: expression ", e, " is not of type ", t, "\n");
 
   return std::get<T>(visited);
 }
 
-EvalExpression::EvalExpression(unsigned int nmbr_dims
+ExprEvaluator::ExprEvaluator(unsigned int nmbr_dims
   , const LIB::PWMapAF &fact , VarEnv env, bool debug)
   : nmbr_dims_(nmbr_dims), fact_(fact), env_(env), debug_(debug) {}
 
-ExprBaseType EvalExpression::operator()(AST::Natural v) const
+ExprBaseType ExprEvaluator::operator()(AST::Natural v) const
 {
   return (LIB::NAT) v;
 }
 
-ExprBaseType EvalExpression::operator()(AST::Rational v) const
+ExprBaseType ExprEvaluator::operator()(AST::Rational v) const
 {
-  return boost::apply_visitor(EvalRat(env_), AST::Expr(v));
+  return boost::apply_visitor(RationalEvaluator(env_), AST::Expr(v));
 }
 
-ExprBaseType EvalExpression::operator()(AST::Name v) const 
+ExprBaseType ExprEvaluator::operator()(AST::Name v) const 
 {
   MaybeEBT v_opt = env_[v];
   if (v_opt)
     return *v_opt;
 
-  Util::ERROR("EvalExpression: variable ", v, " undefined\n");
+  Util::ERROR("ExprEvaluator: variable ", v, " undefined\n");
   return ExprBaseType(); 
 }
 
-ExprBaseType EvalExpression::operator()(AST::UnaryOp v) const
+ExprBaseType ExprEvaluator::operator()(AST::UnaryOp v) const
 {
   ExprBaseType x = boost::apply_visitor(*this, v.expr());
 
@@ -488,19 +475,19 @@ ExprBaseType EvalExpression::operator()(AST::UnaryOp v) const
       break;
 
     default:
-      Util::ERROR("EvalExpression: UnaryOp ", v.op(), " unsupported\n");
+      Util::ERROR("ExprEvaluator: UnaryOp ", v.op(), " unsupported\n");
       return ExprBaseType();
   }
 
   return ExprBaseType(); 
 }
 
-ExprBaseType EvalExpression::operator()(AST::BinOp v) const
+ExprBaseType ExprEvaluator::operator()(AST::BinOp v) const
 { 
   ExprBaseType vl = boost::apply_visitor(*this, v.left());
   ExprBaseType vr = boost::apply_visitor(*this, v.right());
 
-  EvalNat visit_nat(env_);
+  NatEvaluator visit_nat(env_);
   switch (v.op()) {
     case AST::Op::add:
       return std::visit(add_visitor_, vl, vr);
@@ -535,14 +522,14 @@ ExprBaseType EvalExpression::operator()(AST::BinOp v) const
       break;
 
     default:
-      Util::ERROR("EvalExpression: BinOp ", v.op(), " unsupported\n");
+      Util::ERROR("ExprEvaluator: BinOp ", v.op(), " unsupported\n");
       return ExprBaseType(); 
   } 
 
   return ExprBaseType(); 
 }
 
-ExprBaseType EvalExpression::operator()(AST::Call v) const
+ExprBaseType ExprEvaluator::operator()(AST::Call v) const
 {
   std::string vname = v.name();
 
@@ -669,7 +656,7 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
           arity_ok = true;
 
           LIB::Matching match
-            = LIB::BFSMatchingAF().createMatchAlgorithm(fact_);
+            = LIB::BFSMatchingFact().createMatchAlgorithm(fact_);
           auto matching_visitor_ = Overload {
             [&match](LIB::SBG a, LIB::NAT b) {
               return ExprBaseType(match.calculate(a.copy(b)));
@@ -691,7 +678,7 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
         if (eval_args.size() == 1) {
           arity_ok = true;
 
-          LIB::SCC scc = LIB::MinReachSCCAF().createSCCAlgorithm(fact_);
+          LIB::SCC scc = LIB::MinReachSCCFact().createSCCAlgorithm(fact_);
           auto scc_visitor_ = Overload {
             [&scc](LIB::DSBG a) { 
               return ExprBaseType(scc.calculate(a).rmap());
@@ -740,24 +727,24 @@ ExprBaseType EvalExpression::operator()(AST::Call v) const
         break;
 
       default:
-        Util::ERROR("EvalExpression: function ", vname, " not implemented\n");
+        Util::ERROR("ExprEvaluator: function ", vname, " not implemented\n");
         return ExprBaseType();
     }
 
     if (!arity_ok) {
-      Util::ERROR("EvalExpression: wrong number of arguments for Call "
+      Util::ERROR("ExprEvaluator: wrong number of arguments for Call "
         , vname, "\n");
       return ExprBaseType();
     }
   }
 
-  Util::ERROR("EvalExpression: function ", vname, " doesn't exist\n");
+  Util::ERROR("ExprEvaluator: function ", vname, " doesn't exist\n");
   return ExprBaseType();
 }
 
-ExprBaseType EvalExpression::operator()(AST::Interval v) const
+ExprBaseType ExprEvaluator::operator()(AST::Interval v) const
 {
-  EvalNat visit_nat(env_);
+  NatEvaluator visit_nat(env_);
 
   LIB::NAT b = boost::apply_visitor(visit_nat, v.begin());
   LIB::NAT s = boost::apply_visitor(visit_nat, v.step());
@@ -766,7 +753,7 @@ ExprBaseType EvalExpression::operator()(AST::Interval v) const
   return LIB::Interval(b, s, e);
 }
 
-ExprBaseType EvalExpression::operator()(AST::MultiDimInter v) const
+ExprBaseType ExprEvaluator::operator()(AST::MultiDimInter v) const
 {
   LIB::SetPiece res;
 
@@ -781,7 +768,7 @@ ExprBaseType EvalExpression::operator()(AST::MultiDimInter v) const
 }
 
 
-ExprBaseType EvalExpression::operator()(AST::Set v) const
+ExprBaseType ExprEvaluator::operator()(AST::Set v) const
 {
   LIB::Set res = fact_.createSet();
 
@@ -789,36 +776,36 @@ ExprBaseType EvalExpression::operator()(AST::Set v) const
     res.emplaceBack(eval<LIB::SetPiece>(*this, e, "SetPiece"));
 
   Util::ERROR_UNLESS(res.arity() == nmbr_dims_ || res.arity() == 0
-    , "EvalExpr[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
+    , "ExprEvaluator[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
     , res.arity(), "\n");
 
   return res;
 }
 
-ExprBaseType EvalExpression::operator()(AST::LinearExp v) const
+ExprBaseType ExprEvaluator::operator()(AST::LinearExp v) const
 {
-  EvalLE visit_le(env_);
+  LinearExprEvaluator visit_le(env_);
   return boost::apply_visitor(visit_le, AST::Expr(v));
 }
 
-ExprBaseType EvalExpression::operator()(AST::MDLExp v) const
+ExprBaseType ExprEvaluator::operator()(AST::MDLExp v) const
 {
   LIB::Exp res;
 
-  EvalLE visit_le(env_);
+  LinearExprEvaluator visit_le(env_);
   for (const AST::Expr &e : v.exps()) {
     LIB::LExp ith = boost::apply_visitor(visit_le, e);
     res.emplaceBack(ith);
   }
 
   Util::ERROR_UNLESS(res.arity() == nmbr_dims_ || res.arity() == 0
-    , "EvalExpr[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
+    , "ExprEvaluator[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
     , res.arity(), "\n");
 
   return res;
 }
 
-ExprBaseType EvalExpression::operator()(AST::LinearMap v) const
+ExprBaseType ExprEvaluator::operator()(AST::LinearMap v) const
 {
   LIB::Set d = eval<LIB::Set>(*this, v.dom(), "Set");
   LIB::Exp e = eval<LIB::Exp>(*this, v.lexp(), "Exp");
@@ -826,13 +813,13 @@ ExprBaseType EvalExpression::operator()(AST::LinearMap v) const
   LIB::Map res = fact_.createMap(d, e);
 
   Util::ERROR_UNLESS(res.arity() == nmbr_dims_ || res.arity() == 0
-    , "EvalExpr[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
+    , "ExprEvaluator[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
     , res.arity(), "\n");
 
   return res;
 }
 
-ExprBaseType EvalExpression::operator()(AST::PWLMap v) const
+ExprBaseType ExprEvaluator::operator()(AST::PWLMap v) const
 {
   LIB::PWMap res = fact_.createPWMap();
 
@@ -840,13 +827,13 @@ ExprBaseType EvalExpression::operator()(AST::PWLMap v) const
     res.emplaceBack(eval<LIB::Map>(*this, e, "Map"));
 
   Util::ERROR_UNLESS(res.arity() == nmbr_dims_ || res.arity() == 0
-    , "EvalExpr[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
+    , "ExprEvaluator[nmbr_dims = ", nmbr_dims_, "]: arity(", res, ") = "
     , res.arity(), "\n");
 
   return res;
 }
 
-ExprBaseType EvalExpression::operator()(AST::SBG v) const
+ExprBaseType ExprEvaluator::operator()(AST::SBG v) const
 {
   LIB::Set V = eval<LIB::Set>(*this, v.V(), "Set");
   LIB::PWMap Vmap = eval<LIB::PWMap>(*this, v.Vmap(), "PWMap");
@@ -869,7 +856,7 @@ ExprBaseType EvalExpression::operator()(AST::SBG v) const
   return LIB::SBG(fact_, V, Vmap, map1, map2, Emap, subE);
 }
 
-ExprBaseType EvalExpression::operator()(AST::DSBG v) const
+ExprBaseType ExprEvaluator::operator()(AST::DSBG v) const
 {
   LIB::Set V = eval<LIB::Set>(*this, v.V(), "PWMap");
   LIB::PWMap Vmap = eval<LIB::PWMap>(*this, v.Vmap(), "PWMap");
@@ -892,7 +879,7 @@ ExprBaseType EvalExpression::operator()(AST::DSBG v) const
   return LIB::DSBG(fact_, V, Vmap, mapB, mapD, Emap, subE);
 }
 
-ExprBaseType EvalExpression::operator()(AST::ParenExpr v) const
+ExprBaseType ExprEvaluator::operator()(AST::ParenExpr v) const
 {
   return boost::apply_visitor(*this, v.e());
 }

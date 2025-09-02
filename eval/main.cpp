@@ -29,7 +29,7 @@
 #include <getopt.h>
 
 #include "parser/sbg_program.hpp"
-#include "eval/visitors/program_visitor.hpp"
+#include "eval/visitors/program_evaluator.hpp"
 #include "eval/visitors/autom_impl_visitor.hpp"
 
 void parseEvalProgramFromFile(std::string fname, SBG::Eval::Impl impl
@@ -98,7 +98,7 @@ void parseEvalProgramFromFile(std::string fname, SBG::Eval::Impl impl
         break;
     }
 
-    SBG::Eval::ProgramVisitor program_visit(*fact, debug); 
+    SBG::Eval::ProgramEvaluator program_visit(*fact, debug); 
     SBG::Eval::ProgramIO visit_result = boost::apply_visitor(
       program_visit, parser_result
     );

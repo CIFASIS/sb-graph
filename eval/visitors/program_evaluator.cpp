@@ -17,22 +17,22 @@
 
  ******************************************************************************/
 
-#include "eval/visitors/eval_expr.hpp"
-#include "eval/visitors/program_visitor.hpp"
+#include "eval/visitors/expr_evaluator.hpp"
+#include "eval/visitors/program_evaluator.hpp"
 #include "util/logger.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-ProgramVisitor::ProgramVisitor(const LIB::PWMapAF &fact, bool debug)
+ProgramEvaluator::ProgramEvaluator(const LIB::PWMapAF &fact, bool debug)
   : fact_(fact), env_(), debug_(debug) {}
 
-ProgramIO ProgramVisitor::operator()(AST::Program p) const 
+ProgramIO ProgramEvaluator::operator()(AST::Program p) const 
 { 
   LIB::NAT dims = 1;
-  StmEvalList stms;
-  ExprEvalList exprs;
+  StmResultList stms;
+  ExprResultList exprs;
 
   if (debug_)
     Util::SBGLogger::instance().setLevel(Util::LogLevel::Debug);
@@ -45,18 +45,18 @@ ProgramIO ProgramVisitor::operator()(AST::Program p) const
       dims = boost::get<AST::ConfigDims>(first).nmbr_dims();
   }
 
-  StmVisitor stm_visit(dims, fact_);
+  StmEvaluator stm_visit(dims, fact_);
   for (AST::Statement s : p.stms()) {
     if (!boost::apply_visitor(cfg_visit, s)) {
-      StmEval se = boost::apply_visitor(stm_visit, s);
+      StmResult se = boost::apply_visitor(stm_visit, s);
       stms.push_back(se);
     }
   }
 
-  EvalExpression eval_expr(dims, fact_, stm_visit.env(), debug_);
+  ExprEvaluator eval_expr(dims, fact_, stm_visit.env(), debug_);
   for (AST::Expr e : p.exprs()) {
     ExprBaseType expr_res = boost::apply_visitor(eval_expr, e);
-    exprs.push_back(ExprEval(e, expr_res));
+    exprs.push_back(ExprResult(e, expr_res));
   }
 
   return ProgramIO(dims, stms, exprs);

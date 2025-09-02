@@ -1,4 +1,4 @@
-/** @file eval_int.hpp
+/** @file int_evaluator.hpp
 
  @brief <b>Integer expression evaluator</b>
 
@@ -21,8 +21,8 @@
 
  ******************************************************************************/
 
-#ifndef AST_VISITOR_EVAL_INT
-#define AST_VISITOR_EVAL_INT
+#ifndef INT_EVALUATOR 
+#define INT_EVALUATOR 
 
 #include "eval/defs.hpp"
 
@@ -30,10 +30,10 @@ namespace SBG {
 
 namespace Eval {
 
-struct EvalInt : public boost::static_visitor<LIB::INT> {
+struct IntEvaluator : public boost::static_visitor<LIB::INT> {
   public:
-  EvalInt();
-  EvalInt(VarEnv &env);
+  IntEvaluator();
+  IntEvaluator(VarEnv &env);
 
   LIB::INT operator()(AST::Natural v) const;
   LIB::INT operator()(AST::Rational v) const;

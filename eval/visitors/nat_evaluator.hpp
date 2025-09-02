@@ -1,4 +1,4 @@
-/** @file eval_nat.hpp
+/** @file nat_evaluator.hpp
 
  @brief <b>Natural expression evaluator</b>
 
@@ -21,8 +21,8 @@
 
  ******************************************************************************/
 
-#ifndef AST_VISITOR_EVAL_NAT
-#define AST_VISITOR_EVAL_NAT
+#ifndef NAT_EVALUATOR 
+#define NAT_EVALUATOR 
 
 #include "eval/defs.hpp"
 
@@ -30,10 +30,10 @@ namespace SBG {
 
 namespace Eval {
 
-struct EvalNat : public boost::static_visitor<LIB::NAT> {
+struct NatEvaluator : public boost::static_visitor<LIB::NAT> {
   public:
-  EvalNat();
-  EvalNat(VarEnv &env);
+  NatEvaluator();
+  NatEvaluator(VarEnv &env);
 
   LIB::NAT operator()(AST::Natural v) const;
   LIB::NAT operator()(AST::Rational v) const;

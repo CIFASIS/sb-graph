@@ -1,9 +1,9 @@
-/** @file program_visitor.hpp
+/** @file program_evaluator.hpp
 
- @brief <b>Program visitor</b>
+ @brief <b>SBG Program evaluator</b>
 
- Program visitor, that will create an environment using a StmVisitor, and
- then it will evaluate the following expressions with an EvalExpression.
+ The program evaluator evaluates all the statements and expressions in the
+ desired file.
 
  <hr>
 
@@ -24,21 +24,21 @@
 
  ******************************************************************************/
 
-#ifndef AST_VISITOR_PROGRAM 
-#define AST_VISITOR_PROGRAM
+#ifndef PROGRAM_EVALUATOR 
+#define PROGRAM_EVALUATOR
 
 #include <boost/variant.hpp>
 
 #include "ast/sbg_program.hpp"
-#include "eval/visitors/stm_visitor.hpp"
+#include "eval/visitors/stm_evaluator.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-struct ProgramVisitor : public boost::static_visitor<ProgramIO> {
+struct ProgramEvaluator : public boost::static_visitor<ProgramIO> {
   public:
-  ProgramVisitor(const LIB::PWMapAF &fact, bool debug);
+  ProgramEvaluator(const LIB::PWMapAF &fact, bool debug);
  
   ProgramIO operator()(AST::Program p) const; 
 

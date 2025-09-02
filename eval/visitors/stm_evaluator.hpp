@@ -1,4 +1,12 @@
-/*******************************************************************************
+/** @file stm_evaluator.hpp
+
+ @brief <b>Statement evaluator</b>
+
+ Formally, a statement does not generate a result. This evaluator traverses
+ statements evaluating the expressions present in each of them, and storing
+ the corresponding values of variables.
+
+ <hr>
 
  This file is part of Set--Based Graph Library.
 
@@ -17,32 +25,32 @@
 
  ******************************************************************************/
 
-#include "eval/visitors/eval_expr.hpp"
-#include "eval/visitors/stm_visitor.hpp"
+#ifndef STM_EVALUATOR 
+#define STM_EVALUATOR 
+
+#include "ast/statement.hpp"
+#include "eval/defs.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-StmVisitor::StmVisitor(unsigned int nmbr_dims, const LIB::PWMapAF &fact)
-  : nmbr_dims_(nmbr_dims), fact_(fact), env_() {}
+struct StmEvaluator : public boost::static_visitor<StmResult> {
+  public:
+  StmEvaluator(unsigned int nmbr_dims, const LIB::PWMapAF &fact);
+ 
+  VarEnv env();
+  StmResult operator()(AST::Assign assgn) const;
+  StmResult operator()(AST::ConfigDims cfg) const; 
 
-VarEnv StmVisitor::env() { return env_; }
-
-StmEval StmVisitor::operator()(AST::Assign assgn) const 
-{
-  EvalExpression eval_expr(nmbr_dims_, fact_, env_, false);
-  ExprBaseType e = boost::apply_visitor(eval_expr, assgn.r());
-  env_.insert(assgn.l(), e);
-
-  return StmEval(assgn.l(), e);
-}
-
-StmEval StmVisitor::operator()(AST::ConfigDims cfg) const
-{
-  return StmEval("", ExprBaseType());
-}
+  private:
+  unsigned int nmbr_dims_;
+  const LIB::PWMapAF &fact_;
+  mutable VarEnv env_;
+};
 
 } // namespace Eval
 
 } // namespace SBG
+
+#endif

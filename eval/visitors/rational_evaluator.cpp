@@ -17,28 +17,28 @@
 
  ******************************************************************************/
 
-#include "eval/visitors/eval_rat.hpp"
+#include "eval/visitors/rational_evaluator.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-EvalRat::EvalRat() : env_() {}
-EvalRat::EvalRat(VarEnv &env) : env_(env) {}
+RationalEvaluator::RationalEvaluator() : env_() {}
+RationalEvaluator::RationalEvaluator(VarEnv &env) : env_(env) {}
 
-LIB::RATIONAL EvalRat::operator()(AST::Natural v) const
+LIB::RATIONAL RationalEvaluator::operator()(AST::Natural v) const
 {
   return LIB::RATIONAL(v, 1);
 }
 
-LIB::RATIONAL EvalRat::operator()(AST::Rational v) const
+LIB::RATIONAL RationalEvaluator::operator()(AST::Rational v) const
 {
-  EvalInt visit_int(env_);
+  IntEvaluator visit_int(env_);
   return LIB::RATIONAL(boost::apply_visitor(visit_int, v.num())
                         , boost::apply_visitor(visit_int, v.den()));
 }
 
-LIB::RATIONAL EvalRat::operator()(AST::Name v) const 
+LIB::RATIONAL RationalEvaluator::operator()(AST::Name v) const 
 {
   MaybeEBT v_opt = env_[v];
   if (v_opt) { 
@@ -54,33 +54,33 @@ LIB::RATIONAL EvalRat::operator()(AST::Name v) const
       return LIB::RATIONAL(std::get<LIB::NAT>(value));
 
     else {
-      Util::ERROR("EvalRat: variable ", v, " is not rational\n");
+      Util::ERROR("RationalEvaluator: variable ", v, " is not rational\n");
       return LIB::RATIONAL(0, 1);
     }
   }
 
-  Util::ERROR("EvalRat: variable ", v, " undefined\n");
+  Util::ERROR("RationalEvaluator: variable ", v, " undefined\n");
   return LIB::RATIONAL(0, 1);
 }
 
-LIB::RATIONAL EvalRat::operator()(AST::UnaryOp v) const 
+LIB::RATIONAL RationalEvaluator::operator()(AST::UnaryOp v) const 
 { 
-  EvalRat visit_rat(env_);
+  RationalEvaluator visit_rat(env_);
   LIB::RATIONAL result = boost::apply_visitor(visit_rat, v.expr());
   switch (v.op()) {
     case AST::UnOp::oppo:
       return -result;
 
     default:
-      Util::ERROR("EvalRat: UnaryOp ", v.op(), " unsupported\n");
+      Util::ERROR("RationalEvaluator: UnaryOp ", v.op(), " unsupported\n");
       return 0;
   }
 
-  Util::ERROR("EvalRat: UnaryOp ", v.op(), " unsupported\n");
+  Util::ERROR("RationalEvaluator: UnaryOp ", v.op(), " unsupported\n");
   return 0;
 }
 
-LIB::RATIONAL EvalRat::operator()(AST::BinOp v) const 
+LIB::RATIONAL RationalEvaluator::operator()(AST::BinOp v) const 
 {
   LIB::RATIONAL l = boost::apply_visitor(*this, v.left());
   LIB::RATIONAL r = boost::apply_visitor(*this, v.right());
@@ -95,75 +95,75 @@ LIB::RATIONAL EvalRat::operator()(AST::BinOp v) const
       return l * r;
 
     default:
-      Util::ERROR("EvalRat: BinOp ", v.op(), " unsupported\n");
+      Util::ERROR("RationalEvaluator: BinOp ", v.op(), " unsupported\n");
       return LIB::RATIONAL(0, 1);
   }
 
-  Util::ERROR("EvalRat: BinOp ", v.op(), " unsupported\n");
+  Util::ERROR("RationalEvaluator: BinOp ", v.op(), " unsupported\n");
   return 0;
 }
 
-LIB::RATIONAL EvalRat::operator()(AST::Call v) const
+LIB::RATIONAL RationalEvaluator::operator()(AST::Call v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate Call ", v, "\n");
+  Util::ERROR("RationalEvaluator: trying to evaluate Call ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
-LIB::RATIONAL EvalRat::operator()(AST::Interval v) const
+LIB::RATIONAL RationalEvaluator::operator()(AST::Interval v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate Interval ", v, "\n");
+  Util::ERROR("RationalEvaluator: trying to evaluate Interval ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
-LIB::RATIONAL EvalRat::operator()(AST::MultiDimInter v) const
+LIB::RATIONAL RationalEvaluator::operator()(AST::MultiDimInter v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate MultiDimInter ", v, "\n");
+  Util::ERROR("RationalEvaluator: trying to evaluate MultiDimInter ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
-LIB::RATIONAL EvalRat::operator()(AST::Set v) const
+LIB::RATIONAL RationalEvaluator::operator()(AST::Set v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate Set ", v, "\n");
+  Util::ERROR("RationalEvaluator: trying to evaluate Set ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
-LIB::RATIONAL EvalRat::operator()(AST::LinearExp v) const
+LIB::RATIONAL RationalEvaluator::operator()(AST::LinearExp v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate LinearExp ", v, "\n");
+  Util::ERROR("RationalEvaluator: trying to evaluate LinearExp ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
-LIB::RATIONAL EvalRat::operator()(AST::MDLExp v) const
+LIB::RATIONAL RationalEvaluator::operator()(AST::MDLExp v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate MDLExp ", v, "\n");
+  Util::ERROR("RationalEvaluator: trying to evaluate MDLExp ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
-LIB::RATIONAL EvalRat::operator()(AST::LinearMap v) const
+LIB::RATIONAL RationalEvaluator::operator()(AST::LinearMap v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate LinearMap ", v, "\n");
+  Util::ERROR("RationalEvaluator: trying to evaluate LinearMap ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
-LIB::RATIONAL EvalRat::operator()(AST::PWLMap v) const
+LIB::RATIONAL RationalEvaluator::operator()(AST::PWLMap v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate PWLMap ", v, "\n");
+  Util::ERROR("RationalEvaluator: trying to evaluate PWLMap ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
-LIB::RATIONAL EvalRat::operator()(AST::SBG v) const
+LIB::RATIONAL RationalEvaluator::operator()(AST::SBG v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate SBG ", v, "\n");
+  Util::ERROR("RationalEvaluator: trying to evaluate SBG ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
-LIB::RATIONAL EvalRat::operator()(AST::DSBG v) const
+LIB::RATIONAL RationalEvaluator::operator()(AST::DSBG v) const
 {
-  Util::ERROR("EvalRat: trying to evaluate DSBG ", v, "\n");
+  Util::ERROR("RationalEvaluator: trying to evaluate DSBG ", v, "\n");
   return LIB::RATIONAL(0, 1);
 }
 
-LIB::RATIONAL EvalRat::operator()(AST::ParenExpr v) const
+LIB::RATIONAL RationalEvaluator::operator()(AST::ParenExpr v) const
 {
   return boost::apply_visitor(*this, v.e());
 }

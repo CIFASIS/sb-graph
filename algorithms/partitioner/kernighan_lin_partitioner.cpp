@@ -61,19 +61,8 @@ pair<GainObjectImbalance, CostMatrixImbalance> generate_gain_matrix(const Weight
                                          unsigned LMax)
 {
   SBG::Util::Internal::TimeProfiler profiler("generate_gain_matrix");
-  const auto& fact = graph.fact();
   // create the max_gain object with a dummy initialization, any gain will be greater than -infinity
-  GainObjectImbalance max_gain = GainObjectImbalance{
-    numeric_limits<size_t>::infinity(),
-    numeric_limits<size_t>::infinity(),
-    -numeric_limits<size_t>::infinity(),
-    fact.createSet(),
-    fact.createSet(),
-    0,
-    fact.createSet(),
-    fact.createSet(),
-    0
-  };
+  optional<GainObjectImbalance> max_gain = nullopt;
   CostMatrixImbalance local_cost_matrix;
 
   for (size_t i = 0; i < partition_a.size(); i++) {
@@ -104,13 +93,15 @@ pair<GainObjectImbalance, CostMatrixImbalance> generate_gain_matrix(const Weight
       int gain = ec_edges.cardinal() - ic_edges.cardinal();
       local_cost_matrix.emplace_back(i, j, gain, ec_i_a, ic_i_a, set_i_a.cardinal(), ec_j_b, ic_j_b, set_j_b.cardinal());
 
-      if (local_cost_matrix.back().gain > max_gain.gain) {
+      if ((not max_gain) or local_cost_matrix.back().gain > max_gain->gain) {
             max_gain = local_cost_matrix.back();
       }
     }
   }
 
-  return { max_gain, local_cost_matrix };
+  assert(max_gain);
+
+  return { *max_gain, local_cost_matrix };
 }
 
 // Partition a and b (A_c and B_c in the definition) are the remining nodes to be visited, not the actual partitions
@@ -230,7 +221,7 @@ GainObjectImbalance update_diff(CostMatrixImbalance& cost_matrix, Partition& rem
   }
 
   // using a reference to copy the element only once when returning
-  GainObjectImbalance& max_gain_object = cost_matrix.front();
+  optional<GainObjectImbalance> max_gain_object = nullopt;
   for (auto g : cost_matrix) {
     bool change = false;
 
@@ -271,17 +262,19 @@ GainObjectImbalance update_diff(CostMatrixImbalance& cost_matrix, Partition& rem
 
     new_cost_matrix.push_back(move(g));
 
-    if (new_cost_matrix.back().gain > max_gain_object.gain) {
+    if ((not max_gain_object) or new_cost_matrix.back().gain > max_gain_object->gain) {
       max_gain_object = new_cost_matrix.back();
     }
   }
   cost_matrix = new_cost_matrix;
 
+  assert(max_gain_object);
+
 #if PARTITION_IMBALANCE_DEBUG
   logging::sbg_log << remaining_partition_a << ", " << remaining_partition_b << ", " << gain_object << ", " << cost_matrix << endl;
 #endif
 
-    return max_gain_object;
+    return *max_gain_object;
 }
 
 

@@ -670,6 +670,30 @@ std::size_t OrderedDenseSet::arity() const
 SetDelegPtr OrderedDenseSet::disjointCup(const SetDelegate &other) const
 {
   OrdDenseSetCRef othr = static_cast<OrdDenseSetCRef>(other);
+  
+  
+  // Special cases
+  if (isEmpty())
+    return std::make_unique<OrderedDenseSet>(othr.pieces_);
+
+  if (othr.isEmpty())
+    return std::make_unique<OrderedDenseSet>(pieces_);  
+
+  MDIOrdSet res;
+  res.reserve(pieces_.size() + othr.pieces_.size());
+  
+  if (pieces_.back() < othr.pieces_.front()) {
+    res.insert(res.end(), pieces_.begin(), pieces_.end());
+    res.insert(res.end(), othr.pieces_.begin(), othr.pieces_.end());
+    return std::make_unique<OrderedDenseSet>(res);
+  }
+
+  if (othr.pieces_.back() < pieces_.front()) {
+    res.insert(res.end(), othr.pieces_.begin(), othr.pieces_.end());
+    res.insert(res.end(), pieces_.begin(), pieces_.end());
+    return std::make_unique<OrderedDenseSet>(res);
+  }
+  
   MDIOrdSet cup = traverse(&SetPiece::least, othr.pieces_);
 
   return std::make_unique<OrderedDenseSet>(cup);
@@ -1042,8 +1066,8 @@ SetDelegPtr OrderedSet::intersection(const SetDelegate &other) const
   for (const auto& long_elem : long_pieces) {
     const auto long_min = long_elem.minElem();
     const auto long_max = long_elem.maxElem();
-    const auto long_min_x = long_min[0];
-    const auto long_max_x = long_max[0];
+    //const auto long_min_x = long_min[0];
+    //const auto long_max_x = long_max[0];
 
     auto li_prev = short_indexes.before_begin();
     auto li_curr = short_indexes.begin();
@@ -1056,15 +1080,15 @@ SetDelegPtr OrderedSet::intersection(const SetDelegate &other) const
 
       const auto short_min = short_elem.minElem();
       const auto short_max = short_elem.maxElem();
-      const auto short_min_x = short_min[0];
-      const auto short_max_x = short_max[0];
+      //const auto short_min_x = short_min[0];
+      //const auto short_max_x = short_max[0];
 
-      if (short_max_x < long_min_x) {
+      if (short_max < long_min) {
         li_curr = short_indexes.erase_after(li_prev);
         continue;
       }
 
-      if (long_max_x < short_min_x)
+      if (long_max < short_min)
         break;
 
       if (doInt(short_elem,long_elem)) {
@@ -1187,85 +1211,48 @@ SetDelegPtr OrderedSet::complementAtom() const
 
 SetDelegPtr OrderedSet::intersectionComp(const SetDelegate &other, const SetPiece &mdi, SetDelegate &rem) const 
 {
-  OrdSetCRef othr = static_cast<OrdSetCRef>(other);
-  MDIOrdSet inter;
-  
-  // Special cases
-  if (isEmpty() || other.isEmpty())
-    return std::make_unique<OrderedSet>(inter);
+    OrdSetCRef othr = static_cast<OrdSetCRef>(other);
+    MDIOrdSet inter;
 
-  if (pieces_ == othr.pieces_)
-    return std::make_unique<OrderedSet>(pieces_);
-  
-  // General case
-  // Saving untouched pieces from this (the accumulated complement)
-  OrdSetRef remnant = static_cast<OrdSetRef>(rem);
-  unsigned int pos = 0;
-  while (pos < pieces_.size() && pieces_[pos].maxElem()[0] < mdi.minElem()[0]) {
-    remnant.emplaceBack(pieces_[pos]);
-    ++pos;
-  } 
+    if (isEmpty() || other.isEmpty())
+        return std::make_unique<OrderedSet>(inter);
 
-  std::forward_list<size_t> indexes;
-  auto li_it = indexes.before_begin();
-  const size_t idx_size = othr.pieces_.size();
-  for (size_t i = 0; i < idx_size; ++i)
-    li_it = indexes.insert_after(li_it, i);
+    if (pieces_ == othr.pieces_)
+        return std::make_unique<OrderedSet>(pieces_);
 
-  auto othr_begin = othr.pieces_.begin();
-  auto end = pieces_.end();
-  auto current = pieces_.begin() + pos;
-  NAT global_pos = 0;
+    OrdSetRef remnant = static_cast<OrdSetRef>(rem);
+    size_t pos = 0;
+    while (pos < pieces_.size() && pieces_[pos].maxElem() < mdi.minElem()) {
+        remnant.emplaceBack(pieces_[pos]);
+        ++pos;
+    } 
 
-  while (current != end) {
-    const SetPiece &elem = *current;
-    const auto elem_min = elem.minElem();
-    const auto elem_max = elem.maxElem();
-    const auto elem_min_x = elem_min[0];
-    const auto elem_max_x = elem_max[0];
+    NAT global_pos = 0;
+    for (auto current = pieces_.begin() + pos; current != pieces_.end(); ++current) {
+        const SetPiece &elem = *current;
 
-    auto li_prev = indexes.before_begin();
-    auto li_curr = indexes.begin();
-    
-    // doIntersection prevents the creation of additional partitions
-    bool do_intersection = doInt(elem,mdi);
-    
-    advanceHint(inter, elem, global_pos);
-    
-    while (do_intersection && li_curr != indexes.end()) {
-      size_t idx = *li_curr;
-      const SetPiece &othr_elem = *(othr_begin + idx);
-      const auto othr_min = othr_elem.minElem();
-      const auto othr_max = othr_elem.maxElem();
-      const auto othr_min_x = othr_min[0];
-      const auto othr_max_x = othr_max[0];
+        advanceHint(inter, elem, global_pos);
 
+        bool do_intersection = doInt(elem, mdi);
 
-      if (othr_max_x < elem_min_x) {
-        li_curr = indexes.erase_after(li_prev);
-        continue;
-      }
-
-      if (elem_max_x < othr_min_x)
-        break;
-
-      if (doInt(othr_elem, elem)) {
-        auto inter_res = elem.intersection(othr_elem);
-        if (!inter_res.isEmpty())
-          emplaceHint(inter, inter_res, global_pos);
-      }
-
-      ++li_prev;
-      ++li_curr;
+        if (do_intersection) {
+            
+            for (size_t i = 0; i < othr.pieces_.size(); ++i) {
+                const SetPiece &othr_elem = othr.pieces_[i];
+                if (doInt(othr_elem, elem)) {
+                    auto inter_res = elem.intersection(othr_elem);
+                    if (!inter_res.isEmpty())
+                        emplaceHint(inter, inter_res, global_pos);
+                }
+            }
+        } else {
+            emplaceHint(inter, elem, global_pos);
+        }
     }
-    
-    if(!do_intersection)
-      emplaceHint(inter, elem, global_pos);
 
-    ++current;
-  }
-  return std::make_unique<OrderedSet>(inter);
+    return std::make_unique<OrderedSet>(inter);
 }
+
 
 
 

@@ -171,10 +171,10 @@ PWMapDelegPtr UnordPWMap::operator+(const PWMapDelegate &other) const
 PWMapDelegPtr UnordPWMap::operator-(const PWMapDelegate &other) const
 { 
 
-  PWMapDelegPtr res = std::make_unique<UnordPWMap>(fact_);
+  UnordMapCollection res;
 
   if (isEmpty() || other.isEmpty())
-    return res;
+    return std::make_unique<UnordPWMap>(fact_, res);
 
   Interval all(0, 1, Inf);
   Set univ = fact_.createSet(SetPiece(arity(), all));
@@ -241,20 +241,25 @@ PWMapDelegPtr UnordPWMap::operator-(const PWMapDelegate &other) const
             if (!neg.isEmpty()) {
               mdi[j] = neg;
               e[j] = LExp(0, 0);
-              jth.emplaceBack(fact_.createMap(mdi, e));
+              pushBack(jth.pieces_,fact_.createMap(mdi, e));
             }
 
             if (!pos.isEmpty()) {
               mdi[j] = pos;
               e[j] = minus_exp[j];
-              jth.emplaceBack(fact_.createMap(mdi, e));
+              pushBack(jth.pieces_,fact_.createMap(mdi, e));
             }
           }
 
           ith = std::move(jth);
         }
+        
+        
 
-        res = res->concatenation(*ith.restrict(dom));
+        PWMapDelegPtr new_ith_ptr = ith.restrict(dom); 
+        UnordPWMapCRef new_ith = static_cast<UnordPWMapCRef>(*new_ith_ptr);
+        for (const Map &map : new_ith.pieces_)
+          pushBack(res,map);
       }
     }
   }
@@ -262,7 +267,7 @@ PWMapDelegPtr UnordPWMap::operator-(const PWMapDelegate &other) const
   
 
   
-  return res;
+  return std::make_unique<UnordPWMap>(fact_, res);
 }
 
 std::ostream &UnordPWMap::print(std::ostream &out) const
@@ -515,7 +520,8 @@ PWMapDelegPtr UnordPWMap::reduce(const Map &map) const
       not_reduced.emplaceBack(dom_piece);
   }
 
-  pushBack(res, fact_.createMap(not_reduced, e)); // Add unreduced subpieces
+  if (!not_reduced.isEmpty())
+    pushBack(res, fact_.createMap(not_reduced, e)); // Add unreduced subpieces
 
   return std::make_unique<UnordPWMap>(fact_, res);
 }
@@ -820,16 +826,14 @@ void emplaceHint(OrdMapCollection &ord_pw, const Map &m, NAT hint)
 {
   auto end = ord_pw.end();
   auto it = ord_pw.begin();
-  std::advance(it,hint);
+  std::advance(it, hint);
   MapEntry mpe = createMapEntry(m);
-  while (it != end){
-    if (it->second.first < mpe.second.first){
+  while (it != end) {
+    if (it->second.first < mpe.second.first)
       ++it;
-    }
-    else
+    else 
       break;
   }
-
   ord_pw.insert(it, mpe);
 }
 
@@ -846,7 +850,6 @@ void advanceHint(OrdMapCollection &ord_pw, const MD_NAT crit, NAT &hint)
     }
     else
       break;
-     
   }  
 }
 
@@ -959,12 +962,12 @@ bool OrdPWMap::operator==(const PWMapDelegate &other) const
       const Map &s_m = s_mpe.first;
       const SetPerimeter &s_sp = s_mpe.second; 
       
-      if (s_sp.second[0] < l_sp.first[0]) {
+      if (s_sp.second < l_sp.first) {
         si_curr = indexes.erase_after(si_prev);
         continue;
       }
 
-      if (l_sp.second[0] < s_sp.first[0])
+      if (l_sp.second < s_sp.first)
         break;
 
       if (doInt(s_sp, l_sp)) {
@@ -1048,6 +1051,7 @@ PWMapDelegPtr OrdPWMap::operator-(const PWMapDelegate &other) const
   Set set_in = fact_.createSet(SetPiece(arity(), all));
   Set set_out = fact_.createSet(SetPiece(arity(), all));
   processMapsOrd(other,set_in, set_out, res, &OrdPWMap::processMinus,true);
+  std::sort(res.begin(),res.end(), mapEntryComp);
   return std::make_unique<OrdPWMap>(fact_, res);
 }
 
@@ -1114,23 +1118,24 @@ void OrdPWMap::processMinus(const Map &m1, const Map &m2,
       if (!neg.isEmpty()) {
         mdi[j] = neg;
         e[j] = LExp(0, 0);
-        jth.emplaceBack(fact_.createMap(mdi, e));
+        pushBack(jth.pieces_,fact_.createMap(mdi, e));
       }
 
       if (!pos.isEmpty()) {
         mdi[j] = pos;
         e[j] = minus_exp[j];
-        jth.emplaceBack(fact_.createMap(mdi, e));
+        pushBack(jth.pieces_,fact_.createMap(mdi, e));
       }
     }
 
     ith = std::move(jth);
   }
    
-  OrdPWMap res_pwmap(fact_, ord_pwmap); 
-  PWMapDelegPtr concatenated_ptr = res_pwmap.concatenation(*ith.restrict(dom)); 
-  OrdPWMapCRef othr = static_cast<OrdPWMapCRef>(*concatenated_ptr);
-  ord_pwmap = std::move(othr.pieces_);
+
+  PWMapDelegPtr new_ith_ptr =ith.restrict(dom); 
+  OrdPWMapCRef new_ith = static_cast<OrdPWMapCRef>(*new_ith_ptr);
+  for (const MapEntry &e : new_ith.pieces_)
+    pushBack(ord_pwmap, e);
 }
 
 std::ostream &OrdPWMap::print(std::ostream &out) const
@@ -1203,7 +1208,7 @@ PWMapDelegPtr OrdPWMap::restrict(const Set &subdom) const
       continue;
     }
     
-    if (s_max_per[0] < m_min_per[0])
+    if (s_max_per < m_min_per)
       break;
 
 
@@ -1279,7 +1284,7 @@ PWMapDelegPtr OrdPWMap::composition(const PWMapDelegate &other) const
         continue;
       }
 
-      if (i_max_per[0] < t_min_per[0])
+      if (i_max_per < t_min_per)
         break;
     }
   }
@@ -1397,10 +1402,9 @@ PWMapDelegPtr OrdPWMap::combine(const PWMapDelegate &other) const
     
     if (doInt(o_sp, t_sp)){
       Set dom_o_m = o_m.dom(), new_dom = dom_o_m.difference(dom());
-      res_comb = fact_.createMap(new_dom, o_m.exp());
-      
-      if (res_comb.isEmpty())
+      if (new_dom.isEmpty())
         continue;
+      res_comb = fact_.createMap(new_dom, o_m.exp());
     }
     
     advanceHint(res, o_sp.first, global_pos);
@@ -1622,7 +1626,7 @@ PWMapDelegPtr OrdPWMap::firstInv(const Set &subdom) const
         continue;
       }
     }
-    if (s_max_per[0] < t_min_per[0]) break;
+    if (s_max_per < t_min_per) break;
   }
 
   std::sort(res.begin(), res.end(), mapEntryComp);
@@ -1707,12 +1711,12 @@ void OrdPWMap::processMapsOrd(
       const Map &s_m = s_mpe.first;
       const SetPerimeter &s_sp = s_mpe.second; 
       
-      if (s_sp.second[0] < l_sp.first[0]) {
+      if (s_sp.second < l_sp.first) {
         si_curr = indexes.erase_after(si_prev);
         continue;
       }
 
-      if (l_sp.second[0] < s_sp.first[0])
+      if (l_sp.second < s_sp.first)
         break;
 
       // Process overlapping perimeters
@@ -1771,7 +1775,7 @@ PWMapDelegPtr OrdPWMap::offsetDom(const PWMapDelegate &off) const
       continue;
     }
     
-    if (o_max_per[0] <  m_min_per[0])
+    if (o_max_per <  m_min_per)
       break;
   }
 

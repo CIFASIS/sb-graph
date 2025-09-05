@@ -1223,7 +1223,7 @@ SetDelegPtr OrderedSet::intersectionComp(const SetDelegate &other, const SetPiec
     OrdSetRef remnant = static_cast<OrdSetRef>(rem);
     size_t pos = 0;
     while (pos < pieces_.size() && pieces_[pos].maxElem() < mdi.minElem()) {
-        remnant.emplaceBack(pieces_[pos]);
+        remnant.pieces_.emplace_back(pieces_[pos]);
         ++pos;
     } 
 

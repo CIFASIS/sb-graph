@@ -25,6 +25,7 @@
 #include <sbg/interval.hpp>
 #include <sbg/sbg.hpp>
 
+#include "partitioner_params.hpp"
 #include "sbg_partitioner_types.hpp"
 #include "weighted_sb_graph.hpp"
 
@@ -32,15 +33,6 @@
 namespace sbg_partitioner {
 
 constexpr bool sanity_check_enabled = false;
-
-
-enum InitialPartitionStrategy {
-    ALL = 0,
-    DFS_DISTRIBUTIVE_PREORDER = 1,
-    DFS_DISTRIBUTIVE_POSTORDER = 2,
-    DFS_GREEDY_PREORDER = 3,
-    DFS_GREEDY_POSTORDER =4
-};
 
 
 /// @brief Converts a Partition element into a Set.

@@ -20,6 +20,7 @@
 #include <cassert>
 #include <fstream>
 #include <iostream>
+#include <list>
 #include <map>
 #include <optional>
 #include <rapidjson/document.h>
@@ -50,7 +51,7 @@ namespace {
 struct Var {
   string id;
   vector<pair<INT, INT>> exps;
-  vector<int> defs;
+  list<int> defs;
   unsigned cost = 1;
 };
 
@@ -115,7 +116,7 @@ struct Node {
 vector<Var> read_var_object(const rapidjson::Value& var_array)
 {
   vector<Var> vars;
-  // vars.reserve(var_array.GetArray().Size());
+  vars.reserve(var_array.GetArray().Size());
   for (const auto& value : var_array.GetArray()) {
     assert(value.HasMember("id") and value["id"].IsString());
     string id = value["id"].GetString();
@@ -134,12 +135,11 @@ vector<Var> read_var_object(const rapidjson::Value& var_array)
       int exp_a = expression[0].GetInt();
       int exp_b = expression[1].GetInt();
 
-      exps.push_back(make_pair(exp_a, exp_b));
+      exps.emplace_back(exp_a, exp_b);
     }
 
     auto def_object = value["defs"].GetArray();
-    vector<int> defs;
-    defs.reserve(def_object.Size());
+    list<int> defs;
     for (const auto& def : def_object) {
       defs.push_back(def.GetInt());
     }
@@ -222,7 +222,7 @@ tuple<Set, NodeWeight> create_set_of_nodes(const map<int, Node>& nodes, map<int,
     // own domain.
     SetPiece array_of_nodes;
     for (size_t i = 0; i < node.intervals.size(); i++) {
-      auto node_interval = node.intervals[i];
+      const auto& node_interval = node.intervals[i];
 
       int interval_begin, interval_end;
       if (i == 0) {

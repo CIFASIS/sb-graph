@@ -37,7 +37,8 @@ namespace sbg_partitioner {
 void kl_sbg_imbalance_partitioner(
     const SBG::LIB::WeightedSBGraph& graph,
     PartitionMap& partitions,
-    const float imbalance_epsilon);
+    const float imbalance_epsilon,
+    const bool enable_multithreading);
 
 
 /**

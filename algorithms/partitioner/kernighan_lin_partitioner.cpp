@@ -44,8 +44,6 @@ using ec_ic = std::pair<Set, Set>;
 // Using unnamed namespace to define functions with internal linkage
 namespace {
 
-constexpr bool multithreading_enabled = false;
-
 pair<unsigned, unsigned> compute_lmin_lmax(const WeightedSBGraph& graph, unsigned number_of_partitions, const float imbalance_epsilon,
                                            const SetAF& set_fact)
 {
@@ -58,24 +56,13 @@ pair<unsigned, unsigned> compute_lmin_lmax(const WeightedSBGraph& graph, unsigne
   return make_pair(LMin, LMax);
 }
 
-pair<GainObjectImbalance, CostMatrixImbalance> generate_gain_matrix(const WeightedSBGraph& graph, CommunicationCost& cost_matrix, unsigned partition_a_id,
+pair<GainObjectImbalance, CostMatrixImbalance> generate_gain_matrix(const WeightedSBGraph& graph, ICommunicationCost& cost_matrix, unsigned partition_a_id,
                                          Partition& partition_a, unsigned partition_b_id, Partition& partition_b, unsigned LMin,
                                          unsigned LMax)
 {
   SBG::Util::Internal::TimeProfiler profiler("generate_gain_matrix");
-  const auto& fact = graph.fact();
   // create the max_gain object with a dummy initialization, any gain will be greater than -infinity
-  GainObjectImbalance max_gain = GainObjectImbalance{
-    numeric_limits<size_t>::infinity(),
-    numeric_limits<size_t>::infinity(),
-    -numeric_limits<size_t>::infinity(),
-    fact.createSet(),
-    fact.createSet(),
-    0,
-    fact.createSet(),
-    fact.createSet(),
-    0
-  };
+  optional<GainObjectImbalance> max_gain = nullopt;
   CostMatrixImbalance local_cost_matrix;
 
   for (size_t i = 0; i < partition_a.size(); i++) {
@@ -106,13 +93,15 @@ pair<GainObjectImbalance, CostMatrixImbalance> generate_gain_matrix(const Weight
       int gain = ec_edges.cardinal() - ic_edges.cardinal();
       local_cost_matrix.emplace_back(i, j, gain, ec_i_a, ic_i_a, set_i_a.cardinal(), ec_j_b, ic_j_b, set_j_b.cardinal());
 
-      if (local_cost_matrix.back().gain > max_gain.gain) {
+      if ((not max_gain) or local_cost_matrix.back().gain > max_gain->gain) {
             max_gain = local_cost_matrix.back();
       }
     }
   }
 
-  return { max_gain, local_cost_matrix };
+  assert(max_gain);
+
+  return { *max_gain, local_cost_matrix };
 }
 
 // Partition a and b (A_c and B_c in the definition) are the remining nodes to be visited, not the actual partitions
@@ -232,7 +221,7 @@ GainObjectImbalance update_diff(CostMatrixImbalance& cost_matrix, Partition& rem
   }
 
   // using a reference to copy the element only once when returning
-  GainObjectImbalance& max_gain_object = cost_matrix.front();
+  optional<GainObjectImbalance> max_gain_object = nullopt;
   for (auto g : cost_matrix) {
     bool change = false;
 
@@ -273,35 +262,21 @@ GainObjectImbalance update_diff(CostMatrixImbalance& cost_matrix, Partition& rem
 
     new_cost_matrix.push_back(move(g));
 
-    if (new_cost_matrix.back().gain > max_gain_object.gain) {
+    if ((not max_gain_object) or new_cost_matrix.back().gain > max_gain_object->gain) {
       max_gain_object = new_cost_matrix.back();
     }
   }
   cost_matrix = new_cost_matrix;
 
+  assert(max_gain_object);
+
 #if PARTITION_IMBALANCE_DEBUG
   logging::sbg_log << remaining_partition_a << ", " << remaining_partition_b << ", " << gain_object << ", " << cost_matrix << endl;
 #endif
 
-    return max_gain_object;
+    return *max_gain_object;
 }
 
-// auto return type we’ll let the compiler deduce what the return type should be from the return statement
-auto max_diff(CostMatrixImbalance& cost_matrix)
-{
-  // cost_matrix is sort by gain, so the first is the maximum gain
-  auto g = cost_matrix.begin();
-
-  auto gain_object = *g;
-#if PARTITION_IMBALANCE_DEBUG
-  logging::sbg_log << "The best is " << *g << endl;
-#endif
-
-  // remove it, we need to update those values that
-  cost_matrix.erase(g);
-
-  return gain_object;
-}
 
 void update_sum(int& par_sum, int g, int& max_par_sum, pair<Set, Set>& max_par_sum_set, const Set& a_v, const Set& b_v)
 {
@@ -312,7 +287,8 @@ void update_sum(int& par_sum, int g, int& max_par_sum, pair<Set, Set>& max_par_s
   }
 }
 
-int kl_sbg_imbalance(const WeightedSBGraph& graph, CommunicationCost& cost_matrix, unsigned partition_a_id, Partition& partition_a,
+
+int kl_sbg_imbalance(const WeightedSBGraph& graph, ICommunicationCost& cost_matrix, unsigned partition_a_id, Partition& partition_a,
                      unsigned partition_b_id, Partition& partition_b, unsigned LMin, unsigned LMax)
 {
 #if PARTITION_IMBALANCE_DEBUG
@@ -372,7 +348,7 @@ int kl_sbg_imbalance(const WeightedSBGraph& graph, CommunicationCost& cost_matri
   return max_par_sum;
 }
 
-KLBipartResult kl_sbg_bipart_imbalance(const WeightedSBGraph& graph, CommunicationCost& cost_matrix, unsigned partition_a_id,
+KLBipartResult kl_sbg_bipart_imbalance(const WeightedSBGraph& graph, ICommunicationCost& cost_matrix, unsigned partition_a_id,
                                        Partition& partition_a, unsigned partition_b_id, Partition& partition_b, unsigned LMin,
                                        unsigned LMax)
 {
@@ -385,8 +361,8 @@ KLBipartResult kl_sbg_bipart_imbalance(const WeightedSBGraph& graph, Communicati
   return KLBipartResult{partition_a, partition_b, gain};
 }
 
-KLSbgPartitionerResult kl_sbg_partitioner_function(const WeightedSBGraph& graph, PartitionMap& partitions, CommunicationCost& cost_matrix,
-                                                   unsigned LMin, unsigned LMax, vector<KLSbgPartitionerResult>& gains)
+KLSbgPartitionerResult kl_sbg_partitioner_function(const WeightedSBGraph& graph, PartitionMap& partitions, ICommunicationCost& cost_matrix,
+                                                   unsigned LMin, unsigned LMax, list<KLSbgPartitionerResult>& gains)
 {
   KLSbgPartitionerResult best_gain = KLSbgPartitionerResult{0, 0, -1, {}, {}};
   for (size_t i = 0; i < partitions.size(); i++) {
@@ -425,10 +401,10 @@ KLSbgPartitionerResult kl_sbg_partitioner_function(const WeightedSBGraph& graph,
 }
 
 KLSbgPartitionerResult kl_sbg_partitioner_multithreading(const WeightedSBGraph& graph, PartitionMap& partitions,
-                                                         CommunicationCost& cost_matrix, unsigned LMin, unsigned LMax,
-                                                         vector<KLSbgPartitionerResult>& gains)
+                                                         ICommunicationCost& cost_matrix, unsigned LMin, unsigned LMax,
+                                                         list<KLSbgPartitionerResult>& gains)
 {
-  vector<future<KLSbgPartitionerResult>> workers;
+  list<future<KLSbgPartitionerResult>> workers;
   KLSbgPartitionerResult best_gain = KLSbgPartitionerResult{0, 0, -1, {}, {}};
   for (size_t i = 0; i < partitions.size(); i++) {
     const auto ec_partition_i = cost_matrix.get_ec_by_partition_id(i);
@@ -597,21 +573,21 @@ string get_pretty_sb_graph(const SBG::LIB::SBG& g)
   return json_data;
 }
 
-void kl_sbg_imbalance_partitioner(const WeightedSBGraph& graph, PartitionMap& partitions, const float imbalance_epsilon)
+void kl_sbg_imbalance_partitioner(const WeightedSBGraph& graph, PartitionMap& partitions, const float imbalance_epsilon, const bool enable_multithreading)
 {
   auto [LMin, LMax] = imbalance_epsilon > 0.0 ? compute_lmin_lmax(graph, partitions.size(), imbalance_epsilon, graph.fact())
                                               : make_pair<unsigned, unsigned>(0, 0);
   bool change = true;
   int counter = 0;
 
-  CommunicationCost& cost_matrix = get_communication_cost();
-  vector<KLSbgPartitionerResult> gains;
+  ICommunicationCost& cost_matrix = get_communication_cost();
+  list<KLSbgPartitionerResult> gains;
   while (change) {
     cout << "*****ITERATION NUMBER " << counter++ << endl;
     change = false;
 
     KLSbgPartitionerResult best_gain;
-    if (multithreading_enabled) {
+    if (enable_multithreading) {
       best_gain = kl_sbg_partitioner_multithreading(graph, partitions, cost_matrix, LMin, LMax, gains);
     } else {
       best_gain = kl_sbg_partitioner_function(graph, partitions, cost_matrix, LMin, LMax, gains);
@@ -640,7 +616,7 @@ void kl_sbg_imbalance_partitioner(const WeightedSBGraph& graph, PartitionMap& pa
     default:
 
       int it_counter = 0;
-      vector<size_t> modified_partitions = {};
+      list<size_t> modified_partitions = {};
       while (not gains.empty() and best_gain.gain > 0) {
         logging::sbg_log << "change number " << it_counter << " changing " << best_gain.i << ", " << best_gain.j << endl;
         it_counter++;

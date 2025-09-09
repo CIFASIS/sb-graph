@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <list>
+#include <mutex>
 #include <unordered_map>
 #include <vector>
 
@@ -29,27 +31,12 @@
 
 namespace sbg_partitioner {
 
-namespace internal {
 
-using ec_ic = std::pair<SBG::LIB::Set , SBG::LIB::Set>;
-
-/**
- * @brief This function computes external and internal communication
- * given a certain partition for a particular set piece.
- * 
- * @param partition - partition of graph nodes.
- * @param nodes - set piece of the graph nodes.
- * @param graph - set based graph that is being partitioned. */
-ec_ic compute_EC_IC(
-    const Partition& partition,
-    const SBG::LIB::SetPiece& nodes,
-    const SBG::LIB::WeightedSBGraph& graph);
-
-}
-
-class CommunicationCost {
+class ICommunicationCost {
 public:
-    CommunicationCost(const SBG::LIB::WeightedSBGraph& graph, PartitionMap partitions);
+    ICommunicationCost() = default;
+
+    virtual ~ICommunicationCost() = default;
 
     /**
      * @brief After partitions are modified, external and internal cost must be updated and this function takes care of it.
@@ -58,7 +45,7 @@ public:
      * @param partitions - new partition of the graph nodes.
      * @param modified_partitions - [optional] partitions that were updated.
      */
-    void update_partitions(PartitionMap& partitions, std::optional<std::vector<size_t>> modified_partitions = std::nullopt);
+    virtual void update_partitions(PartitionMap& partitions, std::optional<std::reference_wrapper<const std::list<size_t>>> modified_partitions = std::nullopt) = 0;
 
     /**
      * It returns the edges that communicate nodes in partition `partition_id` with others.
@@ -68,7 +55,7 @@ public:
      * @return External edges of the given partition.
      * @note These values are pre-computed when the object is created or partitions are updated.
      */
-    SBG::LIB::Set get_ec_by_partition_id(unsigned partition_id); // non-const since _cost_by_partition may be updated
+    virtual SBG::LIB::Set get_ec_by_partition_id(unsigned partition_id) = 0; // non-const since _cost_by_partition may be updated
 
     /**
      * It returns the edges that communicate the set piece nodes in partition `partition_id` with other partitions.
@@ -80,7 +67,7 @@ public:
      * @note the member function is non-const since _ec_cost_by_interval and _ic_cost_by_interval may be updated to prevent to be recomputed.
      */
 
-    SBG::LIB::Set get_ec_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes);
+    virtual SBG::LIB::Set get_ec_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes) = 0;
 
     /**
      * It returns the edges that communicate the set piece nodes with other nodes in partition `partition_id`.
@@ -91,28 +78,78 @@ public:
      * @return Internal edges of the given set piece.
      * @note the member function is non-const since _ec_cost_by_interval and _ic_cost_by_interval may be updated to prevent to be recomputed.
      */
-    SBG::LIB::Set get_ic_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes);
+    virtual SBG::LIB::Set get_ic_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes) = 0;
+};
+
+
+/// Communication cost pointer
+typedef std::unique_ptr<ICommunicationCost> CommunicationCostPtr;
+
+/**
+ * The actual communication cost class.
+ */
+class CommunicationCost : public ICommunicationCost {
+public:
+    CommunicationCost(const SBG::LIB::WeightedSBGraph& graph, PartitionMap partitions);
+
+    ~CommunicationCost() = default;
+
+    void update_partitions(PartitionMap& partitions, std::optional<std::reference_wrapper<const std::list<size_t>>> modified_partitions = std::nullopt) override;
+
+    SBG::LIB::Set get_ec_by_partition_id(unsigned partition_id)  override; // non-const since _cost_by_partition may be updated
+
+    SBG::LIB::Set get_ec_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes)  override;
+
+    SBG::LIB::Set get_ic_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes) override;
 
 private:
     const SBG::LIB::WeightedSBGraph& _graph; // read-only members
     PartitionMap _partitions;
 
+    // since communication is independent from the partitions, we can share it between many objects
+    static std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SBG::LIB::SetPieceHash> _communication_by_set_piece;
     std::vector<std::pair<SBG::LIB::Set, SBG::LIB::Set>> _cost_by_partition;
     std::vector<std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SBG::LIB::SetPieceHash>> _ec_cost_by_interval;
     std::vector<std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SBG::LIB::SetPieceHash>> _ic_cost_by_interval;
 
     void initialize();
-
+    std::pair<SBG::LIB::Set, SBG::LIB::Set> compute_ec_ic(unsigned partition_id, const SBG::LIB::SetPiece& nodes);
 };
+
+
+/**
+ * Communication cost to run optimization using multithreading.
+ */
+class CommunicationCostSync : public ICommunicationCost {
+public:
+    CommunicationCostSync(const SBG::LIB::WeightedSBGraph& graph, PartitionMap partitions);
+
+    ~CommunicationCostSync() = default;
+
+    void update_partitions(PartitionMap& partitions, std::optional<std::reference_wrapper<const std::list<size_t>>> modified_partitions = std::nullopt) override;
+
+    SBG::LIB::Set get_ec_by_partition_id(unsigned partition_id) override; // non-const since _cost_by_partition may be updated
+
+    SBG::LIB::Set get_ec_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes) override;
+
+    SBG::LIB::Set get_ic_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes) override;
+
+private:
+    CommunicationCost _comm_cost;
+    std::mutex _mutex;
+};
+
+
+CommunicationCostPtr create_communication_cost(const SBG::LIB::WeightedSBGraph& graph, PartitionMap partitions, bool multithreading_enabled);
 
 /**
  * @brief Once communication cost object is created, it can be saved by calling this function to be used in the future.
 */
-void set_communication_cost(CommunicationCost& cost_matrix);
+void set_communication_cost(CommunicationCostPtr&& cost_matrix);
 
 /**
  * @brief Global communication cost object, saved to prevent recomputing.
 */
-CommunicationCost& get_communication_cost();
+ICommunicationCost& get_communication_cost();
 
 }

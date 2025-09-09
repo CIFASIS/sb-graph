@@ -36,16 +36,17 @@ namespace metrics {
 namespace {
 
 Set get_edge_cut(
-    const Set& partition_a,
-    const Set& partition_b,
+    const Set& partition,
     const PWMap& maps_1,
     const PWMap& maps_2,
     SBG::LIB::SetAF& set_fact)
 {
-    auto d = maps_1.preImage(partition_a);
+    auto d = maps_1.preImage(partition);
     auto im = maps_2.image(d);
-    auto ec_nodes = im.intersection(partition_b);
+    auto ec_nodes = im.difference(partition);
     auto external_communication = maps_2.preImage(ec_nodes);
+    // avoid oversizing external communication
+    external_communication = external_communication.intersection(d);
 
     return external_communication;
 }
@@ -132,12 +133,9 @@ int edge_cut(const PartitionMap& partitions, const WeightedSBGraph& sb_graph, Se
     const auto& maps_1 = sb_graph.map1();
     const auto& maps_2 = sb_graph.map2();
     for (size_t i = 0; i < partitions.size(); i++) {
-        Set partition_1 = from_vector(partitions.at(i), set_fact);
-        for (size_t j = i + 1; j < partitions.size(); j++) {
-            Set partition_2 = from_vector(partitions.at(j), set_fact);
-            ec = ec.cup(get_edge_cut(partition_1, partition_2, maps_1, maps_2, set_fact));
-            ec = ec.cup(get_edge_cut(partition_1, partition_2, maps_2, maps_1, set_fact));
-        }
+        Set partition = from_vector(partitions.at(i), set_fact);
+        ec = ec.cup(get_edge_cut(partition, maps_1, maps_2, set_fact));
+        ec = ec.cup(get_edge_cut(partition, maps_2, maps_1, set_fact));
     }
 
     int weight = get_edge_set_cost(ec, sb_graph.get_edge_costs());

@@ -34,6 +34,15 @@ namespace sbg_partitioner {
 constexpr bool sanity_check_enabled = false;
 
 
+enum InitialPartitionStrategy {
+    ALL = 0,
+    DFS_DISTRIBUTIVE_PREORDER = 1,
+    DFS_DISTRIBUTIVE_POSTORDER = 2,
+    DFS_GREEDY_PREORDER = 3,
+    DFS_GREEDY_POSTORDER =4
+};
+
+
 /// @brief Converts a Partition element into a Set.
 /// @param partition - A list of SetPiece elements.
 /// @param set_fact - Factory to create sets.
@@ -47,18 +56,12 @@ SBG::LIB::Set from_vector(const Partition& partition, const SBG::LIB::SetAF& set
 Partition to_vector(const SBG::LIB::Set& partition);
 
 
-// I wish this was a separate function, not part of PartitionGraph but there were a lot of
-// compile problems if partitions map object is created locally and OrdSet objects are added.
-std::vector<PartitionMap>
-make_initial_partitions(
-    SBG::LIB::WeightedSBGraph& graph,
-    unsigned number_of_partitions);
-
-
 PartitionMap
 best_initial_partition(
     SBG::LIB::WeightedSBGraph& graph,
-    unsigned number_of_partitions);
+    unsigned number_of_partitions,
+    const InitialPartitionStrategy strategy,
+    bool multithreading_enabled);
 
 
 /// Returns the connectivity set of a set of edges contained in map1 and map2 of

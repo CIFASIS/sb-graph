@@ -24,7 +24,7 @@
 #ifndef LE_EVALUATOR 
 #define LE_EVALUATOR 
 
-#include "eval/defs.hpp"
+#include "eval/var_env.hpp"
 #include "sbg/lexp.hpp"
 
 namespace SBG {
@@ -33,7 +33,7 @@ namespace Eval {
 
 struct LinearExprEvaluator : public boost::static_visitor<LIB::LExp> {
   public:
-  LinearExprEvaluator(VarEnv &env);
+  LinearExprEvaluator(VarEnv &venv);
 
   LIB::LExp operator()(AST::Natural v) const;
   LIB::LExp operator()(AST::Rational v) const;
@@ -53,7 +53,7 @@ struct LinearExprEvaluator : public boost::static_visitor<LIB::LExp> {
   LIB::LExp operator()(AST::ParenExpr v) const;
 
   private:
-  mutable VarEnv env_;
+  mutable VarEnv venv_;
 };
 
 } // namespace Eval

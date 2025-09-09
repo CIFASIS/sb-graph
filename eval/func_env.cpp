@@ -1,12 +1,4 @@
-/** @file autom_impl_visitor.hpp
-
- @brief <b>Implementation Visitor</b>
-
- This visitor reads the input AST and decides the optimal implementation that
- can be used for that instance. For example, to use ordered dense sets it checks
- that all intervals have step=1 and maps return dense intervals.
-
- <hr>
+/*******************************************************************************
 
  This file is part of Set--Based Graph Library.
 
@@ -25,28 +17,34 @@
 
  ******************************************************************************/
 
-#ifndef AUTOM_IMPL_VISITOR 
-#define AUTOM_IMPL_VISITOR 
-
-#include <boost/variant.hpp>
-
-#include "ast/sbg_program.hpp"
+#include "eval/func_env.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-struct AutomImplVisitor : public boost::static_visitor<ImplContext> {
-  AutomImplVisitor();
+FuncEnv::FuncEnv() {}
 
-  ImplContext operator()(AST::Program p) const;
+FuncEnv::FIt FuncEnv::begin() const
+{
+  return functions_.begin();
+}
 
-  private:
-  mutable VarEnv venv_;
-};
+FuncEnv::FIt FuncEnv::end() const
+{
+  return functions_.end();
+}
+
+FuncEnv::FIt FuncEnv::find(const FuncEnv::FKey& key) const
+{
+  return functions_.find(key);
+}
+
+void FuncEnv::insert(FuncEnv::FKey key, FuncEnv::FValue value)
+{
+  functions_[key] = value;
+}
 
 } // namespace Eval
 
 } // namespace SBG
-
-#endif

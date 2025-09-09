@@ -44,7 +44,7 @@ struct ProgramEvaluator : public boost::static_visitor<ProgramIO> {
 
   private:
   const LIB::PWMapAF &fact_;
-  mutable VarEnv env_;
+  mutable VarEnv venv_;
   mutable bool debug_;
 };
 

@@ -1,11 +1,7 @@
-/** @file autom_impl_visitor.hpp
+/** @file var_env.hpp
 
- @brief <b>Implementation Visitor</b>
-
- This visitor reads the input AST and decides the optimal implementation that
- can be used for that instance. For example, to use ordered dense sets it checks
- that all intervals have step=1 and maps return dense intervals.
-
+ @brief <b>Variables environment</b>
+ 
  <hr>
 
  This file is part of Set--Based Graph Library.
@@ -25,24 +21,38 @@
 
  ******************************************************************************/
 
-#ifndef AUTOM_IMPL_VISITOR 
-#define AUTOM_IMPL_VISITOR 
+#ifndef EVAL_VAR_ENV_HPP
+#define EVAL_VAR_ENV_HPP
 
-#include <boost/variant.hpp>
+#include <unordered_map>
 
-#include "ast/sbg_program.hpp"
+#include "ast/expr.hpp"
+#include "eval/base_type.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-struct AutomImplVisitor : public boost::static_visitor<ImplContext> {
-  AutomImplVisitor();
+/** 
+ * @brief Variable environment (with expressions already evaluated). This env
+ * will be populated by StmEvaluator, and used by ExprEvaluator.
+ */
+struct VarEnv {
+  public:
+  using VKey = AST::Name;
+  using VValue = ExprBaseType;
+  using VType = std::unordered_map<VKey, VValue>;
+  using VIt = VType::const_iterator;
 
-  ImplContext operator()(AST::Program p) const;
+  VarEnv();
+
+  VIt begin() const;
+  VIt end() const;
+  VIt find(const VKey& key) const;
+  void insert(VKey key, VValue value);
 
   private:
-  mutable VarEnv venv_;
+  mutable VType variables_;
 };
 
 } // namespace Eval

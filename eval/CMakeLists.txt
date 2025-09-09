@@ -7,7 +7,11 @@ target_include_directories(sbg-eval-lib PUBLIC ${PROJECT_SOURCE_DIR})
 target_sources(
     sbg-eval-lib
     PRIVATE
-	    defs.cpp
+      eval_context.cpp
+      func_env.cpp
+      impl_context.cpp
+      pretty_print.cpp
+      var_env.cpp
 )
 
 add_subdirectory(visitors)

@@ -17,64 +17,20 @@
 
  ******************************************************************************/
 
-#include "eval/visitors/autom_impl_visitor.hpp"
+#include "eval/visitors/nat_evaluator.hpp"
+#include "eval/visitors/rational_evaluator.hpp"
+#include "eval/visitors/set_impl_visitor.hpp"
+#include "eval/visitors/stm_evaluator.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-member_imp(Impl, int, set_impl);
-member_imp(Impl, int, pw_impl);
-
-Impl::Impl(int set_impl, int pw_impl)
-  : set_impl_(set_impl), pw_impl_(pw_impl) {}
-
-////////////////////////////////////////////////////////////////////////////////
-// Automatic Implementation Visitor --------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-AutomImplVisitor::AutomImplVisitor(Impl user_impl)
-  : user_impl_(user_impl), venv_() {}
-
-Impl AutomImplVisitor::operator()(AST::Program p) const 
-{ 
-  int set_res = 0, pw_res = 0;
-
-  LIB::NAT dims = 1;
-  AST::IsConfig cfg_visit;
-  if (!p.stms().empty()) {
-    AST::Statement first = p.stms()[0];
-    if (boost::apply_visitor(cfg_visit, first))
-      dims = boost::get<AST::ConfigDims>(first).nmbr_dims();
-  }
-
-  LIB::OrdDenseAF set_fact;
-  LIB::MapAF map_fact(set_fact);
-  LIB::UnordPWMapAF pw_fact(map_fact);
-
-  StmEvaluator stm_visit(dims, pw_fact);
-  for (AST::Statement s : p.stms()) {
-    if (!boost::apply_visitor(cfg_visit, s))
-      StmResult se = boost::apply_visitor(stm_visit, s);
-  }
-
-  if (user_impl_.set_impl() < 0 && dims < 2) {
-    bool is_optimizable = true;
-    SetImplVisitor set_impl_visit(stm_visit.venv());
-    for (AST::Expr e : p.exprs())
-      is_optimizable = is_optimizable && boost::apply_visitor(set_impl_visit, e);
-    set_res = is_optimizable ? 2 : 0;
-  }
-
-  return Impl(set_res, pw_res);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Set Implementation Visitor --------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-SetImplVisitor::SetImplVisitor() : venv_() {}
-SetImplVisitor::SetImplVisitor(VarEnv venv) : venv_(venv) {}
+SetImplVisitor::SetImplVisitor(const VarEnv& venv) : venv_(venv) {}
 
 bool SetImplVisitor::operator()(AST::Natural v) const { return true; }
 

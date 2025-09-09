@@ -18,404 +18,649 @@
  ******************************************************************************/
 
 #include "algorithms/cc/cc.hpp"
-#include "algorithms/cutvertex/af_cv.hpp"
-#include "algorithms/matching/bfs_matching.hpp"
-#include "algorithms/matching/matching_fact.hpp"
-#include "algorithms/scc/scc_fact.hpp"
-#include "algorithms/toposort/af_ts.hpp"
-#include "algorithms/misc/causalization_builders.hpp"
-#include "algorithms/misc/causalization_json.hpp"
 #include "eval/visitors/func_evaluator.hpp"
+#include "util/debug.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Function evaluators ---------------------------------------------------------
+// Built-in operators evaluators -----------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-auto& getOpposite()
+ExprBaseType BuiltInOperators::oppositeEvaluator(const EBTList& args)
 {
-  static const auto kOppositeEvaluator = Overload {
+  Util::ERROR_UNLESS(args.size() == 1
+    , "oppositeEvaluator: wrong number of arguments\n");
+
+  const auto opposite_evaluator = Overload {
     [](LIB::NAT a) { return LIB::RATIONAL(a, -1); },
     [](LIB::RATIONAL a) { return LIB::RATIONAL(-1)*a; },
     [](auto a) { 
-      Util::ERROR("oppo_evaluator: wrong argument ", a, " for - (opposite)\n");
+      Util::ERROR("oppositeEvaluator: wrong type argument ", a
+        , " for - (opposite)\n");
       return LIB::RATIONAL(0);
     }
   };
-  return kOppositeEvaluator;
+  return std::visit(opposite_evaluator, args[0]);
 }
 
-auto& getCardinal()
+ExprBaseType BuiltInOperators::cardinalEvaluator(const EBTList& args)
 {
-  static const auto kCardinalEvaluator = Overload {
+  Util::ERROR_UNLESS(args.size() == 1
+    , "cardinalEvaluator: wrong number of arguments\n");
+
+  const auto cardinal_evaluator = Overload {
     [](LIB::Interval a) { return (LIB::NAT) a.cardinal(); },
     [](LIB::MultiDimInter a) { return (LIB::NAT) a.cardinal(); },
     [](LIB::Set a) { return (LIB::NAT) a.cardinal(); },
     [](auto a) { 
-      Util::ERROR("empty_evaluator: wrong argument ", a, " for #\n");
+      Util::ERROR("cardinalEvaluator: wrong argument ", a, " for #\n");
       return (LIB::NAT) 0;
     }
   };
-  return kCardinalEvaluator;
+  return std::visit(cardinal_evaluator, args[0]);
 }
 
-auto& getComplement()
+ExprBaseType BuiltInOperators::complementEvaluator(const EBTList& args)
 {
-  static const auto kComplementEvaluator = Overload {
+  Util::ERROR_UNLESS(args.size() == 1
+    , "complementEvaluator: wrong number of arguments\n");
+
+  const auto complement_evaluator = Overload {
     [](LIB::Set a) { return ExprBaseType(a.complement()); },
     [](auto a) { 
-      Util::ERROR("empty_evaluator: wrong argument ", a
+      Util::ERROR("complementEvaluator: wrong argument ", a
         , " for \' (complement)\n"); 
       return ExprBaseType();
     }
   };
-  return kComplementEvaluator;
+  return std::visit(complement_evaluator, args[0]);
 }
 
-auto add_evaluator = Overload {
-  [](LIB::NAT a, LIB::NAT b) { return ExprBaseType(a + b); },
-  [](LIB::MD_NAT a, LIB::MD_NAT b) { return ExprBaseType(a + b); },
-  [](LIB::RATIONAL a, LIB::RATIONAL b) { return ExprBaseType(a + b); },
-  [](LIB::NAT a, LIB::RATIONAL b) {
-    return ExprBaseType(LIB::RATIONAL(a) + b);
-  },
-  [](LIB::RATIONAL a, LIB::NAT b) {
-    return ExprBaseType(a + LIB::RATIONAL(b));
-  },
-  [](LIB::Exp a, LIB::Exp b) { return ExprBaseType(a + b); },
-  [](LIB::Map a, LIB::Map b) { return ExprBaseType(a + b); },
-  [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a + b); },
-  [](auto a, auto b) { 
-    Util::ERROR("add_evaluator: wrong arguments ", a, ", ", b
-      , " for operator+\n"); 
-    return ExprBaseType();
+ExprBaseType BuiltInOperators::addEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 2
+    , "addEvaluator: wrong number of arguments\n");
+
+  const auto add_evaluator = Overload {
+    [](LIB::NAT a, LIB::NAT b) { return ExprBaseType(a + b); },
+    [](LIB::MD_NAT a, LIB::MD_NAT b) { return ExprBaseType(a + b); },
+    [](LIB::RATIONAL a, LIB::RATIONAL b) { return ExprBaseType(a + b); },
+    [](LIB::NAT a, LIB::RATIONAL b) {
+      return ExprBaseType(LIB::RATIONAL(a) + b);
+    },
+    [](LIB::RATIONAL a, LIB::NAT b) {
+      return ExprBaseType(a + LIB::RATIONAL(b));
+    },
+    [](LIB::Exp a, LIB::Exp b) { return ExprBaseType(a + b); },
+    [](LIB::Map a, LIB::Map b) { return ExprBaseType(a + b); },
+    [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a + b); },
+    [](auto a, auto b) { 
+      Util::ERROR("addEvaluator: wrong arguments ", a, ", ", b
+        , " for operator+\n"); 
+      return ExprBaseType();
+    }
+  };
+  return std::visit(add_evaluator, args[0], args[1]);
+}
+
+ExprBaseType BuiltInOperators::subEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 2
+    , "subEvaluator: wrong number of arguments\n");
+  
+  const auto sub_evaluator = Overload {
+    [](LIB::NAT a, LIB::NAT b) {
+      if (a > b)
+        return ExprBaseType(LIB::NAT(a - b));
+      else
+        return ExprBaseType(LIB::RATIONAL(a) - LIB::RATIONAL(b));
+    },
+    [](LIB::RATIONAL a, LIB::RATIONAL b) { return ExprBaseType(a - b); },
+    [](LIB::NAT a, LIB::RATIONAL b) {
+      return ExprBaseType(LIB::RATIONAL(a) - b);
+    },
+    [](LIB::RATIONAL a, LIB::NAT b) {
+      return ExprBaseType(a - LIB::RATIONAL(b));
+    },
+    [](LIB::Exp a, LIB::Exp b) { return ExprBaseType(a - b); },
+    [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a - b); },
+    [](auto a, auto b) { 
+      Util::ERROR("subEvaluator: wrong arguments ", a, ", ", b
+        , " for operator-\n"); 
+      return ExprBaseType();
+    }
+  };
+  return std::visit(sub_evaluator, args[0], args[1]);
+}
+
+ExprBaseType BuiltInOperators::multEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 2
+    , "multEvaluator: wrong number of arguments\n");
+
+  const auto mult_evaluator = Overload {
+    [](LIB::NAT a, LIB::NAT b) { return ExprBaseType(a*b); },
+    [](LIB::RATIONAL a, LIB::RATIONAL b) { return ExprBaseType(a*b); },
+    [](LIB::NAT a, LIB::RATIONAL b) { return ExprBaseType(LIB::RATIONAL(a)*b); },
+    [](LIB::RATIONAL a, LIB::NAT b) { return ExprBaseType(a*LIB::RATIONAL(b)); },
+    [](auto a, auto b) { 
+      Util::ERROR("multEvaluator: wrong arguments ", a, ", ", b
+        , " for operator*\n"); 
+      return ExprBaseType();
+    }
+  };
+  return std::visit(mult_evaluator, args[0], args[1]);
+}
+
+ExprBaseType BuiltInOperators::eqEvaluator(const EBTList& args)
+{  
+  Util::ERROR_UNLESS(args.size() == 2
+    , "eqEvaluator: wrong number of arguments\n");
+
+  const auto eq_evaluator = Overload {
+    [](LIB::MD_NAT a, LIB::MD_NAT b) { return a == b; },
+    [](LIB::RATIONAL a, LIB::RATIONAL b) { return a == b; },
+    [](LIB::Interval a, LIB::Interval b) { return a == b; },
+    [](LIB::SetPiece a, LIB::SetPiece b) { return a == b; },
+    [](LIB::Set a, LIB::Set b) { return a == b; },
+    [](LIB::Exp a, LIB::Exp b) { return a == b; },
+    [](LIB::Map a, LIB::Map b) { return a == b; },
+    [](LIB::PWMap a, LIB::PWMap b) { return a == b; },
+    [](auto a, auto b) {
+      Util::ERROR("eqEvaluator: wrong arguments ", a, ", ", b
+        , " for operator==\n");
+      return false;
+    }
+  };
+  return std::visit(eq_evaluator, args[0], args[1]);
+}
+
+ExprBaseType BuiltInOperators::lessEvaluator(const EBTList& args)
+{ 
+  Util::ERROR_UNLESS(args.size() == 2
+    , "lessEvaluator: wrong number of arguments\n");
+
+  const auto less_evaluator = Overload {
+    [](LIB::MD_NAT a, LIB::MD_NAT b) { return a < b; },
+    [](LIB::RATIONAL a, LIB::RATIONAL b) { return a < b; },
+    [](LIB::Interval a, LIB::Interval b) { return a < b; },
+    [](LIB::SetPiece a, LIB::SetPiece b) { return a < b; },
+    [](auto a, auto b) { 
+      Util::ERROR("lessEvaluator: wrong arguments ", a, ", ", b
+        , " for operator<\n"); 
+      return false;
+    }
+  };
+  return std::visit(less_evaluator, args[0], args[1]);
+}
+
+ExprBaseType BuiltInOperators::capEvaluator(const EBTList& args)
+{ 
+  Util::ERROR_UNLESS(args.size() == 2
+    , "capEvaluator: wrong number of arguments\n");
+
+  const auto cap_evaluator = Overload{
+    [](LIB::Interval a, LIB::Interval b) {
+      return ExprBaseType(a.intersection(b));
+    },
+    [](LIB::SetPiece a, LIB::SetPiece b) {
+      return ExprBaseType(a.intersection(b));
+    },
+    [](LIB::Set a, LIB::Set b) { return ExprBaseType(a.intersection(b)); },
+    [](auto a, auto b) { 
+      Util::ERROR("capEvaluator: wrong arguments ", a, ", ", b
+        , " for intersection\n"); 
+      return ExprBaseType();
+    }
+  };
+  return std::visit(cap_evaluator, args[0], args[1]);
+}
+
+ExprBaseType BuiltInOperators::cupEvaluator(const EBTList& args)
+{ 
+  Util::ERROR_UNLESS(args.size() == 2
+    , "cupEvaluator: wrong number of arguments\n");
+
+  const auto cup_evaluator = Overload{
+    [](LIB::Set a, LIB::Set b) { return ExprBaseType(a.cup(b)); },
+    [](auto a, auto b) { 
+      Util::ERROR("cupEvaluator: wrong arguments ", a, ", ", b
+        , " for union\n"); 
+      return ExprBaseType();
+    }
+  };
+  return std::visit(cup_evaluator, args[0], args[1]);
+}
+
+ExprBaseType BuiltInOperators::diffEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 2
+    , "diffEvaluator: wrong number of arguments\n");
+
+  const auto diff_evaluator = Overload{
+    [](LIB::Set a, LIB::Set b) { return ExprBaseType(a.difference(b)); },
+    [](auto a, auto b) { 
+      Util::ERROR("diffEvaluator: wrong arguments ", a, ", ", b
+        , " for difference\n"); 
+      return ExprBaseType();
+    }
+  };
+  return std::visit(diff_evaluator, args[0], args[1]);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Built-in functions evaluators -----------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+  
+ExprBaseType BuiltInFunctions::emptyEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 1 
+    , "emptyEvaluator: wrong number of arguments\n");
+
+  const auto empty_evaluator = Overload {
+    [](LIB::Interval a) { return a.isEmpty(); },
+    [](LIB::MultiDimInter a) { return a.isEmpty(); },
+    [](LIB::Set a) { return a.isEmpty(); },
+    [](auto a) { 
+      Util::ERROR("emptyEvaluator: wrong argument ", a, " for isEmpty\n"); 
+      return false;
+    }
+  };
+  return std::visit(empty_evaluator, args[0]);
+}
+  
+ExprBaseType BuiltInFunctions::minEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 1
+    , "minEvaluator: wrong number of arguments\n");
+
+  const auto min_evaluator = Overload {
+    [](LIB::Interval a) { return LIB::MD_NAT(a.begin()); },
+    [](LIB::MultiDimInter a) { return a.minElem(); },
+    [](LIB::Set a) { return a.minElem(); },
+    [](auto a) { 
+      Util::ERROR("minEvaluator: wrong argument ", a, " for minElem\n"); 
+      return LIB::MD_NAT();
+    }
+  };
+  return std::visit(min_evaluator, args[0]);
+}
+ 
+ExprBaseType BuiltInFunctions::maxEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 1
+    , "maxEvaluator: wrong number of arguments\n");
+
+  const auto max_evaluator = Overload {
+    [](LIB::Interval a) { return LIB::MD_NAT(a.end()); },
+    [](LIB::MultiDimInter a) { return a.maxElem(); },
+    [](LIB::Set a) { return a.maxElem(); },
+    [](auto a) { 
+      Util::ERROR("maxEvaluator: wrong argument ", a, " for maxElem\n"); 
+      return LIB::MD_NAT(); 
+    }
+  };
+  return std::visit(max_evaluator, args[0]);
+}
+ 
+ExprBaseType BuiltInFunctions::composeEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 2
+    , "composeEvaluator: wrong number of arguments\n");
+
+  const auto compose_evaluator = Overload {
+    [](LIB::LExp a, LIB::LExp b) { return ExprBaseType(a.composition(b)); },
+    [](LIB::Exp a, LIB::Exp b) { return ExprBaseType(a.composition(b)); },
+    [](LIB::Map a, LIB::Map b) { return ExprBaseType(a.composition(b)); },
+    [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a.composition(b)); },
+    [](auto a, auto b) {
+      Util::ERROR("composeEvaluator: wrong arguments ", a, ", ", b
+        , " for compose\n"); 
+      return ExprBaseType(); 
+     }
+  };
+  return std::visit(compose_evaluator, args[0], args[1]);
+}
+ 
+ExprBaseType BuiltInFunctions::inverseEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 1
+    , "inverseEvaluator: wrong number of arguments\n");
+
+  const auto inverse_evaluator = Overload {
+    [](LIB::LExp a) { return ExprBaseType(a.inverse()); },
+    [](LIB::Exp a) { return ExprBaseType(a.inverse()); },
+    [](LIB::Map a) { return ExprBaseType(a.minInv()); },
+    [](LIB::PWMap a) { return ExprBaseType(a.inverse()); },
+    [](auto a) { 
+      Util::ERROR("inverseEvaluator: wrong arguments ", a, " for inverse\n"); 
+      return ExprBaseType();
+    }
+  };
+  return std::visit(inverse_evaluator, args[0]);
+}
+ 
+ExprBaseType BuiltInFunctions::imageEvaluator(const EBTList& args)
+{
+  if (args.size() == 1) {
+    const auto image_evaluator = Overload {
+      [](LIB::Map a) { return ExprBaseType(a.image()); },
+      [](LIB::PWMap a) { return ExprBaseType(a.image()); },
+      [](auto a) { 
+        Util::ERROR("imageEvaluator: wrong argument ", a, " for image\n"); 
+        return ExprBaseType();
+      }
+    };
+    return std::visit(image_evaluator, args[0]);
   }
-};
-
-auto sub_evaluator = Overload {
-  [](LIB::NAT a, LIB::NAT b) {
-    if (a > b)
-      return ExprBaseType(LIB::NAT(a - b));
-    else
-      return ExprBaseType(LIB::RATIONAL(a) - LIB::RATIONAL(b));
-  },
-  [](LIB::RATIONAL a, LIB::RATIONAL b) { return ExprBaseType(a - b); },
-  [](LIB::NAT a, LIB::RATIONAL b) {
-    return ExprBaseType(LIB::RATIONAL(a) - b);
-  },
-  [](LIB::RATIONAL a, LIB::NAT b) {
-    return ExprBaseType(a - LIB::RATIONAL(b));
-  },
-  [](LIB::Exp a, LIB::Exp b) { return ExprBaseType(a - b); },
-  [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a - b); },
-  [](auto a, auto b) { 
-    Util::ERROR("sub_evaluator: wrong arguments ", a, ", ", b
-      , " for operator-\n"); 
-    return ExprBaseType();
+  else if (args.size() == 2) {
+    const auto image2_evaluator = Overload {
+      [](LIB::Set a, LIB::Map b) { return ExprBaseType(b.image(a)); },
+      [](LIB::Set a, LIB::PWMap b) { return ExprBaseType(b.image(a)); },
+      [](auto a, auto b) { 
+        Util::ERROR("imageEvaluator: wrong arguments ", a, ", ", b
+          , " for image\n"); 
+        return ExprBaseType();
+      }
+    };
+    return std::visit(image2_evaluator, args[0], args[1]);
   }
-};
 
-auto mult_evaluator = Overload {
-  [](LIB::NAT a, LIB::NAT b) { return ExprBaseType(a*b); },
-  [](LIB::RATIONAL a, LIB::RATIONAL b) { return ExprBaseType(a*b); },
-  [](LIB::NAT a, LIB::RATIONAL b) { return ExprBaseType(LIB::RATIONAL(a)*b); },
-  [](LIB::RATIONAL a, LIB::NAT b) { return ExprBaseType(a*LIB::RATIONAL(b)); },
-  [](auto a, auto b) { 
-    Util::ERROR("mult_evaluator: wrong arguments ", a, ", ", b
-      , " for operator*\n"); 
-    return ExprBaseType();
-  }
-};
+  Util::ERROR_UNLESS("imageEvaluator: wrong number of arguments\n");
 
-auto eq_evaluator = Overload {
-  [](LIB::MD_NAT a, LIB::MD_NAT b) { return a == b; },
-  [](LIB::RATIONAL a, LIB::RATIONAL b) { return a == b; },
-  [](LIB::Interval a, LIB::Interval b) { return a == b; },
-  [](LIB::SetPiece a, LIB::SetPiece b) { return a == b; },
-  [](LIB::Set a, LIB::Set b) { return a == b; },
-  [](LIB::Exp a, LIB::Exp b) { return a == b; },
-  [](LIB::Map a, LIB::Map b) { return a == b; },
-  [](LIB::PWMap a, LIB::PWMap b) { return a == b; },
-  [](auto a, auto b) {
-    Util::ERROR("eq_evaluator: wrong arguments ", a, ", ", b
-      , " for operator==\n");
-    return false;
-  }
-};
+  return ExprBaseType();
+}
+ 
+ExprBaseType BuiltInFunctions::preImageEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 2
+    , "preImageEvaluator: wrong number of arguments\n");
 
-auto less_evaluator = Overload {
-  [](LIB::MD_NAT a, LIB::MD_NAT b) { return a < b; },
-  [](LIB::RATIONAL a, LIB::RATIONAL b) { return a < b; },
-  [](LIB::Interval a, LIB::Interval b) { return a < b; },
-  [](LIB::SetPiece a, LIB::SetPiece b) { return a < b; },
-  [](auto a, auto b) { 
-    Util::ERROR("less_evaluator: wrong arguments ", a, ", ", b
-      , " for operator<\n"); 
-    return false;
-  }
-};
+  const auto pre_image_evaluator = Overload {
+    [](LIB::Set a, LIB::Map b) { return ExprBaseType(b.preImage(a)); },
+    [](LIB::Set a, LIB::PWMap b) { return ExprBaseType(b.preImage(a)); },
+    [](auto a, auto b) { 
+      Util::ERROR("preImageEvaluator: wrong arguments ", a, ", ", b
+        , " for pre-image2\n"); 
+      return ExprBaseType();
+    }
+  };
+  return std::visit(pre_image_evaluator, args[0], args[1]);
+}
+ 
+ExprBaseType BuiltInFunctions::domEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 1
+    , "domEvaluator: wrong number of arguments\n");
 
-auto cap_evaluator = Overload{
-  [](LIB::Interval a, LIB::Interval b) {
-    return ExprBaseType(a.intersection(b));
-  },
-  [](LIB::SetPiece a, LIB::SetPiece b) {
-    return ExprBaseType(a.intersection(b));
-  },
-  [](LIB::Set a, LIB::Set b) { return ExprBaseType(a.intersection(b)); },
-  [](auto a, auto b) { 
-    Util::ERROR("cap_evaluator: wrong arguments ", a, ", ", b
-      , " for intersection\n"); 
-    return ExprBaseType();
-  }
-};
+  const auto dom_evaluator = Overload {
+    [](LIB::PWMap a) { return ExprBaseType(a.dom()); },
+    [](auto a) {
+      Util::ERROR("domEvaluator: wrong arguments ", a, "for dom\n");
+      return ExprBaseType();
+    }
+  };
+  return std::visit(dom_evaluator, args[0]);
+}
+ 
+ExprBaseType BuiltInFunctions::combineEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 2
+    , "combineEvaluator: wrong number of arguments\n");
 
-auto cup_evaluator = Overload{
-  [](LIB::Set a, LIB::Set b) { return ExprBaseType(a.cup(b)); },
-  [](auto a, auto b) { 
-    Util::ERROR("cap_evaluator: wrong arguments ", a, ", ", b
-      , " for union\n"); 
-    return ExprBaseType();
-  }
-};
+  const auto combine_evaluator = Overload {
+    [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a.combine(b)); },
+    [](auto a, auto b) { 
+      Util::ERROR("combineEvaluator: wrong arguments ", a, ", ", b
+        , " for combine\n"); 
+      return ExprBaseType(); 
+    }
+  };
+  return std::visit(combine_evaluator, args[0], args[1]);
+}
+ 
+ExprBaseType BuiltInFunctions::firstInvEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 1
+    , "firstInvEvaluator: wrong number of arguments\n");
 
-auto diff_evaluator = Overload{
-  [](LIB::Set a, LIB::Set b) { return ExprBaseType(a.difference(b)); },
-  [](auto a, auto b) { 
-    Util::ERROR("diff_evaluator: wrong arguments ", a, ", ", b
-      , " for difference\n"); 
-    return ExprBaseType();
-  }
-};
+  const auto first_inv_evaluator = Overload {
+    [](LIB::PWMap a) { return ExprBaseType(a.firstInv()); },
+    [](auto a) {
+      Util::ERROR("firstInvEvaluator: wrong argument ", a, " for firstInv\n"); 
+      return ExprBaseType();
+    }
+  };
+  return std::visit(first_inv_evaluator, args[0]);
+}
+ 
+ExprBaseType BuiltInFunctions::minMapEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 2
+    , "minMapEvaluator: wrong number of arguments\n");
 
-auto empty_evaluator = Overload {
-  [](LIB::Interval a) { return a.isEmpty(); },
-  [](LIB::MultiDimInter a) { return a.isEmpty(); },
-  [](LIB::Set a) { return a.isEmpty(); },
-  [](auto a) { 
-    Util::ERROR("empty_evaluator: wrong argument ", a, " for isEmpty\n"); 
-    return false;
-  }
-};
+  const auto min_map_evaluator = Overload {
+    [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a.minMap(b)); },
+    [](auto a, auto b) {
+      Util::ERROR("minMapEvaluator: wrong arguments ", a, ", ", b
+        , " for minMap\n"); 
+      return ExprBaseType();
+    }
+  };
+  return std::visit(min_map_evaluator, args[0], args[1]);
+}
+ 
+ExprBaseType BuiltInFunctions::reduceEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 1
+    , "reduceEvaluator: wrong number of arguments\n");
 
-auto min_evaluator = Overload {
-  [](LIB::Interval a) { return LIB::MD_NAT(a.begin()); },
-  [](LIB::MultiDimInter a) { return a.minElem(); },
-  [](LIB::Set a) { return a.minElem(); },
-  [](auto a) { 
-    Util::ERROR("min_evaluator: wrong argument ", a, " for minElem\n"); 
-    return LIB::MD_NAT();
-  }
-};
+  const auto reduce_evaluator = Overload {
+    [](LIB::PWMap a) { return ExprBaseType(a.reduce()); },
+    [](auto a) {
+      Util::ERROR("reduceEvaluator: wrong argument ", a, " for reduce\n"); 
+      return ExprBaseType();
+    }
+  };
+  return std::visit(reduce_evaluator, args[0]);
+}
+  
+ExprBaseType BuiltInFunctions::minAdjEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 2
+    , "minAdjEvaluator: wrong number of arguments\n");
 
-auto max_evaluator = Overload {
-  [](LIB::Interval a) { return LIB::MD_NAT(a.end()); },
-  [](LIB::MultiDimInter a) { return a.maxElem(); },
-  [](LIB::Set a) { return a.maxElem(); },
-  [](auto a) { 
-    Util::ERROR("max_evaluator: wrong argument ", a, " for maxElem\n"); 
-    return LIB::MD_NAT(); 
-  }
-};
+  const auto min_adj_evaluator = Overload {
+    [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a.minAdjMap(b)); },
+    [](auto a, auto b) { 
+      Util::ERROR("minAdjEvaluator: wrong arguments ", a, ", ", b
+        , " for minAdj\n"); 
+      return ExprBaseType(); 
+    }
+  };
+  return std::visit(min_adj_evaluator, args[0], args[1]);
+}
+ 
+ExprBaseType BuiltInFunctions::mapInfEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 1
+    , "mapInfEvaluator: wrong number of arguments\n");
 
-auto compose_evaluator = Overload {
-  [](LIB::LExp a, LIB::LExp b) { return ExprBaseType(a.composition(b)); },
-  [](LIB::Exp a, LIB::Exp b) { return ExprBaseType(a.composition(b)); },
-  [](LIB::Map a, LIB::Map b) { return ExprBaseType(a.composition(b)); },
-  [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a.composition(b)); },
-  [](auto a, auto b) {
-    Util::ERROR("compose_evaluator: wrong arguments ", a, ", ", b
-      , " for compose\n"); 
-    return ExprBaseType(); 
-   }
-};
-
-auto inverse_evaluator = Overload {
-  [](LIB::LExp a) { return ExprBaseType(a.inverse()); },
-  [](LIB::Exp a) { return ExprBaseType(a.inverse()); },
-  [](LIB::Map a) { return ExprBaseType(a.minInv()); },
-  [](LIB::PWMap a) { return ExprBaseType(a.inverse()); },
-  [](auto a) { 
-    Util::ERROR("inverse_evaluator: wrong arguments ", a, " for inverse\n"); 
-    return ExprBaseType();
-  }
-};
-
-auto image_evaluator = Overload {
-  [](LIB::Map a) { return ExprBaseType(a.image()); },
-  [](LIB::PWMap a) { return ExprBaseType(a.image()); },
-  [](auto a) { 
-    Util::ERROR("image_evaluator: wrong argument ", a, " for image\n"); 
-    return ExprBaseType();
-  }
-};
-
-auto image2_evaluator = Overload {
-  [](LIB::Set a, LIB::Map b) { return ExprBaseType(b.image(a)); },
-  [](LIB::Set a, LIB::PWMap b) { return ExprBaseType(b.image(a)); },
-  [](auto a, auto b) { 
-    Util::ERROR("image2_evaluator: wrong arguments ", a, ", ", b
-      , " for image2\n"); 
-    return ExprBaseType();
-  }
-};
-
-auto pre_image2_evaluator = Overload {
-  [](LIB::Set a, LIB::Map b) { return ExprBaseType(b.preImage(a)); },
-  [](LIB::Set a, LIB::PWMap b) { return ExprBaseType(b.preImage(a)); },
-  [](auto a, auto b) { 
-    Util::ERROR("pre_image2_evaluator: wrong arguments ", a, ", ", b
-      , " for pre-image2\n"); 
-    return ExprBaseType(); 
-  }
-};
-
-auto dom_evaluator = Overload {
-  [](LIB::PWMap a) { return ExprBaseType(a.dom()); },
-  [](auto a) {
-    Util::ERROR("dom_evaluator: wrong arguments ", a, "for dom\n");
-    return ExprBaseType();
-  }
-};
-
-auto combine_evaluator = Overload {
-  [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a.combine(b)); },
-  [](auto a, auto b) { 
-    Util::ERROR("combine_evaluator: wrong arguments ", a, ", ", b
-      , " for combine\n"); 
-    return ExprBaseType(); 
-  }
-};
-
-auto first_inv_evaluator = Overload {
-  [](LIB::PWMap a) { return ExprBaseType(a.firstInv()); },
-  [](auto a) {
-    Util::ERROR("first_inv_evaluator: wrong argument ", a, " for firstInv\n"); 
-    return ExprBaseType();
-  }
-};
-
-auto min_map_evaluator = Overload {
-  [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a.minMap(b)); },
-  [](auto a, auto b) {
-    Util::ERROR("min_map_evaluator: wrong arguments ", a, ", ", b
-      , " for minMap\n"); 
-    return ExprBaseType();
-  }
-};
-
-auto reduce_evaluator = Overload {
-  [](LIB::PWMap a) { return ExprBaseType(a.reduce()); },
-  [](auto a) {
-    Util::ERROR("reduce_evaluator: wrong argument ", a, " for reduce\n"); 
-    return ExprBaseType();
-  }
-};
-
-auto min_adj_evaluator = Overload {
-  [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a.minAdjMap(b)); },
-  [](auto a, auto b) { 
-    Util::ERROR("min_adj_evaluator: wrong arguments ", a, ", ", b
-      , " for minAdj\n"); 
-    return ExprBaseType(); 
-  }
-};
-
-auto inf_evaluator = Overload {
-  [](LIB::PWMap a) { return ExprBaseType(a.mapInf()); },
-  [](auto a) { 
-    Util::ERROR("inf_evaluator: wrong argument ", a, " for mapInf\n"); 
-    return ExprBaseType(); 
-  }
-};
-
+  const auto inf_evaluator = Overload {
+    [](LIB::PWMap a) { return ExprBaseType(a.mapInf()); },
+    [](auto a) { 
+      Util::ERROR("mapInfEvaluator: wrong argument ", a, " for mapInf\n"); 
+      return ExprBaseType(); 
+    }
+  };
+  return std::visit(inf_evaluator, args[0]);
+}
+  
 // Algorithms evaluators ------------------------------------------------------
 
-auto connected_evaluator = Overload {
-  [](LIB::SBG a) { return ExprBaseType(connectedComponents(a)); },
-  [](auto a) {
-    Util::ERROR("connected_evaluator: wrong argument ", a, " for CC\n"); 
-    return ExprBaseType();
-  }
-};
+ExprBaseType BuiltInFunctions::connectedEvaluator(const EBTList& args)
+{ 
+  Util::ERROR_UNLESS(args.size() == 1
+    , "connectedEvaluator: wrong number of arguments\n");
 
-auto ts_evaluator = Overload {
-  [](LIB::DSBG a) { 
-    LIB::TopoSort ts = LIB::MinVertexTSAF().createTSAlgorithm(a.fact());
-    return ExprBaseType(ts.calculate(a));
-  },
-  [](auto a) {
-    Util::ERROR("ts_evaluator: wrong argument ", a, " for sort\n"); 
-    return ExprBaseType();
-  }
-};
+  const auto connected_evaluator = Overload {
+    [](LIB::SBG a) { return ExprBaseType(connectedComponents(a)); },
+    [](auto a) {
+      Util::ERROR("connectedEvaluator: wrong argument ", a, " for CC\n"); 
+      return ExprBaseType();
+    }
+  };
+  return std::visit(connected_evaluator, args[0]);
+}
 
 /*
-auto match_scc_evaluator = Overload {
-  [](LIB::SBG a, LIB::NAT b, LIB::SCC c, bool d) { 
-    LIB::BFSMatching match(a.copy(b), d);
-    match.calculate();
-    LIB::DSBG dsbg = MISC::buildSCCFromMatching(match);
-    return ExprBaseType(c.calculate(dsbg).rmap());
-  },
-  [](LIB::SBG a, LIB::MD_NAT b, LIB::SCC c, bool d) { 
-    LIB::BFSMatching match(a.copy(b[0]), d);
-    match.calculate();
-    LIB::DSBG dsbg = MISC::buildSCCFromMatching(match);
-    return ExprBaseType(c.calculate(dsbg).rmap());
-  },
-  [](auto a, auto b, auto c, auto d) {
-    Util::ERROR("match_scc_evaluator: wrong arguments ", a, ", ", b
-      , " for matchSCC\n"); 
-    return ExprBaseType();
-  }
-};
+ExprBaseType BuiltInFunctions::matchingEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 2
+    , "matchingEvaluator: wrong number of arguments\n");
 
-auto match_scc_ts_evaluator = Overload {
-  [](LIB::SBG a, LIB::NAT b, bool c) { 
-    LIB::BFSMatching match(a.copy(b), c);
-    LIB::Set match_res = match.calculate().matched_edges();
-    LIB::SCC scc(MISC::buildSCCFromMatching(match), c);
-    LIB::PWMap scc_res = scc.calculate();
-    LIB::DSBG ts_dsbg = MISC::buildSortFromSCC(scc, scc_res);
-    LIB::TopoSort ts = LIB::MinVertexTSAF().createTSAlgorithm(ts_dsbg);
-    LIB::PWMap ts_res = ts.calculate(); 
-    MISC::buildJson(match_res, scc_res, ts_res);
-    return ExprBaseType(ts_res);
-  },
-  [](LIB::SBG a, LIB::MD_NAT b, bool c) { 
-    LIB::BFSMatching match(a.copy(b[0]), c);
-    LIB::Set match_res = match.calculate().matched_edges();
-    LIB::SCC scc(MISC::buildSCCFromMatching(match), c);
-    LIB::PWMap scc_res = scc.calculate();
-    LIB::DSBG ts_dsbg = MISC::buildSortFromSCC(scc, scc_res);
-    LIB::TopoSort ts = LIB::MinVertexTSAF().createTSAlgorithm(ts_dsbg);
-    LIB::PWMap ts_res = ts.calculate(); 
-    MISC::buildJson(match_res, scc_res, ts_res);
-    return ExprBaseType(ts_res);
-  },
-  [](auto a, auto b, auto c) {
-    Util::ERROR("match_scc_ts_evaluator: wrong arguments ", a, ", ", b
-      , " for matchSCCTS\n"); 
-    return ExprBaseType();
-  }
-};
+  const auto matching_evaluator = Overload {
+    [](LIB::SBG a, LIB::NAT b) { 
+      return ExprBaseType(match_.calculate(a.copy(b)));
+    },
+    [](LIB::SBG a, LIB::MD_NAT b) { 
+      return ExprBaseType(match_.calculate(a.copy(b[0])));
+    },
+    [](auto a, auto b) {
+      Util::ERROR("matchingEvaluator: wrong arguments ", a, ", ", b
+        , " for matching\n"); 
+      return ExprBaseType();
+    }
+  };
+  return std::visit(matching_evaluator, args[0], args[1]);
+}
+
+ExprBaseType BuiltInFunctions::sccEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 1
+    , "sccEvaluator: wrong number of arguments\n");
+
+  const auto scc_evaluator = Overload {
+    [](LIB::DSBG a) { 
+      return ExprBaseType(scc_.calculate(a).rmap());
+    },
+    [](auto a) {
+      Util::ERROR("sccEvaluator: wrong argument ", a, " for scc\n"); 
+      return ExprBaseType();
+    }
+  };
+  return std::visit(scc_evaluator, args[0]);
+}
+
+ExprBaseType BuiltInFunctions::topoSortEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 1
+    , "topoSortEvaluator: wrong number of arguments\n");
+
+  const auto ts_evaluator = Overload {
+    [](LIB::DSBG a) { 
+      return ExprBaseType(ts_.calculate(a));
+    },
+    [](auto a) {
+      Util::ERROR("topoSortEvaluator: wrong argument ", a, " for sort\n"); 
+      return ExprBaseType();
+    }
+  };
+  return std::visit(ts_evaluator, args[0]);
+}
+
+ExprBaseType BuiltInFunctions::matchSccEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 2
+    , "matchSccEvaluator: wrong number of arguments");
+
+  const auto match_scc_evaluator = Overload {
+    [](LIB::SBG a, LIB::NAT b, LIB::SCC c, bool d) { 
+      LIB::BFSMatching match(a.copy(b), d);
+      match.calculate();
+      LIB::DSBG dsbg = MISC::buildSCCFromMatching(match);
+      return ExprBaseType(c.calculate(dsbg).rmap());
+    },
+    [](LIB::SBG a, LIB::MD_NAT b, LIB::SCC c, bool d) { 
+      LIB::BFSMatching match(a.copy(b[0]), d);
+      match.calculate();
+      LIB::DSBG dsbg = MISC::buildSCCFromMatching(match);
+      return ExprBaseType(c.calculate(dsbg).rmap());
+    },
+    [](auto a, auto b, auto c, auto d) {
+      Util::ERROR("match_scc_evaluator: wrong arguments ", a, ", ", b
+        , " for matchSCC\n"); 
+      return ExprBaseType();
+    }
+  };
+}
+
+ExprBaseType BuiltInFunctions::matchSCCTSEvaluator(const EBTList& args)
+{
+  const auto match_scc_ts_evaluator = Overload {
+    [](LIB::SBG a, LIB::NAT b, bool c) { 
+      LIB::BFSMatching match(a.copy(b), c);
+      LIB::Set match_res = match.calculate().matched_edges();
+      LIB::SCC scc(MISC::buildSCCFromMatching(match), c);
+      LIB::PWMap scc_res = scc.calculate();
+      LIB::DSBG ts_dsbg = MISC::buildSortFromSCC(scc, scc_res);
+      LIB::TopoSort ts = LIB::MinVertexTSAF().createTSAlgorithm(ts_dsbg);
+      LIB::PWMap ts_res = ts.calculate(); 
+      MISC::buildJson(match_res, scc_res, ts_res);
+      return ExprBaseType(ts_res);
+    },
+    [](LIB::SBG a, LIB::MD_NAT b, bool c) { 
+      LIB::BFSMatching match(a.copy(b[0]), c);
+      LIB::Set match_res = match.calculate().matched_edges();
+      LIB::SCC scc(MISC::buildSCCFromMatching(match), c);
+      LIB::PWMap scc_res = scc.calculate();
+      LIB::DSBG ts_dsbg = MISC::buildSortFromSCC(scc, scc_res);
+      LIB::TopoSort ts = LIB::MinVertexTSAF().createTSAlgorithm(ts_dsbg);
+      LIB::PWMap ts_res = ts.calculate(); 
+      MISC::buildJson(match_res, scc_res, ts_res);
+      return ExprBaseType(ts_res);
+    },
+    [](auto a, auto b, auto c) {
+      Util::ERROR("match_scc_ts_evaluator: wrong arguments ", a, ", ", b
+        , " for matchSCCTS\n"); 
+      return ExprBaseType();
+    }
+  };
+}
+
+ExprBaseType BuiltInFunctions::cutVertexEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 1
+    , "cutVertexEvaluator: wrong number of arguments\n");
+
+  const auto cut_evaluator = Overload {
+    [](LIB::DSBG a) { 
+      return ExprBaseType(cv_.calculate(a));
+    },
+    [](auto a) {
+      Util::ERROR("cutVertexEvaluator: wrong argument ", a, " for cut\n"); 
+      return ExprBaseType();
+    }
+  };
+  return std::visit(cut_evaluator, args[0]);
+}
 */
 
-auto cut_evaluator = Overload {
-  [](LIB::DSBG a) { 
-    LIB::MinReachSCCFact scc_fact;
-    LIB::CutVertex cv = LIB::MaxDegCVAF().createCVAlgorithm(a.fact(), scc_fact);
-    return ExprBaseType(cv.calculate(a));
-  },
-  [](auto a) {
-    Util::ERROR("cut_evaluator: wrong argument ", a, " for cut\n"); 
-    return ExprBaseType();
-  }
-};
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+//void BuiltInFunctions::setMatching(Matching m)
+//{
+//  getMatching() = std::move(m);
+//}
+//
+//Matching& BuiltInFunctions::getMatching()
+//{
+//  static Matching m = LIB::BFSMatching();
+//}
 
 } // namespace Eval
 

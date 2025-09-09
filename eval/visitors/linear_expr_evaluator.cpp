@@ -17,15 +17,15 @@
 
  ******************************************************************************/
 
+#include "eval/visitors/int_evaluator.hpp"
 #include "eval/visitors/linear_expr_evaluator.hpp"
-#include "eval/visitors/nat_evaluator.hpp"
 #include "eval/visitors/rational_evaluator.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-LinearExprEvaluator::LinearExprEvaluator(VarEnv &env) : env_(env) {}
+LinearExprEvaluator::LinearExprEvaluator(VarEnv &venv) : venv_(venv) {}
 
 LIB::LExp LinearExprEvaluator::operator()(AST::Natural v) const
 {
@@ -34,7 +34,7 @@ LIB::LExp LinearExprEvaluator::operator()(AST::Natural v) const
 
 LIB::LExp LinearExprEvaluator::operator()(AST::Rational v) const
 {
-  IntEvaluator visit_int(env_);
+  IntEvaluator visit_int(venv_);
   LIB::INT p = boost::apply_visitor(visit_int, v.num());
   LIB::INT q = boost::apply_visitor(visit_int, v.den());
   return LIB::LExp(0, LIB::RATIONAL(p, q));
@@ -45,7 +45,8 @@ LIB::LExp LinearExprEvaluator::operator()(AST::Name v) const
   if (v == "x")
     return LIB::LExp(1, 0);
 
-  LIB::RATIONAL off = boost::apply_visitor(RationalEvaluator(env_), AST::Expr(v));
+  LIB::RATIONAL off = boost::apply_visitor(RationalEvaluator(venv_)
+    , AST::Expr(v));
   return LIB::LExp(0, off);
 }
 
@@ -127,7 +128,7 @@ LIB::LExp LinearExprEvaluator::operator()(AST::Set v) const
 
 LIB::LExp LinearExprEvaluator::operator()(AST::LinearExp v) const
 { 
-  RationalEvaluator visit_rat(env_);
+  RationalEvaluator visit_rat(venv_);
   AST::Expr m = v.slope();
   AST::Expr h = v.offset();
 

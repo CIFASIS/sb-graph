@@ -17,44 +17,11 @@
 
  ******************************************************************************/
 
-#include "eval/defs.hpp"
+#include "eval/pretty_print.hpp"
 
 namespace SBG {
 
 namespace Eval {
-
-// Environments ----------------------------------------------------------------
-
-VarEnv::VarEnv() : mapping_() {}
-
-void VarEnv::insert(VKey k, VValue v)
-{
-  mapping_.erase(k);
-  mapping_.insert(std::pair<VKey, VValue>(k, v));
-}
-
-MaybeVValue VarEnv::operator[](VKey k) const
-{
-  if (mapping_.find(k) == mapping_.end()) return std::nullopt;
-  return mapping_.at(k);
-}
-
-FuncEnv::FuncEnv() {}
-FuncEnvType FuncEnv::mapping_ = {
-  {"isEmpty", 0}, {"minElem", 1}, {"maxElem", 2}
-  , {"compose", 3}, {"inv", 4}, {"image", 5}, {"preImage", 6}, {"dom", 7}
-  , {"combine", 8}, {"firstInv", 9}, {"minMap", 10}, {"reduce", 11}
-  , {"minAdj", 12}, {"mapInf", 13}, {"CC", 14}, {"matching", 15}, {"scc", 16}
-  , {"sort", 17}, {"matchSCC", 18}, {"matchSCCTS", 19}, {"cut", 20}
-};
-
-MaybeFValue FuncEnv::operator[](FKey k) const
-{
-  if (mapping_.find(k) == mapping_.end()) return std::nullopt;
-  return mapping_.at(k);
-}
-
-// Classes for pretty printing ------------------------------------------------
 
 template<typename T, typename... Ts>
 std::ostream &operator<<(std::ostream &out, const std::variant<T, Ts...> &v)

@@ -1,11 +1,7 @@
-/** @file autom_impl_visitor.hpp
+/** @file func_env.hpp
 
- @brief <b>Implementation Visitor</b>
-
- This visitor reads the input AST and decides the optimal implementation that
- can be used for that instance. For example, to use ordered dense sets it checks
- that all intervals have step=1 and maps return dense intervals.
-
+ @brief <b>Function environment</b>
+ 
  <hr>
 
  This file is part of Set--Based Graph Library.
@@ -25,24 +21,37 @@
 
  ******************************************************************************/
 
-#ifndef AUTOM_IMPL_VISITOR 
-#define AUTOM_IMPL_VISITOR 
+#ifndef EVAL_FUNC_ENV_HPP
+#define EVAL_FUNC_ENV_HPP
 
-#include <boost/variant.hpp>
+#include <unordered_map>
 
-#include "ast/sbg_program.hpp"
+#include "ast/expr.hpp"
+#include "eval/base_type.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-struct AutomImplVisitor : public boost::static_visitor<ImplContext> {
-  AutomImplVisitor();
+/**
+ * @brief Function environment. Only has built-in functions: SBG programs can't
+ * define new functions.
+ */
+struct FuncEnv {
+  using FKey = AST::Name;
+  using FValue = std::function<ExprBaseType(const std::vector<ExprBaseType>&)>;
+  using FType = std::unordered_map<FKey, FValue>;
+  using FIt = FType::const_iterator;
 
-  ImplContext operator()(AST::Program p) const;
+  FuncEnv();
+
+  FIt begin() const;
+  FIt end() const;
+  FIt find(const FKey& key) const;
+  void insert(FKey key, FValue value);
 
   private:
-  mutable VarEnv venv_;
+  FType functions_;
 };
 
 } // namespace Eval

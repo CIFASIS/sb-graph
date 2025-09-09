@@ -24,16 +24,13 @@ namespace SBG {
 
 namespace Eval {
 
-StmEvaluator::StmEvaluator(unsigned int nmbr_dims, const LIB::PWMapAF &fact)
-  : nmbr_dims_(nmbr_dims), fact_(fact), env_() {}
-
-VarEnv StmEvaluator::env() { return env_; }
+StmEvaluator::StmEvaluator(EvalContext&& eval_ctx) : eval_ctx_(eval_ctx) {}
 
 StmResult StmEvaluator::operator()(AST::Assign assgn) const 
 {
-  ExprEvaluator eval_expr(nmbr_dims_, fact_, env_, false);
+  ExprEvaluator eval_expr(eval_ctx_);
   ExprBaseType e = boost::apply_visitor(eval_expr, assgn.r());
-  env_.insert(assgn.l(), e);
+  eval_ctx_.insertVariable(assgn.l(), e);
 
   return StmResult(assgn.l(), e);
 }

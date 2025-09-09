@@ -24,7 +24,7 @@
 #ifndef INT_EVALUATOR 
 #define INT_EVALUATOR 
 
-#include "eval/defs.hpp"
+#include "eval/var_env.hpp"
 
 namespace SBG {
 
@@ -33,7 +33,7 @@ namespace Eval {
 struct IntEvaluator : public boost::static_visitor<LIB::INT> {
   public:
   IntEvaluator();
-  IntEvaluator(VarEnv &env);
+  IntEvaluator(VarEnv &venv);
 
   LIB::INT operator()(AST::Natural v) const;
   LIB::INT operator()(AST::Rational v) const;
@@ -53,7 +53,7 @@ struct IntEvaluator : public boost::static_visitor<LIB::INT> {
   LIB::INT operator()(AST::ParenExpr v) const;
 
   private:
-  mutable VarEnv env_;
+  mutable VarEnv venv_;
 };
 
 } // namespace Eval

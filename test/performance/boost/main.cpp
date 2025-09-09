@@ -35,10 +35,11 @@
 #include <boost/graph/topological_sort.hpp>
 #include <gtest/gtest.h>
 
+#include "algorithms/matching/bfs_matching.hpp"
 #include "algorithms/misc/causalization_builders.hpp"
-#include "algorithms/scc/af_scc.hpp"
+#include "algorithms/scc/scc_fact.hpp"
 #include "algorithms/toposort/af_ts.hpp"
-#include "eval/visitors/program_visitor.hpp"
+#include "eval/visitors/program_evaluator.hpp"
 #include "parser/sbg_program.hpp"
 #include "test/performance/boost/ordinary_graph_builder.hpp"
 
@@ -105,7 +106,7 @@ void algorithmEvaluator(int alg, SBG::LIB::SBG g, const SBG::LIB::PWMapAF &fact)
   }
 
   SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
-  SBG::LIB::SCC scc = SBG::LIB::MinReachSCCAF().createSCCAlgorithm(fact);
+  SBG::LIB::SCC scc = SBG::LIB::MinReachSCCFact().createSCCAlgorithm(fact);
   SBG::LIB::SCCData scc_res = scc.calculate(scc_dsbg);
  
   if (alg == 1) {
@@ -149,12 +150,12 @@ void parseEvalProgramFromFile(int alg, std::string fname, int copies)
     SBG::LIB::UnordAF set_fact;
     SBG::LIB::MapAF map_fact(set_fact);
     SBG::LIB::UnordPWMapAF fact(map_fact);
-    SBG::Eval::ProgramVisitor program_visit(fact, false); 
+    SBG::Eval::ProgramEvaluator program_visit(fact, false); 
     SBG::Eval::ProgramIO visit_result = boost::apply_visitor(
       program_visit, parser_result
     );
 
-    for (const SBG::Eval::ExprEval &ev : visit_result.exprs()) {
+    for (const SBG::Eval::ExprResult &ev : visit_result.exprs()) {
       SBG::Eval::ExprBaseType e = std::get<1>(ev);
       if (std::holds_alternative<SBG::LIB::SBG>(e))
         algorithmEvaluator(alg, std::get<SBG::LIB::SBG>(e), fact);

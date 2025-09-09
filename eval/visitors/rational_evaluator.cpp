@@ -17,14 +17,15 @@
 
  ******************************************************************************/
 
+#include "eval/visitors/int_evaluator.hpp"
 #include "eval/visitors/rational_evaluator.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-RationalEvaluator::RationalEvaluator() : env_() {}
-RationalEvaluator::RationalEvaluator(VarEnv &env) : env_(env) {}
+RationalEvaluator::RationalEvaluator() : venv_() {}
+RationalEvaluator::RationalEvaluator(VarEnv &venv) : venv_(venv) {}
 
 LIB::RATIONAL RationalEvaluator::operator()(AST::Natural v) const
 {
@@ -33,16 +34,16 @@ LIB::RATIONAL RationalEvaluator::operator()(AST::Natural v) const
 
 LIB::RATIONAL RationalEvaluator::operator()(AST::Rational v) const
 {
-  IntEvaluator visit_int(env_);
+  IntEvaluator visit_int(venv_);
   return LIB::RATIONAL(boost::apply_visitor(visit_int, v.num())
                         , boost::apply_visitor(visit_int, v.den()));
 }
 
 LIB::RATIONAL RationalEvaluator::operator()(AST::Name v) const 
 {
-  MaybeEBT v_opt = env_[v];
-  if (v_opt) { 
-    ExprBaseType value = *v_opt;
+  auto var_definition = venv_.find(v);
+  if (var_definition != venv_.end()) { 
+    ExprBaseType value = var_definition->second;
     if (std::holds_alternative<LIB::RATIONAL>(value))
       return std::get<LIB::RATIONAL>(value);
     else if (std::holds_alternative<LIB::MD_NAT>(value)) {
@@ -65,7 +66,7 @@ LIB::RATIONAL RationalEvaluator::operator()(AST::Name v) const
 
 LIB::RATIONAL RationalEvaluator::operator()(AST::UnaryOp v) const 
 { 
-  RationalEvaluator visit_rat(env_);
+  RationalEvaluator visit_rat(venv_);
   LIB::RATIONAL result = boost::apply_visitor(visit_rat, v.expr());
   switch (v.op()) {
     case AST::UnOp::oppo:

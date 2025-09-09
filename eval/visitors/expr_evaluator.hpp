@@ -24,7 +24,7 @@
 #ifndef EXPR_EVALUATOR 
 #define EXPR_EVALUATOR 
 
-#include "eval/defs.hpp"
+#include "eval/eval_context.hpp"
 #include "sbg/af_pwmap.hpp"
 
 namespace SBG {
@@ -33,9 +33,7 @@ namespace Eval {
 
 struct ExprEvaluator : public boost::static_visitor<ExprBaseType> {
   public:
-  ExprEvaluator(VarEnv env);
-  ExprEvaluator(unsigned int nmbr_dims, const LIB::PWMapAF &fact
-    , VarEnv env, bool debug);
+  ExprEvaluator(EvalContext&& eval_ctx);
 
   ExprBaseType operator()(AST::Natural v) const;
   ExprBaseType operator()(AST::Rational v) const;
@@ -55,11 +53,7 @@ struct ExprEvaluator : public boost::static_visitor<ExprBaseType> {
   ExprBaseType operator()(AST::ParenExpr v) const;
 
   private:
-  unsigned int nmbr_dims_;
-  const LIB::PWMapAF &fact_;
-  mutable VarEnv env_;
-  FuncEnv fenv_;
-  mutable bool debug_;
+  EvalContext eval_ctx_;
 };
 
 } // namespace Eval

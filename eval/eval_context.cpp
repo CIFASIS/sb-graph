@@ -1,12 +1,4 @@
-/** @file autom_impl_visitor.hpp
-
- @brief <b>Implementation Visitor</b>
-
- This visitor reads the input AST and decides the optimal implementation that
- can be used for that instance. For example, to use ordered dense sets it checks
- that all intervals have step=1 and maps return dense intervals.
-
- <hr>
+/*******************************************************************************
 
  This file is part of Set--Based Graph Library.
 
@@ -25,28 +17,48 @@
 
  ******************************************************************************/
 
-#ifndef AUTOM_IMPL_VISITOR 
-#define AUTOM_IMPL_VISITOR 
-
-#include <boost/variant.hpp>
-
-#include "ast/sbg_program.hpp"
+#include "eval/eval_context.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-struct AutomImplVisitor : public boost::static_visitor<ImplContext> {
-  AutomImplVisitor();
+EvalContext::EvalContext() : ImplContext(), arity_(0), venv_(), fenv_() {}
 
-  ImplContext operator()(AST::Program p) const;
+// Getters ---------------------------------------------------------------------
 
-  private:
-  mutable VarEnv venv_;
-};
+unsigned int EvalContext::arity() const
+{
+  return arity_;
+}
+
+const VarEnv& EvalContext::venv() const
+{
+  return venv_;
+}
+
+const FuncEnv& EvalContext::fenv() const
+{
+  return fenv_;
+}
+
+// Setters ---------------------------------------------------------------------
+
+void EvalContext::setArity(unsigned int arity)
+{
+  arity_ = arity;
+}
+
+void EvalContext::insertVariable(VarEnv::VKey key, VarEnv::VValue value)
+{
+  venv_.insert(key, value);
+}
+
+void EvalContext::insertFunction(FuncEnv::FKey key, FuncEnv::FValue value)
+{
+  fenv_.insert(key, value);
+}
 
 } // namespace Eval
 
 } // namespace SBG
-
-#endif

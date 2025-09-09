@@ -24,7 +24,7 @@
 #ifndef RATIONAL_EVALUATOR 
 #define RATIONAL_EVALUATOR 
 
-#include "eval/visitors/int_evaluator.hpp"
+#include "eval/var_env.hpp"
 #include "sbg/rational.hpp"
 
 namespace SBG {
@@ -34,7 +34,7 @@ namespace Eval {
 struct RationalEvaluator : public boost::static_visitor<LIB::RATIONAL> {
   public:
   RationalEvaluator();
-  RationalEvaluator(VarEnv &env);
+  RationalEvaluator(VarEnv &venv);
 
   LIB::RATIONAL operator()(AST::Natural v) const;
   LIB::RATIONAL operator()(AST::Rational v) const;
@@ -54,7 +54,7 @@ struct RationalEvaluator : public boost::static_visitor<LIB::RATIONAL> {
   LIB::RATIONAL operator()(AST::ParenExpr) const;
 
   private:
-  mutable VarEnv env_;
+  mutable VarEnv venv_;
 };
 
 } // namespace Eval

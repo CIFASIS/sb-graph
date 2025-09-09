@@ -1,10 +1,6 @@
-/** @file autom_impl_visitor.hpp
+/** @file eval_context.hpp
 
- @brief <b>Implementation Visitor</b>
-
- This visitor reads the input AST and decides the optimal implementation that
- can be used for that instance. For example, to use ordered dense sets it checks
- that all intervals have step=1 and maps return dense intervals.
+ @brief <b>Evaluation context with desired implementations</b>
 
  <hr>
 
@@ -25,24 +21,37 @@
 
  ******************************************************************************/
 
-#ifndef AUTOM_IMPL_VISITOR 
-#define AUTOM_IMPL_VISITOR 
+#ifndef EVAL_CONTEXT_HPP
+#define EVAL_CONTEXT_HPP
 
-#include <boost/variant.hpp>
-
-#include "ast/sbg_program.hpp"
+#include "eval/func_env.hpp"
+#include "eval/impl_context.hpp"
+#include "eval/var_env.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-struct AutomImplVisitor : public boost::static_visitor<ImplContext> {
-  AutomImplVisitor();
+/** 
+ * @brief TODO
+ */
+class EvalContext : public ImplContext {
+  public:
+  EvalContext();
 
-  ImplContext operator()(AST::Program p) const;
+  // Getters
+  unsigned int arity() const;
+  const VarEnv& venv() const;
+  const FuncEnv& fenv() const;
+  // Setters
+  void setArity(unsigned int arity); 
+  void insertVariable(VarEnv::VKey key, VarEnv::VValue value); 
+  void insertFunction(FuncEnv::FKey key, FuncEnv::FValue value);
 
   private:
-  mutable VarEnv venv_;
+  unsigned int arity_; ///< Number of dimensions of the program
+  VarEnv venv_;
+  FuncEnv fenv_;
 };
 
 } // namespace Eval

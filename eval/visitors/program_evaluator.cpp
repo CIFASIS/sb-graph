@@ -26,26 +26,26 @@ namespace SBG {
 namespace Eval {
 
 ProgramEvaluator::ProgramEvaluator(const LIB::PWMapAF &fact, bool debug)
-  : fact_(fact), env_(), debug_(debug) {}
+  : fact_(fact), venv_(), debug_(debug) {}
 
 ProgramIO ProgramEvaluator::operator()(AST::Program p) const 
 { 
   LIB::NAT dims = 1;
-  StmResultList stms;
-  ExprResultList exprs;
 
   if (debug_)
     Util::SBGLogger::instance().setLevel(Util::LogLevel::Debug);
 
+  EvalContext eval_ctx;
   AST::IsConfig cfg_visit;
   if (!p.stms().empty()) {
     AST::Statement first = p.stms()[0];
 
     if (boost::apply_visitor(cfg_visit, first))
-      dims = boost::get<AST::ConfigDims>(first).nmbr_dims();
+      eval_ctx.setArity(boost::get<AST::ConfigDims>(first).nmbr_dims());
   }
 
-  StmEvaluator stm_visit(dims, fact_);
+  StmResultList stms;
+  StmEvaluator stm_visit(std::move(eval_ctx));
   for (AST::Statement s : p.stms()) {
     if (!boost::apply_visitor(cfg_visit, s)) {
       StmResult se = boost::apply_visitor(stm_visit, s);
@@ -53,7 +53,8 @@ ProgramIO ProgramEvaluator::operator()(AST::Program p) const
     }
   }
 
-  ExprEvaluator eval_expr(dims, fact_, stm_visit.env(), debug_);
+  ExprResultList exprs;
+  ExprEvaluator eval_expr(std::move(eval_ctx));
   for (AST::Expr e : p.exprs()) {
     ExprBaseType expr_res = boost::apply_visitor(eval_expr, e);
     exprs.push_back(ExprResult(e, expr_res));

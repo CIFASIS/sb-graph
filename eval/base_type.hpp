@@ -1,10 +1,8 @@
-/** @file autom_impl_visitor.hpp
+/** @file base_type.hpp
 
- @brief <b>Implementation Visitor</b>
-
- This visitor reads the input AST and decides the optimal implementation that
- can be used for that instance. For example, to use ordered dense sets it checks
- that all intervals have step=1 and maps return dense intervals.
+ @brief <b>Expression evaluator base type</b>
+ 
+ This module defines the possible types that a SBG expression can evaluate to.
 
  <hr>
 
@@ -25,25 +23,33 @@
 
  ******************************************************************************/
 
-#ifndef AUTOM_IMPL_VISITOR 
-#define AUTOM_IMPL_VISITOR 
+#ifndef EVAL_BASE_TYPE_HPP
+#define EVAL_BASE_TYPE_HPP
 
-#include <boost/variant.hpp>
+#include <variant>
 
-#include "ast/sbg_program.hpp"
+#include "ast/expr.hpp"
+#include "algorithms/matching/matching.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-struct AutomImplVisitor : public boost::static_visitor<ImplContext> {
-  AutomImplVisitor();
-
-  ImplContext operator()(AST::Program p) const;
-
-  private:
-  mutable VarEnv venv_;
-};
+using ExprBaseType = std::variant<bool
+  , LIB::NAT
+  , LIB::MD_NAT
+  , LIB::RATIONAL
+  , LIB::Interval
+  , LIB::SetPiece
+  , LIB::Set
+  , LIB::Exp
+  , LIB::Map
+  , LIB::PWMap
+  , LIB::SBG
+  , LIB::DSBG
+  , LIB::MatchData>;
+using MaybeEBT = std::optional<ExprBaseType>;
+using EBTList = std::vector<ExprBaseType>;
 
 } // namespace Eval
 

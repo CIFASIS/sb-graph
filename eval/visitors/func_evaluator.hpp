@@ -27,7 +27,11 @@
 #ifndef FUNC_EVALUATOR 
 #define FUNC_EVALUATOR 
 
-#include "eval/defs.hpp"
+#include "algorithms/cutvertex/cut_vertex.hpp"
+#include "algorithms/matching/matching.hpp"
+#include "algorithms/scc/scc.hpp"
+#include "algorithms/toposort/topo_sort.hpp"
+#include "eval/base_type.hpp"
 
 namespace SBG {
 
@@ -46,37 +50,51 @@ namespace Eval {
 template<class... Ts> struct Overload : Ts... { using Ts::operator()...; };
 template<class... Ts> Overload(Ts...) -> Overload<Ts...>;
 
-/*
-auto& getOpposite();
-auto& getCardinal();
-auto& getComplement();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-const auto& get();
-*/
+////////////////////////////////////////////////////////////////////////////////
+// Built-in Operators ----------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+class BuiltInOperators {
+  public:
+  static ExprBaseType oppositeEvaluator(const EBTList& args);
+  static ExprBaseType cardinalEvaluator(const EBTList& args);
+  static ExprBaseType complementEvaluator(const EBTList& args);
+  static ExprBaseType addEvaluator(const EBTList& args);
+  static ExprBaseType subEvaluator(const EBTList& args);
+  static ExprBaseType multEvaluator(const EBTList& args);
+  static ExprBaseType eqEvaluator(const EBTList& args);
+  static ExprBaseType lessEvaluator(const EBTList& args);
+  static ExprBaseType capEvaluator(const EBTList& args);
+  static ExprBaseType cupEvaluator(const EBTList& args);
+  static ExprBaseType diffEvaluator(const EBTList& args);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Built-in Functions ----------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+class BuiltInFunctions {
+  public:
+  static ExprBaseType emptyEvaluator(const EBTList& args);
+  static ExprBaseType minEvaluator(const EBTList& args);
+  static ExprBaseType maxEvaluator(const EBTList& args);
+  static ExprBaseType composeEvaluator(const EBTList& args);
+  static ExprBaseType inverseEvaluator(const EBTList& args);
+  static ExprBaseType imageEvaluator(const EBTList& args);
+  static ExprBaseType preImageEvaluator(const EBTList& args);
+  static ExprBaseType domEvaluator(const EBTList& args);
+  static ExprBaseType combineEvaluator(const EBTList& args);
+  static ExprBaseType firstInvEvaluator(const EBTList& args);
+  static ExprBaseType minMapEvaluator(const EBTList& args);
+  static ExprBaseType reduceEvaluator(const EBTList& args);
+  static ExprBaseType minAdjEvaluator(const EBTList& args);
+  static ExprBaseType mapInfEvaluator(const EBTList& args);
+  static ExprBaseType connectedEvaluator(const EBTList& args);
+  //static ExprBaseType matchingEvaluator(const EBTList& args);
+  //static ExprBaseType sccEvaluator(const EBTList& args);
+  //static ExprBaseType topoSortEvaluator(const EBTList& args);
+  //static ExprBaseType cutVertexEvaluator(const EBTList& args);
+};
 
 } // namespace Eval
 

@@ -23,8 +23,8 @@ namespace SBG {
 
 namespace Eval {
 
-IntEvaluator::IntEvaluator() : env_() {}
-IntEvaluator::IntEvaluator(VarEnv &env) : env_(env) {}
+IntEvaluator::IntEvaluator() : venv_() {}
+IntEvaluator::IntEvaluator(VarEnv &venv) : venv_(venv) {}
 
 LIB::INT IntEvaluator::operator()(AST::Natural v) const { return (LIB::INT) v; }
 
@@ -39,9 +39,9 @@ LIB::INT IntEvaluator::operator()(AST::Rational v) const
 
 LIB::INT IntEvaluator::operator()(AST::Name v) const 
 { 
-  MaybeEBT v_opt = env_[v];
-  if (v_opt) { 
-    ExprBaseType value = *v_opt;
+  auto var_definition = venv_.find(v);
+  if (var_definition != venv_.end()) { 
+    ExprBaseType value = var_definition->second;
     if (std::holds_alternative<LIB::NAT>(value))
       return (LIB::INT)(std::get<LIB::NAT>(value));
     else if (std::holds_alternative<LIB::MD_NAT>(value)) {

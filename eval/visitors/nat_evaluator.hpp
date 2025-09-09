@@ -24,7 +24,7 @@
 #ifndef NAT_EVALUATOR 
 #define NAT_EVALUATOR 
 
-#include "eval/defs.hpp"
+#include "eval/var_env.hpp"
 
 namespace SBG {
 
@@ -33,7 +33,7 @@ namespace Eval {
 struct NatEvaluator : public boost::static_visitor<LIB::NAT> {
   public:
   NatEvaluator();
-  NatEvaluator(VarEnv &env);
+  NatEvaluator(VarEnv &venv);
 
   LIB::NAT operator()(AST::Natural v) const;
   LIB::NAT operator()(AST::Rational v) const;
@@ -53,7 +53,7 @@ struct NatEvaluator : public boost::static_visitor<LIB::NAT> {
   LIB::NAT operator()(AST::ParenExpr) const;
 
   private:
-  mutable VarEnv env_;
+  mutable VarEnv venv_;
 };
 
 } // namespace Eval

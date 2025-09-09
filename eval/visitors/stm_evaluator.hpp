@@ -29,7 +29,8 @@
 #define STM_EVALUATOR 
 
 #include "ast/statement.hpp"
-#include "eval/defs.hpp"
+#include "eval/eval_context.hpp"
+#include "eval/pretty_print.hpp"
 
 namespace SBG {
 
@@ -37,16 +38,15 @@ namespace Eval {
 
 struct StmEvaluator : public boost::static_visitor<StmResult> {
   public:
-  StmEvaluator(unsigned int nmbr_dims, const LIB::PWMapAF &fact);
+  StmEvaluator(EvalContext&& eval_ctx);
+
+  //const EvalContext& eval_ctx();
  
-  VarEnv env();
   StmResult operator()(AST::Assign assgn) const;
   StmResult operator()(AST::ConfigDims cfg) const; 
 
   private:
-  unsigned int nmbr_dims_;
-  const LIB::PWMapAF &fact_;
-  mutable VarEnv env_;
+  EvalContext eval_ctx;
 };
 
 } // namespace Eval

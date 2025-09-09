@@ -1,6 +1,6 @@
 /** @file cut_vertex.hpp
 
- @brief <b>SBG Vertex Cut Set Algorithm implementation</b>
+ @brief <b>SBG Vertex Cut Set Algorithm Abstract Interface</b>
 
  <hr>
 
@@ -24,19 +24,19 @@
 #ifndef SBG_CUTVERTEX_HPP
 #define SBG_CUTVERTEX_HPP
 
-#include "algorithms/scc/af_scc.hpp"
+#include "algorithms/scc/scc_fact.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Vertex Cut Set Algorithm Abstract Delegate ---------------------------------
+// Vertex Cut Set Algorithm Abstract Strategy ---------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
-struct CVDelegate;
+struct CVStrategy;
 
-typedef std::unique_ptr<CVDelegate> CVDelegPtr;
+typedef std::unique_ptr<CVStrategy> CVStratPtr;
 
 /**
 * @brief Aims to calculate a minimum cut set of vertices, that is, a set of
@@ -44,47 +44,31 @@ typedef std::unique_ptr<CVDelegate> CVDelegPtr;
 * SCC left. Since this is a NP-hard problem, heuristics are used, and thus is
 * not guaranteed that the set is actually minimum.
 */
-struct CVDelegate {
-  protected:
-  const PWMapAF &pw_fact_;
-  const SCCAF &scc_fact_;
-
+struct CVStrategy {
   public:
-  virtual ~CVDelegate() = default;
+  virtual ~CVStrategy() = default;
 
-  CVDelegate(const PWMapAF &pw_fact, const SCCAF &scc_fact);
+  CVStrategy(const PWMapAF& pw_fact, const SCCFact& scc_fact);
 
-  virtual Set calculate(const DSBG &dsbg) const = 0;
+  virtual Set calculate(const DSBG& dsbg) const = 0;
+
+  protected:
+  const PWMapAF& pw_fact_;
+  const SCCFact& scc_fact_;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// Maximum Degree Vertex Cut Set Algorithm Implementation (concrete delegate) -
-///////////////////////////////////////////////////////////////////////////////
-
-/**
- * @brief In each step takes out the vertex of maximum degree.
- */
-struct MaxDegCutVertex : public CVDelegate {
-  MaxDegCutVertex(const PWMapAF &pw_fact, const SCCAF &scc_fact);
-
-  Set calculate(const DSBG &dsbg) const override;
-
-  private:
-  PWMap getDegMap(const DSBG &dsbg) const;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-// Vertex Cut Set Algorithm Implementation (delegator) ------------------------ 
+// Vertex Cut Set Algorithm Interface (context) ------------------------------- 
 ///////////////////////////////////////////////////////////////////////////////
 
 struct CutVertex {
-  private:
-  CVDelegPtr delegate_;
-
   public:
-  CutVertex(CVDelegPtr deleg);
+  CutVertex(CVStratPtr strat);
 
-  Set calculate(const DSBG &dsbg) const;
+  Set calculate(const DSBG& dsbg) const;
+
+  private:
+  CVStratPtr strategy_;
 };
 
 } // namespace LIB

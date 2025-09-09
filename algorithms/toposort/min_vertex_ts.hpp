@@ -1,4 +1,9 @@
-/*******************************************************************************
+/** @file min_vertex_ts.hpp
+
+ @brief <b>Concrete SBG Minimum Vertex Topological Sort Algorithm
+ implementation</b>
+
+ <hr>
 
  This file is part of Set--Based Graph Library.
 
@@ -17,34 +22,30 @@
 
  ******************************************************************************/
 
-#include <chrono>
+#ifndef SBG_MIN_VERTEX_TS_HPP
+#define SBG_MIN_VERTEX_TS_HPP
 
-#include "algorithms/cutvertex/cut_vertex.hpp"
-#include "algorithms/scc/scc.hpp"
-#include "util/logger.hpp"
+#include "algorithms/toposort/topo_sort.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Vertex Cut Set Algorithm Abstract Strategy Constructors ---------------------
+// Minimum Vertex Topological Sort Algorithm Implementation (concrete strategy)
 ////////////////////////////////////////////////////////////////////////////////
 
-CVStrategy::CVStrategy(const PWMapAF& pw_fact, const SCCFact& scc_fact)
-  : pw_fact_(pw_fact), scc_fact_(scc_fact) {}
+/**
+ * @brief In each step takes out the minimum vertex without dependencies.
+ */
+struct MinVertexTopoSort : public TSStrategy {
+  MinVertexTopoSort(const PWMapAF& fact);
 
-////////////////////////////////////////////////////////////////////////////////
-// Vertex Cut Set Algorithm Interface ------------------------------------------ 
-////////////////////////////////////////////////////////////////////////////////
-
-CutVertex::CutVertex(CVStratPtr strat) : strategy_(std::move(strat)) {}
-
-Set CutVertex::calculate(const DSBG& dsbg) const
-{
-  return strategy_->calculate(dsbg);
-}
+  PWMap calculate(const DSBG& dsbg) const override; 
+};
 
 } // namespace LIB
 
 } // namespace SBG
+
+#endif

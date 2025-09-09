@@ -17,32 +17,21 @@
 
  ******************************************************************************/
 
-#include <chrono>
-
-#include "algorithms/cutvertex/cut_vertex.hpp"
-#include "algorithms/scc/scc.hpp"
-#include "util/logger.hpp"
+#include "algorithms/cutvertex/cv_fact.hpp"
+#include "algorithms/cutvertex/maxdeg_cv.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Vertex Cut Set Algorithm Abstract Strategy Constructors ---------------------
+// Maximum Degree Cut Vertex AF ------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-CVStrategy::CVStrategy(const PWMapAF& pw_fact, const SCCFact& scc_fact)
-  : pw_fact_(pw_fact), scc_fact_(scc_fact) {}
-
-////////////////////////////////////////////////////////////////////////////////
-// Vertex Cut Set Algorithm Interface ------------------------------------------ 
-////////////////////////////////////////////////////////////////////////////////
-
-CutVertex::CutVertex(CVStratPtr strat) : strategy_(std::move(strat)) {}
-
-Set CutVertex::calculate(const DSBG& dsbg) const
+CutVertex MaxDegCVFact::createCVAlgorithm(const PWMapAF &pw_fact
+  , const SCCFact &scc_fact) const
 {
-  return strategy_->calculate(dsbg);
+  return CutVertex(std::make_unique<MaxDegCutVertex>(pw_fact, scc_fact));
 }
 
 } // namespace LIB

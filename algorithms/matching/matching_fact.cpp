@@ -1,8 +1,4 @@
-/** @file af_scc.hpp
-
- @brief <b>SCC Algorithm Abstract Factory</b>
-
- <hr>
+/*******************************************************************************
 
  This file is part of Set--Based Graph Library.
 
@@ -21,32 +17,22 @@
 
  ******************************************************************************/
 
-#ifndef SBG_AF_SCC_HPP
-#define SBG_AF_SCC_HPP
-
-#include "scc.hpp"
+#include "algorithms/matching/bfs_matching.hpp"
+#include "algorithms/matching/matching_fact.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
-struct SCCAF {
-  public:
-  virtual ~SCCAF() = default;
-  SCCAF() = default;
+////////////////////////////////////////////////////////////////////////////////
+// Minimum Reachable SCC Fact ----------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
-  virtual SCC createSCCAlgorithm(const PWMapAF &fact) const = 0;
-};
-
-struct MinReachSCCAF : public SCCAF {
-  public:
-  MinReachSCCAF() = default;
-
-  SCC createSCCAlgorithm(const PWMapAF &fact) const override;
-};
+Matching BFSMatchingFact::createMatchAlgorithm(const PWMapAF& fact) const
+{
+  return Matching(std::make_unique<BFSMatching>(fact));
+}
 
 } // namespace LIB
 
-}  // namespace SBG
-
-#endif
+} // namespace SBG

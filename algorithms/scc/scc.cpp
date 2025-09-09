@@ -39,102 +39,20 @@ const PWMap& SCCData::rmap() const { return rmap_; }
 const Set& SCCData::Ediff() const { return Ediff_; }
 
 ////////////////////////////////////////////////////////////////////////////////
-// SCC Algorithm Delegate Constructors -----------------------------------------
+// SCC Algorithm Abstract Strategy Constructors --------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-SCCDelegate::SCCDelegate(const PWMapAF& fact) : fact_(std::move(fact)) {}
+SCCStrategy::SCCStrategy(const PWMapAF& fact) : fact_(std::move(fact)) {}
 
 ////////////////////////////////////////////////////////////////////////////////
-// Minimum Reachable SCC Algorithm ---------------------------------------------
+// SCC Algorithm Interface -----------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-MinReachSCC::MinReachSCC(const PWMapAF& fact)
-  : SCCDelegate(fact), dsbg_(DSBG(fact)), E_(fact_.createSet()) {}
-
-void MinReachSCC::swapEdgesDirection(const Set& E)
-{
-  PWMap mapB = dsbg_.mapB();
-  PWMap mapD = dsbg_.mapD();
-
-  PWMap temp_mapB = mapB.restrict(E);
-  mapB = mapD.restrict(E);
-  mapD = temp_mapB.restrict(E);
-
-  PWMap Emap = dsbg_.Emap().restrict(E);
-  PWMap subEmap = dsbg_.subEmap().restrict(E);
-
-  dsbg_ = DSBG(fact_, dsbg_.V().compact(), dsbg_.Vmap().compact()
-    , mapB.compact(), mapD.compact(), Emap.compact(), subEmap.compact());
-
-  return;
-}
-
-PWMap MinReachSCC::sccStep()
-{
-  // Calculate MRV
-  MinAdjMRV mrv(fact_);
-  PWMap new_rmap = mrv.calculate(dsbg_);
-  Util::DEBUG_LOG << "MinReachSCC new_rmap: " << new_rmap << "\n";
-
-  // Leave edges in the same SCC
-  PWMap rmapB = new_rmap.composition(dsbg_.mapB());
-  PWMap rmapD = new_rmap.composition(dsbg_.mapD());
-  Set Esame = rmapB.equalImage(rmapD);
-  E_ = Esame;
-  Util::DEBUG_LOG << "MinReachSCC erased edges: "
-    << dsbg_.E().difference(E_) << "\n\n";
-
-  // Swap directions
-  swapEdgesDirection(E_);
-
-  return new_rmap;
-}
-
-void MinReachSCC::init(const DSBG& dsbg)
-{
-  dsbg_ = dsbg;
-  E_ = dsbg.E();
-
-  return;
-}
-
-SCCData MinReachSCC::calculate(const DSBG& dsbg)
-{
-  Util::DEBUG_LOG << "MinReachSCC dsbg: \n" << dsbg << "\n\n";
-
-  init(dsbg);
-
-  auto begin = std::chrono::high_resolution_clock::now();
-  PWMap rmap = fact_.createPWMap();
-  Set Ediff = fact_.createSet();
-  Set oldE = dsbg.E();
-  do {
-    oldE = dsbg_.E();
-    rmap = sccStep();
-    Ediff = oldE.difference(dsbg_.E());
-  } while (Ediff != fact_.createSet());
-  rmap = rmap.compact();
-  auto end = std::chrono::high_resolution_clock::now();
-
-  auto total = std::chrono::duration_cast<std::chrono::microseconds>(
-    end - begin
-  );
-  Util::SBG_LOG << "Total MinReachSCC exec time: " << total.count() << " [μs]\n\n"; 
-
-  Util::DEBUG_LOG << "MinReachSCC result: " << rmap << "\n\n";
-
-  return SCCData(dsbg, rmap, Ediff);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// SCC Algorithm Implementation ------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-SCC::SCC(SCCDelegPtr deleg) : delegate_(std::move(deleg)) {}
+SCC::SCC(SCCStratPtr strat) : strategy_(std::move(strat)) {}
 
 SCCData SCC::calculate(const DSBG& dsbg)
 {
-  return delegate_->calculate(dsbg);
+  return strategy_->calculate(dsbg);
 }
 
 } // namespace LIB

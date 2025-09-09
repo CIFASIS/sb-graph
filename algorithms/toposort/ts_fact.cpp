@@ -17,7 +17,8 @@
 
  ******************************************************************************/
 
-#include "algorithms/toposort/af_ts.hpp"
+#include "algorithms/toposort/ts_fact.hpp"
+#include "algorithms/toposort/min_vertex_ts.hpp"
 
 namespace SBG {
 
@@ -27,7 +28,7 @@ namespace LIB {
 // Minimum Vertex Topological Sort AF ------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-TopoSort MinVertexTSAF::createTSAlgorithm(const PWMapAF &fact) const
+TopoSort MinVertexTSFact::createTSAlgorithm(const PWMapAF& fact) const
 {
   return TopoSort(std::make_unique<MinVertexTopoSort>(fact));
 }

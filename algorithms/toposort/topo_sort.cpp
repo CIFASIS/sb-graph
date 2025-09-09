@@ -27,108 +27,20 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Topological Sort Algorithm Delegate Constructors ----------------------------
+// Topological Sort Algorithm Abstract Strategy Constructors -------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-TSDelegate::TSDelegate(const PWMapAF &fact) : fact_(fact) {}
+TSStrategy::TSStrategy(const PWMapAF& fact) : fact_(fact) {}
 
 ////////////////////////////////////////////////////////////////////////////////
-// Topological sort ------------------------------------------------------------
+// Topological Sort Algorithm Interface ----------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-MinVertexTopoSort::MinVertexTopoSort(const PWMapAF &fact) : TSDelegate(fact) {}
+TopoSort::TopoSort(TSStratPtr strat) : strategy_(std::move(strat)) {}
 
-Exp calculateExp(const MD_NAT &from, const MD_NAT & to)
+PWMap TopoSort::calculate(const DSBG& dsbg) const
 {
-  Exp res;
-
-  RATIONAL one(1, 1);
-  for (unsigned int j = 0; j < from.arity(); ++j) { 
-    RATIONAL r_from(from[j]), r_to(to[j]);
-    res.emplaceBack(LExp(1, r_to - r_from));
-  }
-
-  return res;
-}
-
-PWMap MinVertexTopoSort::calculate(const DSBG &dsbg) const
-{
-  Util::DEBUG_LOG << "Topological sort dsbg:\n" << dsbg << "\n\n";
-
-  auto begin = std::chrono::high_resolution_clock::now();
-  PWMap mapB = dsbg.mapB(), mapD = dsbg.mapD(), Vmap = dsbg.Vmap();
-  PWMap smap = fact_.createPWMap();
-  Set U = dsbg.V(), Nd = U.difference(mapB.image());
-  if (!Nd.isEmpty()) {
-    MD_NAT vsucc = Nd.minElem();
-    Set SV = fact_.createSet(), E = dsbg.E();
-    do {
-      Set vsucc_set = fact_.createSet(SetPiece(vsucc));
-      Set Nd_vsucc = Nd.intersection(Vmap.preImage(Vmap.image(vsucc_set)));
-      MD_NAT v = Nd.minElem();
-      if (!Nd_vsucc.isEmpty())
-        v = Nd_vsucc.minElem();
-      Set d = fact_.createSet(v);
-      Exp e = calculateExp(v, vsucc);
-      vsucc = v;
-
-      Set SVd = Vmap.image(d);
-      bool cond = SVd.intersection(SV).isEmpty();
-      if (!cond) {
-        Set dvs = Vmap.preImage(SVd);
-        for (const Map &map : smap.restrict(dvs)) {
-          if (e == map.exp()) {
-            d = dvs.difference(smap.dom());
-            break;
-          }
-        }
-      }
-      smap.emplaceBack(fact_.createMap(d, e));
-      
-      Set Nsucc = U.difference(smap.dom());
-      Set S = smap.dom().difference(smap.preImage(Nsucc));
-
-      E = E.difference(mapD.preImage(S));
-      mapB = mapB.restrict(E);
-      mapD = mapD.restrict(E);
-
-      U = U.difference(S);
-      Nd = U.difference(mapB.image());
-      SV = SV.cup(Vmap.image(d));
-      if (S == smap.dom()) {
-        Set start = smap.dom().difference(smap.image());
-        if (!start.isEmpty())
-          vsucc = start.minElem(); 
-      }
-
-      Util::DEBUG_LOG << "S: " << S << "\n";
-      Util::DEBUG_LOG << "U: " << U << "\n";
-      Util::DEBUG_LOG << "E: " << E << "\n";
-      Util::DEBUG_LOG << "Nd: " << Nd << "\n";
-      Util::DEBUG_LOG << "smap: " << smap << "\n\n";
-    } while (!U.isEmpty());
-  }
-  auto end = std::chrono::high_resolution_clock::now();
-
-  auto total = std::chrono::duration_cast<std::chrono::microseconds>(
-    end - begin
-  );
-  Util::SBG_LOG << "Total topological sort exec time: " << total.count() << " [μs]\n\n"; 
-
-  Util::DEBUG_LOG << "Topological sort result:\n" << smap.compact() << "\n\n";
-
-  return smap.compact();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Topological Sort Algorithm Implementation -----------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-TopoSort::TopoSort(TSDelegPtr deleg) : delegate_(std::move(deleg)) {}
-
-PWMap TopoSort::calculate(const DSBG &dsbg) const
-{
-  return delegate_->calculate(dsbg);
+  return strategy_->calculate(dsbg);
 }
 
 } // namespace LIB

@@ -17,20 +17,20 @@
 
  ******************************************************************************/
 
-#include "algorithms/cutvertex/af_cv.hpp"
+#include "algorithms/scc/minreach_scc.hpp"
+#include "algorithms/scc/scc_fact.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Maximum Degree Cut Vertex AF ------------------------------------------------
+// Minimum Reachable SCC AF ----------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-CutVertex MaxDegCVAF::createCVAlgorithm(const PWMapAF &pw_fact
-  , const SCCAF &scc_fact) const
+SCC MinReachSCCFact::createSCCAlgorithm(const PWMapAF &fact) const
 {
-  return CutVertex(std::make_unique<MaxDegCutVertex>(pw_fact, scc_fact));
+  return SCC(std::make_unique<MinReachSCC>(fact));
 }
 
 } // namespace LIB

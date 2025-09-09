@@ -172,7 +172,6 @@ PWMap MinAdjMRV::impl(const DSBG& dsbg)
   return rmap;
 }
 
-
 template class MRV<MinAdjMRV>;
 
 } // namespace LIB

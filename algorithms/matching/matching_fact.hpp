@@ -1,6 +1,6 @@
-/** @file af_ts.hpp
+/** @file matching_fact.hpp
 
- @brief <b>Topological Sort Algorithm Abstract Factory</b>
+ @brief <b>Matching Algorithm Factory</b>
 
  <hr>
 
@@ -21,28 +21,28 @@
 
  ******************************************************************************/
 
-#ifndef SBG_AF_TS_HPP
-#define SBG_AF_TS_HPP
+#ifndef SBG_MATCHING_FACT_HPP
+#define SBG_MATCHING_FACT_HPP
 
-#include "topo_sort.hpp"
+#include "algorithms/matching/matching.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
-struct TSAF {
+class MatchingFact {
   public:
-  virtual ~TSAF() = default;
-  TSAF() = default;
+  virtual ~MatchingFact() = default;
+  MatchingFact() = default;
 
-  virtual TopoSort createTSAlgorithm(const PWMapAF &fact) const = 0;
+  virtual Matching createMatchAlgorithm(const PWMapAF& fact) const = 0;
 };
 
-struct MinVertexTSAF : public TSAF {
+class BFSMatchingFact : public MatchingFact {
   public:
-  MinVertexTSAF() = default;
+  BFSMatchingFact() = default;
 
-  TopoSort createTSAlgorithm(const PWMapAF &fact) const override;
+  Matching createMatchAlgorithm(const PWMapAF& fact) const override;
 };
 
 } // namespace LIB

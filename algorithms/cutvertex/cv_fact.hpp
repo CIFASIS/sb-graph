@@ -1,6 +1,6 @@
-/** @file af_matching.hpp
+/** @file cv_fact.hpp
 
- @brief <b>Matching Algorithm Abstract Factory</b>
+ @brief <b>Vertex Cut Set Algorithm Factory</b>
 
  <hr>
 
@@ -21,28 +21,30 @@
 
  ******************************************************************************/
 
-#ifndef SBG_AF_MATCHING_HPP
-#define SBG_AF_MATCHING_HPP
+#ifndef SBG_CV_FACT_HPP
+#define SBG_CV_FACT_HPP
 
-#include "matching.hpp"
+#include "cut_vertex.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
-struct MatchingAF {
+struct CVFact {
   public:
-  virtual ~MatchingAF() = default;
-  MatchingAF() = default;
+  virtual ~CVFact() = default;
+  CVFact() = default;
 
-  virtual Matching createMatchAlgorithm(const PWMapAF &fact) const = 0;
+  virtual CutVertex createCVAlgorithm(const PWMapAF &pw_fact
+    , const SCCFact &scc_fact) const = 0;
 };
 
-struct BFSMatchingAF : public MatchingAF {
+struct MaxDegCVFact : public CVFact {
   public:
-  BFSMatchingAF() = default;
+  MaxDegCVFact() = default;
 
-  Matching createMatchAlgorithm(const PWMapAF &fact) const override;
+  CutVertex createCVAlgorithm(const PWMapAF &pw_fact, const SCCFact &scc_fact)
+    const override;
 };
 
 } // namespace LIB

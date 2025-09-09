@@ -1,7 +1,8 @@
 target_sources(
     sbgraph
     PRIVATE
-        af_matching.cpp
+        bfs_matching.cpp
+        bfs_paths.cpp
         matching.cpp
-        paths.cpp
+        matching_fact.cpp
 )

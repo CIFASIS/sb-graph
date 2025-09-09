@@ -1,6 +1,7 @@
 target_sources(
     sbgraph
     PRIVATE
-        af_ts.cpp
+        min_vertex_ts.cpp
         topo_sort.cpp
+        ts_fact.cpp
 )

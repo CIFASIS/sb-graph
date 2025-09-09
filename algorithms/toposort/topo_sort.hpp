@@ -1,6 +1,6 @@
 /** @file topo_sort.hpp
 
- @brief <b>SBG Topological Sort Algorithm implementation</b>
+ @brief <b>SBG Topological Sort Algorithm Abstract Interface</b>
 
  <hr>
 
@@ -21,8 +21,8 @@
 
  ******************************************************************************/
 
-#ifndef SBG_TOPSORT_HPP
-#define SBG_TOPSORT_HPP
+#ifndef SBG_TOPOSORT_HPP
+#define SBG_TOPOSORT_HPP
 
 #include "sbg/sbg.hpp"
 
@@ -31,50 +31,37 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Topological Sort Algorithm Abstract Delegate --------------------------------
+// Topological Sort Algorithm Abstract Strategy --------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct TSDelegate;
+struct TSStrategy;
 
-typedef std::unique_ptr<TSDelegate> TSDelegPtr;
+typedef std::unique_ptr<TSStrategy> TSStratPtr;
 
-struct TSDelegate {
-  protected:
-  const PWMapAF &fact_;
-
+struct TSStrategy {
   public:
-  virtual ~TSDelegate() = default;
+  virtual ~TSStrategy() = default;
 
-  TSDelegate(const PWMapAF &fact);
+  TSStrategy(const PWMapAF& fact);
 
-  virtual PWMap calculate(const DSBG &dsbg) const = 0;
+  virtual PWMap calculate(const DSBG& dsbg) const = 0;
+
+  protected:
+  const PWMapAF& fact_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// Minimum Vertex Topological Sort Algorithm Implementation (concrete delegate)
-////////////////////////////////////////////////////////////////////////////////
-
-/**
- * @brief In each step takes out the minimum vertex without dependencies.
- */
-struct MinVertexTopoSort : public TSDelegate {
-  MinVertexTopoSort(const PWMapAF &fact);
-
-  PWMap calculate(const DSBG &dsbg) const override; 
-};
-
-////////////////////////////////////////////////////////////////////////////////
-// Topological Sort Algorithm Implementation (delegator) -----------------------
+// Topological Sort Algorithm Interface (context) ------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 struct TopoSort {
   private:
-  TSDelegPtr delegate_;
+  TSStratPtr strategy_;
 
   public:
-  TopoSort(TSDelegPtr deleg);
+  TopoSort(TSStratPtr strat);
 
-  PWMap calculate(const DSBG &dsbg) const;
+  PWMap calculate(const DSBG& dsbg) const;
 };
 
 } // namespace LIB

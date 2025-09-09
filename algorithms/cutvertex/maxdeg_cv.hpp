@@ -1,6 +1,6 @@
-/** @file af_cv.hpp
+/** @file maxdeg_cv.hpp
 
- @brief <b>Vertex Cut Set Algorithm Abstract Factory</b>
+ @brief <b>SBG Maximum Degree Vertex Cut Set Algorithm implementation</b>
 
  <hr>
 
@@ -21,34 +21,34 @@
 
  ******************************************************************************/
 
-#ifndef SBG_AF_CV_HPP
-#define SBG_AF_CV_HPP
+#ifndef SBG_MAXDEG_CUTVERTEX_HPP
+#define SBG_MAXDEG_CUTVERTEX_HPP
 
-#include "cut_vertex.hpp"
+#include "algorithms/cutvertex/cut_vertex.hpp"
+#include "algorithms/scc/scc_fact.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
-struct CVAF {
-  public:
-  virtual ~CVAF() = default;
-  CVAF() = default;
+///////////////////////////////////////////////////////////////////////////////
+// Maximum Degree Vertex Cut Set Algorithm Implementation (concrete strategy) -
+///////////////////////////////////////////////////////////////////////////////
 
-  virtual CutVertex createCVAlgorithm(const PWMapAF &pw_fact
-    , const SCCAF &scc_fact) const = 0;
-};
+/**
+ * @brief In each step takes out the vertex of maximum degree.
+ */
+struct MaxDegCutVertex : public CVStrategy {
+  MaxDegCutVertex(const PWMapAF& pw_fact, const SCCFact& scc_fact);
 
-struct MaxDegCVAF : public CVAF {
-  public:
-  MaxDegCVAF() = default;
+  Set calculate(const DSBG& dsbg) const override;
 
-  CutVertex createCVAlgorithm(const PWMapAF &pw_fact, const SCCAF &scc_fact)
-    const override;
+  private:
+  PWMap getDegMap(const DSBG& dsbg) const;
 };
 
 } // namespace LIB
 
-}  // namespace SBG
+} // namespace SBG
 
 #endif

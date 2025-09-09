@@ -40,39 +40,26 @@ namespace LIB {
  * @brief Compile time configurable algorithm for discovering paths.
  *
  * @tparam PathsImp Concrete strategy to apply. Must provide an
- * `impl(const DSBG &dsbg, const Set &endings)` method.
+ * `impl(const DSBG& dsbg, const Set& endings)` method.
  */
 template<class PathsImpl>
-class Paths {
+class PathsContext {
   public:
+  PathsContext(PathsImpl impl) : impl_(impl) {}
+
   /**
    * @brief For every vertex of `dsbg` calculates a path starting from itself
    * up to a vertex in `endings`.
    * @return The resulting pw is such that if pw(x) = y, then y is the successor
    * of x in the path.
    */
-  PWMap calculate(const DSBG &dsbg, const Set &endings);
+  inline PWMap calculate(const DSBG& dsbg, const Set& endings)
+  {
+    return impl_.calculate(dsbg, endings);
+  }
 
   protected:
-  Paths(const PWMapAF &fact);
-  const PWMapAF &fact_;
-};
-
-/**
- * @brief Backward BFS implementation to calculate paths.
- */
-class BFSPaths : public Paths<BFSPaths> {
-  public:
-  BFSPaths(const PWMapAF &fact);
-
-  /**
-   * @brief Concrete implementation that starts with the identity pw for
-   * vertices belonging to `endings`. In each step adds adjacent vertices to
-   * the map. It also detects recursions (i.e. if a Set-Vertex is visited more)
-   * than once, replicating the same path for every element of the same
-   * Set-Vertex.
-   */
-  PWMap impl(const DSBG &dsbg, const Set &endings);
+  PathsImpl impl_;
 };
 
 } // namespace LIB

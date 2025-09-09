@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "algorithms/matching/paths.hpp"
+#include "algorithms/matching/bfs_paths.hpp"
 #include "util/logger.hpp"
 
 namespace SBG {
@@ -25,25 +25,12 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Path Finder -----------------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-template<class PathsImpl>
-Paths<PathsImpl>::Paths(const PWMapAF &fact) : fact_(fact) {}
-
-template<class PathsImpl>
-PWMap Paths<PathsImpl>::calculate(const DSBG &dsbg, const Set &endings)
-{
-  return static_cast<PathsImpl*>(this)->impl(dsbg, endings);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // Path Finder BFS Implementation ----------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-BFSPaths::BFSPaths(const PWMapAF &fact) : Paths<BFSPaths>(fact) {}
+BFSPaths::BFSPaths(const PWMapAF& fact) : fact_(fact) {}
 
-PWMap BFSPaths::impl(const DSBG &dsbg, const Set &endings)
+PWMap BFSPaths::calculate(const DSBG& dsbg, const Set& endings)
 {
   Set dsbgV = dsbg.V();
   PWMap dsbgB = dsbg.mapB();
@@ -97,8 +84,6 @@ PWMap BFSPaths::impl(const DSBG &dsbg, const Set &endings)
 
   return res;
 }
-
-template class Paths<BFSPaths>;
 
 } // namespace LIB
 

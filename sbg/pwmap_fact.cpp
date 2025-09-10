@@ -17,58 +17,60 @@
 
  ******************************************************************************/
 
-#include "sbg/af_pwmap.hpp"
+#include "sbg/pwmap_fact.hpp"
+#include "sbg/ord_pwmap.hpp"
+#include "sbg/unord_pwmap.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// PWMap AF --------------------------------------------------------------------
+// PWMap Factory ---------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-PWMapAF::PWMapAF(const MapAF &map_fact)
-  : MapAF(map_fact), map_fact_(map_fact) {}
+PWMapFact::PWMapFact(const MapFact &map_fact)
+  : MapFact(map_fact), map_fact_(map_fact) {}
 
 ////////////////////////////////////////////////////////////////////////////////
-// UnordPWMap AF ---------------------------------------------------------------
+// UnordPWMap Factory ----------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-UnordPWMapAF::UnordPWMapAF(const MapAF &map_fact) : PWMapAF(map_fact) {}
+UnordPWMapFact::UnordPWMapFact(const MapFact &map_fact) : PWMapFact(map_fact) {}
 
-PWMap UnordPWMapAF::createPWMap() const
+PWMap UnordPWMapFact::createPWMap() const
 {
   return PWMap(std::make_unique<UnordPWMap>(map_fact_));
 }
 
-PWMap UnordPWMapAF::createPWMap(const Set &s) const
+PWMap UnordPWMapFact::createPWMap(const Set &s) const
 {
   return PWMap(std::make_unique<UnordPWMap>(map_fact_, s));
 }
 
-PWMap UnordPWMapAF::createPWMap(const Map &m) const
+PWMap UnordPWMapFact::createPWMap(const Map &m) const
 {
   return PWMap(std::make_unique<UnordPWMap>(map_fact_, m));
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// OrdPWMap AF -----------------------------------------------------------------
+// OrdPWMap Factory ------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-OrdPWMapAF::OrdPWMapAF(const MapAF &map_fact) : PWMapAF(map_fact) {}
+OrdPWMapFact::OrdPWMapFact(const MapFact &map_fact) : PWMapFact(map_fact) {}
 
-PWMap OrdPWMapAF::createPWMap() const
+PWMap OrdPWMapFact::createPWMap() const
 {
   return PWMap(std::make_unique<OrdPWMap>(map_fact_));
 }
 
-PWMap OrdPWMapAF::createPWMap(const Set &s) const
+PWMap OrdPWMapFact::createPWMap(const Set &s) const
 {
   return PWMap(std::make_unique<OrdPWMap>(map_fact_, s));
 }
 
-PWMap OrdPWMapAF::createPWMap(const Map &m) const
+PWMap OrdPWMapFact::createPWMap(const Map &m) const
 {
   return PWMap(std::make_unique<OrdPWMap>(map_fact_, m));
 }

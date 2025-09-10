@@ -85,14 +85,14 @@ member_move_imp(Map, Set, dom);
 member_move_imp(Map, Exp, exp);
 
 Map::~Map() {}
-Map::Map(const SetAF &fact) : fact_(fact), dom_(fact.createSet()){}
-Map::Map(const SetAF &fact, MD_NAT x, Exp exp)
+Map::Map(const SetFact &fact) : fact_(fact), dom_(fact.createSet()){}
+Map::Map(const SetFact &fact, MD_NAT x, Exp exp)
   : fact_(fact), dom_(fact.createSet(x)), exp_(exp){}
-Map::Map(const SetAF &fact, Interval i, LExp le)
+Map::Map(const SetFact &fact, Interval i, LExp le)
   : fact_(fact), dom_(fact.createSet(i)), exp_(Exp(le)){}
-Map::Map(const SetAF &fact, SetPiece mdi, Exp exp)
+Map::Map(const SetFact &fact, SetPiece mdi, Exp exp)
   : fact_(fact), dom_(fact.createSet(mdi)), exp_(exp){}
-Map::Map(const SetAF &fact, Set s, Exp exp)
+Map::Map(const SetFact &fact, Set s, Exp exp)
   : fact_(fact), dom_(std::move(s)), exp_(exp){}
 
 bool Map::operator==(const Map &other) const

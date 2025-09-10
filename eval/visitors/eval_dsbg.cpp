@@ -23,7 +23,7 @@ namespace SBG {
 
 namespace Eval {
 
-EvalDSBG::EvalDSBG(unsigned int nmbr_dims, const LIB::PWMapAF &fact, VarEnv &env)
+EvalDSBG::EvalDSBG(unsigned int nmbr_dims, const LIB::PWMapFact &fact, VarEnv &env)
   : nmbr_dims_(nmbr_dims), fact_(fact), env_(env) {}
 
 LIB::DSBG EvalDSBG::operator()(AST::Natural v) const

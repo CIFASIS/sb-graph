@@ -35,12 +35,12 @@ member_imp(SBG, PWMap, map2);
 member_imp(SBG, PWMap, Emap);
 member_imp(SBG, PWMap, subEmap);
 
-SBG::SBG(const PWMapAF &fact) 
+SBG::SBG(const PWMapFact &fact) 
   : fact_(fact), V_(fact_.createSet()), Vmap_(fact_.createPWMap())
   , E_(fact_.createSet()), map1_(fact_.createPWMap())
   , map2_(fact_.createPWMap()), Emap_(fact_.createPWMap())
   , subEmap_(fact_.createPWMap()) {}
-SBG::SBG(const PWMapAF &fact, const Set &V, const PWMap &Vmap
+SBG::SBG(const PWMapFact &fact, const Set &V, const PWMap &Vmap
   , const PWMap &map1, const PWMap &map2
   , const PWMap &Emap, const PWMap &subEmap)
   : fact_(fact), V_(V), Vmap_(Vmap), E_(map1.dom().intersection(map2.dom()))
@@ -185,7 +185,7 @@ SBG SBG::copy(unsigned int times) const
   return res;
 }
 
-const PWMapAF &SBG::fact() const { return fact_; }
+const PWMapFact &SBG::fact() const { return fact_; }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Directed SBG ----------------------------------------------------------------
@@ -199,12 +199,12 @@ member_imp(DSBG, PWMap, mapD);
 member_imp(DSBG, PWMap, Emap);
 member_imp(DSBG, PWMap, subEmap);
 
-DSBG::DSBG(const PWMapAF &fact)
+DSBG::DSBG(const PWMapFact &fact)
   : fact_(fact), V_(fact_.createSet()), Vmap_(fact_.createPWMap())
   , E_(fact_.createSet()), mapB_(fact_.createPWMap())
   , mapD_(fact_.createPWMap()), Emap_(fact_.createPWMap())
   , subEmap_(fact_.createPWMap()) {}
-DSBG::DSBG(const PWMapAF &fact, const Set &V, const PWMap &Vmap
+DSBG::DSBG(const PWMapFact &fact, const Set &V, const PWMap &Vmap
   , const PWMap &mapB, const PWMap &mapD
   , const PWMap &Emap, const PWMap &subEmap)
   : fact_(fact), V_(V), Vmap_(Vmap)
@@ -313,7 +313,7 @@ DSBG DSBG::eraseVertices(const Set &vs) const
     , new_Emap, new_subE);
 }
 
-const PWMapAF &DSBG::fact() const { return fact_; }
+const PWMapFact &DSBG::fact() const { return fact_; }
 
 } // namespace LIB
 

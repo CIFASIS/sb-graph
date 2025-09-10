@@ -17,56 +17,56 @@
 
  ******************************************************************************/
 
-#include "sbg/af_map.hpp"
+#include "sbg/map_fact.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Map AF ----------------------------------------------------------------------
+// Map Factory -----------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-MapAF::MapAF(const SetAF &set_fact) : set_fact_(set_fact) {}
+MapFact::MapFact(const SetFact &set_fact) : set_fact_(set_fact) {}
 
-Set MapAF::createSet() const { return set_fact_.createSet(); }
+Set MapFact::createSet() const { return set_fact_.createSet(); }
 
-Set MapAF::createSet(const MD_NAT &x) const
+Set MapFact::createSet(const MD_NAT &x) const
 {
   return set_fact_.createSet(x);
 }
 
-Set MapAF::createSet(const Interval &i) const
+Set MapFact::createSet(const Interval &i) const
 {
   return set_fact_.createSet(i);
 }
 
-Set MapAF::createSet(const SetPiece &mdi) const
+Set MapFact::createSet(const SetPiece &mdi) const
 {
   return set_fact_.createSet(mdi);
 }
 
-Map MapAF::createMap() const
+Map MapFact::createMap() const
 {
   return Map(set_fact_);
 }
 
-Map MapAF::createMap(MD_NAT x, Exp exp) const
+Map MapFact::createMap(MD_NAT x, Exp exp) const
 {
   return Map(set_fact_, x, exp);
 }
 
-Map MapAF::createMap(Interval i, LExp le) const
+Map MapFact::createMap(Interval i, LExp le) const
 {
   return Map(set_fact_, i, le);
 }
 
-Map MapAF::createMap(SetPiece mdi, Exp exp) const
+Map MapFact::createMap(SetPiece mdi, Exp exp) const
 {
   return Map(set_fact_, mdi, exp);
 }
 
-Map MapAF::createMap(Set s, Exp exp) const
+Map MapFact::createMap(Set s, Exp exp) const
 {
   return Map(set_fact_, s, exp);
 }

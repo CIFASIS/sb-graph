@@ -31,7 +31,7 @@
 
 #include "ast/expr.hpp"
 #include "ast/statement.hpp"
-#include "sbg/af_pwmap.hpp"
+#include "sbg/pwmap_fact.hpp"
 #include "sbg/sbg_algorithms.hpp"
 
 namespace SBG {

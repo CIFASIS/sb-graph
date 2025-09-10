@@ -29,7 +29,7 @@ namespace LIB {
 
 PWMap connectedComponents(SBG g)
 {
-  const PWMapAF &fact_ = g.fact();
+  const PWMapFact &fact_ = g.fact();
 
   if (!g.V().isEmpty()) {
     PWMap rmap = fact_.createPWMap(g.V()), old_rmap = fact_.createPWMap();
@@ -438,7 +438,7 @@ MatchInfo SBGMatching::calculate()
   return MatchInfo(matched_E().compact(), fullyMatchedU());
 }
 
-const PWMapAF &SBGMatching::fact() const { return fact_; }
+const PWMapFact &SBGMatching::fact() const { return fact_; }
 
 ////////////////////////////////////////////////////////////////////////////////
 // SCC -------------------------------------------------------------------------
@@ -649,7 +649,7 @@ PWMap SBGSCC::calculate()
   return rmap.compact();
 }
 
-const PWMapAF &SBGSCC::fact() const { return fact_; }
+const PWMapFact &SBGSCC::fact() const { return fact_; }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Topological sort ------------------------------------------------------------
@@ -747,7 +747,7 @@ PWMap SBGTopSort::calculate()
   return smap.compact();
 }
 
-const PWMapAF &SBGTopSort::fact() const { return fact_; }
+const PWMapFact &SBGTopSort::fact() const { return fact_; }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Cut-set algorithm -----------------------------------------------------------
@@ -876,7 +876,7 @@ Set SBGCutSet::calculate()
 
 DSBG buildSCCFromMatching(const SBGMatching &match)
 {
-  const PWMapAF &fact = match.fact();
+  const PWMapFact &fact = match.fact();
 
   auto start = std::chrono::high_resolution_clock::now();
   Set matched_edges = match.matched_E(), unmatched_edges = match.unmatched_E();

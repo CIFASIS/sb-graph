@@ -32,7 +32,7 @@ namespace Eval {
 
 struct EvalDSBG : public boost::static_visitor<LIB::DSBG> {
   public:
-  EvalDSBG(unsigned int nmbr_dims, const LIB::PWMapAF &fact, VarEnv &env);
+  EvalDSBG(unsigned int nmbr_dims, const LIB::PWMapFact &fact, VarEnv &env);
 
   LIB::DSBG operator()(AST::Natural v) const;
   LIB::DSBG operator()(AST::Rational v) const;
@@ -60,7 +60,7 @@ struct EvalDSBG : public boost::static_visitor<LIB::DSBG> {
 
   private:
   unsigned int nmbr_dims_;
-  const LIB::PWMapAF &fact_;
+  const LIB::PWMapFact &fact_;
   mutable VarEnv env_;
 };
 

@@ -6,15 +6,20 @@ SBG_ROOT := sbg
 	SBG_SRC := \
     $(SBG_ROOT)/sbg_algorithms.cpp \
     $(SBG_ROOT)/sbg.cpp \
-    $(SBG_ROOT)/af_pwmap.cpp \
+    $(SBG_ROOT)/pwmap_fact.cpp \
     $(SBG_ROOT)/pw_map.cpp \
-  	$(SBG_ROOT)/af_map.cpp \
+    $(SBG_ROOT)/unord_pwmap.cpp \
+    $(SBG_ROOT)/ord_pwmap.cpp \
+  	$(SBG_ROOT)/map_fact.cpp \
     $(SBG_ROOT)/map.cpp \
     $(SBG_ROOT)/multidim_lexp.cpp \
     $(SBG_ROOT)/lexp.cpp \
     $(SBG_ROOT)/rational.cpp \
-  	$(SBG_ROOT)/af_set.cpp \
+  	$(SBG_ROOT)/set_fact.cpp \
   	$(SBG_ROOT)/set.cpp \
+		$(SBG_ROOT)/unord_set.cpp \
+		$(SBG_ROOT)/ord_set.cpp \
+		$(SBG_ROOT)/ord_unidim_dense_set.cpp \
   	$(SBG_ROOT)/multidim_inter.cpp \
   	$(SBG_ROOT)/interval.cpp \
     $(SBG_ROOT)/natural.cpp \

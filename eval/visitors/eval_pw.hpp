@@ -32,7 +32,7 @@ namespace Eval {
 
 struct EvalPWMap : public boost::static_visitor<LIB::PWMap> {
   public:
-  EvalPWMap(unsigned int nmbr_dims, const LIB::PWMapAF &fact, VarEnv &env);
+  EvalPWMap(unsigned int nmbr_dims, const LIB::PWMapFact &fact, VarEnv &env);
 
   LIB::PWMap operator()(AST::Natural v) const;
   LIB::PWMap operator()(AST::Rational v) const;
@@ -60,7 +60,7 @@ struct EvalPWMap : public boost::static_visitor<LIB::PWMap> {
 
   private:
   unsigned int nmbr_dims_;
-  const LIB::PWMapAF &fact_;
+  const LIB::PWMapFact &fact_;
   mutable VarEnv env_;
 };
 

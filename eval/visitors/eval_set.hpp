@@ -32,7 +32,7 @@ namespace Eval {
 
 struct EvalSet : public boost::static_visitor<LIB::Set> {
   public:
-  EvalSet(unsigned int nmbr_dims, const LIB::PWMapAF &fact, VarEnv &env);
+  EvalSet(unsigned int nmbr_dims, const LIB::PWMapFact &fact, VarEnv &env);
 
   LIB::Set operator()(AST::Natural v) const;
   LIB::Set operator()(AST::Rational v) const;
@@ -60,7 +60,7 @@ struct EvalSet : public boost::static_visitor<LIB::Set> {
 
   private:
   unsigned int nmbr_dims_;
-  const LIB::PWMapAF &fact_;
+  const LIB::PWMapFact &fact_;
   mutable VarEnv env_;
 };
 

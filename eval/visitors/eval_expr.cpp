@@ -272,10 +272,10 @@ auto cut_visitor_ = Overload {
 ////////////////////////////////////////////////////////////////////////////////
 
 EvalExpression::EvalExpression(VarEnv env)
-  : nmbr_dims_(1), fact_(LIB::UnordPWMapAF(LIB::MapAF(LIB::UnordAF())))
+  : nmbr_dims_(1), fact_(LIB::UnordPWMapFact(LIB::MapFact(LIB::UnordSetFact())))
   , env_(env), debug_(false) {}
 EvalExpression::EvalExpression(unsigned int nmbr_dims
-  , const LIB::PWMapAF &fact , VarEnv env, bool debug)
+  , const LIB::PWMapFact &fact , VarEnv env, bool debug)
   : nmbr_dims_(nmbr_dims), fact_(fact), env_(env), debug_(debug) {}
 
 ExprBaseType EvalExpression::operator()(AST::Natural v) const

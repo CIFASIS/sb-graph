@@ -1,9 +1,6 @@
-/** @file af_map.hpp
+/** @file pwmap_fact.hpp
 
- @brief <b>PWMap Abstract Factory</b>
-
- Currently only one implementation of PWMaps is supported: unordered. In the
- future an ordered implementation might be added.
+ @brief <b>PWMap Factory</b>
 
  <hr>
 
@@ -24,8 +21,8 @@
 
  ******************************************************************************/
 
-#ifndef SBG_AF_PWMAP_HPP
-#define SBG_AF_PWMAP_HPP
+#ifndef SBG_PWMAP_FACT_HPP
+#define SBG_PWMAP_FACT_HPP
 
 #include "pw_map.hpp"
 
@@ -33,31 +30,31 @@ namespace SBG {
 
 namespace LIB {
 
-struct PWMapAF : public MapAF {
+struct PWMapFact : public MapFact {
   protected:
-  const MapAF &map_fact_;
+  const MapFact &map_fact_;
 
   public:
-  virtual ~PWMapAF() = default;
-  PWMapAF(const MapAF &map_fact);
+  virtual ~PWMapFact() = default;
+  PWMapFact(const MapFact &map_fact);
 
   virtual PWMap createPWMap() const = 0;
   virtual PWMap createPWMap(const Set &s) const = 0;
   virtual PWMap createPWMap(const Map &m) const = 0;
 };
 
-struct UnordPWMapAF : public PWMapAF {
+struct UnordPWMapFact : public PWMapFact {
   public:
-  UnordPWMapAF(const MapAF &map_fact);
+  UnordPWMapFact(const MapFact &map_fact);
 
   PWMap createPWMap() const override;
   PWMap createPWMap(const Set &s) const override;
   PWMap createPWMap(const Map &m) const override;
 };
 
-struct OrdPWMapAF : public PWMapAF {
+struct OrdPWMapFact : public PWMapFact {
   public:
-  OrdPWMapAF(const MapAF &map_fact);
+  OrdPWMapFact(const MapFact &map_fact);
 
   PWMap createPWMap() const override;
   PWMap createPWMap(const Set &s) const override;

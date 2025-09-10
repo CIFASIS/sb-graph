@@ -23,7 +23,7 @@ namespace SBG {
 
 namespace Eval {
 
-EvalPWMap::EvalPWMap(unsigned int nmbr_dims, const LIB::PWMapAF &fact
+EvalPWMap::EvalPWMap(unsigned int nmbr_dims, const LIB::PWMapFact &fact
   , VarEnv &env)
   : nmbr_dims_(nmbr_dims), fact_(fact), env_(env) {}
 

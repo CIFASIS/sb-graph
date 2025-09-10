@@ -1,4 +1,4 @@
-/** @file af_map.hpp
+/** @file map_fact.hpp
 
  @brief <b>Map Factory</b>
 
@@ -21,8 +21,8 @@
 
  ******************************************************************************/
 
-#ifndef SBG_AF_MAP_HPP
-#define SBG_AF_MAP_HPP
+#ifndef SBG_MAP_FACT_HPP
+#define SBG_MAP_FACT_HPP
 
 #include "map.hpp"
 
@@ -30,12 +30,12 @@ namespace SBG {
 
 namespace LIB {
 
-struct MapAF : public SetAF {
+struct MapFact : public SetFact {
   private:
-  const SetAF &set_fact_;
+  const SetFact &set_fact_;
 
   public:
-  MapAF(const SetAF &set_fact);
+  MapFact(const SetFact &set_fact);
 
   Set createSet() const override;
   Set createSet(const MD_NAT &x) const override;

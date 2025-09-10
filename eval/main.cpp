@@ -64,18 +64,18 @@ void parseEvalProgramFromFile(std::string fname, Impl impl, bool debug)
     std::cout << ">>>>>> Eval result <<<<<<\n";
     std::cout << "-------------------------\n";
 
-    std::shared_ptr<SBG::LIB::SetAF> set_fact 
-      = std::make_shared<SBG::LIB::UnordAF>();
+    std::shared_ptr<SBG::LIB::SetFact> set_fact 
+      = std::make_shared<SBG::LIB::UnordSetFact>();
     switch (impl.set_impl_) {
       case 1:
         std::cout << ">>>>>> Ordered Sets <<<<<<\n";
         std::cout << "-------------------------\n\n";
-        set_fact = std::make_shared<SBG::LIB::OrdAF>();
+        set_fact = std::make_shared<SBG::LIB::OrdSetFact>();
         break;
       case 2:
         std::cout << ">>>>>> Ordered Dense Sets <<<<<<\n";
         std::cout << "-------------------------\n\n";
-        set_fact = std::make_shared<SBG::LIB::OrdDenseAF>();
+        set_fact = std::make_shared<SBG::LIB::OrdUnidimDenseSetFact>();
         break;
 
       default:
@@ -84,14 +84,14 @@ void parseEvalProgramFromFile(std::string fname, Impl impl, bool debug)
         break;
     }
 
-    SBG::LIB::MapAF map_fact(*set_fact);
-    std::shared_ptr<SBG::LIB::PWMapAF> fact
-      = std::make_shared<SBG::LIB::UnordPWMapAF>(map_fact);
+    SBG::LIB::MapFact map_fact(*set_fact);
+    std::shared_ptr<SBG::LIB::PWMapFact> fact
+      = std::make_shared<SBG::LIB::UnordPWMapFact>(map_fact);
     switch (impl.pw_impl_) {
       case 1:
         std::cout << ">>>>>> Ordered PWMaps <<<<<<\n";
         std::cout << "-------------------------\n\n";
-        fact = std::make_shared<SBG::LIB::OrdPWMapAF>(map_fact);
+        fact = std::make_shared<SBG::LIB::OrdPWMapFact>(map_fact);
         break;
       default:
         break;

@@ -41,7 +41,7 @@
 #ifndef SBG_SBG_HPP
 #define SBG_SBG_HPP
 
-#include "sbg/af_pwmap.hpp"
+#include "sbg/pwmap_fact.hpp"
 #include "util/debug.hpp"
 
 namespace SBG {
@@ -54,7 +54,7 @@ namespace LIB {
 
 struct SBG {
   private:
-  const PWMapAF &fact_;
+  const PWMapFact &fact_;
 
   public:
   // Vertex definitions
@@ -71,14 +71,14 @@ struct SBG {
   /**
    * @brief Empty SBG constructor.
    */
-  SBG(const PWMapAF &fact);
+  SBG(const PWMapFact &fact);
 
   /**
    * @brief SBG constructor that copies arguments to construct member variables.
    * A set of edges E is not needed, as it will be obtained from the domain of
    * map1_ and map2_.
    */
-  SBG(const PWMapAF &fact, const Set &V, const PWMap &Vmap
+  SBG(const PWMapFact &fact, const Set &V, const PWMap &Vmap
     , const PWMap &map1, const PWMap &map2
     , const PWMap &Emap, const PWMap &subEmap);
 
@@ -103,7 +103,7 @@ struct SBG {
    */
   SBG copy(unsigned int times) const;
 
-  const PWMapAF &fact() const;
+  const PWMapFact &fact() const;
 };
 std::ostream &operator<<(std::ostream &out, const SBG &g);
 
@@ -113,7 +113,7 @@ std::ostream &operator<<(std::ostream &out, const SBG &g);
 
 struct DSBG {
   private:
-  const PWMapAF &fact_;
+  const PWMapFact &fact_;
 
   public:
   // Vertex definitions
@@ -130,14 +130,14 @@ struct DSBG {
   /**
    * @brief Empty SBG constructor.
    */
-  DSBG(const PWMapAF &fact);
+  DSBG(const PWMapFact &fact);
 
   /**
    * @brief SBG constructor that copies arguments to construct member variables.
    * A set of edges E is not needed, as it will be obtained from the domain of
    * map1_ and map2_.
    */
-  DSBG(const PWMapAF &fact, const Set &V, const PWMap &Vmap
+  DSBG(const PWMapFact &fact, const Set &V, const PWMap &Vmap
    , const PWMap &mapB, const PWMap &mapD
    , const PWMap &Emap, const PWMap &subEmap);
 
@@ -162,7 +162,7 @@ struct DSBG {
    */
   DSBG eraseVertices(const Set &vs) const;
 
-  const PWMapAF &fact() const;
+  const PWMapFact &fact() const;
 };
 std::ostream &operator<<(std::ostream &out, const DSBG &dg);
 

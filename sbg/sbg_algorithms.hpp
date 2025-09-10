@@ -58,7 +58,7 @@ std::ostream &operator<<(std::ostream &out, const MatchInfo &m_info);
 
 struct SBGMatching {
   private:
-  const PWMapAF &fact_;
+  const PWMapFact &fact_;
 
   //*** SBG info, constant
   member_class(SBG, sbg);
@@ -104,7 +104,7 @@ struct SBGMatching {
 
   MatchInfo calculate();
 
-  const PWMapAF &fact() const;
+  const PWMapFact &fact() const;
 
   private:
   void selectSucc(DSBG dsbg);
@@ -133,7 +133,7 @@ struct SBGMatching {
 
 struct SBGSCC {
   private:
-  const PWMapAF &fact_;
+  const PWMapFact &fact_;
 
   //*** SBG info, constant
   member_class(DSBG, dsbg);
@@ -160,7 +160,7 @@ struct SBGSCC {
 
   PWMap calculate();
 
-  const PWMapAF &fact() const;
+  const PWMapFact &fact() const;
 
   private:
   PWMap sccMinReach(const DSBG &dg) const;
@@ -173,7 +173,7 @@ struct SBGSCC {
 
 struct SBGTopSort {
   private:
-  const PWMapAF &fact_;
+  const PWMapFact &fact_;
 
   //*** SBG info, constant
   member_class(DSBG, dsbg);
@@ -186,7 +186,7 @@ struct SBGTopSort {
 
   PWMap calculate(); 
 
-  const PWMapAF &fact() const;
+  const PWMapFact &fact() const;
 
   private:
   Exp calculateExp(const MD_NAT &from, const MD_NAT &to);
@@ -205,7 +205,7 @@ struct SBGTopSort {
 
 struct SBGCutSet {
   private:
-  const PWMapAF &fact_;
+  const PWMapFact &fact_;
 
   //*** SBG info, constant
   member_class(DSBG, dsbg);

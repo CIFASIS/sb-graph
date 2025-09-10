@@ -1,13 +1,15 @@
 /** @file set.hpp
 
- @brief <b>Set delegate pattern</b>
+ @brief <b>SBG Set</b>
 
- Compact implementation of sets of multi-dimensional naturals (all with the same
- number of dimensions), using collections of disjoint MDIs. Currently two
- implementations are supported: OrderedDenseSet that can represent sets of
- one dimensional naturals and that is optimized by keeping an ordered collection
- of MDIs; and UnorderedSet that keeps no order, but supports multi-dimensional
- values.
+ A SBG Set is a structure that represents sets of multi-dimensional naturals
+ (all with the same number of dimensions), using collections of disjoint MDIs.
+ Currently three implementations are supported:
+   - UnorderedSet that keeps no order, but supports multi-dimensional values.
+   - OrderedSet that supports multi-dimensional values while also keeping an
+     internal order that enhances performance.
+   - OrdUnidimDenseSet that can represent sets of one dimensional naturals and
+     that is optimized by keeping an ordered collection of MDIs.
 
  <hr>
 
@@ -32,52 +34,48 @@
 #define SBG_SET_HPP
 
 #include <memory>
-#include <forward_list>
-#include <set>
-#include <algorithm>
+
 #include "sbg/multidim_inter.hpp"
-
-
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Set Abstract Delegate -------------------------------------------------------
+// Set Abstract Strategy -------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct SetDelegate;
+struct SetStrategy;
 
-typedef std::unique_ptr<SetDelegate> SetDelegPtr;
+typedef std::unique_ptr<SetStrategy> SetStratPtr;
 
-struct SetDelegate {
-  virtual ~SetDelegate() = default;
+struct SetStrategy {
+  virtual ~SetStrategy() = default;
 
   /**
    * @brief Constructs an empty set.
    */
-  SetDelegate();
+  SetStrategy();
 
   /**
    * @brief Constructs a set with an unique element \p x.
    */
-  SetDelegate(const MD_NAT &x);
+  SetStrategy(const MD_NAT &x);
 
   /**
    * @brief Constructs a one-dimensional set with the same elements as \p i.
    */
-  SetDelegate(const Interval &i);
+  SetStrategy(const Interval &i);
 
   /**
    * @brief Constructs a set with the same elements as \p mdi.
    */
-  SetDelegate(const SetPiece &mdi);
+  SetStrategy(const SetPiece &mdi);
 
   /**
    * @brief Auxiliary function for defining the copy constructor of Set.
    */
-  virtual SetDelegPtr clone() const = 0;
+  virtual SetStratPtr clone() const = 0;
 
   struct Iterator {
     public:
@@ -112,8 +110,8 @@ struct SetDelegate {
    */
   virtual void emplaceBack(const SetPiece &mdi) = 0;
 
-  virtual bool operator==(const SetDelegate &other) const = 0;
-  virtual bool operator!=(const SetDelegate &other) const = 0;
+  virtual bool operator==(const SetStrategy &other) const = 0;
+  virtual bool operator!=(const SetStrategy &other) const = 0;
   virtual std::ostream &print(std::ostream &out) const = 0;
 
   // Traditional set operations ------------------------------------------------
@@ -126,19 +124,19 @@ struct SetDelegate {
   virtual bool isEmpty() const = 0;
   virtual MD_NAT minElem() const = 0;
   virtual MD_NAT maxElem() const = 0;
-  virtual SetDelegPtr intersection(const SetDelegate &other) const = 0;
+  virtual SetStratPtr intersection(const SetStrategy &other) const = 0;
 
   /**
    * @brief Calculates the union of two sets.
    */
-  virtual SetDelegPtr cup(const SetDelegate &other) const = 0;
+  virtual SetStratPtr cup(const SetStrategy &other) const = 0;
 
   /**
    * @brief Calculates the complement of a set.\n 
    * Precondition: set must not be empty (undetermined arity).
    */
-  virtual SetDelegPtr complement() const = 0;
-  virtual SetDelegPtr difference(const SetDelegate &other) const = 0;
+  virtual SetStratPtr complement() const = 0;
+  virtual SetStratPtr difference(const SetStrategy &other) const = 0;
 
   // Extra operations ----------------------------------------------------------
 
@@ -152,269 +150,43 @@ struct SetDelegate {
    * @brief Calculates the union of two disjoint sets. \n 
    * Precondition: this->intersection(other) = {}.
    */
-  virtual SetDelegPtr disjointCup(const SetDelegate &other) const = 0;
+  virtual SetStratPtr disjointCup(const SetStrategy &other) const = 0;
 
   /**
    * @brief Returns a set that keeps pieces of the original set that satisfy
    * the predicate argument.
    */
-  virtual SetDelegPtr filterSet(bool (*f)(const SetPiece &mdi)) const = 0;
+  virtual SetStratPtr filterSet(bool (*f)(const SetPiece &mdi)) const = 0;
 
   /**
    * @brief Sum a constant value to every element of the set.
    */
-  virtual SetDelegPtr offset(const MD_NAT &off) const = 0;
+  virtual SetStratPtr offset(const MD_NAT &off) const = 0;
 
   /**
    * @brief Merge as many pieces of the set as possible. Heuristic guided.
    */
-  virtual SetDelegPtr compact() const = 0;
+  virtual SetStratPtr compact() const = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// Unordered Set Implementation (concrete delegate) ----------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-typedef std::vector<SetPiece> MDIUnordSet;
-
-struct UnorderedSet : public SetDelegate {
-  member_class(MDIUnordSet, pieces);
-
-  ~UnorderedSet();
-  UnorderedSet();
-  UnorderedSet(const MD_NAT &x);
-  UnorderedSet(const Interval &i);
-  UnorderedSet(const SetPiece &mdi);
-  UnorderedSet(const MDIUnordSet &pieces);
-
-  SetDelegPtr clone() const override;
-
-  struct Iterator : public SetDelegate::Iterator {
-    member_class(MDIUnordSet::const_iterator, it);
-
-    Iterator(MDIUnordSet::const_iterator it);
-    void operator++() override;
-    bool operator!=(const SetDelegate::Iterator &other) const override;
-    const SetPiece &operator*() const override;
-  };
-
-  std::shared_ptr<SetDelegate::Iterator> begin() const override;
-  std::shared_ptr<SetDelegate::Iterator> end() const override;
-
-  std::size_t size() const override;
-  void emplace(const SetPiece &mdi) override;
-  void emplaceBack(const SetPiece &mdi) override;
-
-  bool operator==(const SetDelegate &other) const override;
-  bool operator!=(const SetDelegate &other) const override;
-  std::ostream &print(std::ostream &out) const override;
-
-  // Traditional set operations ------------------------------------------------
-
-  unsigned int cardinal() const override;
-  bool isEmpty() const override;
-  MD_NAT minElem() const override;
-  MD_NAT maxElem() const override;
-  SetDelegPtr intersection(const SetDelegate &other) const override;
-  SetDelegPtr cup(const SetDelegate &other) const override;
-  SetDelegPtr complement() const;
-  SetDelegPtr difference(const SetDelegate &other) const override;
-
-  // Extra operations ----------------------------------------------------------
-
-  std::size_t arity() const override;
-  SetDelegPtr disjointCup(const SetDelegate &other) const override;
-  SetDelegPtr filterSet(bool (*f)(const SetPiece &mdi)) const override;
-  SetDelegPtr offset(const MD_NAT &off) const override;
-  SetDelegPtr compact() const override;
-
-  private:
-  /**
-   * @brief Calculate the complement of an unordered set with a single piece.
-   */
-  SetDelegPtr complementAtom() const;
-};
-
-typedef const UnorderedSet &UnordSetCRef;
-
-////////////////////////////////////////////////////////////////////////////////
-// Ordered Dense Set Implementation (concrete delegate) -----------------------
-////////////////////////////////////////////////////////////////////////////////
-
-typedef std::vector<SetPiece> MDIOrdSet;
-
-struct OrderedDenseSet : public SetDelegate {
-  member_class(MDIOrdSet, pieces);
-
-  ~OrderedDenseSet();
-  OrderedDenseSet();
-  OrderedDenseSet(MD_NAT x);
-  OrderedDenseSet(Interval i);
-  OrderedDenseSet(SetPiece mdi);
-  OrderedDenseSet(MDIOrdSet pieces);
-
-  SetDelegPtr clone() const override;
-
-  struct Iterator : public SetDelegate::Iterator {
-    member_class(MDIOrdSet::const_iterator, it);
-
-    Iterator(MDIOrdSet::const_iterator it);
-    void operator++() override;
-    bool operator!=(const SetDelegate::Iterator &other) const override;
-    const SetPiece &operator*() const override;
-  };
-
-  std::shared_ptr<SetDelegate::Iterator> begin() const override;
-  std::shared_ptr<SetDelegate::Iterator> end() const override;
-
-  std::size_t size() const override;
-  void emplace(const SetPiece &mdi) override;
-  void emplaceBack(const SetPiece &mdi) override;
-
-  bool operator==(const SetDelegate &other) const override;
-  bool operator!=(const SetDelegate &other) const override;
-  std::ostream &print(std::ostream &out) const override;
-
-  // Traditional set operations ------------------------------------------------
-
-  unsigned int cardinal() const override;
-  bool isEmpty() const override;
-  MD_NAT minElem() const override;
-  MD_NAT maxElem() const override;
-  SetDelegPtr intersection(const SetDelegate &other) const override;
-  SetDelegPtr cup(const SetDelegate &other) const override;
-  SetDelegPtr complement() const;
-  SetDelegPtr difference(const SetDelegate &other) const override;
-
-  // Extra operations ----------------------------------------------------------
-
-  std::size_t arity() const override;
-  SetDelegPtr disjointCup(const SetDelegate &other) const override;
-  SetDelegPtr filterSet(bool (*f)(const SetPiece &mdi)) const override;
-  SetDelegPtr offset(const MD_NAT &off) const override;
-  SetDelegPtr compact() const override;
-
-  private:
-  /**
-   * @brief Performs operation f between a piece of s1 and a piece of s2. At the
-   * start begins with both minimum elements, and advances the iterator of the
-   * set with the piece that has the minimum end. This is repeated until one of
-   * the two collections is consumed.
-   */
-  MDIOrdSet boundedTraverse(SetPiece (SetPiece::*f)(const SetPiece &) const
-    , const MDIOrdSet &other) const;
-
-  /**
-   * @brief Performs operation f between a piece of s1 and a piece of s2. At the
-   * start begins with both minimum elements, and advances the iterator of the
-   * set with the piece that has the minimum end. This is repeated until one of
-   * the two collections is consumed. Then, all the remaining pieces of the
-   * other set are also inserted.
-   */
-  MDIOrdSet traverse(SetPiece (SetPiece::*f)(const SetPiece &) const
-    , const MDIOrdSet &other) const;
-
-  
-};
-
-typedef const OrderedDenseSet &OrdDenseSetCRef;
-
-////////////////////////////////////////////////////////////////////////////////
-// Ordered Set Implementation (concrete delegate) ------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-struct OrderedSet : public SetDelegate {
-  member_class(MDIOrdSet, pieces);
-
-  ~OrderedSet();
-  OrderedSet();
-  OrderedSet(MD_NAT x);
-  OrderedSet(Interval i);
-  OrderedSet(SetPiece mdi);
-  OrderedSet(MDIOrdSet pieces);
-
-  SetDelegPtr clone() const override;
-
-  struct Iterator : public SetDelegate::Iterator {
-    member_class(MDIOrdSet::const_iterator, it);
-
-    Iterator(MDIOrdSet::const_iterator it);
-    void operator++() override;
-    bool operator!=(const SetDelegate::Iterator &other) const override;
-    const SetPiece &operator*() const override;
-  };
-
-  std::shared_ptr<SetDelegate::Iterator> begin() const override;
-  std::shared_ptr<SetDelegate::Iterator> end() const override;
-
-  std::size_t size() const override;
-  void emplace(const SetPiece &mdi) override;
-  void emplaceBack(const SetPiece &mdi) override;
-
-  bool operator==(const SetDelegate &other) const override;
-  bool operator!=(const SetDelegate &other) const override;
-  std::ostream &print(std::ostream &out) const override;
-
-  // Traditional set operations ------------------------------------------------
-
-  unsigned int cardinal() const override;
-  bool isEmpty() const override;
-  MD_NAT minElem() const override;
-  MD_NAT maxElem() const override;
-  SetDelegPtr intersection(const SetDelegate &other) const override;
-  SetDelegPtr cup(const SetDelegate &other) const override;
-  SetDelegPtr complement() const;
-  SetDelegPtr difference(const SetDelegate &other) const override;
-
-  // Extra operations ----------------------------------------------------------
-
-  std::size_t arity() const override;
-  SetDelegPtr disjointCup(const SetDelegate &other) const override;
-  SetDelegPtr filterSet(bool (*f)(const SetPiece &mdi)) const override;
-  SetDelegPtr offset(const MD_NAT &off) const override;
-  SetDelegPtr compact() const override;
-
-  private:
-  
-  /**
-   *Calculates the complement of an ordered set with a single piece.
-  **/
-  
-  SetDelegPtr complementAtom() const;
-  
-  /**
-   *Computes the accumulated complement between an ordered set (this), 
-   *which represents the complement of an ordered set, 
-   *and an ordered set (other), which represents the complement of an atomic ordered set.
-  **/
-  
-  SetDelegPtr intersectionComp(const SetDelegate &other,const SetPiece &mdi, SetDelegate &rem) const;
-  
-    
-};
-
-typedef const OrderedSet &OrdSetCRef;
-typedef OrderedSet &OrdSetRef;
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Set Implementation (delegator) --------------------------------------
+// Set Interface (context) -----------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 struct Set {
   private:
-  SetDelegPtr delegate_;
+  SetStratPtr strategy_;
 
   public:
-  Set(SetDelegPtr deleg);
+  Set(SetStratPtr strat);
   Set(const Set &other);
 
   struct Iterator {
     private:
-    std::shared_ptr<SetDelegate::Iterator> it_;
+    std::shared_ptr<SetStrategy::Iterator> it_;
 
     public:
-    Iterator(std::shared_ptr<SetDelegate::Iterator> it);
+    Iterator(std::shared_ptr<SetStrategy::Iterator> it);
     void operator++();
     bool operator!=(const Iterator& other) const;
     SetPiece operator*() const;

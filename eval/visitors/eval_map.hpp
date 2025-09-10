@@ -33,7 +33,7 @@ namespace Eval {
 
 struct EvalMap : public boost::static_visitor<LIB::Map> {
   public:
-  EvalMap(unsigned int nmbr_dims, const LIB::PWMapAF &fact, VarEnv &env);
+  EvalMap(unsigned int nmbr_dims, const LIB::PWMapFact &fact, VarEnv &env);
 
   LIB::Map operator()(AST::Natural v) const;
   LIB::Map operator()(AST::Rational v) const;
@@ -61,7 +61,7 @@ struct EvalMap : public boost::static_visitor<LIB::Map> {
 
   private:
   unsigned int nmbr_dims_;
-  const LIB::PWMapAF &fact_;
+  const LIB::PWMapFact &fact_;
   mutable VarEnv env_;
 };
 

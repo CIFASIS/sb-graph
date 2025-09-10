@@ -1,12 +1,10 @@
-/** @file af_set.hpp
+/** @file set_fact.hpp
 
- @brief <b>Set Abstract Factory</b>
+ @brief <b>Set Factory</b>
 
- While developing the SBG library several implementations were proposed. First,
- two implementations were proposed for sets: unordered and ordered sets. For
- this reason, it was decided that delegation should be used to provide
- different implementations, and also an abstract factory was needed to create
- objects with the desired implementation.
+ As other structures will have to create SBG Sets (i.e., Maps and PWMaps), it
+ is necessary to have a way to create SBG Sets objects with the desired
+ implementation. This module provides a factory to such purpose.
 
  <hr>
 
@@ -27,8 +25,8 @@
 
  ******************************************************************************/
 
-#ifndef SBG_AF_SET_HPP
-#define SBG_AF_SET_HPP
+#ifndef SBG_SET_FACT_HPP
+#define SBG_SET_FACT_HPP
 
 #include "set.hpp"
 
@@ -36,8 +34,8 @@ namespace SBG {
 
 namespace LIB {
 
-struct SetAF {
-  virtual ~SetAF() = default;
+struct SetFact {
+  virtual ~SetFact() = default;
 
   virtual Set createSet() const = 0;
   virtual Set createSet(const MD_NAT &x) const = 0;
@@ -45,21 +43,21 @@ struct SetAF {
   virtual Set createSet(const SetPiece &mdi) const = 0;
 };
 
-struct UnordAF : public SetAF {
+struct UnordSetFact : public SetFact {
   Set createSet() const override;
   Set createSet(const MD_NAT &x) const override;
   Set createSet(const Interval &i) const override;
   Set createSet(const SetPiece &mdi) const override;
 };
 
-struct OrdDenseAF : public SetAF {
+struct OrdUnidimDenseSetFact : public SetFact {
   Set createSet()  const override;
   Set createSet(const MD_NAT &x) const override;
   Set createSet(const Interval &i) const override;
   Set createSet(const SetPiece &mdi) const override;
 };
 
-struct OrdAF : public SetAF {
+struct OrdSetFact : public SetFact {
   Set createSet()  const override;
   Set createSet(const MD_NAT &x) const override;
   Set createSet(const Interval &i) const override;

@@ -23,7 +23,7 @@ namespace SBG {
 
 namespace Eval {
 
-EvalSet::EvalSet(unsigned int nmbr_dims, const LIB::PWMapAF &fact, VarEnv &env)
+EvalSet::EvalSet(unsigned int nmbr_dims, const LIB::PWMapFact &fact, VarEnv &env)
   : nmbr_dims_(nmbr_dims), fact_(fact), env_(env) {}
 
 LIB::Set EvalSet::operator()(AST::Natural v) const

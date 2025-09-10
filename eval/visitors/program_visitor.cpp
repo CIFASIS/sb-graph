@@ -23,7 +23,7 @@ namespace SBG {
 
 namespace Eval {
 
-ProgramVisitor::ProgramVisitor(std::shared_ptr<LIB::PWMapAF> fact, bool debug)
+ProgramVisitor::ProgramVisitor(std::shared_ptr<LIB::PWMapFact> fact, bool debug)
   : fact_(*fact), env_(), debug_(debug) {}
 
 ProgramIO ProgramVisitor::operator()(AST::Program p) const 

@@ -34,7 +34,7 @@ namespace Eval {
 struct EvalExpression : public boost::static_visitor<ExprBaseType> {
   public:
   EvalExpression(VarEnv env);
-  EvalExpression(unsigned int nmbr_dims, const LIB::PWMapAF &fact
+  EvalExpression(unsigned int nmbr_dims, const LIB::PWMapFact &fact
     , VarEnv env, bool debug);
 
   ExprBaseType operator()(AST::Natural v) const;
@@ -63,7 +63,7 @@ struct EvalExpression : public boost::static_visitor<ExprBaseType> {
 
   private:
   unsigned int nmbr_dims_;
-  const LIB::PWMapAF &fact_;
+  const LIB::PWMapFact &fact_;
   mutable VarEnv env_;
   FuncEnv fenv_;
   mutable bool debug_;

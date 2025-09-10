@@ -49,9 +49,9 @@ void parseEvalProgramFromFile(std::string fname)
     SBG::Util::SBG_LOG << ">>>>>> Eval result <<<<<<\n";
     SBG::Util::SBG_LOG << "-------------------------\n\n";
 
-    SBG::LIB::UnordAF set_fact;
-    SBG::LIB::MapAF map_fact(set_fact);
-    auto fact = std::make_shared<SBG::LIB::UnordPWMapAF>(map_fact); 
+    SBG::LIB::UnordSetFact set_fact;
+    SBG::LIB::MapFact map_fact(set_fact);
+    auto fact = std::make_shared<SBG::LIB::UnordPWMapFact>(map_fact); 
     SBG::Eval::ProgramVisitor program_visit(fact, false); 
     SBG::Eval::ProgramIO visit_result = boost::apply_visitor(
       program_visit, parser_result

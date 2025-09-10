@@ -26,7 +26,7 @@ TEST(SetPerf, OrdDenseIntersection)
 {
   int N = 10000;
 
-  SBG::LIB::OrdDenseSetFact fact;
+  SBG::LIB::OrdUnidimDenseSetFact fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
   for (int j = 0; j < N; j++) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
@@ -52,7 +52,7 @@ TEST(SetPerf, OrdDenseDifference)
 {
   int N = 10000;
 
-  SBG::LIB::OrdDenseSetFact fact;
+  SBG::LIB::OrdUnidimDenseSetFact fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
   for (int j = 0; j < N; j++) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
@@ -77,7 +77,7 @@ TEST(SetPerf, OrdDenseUnion)
 {
   int N = 10000;
 
-  SBG::LIB::OrdDenseSetFact fact;
+  SBG::LIB::OrdUnidimDenseSetFact fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
   for (int j = 0; j < N; j++) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
@@ -102,7 +102,7 @@ TEST(SetPerf, OrdDenseDisjointUnion)
 {
   int N = 10000;
 
-  SBG::LIB::OrdDenseSetFact fact;
+  SBG::LIB::OrdUnidimDenseSetFact fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
   for (int j = 0; j < N; j+=2) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
@@ -124,7 +124,7 @@ TEST(SetPerf, OrdDenseComplement)
 {
   int N = 10000;
 
-  SBG::LIB::OrdDenseSetFact fact;
+  SBG::LIB::OrdUnidimDenseSetFact fact;
   SBG::LIB::Set s1 = fact.createSet();
   for (int j = 0; j < N; j++) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);

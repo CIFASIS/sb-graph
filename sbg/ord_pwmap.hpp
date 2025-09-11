@@ -116,6 +116,11 @@ struct OrdPWMap : public PWMapStrategy {
   PWMapStratPtr compact() const override;
   
   private:
+  
+  /**
+   * @brief Calculates the minAdjMap core, which contains the entire main process of the function.
+   */
+  
   void processMinAdjMap(
   const Map &m1, 
   const Map &m2, 
@@ -123,6 +128,10 @@ struct OrdPWMap : public PWMapStrategy {
   Set &set_out, 
   OrdMapCollection  &ord_pwmap,
   NAT &global_pos) const;
+  
+  /**
+   * @brief Calculates the minus core, which contains the entire main process of the function.
+   */
   
   void processMinus(
   const Map &m1, 
@@ -132,6 +141,10 @@ struct OrdPWMap : public PWMapStrategy {
   OrdMapCollection  &ord_pwmap,
   NAT &global_pos) const; 
   
+  /**
+   * @brief Calculates the add core, which contains the entire main process of the function.
+   */
+  
   void processAdd(
   const Map &m1, 
   const Map &m2, 
@@ -139,6 +152,10 @@ struct OrdPWMap : public PWMapStrategy {
   Set &set_out, 
   OrdMapCollection  &ord_pwmap,
   NAT &global_pos) const; 
+  
+  /**
+   * @brief Calculates the equalImage core, which contains the entire main process of the function.
+   */
   
   void processEqualImage(
   const Map &m1, 
@@ -148,11 +165,20 @@ struct OrdPWMap : public PWMapStrategy {
   OrdMapCollection  &ord_pwmap,
   NAT &global_pos) const; 
   
+  /**
+   * @brief Type used in the 'processMapsOrd' declaration to reduce its size.
+   * This type is the same as the process functions above.
+   */
+  
   using ProcessFunc = void (OrdPWMap::*)(
   const Map &, const Map &, 
   Set &, Set &, OrdMapCollection &, 
   NAT&
   ) const;
+  
+  /**
+   * @brief Provides an efficient method for processing two ordered piecewise maps.
+   */
   
   void processMapsOrd(
     const PWMapStrategy &other,

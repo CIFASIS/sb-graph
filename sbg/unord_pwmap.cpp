@@ -154,14 +154,14 @@ UnordPWMap &UnordPWMap::operator=(UnordPWMap &&other)
 
 PWMapStratPtr UnordPWMap::operator+(const PWMapStrategy &other) const
 {
-  UnordMapCollection res;
-
+  PWMapStratPtr res = std::make_unique<UnordPWMap>(fact_);
+  
   UnordPWMapCRef othr = static_cast<UnordPWMapCRef>(other);
   for (const Map &m1 : pieces_) 
     for (const Map &m2 : othr.pieces_) 
-      res.push_back(m1 + m2);
+      res->emplaceBack(m1 + m2);
 
-  return std::make_unique<UnordPWMap>(fact_, res);
+  return res;
 }
 
 PWMapStratPtr UnordPWMap::operator-(const PWMapStrategy &other) const

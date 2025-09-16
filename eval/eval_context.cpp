@@ -32,12 +32,12 @@ unsigned int EvalContext::arity() const
   return arity_;
 }
 
-const VarEnv& EvalContext::venv() const
+VarEnv& EvalContext::venv()
 {
   return venv_;
 }
 
-const FuncEnv& EvalContext::fenv() const
+FuncEnv& EvalContext::fenv()
 {
   return fenv_;
 }

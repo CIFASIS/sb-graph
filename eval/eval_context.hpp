@@ -33,7 +33,8 @@ namespace SBG {
 namespace Eval {
 
 /** 
- * @brief TODO
+ * @brief Evaluation context that keeps track of the arity of the evaluated
+ * program, defined variables, and built-in functions.
  */
 class EvalContext : public ImplContext {
   public:
@@ -41,8 +42,8 @@ class EvalContext : public ImplContext {
 
   // Getters
   unsigned int arity() const;
-  const VarEnv& venv() const;
-  const FuncEnv& fenv() const;
+  VarEnv& venv();
+  FuncEnv& fenv();
   // Setters
   void setArity(unsigned int arity); 
   void insertVariable(VarEnv::VKey key, VarEnv::VValue value); 

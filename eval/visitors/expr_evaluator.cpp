@@ -50,7 +50,8 @@ T eval(const ExprEvaluator &visit, AST::Expr e, std::string t = "UNDEF")
   return std::get<T>(visited);
 }
 
-ExprEvaluator::ExprEvaluator(EvalContext&& eval_ctx) : eval_ctx_(eval_ctx)
+ExprEvaluator::ExprEvaluator(ImplContext& impl_ctx, EvalContext& eval_ctx)
+  : impl_ctx_(impl_ctx), eval_ctx_(eval_ctx)
 {
   // Set built-in functions
   //fenv_.insert("minus", BuiltInOperators::oppositeEvaluator);
@@ -90,13 +91,14 @@ ExprBaseType ExprEvaluator::operator()(AST::Natural v) const
 
 ExprBaseType ExprEvaluator::operator()(AST::Rational v) const
 {
-  return boost::apply_visitor(RationalEvaluator(ctx_eval_.venv()), AST::Expr(v));
+  return boost::apply_visitor(RationalEvaluator(eval_ctx_.venv())
+    , AST::Expr(v));
 }
 
 ExprBaseType ExprEvaluator::operator()(AST::Name v) const 
 {
-  auto var_definition = ctx_eval_.venv().find(v);
-  if (var_definition != ctx_eval_.venv().end()) { 
+  auto var_definition = eval_ctx_.venv().find(v);
+  if (var_definition != eval_ctx_.venv().end()) { 
     return var_definition->second;
   }
 
@@ -136,7 +138,7 @@ ExprBaseType ExprEvaluator::operator()(AST::BinOp v) const
   ExprBaseType vl = boost::apply_visitor(*this, v.left());
   ExprBaseType vr = boost::apply_visitor(*this, v.right());
 
-  NatEvaluator visit_nat(ctx_eval_.venv());
+  NatEvaluator visit_nat(eval_ctx_.venv());
   /*
   switch (v.op()) {
     case AST::Op::add:
@@ -184,8 +186,8 @@ ExprBaseType ExprEvaluator::operator()(AST::Call v) const
 {
   std::string func_name = v.name();
 
-  auto func_definition = fenv_.find(func_name);
-  if (func_definition != fenv_.end()) { 
+  auto func_definition = eval_ctx_.fenv().find(func_name);
+  if (func_definition != eval_ctx_.fenv().end()) { 
     std::vector<ExprBaseType> evaluated_args;
     for (AST::Expr a : v.args()) {
       evaluated_args.push_back(boost::apply_visitor(*this, a));
@@ -200,7 +202,7 @@ ExprBaseType ExprEvaluator::operator()(AST::Call v) const
 
 ExprBaseType ExprEvaluator::operator()(AST::Interval v) const
 {
-  NatEvaluator visit_nat(ctx_eval_.venv());
+  NatEvaluator visit_nat(eval_ctx_.venv());
 
   LIB::NAT b = boost::apply_visitor(visit_nat, v.begin());
   LIB::NAT s = boost::apply_visitor(visit_nat, v.step());
@@ -226,7 +228,7 @@ ExprBaseType ExprEvaluator::operator()(AST::MultiDimInter v) const
 
 ExprBaseType ExprEvaluator::operator()(AST::Set v) const
 {
-  LIB::Set res = fact_.createSet();
+  LIB::Set res = impl_ctx_.setFact().createSet();
 
   for (const AST::Expr &e : v.pieces())
     res.emplaceBack(eval<LIB::SetPiece>(*this, e, "SetPiece"));
@@ -240,7 +242,7 @@ ExprBaseType ExprEvaluator::operator()(AST::Set v) const
 
 ExprBaseType ExprEvaluator::operator()(AST::LinearExp v) const
 {
-  LinearExprEvaluator visit_le(ctx_eval_.venv());
+  LinearExprEvaluator visit_le(eval_ctx_.venv());
   return boost::apply_visitor(visit_le, AST::Expr(v));
 }
 
@@ -248,7 +250,7 @@ ExprBaseType ExprEvaluator::operator()(AST::MDLExp v) const
 {
   LIB::Exp res;
 
-  LinearExprEvaluator visit_le(ctx_eval_.venv());
+  LinearExprEvaluator visit_le(eval_ctx_.venv());
   for (const AST::Expr &e : v.exps()) {
     LIB::LExp ith = boost::apply_visitor(visit_le, e);
     res.emplaceBack(ith);
@@ -266,7 +268,7 @@ ExprBaseType ExprEvaluator::operator()(AST::LinearMap v) const
   LIB::Set d = eval<LIB::Set>(*this, v.dom(), "Set");
   LIB::Exp e = eval<LIB::Exp>(*this, v.lexp(), "Exp");
 
-  LIB::Map res = fact_.createMap(d, e);
+  LIB::Map res = impl_ctx_.pwFact().createMap(d, e);
 
   Util::ERROR_UNLESS(res.arity() == eval_ctx_.arity() || res.arity() == 0
     , "ExprEvaluator[nmbr_dims = ", eval_ctx_.arity(), "]: arity(", res, ") = "
@@ -277,7 +279,7 @@ ExprBaseType ExprEvaluator::operator()(AST::LinearMap v) const
 
 ExprBaseType ExprEvaluator::operator()(AST::PWLMap v) const
 {
-  LIB::PWMap res = fact_.createPWMap();
+  LIB::PWMap res = impl_ctx_.pwFact().createPWMap();
 
   for (const AST::Expr &e : v.maps())
     res.emplaceBack(eval<LIB::Map>(*this, e, "Map"));
@@ -298,18 +300,19 @@ ExprBaseType ExprEvaluator::operator()(AST::SBG v) const
   LIB::PWMap Emap = eval<LIB::PWMap>(*this, v.Emap(), "PWMap");
   LIB::PWMap subE = eval<LIB::PWMap>(*this, v.subE_map(), "PWMap");
 
+  LIB::PWMapAF& pw_fact = impl_ctx_.pwFact();
   if (subE.dom().isEmpty() && !Emap.dom().isEmpty()) {
     unsigned int j = 1;
     for (const LIB::Map &m : Emap) {
       for (const LIB::SetPiece &mdi : m.dom()) {
         LIB::Exp off(LIB::MD_NAT(mdi.arity(), j));
-        subE.emplaceBack(fact_.createMap(fact_.createSet(mdi), off)); 
+        subE.emplaceBack(pw_fact.createMap(pw_fact.createSet(mdi), off)); 
         ++j;
       }
     }
   } 
 
-  return LIB::SBG(fact_, V, Vmap, map1, map2, Emap, subE);
+  return LIB::SBG(pw_fact, V, Vmap, map1, map2, Emap, subE);
 }
 
 ExprBaseType ExprEvaluator::operator()(AST::DSBG v) const
@@ -321,18 +324,19 @@ ExprBaseType ExprEvaluator::operator()(AST::DSBG v) const
   LIB::PWMap Emap = eval<LIB::PWMap>(*this, v.Emap(), "PWMap");
   LIB::PWMap subE = eval<LIB::PWMap>(*this, v.subE_map(), "PWMap");
 
+  LIB::PWMapAF& pw_fact = impl_ctx_.pwFact();
   if (subE.dom().isEmpty() && !Emap.dom().isEmpty()) {
     unsigned int j = 1;
     for (const LIB::Map &m : Emap) {
       for (const LIB::SetPiece &mdi : m.dom()) {
         LIB::Exp off(LIB::MD_NAT(mdi.arity(), j));
-        subE.emplaceBack(fact_.createMap(fact_.createSet(mdi), off)); 
+        subE.emplaceBack(pw_fact.createMap(pw_fact.createSet(mdi), off)); 
         ++j;
       }
     }
   } 
 
-  return LIB::DSBG(fact_, V, Vmap, mapB, mapD, Emap, subE);
+  return LIB::DSBG(pw_fact, V, Vmap, mapB, mapD, Emap, subE);
 }
 
 ExprBaseType ExprEvaluator::operator()(AST::ParenExpr v) const

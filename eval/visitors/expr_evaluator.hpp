@@ -33,7 +33,7 @@ namespace Eval {
 
 struct ExprEvaluator : public boost::static_visitor<ExprBaseType> {
   public:
-  ExprEvaluator(EvalContext&& eval_ctx);
+  ExprEvaluator(ImplContext& impl_ctx, EvalContext& eval_ctx);
 
   ExprBaseType operator()(AST::Natural v) const;
   ExprBaseType operator()(AST::Rational v) const;
@@ -53,7 +53,8 @@ struct ExprEvaluator : public boost::static_visitor<ExprBaseType> {
   ExprBaseType operator()(AST::ParenExpr v) const;
 
   private:
-  EvalContext eval_ctx_;
+  ImplContext& impl_ctx_;
+  EvalContext& eval_ctx_;
 };
 
 } // namespace Eval

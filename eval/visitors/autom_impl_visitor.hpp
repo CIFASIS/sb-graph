@@ -31,18 +31,20 @@
 #include <boost/variant.hpp>
 
 #include "ast/sbg_program.hpp"
+#include "eval/impl_context.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
 struct AutomImplVisitor : public boost::static_visitor<ImplContext> {
-  AutomImplVisitor();
+  public:
+  AutomImplVisitor(ImplContext& impl_ctx);
 
-  ImplContext operator()(AST::Program p) const;
+  ImplContext& operator()(AST::Program p) const;
 
   private:
-  mutable VarEnv venv_;
+  ImplContext& impl_ctx_;
 };
 
 } // namespace Eval

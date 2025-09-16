@@ -28,37 +28,51 @@
 #ifndef SET_IMPL_VISITOR
 #define SET_IMPL_VISITOR
 
+#include <algorithm>
+
 #include <boost/variant.hpp>
 
 #include "ast/sbg_program.hpp"
 #include "eval/impl_context.hpp"
+#include "eval/var_env.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-class SetImplVisitor : public boost::static_visitor<bool> {
+/**
+ * @brief The visitor will return an int value, each one representing a
+ * different implementation. Then, invoking operation getFact will perform the
+ * corresponding transformation to obtain the selected factory.
+ * The mapping is currently as follows:
+ *   - 0: unordered sets.
+ *   - 1: ordered sets.
+ *   - 2: unidimensional ordered sets.
+ */
+class SetImplVisitor : public boost::static_visitor<int> {
   public:
   SetImplVisitor(const VarEnv& venv);
 
-  bool operator()(AST::Natural v) const;
-  bool operator()(AST::Rational v) const;
-  bool operator()(AST::Name v) const;
-  bool operator()(AST::UnaryOp v) const;
-  bool operator()(AST::BinOp v) const;
-  bool operator()(AST::Call v) const;
-  bool operator()(AST::Interval v) const;
-  bool operator()(AST::MultiDimInter v) const;
-  bool operator()(AST::Set v) const;
-  bool operator()(AST::LinearExp v) const;
-  bool operator()(AST::MDLExp v) const;
-  bool operator()(AST::LinearMap v) const;
-  bool operator()(AST::PWLMap v) const;
-  bool operator()(AST::SBG v) const;
-  bool operator()(AST::DSBG v) const;
-  bool operator()(AST::ParenExpr) const;
+  SetFactPtr getFact(const AST::Expr expr) const;
 
   private:
+  int operator()(AST::Natural v) const;
+  int operator()(AST::Rational v) const;
+  int operator()(AST::Name v) const;
+  int operator()(AST::UnaryOp v) const;
+  int operator()(AST::BinOp v) const;
+  int operator()(AST::Call v) const;
+  int operator()(AST::Interval v) const;
+  int operator()(AST::MultiDimInter v) const;
+  int operator()(AST::Set v) const;
+  int operator()(AST::LinearExp v) const;
+  int operator()(AST::MDLExp v) const;
+  int operator()(AST::LinearMap v) const;
+  int operator()(AST::PWLMap v) const;
+  int operator()(AST::SBG v) const;
+  int operator()(AST::DSBG v) const;
+  int operator()(AST::ParenExpr) const;
+
   const VarEnv& venv_;
 };
 

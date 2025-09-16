@@ -24,11 +24,17 @@ namespace SBG {
 
 namespace Eval {
 
-StmEvaluator::StmEvaluator(EvalContext&& eval_ctx) : eval_ctx_(eval_ctx) {}
+StmEvaluator::StmEvaluator(ImplContext& impl_ctx, EvalContext& eval_ctx)
+  : impl_ctx_(impl_ctx), eval_ctx_(eval_ctx) {}
+
+EvalContext& StmEvaluator::evalCtx() const
+{
+  return eval_ctx_;
+}
 
 StmResult StmEvaluator::operator()(AST::Assign assgn) const 
 {
-  ExprEvaluator eval_expr(eval_ctx_);
+  ExprEvaluator eval_expr(impl_ctx_, eval_ctx_);
   ExprBaseType e = boost::apply_visitor(eval_expr, assgn.r());
   eval_ctx_.insertVariable(assgn.l(), e);
 

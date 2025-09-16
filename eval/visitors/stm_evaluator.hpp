@@ -38,15 +38,15 @@ namespace Eval {
 
 struct StmEvaluator : public boost::static_visitor<StmResult> {
   public:
-  StmEvaluator(EvalContext&& eval_ctx);
+  StmEvaluator(ImplContext& impl_ctx, EvalContext& eval_ctx);
 
-  //const EvalContext& eval_ctx();
- 
+  EvalContext& evalCtx() const;
   StmResult operator()(AST::Assign assgn) const;
   StmResult operator()(AST::ConfigDims cfg) const; 
 
   private:
-  EvalContext eval_ctx;
+  ImplContext& impl_ctx_;
+  EvalContext& eval_ctx_;
 };
 
 } // namespace Eval

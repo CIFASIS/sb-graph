@@ -30,7 +30,7 @@ namespace LIB {
 // Minimum Vertex Topological Sort Algorithm -----------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-MinVertexTopoSort::MinVertexTopoSort(const PWMapAF& fact) : TSStrategy(fact) {}
+MinVertexTopoSort::MinVertexTopoSort() {}
 
 Exp calculateExp(const MD_NAT& from, const MD_NAT&  to)
 {
@@ -51,18 +51,18 @@ PWMap MinVertexTopoSort::calculate(const DSBG& dsbg) const
 
   auto begin = std::chrono::high_resolution_clock::now();
   PWMap mapB = dsbg.mapB(), mapD = dsbg.mapD(), Vmap = dsbg.Vmap();
-  PWMap smap = fact_.createPWMap();
+  PWMap smap = PW_FACT.createPWMap();
   Set U = dsbg.V(), Nd = U.difference(mapB.image());
   if (!Nd.isEmpty()) {
     MD_NAT vsucc = Nd.minElem();
-    Set SV = fact_.createSet(), E = dsbg.E();
+    Set SV = SET_FACT.createSet(), E = dsbg.E();
     do {
-      Set vsucc_set = fact_.createSet(SetPiece(vsucc));
+      Set vsucc_set = SET_FACT.createSet(SetPiece(vsucc));
       Set Nd_vsucc = Nd.intersection(Vmap.preImage(Vmap.image(vsucc_set)));
       MD_NAT v = Nd.minElem();
       if (!Nd_vsucc.isEmpty())
         v = Nd_vsucc.minElem();
-      Set d = fact_.createSet(v);
+      Set d = SET_FACT.createSet(v);
       Exp e = calculateExp(v, vsucc);
       vsucc = v;
 
@@ -77,7 +77,7 @@ PWMap MinVertexTopoSort::calculate(const DSBG& dsbg) const
           }
         }
       }
-      smap.emplaceBack(fact_.createMap(d, e));
+      smap.emplaceBack(MAP_FACT.createMap(d, e));
       
       Set Nsucc = U.difference(smap.dom());
       Set S = smap.dom().difference(smap.preImage(Nsucc));

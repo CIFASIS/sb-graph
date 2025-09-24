@@ -45,8 +45,6 @@ namespace LIB {
 template<class PathsImpl>
 class PathsContext {
   public:
-  PathsContext(PathsImpl impl) : impl_(impl) {}
-
   /**
    * @brief For every vertex of `dsbg` calculates a path starting from itself
    * up to a vertex in `endings`.
@@ -55,11 +53,11 @@ class PathsContext {
    */
   inline PWMap calculate(const DSBG& dsbg, const Set& endings)
   {
-    return impl_.calculate(dsbg, endings);
+    return static_cast<PathsImpl*>(this)->calculate(dsbg, endings);
   }
 
   protected:
-  PathsImpl impl_;
+  PathsContext() = default;
 };
 
 } // namespace LIB

@@ -67,12 +67,9 @@ class MatchStrategy {
   public:
   virtual ~MatchStrategy() = default;
 
-  MatchStrategy(const PWMapAF& fact);
+  MatchStrategy();
 
   virtual MatchData calculate(const SBG& sbg) = 0;
-
-  protected:
-  const PWMapAF& fact_;
 };
 
 

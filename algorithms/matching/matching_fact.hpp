@@ -35,14 +35,35 @@ class MatchingFact {
   virtual ~MatchingFact() = default;
   MatchingFact() = default;
 
-  virtual Matching createMatchAlgorithm(const PWMapAF& fact) const = 0;
+  virtual Matching createMatchAlgorithm() const = 0;
 };
 
 class BFSMatchingFact : public MatchingFact {
   public:
   BFSMatchingFact() = default;
 
-  Matching createMatchAlgorithm(const PWMapAF& fact) const override;
+  Matching createMatchAlgorithm() const override;
+};
+
+/**
+ * @brief Single instance of match factory to be used by clients in need of
+ * creating an instance of a matching algorithm. A client includes this file and
+ * calls MATCH_FACT.createMatchAlgorithm(args).
+ */
+class MatchFactory {
+  public:
+  ~MatchFactory() = default;
+  static MatchFactory& instance() {
+    static MatchFactory instance_;
+    return instance_;
+  }
+
+  MatchingFact& getMatchFactory();
+  void setMatchFactory(std::unique_ptr<MatchingFact> match_fact);
+
+  private:
+  MatchFactory();
+  std::unique_ptr<MatchingFact> match_fact_;
 };
 
 } // namespace LIB

@@ -38,8 +38,9 @@ namespace LIB {
 /**
  * @brief In each step takes out the vertex of maximum degree.
  */
-struct MaxDegCutVertex : public CVStrategy {
-  MaxDegCutVertex(const PWMapAF& pw_fact, const SCCFact& scc_fact);
+class MaxDegCutVertex : public CVStrategy {
+  public:
+  MaxDegCutVertex();
 
   Set calculate(const DSBG& dsbg) const override;
 

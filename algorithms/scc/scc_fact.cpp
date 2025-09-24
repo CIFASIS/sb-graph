@@ -28,9 +28,25 @@ namespace LIB {
 // Minimum Reachable SCC AF ----------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-SCC MinReachSCCFact::createSCCAlgorithm(const PWMapAF &fact) const
+SCC MinReachSCCFact::createSCCAlgorithm() const
 {
-  return SCC(std::make_unique<MinReachSCC>(fact));
+  return SCC(std::make_unique<MinReachSCC>());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Factory for clients --------------------------------------------------------- 
+////////////////////////////////////////////////////////////////////////////////
+
+SCCFactory::SCCFactory() : scc_fact_(std::make_unique<MinReachSCCFact>()) {}
+
+SCCFact& SCCFactory::getSCCFactory()
+{
+  return *scc_fact_;
+}
+
+void SCCFactory::setSCCFactory(std::unique_ptr<SCCFact> scc_fact)
+{
+  scc_fact_ = std::move(scc_fact);
 }
 
 } // namespace LIB

@@ -20,7 +20,7 @@
 #include <chrono>
 
 #include "algorithms/scc/minreach_scc.hpp"
-#include "algorithms/scc/mrv.hpp"
+#include "algorithms/scc/minadj_mrv.hpp"
 #include "util/logger.hpp"
 
 namespace SBG {
@@ -31,8 +31,7 @@ namespace LIB {
 // Minimum Reachable SCC Algorithm ---------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-MinReachSCC::MinReachSCC(const PWMapAF& fact)
-  : SCCStrategy(fact), dsbg_(DSBG(fact)), E_(fact_.createSet()) {}
+MinReachSCC::MinReachSCC() : dsbg_(), E_(SET_FACT.createSet()) {}
 
 void MinReachSCC::swapEdgesDirection(const Set& E)
 {
@@ -46,7 +45,7 @@ void MinReachSCC::swapEdgesDirection(const Set& E)
   PWMap Emap = dsbg_.Emap().restrict(E);
   PWMap subEmap = dsbg_.subEmap().restrict(E);
 
-  dsbg_ = DSBG(fact_, dsbg_.V().compact(), dsbg_.Vmap().compact()
+  dsbg_ = DSBG(dsbg_.V().compact(), dsbg_.Vmap().compact()
     , mapB.compact(), mapD.compact(), Emap.compact(), subEmap.compact());
 
   return;
@@ -55,7 +54,7 @@ void MinReachSCC::swapEdgesDirection(const Set& E)
 PWMap MinReachSCC::sccStep()
 {
   // Calculate MRV
-  MinAdjMRV mrv(fact_);
+  MinAdjMRV mrv;
   PWMap new_rmap = mrv.calculate(dsbg_);
   Util::DEBUG_LOG << "MinReachSCC new_rmap: " << new_rmap << "\n";
 
@@ -88,14 +87,14 @@ SCCData MinReachSCC::calculate(const DSBG& dsbg)
   init(dsbg);
 
   auto begin = std::chrono::high_resolution_clock::now();
-  PWMap rmap = fact_.createPWMap();
-  Set Ediff = fact_.createSet();
+  PWMap rmap = PW_FACT.createPWMap();
+  Set Ediff = SET_FACT.createSet();
   Set oldE = dsbg.E();
   do {
     oldE = dsbg_.E();
     rmap = sccStep();
     Ediff = oldE.difference(dsbg_.E());
-  } while (Ediff != fact_.createSet());
+  } while (Ediff != SET_FACT.createSet());
   rmap = rmap.compact();
   auto end = std::chrono::high_resolution_clock::now();
 

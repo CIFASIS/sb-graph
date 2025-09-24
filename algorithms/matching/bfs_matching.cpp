@@ -20,7 +20,6 @@
 #include <chrono>
 
 #include "algorithms/matching/bfs_matching.hpp"
-#include "algorithms/matching/bfs_paths.hpp"
 #include "util/logger.hpp"
 
 namespace SBG {
@@ -38,9 +37,8 @@ bool BFSMatching::ExitCondition::full_match() { return full_match_; }
 
 bool BFSMatching::ExitCondition::found_paths() { return found_paths_; }
 
-BFSMatching::BFSMatching(const PWMapAF& fact)
-  : MatchStrategy(fact), M_(fact.createSet()), dsbg_(DSBG(fact))
-    , direction_(Direction::kForward) {}
+BFSMatching::BFSMatching() : M_(SET_FACT.createSet()), dsbg_()
+  , direction_(Direction::kForward) {}
 
 void BFSMatching::swapEdgesDirection(const Set& E)
 {
@@ -51,7 +49,7 @@ void BFSMatching::swapEdgesDirection(const Set& E)
   mapB = mapD.restrict(E).combine(mapB);
   mapD = temp_mapB.restrict(E).combine(mapD);
 
-  dsbg_ = DSBG(fact_, dsbg_.V().compact(), dsbg_.Vmap().compact()
+  dsbg_ = DSBG(dsbg_.V().compact(), dsbg_.Vmap().compact()
     , mapB.compact(), mapD.compact(), dsbg_.Emap().compact()
     , dsbg_.subEmap().compact());
 
@@ -60,17 +58,17 @@ void BFSMatching::swapEdgesDirection(const Set& E)
 
 PWMap BFSMatching::partitionSubsetEdges() const
 {
-  PWMap result = fact_.createPWMap();
+  PWMap result = PW_FACT.createPWMap();
   Set free_edges = dsbg_.E().difference(M_);
   unsigned int dims = free_edges.arity();
   unsigned int j = 1;
   for (const Map& subset_edge : dsbg_.subEmap()) {
     Set dom = subset_edge.dom();
     Exp matched_exp(MD_NAT(dims, j));
-    Map matched_map = fact_.createMap(M_.intersection(dom), matched_exp);
+    Map matched_map = MAP_FACT.createMap(M_.intersection(dom), matched_exp);
     ++j;
     Exp free_exp(MD_NAT(dims, j));
-    Map free_map = fact_.createMap(free_edges.intersection(dom), free_exp);
+    Map free_map = MAP_FACT.createMap(free_edges.intersection(dom), free_exp);
     ++j;
 
     result.emplaceBack(matched_map);
@@ -116,9 +114,8 @@ Set BFSMatching::directedStep(const Set& E, const Set& right_vertices)
     = forward_vertices.difference(matched_forward_vertices);
 
   // Detect paths leading to unmatched_forward_vertices
-  Paths paths(fact_);
-  DSBG restricted_dsbg(fact_, dsbg_.V(), dsbg_.Vmap(), mapB, mapD
-    , Emap, subEmap);
+  DSBG restricted_dsbg(dsbg_.V(), dsbg_.Vmap(), mapB, mapD, Emap, subEmap);
+  BFSPaths paths;
   PWMap smap = paths.calculate(restricted_dsbg, unmatched_forward_vertices);
 
   // Keep edges
@@ -172,7 +169,7 @@ bool BFSMatching::ExitCondition::isSatisfied()
 
 void BFSMatching::init(const SBG& sbg)
 {
-  dsbg_ = DSBG(sbg.fact(), sbg.V().compact(), sbg.Vmap().compact(), sbg.map2()
+  dsbg_ = DSBG(sbg.V().compact(), sbg.Vmap().compact(), sbg.map2()
     , sbg.map1().compact(), sbg.Emap().compact(), sbg.subEmap().compact());
 
   return;

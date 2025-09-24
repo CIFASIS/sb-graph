@@ -34,27 +34,24 @@ namespace LIB {
 // Topological Sort Algorithm Abstract Strategy --------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct TSStrategy;
+class TSStrategy;
 
 typedef std::unique_ptr<TSStrategy> TSStratPtr;
 
-struct TSStrategy {
+class TSStrategy {
   public:
   virtual ~TSStrategy() = default;
 
-  TSStrategy(const PWMapAF& fact);
+  TSStrategy();
 
   virtual PWMap calculate(const DSBG& dsbg) const = 0;
-
-  protected:
-  const PWMapAF& fact_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 // Topological Sort Algorithm Interface (context) ------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct TopoSort {
+class TopoSort {
   private:
   TSStratPtr strategy_;
 

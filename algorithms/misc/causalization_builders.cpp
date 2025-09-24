@@ -20,25 +20,25 @@
 #include <chrono>
 
 #include "algorithms/misc/causalization_builders.hpp"
+#include "sbg/af_pwmap.hpp"
 #include "util/logger.hpp"
 
 namespace MISC {
 
 SBG::LIB::DSBG buildSCCFromMatching(const SBG::LIB::MatchData &data)
 {
-
   auto start = std::chrono::high_resolution_clock::now();
 
   const SBG::LIB::SBG &sbg = data.sbg();
-  const SBG::LIB::PWMapAF &fact = sbg.fact();
   SBG::LIB::Set M = data.M();
   SBG::LIB::Set free_edges = sbg.E().difference(M);
 
   SBG::LIB::Set V = M.compact();
   SBG::LIB::PWMap auxVmap = data.sbg().subEmap().restrict(M);
-  SBG::LIB::PWMap Vmap = fact.createPWMap();
+  SBG::LIB::PWMap Vmap = SBG::LIB::PW_FACT.createPWMap();
   for (const SBG::LIB::Map &map : auxVmap) 
-    Vmap.emplaceBack(fact.createMap(map.dom().compact(), map.exp()));
+    Vmap.emplaceBack(SBG::LIB::MAP_FACT.createMap(map.dom().compact()
+      , map.exp()));
 
   SBG::LIB::PWMap mapF = sbg.map1();
   SBG::LIB::PWMap mapU = sbg.map2();
@@ -55,7 +55,7 @@ SBG::LIB::DSBG buildSCCFromMatching(const SBG::LIB::MatchData &data)
   SBG::LIB::PWMap Emap = sbg.Emap().restrict(free_edges);
   SBG::LIB::PWMap subEmap = sbg.subEmap().restrict(free_edges);
 
-  SBG::LIB::DSBG res(fact, V, Vmap, mapB, mapD, Emap, subEmap);
+  SBG::LIB::DSBG res(V, Vmap, mapB, mapD, Emap, subEmap);
   auto end = std::chrono::high_resolution_clock::now();
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(
     end - start 
@@ -87,7 +87,7 @@ SBG::LIB::DSBG buildSortFromSCC(const SBG::LIB::SCCData &data)
   SBG::LIB::PWMap Emap = dsbg.Emap().restrict(Ediff);
   SBG::LIB::PWMap subEmap = dsbg.subEmap().restrict(Ediff);
 
-  SBG::LIB::DSBG res(dsbg.fact(), V, Vmap, mapB, mapD, Emap, subEmap);
+  SBG::LIB::DSBG res(V, Vmap, mapB, mapD, Emap, subEmap);
   auto end = std::chrono::high_resolution_clock::now();
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(
     end - start 

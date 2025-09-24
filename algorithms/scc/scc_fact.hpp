@@ -30,19 +30,42 @@ namespace SBG {
 
 namespace LIB {
 
-struct SCCFact {
+#define SCC_FACT SCCFactory::instance().getSCCFactory()
+
+class SCCFact {
   public:
   virtual ~SCCFact() = default;
   SCCFact() = default;
 
-  virtual SCC createSCCAlgorithm(const PWMapAF &fact) const = 0;
+  virtual SCC createSCCAlgorithm() const = 0;
 };
 
-struct MinReachSCCFact : public SCCFact {
+class MinReachSCCFact : public SCCFact {
   public:
   MinReachSCCFact() = default;
 
-  SCC createSCCAlgorithm(const PWMapAF &fact) const override;
+  SCC createSCCAlgorithm() const override;
+};
+
+/**
+ * @brief Single instance of scc factory to be used by clients in need of
+ * creating an instance of a scc algorithm. A client includes this file and
+ * calls SCC_FACT.createSCCAlgorithm(args).
+ */
+class SCCFactory {
+  public:
+  ~SCCFactory() = default;
+  static SCCFactory& instance() {
+    static SCCFactory instance_;
+    return instance_;
+  }
+
+  SCCFact& getSCCFactory();
+  void setSCCFactory(std::unique_ptr<SCCFact> scc_fact);
+
+  private:
+  SCCFactory();
+  std::unique_ptr<SCCFact> scc_fact_;
 };
 
 } // namespace LIB

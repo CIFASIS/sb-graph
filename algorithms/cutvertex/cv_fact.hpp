@@ -30,21 +30,42 @@ namespace SBG {
 
 namespace LIB {
 
-struct CVFact {
+#define CV_FACT CVFactory::instance().getCVFactory()
+
+class CVFact {
   public:
   virtual ~CVFact() = default;
   CVFact() = default;
 
-  virtual CutVertex createCVAlgorithm(const PWMapAF &pw_fact
-    , const SCCFact &scc_fact) const = 0;
+  virtual CutVertex createCVAlgorithm() const = 0;
 };
 
-struct MaxDegCVFact : public CVFact {
+class MaxDegCVFact : public CVFact {
   public:
   MaxDegCVFact() = default;
 
-  CutVertex createCVAlgorithm(const PWMapAF &pw_fact, const SCCFact &scc_fact)
-    const override;
+  CutVertex createCVAlgorithm() const override;
+};
+
+/**
+ * @brief Single instance of cv factory to be used by clients in need of
+ * creating an instance of a cv algorithm. A client includes this file and
+ * calls CV_FACT.createCVAlgorithm(args).
+ */
+class CVFactory {
+  public:
+  ~CVFactory() = default;
+  static CVFactory& instance() {
+    static CVFactory instance_;
+    return instance_;
+  }
+
+  CVFact& getCVFactory();
+  void setCVFactory(std::unique_ptr<CVFact> cv_fact);
+
+  private:
+  CVFactory();
+  std::unique_ptr<CVFact> cv_fact_;
 };
 
 } // namespace LIB

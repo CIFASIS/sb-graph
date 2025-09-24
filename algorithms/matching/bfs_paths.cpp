@@ -28,8 +28,6 @@ namespace LIB {
 // Path Finder BFS Implementation ----------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-BFSPaths::BFSPaths(const PWMapAF& fact) : fact_(fact) {}
-
 PWMap BFSPaths::calculate(const DSBG& dsbg, const Set& endings)
 {
   Set dsbgV = dsbg.V();
@@ -38,14 +36,14 @@ PWMap BFSPaths::calculate(const DSBG& dsbg, const Set& endings)
   PWMap subEmap = dsbg.subEmap();
 
   // Unmatched vertices in forward direction
-  PWMap res = fact_.createPWMap(endings);
+  PWMap res = PW_FACT.createPWMap(endings);
 
   // A record of allowed edges to keep out cycle edges
   Set allowed_edges = dsbg.E();
   // Ingoing edges to vertices that reach unmatched_D
   Set ingoing = dsbgD.preImage(endings); 
   // A record of visited set-edges
-  Set visitedE = fact_.createSet();
+  Set visitedE = SET_FACT.createSet();
   do {
     // Calculate successor for ith vertices
     PWMap ingB = dsbgB.restrict(ingoing), ingD = dsbgD.restrict(ingoing);

@@ -24,6 +24,7 @@
 #ifndef SBG_BFS_MATCH_HPP
 #define SBG_BFS_MATCH_HPP
 
+#include "algorithms/matching/bfs_paths.cpp"
 #include "algorithms/matching/matching.hpp"
 
 namespace SBG {
@@ -42,12 +43,12 @@ namespace LIB {
  * resulting DSBG.
  * In each iteration augmenting paths are detected, and the direction of edges
  * in such paths are swapped.
- * The algorithms stops once a full match is calculate (i.e. one that saturates
+ * The algorithms stops once a full match is calculated (i.e. one that saturates
  * all right vertices), or when no more augmenting paths are found.
  */
 class BFSMatching : public MatchStrategy {
   public:
-  BFSMatching(const PWMapAF& fact);
+  BFSMatching();
 
   MatchData calculate(const SBG& sbg) override;
 

@@ -1,9 +1,4 @@
-/** @file min_vertex_ts.hpp
-
- @brief <b>Concrete SBG Minimum Vertex Topological Sort Algorithm
- implementation</b>
-
- <hr>
+/*******************************************************************************
 
  This file is part of Set--Based Graph Library.
 
@@ -22,31 +17,12 @@
 
  ******************************************************************************/
 
-#ifndef SBG_MIN_VERTEX_TS_HPP
-#define SBG_MIN_VERTEX_TS_HPP
-
-#include "algorithms/toposort/topo_sort.hpp"
+#include "sbg/sbg_factory.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
-////////////////////////////////////////////////////////////////////////////////
-// Minimum Vertex Topological Sort Algorithm Implementation (concrete strategy)
-////////////////////////////////////////////////////////////////////////////////
-
-/**
- * @brief In each step takes out the minimum vertex without dependencies.
- */
-class MinVertexTopoSort : public TSStrategy {
-  public:
-  MinVertexTopoSort();
-
-  PWMap calculate(const DSBG& dsbg) const override; 
-};
-
 } // namespace LIB
 
 } // namespace SBG
-
-#endif

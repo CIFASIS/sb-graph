@@ -31,9 +31,7 @@ namespace LIB {
 // Maximum Degree Vertex Cut Set Algorithm -------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-MaxDegCutVertex::MaxDegCutVertex(const PWMapAF& pw_fact
-  , const SCCFact& scc_fact)
-  : CVStrategy(pw_fact, scc_fact) {}
+MaxDegCutVertex::MaxDegCutVertex() {}
 
 PWMap MaxDegCutVertex::getDegMap(const DSBG& dsbg) const
 {
@@ -42,7 +40,7 @@ PWMap MaxDegCutVertex::getDegMap(const DSBG& dsbg) const
 
   auto dims = V.arity();
   MD_NAT zero(dims, 0), one(dims, 1);
-  PWMap dmap = pw_fact_.createPWMap(pw_fact_.createMap(V, Exp(zero))); 
+  PWMap dmap = PW_FACT.createPWMap(MAP_FACT.createMap(V, Exp(zero))); 
 
   for (const Map& SE : dsbg.subEmap()) {
     Set dom = SE.dom();
@@ -75,8 +73,8 @@ Set MaxDegCutVertex::calculate(const DSBG& dsbg) const
 
   DSBG dg = dsbg;
   PWMap Vmap = dg.Vmap(), mapB = dg.mapB(), mapD = dg.mapD();
-  PWMap rmap = scc_fact_.createSCCAlgorithm(pw_fact_).calculate(dg).rmap();
-  Set newD = pw_fact_.createSet(), oldD = newD, visitedV = newD, V = dg.V();
+  PWMap rmap = SCC_FACT.createSCCAlgorithm().calculate(dg).rmap();
+  Set newD = SET_FACT.createSet(), oldD = newD, visitedV = newD, V = dg.V();
 
   Util::DEBUG_LOG << "initial dg vertex cut set:\n" << dg << "\n";
 
@@ -88,9 +86,9 @@ Set MaxDegCutVertex::calculate(const DSBG& dsbg) const
     oldD = newD;
  
     MD_NAT aux = dmap.image().maxElem();
-    MD_NAT vmax = dmap.preImage(pw_fact_.createSet(aux)).minElem();
-    Set vmaxSV = Vmap.image(pw_fact_.createSet(vmax));
-    newD = newD.cup(pw_fact_.createSet(vmax));
+    MD_NAT vmax = dmap.preImage(SET_FACT.createSet(aux)).minElem();
+    Set vmaxSV = Vmap.image(SET_FACT.createSet(vmax));
+    newD = newD.cup(SET_FACT.createSet(vmax));
 
     if (!visitedV.intersection(vmaxSV).isEmpty()) {
       MD_NAT vmaxD = newD.intersection(Vmap.preImage(vmaxSV)).minElem();
@@ -111,7 +109,7 @@ Set MaxDegCutVertex::calculate(const DSBG& dsbg) const
       Util::DEBUG_LOG << "vmaxD: " << vmaxD << "\n"; 
       Util::DEBUG_LOG << "mdi: " << mdi << "\n\n";
 
-      Set mdi_set = pw_fact_.createSet(mdi);
+      Set mdi_set = SET_FACT.createSet(mdi);
       newD = newD.cup(mdi_set.intersection(Vmap.preImage(vmaxSV)));
     }
 
@@ -126,7 +124,7 @@ Set MaxDegCutVertex::calculate(const DSBG& dsbg) const
     dmap = getDegMap(dg);
 
     // Resulting SCC from induced graph
-    rmap = scc_fact_.createSCCAlgorithm(pw_fact_).calculate(dg).rmap();
+    rmap = SCC_FACT.createSCCAlgorithm().calculate(dg).rmap();
 
     Util::DEBUG_LOG << "oldD: " << oldD << "\n";
     Util::DEBUG_LOG << "newD: " << newD << "\n";

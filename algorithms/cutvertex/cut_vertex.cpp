@@ -31,8 +31,7 @@ namespace LIB {
 // Vertex Cut Set Algorithm Abstract Strategy Constructors ---------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-CVStrategy::CVStrategy(const PWMapAF& pw_fact, const SCCFact& scc_fact)
-  : pw_fact_(pw_fact), scc_fact_(scc_fact) {}
+CVStrategy::CVStrategy() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Vertex Cut Set Algorithm Interface ------------------------------------------ 

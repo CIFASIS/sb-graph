@@ -30,23 +30,38 @@ namespace SBG {
 
 namespace LIB {
 
-struct MapAF : public SetAF {
-  private:
-  const SetAF &set_fact_;
+#define MAP_FACT MapFactory::instance().getMapFactory() 
 
+struct MapAF {
   public:
-  MapAF(const SetAF &set_fact);
-
-  Set createSet() const override;
-  Set createSet(const MD_NAT &x) const override;
-  Set createSet(const Interval &i) const override;
-  Set createSet(const SetPiece &mdi) const override;
+  MapAF();
 
   Map createMap() const;
   Map createMap(MD_NAT x, Exp exp) const;
   Map createMap(Interval i, LExp le) const;
   Map createMap(SetPiece mdi, Exp exp) const;
   Map createMap(Set s, Exp exp) const;
+};
+
+/**
+ * @brief Single instance of set factory to be used by clients in need of
+ * creating mapss. A client includes this file and calls
+ * MAP_FACT.createMap(args).
+ */
+class MapFactory {
+  public:
+  ~MapFactory() = default;
+  static MapFactory& instance() {
+    static MapFactory instance_;
+    return instance_;
+  }
+
+  MapAF& getMapFactory();
+  void setMapFactory(std::unique_ptr<MapAF> map_fact);
+
+  private:
+  MapFactory();
+  std::unique_ptr<MapAF> map_fact_;
 };
 
 } // namespace LIB

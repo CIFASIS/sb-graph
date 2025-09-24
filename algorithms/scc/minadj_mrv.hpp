@@ -1,6 +1,6 @@
 /** @file mrv.hpp
 
- @brief <b>SBG Minimum Reachable Vertex (MRV) Algorithm</b>
+ @brief <b>Concrete SBG MRV Algorithm</b>
 
  @see scc.hpp and scc.cpp files to comprehend its purpose.
 
@@ -23,10 +23,10 @@
 
  ******************************************************************************/
 
-#ifndef SBG_MRV_HPP
-#define SBG_MRV_HPP
+#ifndef SBG_MINADJ_MRV_HPP
+#define SBG_MINADJ_MRV_HPP
 
-#include "sbg/sbg.hpp"
+#include "algorithms/scc/mrv.hpp"
 
 namespace SBG {
 
@@ -37,25 +37,39 @@ namespace LIB {
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * @brief Compile time configurable algorithm to calculate the MRV.
- *
- * @tparam MRVImp Concrete strategy to apply. Must provide an
- * `impl(const DSBG& dsbg)` method.
+ * @brief Minimum Adjacent implementation to calculate MRV.
  */
-template<class MRVImpl>
-class MRVContext {
+class MinAdjMRV : public MRVContext<MinAdjMRV> {
   public:
+  MinAdjMRV();
+ 
   /**
-   * @brief For every vertex of `dsbg` calculates its minimum reachable vertex.
-   * @return The resulting pw is such that if pw(x) = y then MRV(x) = y.
+   * @brief Concrete implementation that starts with the identity pw for every
+   * vertex. Then, for every vertex it compares the current MRV with the MRVs
+   * of their adjacent reachable vertices.
+   * It also handles recursive paths (i.e. paths that have a length depending
+   * on the size of the intervals that define the DSBG).
    */
-  inline PWMap calculate(const DSBG& dsbg)
-  {
-    return static_cast<MRVImpl*>(this)->calculate(dsbg);
-  }
+  PWMap calculate(const DSBG& dsbg);
 
-  protected:
-  MRVContext() = default;
+  private:
+  /**
+   * @brief Given the current state of rmap_, returns the set of edges (u, v)
+   * such that rmap_(u) > rmap_(v), which are edges leading to a new
+   * minimum MRV.
+   */
+  Set decreasingRepresentative(const PWMap& rmap) const;
+
+  Set edgesInPaths(const PWMap& smap) const;
+
+  /*
+   * @brief Calculates the MRV for recursive paths.
+   */
+  PWMap recursivePaths(const Set& paths_edges, const Set& outgoing);
+
+  DSBG dsbg_;
+  PWMap smap_;
+  Set visitedSE_;
 };
 
 } // namespace LIB

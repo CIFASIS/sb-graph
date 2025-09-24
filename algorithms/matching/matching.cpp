@@ -66,7 +66,7 @@ std::ostream& operator<<(std::ostream& out, const MatchData& data)
 // Matching Algorithm Abstract Strategy Constructors ---------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-MatchStrategy::MatchStrategy(const PWMapAF& fact) : fact_(std::move(fact)) {}
+MatchStrategy::MatchStrategy() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Matching Algorithm Interface ------------------------------------------------ 

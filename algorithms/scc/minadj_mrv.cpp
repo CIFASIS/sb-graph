@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "algorithms/scc/mrv.hpp"
+#include "algorithms/scc/minadj_mrv.hpp"
 #include "util/logger.hpp"
 
 namespace SBG {
@@ -25,28 +25,15 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// MRV Algorithm ---------------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-template<class MRVImpl>
-MRV<MRVImpl>::MRV(const PWMapAF& fact) : fact_(fact) {}
-
-template<class MRVImpl>
-PWMap MRV<MRVImpl>::calculate(const DSBG& dsbg)
-{
-  return static_cast<MRVImpl*>(this)->impl(dsbg);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // Minimum Adjacent MRV Implementation -----------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-MinAdjMRV::MinAdjMRV(const PWMapAF& fact) : MRV<MinAdjMRV>(fact)
-  , dsbg_(fact), smap_(fact_.createPWMap()), visitedSE_(fact.createSet()) {}
+MinAdjMRV::MinAdjMRV() : dsbg_(), smap_(PW_FACT.createPWMap())
+  , visitedSE_(SET_FACT.createSet()) {}
 
 Set MinAdjMRV::decreasingRepresentative(const PWMap& rmap) const
 {
-  Set result = fact_.createSet();
+  Set result = SET_FACT.createSet();
 
   PWMap mapB = dsbg_.mapB();
   PWMap mapD = dsbg_.mapD();
@@ -61,13 +48,13 @@ Set MinAdjMRV::decreasingRepresentative(const PWMap& rmap) const
   PWMap offD = rmapD.offsetImage(MD_NAT(dims, 1)); 
   PWMap subt = (offD - rmapB);
   SetPiece im(dims, Interval(0, 1, Inf));
-  Set min_in_mapD = fact_.createSet();
+  Set min_in_mapD = SET_FACT.createSet();
   for (unsigned int k = 0; k < dims; ++k) {
     im[k] = Interval(0, 1, 0);
     if (k > 0)
       im[k-1] = Interval(1, 1, 1);
 
-    Set kth = subt.preImage(fact_.createSet(im));
+    Set kth = subt.preImage(SET_FACT.createSet(im));
     min_in_mapD = min_in_mapD.disjointCup(kth);
   }
 
@@ -94,7 +81,7 @@ Set MinAdjMRV::edgesInPaths(const PWMap& smap) const
 
 PWMap MinAdjMRV::recursivePaths(const Set& ith_paths_edges, const Set& outgoing)
 {
-  PWMap result = fact_.createPWMap();
+  PWMap result = PW_FACT.createPWMap();
 
   PWMap subEmap = dsbg_.subEmap();
   Set ithSE = subEmap.image(ith_paths_edges);
@@ -105,7 +92,7 @@ PWMap MinAdjMRV::recursivePaths(const Set& ith_paths_edges, const Set& outgoing)
     PWMap mapD = dsbg_.mapD();
 
     Set ith_start = smap_.dom().difference(smap_.image());
-    Set E = fact_.createSet(); 
+    Set E = SET_FACT.createSet(); 
     PWMap subEmap = dsbg_.subEmap();
     bool exit_condition = true;
     do {
@@ -130,7 +117,7 @@ PWMap MinAdjMRV::recursivePaths(const Set& ith_paths_edges, const Set& outgoing)
 }
 
 
-PWMap MinAdjMRV::impl(const DSBG& dsbg)
+PWMap MinAdjMRV::calculate(const DSBG& dsbg)
 {
   std::cout << "MinAdjMRV dsbg:\n" << dsbg << "\n\n";
 
@@ -138,15 +125,15 @@ PWMap MinAdjMRV::impl(const DSBG& dsbg)
   PWMap mapB = dsbg_.mapB();
   PWMap mapD = dsbg_.mapD();
   PWMap subEmap = dsbg_.subEmap();
-  visitedSE_ = fact_.createSet();
+  visitedSE_ = SET_FACT.createSet();
 
-  smap_ = fact_.createPWMap(dsbg.V());
+  smap_ = PW_FACT.createPWMap(dsbg.V());
   PWMap rmap = smap_;
 
   if (!dsbg_.V().isEmpty() && !dsbg_.E().isEmpty()) {
-    PWMap old_rmap = fact_.createPWMap();
-    Set E = fact_.createSet();
-    Set paths_edges = fact_.createSet();
+    PWMap old_rmap = PW_FACT.createPWMap();
+    Set E = SET_FACT.createSet();
+    Set paths_edges = SET_FACT.createSet();
     do {
       old_rmap = rmap;
 
@@ -171,8 +158,6 @@ PWMap MinAdjMRV::impl(const DSBG& dsbg)
 
   return rmap;
 }
-
-template class MRV<MinAdjMRV>;
 
 } // namespace LIB
 

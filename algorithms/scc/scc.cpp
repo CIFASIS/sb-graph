@@ -42,7 +42,7 @@ const Set& SCCData::Ediff() const { return Ediff_; }
 // SCC Algorithm Abstract Strategy Constructors --------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-SCCStrategy::SCCStrategy(const PWMapAF& fact) : fact_(std::move(fact)) {}
+SCCStrategy::SCCStrategy() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // SCC Algorithm Interface -----------------------------------------------------

@@ -35,15 +35,15 @@ member_imp(SBG, PWMap, map2);
 member_imp(SBG, PWMap, Emap);
 member_imp(SBG, PWMap, subEmap);
 
-SBG::SBG(const PWMapAF &fact) 
-  : fact_(fact), V_(fact_.createSet()), Vmap_(fact_.createPWMap())
-  , E_(fact_.createSet()), map1_(fact_.createPWMap())
-  , map2_(fact_.createPWMap()), Emap_(fact_.createPWMap())
-  , subEmap_(fact_.createPWMap()) {}
-SBG::SBG(const PWMapAF &fact, const Set &V, const PWMap &Vmap
+SBG::SBG() 
+  : V_(SET_FACT.createSet()), Vmap_(PW_FACT.createPWMap())
+  , E_(SET_FACT.createSet()), map1_(PW_FACT.createPWMap())
+  , map2_(PW_FACT.createPWMap()), Emap_(PW_FACT.createPWMap())
+  , subEmap_(PW_FACT.createPWMap()) {}
+SBG::SBG(const Set &V, const PWMap &Vmap
   , const PWMap &map1, const PWMap &map2
   , const PWMap &Emap, const PWMap &subEmap)
-  : fact_(fact), V_(V), Vmap_(Vmap), E_(map1.dom().intersection(map2.dom()))
+  : V_(V), Vmap_(Vmap), E_(map1.dom().intersection(map2.dom()))
     , map1_(map1), map2_(map2), Emap_(Emap), subEmap_(subEmap) {}
 
 SBG &SBG::operator=(const SBG &other)
@@ -86,22 +86,21 @@ SBG SBG::addSV(const Set &vertices) const
     MD_NAT max = SV.isEmpty() ? MD_NAT(dims, 0) : SV.maxElem();
     for (unsigned int j = 0; j < dims; ++j)
       max[j] = max[j] + 1;
-    Map m = fact_.createMap(vertices, Exp(max));
+    Map m = MAP_FACT.createMap(vertices, Exp(max));
     new_Vmap.emplaceBack(m);
 
-    return SBG(fact_, new_V, new_Vmap, new_map1, new_map2
-      , new_Emap, new_subE);
+    return SBG(new_V, new_Vmap, new_map1, new_map2, new_Emap, new_subE);
   }
 
   else if (!vertices.intersection(V_).isEmpty())
     Util::ERROR("Trying to add existing vertices: ", vertices, " to SBG\n");
 
-  return SBG(fact_);
+  return SBG();
 }
 
 SBG SBG::addSE(const PWMap &pw1, const PWMap &pw2) const
 {
-  Set edges = fact_.createSet(), edges1 = pw1.dom(), edges2 = pw2.dom();
+  Set edges = SET_FACT.createSet(), edges1 = pw1.dom(), edges2 = pw2.dom();
   if (edges1 == edges2) {
     edges = edges1;
     if (!edges.isEmpty() && edges.intersection(E_).isEmpty()) {
@@ -115,21 +114,20 @@ SBG SBG::addSE(const PWMap &pw1, const PWMap &pw2) const
       MD_NAT max = SE.isEmpty() ? MD_NAT(dims, 0) : SE.maxElem();
       for (unsigned int j = 0; j < dims; ++j)
         max[j] = max[j] + 1;
-      Map m = fact_.createMap(edges, max);  
+      Map m = MAP_FACT.createMap(edges, max);  
       new_Emap.emplaceBack(m);
 
       new_map1 = new_map1.concatenation(pw1);
       new_map2 = new_map2.concatenation(pw2);
 
-      return SBG(fact_, new_V, new_Vmap, new_map1, new_map2
-        , new_Emap, new_subE);
+      return SBG(new_V, new_Vmap, new_map1, new_map2, new_Emap, new_subE);
     }
 
     else if (!edges.intersection(E_).isEmpty())
       Util::ERROR("Trying to add existing edges: ", edges, " to SBG\n");
   }
 
-  return SBG(fact_);
+  return SBG();
 }
 
 SBG SBG::copy(unsigned int times) const
@@ -181,11 +179,9 @@ SBG SBG::copy(unsigned int times) const
     }
   }
 
-  SBG res(fact_, new_V, new_Vmap, new_map1, new_map2, new_Emap, new_subE);
+  SBG res(new_V, new_Vmap, new_map1, new_map2, new_Emap, new_subE);
   return res;
 }
-
-const PWMapAF &SBG::fact() const { return fact_; }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Directed SBG ----------------------------------------------------------------
@@ -199,15 +195,15 @@ member_imp(DSBG, PWMap, mapD);
 member_imp(DSBG, PWMap, Emap);
 member_imp(DSBG, PWMap, subEmap);
 
-DSBG::DSBG(const PWMapAF &fact)
-  : fact_(fact), V_(fact_.createSet()), Vmap_(fact_.createPWMap())
-  , E_(fact_.createSet()), mapB_(fact_.createPWMap())
-  , mapD_(fact_.createPWMap()), Emap_(fact_.createPWMap())
-  , subEmap_(fact_.createPWMap()) {}
-DSBG::DSBG(const PWMapAF &fact, const Set &V, const PWMap &Vmap
+DSBG::DSBG()
+  : V_(SET_FACT.createSet()), Vmap_(PW_FACT.createPWMap())
+  , E_(SET_FACT.createSet()), mapB_(PW_FACT.createPWMap())
+  , mapD_(PW_FACT.createPWMap()), Emap_(PW_FACT.createPWMap())
+  , subEmap_(PW_FACT.createPWMap()) {}
+DSBG::DSBG(const Set &V, const PWMap &Vmap
   , const PWMap &mapB, const PWMap &mapD
   , const PWMap &Emap, const PWMap &subEmap)
-  : fact_(fact), V_(V), Vmap_(Vmap)
+  : V_(V), Vmap_(Vmap)
     , E_(mapB.dom().intersection(mapD.dom()))
     , mapB_(mapB), mapD_(mapD), Emap_(Emap), subEmap_(subEmap) {}
 
@@ -251,22 +247,21 @@ DSBG DSBG::addSV(const Set &vertices) const
     MD_NAT max = SV.isEmpty() ? MD_NAT(dims, 0) : SV.maxElem();
     for (unsigned int j = 0; j < dims; ++j)
       max[j] = max[j] + 1;
-    Map m = fact_.createMap(vertices, Exp(max));
+    Map m = MAP_FACT.createMap(vertices, Exp(max));
     new_Vmap.emplaceBack(m);
 
-    return DSBG(fact_, new_V, new_Vmap, new_mapB, new_mapD
-      , new_Emap, new_subE);
+    return DSBG(new_V, new_Vmap, new_mapB, new_mapD, new_Emap, new_subE);
   }
 
   else if (!vertices.intersection(V_).isEmpty())
     Util::ERROR("Trying to add existing vertices: ", vertices, " to DSBG\n");
 
-  return DSBG(fact_);
+  return DSBG();
 }
 
 DSBG DSBG::addSE(const PWMap &pw1, const PWMap &pw2) const
 {
-  Set edges = fact_.createSet(), edges1 = pw1.dom(), edges2 = pw2.dom();
+  Set edges = SET_FACT.createSet(), edges1 = pw1.dom(), edges2 = pw2.dom();
   if (edges1 == edges2) {
     edges = edges1;
     if (!edges.isEmpty() && edges.intersection(E_).isEmpty()) {
@@ -280,21 +275,20 @@ DSBG DSBG::addSE(const PWMap &pw1, const PWMap &pw2) const
       MD_NAT max = SE.isEmpty() ? MD_NAT(dims, 0) : SE.maxElem();
       for (unsigned int j = 0; j < dims; ++j)
         max[j] = max[j] + 1;
-      Map m = fact_.createMap(edges, max);
+      Map m = MAP_FACT.createMap(edges, max);
       new_Emap.emplaceBack(m);
 
       new_mapB = new_mapB.concatenation(pw1);
       new_mapD = new_mapD.concatenation(pw2);
    
-      return DSBG(fact_, new_V, new_Vmap, new_mapB, new_mapD
-        , new_Emap, new_subE);
+      return DSBG(new_V, new_Vmap, new_mapB, new_mapD, new_Emap, new_subE);
     }
 
     else if (!edges.intersection(E_).isEmpty())
       Util::ERROR("Trying to add existing edges: ", edges, " to DSBG\n");
   }
 
-  return DSBG(fact_);
+  return DSBG();
 }
 
 DSBG DSBG::eraseVertices(const Set &vs) const
@@ -309,11 +303,8 @@ DSBG DSBG::eraseVertices(const Set &vs) const
   PWMap new_Emap = Emap_.restrict(new_E);
   PWMap new_subE = subEmap_.restrict(new_E);
 
-  return DSBG(fact_, new_V, new_Vmap, new_mapB, new_mapD
-    , new_Emap, new_subE);
+  return DSBG(new_V, new_Vmap, new_mapB, new_mapD, new_Emap, new_subE);
 }
-
-const PWMapAF &DSBG::fact() const { return fact_; }
 
 } // namespace LIB
 

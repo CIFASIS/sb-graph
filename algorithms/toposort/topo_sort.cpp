@@ -30,7 +30,7 @@ namespace LIB {
 // Topological Sort Algorithm Abstract Strategy Constructors -------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-TSStrategy::TSStrategy(const PWMapAF& fact) : fact_(fact) {}
+TSStrategy::TSStrategy() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Topological Sort Algorithm Interface ----------------------------------------

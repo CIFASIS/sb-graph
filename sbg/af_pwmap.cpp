@@ -27,28 +27,43 @@ namespace LIB {
 // PWMap AF --------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-PWMapAF::PWMapAF(const MapAF &map_fact)
-  : MapAF(map_fact), map_fact_(map_fact) {}
+PWMapAF::PWMapAF() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // UnordPWMap AF ---------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-UnordPWMapAF::UnordPWMapAF(const MapAF &map_fact) : PWMapAF(map_fact) {}
+UnordPWMapAF::UnordPWMapAF() {}
 
 PWMap UnordPWMapAF::createPWMap() const
 {
-  return PWMap(std::make_unique<UnordPWMap>(map_fact_));
+  return PWMap(std::make_unique<UnordPWMap>());
 }
 
 PWMap UnordPWMapAF::createPWMap(const Set &s) const
 {
-  return PWMap(std::make_unique<UnordPWMap>(map_fact_, s));
+  return PWMap(std::make_unique<UnordPWMap>(s));
 }
 
 PWMap UnordPWMapAF::createPWMap(const Map &m) const
 {
-  return PWMap(std::make_unique<UnordPWMap>(map_fact_, m));
+  return PWMap(std::make_unique<UnordPWMap>(m));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Factory for clients --------------------------------------------------------- 
+////////////////////////////////////////////////////////////////////////////////
+
+PWFactory::PWFactory() : pw_fact_(std::make_unique<UnordPWMapAF>()) {}
+
+PWMapAF& PWFactory::getPWFactory()
+{
+  return *pw_fact_;
+}
+
+void PWFactory::setPWFactory(std::unique_ptr<PWMapAF> pw_fact)
+{
+  pw_fact_ = std::move(pw_fact);
 }
 
 } // namespace LIB

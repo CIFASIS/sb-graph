@@ -39,10 +39,8 @@ namespace LIB {
 /**
  * @brief Backward BFS implementation to calculate paths.
  */
-class BFSPaths {
+class BFSPaths : public PathsContext<BFSPaths> {
   public:
-  BFSPaths(const PWMapAF& fact);
-
   /**
    * @brief Concrete implementation that starts with the identity pw for
    * vertices belonging to `endings`. In each step adds adjacent vertices to
@@ -51,12 +49,7 @@ class BFSPaths {
    * Set-Vertex.
    */
   PWMap calculate(const DSBG& dsbg, const Set& endings);
-
-  private:
-  const PWMapAF& fact_;
 };
-
-using Paths = PathsContext<BFSPaths>;
 
 } // namespace LIB
 

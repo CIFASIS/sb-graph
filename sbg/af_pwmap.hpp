@@ -33,13 +33,12 @@ namespace SBG {
 
 namespace LIB {
 
-struct PWMapAF : public MapAF {
-  protected:
-  const MapAF &map_fact_;
+#define PW_FACT PWFactory::instance().getPWFactory()
 
+struct PWMapAF {
   public:
   virtual ~PWMapAF() = default;
-  PWMapAF(const MapAF &map_fact);
+  PWMapAF();
 
   virtual PWMap createPWMap() const = 0;
   virtual PWMap createPWMap(const Set &s) const = 0;
@@ -48,11 +47,32 @@ struct PWMapAF : public MapAF {
 
 struct UnordPWMapAF : public PWMapAF {
   public:
-  UnordPWMapAF(const MapAF &map_fact);
+  UnordPWMapAF();
 
   PWMap createPWMap() const override;
   PWMap createPWMap(const Set &s) const override;
   PWMap createPWMap(const Map &m) const override;
+};
+
+/**
+ * @brief Single instance of pw factory to be used by clients in need of
+ * creating pws. A client includes this file and calls
+ * PW_FACT.createPWMap(args).
+ */
+class PWFactory {
+  public:
+  ~PWFactory() = default;
+  static PWFactory& instance() {
+    static PWFactory instance_;
+    return instance_;
+  }
+
+  PWMapAF& getPWFactory();
+  void setPWFactory(std::unique_ptr<PWMapAF> set_fact);
+
+  private:
+  PWFactory();
+  std::unique_ptr<PWMapAF> pw_fact_;
 };
 
 } // namespace LIB

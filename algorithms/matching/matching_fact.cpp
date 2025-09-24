@@ -28,9 +28,26 @@ namespace LIB {
 // Minimum Reachable SCC Fact ----------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-Matching BFSMatchingFact::createMatchAlgorithm(const PWMapAF& fact) const
+Matching BFSMatchingFact::createMatchAlgorithm() const
 {
-  return Matching(std::make_unique<BFSMatching>(fact));
+  return Matching(std::make_unique<BFSMatching>());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Factory for clients --------------------------------------------------------- 
+////////////////////////////////////////////////////////////////////////////////
+
+MatchFactory::MatchFactory()
+  : match_fact_(std::make_unique<BFSMatchingFact>()) {}
+
+MatchingFact& MatchFactory::getMatchFactory()
+{
+  return *match_fact_;
+}
+
+void MatchFactory::setMatchFactory(std::unique_ptr<MatchingFact> match_fact)
+{
+  match_fact_ = std::move(match_fact);
 }
 
 } // namespace LIB

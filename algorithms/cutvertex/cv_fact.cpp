@@ -28,10 +28,25 @@ namespace LIB {
 // Maximum Degree Cut Vertex AF ------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-CutVertex MaxDegCVFact::createCVAlgorithm(const PWMapAF &pw_fact
-  , const SCCFact &scc_fact) const
+CutVertex MaxDegCVFact::createCVAlgorithm() const
 {
-  return CutVertex(std::make_unique<MaxDegCutVertex>(pw_fact, scc_fact));
+  return CutVertex(std::make_unique<MaxDegCutVertex>());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Factory for clients --------------------------------------------------------- 
+////////////////////////////////////////////////////////////////////////////////
+
+CVFactory::CVFactory() : cv_fact_(std::make_unique<MaxDegCVFact>()) {}
+
+CVFact& CVFactory::getCVFactory()
+{
+  return *cv_fact_;
+}
+
+void CVFactory::setCVFactory(std::unique_ptr<CVFact> cv_fact)
+{
+  cv_fact_ = std::move(cv_fact);
 }
 
 } // namespace LIB

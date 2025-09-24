@@ -36,6 +36,8 @@ namespace SBG {
 
 namespace LIB {
 
+#define SET_FACT SetFactory::instance().getSetFactory()
+
 struct SetAF {
   virtual ~SetAF() = default;
 
@@ -57,6 +59,27 @@ struct OrdDenseAF : public SetAF {
   Set createSet(const MD_NAT &x) const override;
   Set createSet(const Interval &i) const override;
   Set createSet(const SetPiece &mdi) const override;
+};
+
+/**
+ * @brief Single instance of set factory to be used by clients in need of
+ * creating sets. A client includes this file and calls
+ * SET_FACT.createSet(args).
+ */
+class SetFactory {
+  public:
+  ~SetFactory() = default;
+  static SetFactory& instance() {
+    static SetFactory instance_;
+    return instance_;
+  }
+
+  SetAF& getSetFactory();
+  void setSetFactory(std::unique_ptr<SetAF> set_fact);
+
+  private:
+  SetFactory();
+  std::unique_ptr<SetAF> set_fact_;
 };
 
 } // namespace LIB

@@ -34,7 +34,7 @@ namespace LIB {
 // Vertex Cut Set Algorithm Abstract Strategy ---------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
-struct CVStrategy;
+class CVStrategy;
 
 typedef std::unique_ptr<CVStrategy> CVStratPtr;
 
@@ -44,24 +44,20 @@ typedef std::unique_ptr<CVStrategy> CVStratPtr;
 * SCC left. Since this is a NP-hard problem, heuristics are used, and thus is
 * not guaranteed that the set is actually minimum.
 */
-struct CVStrategy {
+class CVStrategy {
   public:
   virtual ~CVStrategy() = default;
 
-  CVStrategy(const PWMapAF& pw_fact, const SCCFact& scc_fact);
+  CVStrategy();
 
   virtual Set calculate(const DSBG& dsbg) const = 0;
-
-  protected:
-  const PWMapAF& pw_fact_;
-  const SCCFact& scc_fact_;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 // Vertex Cut Set Algorithm Interface (context) ------------------------------- 
 ///////////////////////////////////////////////////////////////////////////////
 
-struct CutVertex {
+class CutVertex {
   public:
   CutVertex(CVStratPtr strat);
 

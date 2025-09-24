@@ -27,48 +27,47 @@ namespace LIB {
 // Map AF ----------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-MapAF::MapAF(const SetAF &set_fact) : set_fact_(set_fact) {}
-
-Set MapAF::createSet() const { return set_fact_.createSet(); }
-
-Set MapAF::createSet(const MD_NAT &x) const
-{
-  return set_fact_.createSet(x);
-}
-
-Set MapAF::createSet(const Interval &i) const
-{
-  return set_fact_.createSet(i);
-}
-
-Set MapAF::createSet(const SetPiece &mdi) const
-{
-  return set_fact_.createSet(mdi);
-}
+MapAF::MapAF() {}
 
 Map MapAF::createMap() const
 {
-  return Map(set_fact_);
+  return Map();
 }
 
 Map MapAF::createMap(MD_NAT x, Exp exp) const
 {
-  return Map(set_fact_, x, exp);
+  return Map(x, exp);
 }
 
 Map MapAF::createMap(Interval i, LExp le) const
 {
-  return Map(set_fact_, i, le);
+  return Map(i, le);
 }
 
 Map MapAF::createMap(SetPiece mdi, Exp exp) const
 {
-  return Map(set_fact_, mdi, exp);
+  return Map(mdi, exp);
 }
 
 Map MapAF::createMap(Set s, Exp exp) const
 {
-  return Map(set_fact_, s, exp);
+  return Map(s, exp);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Factory for clients --------------------------------------------------------- 
+////////////////////////////////////////////////////////////////////////////////
+
+MapFactory::MapFactory() : map_fact_(std::make_unique<MapAF>()) {}
+
+MapAF& MapFactory::getMapFactory()
+{
+  return *map_fact_;
+}
+
+void MapFactory::setMapFactory(std::unique_ptr<MapAF> map_fact)
+{
+  map_fact_ = std::move(map_fact);
 }
 
 } // namespace LIB

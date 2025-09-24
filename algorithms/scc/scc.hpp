@@ -31,7 +31,7 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Auxiliary structures --------------------------------------------------------
+// Auxiliary classures --------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -55,27 +55,24 @@ struct SCCData {
 // SCC Algorithm Abstract Strategy ---------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct SCCStrategy;
+class SCCStrategy;
 
 typedef std::unique_ptr<SCCStrategy> SCCStratPtr;
 
-struct SCCStrategy {
+class SCCStrategy {
   public:
   virtual ~SCCStrategy() = default;
 
-  SCCStrategy(const PWMapAF& fact);
+  SCCStrategy();
 
   virtual SCCData calculate(const DSBG& dsbg) = 0;
-
-  protected:
-  const PWMapAF& fact_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 // SCC Algorithm Interface (context) -------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct SCC {
+class SCC {
   public:
   SCC(SCCStratPtr strat);
 

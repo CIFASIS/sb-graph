@@ -44,7 +44,7 @@ namespace LIB {
  */
 class MinReachSCC : public SCCStrategy {
   public:
-  MinReachSCC(const PWMapAF& fact);
+  MinReachSCC();
 
   SCCData calculate(const DSBG& dsbg) override;
 

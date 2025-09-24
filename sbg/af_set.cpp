@@ -71,6 +71,22 @@ Set OrdDenseAF::createSet(const SetPiece &mdi) const
   return Set(std::make_unique<OrderedDenseSet>(mdi));
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Factory for clients --------------------------------------------------------- 
+////////////////////////////////////////////////////////////////////////////////
+
+SetFactory::SetFactory() : set_fact_(std::make_unique<UnordAF>()) {}
+
+SetAF& SetFactory::getSetFactory()
+{
+  return *set_fact_;
+}
+
+void SetFactory::setSetFactory(std::unique_ptr<SetAF> set_fact)
+{
+  set_fact_ = std::move(set_fact);
+}
+
 } // namespace LIB
 
 } // namespace SBG

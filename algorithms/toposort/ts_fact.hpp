@@ -30,20 +30,44 @@ namespace SBG {
 
 namespace LIB {
 
-struct TSFact {
+#define TS_FACT TSFactory::instance().getTSFactory()
+
+class TSFact {
   public:
   virtual ~TSFact() = default;
   TSFact() = default;
 
-  virtual TopoSort createTSAlgorithm(const PWMapAF& fact) const = 0;
+  virtual TopoSort createTSAlgorithm() const = 0;
 };
 
-struct MinVertexTSFact : public TSFact {
+class MinVertexTSFact : public TSFact {
   public:
   MinVertexTSFact() = default;
 
-  TopoSort createTSAlgorithm(const PWMapAF& fact) const override;
+  TopoSort createTSAlgorithm() const override;
 };
+
+/**
+ * @brief Single instance of ts factory to be used by clients in need of
+ * creating an instance of a ts algorithm. A client includes this file and
+ * calls TS_FACT.createTSAlgorithm(args).
+ */
+class TSFactory {
+  public:
+  ~TSFactory() = default;
+  static TSFactory& instance() {
+    static TSFactory instance_;
+    return instance_;
+  }
+
+  TSFact& getTSFactory();
+  void setTSFactory(std::unique_ptr<TSFact> ts_fact);
+
+  private:
+  TSFactory();
+  std::unique_ptr<TSFact> ts_fact_;
+};
+
 
 } // namespace LIB
 

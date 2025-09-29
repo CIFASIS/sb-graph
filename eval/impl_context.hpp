@@ -28,12 +28,12 @@
 #include "algorithms/matching/matching_fact.hpp"
 #include "algorithms/scc/scc_fact.hpp"
 #include "algorithms/toposort/ts_fact.hpp"
+#include "sbg/af_set.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-using SetFactPtr = std::unique_ptr<LIB::SetAF>;
 using PWMapFactPtr = std::unique_ptr<LIB::PWMapAF>;
 using MatchFactPtr = std::unique_ptr<LIB::MatchingFact>;
 using SCCFactPtr = std::unique_ptr<LIB::SCCFact>;
@@ -48,22 +48,22 @@ class ImplContext {
   ImplContext();
 
   // Getters
-  LIB::SetAF& setFact() const;
-  LIB::PWMapAF& pwFact() const;
-  LIB::MatchingFact& matchFact() const;
-  LIB::SCCFact& sccFact() const;
-  LIB::TSFact& tsFact() const;
-  LIB::CVFact& cvFact() const;
+  LIB::SetAF& set_fact() const;
+  LIB::PWMapAF& pw_fact() const;
+  LIB::MatchingFact& match_fact() const;
+  LIB::SCCFact& scc_fact() const;
+  LIB::TSFact& ts_fact() const;
+  LIB::CVFact& cv_fact() const;
   // Setters
-  void setSetFact(SetFactPtr fact);
-  void setPwFact(PWMapFactPtr fact); 
-  void setMatchFact(MatchFactPtr fact); 
-  void setSccFact(SCCFactPtr fact); 
-  void setTSFact(TSFactPtr fact); 
-  void setCVFact(CVFactPtr fact);
+  void set_set_fact(LIB::SetFactPtr fact);
+  void set_pw_fact(PWMapFactPtr fact); 
+  void set_match_fact(MatchFactPtr fact); 
+  void set_scc_fact(SCCFactPtr fact); 
+  void set_ts_fact(TSFactPtr fact); 
+  void set_cv_fact(CVFactPtr fact);
 
   private:
-  SetFactPtr set_fact_;
+  LIB::SetFactPtr set_fact_;
   PWMapFactPtr pw_fact_;
   MatchFactPtr match_fact_;
   SCCFactPtr scc_fact_;

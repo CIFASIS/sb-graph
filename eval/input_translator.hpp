@@ -1,9 +1,6 @@
-/** @file program_evaluator.hpp
+/** @file input_translator.hpp
 
- @brief <b>SBG Program evaluator</b>
-
- The program evaluator evaluates all the statements and expressions in the
- desired file.
+ @brief <b>User input translator</b>
 
  <hr>
 
@@ -24,23 +21,20 @@
 
  ******************************************************************************/
 
-#ifndef PROGRAM_EVALUATOR 
-#define PROGRAM_EVALUATOR
+#ifndef EVAL_INPUT_TRANSLATOR_HPP
+#define EVAL_INPUT_TRANSLATOR_HPP
 
-#include <boost/variant.hpp>
-
-#include "ast/sbg_program.hpp"
-#include "eval/visitors/stm_evaluator.hpp"
+#include "eval/user_input.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-class ProgramEvaluator {
+class InputTranslator {
   public:
-  ProgramEvaluator();
- 
-  ProgramIO evaluate(AST::SBGProgram p) const; 
+  InputTranslator();
+
+  void translate(EvalUserInput& input);
 };
 
 } // namespace Eval

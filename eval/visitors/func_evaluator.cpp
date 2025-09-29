@@ -34,7 +34,7 @@ ExprBaseType BuiltInOperators::oppositeEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 1
     , "oppositeEvaluator: wrong number of arguments\n");
 
-  const auto opposite_evaluator = Overload {
+  auto opposite_evaluator = Overload {
     [](LIB::NAT a) { return LIB::RATIONAL(a, -1); },
     [](LIB::RATIONAL a) { return LIB::RATIONAL(-1)*a; },
     [](auto a) { 
@@ -648,19 +648,6 @@ ExprBaseType BuiltInFunctions::cutVertexEvaluator(const EBTList& args)
   return std::visit(cut_evaluator, args[0]);
 }
 */
-
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-//void BuiltInFunctions::setMatching(Matching m)
-//{
-//  getMatching() = std::move(m);
-//}
-//
-//Matching& BuiltInFunctions::getMatching()
-//{
-//  static Matching m = LIB::BFSMatching();
-//}
 
 } // namespace Eval
 

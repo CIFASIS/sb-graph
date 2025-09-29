@@ -17,6 +17,7 @@
 
  ******************************************************************************/
 
+#include "eval/user_impl_map.hpp"
 #include "eval/visitors/autom_impl_visitor.hpp"
 #include "eval/visitors/stm_evaluator.hpp"
 #include "eval/visitors/set_impl_visitor.hpp"
@@ -30,10 +31,9 @@ namespace Eval {
 // Automatic Implementation Visitor --------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-AutomImplVisitor::AutomImplVisitor(ImplContext& impl_ctx)
-  : impl_ctx_(impl_ctx) {}
+AutomImplVisitor::AutomImplVisitor() {}
 
-ImplContext& AutomImplVisitor::operator()(AST::Program p) const 
+void AutomImplVisitor::visit(AST::SBGProgram p) const
 { 
   // Statement inspection ------------------------------------------------------ 
 
@@ -46,7 +46,7 @@ ImplContext& AutomImplVisitor::operator()(AST::Program p) const
   }
 
   EvalContext eval_ctx;
-  StmEvaluator stm_eval(impl_ctx_, eval_ctx);
+  StmEvaluator stm_eval(eval_ctx);
   for (AST::Statement stm : p.stms()) {
     if (!boost::apply_visitor(cfg_visit, stm))
       StmResult se = boost::apply_visitor(stm_eval, stm);
@@ -54,16 +54,20 @@ ImplContext& AutomImplVisitor::operator()(AST::Program p) const
 
   // Set Implementation --------------------------------------------------------
 
-  SetFactPtr set_fact = std::make_unique<LIB::OrdDenseAF>();
+  int auto_set_impl = 2;
   if (dims < 2) {
-    SetImplVisitor set_impl_visit(stm_eval.evalCtx().venv());
+    SetImplExprVisitor set_impl_visit(stm_eval.eval_ctx().venv());
+    for (AST::Expr expr : p.exprs()) {
+      int ith_set_impl = boost::apply_visitor(set_impl_visit, expr);
+      auto_set_impl = std::min(auto_set_impl, ith_set_impl);
+    }
   }
 
-  // Final result configuration ------------------------------------------------
+  LIB::SetFactPtr set_fact = std::get<LIB::SetFactPtr>(IMPL_MAP.getFactory("set"
+    , auto_set_impl));
+  LIB::SetFactory::instance().set_set_fact(std::move(set_fact));
 
-  impl_ctx_.setSetFact(std::move(set_fact));
-
-  return impl_ctx_;
+  return;
 }
 
 } // namespace Eval

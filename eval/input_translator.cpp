@@ -1,11 +1,4 @@
-/** @file program_evaluator.hpp
-
- @brief <b>SBG Program evaluator</b>
-
- The program evaluator evaluates all the statements and expressions in the
- desired file.
-
- <hr>
+/*******************************************************************************
 
  This file is part of Set--Based Graph Library.
 
@@ -24,27 +17,29 @@
 
  ******************************************************************************/
 
-#ifndef PROGRAM_EVALUATOR 
-#define PROGRAM_EVALUATOR
-
-#include <boost/variant.hpp>
-
-#include "ast/sbg_program.hpp"
-#include "eval/visitors/stm_evaluator.hpp"
+#include "eval/input_translator.hpp"
+#include "eval/user_impl_map.hpp"
+#include "sbg/af_set.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-class ProgramEvaluator {
-  public:
-  ProgramEvaluator();
- 
-  ProgramIO evaluate(AST::SBGProgram p) const; 
-};
+InputTranslator::InputTranslator() {}
+
+void InputTranslator::translate(EvalUserInput& input)
+{
+  EvalUserInput::MaybeInt s = input.set_impl();
+  if (s) {
+    int set_impl = *s;
+    LIB::SetFactPtr set_fact = std::get<LIB::SetFactPtr>(IMPL_MAP
+      .getFactory("set", set_impl));
+    LIB::SetFactory::instance().set_set_fact(std::move(set_fact));
+  }
+
+  return;
+}
 
 } // namespace Eval
 
 } // namespace SBG
-
-#endif

@@ -50,32 +50,29 @@ T eval(const ExprEvaluator &visit, AST::Expr e, std::string t = "UNDEF")
   return std::get<T>(visited);
 }
 
-ExprEvaluator::ExprEvaluator(ImplContext& impl_ctx, EvalContext& eval_ctx)
-  : impl_ctx_(impl_ctx), eval_ctx_(eval_ctx)
+ExprEvaluator::ExprEvaluator(EvalContext& eval_ctx) : eval_ctx_(eval_ctx)
 {
   // Set built-in functions
-  //fenv_.insert("minus", BuiltInOperators::oppositeEvaluator);
-  //fenv_.insert("#", BuiltInOperators::cardinalEvaluator);
-  //fenv_.insert("'", BuiltInOperators::complementEvaluator);
-  //fenv_.insert("+", BuiltInOperators::addEvaluator);
-  //fenv_.insert("-", BuiltInOperators::subEvaluator);
-
-  //BuiltInFunctions::setMatching(LIB::BFSMatching);
-  //fenv_.insert("isEmpty", BuiltInFunctions::emptyEvaluator);
-  //fenv_.insert("minElem", BuiltInFunctions::minEvaluator);
-  //fenv_.insert("maxElem", BuiltInFunctions::maxEvaluator);
-  //fenv_.insert("compose", BuiltInFunctions::composeEvaluator);
-  //fenv_.insert("inv", BuiltInFunctions::inverseEvaluator);
-  //fenv_.insert("image", BuiltInFunctions::imageEvaluator);
-  //fenv_.insert("preImage", BuiltInFunctions::preImageEvaluator);
-  //fenv_.insert("dom", BuiltInFunctions::domEvaluator);
-  //fenv_.insert("combine", BuiltInFunctions::combineEvaluator);
-  //fenv_.insert("firstInv", BuiltInFunctions::firstInvEvaluator);
-  //fenv_.insert("minMap", BuiltInFunctions::minMapEvaluator);
-  //fenv_.insert("reduce", BuiltInFunctions::reduceEvaluator);
-  //fenv_.insert("minAdj", BuiltInFunctions::minAdjEvaluator);
-  //fenv_.insert("mapInf", BuiltInFunctions::mapInfEvaluator);
-  //fenv_.insert("cc", BuiltInFunctions::connectedEvaluator);
+  eval_ctx.fenv().insert("minus", BuiltInOperators::oppositeEvaluator);
+  eval_ctx.fenv().insert("#", BuiltInOperators::cardinalEvaluator);
+  eval_ctx.fenv().insert("'", BuiltInOperators::complementEvaluator);
+  eval_ctx.fenv().insert("+", BuiltInOperators::addEvaluator);
+  eval_ctx.fenv().insert("-", BuiltInOperators::subEvaluator);
+  eval_ctx.fenv().insert("isEmpty", BuiltInFunctions::emptyEvaluator);
+  eval_ctx.fenv().insert("minElem", BuiltInFunctions::minEvaluator);
+  eval_ctx.fenv().insert("maxElem", BuiltInFunctions::maxEvaluator);
+  eval_ctx.fenv().insert("compose", BuiltInFunctions::composeEvaluator);
+  eval_ctx.fenv().insert("inv", BuiltInFunctions::inverseEvaluator);
+  eval_ctx.fenv().insert("image", BuiltInFunctions::imageEvaluator);
+  eval_ctx.fenv().insert("preImage", BuiltInFunctions::preImageEvaluator);
+  eval_ctx.fenv().insert("dom", BuiltInFunctions::domEvaluator);
+  eval_ctx.fenv().insert("combine", BuiltInFunctions::combineEvaluator);
+  eval_ctx.fenv().insert("firstInv", BuiltInFunctions::firstInvEvaluator);
+  eval_ctx.fenv().insert("minMap", BuiltInFunctions::minMapEvaluator);
+  eval_ctx.fenv().insert("reduce", BuiltInFunctions::reduceEvaluator);
+  eval_ctx.fenv().insert("minAdj", BuiltInFunctions::minAdjEvaluator);
+  eval_ctx.fenv().insert("mapInf", BuiltInFunctions::mapInfEvaluator);
+  eval_ctx.fenv().insert("cc", BuiltInFunctions::connectedEvaluator);
   //fenv_.insert("match", BuiltInFunctions::matchingEvaluator);
   //fenv_.insert("scc", BuiltInFunctions::sccEvaluator);
   //fenv_.insert("sort", BuiltInFunctions::topoSortEvaluator);
@@ -228,7 +225,7 @@ ExprBaseType ExprEvaluator::operator()(AST::MultiDimInter v) const
 
 ExprBaseType ExprEvaluator::operator()(AST::Set v) const
 {
-  LIB::Set res = impl_ctx_.setFact().createSet();
+  LIB::Set res = LIB::SET_FACT.createSet();
 
   for (const AST::Expr &e : v.pieces())
     res.emplaceBack(eval<LIB::SetPiece>(*this, e, "SetPiece"));
@@ -268,7 +265,7 @@ ExprBaseType ExprEvaluator::operator()(AST::LinearMap v) const
   LIB::Set d = eval<LIB::Set>(*this, v.dom(), "Set");
   LIB::Exp e = eval<LIB::Exp>(*this, v.lexp(), "Exp");
 
-  LIB::Map res = impl_ctx_.pwFact().createMap(d, e);
+  LIB::Map res(d, e);
 
   Util::ERROR_UNLESS(res.arity() == eval_ctx_.arity() || res.arity() == 0
     , "ExprEvaluator[nmbr_dims = ", eval_ctx_.arity(), "]: arity(", res, ") = "
@@ -279,7 +276,7 @@ ExprBaseType ExprEvaluator::operator()(AST::LinearMap v) const
 
 ExprBaseType ExprEvaluator::operator()(AST::PWLMap v) const
 {
-  LIB::PWMap res = impl_ctx_.pwFact().createPWMap();
+  LIB::PWMap res = LIB::PW_FACT.createPWMap();
 
   for (const AST::Expr &e : v.maps())
     res.emplaceBack(eval<LIB::Map>(*this, e, "Map"));
@@ -300,19 +297,18 @@ ExprBaseType ExprEvaluator::operator()(AST::SBG v) const
   LIB::PWMap Emap = eval<LIB::PWMap>(*this, v.Emap(), "PWMap");
   LIB::PWMap subE = eval<LIB::PWMap>(*this, v.subE_map(), "PWMap");
 
-  LIB::PWMapAF& pw_fact = impl_ctx_.pwFact();
   if (subE.dom().isEmpty() && !Emap.dom().isEmpty()) {
     unsigned int j = 1;
     for (const LIB::Map &m : Emap) {
       for (const LIB::SetPiece &mdi : m.dom()) {
         LIB::Exp off(LIB::MD_NAT(mdi.arity(), j));
-        subE.emplaceBack(pw_fact.createMap(pw_fact.createSet(mdi), off)); 
+        subE.emplaceBack(LIB::Map(LIB::SET_FACT.createSet(mdi), off)); 
         ++j;
       }
     }
   } 
 
-  return LIB::SBG(pw_fact, V, Vmap, map1, map2, Emap, subE);
+  return LIB::SBG(V, Vmap, map1, map2, Emap, subE);
 }
 
 ExprBaseType ExprEvaluator::operator()(AST::DSBG v) const
@@ -324,19 +320,18 @@ ExprBaseType ExprEvaluator::operator()(AST::DSBG v) const
   LIB::PWMap Emap = eval<LIB::PWMap>(*this, v.Emap(), "PWMap");
   LIB::PWMap subE = eval<LIB::PWMap>(*this, v.subE_map(), "PWMap");
 
-  LIB::PWMapAF& pw_fact = impl_ctx_.pwFact();
   if (subE.dom().isEmpty() && !Emap.dom().isEmpty()) {
     unsigned int j = 1;
     for (const LIB::Map &m : Emap) {
       for (const LIB::SetPiece &mdi : m.dom()) {
         LIB::Exp off(LIB::MD_NAT(mdi.arity(), j));
-        subE.emplaceBack(pw_fact.createMap(pw_fact.createSet(mdi), off)); 
+        subE.emplaceBack(LIB::Map(LIB::SET_FACT.createSet(mdi), off)); 
         ++j;
       }
     }
   } 
 
-  return LIB::DSBG(pw_fact, V, Vmap, mapB, mapD, Emap, subE);
+  return LIB::DSBG(V, Vmap, mapB, mapD, Emap, subE);
 }
 
 ExprBaseType ExprEvaluator::operator()(AST::ParenExpr v) const

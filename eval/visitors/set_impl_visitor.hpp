@@ -41,21 +41,18 @@ namespace SBG {
 namespace Eval {
 
 /**
- * @brief The visitor will return an int value, each one representing a
- * different implementation. Then, invoking operation getFact will perform the
- * corresponding transformation to obtain the selected factory.
+ * @brief Single expression visitor to pick the optimal representation for
+ * sets. The visitor will return an int value, each one representing a
+ * different implementation.
  * The mapping is currently as follows:
  *   - 0: unordered sets.
  *   - 1: ordered sets.
  *   - 2: unidimensional ordered sets.
  */
-class SetImplVisitor : public boost::static_visitor<int> {
+class SetImplExprVisitor : public boost::static_visitor<int> {
   public:
-  SetImplVisitor(const VarEnv& venv);
+  SetImplExprVisitor(const VarEnv& venv);
 
-  SetFactPtr getFact(const AST::Expr expr) const;
-
-  private:
   int operator()(AST::Natural v) const;
   int operator()(AST::Rational v) const;
   int operator()(AST::Name v) const;
@@ -73,6 +70,7 @@ class SetImplVisitor : public boost::static_visitor<int> {
   int operator()(AST::DSBG v) const;
   int operator()(AST::ParenExpr) const;
 
+  private:
   const VarEnv& venv_;
 };
 

@@ -30,7 +30,7 @@ namespace SBG {
 
 namespace Eval {
 
-struct NatEvaluator : public boost::static_visitor<LIB::NAT> {
+class NatEvaluator : public boost::static_visitor<LIB::NAT> {
   public:
   NatEvaluator();
   NatEvaluator(VarEnv &venv);

@@ -36,16 +36,15 @@ namespace SBG {
 
 namespace Eval {
 
-struct StmEvaluator : public boost::static_visitor<StmResult> {
+class StmEvaluator : public boost::static_visitor<StmResult> {
   public:
-  StmEvaluator(ImplContext& impl_ctx, EvalContext& eval_ctx);
+  StmEvaluator(EvalContext& eval_ctx);
 
-  EvalContext& evalCtx() const;
+  EvalContext& eval_ctx() const;
   StmResult operator()(AST::Assign assgn) const;
   StmResult operator()(AST::ConfigDims cfg) const; 
 
   private:
-  ImplContext& impl_ctx_;
   EvalContext& eval_ctx_;
 };
 

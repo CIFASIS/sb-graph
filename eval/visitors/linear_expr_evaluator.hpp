@@ -31,7 +31,7 @@ namespace SBG {
 
 namespace Eval {
 
-struct LinearExprEvaluator : public boost::static_visitor<LIB::LExp> {
+class LinearExprEvaluator : public boost::static_visitor<LIB::LExp> {
   public:
   LinearExprEvaluator(VarEnv &venv);
 

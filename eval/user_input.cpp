@@ -17,46 +17,78 @@
 
  ******************************************************************************/
 
-#include "eval/eval_context.hpp"
+#include "eval/user_input.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-EvalContext::EvalContext() : arity_(0), venv_(), fenv_() {}
+// Constructors ----------------------------------------------------------------
+
+EvalUserInput::EvalUserInput() {}
 
 // Getters ---------------------------------------------------------------------
 
-unsigned int EvalContext::arity() const
+EvalUserInput::MaybeInt EvalUserInput::set_impl() const
 {
-  return arity_;
+  return set_impl_;
 }
 
-VarEnv& EvalContext::venv()
+EvalUserInput::MaybeInt EvalUserInput::pw_impl() const
 {
-  return venv_;
+  return pw_impl_;
 }
 
-FuncEnv& EvalContext::fenv()
+EvalUserInput::MaybeInt EvalUserInput::match_impl() const
 {
-  return fenv_;
+  return match_impl_;
+}
+
+EvalUserInput::MaybeInt EvalUserInput::scc_impl() const
+{
+  return scc_impl_;
+}
+
+EvalUserInput::MaybeInt EvalUserInput::ts_impl() const
+{
+  return ts_impl_;
+}
+
+EvalUserInput::MaybeInt EvalUserInput::cv_impl() const
+{
+  return cv_impl_;
 }
 
 // Setters ---------------------------------------------------------------------
 
-void EvalContext::setArity(unsigned int arity)
+void EvalUserInput::set_set_impl(MaybeInt set_impl)
 {
-  arity_ = arity;
+  set_impl_ = set_impl;
 }
 
-void EvalContext::insertVariable(VarEnv::VKey key, VarEnv::VValue value)
+void EvalUserInput::set_pw_impl(MaybeInt pw_impl)
 {
-  venv_.insert(key, value);
+  pw_impl_ = pw_impl;
 }
 
-void EvalContext::insertFunction(FuncEnv::FKey key, FuncEnv::FValue value)
+void EvalUserInput::set_match_impl(MaybeInt match_impl)
 {
-  fenv_.insert(key, value);
+  match_impl_ = match_impl;
+}
+
+void EvalUserInput::set_scc_impl(MaybeInt scc_impl)
+{
+  scc_impl_ = scc_impl;
+}
+
+void EvalUserInput::set_ts_impl(MaybeInt ts_impl)
+{
+  ts_impl_ = ts_impl;
+}
+
+void EvalUserInput::set_cv_impl(MaybeInt cv_impl)
+{
+  cv_impl_ = cv_impl;
 }
 
 } // namespace Eval

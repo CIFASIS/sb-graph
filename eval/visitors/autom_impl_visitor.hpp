@@ -37,14 +37,11 @@ namespace SBG {
 
 namespace Eval {
 
-struct AutomImplVisitor : public boost::static_visitor<ImplContext> {
+class AutomImplVisitor {
   public:
-  AutomImplVisitor(ImplContext& impl_ctx);
+  AutomImplVisitor();
 
-  ImplContext& operator()(AST::Program p) const;
-
-  private:
-  ImplContext& impl_ctx_;
+  void visit(AST::SBGProgram p) const;
 };
 
 } // namespace Eval

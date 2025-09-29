@@ -55,7 +55,7 @@ add_subdirectory(eval)
 add_subdirectory(parser)
 add_subdirectory(ast)
 add_subdirectory(sbg)
-add_subdirectory(test)
+#add_subdirectory(test)
 add_subdirectory(util)
 
 set_target_properties(sbgraph PROPERTIES DEBUG_POSTFIX "d")

@@ -2,7 +2,7 @@
 
  @brief <b>Function evaluator</b>
 
- Evaluator for built-in functions. Currently user-defined functions arenot
+ Evaluator for built-in functions. Currently user-defined functions aren't
  allowed.
 
  <hr>
@@ -47,7 +47,11 @@ namespace Eval {
  * functions (for example, isEmpty can be applied to intervals, sets, etc.).
  */
 
-template<class... Ts> struct Overload : Ts... { using Ts::operator()...; };
+template<class... Ts> class Overload : Ts... {
+  public:
+  using Ts::operator()...;
+  Overload(Ts... ts) : Ts(ts)... {};
+};
 template<class... Ts> Overload(Ts...) -> Overload<Ts...>;
 
 ////////////////////////////////////////////////////////////////////////////////

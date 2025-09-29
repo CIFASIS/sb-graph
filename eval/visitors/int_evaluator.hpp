@@ -30,7 +30,7 @@ namespace SBG {
 
 namespace Eval {
 
-struct IntEvaluator : public boost::static_visitor<LIB::INT> {
+class IntEvaluator : public boost::static_visitor<LIB::INT> {
   public:
   IntEvaluator();
   IntEvaluator(VarEnv &venv);

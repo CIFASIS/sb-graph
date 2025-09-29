@@ -31,7 +31,7 @@ namespace SBG {
 
 namespace Eval {
 
-struct RationalEvaluator : public boost::static_visitor<LIB::RATIONAL> {
+class RationalEvaluator : public boost::static_visitor<LIB::RATIONAL> {
   public:
   RationalEvaluator();
   RationalEvaluator(VarEnv &venv);

@@ -1,9 +1,6 @@
-/** @file program_evaluator.hpp
+/** @file file_evaluator.hpp
 
- @brief <b>SBG Program evaluator</b>
-
- The program evaluator evaluates all the statements and expressions in the
- desired file.
+ @brief <b>File Evaluator</b>
 
  <hr>
 
@@ -24,24 +21,16 @@
 
  ******************************************************************************/
 
-#ifndef PROGRAM_EVALUATOR 
-#define PROGRAM_EVALUATOR
+#ifndef EVAL_FILE_HPP
+#define EVAL_FILE_HPP
 
-#include <boost/variant.hpp>
-
-#include "ast/sbg_program.hpp"
-#include "eval/visitors/stm_evaluator.hpp"
+#include "util/user_input_handler.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-class ProgramEvaluator {
-  public:
-  ProgramEvaluator();
- 
-  ProgramIO evaluate(AST::SBGProgram p) const; 
-};
+void parseEvalFile(std::string fname);
 
 } // namespace Eval
 

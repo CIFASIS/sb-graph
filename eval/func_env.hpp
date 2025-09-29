@@ -37,7 +37,8 @@ namespace Eval {
  * @brief Function environment. Only has built-in functions: SBG programs can't
  * define new functions.
  */
-struct FuncEnv {
+class FuncEnv {
+  public:
   using FKey = AST::Name;
   using FValue = std::function<ExprBaseType(const std::vector<ExprBaseType>&)>;
   using FType = std::unordered_map<FKey, FValue>;

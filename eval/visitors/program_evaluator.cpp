@@ -25,10 +25,9 @@ namespace SBG {
 
 namespace Eval {
 
-ProgramEvaluator::ProgramEvaluator(ImplContext& impl_ctx)
-  : impl_ctx_(impl_ctx) {}
+ProgramEvaluator::ProgramEvaluator() {}
 
-ProgramIO ProgramEvaluator::operator()(AST::Program p) const 
+ProgramIO ProgramEvaluator::evaluate(AST::SBGProgram p) const 
 { 
   LIB::NAT dims = 1;
 
@@ -42,7 +41,7 @@ ProgramIO ProgramEvaluator::operator()(AST::Program p) const
   }
 
   StmResultList stms;
-  StmEvaluator stm_visit(impl_ctx_, eval_ctx);
+  StmEvaluator stm_visit(eval_ctx);
   for (AST::Statement s : p.stms()) {
     if (!boost::apply_visitor(cfg_visit, s)) {
       StmResult se = boost::apply_visitor(stm_visit, s);
@@ -51,7 +50,7 @@ ProgramIO ProgramEvaluator::operator()(AST::Program p) const
   }
 
   ExprResultList exprs;
-  ExprEvaluator eval_expr(impl_ctx_, eval_ctx);
+  ExprEvaluator eval_expr(eval_ctx);
   for (AST::Expr e : p.exprs()) {
     ExprBaseType expr_res = boost::apply_visitor(eval_expr, e);
     exprs.push_back(ExprResult(e, expr_res));

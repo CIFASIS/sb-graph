@@ -8,6 +8,7 @@ target_sources(
     sbg-util-lib
     PRIVATE
     logger.cpp
+    user_input_handler.cpp
 )
 
 add_custom_target(util-doc

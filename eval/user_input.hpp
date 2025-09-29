@@ -1,6 +1,9 @@
-/** @file eval_context.hpp
+/** @file user_input.hpp
 
- @brief <b>Evaluation context with desired implementations</b>
+ @brief <b>User input definitions</b>
+ 
+ This module defines structures to represent the user input for the desired
+ implementations of sets, pws and algorithms.
 
  <hr>
 
@@ -21,38 +24,43 @@
 
  ******************************************************************************/
 
-#ifndef EVAL_CONTEXT_HPP
-#define EVAL_CONTEXT_HPP
+#ifndef EVAL_USER_INPUT_HPP
+#define EVAL_USER_INPUT_HPP
 
-#include "eval/func_env.hpp"
-#include "eval/impl_context.hpp"
-#include "eval/var_env.hpp"
+#include "boost/optional.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-/** 
- * @brief Evaluation context that keeps track of the arity of the evaluated
- * program, defined variables, and built-in functions.
- */
-class EvalContext {
+class EvalUserInput {
   public:
-  EvalContext();
+  using MaybeInt = boost::optional<int>;
+
+  EvalUserInput();
 
   // Getters
-  unsigned int arity() const;
-  VarEnv& venv();
-  FuncEnv& fenv();
+  MaybeInt set_impl() const;
+  MaybeInt pw_impl() const;
+  MaybeInt match_impl() const;
+  MaybeInt scc_impl() const;
+  MaybeInt ts_impl() const;
+  MaybeInt cv_impl() const;
   // Setters
-  void setArity(unsigned int arity); 
-  void insertVariable(VarEnv::VKey key, VarEnv::VValue value); 
-  void insertFunction(FuncEnv::FKey key, FuncEnv::FValue value);
+  void set_set_impl(MaybeInt set_impl);
+  void set_pw_impl(MaybeInt pw_impl);
+  void set_match_impl(MaybeInt match_impl);
+  void set_scc_impl(MaybeInt scc_impl);
+  void set_ts_impl(MaybeInt ts_impl);
+  void set_cv_impl(MaybeInt cv_impl);
 
   private:
-  unsigned int arity_; ///< Number of dimensions of the program
-  VarEnv venv_;
-  FuncEnv fenv_;
+  MaybeInt set_impl_;
+  MaybeInt pw_impl_;
+  MaybeInt match_impl_;
+  MaybeInt scc_impl_;
+  MaybeInt ts_impl_;
+  MaybeInt cv_impl_;
 };
 
 } // namespace Eval

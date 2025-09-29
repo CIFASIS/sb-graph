@@ -37,7 +37,7 @@ namespace Eval {
  * @brief Variable environment (with expressions already evaluated). This env
  * will be populated by StmEvaluator, and used by ExprEvaluator.
  */
-struct VarEnv {
+class VarEnv {
   public:
   using VKey = AST::Name;
   using VValue = ExprBaseType;

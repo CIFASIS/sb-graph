@@ -31,9 +31,9 @@ namespace SBG {
 
 namespace Eval {
 
-struct ExprEvaluator : public boost::static_visitor<ExprBaseType> {
+class ExprEvaluator : public boost::static_visitor<ExprBaseType> {
   public:
-  ExprEvaluator(ImplContext& impl_ctx, EvalContext& eval_ctx);
+  ExprEvaluator(EvalContext& eval_ctx);
 
   ExprBaseType operator()(AST::Natural v) const;
   ExprBaseType operator()(AST::Rational v) const;
@@ -53,7 +53,6 @@ struct ExprEvaluator : public boost::static_visitor<ExprBaseType> {
   ExprBaseType operator()(AST::ParenExpr v) const;
 
   private:
-  ImplContext& impl_ctx_;
   EvalContext& eval_ctx_;
 };
 

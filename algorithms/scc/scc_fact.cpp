@@ -39,12 +39,12 @@ SCC MinReachSCCFact::createSCCAlgorithm() const
 
 SCCFactory::SCCFactory() : scc_fact_(std::make_unique<MinReachSCCFact>()) {}
 
-SCCFact& SCCFactory::getSCCFactory()
+SCCFact& SCCFactory::scc_fact()
 {
   return *scc_fact_;
 }
 
-void SCCFactory::setSCCFactory(std::unique_ptr<SCCFact> scc_fact)
+void SCCFactory::set_scc_fact(SCCFactPtr scc_fact)
 {
   scc_fact_ = std::move(scc_fact);
 }

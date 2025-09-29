@@ -30,6 +30,8 @@ namespace SBG {
 
 namespace LIB {
 
+#define MATCH_FACT MatchFactory::instance().match_fact()
+
 class MatchingFact {
   public:
   virtual ~MatchingFact() = default;
@@ -45,6 +47,8 @@ class BFSMatchingFact : public MatchingFact {
   Matching createMatchAlgorithm() const override;
 };
 
+using MatchFactPtr = std::unique_ptr<MatchingFact>;
+
 /**
  * @brief Single instance of match factory to be used by clients in need of
  * creating an instance of a matching algorithm. A client includes this file and
@@ -58,13 +62,13 @@ class MatchFactory {
     static MatchFactory instance_;
     return instance_;
   }
-  MatchingFact& getMatchFactory();
-  void setMatchFactory(std::unique_ptr<MatchingFact> match_fact);
+  MatchingFact& match_fact();
+  void set_match_fact(MatchFactPtr match_fact);
 
   private:
   MatchFactory();
 
-  std::unique_ptr<MatchingFact> match_fact_;
+  MatchFactPtr match_fact_;
 };
 
 } // namespace LIB

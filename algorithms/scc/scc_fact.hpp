@@ -30,7 +30,7 @@ namespace SBG {
 
 namespace LIB {
 
-#define SCC_FACT SCCFactory::instance().getSCCFactory()
+#define SCC_FACT SCCFactory::instance().scc_fact()
 
 class SCCFact {
   public:
@@ -47,6 +47,8 @@ class MinReachSCCFact : public SCCFact {
   SCC createSCCAlgorithm() const override;
 };
 
+using SCCFactPtr = std::unique_ptr<SCCFact>;
+
 /**
  * @brief Single instance of scc factory to be used by clients in need of
  * creating an instance of a scc algorithm. A client includes this file and
@@ -60,13 +62,13 @@ class SCCFactory {
     static SCCFactory instance_;
     return instance_;
   }
-  SCCFact& getSCCFactory();
-  void setSCCFactory(std::unique_ptr<SCCFact> scc_fact);
+  SCCFact& scc_fact();
+  void set_scc_fact(SCCFactPtr scc_fact);
 
   private:
   SCCFactory();
 
-  std::unique_ptr<SCCFact> scc_fact_;
+  SCCFactPtr scc_fact_;
 };
 
 } // namespace LIB

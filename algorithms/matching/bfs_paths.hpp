@@ -41,6 +41,8 @@ namespace LIB {
  */
 class BFSPaths : public PathsContext<BFSPaths> {
   public:
+  BFSPaths();
+
   /**
    * @brief Concrete implementation that starts with the identity pw for
    * vertices belonging to `endings`. In each step adds adjacent vertices to

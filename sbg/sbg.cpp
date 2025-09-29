@@ -86,7 +86,7 @@ SBG SBG::addSV(const Set &vertices) const
     MD_NAT max = SV.isEmpty() ? MD_NAT(dims, 0) : SV.maxElem();
     for (unsigned int j = 0; j < dims; ++j)
       max[j] = max[j] + 1;
-    Map m = MAP_FACT.createMap(vertices, Exp(max));
+    Map m(vertices, Exp(max));
     new_Vmap.emplaceBack(m);
 
     return SBG(new_V, new_Vmap, new_map1, new_map2, new_Emap, new_subE);
@@ -114,7 +114,7 @@ SBG SBG::addSE(const PWMap &pw1, const PWMap &pw2) const
       MD_NAT max = SE.isEmpty() ? MD_NAT(dims, 0) : SE.maxElem();
       for (unsigned int j = 0; j < dims; ++j)
         max[j] = max[j] + 1;
-      Map m = MAP_FACT.createMap(edges, max);  
+      Map m(edges, max);  
       new_Emap.emplaceBack(m);
 
       new_map1 = new_map1.concatenation(pw1);
@@ -247,7 +247,7 @@ DSBG DSBG::addSV(const Set &vertices) const
     MD_NAT max = SV.isEmpty() ? MD_NAT(dims, 0) : SV.maxElem();
     for (unsigned int j = 0; j < dims; ++j)
       max[j] = max[j] + 1;
-    Map m = MAP_FACT.createMap(vertices, Exp(max));
+    Map m(vertices, Exp(max));
     new_Vmap.emplaceBack(m);
 
     return DSBG(new_V, new_Vmap, new_mapB, new_mapD, new_Emap, new_subE);
@@ -275,7 +275,7 @@ DSBG DSBG::addSE(const PWMap &pw1, const PWMap &pw2) const
       MD_NAT max = SE.isEmpty() ? MD_NAT(dims, 0) : SE.maxElem();
       for (unsigned int j = 0; j < dims; ++j)
         max[j] = max[j] + 1;
-      Map m = MAP_FACT.createMap(edges, max);
+      Map m(edges, max);
       new_Emap.emplaceBack(m);
 
       new_mapB = new_mapB.concatenation(pw1);

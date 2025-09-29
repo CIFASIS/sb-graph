@@ -61,7 +61,7 @@ PWMapAF& PWFactory::pw_fact()
   return *pw_fact_;
 }
 
-void PWFactory::set_pw_fact(std::unique_ptr<PWMapAF> pw_fact)
+void PWFactory::set_pw_fact(PWMapFactPtr pw_fact)
 {
   pw_fact_ = std::move(pw_fact);
 }

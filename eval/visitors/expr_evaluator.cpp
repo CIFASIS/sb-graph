@@ -53,32 +53,25 @@ T eval(const ExprEvaluator &visit, AST::Expr e, std::string t = "UNDEF")
 ExprEvaluator::ExprEvaluator(EvalContext& eval_ctx) : eval_ctx_(eval_ctx)
 {
   // Set built-in functions
-  eval_ctx.fenv().insert("minus", BuiltInOperators::oppositeEvaluator);
-  eval_ctx.fenv().insert("#", BuiltInOperators::cardinalEvaluator);
-  eval_ctx.fenv().insert("'", BuiltInOperators::complementEvaluator);
-  eval_ctx.fenv().insert("+", BuiltInOperators::addEvaluator);
-  eval_ctx.fenv().insert("-", BuiltInOperators::subEvaluator);
-  eval_ctx.fenv().insert("isEmpty", BuiltInFunctions::emptyEvaluator);
-  eval_ctx.fenv().insert("minElem", BuiltInFunctions::minEvaluator);
-  eval_ctx.fenv().insert("maxElem", BuiltInFunctions::maxEvaluator);
-  eval_ctx.fenv().insert("compose", BuiltInFunctions::composeEvaluator);
-  eval_ctx.fenv().insert("inv", BuiltInFunctions::inverseEvaluator);
-  eval_ctx.fenv().insert("image", BuiltInFunctions::imageEvaluator);
-  eval_ctx.fenv().insert("preImage", BuiltInFunctions::preImageEvaluator);
-  eval_ctx.fenv().insert("dom", BuiltInFunctions::domEvaluator);
-  eval_ctx.fenv().insert("combine", BuiltInFunctions::combineEvaluator);
-  eval_ctx.fenv().insert("firstInv", BuiltInFunctions::firstInvEvaluator);
-  eval_ctx.fenv().insert("minMap", BuiltInFunctions::minMapEvaluator);
-  eval_ctx.fenv().insert("reduce", BuiltInFunctions::reduceEvaluator);
-  eval_ctx.fenv().insert("minAdj", BuiltInFunctions::minAdjEvaluator);
-  eval_ctx.fenv().insert("mapInf", BuiltInFunctions::mapInfEvaluator);
-  eval_ctx.fenv().insert("cc", BuiltInFunctions::connectedEvaluator);
-  //fenv_.insert("match", BuiltInFunctions::matchingEvaluator);
-  //fenv_.insert("scc", BuiltInFunctions::sccEvaluator);
-  //fenv_.insert("sort", BuiltInFunctions::topoSortEvaluator);
-  //fenv_.insert("cut", BuiltInFunctions::cutVertexEvaluator);
-  //fenv_.insert("",);
-  //fenv_.insert("",);
+  eval_ctx.insertFunction("isEmpty", BuiltInFunctions::emptyEvaluator);
+  eval_ctx.insertFunction("minElem", BuiltInFunctions::minEvaluator);
+  eval_ctx.insertFunction("maxElem", BuiltInFunctions::maxEvaluator);
+  eval_ctx.insertFunction("compose", BuiltInFunctions::composeEvaluator);
+  eval_ctx.insertFunction("inv", BuiltInFunctions::inverseEvaluator);
+  eval_ctx.insertFunction("image", BuiltInFunctions::imageEvaluator);
+  eval_ctx.insertFunction("preImage", BuiltInFunctions::preImageEvaluator);
+  eval_ctx.insertFunction("dom", BuiltInFunctions::domEvaluator);
+  eval_ctx.insertFunction("combine", BuiltInFunctions::combineEvaluator);
+  eval_ctx.insertFunction("firstInv", BuiltInFunctions::firstInvEvaluator);
+  eval_ctx.insertFunction("minMap", BuiltInFunctions::minMapEvaluator);
+  eval_ctx.insertFunction("reduce", BuiltInFunctions::reduceEvaluator);
+  eval_ctx.insertFunction("minAdj", BuiltInFunctions::minAdjEvaluator);
+  eval_ctx.insertFunction("mapInf", BuiltInFunctions::mapInfEvaluator);
+  eval_ctx.insertFunction("cc", BuiltInFunctions::connectedEvaluator);
+  eval_ctx.insertFunction("match", BuiltInFunctions::matchingEvaluator);
+  eval_ctx.insertFunction("scc", BuiltInFunctions::sccEvaluator);
+  eval_ctx.insertFunction("sort", BuiltInFunctions::topoSortEvaluator);
+  eval_ctx.insertFunction("cut", BuiltInFunctions::cutVertexEvaluator);
 }
 
 ExprBaseType ExprEvaluator::operator()(AST::Natural v) const

@@ -39,12 +39,12 @@ TopoSort MinVertexTSFact::createTSAlgorithm() const
 
 TSFactory::TSFactory() : ts_fact_(std::make_unique<MinVertexTSFact>()) {}
 
-TSFact& TSFactory::getTSFactory()
+TSFact& TSFactory::ts_fact()
 {
   return *ts_fact_;
 }
 
-void TSFactory::setTSFactory(std::unique_ptr<TSFact> ts_fact)
+void TSFactory::set_ts_fact(TSFactPtr ts_fact)
 {
   ts_fact_ = std::move(ts_fact);
 }

@@ -32,7 +32,12 @@
 #include <unordered_map>
 #include <variant>
 
-#include "eval/impl_context.hpp"
+#include "algorithms/cutvertex/cv_fact.hpp"
+#include "algorithms/matching/matching_fact.hpp"
+#include "algorithms/scc/scc_fact.hpp"
+#include "algorithms/toposort/ts_fact.hpp"
+#include "sbg/af_pwmap.hpp"
+#include "sbg/af_set.hpp"
 
 namespace SBG {
 
@@ -43,8 +48,8 @@ namespace Eval {
 /**
  * @brief Type defined to be used in ImplEnv.
  */
-using ImplFactory = std::variant<LIB::SetFactPtr, PWMapFactPtr, MatchFactPtr
-  , SCCFactPtr, TSFactPtr, CVFactPtr>;
+using ImplFactory = std::variant<LIB::SetFactPtr, LIB::PWMapFactPtr
+  , LIB::MatchFactPtr, LIB::SCCFactPtr, LIB::TSFactPtr, LIB::CVFactPtr>;
 
 /**
  * @brief Mapping for all structures such as Set, PW and algorithms.

@@ -30,7 +30,7 @@ namespace SBG {
 
 namespace LIB {
 
-#define CV_FACT CVFactory::instance().getCVFactory()
+#define CV_FACT CVFactory::instance().cv_fact()
 
 class CVFact {
   public:
@@ -47,6 +47,8 @@ class MaxDegCVFact : public CVFact {
   CutVertex createCVAlgorithm() const override;
 };
 
+using CVFactPtr = std::unique_ptr<CVFact>;
+
 /**
  * @brief Single instance of cv factory to be used by clients in need of
  * creating an instance of a cv algorithm. A client includes this file and
@@ -60,13 +62,13 @@ class CVFactory {
     static CVFactory instance_;
     return instance_;
   }
-  CVFact& getCVFactory();
-  void setCVFactory(std::unique_ptr<CVFact> cv_fact);
+  CVFact& cv_fact();
+  void set_cv_fact(CVFactPtr cv_fact);
 
   private:
   CVFactory();
 
-  std::unique_ptr<CVFact> cv_fact_;
+  CVFactPtr cv_fact_;
 };
 
 } // namespace LIB

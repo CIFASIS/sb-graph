@@ -11,7 +11,6 @@ target_sources(
       eval_exec.cpp
       file_evaluator.cpp
       func_env.cpp
-      impl_context.cpp
       input_translator.cpp
       pretty_print.cpp
       user_impl_map.cpp

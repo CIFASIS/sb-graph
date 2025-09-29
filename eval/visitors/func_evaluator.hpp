@@ -94,10 +94,10 @@ class BuiltInFunctions {
   static ExprBaseType minAdjEvaluator(const EBTList& args);
   static ExprBaseType mapInfEvaluator(const EBTList& args);
   static ExprBaseType connectedEvaluator(const EBTList& args);
-  //static ExprBaseType matchingEvaluator(const EBTList& args);
-  //static ExprBaseType sccEvaluator(const EBTList& args);
-  //static ExprBaseType topoSortEvaluator(const EBTList& args);
-  //static ExprBaseType cutVertexEvaluator(const EBTList& args);
+  static ExprBaseType matchingEvaluator(const EBTList& args);
+  static ExprBaseType sccEvaluator(const EBTList& args);
+  static ExprBaseType topoSortEvaluator(const EBTList& args);
+  static ExprBaseType cutVertexEvaluator(const EBTList& args);
 };
 
 } // namespace Eval

@@ -18,6 +18,10 @@
  ******************************************************************************/
 
 #include "algorithms/cc/cc.hpp"
+#include "algorithms/cutvertex/cv_fact.hpp"
+#include "algorithms/matching/matching_fact.hpp"
+#include "algorithms/scc/scc_fact.hpp"
+#include "algorithms/toposort/ts_fact.hpp"
 #include "eval/visitors/func_evaluator.hpp"
 #include "util/debug.hpp"
 
@@ -516,18 +520,18 @@ ExprBaseType BuiltInFunctions::connectedEvaluator(const EBTList& args)
   return std::visit(connected_evaluator, args[0]);
 }
 
-/*
 ExprBaseType BuiltInFunctions::matchingEvaluator(const EBTList& args)
 {
   Util::ERROR_UNLESS(args.size() == 2
     , "matchingEvaluator: wrong number of arguments\n");
 
+  LIB::Matching match_impl = SBG::LIB::MATCH_FACT.createMatchAlgorithm();
   const auto matching_evaluator = Overload {
-    [](LIB::SBG a, LIB::NAT b) { 
-      return ExprBaseType(match_.calculate(a.copy(b)));
+    [&match_impl](LIB::SBG a, LIB::NAT b) { 
+      return ExprBaseType(match_impl.calculate(a.copy(b)));
     },
-    [](LIB::SBG a, LIB::MD_NAT b) { 
-      return ExprBaseType(match_.calculate(a.copy(b[0])));
+    [&match_impl](LIB::SBG a, LIB::MD_NAT b) { 
+      return ExprBaseType(match_impl.calculate(a.copy(b[0])));
     },
     [](auto a, auto b) {
       Util::ERROR("matchingEvaluator: wrong arguments ", a, ", ", b
@@ -543,9 +547,10 @@ ExprBaseType BuiltInFunctions::sccEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 1
     , "sccEvaluator: wrong number of arguments\n");
 
+  SBG::LIB::SCC scc_impl = SBG::LIB::SCC_FACT.createSCCAlgorithm();
   const auto scc_evaluator = Overload {
-    [](LIB::DSBG a) { 
-      return ExprBaseType(scc_.calculate(a).rmap());
+    [&scc_impl](LIB::DSBG a) { 
+      return ExprBaseType(scc_impl.calculate(a).rmap());
     },
     [](auto a) {
       Util::ERROR("sccEvaluator: wrong argument ", a, " for scc\n"); 
@@ -560,9 +565,10 @@ ExprBaseType BuiltInFunctions::topoSortEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 1
     , "topoSortEvaluator: wrong number of arguments\n");
 
+  SBG::LIB::TopoSort ts_impl = SBG::LIB::TS_FACT.createTSAlgorithm();
   const auto ts_evaluator = Overload {
-    [](LIB::DSBG a) { 
-      return ExprBaseType(ts_.calculate(a));
+    [&ts_impl](LIB::DSBG a) { 
+      return ExprBaseType(ts_impl.calculate(a));
     },
     [](auto a) {
       Util::ERROR("topoSortEvaluator: wrong argument ", a, " for sort\n"); 
@@ -572,6 +578,25 @@ ExprBaseType BuiltInFunctions::topoSortEvaluator(const EBTList& args)
   return std::visit(ts_evaluator, args[0]);
 }
 
+ExprBaseType BuiltInFunctions::cutVertexEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 1
+    , "cutVertexEvaluator: wrong number of arguments\n");
+
+  SBG::LIB::CutVertex cv_impl = SBG::LIB::CV_FACT.createCVAlgorithm();
+  const auto cv_evaluator = Overload {
+    [&cv_impl](LIB::DSBG a) { 
+      return ExprBaseType(cv_impl.calculate(a));
+    },
+    [](auto a) {
+      Util::ERROR("topoSortEvaluator: wrong argument ", a, " for sort\n"); 
+      return ExprBaseType();
+    }
+  };
+  return std::visit(cv_evaluator, args[0]);
+}
+
+/*
 ExprBaseType BuiltInFunctions::matchSccEvaluator(const EBTList& args)
 {
   Util::ERROR_UNLESS(args.size() == 2

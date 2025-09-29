@@ -40,7 +40,7 @@ PWMap MaxDegCutVertex::getDegMap(const DSBG& dsbg) const
 
   auto dims = V.arity();
   MD_NAT zero(dims, 0), one(dims, 1);
-  PWMap dmap = PW_FACT.createPWMap(MAP_FACT.createMap(V, Exp(zero))); 
+  PWMap dmap = PW_FACT.createPWMap(Map(V, Exp(zero))); 
 
   for (const Map& SE : dsbg.subEmap()) {
     Set dom = SE.dom();

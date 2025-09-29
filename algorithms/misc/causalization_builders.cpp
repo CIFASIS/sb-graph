@@ -37,7 +37,7 @@ SBG::LIB::DSBG buildSCCFromMatching(const SBG::LIB::MatchData &data)
   SBG::LIB::PWMap auxVmap = data.sbg().subEmap().restrict(M);
   SBG::LIB::PWMap Vmap = SBG::LIB::PW_FACT.createPWMap();
   for (const SBG::LIB::Map &map : auxVmap) 
-    Vmap.emplaceBack(SBG::LIB::MAP_FACT.createMap(map.dom().compact()
+    Vmap.emplaceBack(SBG::LIB::Map(map.dom().compact()
       , map.exp()));
 
   SBG::LIB::PWMap mapF = sbg.map1();

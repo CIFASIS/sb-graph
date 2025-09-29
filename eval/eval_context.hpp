@@ -1,6 +1,6 @@
 /** @file eval_context.hpp
 
- @brief <b>Evaluation context with desired implementations</b>
+ @brief <b>Evaluation context</b>
 
  <hr>
 
@@ -25,7 +25,6 @@
 #define EVAL_CONTEXT_HPP
 
 #include "eval/func_env.hpp"
-#include "eval/impl_context.hpp"
 #include "eval/var_env.hpp"
 
 namespace SBG {

@@ -54,6 +54,8 @@ struct UnordPWMapAF : public PWMapAF {
   PWMap createPWMap(const Map &m) const override;
 };
 
+using PWMapFactPtr = std::unique_ptr<PWMapAF>;
+
 /**
  * @brief Single instance of pw factory to be used by clients in need of
  * creating pws. A client includes this file and calls
@@ -68,11 +70,11 @@ class PWFactory {
   }
 
   PWMapAF& pw_fact();
-  void set_pw_fact(std::unique_ptr<PWMapAF> set_fact);
+  void set_pw_fact(PWMapFactPtr set_fact);
 
   private:
   PWFactory();
-  std::unique_ptr<PWMapAF> pw_fact_;
+  PWMapFactPtr pw_fact_;
 };
 
 } // namespace LIB

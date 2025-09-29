@@ -23,7 +23,7 @@ namespace SBG {
 
 namespace Eval {
 
-EvalContext::EvalContext() : arity_(0), venv_(), fenv_() {}
+EvalContext::EvalContext() : arity_(1), venv_(), fenv_() {}
 
 // Getters ---------------------------------------------------------------------
 

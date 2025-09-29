@@ -28,7 +28,9 @@ namespace LIB {
 // Path Finder BFS Implementation ----------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-inline PWMap BFSPaths::calculate(const DSBG& dsbg, const Set& endings)
+BFSPaths::BFSPaths() {}
+
+PWMap BFSPaths::calculate(const DSBG& dsbg, const Set& endings)
 {
   Set dsbgV = dsbg.V();
   PWMap dsbgB = dsbg.mapB();

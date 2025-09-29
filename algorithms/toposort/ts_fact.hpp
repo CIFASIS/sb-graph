@@ -30,7 +30,7 @@ namespace SBG {
 
 namespace LIB {
 
-#define TS_FACT TSFactory::instance().getTSFactory()
+#define TS_FACT TSFactory::instance().ts_fact()
 
 class TSFact {
   public:
@@ -47,6 +47,8 @@ class MinVertexTSFact : public TSFact {
   TopoSort createTSAlgorithm() const override;
 };
 
+using TSFactPtr = std::unique_ptr<TSFact>;
+
 /**
  * @brief Single instance of ts factory to be used by clients in need of
  * creating an instance of a ts algorithm. A client includes this file and
@@ -60,13 +62,13 @@ class TSFactory {
     static TSFactory instance_;
     return instance_;
   }
-  TSFact& getTSFactory();
-  void setTSFactory(std::unique_ptr<TSFact> ts_fact);
+  TSFact& ts_fact();
+  void set_ts_fact(TSFactPtr ts_fact);
 
   private:
   TSFactory();
 
-  std::unique_ptr<TSFact> ts_fact_;
+  TSFactPtr ts_fact_;
 };
 
 

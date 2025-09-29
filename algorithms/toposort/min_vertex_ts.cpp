@@ -77,7 +77,7 @@ PWMap MinVertexTopoSort::calculate(const DSBG& dsbg) const
           }
         }
       }
-      smap.emplaceBack(MAP_FACT.createMap(d, e));
+      smap.emplaceBack(Map(d, e));
       
       Set Nsucc = U.difference(smap.dom());
       Set S = smap.dom().difference(smap.preImage(Nsucc));

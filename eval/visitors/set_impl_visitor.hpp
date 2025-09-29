@@ -33,7 +33,6 @@
 #include <boost/variant.hpp>
 
 #include "ast/sbg_program.hpp"
-#include "eval/impl_context.hpp"
 #include "eval/var_env.hpp"
 
 namespace SBG {

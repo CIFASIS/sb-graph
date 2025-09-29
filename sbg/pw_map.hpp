@@ -30,7 +30,7 @@
 #ifndef SBG_PWMAP_HPP
 #define SBG_PWMAP_HPP
 
-#include "sbg/af_map.hpp"
+#include "sbg/map.hpp"
 
 namespace SBG {
 

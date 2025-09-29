@@ -65,10 +65,10 @@ PWMap BFSMatching::partitionSubsetEdges() const
   for (const Map& subset_edge : dsbg_.subEmap()) {
     Set dom = subset_edge.dom();
     Exp matched_exp(MD_NAT(dims, j));
-    Map matched_map = MAP_FACT.createMap(M_.intersection(dom), matched_exp);
+    Map matched_map(M_.intersection(dom), matched_exp);
     ++j;
     Exp free_exp(MD_NAT(dims, j));
-    Map free_map = MAP_FACT.createMap(free_edges.intersection(dom), free_exp);
+    Map free_map(free_edges.intersection(dom), free_exp);
     ++j;
 
     result.emplaceBack(matched_map);

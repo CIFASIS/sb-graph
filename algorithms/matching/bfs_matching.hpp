@@ -24,7 +24,7 @@
 #ifndef SBG_BFS_MATCH_HPP
 #define SBG_BFS_MATCH_HPP
 
-#include "algorithms/matching/bfs_paths.cpp"
+#include "algorithms/matching/bfs_paths.hpp"
 #include "algorithms/matching/matching.hpp"
 
 namespace SBG {

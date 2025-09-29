@@ -39,12 +39,12 @@ CutVertex MaxDegCVFact::createCVAlgorithm() const
 
 CVFactory::CVFactory() : cv_fact_(std::make_unique<MaxDegCVFact>()) {}
 
-CVFact& CVFactory::getCVFactory()
+CVFact& CVFactory::cv_fact()
 {
   return *cv_fact_;
 }
 
-void CVFactory::setCVFactory(std::unique_ptr<CVFact> cv_fact)
+void CVFactory::set_cv_fact(CVFactPtr cv_fact)
 {
   cv_fact_ = std::move(cv_fact);
 }

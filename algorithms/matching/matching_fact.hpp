@@ -53,16 +53,17 @@ class BFSMatchingFact : public MatchingFact {
 class MatchFactory {
   public:
   ~MatchFactory() = default;
+
   static MatchFactory& instance() {
     static MatchFactory instance_;
     return instance_;
   }
-
   MatchingFact& getMatchFactory();
   void setMatchFactory(std::unique_ptr<MatchingFact> match_fact);
 
   private:
   MatchFactory();
+
   std::unique_ptr<MatchingFact> match_fact_;
 };
 

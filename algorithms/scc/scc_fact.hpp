@@ -55,16 +55,17 @@ class MinReachSCCFact : public SCCFact {
 class SCCFactory {
   public:
   ~SCCFactory() = default;
+
   static SCCFactory& instance() {
     static SCCFactory instance_;
     return instance_;
   }
-
   SCCFact& getSCCFactory();
   void setSCCFactory(std::unique_ptr<SCCFact> scc_fact);
 
   private:
   SCCFactory();
+
   std::unique_ptr<SCCFact> scc_fact_;
 };
 

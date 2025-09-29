@@ -55,16 +55,17 @@ class MinVertexTSFact : public TSFact {
 class TSFactory {
   public:
   ~TSFactory() = default;
+
   static TSFactory& instance() {
     static TSFactory instance_;
     return instance_;
   }
-
   TSFact& getTSFactory();
   void setTSFactory(std::unique_ptr<TSFact> ts_fact);
 
   private:
   TSFactory();
+
   std::unique_ptr<TSFact> ts_fact_;
 };
 

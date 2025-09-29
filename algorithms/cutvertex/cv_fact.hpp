@@ -55,16 +55,17 @@ class MaxDegCVFact : public CVFact {
 class CVFactory {
   public:
   ~CVFactory() = default;
+
   static CVFactory& instance() {
     static CVFactory instance_;
     return instance_;
   }
-
   CVFact& getCVFactory();
   void setCVFactory(std::unique_ptr<CVFact> cv_fact);
 
   private:
   CVFactory();
+
   std::unique_ptr<CVFact> cv_fact_;
 };
 

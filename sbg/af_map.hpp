@@ -45,7 +45,7 @@ struct MapAF {
 
 /**
  * @brief Single instance of set factory to be used by clients in need of
- * creating mapss. A client includes this file and calls
+ * creating maps. A client includes this file and calls
  * MAP_FACT.createMap(args).
  */
 class MapFactory {

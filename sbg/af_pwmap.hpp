@@ -33,7 +33,7 @@ namespace SBG {
 
 namespace LIB {
 
-#define PW_FACT PWFactory::instance().getPWFactory()
+#define PW_FACT PWFactory::instance().pw_fact()
 
 struct PWMapAF {
   public:
@@ -67,8 +67,8 @@ class PWFactory {
     return instance_;
   }
 
-  PWMapAF& getPWFactory();
-  void setPWFactory(std::unique_ptr<PWMapAF> set_fact);
+  PWMapAF& pw_fact();
+  void set_pw_fact(std::unique_ptr<PWMapAF> set_fact);
 
   private:
   PWFactory();

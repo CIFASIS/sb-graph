@@ -36,9 +36,10 @@ namespace SBG {
 
 namespace LIB {
 
-#define SET_FACT SetFactory::instance().getSetFactory()
+#define SET_FACT SetFactory::instance().set_fact()
 
-struct SetAF {
+class SetAF {
+  public:
   virtual ~SetAF() = default;
 
   virtual Set createSet() const = 0;
@@ -47,19 +48,23 @@ struct SetAF {
   virtual Set createSet(const SetPiece &mdi) const = 0;
 };
 
-struct UnordAF : public SetAF {
+class UnordAF : public SetAF {
+  public:
   Set createSet() const override;
   Set createSet(const MD_NAT &x) const override;
   Set createSet(const Interval &i) const override;
   Set createSet(const SetPiece &mdi) const override;
 };
 
-struct OrdDenseAF : public SetAF {
+class OrdDenseAF : public SetAF {
+  public:
   Set createSet()  const override;
   Set createSet(const MD_NAT &x) const override;
   Set createSet(const Interval &i) const override;
   Set createSet(const SetPiece &mdi) const override;
 };
+
+using SetFactPtr = std::unique_ptr<SetAF>;
 
 /**
  * @brief Single instance of set factory to be used by clients in need of
@@ -74,12 +79,12 @@ class SetFactory {
     return instance_;
   }
 
-  SetAF& getSetFactory();
-  void setSetFactory(std::unique_ptr<SetAF> set_fact);
+  SetAF& set_fact();
+  void set_set_fact(SetFactPtr set_fact);
 
   private:
   SetFactory();
-  std::unique_ptr<SetAF> set_fact_;
+  SetFactPtr set_fact_;
 };
 
 } // namespace LIB

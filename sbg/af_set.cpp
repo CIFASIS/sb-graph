@@ -77,12 +77,12 @@ Set OrdDenseAF::createSet(const SetPiece &mdi) const
 
 SetFactory::SetFactory() : set_fact_(std::make_unique<UnordAF>()) {}
 
-SetAF& SetFactory::getSetFactory()
+SetAF& SetFactory::set_fact()
 {
   return *set_fact_;
 }
 
-void SetFactory::setSetFactory(std::unique_ptr<SetAF> set_fact)
+void SetFactory::set_set_fact(SetFactPtr set_fact)
 {
   set_fact_ = std::move(set_fact);
 }

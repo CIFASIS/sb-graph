@@ -41,10 +41,6 @@ struct Map;
 
 typedef std::optional<Map> MaybeMap;
 
-/**
- * @brief Implementation of maps. Every map has as member a SetAF that keeps
- * track of the chosen implementation for Sets.
- */
 struct Map {
   public:
   member_class(Set, dom);

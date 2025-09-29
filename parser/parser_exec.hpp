@@ -1,4 +1,8 @@
-/*****************************************************************************
+/** @file parser_exec.hpp
+
+ @brief <b>Executor of the parser</b>
+
+ <hr>
 
  This file is part of Set--Based Graph Library.
 
@@ -17,18 +21,21 @@
 
  ******************************************************************************/
 
-#ifndef PARSER_HPP
-#define PARSER_HPP
+#ifndef PARSER_EXEC_HPP
+#define PARSER_EXEC_HPP
 
-#include <string>
-
-#include "parser/sbg_program.hpp"
+#include "util/user_input_handler.hpp"
 
 namespace SBG {
 
-namespace Parser  {
+namespace Parser {
 
-AST::SBGProgram parseProgramFromFile(std::string fname);
+class ParserExecutor : public Util::UserInputHandler {
+  public:
+  ParserExecutor();
+
+  void execute(int arg_count, char* args[]) override;
+};
 
 } // namespace Parser
 

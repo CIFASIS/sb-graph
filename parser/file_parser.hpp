@@ -1,4 +1,8 @@
-/*****************************************************************************
+/** @file file_parser.hpp
+
+ @brief <b>File Parser</b>
+
+ <hr>
 
  This file is part of Set--Based Graph Library.
 
@@ -17,16 +21,21 @@
 
  ******************************************************************************/
 
-#include <iostream>
+#ifndef FILE_PARSER_HPP
+#define FILE_PARSER_HPP
 
-#include "parser/parser_exec.hpp"
+#include <string>
 
-int main(int argc, char** argv) 
-{
-  std::cout << std::boolalpha;
+#include "parser/sbg_program.hpp"
 
-  SBG::Parser::ParserExecutor parser_exec;
-  parser_exec.execute(argc, argv); 
+namespace SBG {
 
-  return 0;
-}
+namespace Parser  {
+
+AST::SBGProgram parseFile(std::string fname);
+
+} // namespace Parser
+
+} // namespace SBG
+
+#endif

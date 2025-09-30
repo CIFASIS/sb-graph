@@ -42,10 +42,10 @@ AST::SBGProgram parseFile(std::string fname)
   bool r = boost::spirit::qi::phrase_parse(iter, end, g
     , SBG::Parser::Skipper<SBG::Parser::StrIt>(), result);
 
-  std::cout << "-------------------------\n";
+  std::cout << "-----------------------------------\n";
   if (r && iter == end) {
-    std::cout << "Parsing succeeded\n";
-    std::cout << "-------------------------\n";
+    std::cout << ">>>>>>>>> Parser result <<<<<<<<<<<\n";
+    std::cout << "-----------------------------------\n";
     std::cout << "\n" << result << "\n";
   }
   else {

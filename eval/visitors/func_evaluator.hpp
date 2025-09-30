@@ -73,6 +73,20 @@ class BuiltInOperators {
   static ExprBaseType diffEvaluator(const EBTList& args);
 };
 
+class UnaryOpEvaluator {
+  public:
+  UnaryOpEvaluator();
+
+  ExprBaseType evaluate(EBTList& evaluated_args, AST::UnOp op);
+};
+
+class BinOpEvaluator {
+  public:
+  BinOpEvaluator();
+
+  ExprBaseType evaluate(EBTList& evaluated_args, AST::Op op);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // Built-in Functions ----------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
@@ -98,6 +112,7 @@ class BuiltInFunctions {
   static ExprBaseType sccEvaluator(const EBTList& args);
   static ExprBaseType topoSortEvaluator(const EBTList& args);
   static ExprBaseType cutVertexEvaluator(const EBTList& args);
+  static ExprBaseType matchSCCEvaluator(const EBTList& args);
 };
 
 } // namespace Eval

@@ -29,17 +29,17 @@ namespace Eval {
 
 void printHeader()
 {
-  std::cout << "-------------------------\n";
+  std::cout << "-----------------------------------\n";
   std::cout << "Set implementation: " << "???" << "\n";
   std::cout << "PWMap implementation: " << "???" << "\n";
-  std::cout << "-------------------------\n";
+  std::cout << "-----------------------------------\n";
   std::cout << "Matching algorithm: " << "???" << "\n";
   std::cout << "SCC algorithm: " << "???" << "\n";
   std::cout << "Cut vertex algorithm: " << "???" << "\n";
   std::cout << "Topological sort algorithm: " << "???" << "\n";
-  std::cout << "-------------------------\n";
-  std::cout << ">>>>>> Eval result <<<<<<\n";
-  std::cout << "-------------------------\n\n";
+  std::cout << "-----------------------------------\n";
+  std::cout << ">>>>>>>>>>> Eval result <<<<<<<<<<<\n";
+  std::cout << "-----------------------------------\n\n";
 }
 
 void parseEvalFile(std::string fname)

@@ -20,6 +20,7 @@
 #include "algorithms/cc/cc.hpp"
 #include "algorithms/cutvertex/cv_fact.hpp"
 #include "algorithms/matching/matching_fact.hpp"
+#include "algorithms/misc/causalization_builders.hpp"
 #include "algorithms/scc/scc_fact.hpp"
 #include "algorithms/toposort/ts_fact.hpp"
 #include "eval/visitors/func_evaluator.hpp"
@@ -253,6 +254,78 @@ ExprBaseType BuiltInOperators::diffEvaluator(const EBTList& args)
     }
   };
   return std::visit(diff_evaluator, args[0], args[1]);
+}
+
+// Operators evaluators --------------------------------------------------------
+
+UnaryOpEvaluator::UnaryOpEvaluator() {}
+
+ExprBaseType UnaryOpEvaluator::evaluate(EBTList& evaluated_args, AST::UnOp op)
+{
+  switch (op) {
+    case AST::UnOp::oppo:
+      return BuiltInOperators::oppositeEvaluator(evaluated_args);
+      break;
+
+    case AST::UnOp::card:
+      return BuiltInOperators::cardinalEvaluator(evaluated_args);
+      break;
+
+    case AST::UnOp::comp:
+      return BuiltInOperators::complementEvaluator(evaluated_args);
+      break;
+
+    default:
+      Util::ERROR("UnaryOpEvaluator: UnaryOp ", op, " unsupported\n");
+      return ExprBaseType();
+  }
+
+  return ExprBaseType(); 
+}
+
+BinOpEvaluator::BinOpEvaluator() {}
+
+ExprBaseType BinOpEvaluator::evaluate(EBTList& evaluated_args, AST::Op op)
+{
+  switch (op) {
+    case AST::Op::add:
+      return BuiltInOperators::addEvaluator(evaluated_args);
+      break;
+
+    case AST::Op::sub:
+      return BuiltInOperators::subEvaluator(evaluated_args);
+      break;
+
+    case AST::Op::mult:
+      return BuiltInOperators::multEvaluator(evaluated_args);
+      break;
+
+    case AST::Op::eq:
+      return BuiltInOperators::eqEvaluator(evaluated_args);
+      break;
+
+    case AST::Op::less:
+      return BuiltInOperators::lessEvaluator(evaluated_args);
+      break;
+
+    case AST::Op::cap:
+      return BuiltInOperators::capEvaluator(evaluated_args);
+      break;
+
+    case AST::Op::cup:
+      return BuiltInOperators::cupEvaluator(evaluated_args);
+      break;
+
+    case AST::Op::diff:
+      return BuiltInOperators::diffEvaluator(evaluated_args);
+      break;
+
+    default:
+      Util::ERROR("BinOpEvaluator: BinOp ", op, " unsupported\n");
+      return ExprBaseType(); 
+  } 
+
+  return ExprBaseType(); 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -525,7 +598,7 @@ ExprBaseType BuiltInFunctions::matchingEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 2
     , "matchingEvaluator: wrong number of arguments\n");
 
-  LIB::Matching match_impl = SBG::LIB::MATCH_FACT.createMatchAlgorithm();
+  LIB::Matching match_impl = LIB::MATCH_FACT.createMatchAlgorithm();
   const auto matching_evaluator = Overload {
     [&match_impl](LIB::SBG a, LIB::NAT b) { 
       return ExprBaseType(match_impl.calculate(a.copy(b)));
@@ -547,7 +620,7 @@ ExprBaseType BuiltInFunctions::sccEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 1
     , "sccEvaluator: wrong number of arguments\n");
 
-  SBG::LIB::SCC scc_impl = SBG::LIB::SCC_FACT.createSCCAlgorithm();
+  LIB::SCC scc_impl = LIB::SCC_FACT.createSCCAlgorithm();
   const auto scc_evaluator = Overload {
     [&scc_impl](LIB::DSBG a) { 
       return ExprBaseType(scc_impl.calculate(a).rmap());
@@ -565,7 +638,7 @@ ExprBaseType BuiltInFunctions::topoSortEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 1
     , "topoSortEvaluator: wrong number of arguments\n");
 
-  SBG::LIB::TopoSort ts_impl = SBG::LIB::TS_FACT.createTSAlgorithm();
+  LIB::TopoSort ts_impl = LIB::TS_FACT.createTSAlgorithm();
   const auto ts_evaluator = Overload {
     [&ts_impl](LIB::DSBG a) { 
       return ExprBaseType(ts_impl.calculate(a));
@@ -583,7 +656,7 @@ ExprBaseType BuiltInFunctions::cutVertexEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 1
     , "cutVertexEvaluator: wrong number of arguments\n");
 
-  SBG::LIB::CutVertex cv_impl = SBG::LIB::CV_FACT.createCVAlgorithm();
+  LIB::CutVertex cv_impl = LIB::CV_FACT.createCVAlgorithm();
   const auto cv_evaluator = Overload {
     [&cv_impl](LIB::DSBG a) { 
       return ExprBaseType(cv_impl.calculate(a));
@@ -596,33 +669,35 @@ ExprBaseType BuiltInFunctions::cutVertexEvaluator(const EBTList& args)
   return std::visit(cv_evaluator, args[0]);
 }
 
-/*
-ExprBaseType BuiltInFunctions::matchSccEvaluator(const EBTList& args)
+ExprBaseType BuiltInFunctions::matchSCCEvaluator(const EBTList& args)
 {
   Util::ERROR_UNLESS(args.size() == 2
-    , "matchSccEvaluator: wrong number of arguments");
+    , "matchSCCEvaluator: wrong number of arguments");
 
+  LIB::Matching match_impl = LIB::MATCH_FACT.createMatchAlgorithm();
+  LIB::SCC scc_impl = LIB::SCC_FACT.createSCCAlgorithm();
   const auto match_scc_evaluator = Overload {
-    [](LIB::SBG a, LIB::NAT b, LIB::SCC c, bool d) { 
-      LIB::BFSMatching match(a.copy(b), d);
-      match.calculate();
-      LIB::DSBG dsbg = MISC::buildSCCFromMatching(match);
-      return ExprBaseType(c.calculate(dsbg).rmap());
+    [&match_impl, &scc_impl](LIB::SBG a, LIB::NAT b) { 
+      LIB::MatchData match_result = match_impl.calculate(a.copy(b));
+      LIB::DSBG dsbg = MISC::buildSCCFromMatching(match_result);
+      return ExprBaseType(scc_impl.calculate(dsbg).rmap());
     },
-    [](LIB::SBG a, LIB::MD_NAT b, LIB::SCC c, bool d) { 
-      LIB::BFSMatching match(a.copy(b[0]), d);
-      match.calculate();
-      LIB::DSBG dsbg = MISC::buildSCCFromMatching(match);
-      return ExprBaseType(c.calculate(dsbg).rmap());
+    [&match_impl, &scc_impl](LIB::SBG a, LIB::MD_NAT b) { 
+      LIB::MatchData match_result = match_impl.calculate(a.copy(b[0]));
+      LIB::DSBG dsbg = MISC::buildSCCFromMatching(match_result);
+      return ExprBaseType(scc_impl.calculate(dsbg).rmap());
     },
-    [](auto a, auto b, auto c, auto d) {
+    [](auto a, auto b) {
       Util::ERROR("match_scc_evaluator: wrong arguments ", a, ", ", b
         , " for matchSCC\n"); 
       return ExprBaseType();
     }
   };
+
+  return std::visit(match_scc_evaluator, args[0], args[1]);
 }
 
+/*
 ExprBaseType BuiltInFunctions::matchSCCTSEvaluator(const EBTList& args)
 {
   const auto match_scc_ts_evaluator = Overload {
@@ -654,23 +729,6 @@ ExprBaseType BuiltInFunctions::matchSCCTSEvaluator(const EBTList& args)
       return ExprBaseType();
     }
   };
-}
-
-ExprBaseType BuiltInFunctions::cutVertexEvaluator(const EBTList& args)
-{
-  Util::ERROR_UNLESS(args.size() == 1
-    , "cutVertexEvaluator: wrong number of arguments\n");
-
-  const auto cut_evaluator = Overload {
-    [](LIB::DSBG a) { 
-      return ExprBaseType(cv_.calculate(a));
-    },
-    [](auto a) {
-      Util::ERROR("cutVertexEvaluator: wrong argument ", a, " for cut\n"); 
-      return ExprBaseType();
-    }
-  };
-  return std::visit(cut_evaluator, args[0]);
 }
 */
 

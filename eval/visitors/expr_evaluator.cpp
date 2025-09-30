@@ -72,6 +72,7 @@ ExprEvaluator::ExprEvaluator(EvalContext& eval_ctx) : eval_ctx_(eval_ctx)
   eval_ctx.insertFunction("scc", BuiltInFunctions::sccEvaluator);
   eval_ctx.insertFunction("sort", BuiltInFunctions::topoSortEvaluator);
   eval_ctx.insertFunction("cut", BuiltInFunctions::cutVertexEvaluator);
+  eval_ctx.insertFunction("matchSCC", BuiltInFunctions::matchSCCEvaluator);
 }
 
 ExprBaseType ExprEvaluator::operator()(AST::Natural v) const
@@ -98,78 +99,22 @@ ExprBaseType ExprEvaluator::operator()(AST::Name v) const
 
 ExprBaseType ExprEvaluator::operator()(AST::UnaryOp v) const
 {
-  ExprBaseType x = boost::apply_visitor(*this, v.expr());
-
-  /*
-  switch (v.op()) {
-    case AST::UnOp::oppo:
-      return std::visit(oppo_visitor_, x);
-      break;
-
-    case AST::UnOp::card:
-      return std::visit(cardinal_visitor_, x);
-      break;
-
-    case AST::UnOp::comp:
-      return std::visit(complement_visitor_, x);
-      break;
-
-    default:
-      Util::ERROR("ExprEvaluator: UnaryOp ", v.op(), " unsupported\n");
-      return ExprBaseType();
-  }
-  */
-
-  return ExprBaseType(); 
+  ExprBaseType inner = boost::apply_visitor(*this, v.expr());
+  EBTList evaluated_args;
+  evaluated_args.push_back(inner);
+  UnaryOpEvaluator unary_op_eval;
+  return unary_op_eval.evaluate(evaluated_args, v.op());
 }
 
 ExprBaseType ExprEvaluator::operator()(AST::BinOp v) const
 { 
-  ExprBaseType vl = boost::apply_visitor(*this, v.left());
-  ExprBaseType vr = boost::apply_visitor(*this, v.right());
-
-  NatEvaluator visit_nat(eval_ctx_.venv());
-  /*
-  switch (v.op()) {
-    case AST::Op::add:
-      return std::visit(add_visitor_, vl, vr);
-      break;
-
-    case AST::Op::sub:
-      return std::visit(sub_visitor_, vl, vr);
-      break;
-
-    case AST::Op::mult:
-      return std::visit(mult_visitor_, vl, vr);
-      break;
-
-    case AST::Op::eq:
-      return std::visit(eq_visitor_, vl, vr);
-      break;
-
-    case AST::Op::less:
-      return std::visit(less_visitor_, vl, vr);
-      break;
-
-    case AST::Op::cap:
-      return std::visit(cap_visitor_, vl, vr);
-      break;
-
-    case AST::Op::cup:
-      return std::visit(cup_visitor_, vl, vr);
-      break;
-
-    case AST::Op::diff:
-      return std::visit(diff_visitor_, vl, vr);
-      break;
-
-    default:
-      Util::ERROR("ExprEvaluator: BinOp ", v.op(), " unsupported\n");
-      return ExprBaseType(); 
-  } 
-  */
-
-  return ExprBaseType(); 
+  ExprBaseType left = boost::apply_visitor(*this, v.left());
+  ExprBaseType right = boost::apply_visitor(*this, v.right());
+  EBTList evaluated_args;
+  evaluated_args.push_back(left);
+  evaluated_args.push_back(right);
+  BinOpEvaluator bin_op_eval;
+  return bin_op_eval.evaluate(evaluated_args, v.op());
 }
 
 ExprBaseType ExprEvaluator::operator()(AST::Call v) const

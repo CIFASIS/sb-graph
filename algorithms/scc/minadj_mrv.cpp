@@ -119,7 +119,7 @@ PWMap MinAdjMRV::recursivePaths(const Set& ith_paths_edges, const Set& outgoing)
 
 PWMap MinAdjMRV::calculate(const DSBG& dsbg)
 {
-  std::cout << "MinAdjMRV dsbg:\n" << dsbg << "\n\n";
+  Util::DEBUG_LOG << "MinAdjMRV dsbg:\n" << dsbg << "\n\n";
 
   dsbg_ = dsbg;
   PWMap mapB = dsbg_.mapB();

@@ -1,4 +1,4 @@
-/** @file af_map.hpp
+/** @file af_pwmap.hpp
 
  @brief <b>PWMap Abstract Factory</b>
 

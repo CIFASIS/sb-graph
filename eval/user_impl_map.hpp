@@ -29,6 +29,7 @@
 #ifndef EVAL_USER_IMPL_MAP_HPP
 #define EVAL_USER_IMPL_MAP_HPP
 
+#include <functional>
 #include <unordered_map>
 #include <variant>
 

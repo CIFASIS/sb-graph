@@ -43,6 +43,7 @@ struct PWMapAF {
   virtual PWMap createPWMap() const = 0;
   virtual PWMap createPWMap(const Set &s) const = 0;
   virtual PWMap createPWMap(const Map &m) const = 0;
+  virtual std::string prettyPrint() const = 0;
 };
 
 struct UnordPWMapAF : public PWMapAF {
@@ -52,6 +53,7 @@ struct UnordPWMapAF : public PWMapAF {
   PWMap createPWMap() const override;
   PWMap createPWMap(const Set &s) const override;
   PWMap createPWMap(const Map &m) const override;
+  std::string prettyPrint() const override;
 };
 
 using PWMapFactPtr = std::unique_ptr<PWMapAF>;

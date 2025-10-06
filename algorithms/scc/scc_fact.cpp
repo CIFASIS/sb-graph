@@ -33,6 +33,11 @@ SCC MinReachSCCFact::createSCCAlgorithm() const
   return SCC(std::make_unique<MinReachSCC>());
 }
 
+std::string MinReachSCCFact::prettyPrint() const
+{
+  return "MRV";
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Factory for clients --------------------------------------------------------- 
 ////////////////////////////////////////////////////////////////////////////////

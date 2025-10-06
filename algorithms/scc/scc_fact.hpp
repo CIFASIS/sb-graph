@@ -38,6 +38,7 @@ class SCCFact {
   SCCFact() = default;
 
   virtual SCC createSCCAlgorithm() const = 0;
+  virtual std::string prettyPrint() const = 0;
 };
 
 class MinReachSCCFact : public SCCFact {
@@ -45,6 +46,7 @@ class MinReachSCCFact : public SCCFact {
   MinReachSCCFact() = default;
 
   SCC createSCCAlgorithm() const override;
+  std::string prettyPrint() const override;
 };
 
 using SCCFactPtr = std::unique_ptr<SCCFact>;

@@ -77,7 +77,9 @@ member_imp(ProgramIO, ExprResultList, exprs);
 
 std::ostream &operator<<(std::ostream &out, const ProgramIO &p)
 {
-  out << p.stms() << "\n";
+  out << p.stms();
+  if (p.stms().size() != 0)
+    out << "\n";
   out << p.exprs();
 
   return out;

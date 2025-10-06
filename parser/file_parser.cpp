@@ -51,7 +51,7 @@ AST::SBGProgram parseFile(std::string fname)
   else {
     std::string rest(iter, end);
     std::cout << "Parsing failed\n";
-    std::cout << "-------------------------\n";
+    std::cout << "-----------------------------------\n";
     std::cout << "\nstopped at: \n" << rest << "\n";
   }
 

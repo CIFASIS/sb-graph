@@ -24,13 +24,14 @@
 #ifndef EVAL_FILE_HPP
 #define EVAL_FILE_HPP
 
+#include "eval/pretty_print.hpp"
 #include "util/user_input_handler.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-void parseEvalFile(std::string fname);
+ProgramIO parseEvalFile(std::string fname);
 
 } // namespace Eval
 

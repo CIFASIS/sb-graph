@@ -1,4 +1,9 @@
-/**
+/** @file boost_exec.hpp
+
+ @brief <b>Executor of the Boost testing</b>
+
+ <hr>
+
  This file is part of Set--Based Graph Library.
 
  SBG Library is free software: you can redistribute it and/or modify
@@ -16,34 +21,23 @@
 
  ******************************************************************************/
 
-#pragma once
+#ifndef BOOST_EXEC_HPP
+#define BOOST_EXEC_HPP
 
-#include "partition_graph.hpp"
+#include "util/user_input_handler.hpp"
 
-namespace sbg_partitioner {
+namespace Boost {
 
-namespace metrics {
+class BoostExecutor : public SBG::Util::UserInputHandler {
+  public:
+  BoostExecutor();
 
+  void execute(int arg_count, char* args[]) override;
 
-struct communication_metrics {
-    int edge_cut;
-    int comm_volume;
-    int max_comm_volume;
-    float maximum_imbalance;
+  private:
+  boost::optional<int> stage_;
 };
 
+} // namespace Boost
 
-int edge_cut(const PartitionMap& partitions, const SBG::LIB::WeightedSBGraph& sb_graph);
-
-std::pair<int, int> communication_volume(
-    const PartitionMap& partitions,
-    const SBG::LIB::WeightedSBGraph& sb_graph);
-
-float maximum_imbalance(const PartitionMap& partitions, const SBG::LIB::WeightedSBGraph& sb_graph);
-
-PartitionMap read_partition_from_file(const std::string& name, const SBG::LIB::WeightedSBGraph& sb_graph);
-
-std::ostream& operator<<(std::ostream& os, const communication_metrics& comm_metrics);
-}
-
-}
+#endif

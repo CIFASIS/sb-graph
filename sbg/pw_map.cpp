@@ -17,6 +17,7 @@
 
  ******************************************************************************/
 
+#include <iostream>
 #include "sbg/pw_map.hpp"
 
 namespace SBG {
@@ -192,7 +193,7 @@ PWMapDelegPtr UnordPWMap::operator-(const PWMapDelegate &other) const
           }
           // Increasing expression
           else if (m > 0) {
-            RATIONAL cross = -h / m;
+            RATIONAL cross = -h/m;
             if (cross > 0 || cross == 0) {
               begin_pos = boost::rational_cast<NAT>(cross.value()) + 1;
               if (begin_pos > 0)
@@ -202,14 +203,22 @@ PWMapDelegPtr UnordPWMap::operator-(const PWMapDelegate &other) const
                 end_neg = 0;
               }
             }
+            else {
+              begin_neg = 1;
+              end_neg = 0;
+            }
           }
           // Decresing expression
           else { 
-            RATIONAL cross = -h / m;
+            RATIONAL cross = -h/m;
             if (cross > 0 || cross == 0) {
               end_pos = boost::rational_cast<NAT>(cross.value());
               if (end_pos > 0)
                 begin_neg = end_pos + 1;
+              else {
+                begin_pos = 1;
+                end_pos = 0;
+              }
             }
             else {
               begin_pos = 1;

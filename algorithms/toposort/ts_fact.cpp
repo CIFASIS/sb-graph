@@ -33,6 +33,11 @@ TopoSort MinVertexTSFact::createTSAlgorithm() const
   return TopoSort(std::make_unique<MinVertexTopoSort>());
 }
 
+std::string MinVertexTSFact::prettyPrint() const
+{
+  return "minimum vertex";
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Factory for clients --------------------------------------------------------- 
 ////////////////////////////////////////////////////////////////////////////////

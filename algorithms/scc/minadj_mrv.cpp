@@ -94,13 +94,16 @@ PWMap MinAdjMRV::recursivePaths(const Set& ith_paths_edges, const Set& outgoing)
     Set ith_start = smap_.dom().difference(smap_.image());
     Set E = SET_FACT.createSet(); 
     PWMap subEmap = dsbg_.subEmap();
-    bool exit_condition = true;
-    do {
-      Set ithE = mapB.preImage(ith_start).intersection(ith_paths_edges);
-      E = E.disjointCup(ithE);
-      ith_start = mapD.image(ithE);
-      exit_condition = !repeatedSE.intersection(subEmap.image(E)).isEmpty();
-    } while (!exit_condition);
+    Set ithE = mapB.preImage(ith_start).intersection(ith_paths_edges);
+    if (!ithE.isEmpty()) {
+      bool exit_condition = true;
+      do {
+        ithE = mapB.preImage(ith_start).intersection(ith_paths_edges);
+        E = E.disjointCup(ithE);
+        ith_start = mapD.image(ithE);
+        exit_condition = !repeatedSE.intersection(subEmap.image(E)).isEmpty();
+      } while (!exit_condition);
+    }
 
     Set smap_edges = edgesInPaths(smap_);
     Set adj = mapB.preImage(mapB.image(smap_edges));
@@ -152,7 +155,7 @@ PWMap MinAdjMRV::calculate(const DSBG& dsbg)
 
       // Calculate representatives map
       rmap = smap_.mapInf();
-      rmap = rmap.minMap(old_rmap);
+      rmap = rmap.minMap(old_rmap).combine(rmap);
     } while (!E.isEmpty());
   }
 

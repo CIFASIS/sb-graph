@@ -33,6 +33,11 @@ CutVertex MaxDegCVFact::createCVAlgorithm() const
   return CutVertex(std::make_unique<MaxDegCutVertex>());
 }
 
+std::string MaxDegCVFact::prettyPrint() const
+{
+  return "maximum degree vertex";
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Factory for clients --------------------------------------------------------- 
 ////////////////////////////////////////////////////////////////////////////////

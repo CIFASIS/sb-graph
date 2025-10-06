@@ -50,6 +50,11 @@ PWMap UnordPWMapAF::createPWMap(const Map &m) const
   return PWMap(std::make_unique<UnordPWMap>(m));
 }
 
+std::string UnordPWMapAF::prettyPrint() const
+{
+  return "unordered";
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Factory for clients --------------------------------------------------------- 
 ////////////////////////////////////////////////////////////////////////////////

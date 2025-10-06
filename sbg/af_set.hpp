@@ -46,6 +46,7 @@ class SetAF {
   virtual Set createSet(const MD_NAT &x) const = 0;
   virtual Set createSet(const Interval &i) const = 0;
   virtual Set createSet(const SetPiece &mdi) const = 0;
+  virtual std::string prettyPrint() const = 0;
 };
 
 class UnordAF : public SetAF {
@@ -54,6 +55,7 @@ class UnordAF : public SetAF {
   Set createSet(const MD_NAT &x) const override;
   Set createSet(const Interval &i) const override;
   Set createSet(const SetPiece &mdi) const override;
+  std::string prettyPrint() const override;
 };
 
 class OrdDenseAF : public SetAF {
@@ -62,6 +64,7 @@ class OrdDenseAF : public SetAF {
   Set createSet(const MD_NAT &x) const override;
   Set createSet(const Interval &i) const override;
   Set createSet(const SetPiece &mdi) const override;
+  std::string prettyPrint() const override;
 };
 
 using SetFactPtr = std::unique_ptr<SetAF>;

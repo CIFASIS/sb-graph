@@ -38,6 +38,7 @@ class TSFact {
   TSFact() = default;
 
   virtual TopoSort createTSAlgorithm() const = 0;
+  virtual std::string prettyPrint() const = 0;
 };
 
 class MinVertexTSFact : public TSFact {
@@ -45,6 +46,7 @@ class MinVertexTSFact : public TSFact {
   MinVertexTSFact() = default;
 
   TopoSort createTSAlgorithm() const override;
+  std::string prettyPrint() const override;
 };
 
 using TSFactPtr = std::unique_ptr<TSFact>;

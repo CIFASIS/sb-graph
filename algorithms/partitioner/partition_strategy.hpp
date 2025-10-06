@@ -46,7 +46,7 @@ public:
 class PartitionStrategyGreedy : public PartitionStrategy
 {
 public:
-    PartitionStrategyGreedy(unsigned number_of_partitions, const SBG::LIB::WeightedSBGraph graph, SBG::LIB::SetAF& set_fact);
+    PartitionStrategyGreedy(unsigned number_of_partitions, const SBG::LIB::WeightedSBGraph graph);
 
     virtual ~PartitionStrategyGreedy() = default;
 
@@ -64,7 +64,6 @@ private:
     size_t _expected_size_by_partition;
     std::map<unsigned, unsigned> _current_size_by_partition;
     SBG::LIB::NodeWeight _node_weight;
-    SBG::LIB::SetAF* _set_fact;
 };
 
 
@@ -79,7 +78,7 @@ struct SizeCmp
 class PartitionStrategyDistributive : public PartitionStrategy
 {
 public:
-    PartitionStrategyDistributive(unsigned number_of_partitions, const SBG::LIB::WeightedSBGraph graph, SBG::LIB::SetAF& set_fact);
+    PartitionStrategyDistributive(unsigned number_of_partitions, const SBG::LIB::WeightedSBGraph graph);
 
     virtual ~PartitionStrategyDistributive() = default;
 
@@ -97,7 +96,6 @@ private:
     std::map<unsigned, unsigned> _current_size_by_partition;
     SBG::LIB::Set _nodes;
     SBG::LIB::NodeWeight _node_weight;
-    SBG::LIB::SetAF* _set_fact;
 };
 
 std::ostream& operator<<(std::ostream& os, const PartitionStrategy& pgraph);

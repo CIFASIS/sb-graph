@@ -63,9 +63,7 @@ void AutomImplVisitor::visit(AST::SBGProgram p) const
     }
   }
 
-  LIB::SetFactPtr set_fact = std::get<LIB::SetFactPtr>(IMPL_MAP.getFactory("set"
-    , auto_set_impl));
-  LIB::SetFactory::instance().set_set_fact(std::move(set_fact));
+  setSetFactory(auto_set_impl);
 
   return;
 }

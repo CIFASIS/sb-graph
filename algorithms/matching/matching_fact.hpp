@@ -38,6 +38,7 @@ class MatchingFact {
   MatchingFact() = default;
 
   virtual Matching createMatchAlgorithm() const = 0;
+  virtual std::string prettyPrint() const = 0;
 };
 
 class BFSMatchingFact : public MatchingFact {
@@ -45,6 +46,7 @@ class BFSMatchingFact : public MatchingFact {
   BFSMatchingFact() = default;
 
   Matching createMatchAlgorithm() const override;
+  std::string prettyPrint() const override;
 };
 
 using MatchFactPtr = std::unique_ptr<MatchingFact>;

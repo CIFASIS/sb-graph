@@ -54,8 +54,8 @@ UserImplMap::StructImplMap setMap()
 {
   UserImplMap::StructImplMap set_mapping;
   set_mapping[0] = []() { return std::make_unique<LIB::UnordAF>(); };
-  set_mapping[1] = []() { return std::make_unique<LIB::OrdDenseAF>(); };
-  set_mapping[2] = []() { return std::make_unique<LIB::UnordAF>(); };
+  set_mapping[1] = []() { return std::make_unique<LIB::UnordAF>(); };
+  set_mapping[2] = []() { return std::make_unique<LIB::OrdDenseAF>(); };
   set_mapping.freeze();
   return set_mapping;
 }
@@ -119,6 +119,19 @@ ImplFactory UserImplMap::getFactory(std::string strct, int impl)
 {
   const StructImplMap& struct_map = implementations_[strct];
   return struct_map[impl]();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Extra operations ------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+void setSetFactory(int set_impl)
+{
+  LIB::SetFactPtr set_fact = std::get<LIB::SetFactPtr>(IMPL_MAP.getFactory("set"
+    , set_impl));
+  LIB::SetFactory::instance().set_set_fact(std::move(set_fact));
+
+  return;
 }
 
 } // namespace Eval

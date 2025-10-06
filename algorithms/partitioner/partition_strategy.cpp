@@ -31,17 +31,15 @@ using namespace SBG::LIB;
 
 namespace sbg_partitioner {
 
-PartitionStrategyGreedy::PartitionStrategyGreedy(unsigned number_of_partitions, const SBG::LIB::WeightedSBGraph graph,
-                                                 SBG::LIB::SetAF& set_fact)
+PartitionStrategyGreedy::PartitionStrategyGreedy(unsigned number_of_partitions, const SBG::LIB::WeightedSBGraph graph)
     : PartitionStrategy(),
       _number_of_partitions(number_of_partitions),
       _current_partition(0),
-      _node_weight(graph.get_node_weights()),
-      _set_fact(&set_fact)
+      _node_weight(graph.get_node_weights())
 {
   // get total of nodes by accumulating all interval values
-  _total_of_nodes = get_node_size(graph.V(), SBG::LIB::NodeWeight(), *_set_fact);
-  size_t actual_total_of_nodes = get_node_size(graph.V(), _node_weight, *_set_fact);
+  _total_of_nodes = get_node_size(graph.V(), SBG::LIB::NodeWeight());
+  size_t actual_total_of_nodes = get_node_size(graph.V(), _node_weight);
 
   unsigned min_amount_by_partition = actual_total_of_nodes / number_of_partitions;
   unsigned surplus = actual_total_of_nodes % number_of_partitions;
@@ -77,12 +75,12 @@ void PartitionStrategyGreedy::operator()(const SetPiece& node)
 #if DEBUG_PARTITION_STRATEGY_ENABLED
   logging::sbg_log << "Adding node " << node << endl;
 #endif
-  Set node_to_be_added = _set_fact->createSet(node);
+  Set node_to_be_added = SET_FACT.createSet(node);
 
   // let's just work with sizes
   map<unsigned, unsigned> size_by_partition;
-  unsigned pending_node_elements = get_node_size(node, SBG::LIB::NodeWeight(), *_set_fact);
-  int node_weight = get_set_cost(node, _node_weight, *_set_fact);
+  unsigned pending_node_elements = get_node_size(node, SBG::LIB::NodeWeight());
+  int node_weight = get_set_cost(node, _node_weight);
 
   auto keys_sort_by_value = sort_keys_by_value(_current_size_by_partition);
   for (const auto i : keys_sort_by_value) {
@@ -107,7 +105,7 @@ void PartitionStrategyGreedy::operator()(const SetPiece& node)
     _current_size_by_partition[p] += to_be_added;
   }
 
-  Set remaining_node = _set_fact->createSet(node);
+  Set remaining_node = SET_FACT.createSet(node);
   for (unsigned i = 0; i < _number_of_partitions; i++) {
     if (size_by_partition[i] == 0) {
       continue;
@@ -115,8 +113,8 @@ void PartitionStrategyGreedy::operator()(const SetPiece& node)
 
     auto& p = _partitions[i];
 
-    Set node_to_be_added = _set_fact->createSet();
-    tie(node_to_be_added, remaining_node) = cut_interval_by_dimension(remaining_node, _node_weight, size_by_partition[i], *_set_fact);
+    Set node_to_be_added = SET_FACT.createSet();
+    tie(node_to_be_added, remaining_node) = cut_interval_by_dimension(remaining_node, _node_weight, size_by_partition[i]);
 
     for_each(node_to_be_added.begin(), node_to_be_added.end(), [&p](const auto& set_piece) { p.insert(set_piece); });
   }
@@ -126,12 +124,11 @@ map<unsigned, set<SetPiece>> PartitionStrategyGreedy::partitions() const { retur
 
 /* PartitionStrategyDistributive */
 
-PartitionStrategyDistributive::PartitionStrategyDistributive(unsigned number_of_partitions, const WeightedSBGraph graph, SetAF& set_fact)
+PartitionStrategyDistributive::PartitionStrategyDistributive(unsigned number_of_partitions, const WeightedSBGraph graph)
     : PartitionStrategy(),
       _number_of_partitions(number_of_partitions),
       _nodes(graph.V()),
-      _node_weight(graph.get_node_weights()),
-      _set_fact(&set_fact)
+      _node_weight(graph.get_node_weights())
 {
   for (unsigned i = 0; i < _number_of_partitions; i++) {
     auto p = make_pair(i, 0);
@@ -176,7 +173,7 @@ void PartitionStrategyDistributive::operator()(const SBG::LIB::SetPiece& node)
 #if DEBUG_PARTITION_STRATEGY_ENABLED
   logging::sbg_log << "Adding " << node << " distributively to partitions" << endl;
 #endif
-  auto s = get_node_size(node, NodeWeight(), *_set_fact);
+  auto s = get_node_size(node, NodeWeight());
   unsigned size_by_part = s / _number_of_partitions;
   unsigned surplus = s % _number_of_partitions;
 
@@ -190,7 +187,7 @@ void PartitionStrategyDistributive::operator()(const SBG::LIB::SetPiece& node)
     add_surplus_sorting_by_value(_current_size_by_partition, size_by_partition, surplus);
   }
 
-  Set node_to_be_added = _set_fact->createSet(node);
+  Set node_to_be_added = SET_FACT.createSet(node);
   for (const auto [i, n] : size_by_partition) {
 #if DEBUG_PARTITION_STRATEGY_ENABLED
     logging::sbg_log << "For partition " << i << " size: " << n << endl;
@@ -200,13 +197,13 @@ void PartitionStrategyDistributive::operator()(const SBG::LIB::SetPiece& node)
     }
     auto& p = _partitions[i];
 
-    Set temp_node = _set_fact->createSet();
-    tie(temp_node, node_to_be_added) = cut_interval_by_dimension(node_to_be_added, NodeWeight(), size_by_partition[i], *_set_fact);
+    Set temp_node = SET_FACT.createSet();
+    tie(temp_node, node_to_be_added) = cut_interval_by_dimension(node_to_be_added, NodeWeight(), size_by_partition[i]);
 #if DEBUG_PARTITION_STRATEGY_ENABLED
     logging::sbg_log << "About to add " << temp_node << " to " << i << ", remaining: " << node_to_be_added << endl;
 #endif
     for_each(temp_node.begin(), temp_node.end(), [&p](const SetPiece& s) { p.insert(s); });
-    _current_size_by_partition[i] += get_node_size(temp_node, _node_weight, *_set_fact);
+    _current_size_by_partition[i] += get_node_size(temp_node, _node_weight);
   }
 }
 

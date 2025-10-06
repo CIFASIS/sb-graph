@@ -18,7 +18,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   add_compile_definitions(SBG_PARTITIONER_LOGGING)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -Wall ") # -Werror
 else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-reorder -fconcepts")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-reorder -fconcepts -O3")
 endif()
 
 # Output directories
@@ -55,7 +55,7 @@ add_subdirectory(eval)
 add_subdirectory(parser)
 add_subdirectory(ast)
 add_subdirectory(sbg)
-#add_subdirectory(test)
+add_subdirectory(test)
 add_subdirectory(util)
 
 set_target_properties(sbgraph PROPERTIES DEBUG_POSTFIX "d")

@@ -45,9 +45,8 @@ enum PartitionAlgorithm
 
 /// @brief Converts a Partition element into a Set.
 /// @param partition - A list of SetPiece elements.
-/// @param set_fact - Factory to create sets.
 /// @return A SBG::LIB::Set representation of the Partition element.
-SBG::LIB::Set from_vector(const Partition& partition, SBG::LIB::SetAF& set_fact);
+SBG::LIB::Set from_vector(const Partition& partition);
 
 
 /// @brief Converts a set into a Partition element.
@@ -61,15 +60,13 @@ Partition to_vector(const SBG::LIB::Set& partition);
 std::vector<PartitionMap>
 make_initial_partitions(
     SBG::LIB::WeightedSBGraph& graph,
-    unsigned number_of_partitions,
-    SBG::LIB::SetAF& set_fact);
+    unsigned number_of_partitions);
 
 
 PartitionMap
 best_initial_partition(
     SBG::LIB::WeightedSBGraph& graph,
-    unsigned number_of_partitions,
-    SBG::LIB::SetAF& set_fact);
+    unsigned number_of_partitions);
 
 
 /// Returns the connectivity set of a set of edges contained in map1 and map2 of
@@ -78,8 +75,7 @@ best_initial_partition(
 SBG::LIB::Set get_connectivity_set(
     SBG::LIB::SBG& graph,
     const PartitionMap& partitions,
-    size_t edge_index,
-    SBG::LIB::SetAF& set_fact);
+    size_t edge_index);
 
 
 void sort_partition_intervals(Partition& p);
@@ -88,7 +84,7 @@ void sort_partition_intervals(Partition& p);
 std::string get_output(const PartitionMap& partition_map);
 
 
-void sanity_check(const SBG::LIB::WeightedSBGraph& graph, PartitionMap& partitions_set, unsigned number_of_partitions, SBG::LIB::SetAF& set_fact);
+void sanity_check(const SBG::LIB::WeightedSBGraph& graph, PartitionMap& partitions_set, unsigned number_of_partitions);
 
 
 std::ostream& operator<<(std::ostream& os, const Partition& partitions);

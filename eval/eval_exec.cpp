@@ -20,6 +20,10 @@
 #include <iostream>
 #include <fstream>
 
+#include "algorithms/cutvertex/cv_fact.hpp"
+#include "algorithms/matching/matching_fact.hpp"
+#include "algorithms/scc/scc_fact.hpp"
+#include "algorithms/toposort/ts_fact.hpp"
 #include "eval/eval_exec.hpp"
 #include "eval/file_evaluator.hpp"
 #include "eval/input_translator.hpp"
@@ -31,12 +35,35 @@ namespace SBG {
 namespace Eval {
 
 ////////////////////////////////////////////////////////////////////////////////
+// Auxiliary functions ---------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+void printHeader(Util::prog_opts::variables_map vm)
+{
+  if (vm.count("debug")) {
+    std::cout << "-----------------------------------\n";
+    std::cout << "Set implementation: " << LIB::SET_FACT.prettyPrint() << "\n";
+    std::cout << "PWMap implementation: " << LIB::PW_FACT.prettyPrint() << "\n";
+    std::cout << "-----------------------------------\n";
+    std::cout << "Matching algorithm: " << LIB::MATCH_FACT.prettyPrint() << "\n";
+    std::cout << "SCC algorithm: " << LIB::SCC_FACT.prettyPrint() << "\n";
+    std::cout << "Cut vertex algorithm: " << LIB::CV_FACT.prettyPrint() << "\n";
+    std::cout << "Topological sort algorithm: " << LIB::TS_FACT.prettyPrint()
+      << "\n";
+  }
+  std::cout << "-----------------------------------\n";
+  std::cout << ">>>>>>>>>>> Eval result <<<<<<<<<<<\n";
+  std::cout << "-----------------------------------\n\n";
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Evaluation Executor ---------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 EvalExecutor::EvalExecutor() : set_impl_(0)
 {
   config_.add_options()
+
     ("set_impl,s", Util::prog_opts::value(&set_impl_),
       " Desired set implementation:"
       "\n  - 0 for unordered sets (default option)"
@@ -99,7 +126,9 @@ void EvalExecutor::execute(int arg_count, char* args[])
     EvalUserInput input = gatherUserInput();
     InputTranslator input_translator;
     input_translator.translate(input);
-    parseEvalFile(*input_file_); 
+    ProgramIO eval_result = parseEvalFile(*input_file_); 
+    printHeader(vm);
+    std::cout << eval_result;
   }
   else {
     std::cout << "Usage: filename [options]\n";

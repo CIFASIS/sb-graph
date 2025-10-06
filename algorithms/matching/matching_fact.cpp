@@ -33,6 +33,11 @@ Matching BFSMatchingFact::createMatchAlgorithm() const
   return Matching(std::make_unique<BFSMatching>());
 }
 
+std::string BFSMatchingFact::prettyPrint() const
+{
+  return "BFS paths";
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Factory for clients --------------------------------------------------------- 
 ////////////////////////////////////////////////////////////////////////////////

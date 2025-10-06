@@ -27,32 +27,14 @@ namespace SBG {
 
 namespace Eval {
 
-void printHeader()
-{
-  std::cout << "-----------------------------------\n";
-  std::cout << "Set implementation: " << "???" << "\n";
-  std::cout << "PWMap implementation: " << "???" << "\n";
-  std::cout << "-----------------------------------\n";
-  std::cout << "Matching algorithm: " << "???" << "\n";
-  std::cout << "SCC algorithm: " << "???" << "\n";
-  std::cout << "Cut vertex algorithm: " << "???" << "\n";
-  std::cout << "Topological sort algorithm: " << "???" << "\n";
-  std::cout << "-----------------------------------\n";
-  std::cout << ">>>>>>>>>>> Eval result <<<<<<<<<<<\n";
-  std::cout << "-----------------------------------\n\n";
-}
-
-void parseEvalFile(std::string fname)
+ProgramIO parseEvalFile(std::string fname)
 {
   SBG::AST::SBGProgram parser_result = SBG::Parser::parseFile(fname);
 
   SBG::Eval::ProgramEvaluator program_visit; 
   SBG::Eval::ProgramIO visit_result = program_visit.evaluate(parser_result);
 
-  printHeader();
-  std::cout << visit_result;
-
-  return;
+  return visit_result;
 }
 
 } // namespace Eval

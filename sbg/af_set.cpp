@@ -47,6 +47,11 @@ Set UnordAF::createSet(const SetPiece &mdi) const
   return Set(std::make_unique<UnorderedSet>(mdi));
 }
 
+std::string UnordAF::prettyPrint() const
+{
+  return "unordered";
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Ordered Set (1 dimension, dense intervals) AF -------------------------------
 ////////////////////////////////////////////////////////////////////////////////
@@ -69,6 +74,11 @@ Set OrdDenseAF::createSet(const Interval &i) const
 Set OrdDenseAF::createSet(const SetPiece &mdi) const
 {
   return Set(std::make_unique<OrderedDenseSet>(mdi));
+}
+
+std::string OrdDenseAF::prettyPrint() const
+{
+  return "ordered unidimensional dense";
 }
 
 ////////////////////////////////////////////////////////////////////////////////

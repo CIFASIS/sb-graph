@@ -38,6 +38,7 @@ class CVFact {
   CVFact() = default;
 
   virtual CutVertex createCVAlgorithm() const = 0;
+  virtual std::string prettyPrint() const = 0;
 };
 
 class MaxDegCVFact : public CVFact {
@@ -45,6 +46,7 @@ class MaxDegCVFact : public CVFact {
   MaxDegCVFact() = default;
 
   CutVertex createCVAlgorithm() const override;
+  std::string prettyPrint() const override;
 };
 
 using CVFactPtr = std::unique_ptr<CVFact>;

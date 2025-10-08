@@ -29,10 +29,10 @@ namespace Eval {
 
 ProgramIO parseEvalFile(std::string fname)
 {
-  SBG::AST::SBGProgram parser_result = SBG::Parser::parseFile(fname);
+  AST::SBGProgram parser_result = Parser::parseFile(fname);
 
-  SBG::Eval::ProgramEvaluator program_visit; 
-  SBG::Eval::ProgramIO visit_result = program_visit.evaluate(parser_result);
+  Eval::ProgramEvaluator program_visit; 
+  Eval::ProgramIO visit_result = program_visit.evaluate(parser_result);
 
   return visit_result;
 }

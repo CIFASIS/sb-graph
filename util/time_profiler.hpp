@@ -49,12 +49,8 @@ private:
     static std::unordered_map<std::string, double> _execution_time;
 };
 
-}
+} // namespace Internal
 
-}
+} // namespace Util
 
-<<<<<<< HEAD
-}
-=======
-}
->>>>>>> sb-graph-dev
+} // namespace SBG

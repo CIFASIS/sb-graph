@@ -9,5 +9,6 @@ target_sources(
         linear_expr_evaluator.cpp
         program_evaluator.cpp
         rational_evaluator.cpp
+        set_impl_visitor.cpp
         stm_evaluator.cpp
 )

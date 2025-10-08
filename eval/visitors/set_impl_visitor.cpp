@@ -30,7 +30,7 @@ namespace Eval {
 // Set Implementation single Expression Visitor --------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-SetImplExprVisitor::SetImplExprVisitor(const VarEnv& venv) : venv_(venv) {}
+SetImplExprVisitor::SetImplExprVisitor(VarEnv& venv) : venv_(venv) {}
 
 int SetImplExprVisitor::operator()(AST::Natural v) const { return 2; }
 

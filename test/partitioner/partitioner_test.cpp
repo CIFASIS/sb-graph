@@ -62,7 +62,6 @@ static void test_create_sb_graph(const std::string& filename, const std::vector<
                                  const std::vector<Interval>& lhs_map_domain, const std::vector<Exp>& lhs_map_exps,
                                  const std::vector<Interval>& rhs_map_domain, const std::vector<Exp>& rhs_map_exps)
 {
-<<<<<<< HEAD
   auto sb_graph = sbg_partitioner::build_sb_graph(filename);
 
   // create nodes of the expected graph
@@ -87,37 +86,6 @@ static void test_create_sb_graph(const std::string& filename, const std::vector<
   EXPECT_EQ(lhs_maps.dom(), sb_graph.E());
   EXPECT_EQ(rhs_maps.dom(), sb_graph.E());
 
-=======
-  // create needed factories
-  SBG::LIB::UnordAF set_fact;
-  SBG::LIB::MapAF map_fact(set_fact);
-  SBG::LIB::UnordPWMapAF pw_fact(map_fact);
-
-  auto sb_graph = sbg_partitioner::build_sb_graph(filename, pw_fact);
-
-  // create nodes of the expected graph
-  auto expected_nodes = set_fact.createSet();
-  for (const auto& n : node_intervals) {
-    expected_nodes.emplaceBack(n);
-  }
-  EXPECT_EQ(expected_nodes, sb_graph.V());
-
-  // create edges of the expected graph through its maps
-  PWMap lhs_maps = pw_fact.createPWMap();
-  for (size_t i = 0; i < lhs_map_domain.size(); i++) {
-    lhs_maps.emplaceBack(map_fact.createMap(lhs_map_domain[i], lhs_map_exps[i]));
-  }
-
-  PWMap rhs_maps = pw_fact.createPWMap();
-  for (size_t i = 0; i < rhs_map_domain.size(); i++) {
-    rhs_maps.emplaceBack(map_fact.createMap(rhs_map_domain[i], rhs_map_exps[i]));
-  }
-
-  // test edges are correct
-  EXPECT_EQ(lhs_maps.dom(), sb_graph.E());
-  EXPECT_EQ(rhs_maps.dom(), sb_graph.E());
-
->>>>>>> sb-graph-dev
   // test that maps are as expected
   EXPECT_EQ(lhs_maps, sb_graph.map1());
   EXPECT_EQ(rhs_maps, sb_graph.map2());
@@ -143,19 +111,10 @@ TEST(initial_partition, PartitionerTests)
 {
   auto sb_graph = sbg_partitioner::build_sb_graph(get_full_file_name("air_conditioners_1000.json"));
 
-<<<<<<< HEAD
   constexpr bool enable_multithreading = false;
   sbg_partitioner::PartitionMap partition = sbg_partitioner::best_initial_partition(sb_graph, 4, sbg_partitioner::InitialPartitionStrategy::ALL, enable_multithreading);
 
   auto expected_distributed_pre_order_0 = SET_FACT.createSet();
-=======
-  auto sb_graph = sbg_partitioner::build_sb_graph(get_full_file_name("air_conditioners_1000.json"), pw_fact);
-
-  constexpr bool enable_multithreading = false;
-  sbg_partitioner::PartitionMap partition = sbg_partitioner::best_initial_partition(sb_graph, 4, sbg_partitioner::InitialPartitionStrategy::ALL, enable_multithreading);
-
-  auto expected_distributed_pre_order_0 = set_fact.createSet();
->>>>>>> sb-graph-dev
   expected_distributed_pre_order_0.emplaceBack(Interval(0, 1, 249));
   expected_distributed_pre_order_0.emplaceBack(Interval(1000, 1, 1249));
   expected_distributed_pre_order_0.emplaceBack(Interval(2000, 1, 2249));
@@ -190,23 +149,11 @@ TEST(initial_partition, PartitionerTests)
 
 static void test_partitioning(const std::string& filename, int number_of_partitions)
 {
-<<<<<<< HEAD
   auto sb_graph = sbg_partitioner::build_sb_graph(filename);
   constexpr bool enable_multithreading = false;
   auto partitions = sbg_partitioner::best_initial_partition(sb_graph, number_of_partitions, sbg_partitioner::InitialPartitionStrategy::ALL, enable_multithreading);
   sbg_partitioner::kl_sbg_imbalance_partitioner(sb_graph, partitions, 0.0, enable_multithreading);
 
-=======
-  UnordAF set_fact;
-  MapAF map_fact(set_fact);
-  UnordPWMapAF pw_fact(map_fact);
-
-  auto sb_graph = sbg_partitioner::build_sb_graph(filename, pw_fact);
-  constexpr bool enable_multithreading = false;
-  auto partitions = sbg_partitioner::best_initial_partition(sb_graph, number_of_partitions, sbg_partitioner::InitialPartitionStrategy::ALL, enable_multithreading);
-  sbg_partitioner::kl_sbg_imbalance_partitioner(sb_graph, partitions, 0.0, enable_multithreading);
-
->>>>>>> sb-graph-dev
   sbg_partitioner::sanity_check(sb_graph, partitions, number_of_partitions);
 }
 
@@ -223,8 +170,4 @@ TEST(partitioning, PartitionerTests)
   test_partitioning(get_full_file_name("air_conditioners_cont_4_1000.json"), 4);
 }
 
-<<<<<<< HEAD
 /// @}
-=======
-/// @}
->>>>>>> sb-graph-dev

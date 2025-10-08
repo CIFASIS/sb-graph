@@ -9,10 +9,7 @@ target_sources(
     PRIVATE
     logger.cpp
     time_profiler.cpp
-<<<<<<< HEAD
     user_input_handler.cpp
-=======
->>>>>>> sb-graph-dev
 )
 
 add_custom_target(util-doc

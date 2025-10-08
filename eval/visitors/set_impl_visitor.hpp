@@ -50,7 +50,7 @@ namespace Eval {
  */
 class SetImplExprVisitor : public boost::static_visitor<int> {
   public:
-  SetImplExprVisitor(const VarEnv& venv);
+  SetImplExprVisitor(VarEnv& venv);
 
   int operator()(AST::Natural v) const;
   int operator()(AST::Rational v) const;
@@ -70,7 +70,7 @@ class SetImplExprVisitor : public boost::static_visitor<int> {
   int operator()(AST::ParenExpr) const;
 
   private:
-  const VarEnv& venv_;
+  VarEnv& venv_;
 };
 
 } // namespace Eval

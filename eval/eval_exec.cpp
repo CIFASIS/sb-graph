@@ -19,6 +19,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <streambuf>
 
 #include "algorithms/cutvertex/cv_fact.hpp"
 #include "algorithms/matching/matching_fact.hpp"
@@ -28,6 +29,8 @@
 #include "eval/file_evaluator.hpp"
 #include "eval/input_translator.hpp"
 #include "eval/file_evaluator.hpp"
+#include "eval/visitors/autom_impl_visitor.hpp"
+#include "parser/file_parser.hpp"
 #include "util/debug.hpp"
 
 namespace SBG {
@@ -45,7 +48,8 @@ void printHeader(Util::prog_opts::variables_map vm)
     std::cout << "Set implementation: " << LIB::SET_FACT.prettyPrint() << "\n";
     std::cout << "PWMap implementation: " << LIB::PW_FACT.prettyPrint() << "\n";
     std::cout << "-----------------------------------\n";
-    std::cout << "Matching algorithm: " << LIB::MATCH_FACT.prettyPrint() << "\n";
+    std::cout << "Matching algorithm: " << LIB::MATCH_FACT.prettyPrint()
+      << "\n";
     std::cout << "SCC algorithm: " << LIB::SCC_FACT.prettyPrint() << "\n";
     std::cout << "Cut vertex algorithm: " << LIB::CV_FACT.prettyPrint() << "\n";
     std::cout << "Topological sort algorithm: " << LIB::TS_FACT.prettyPrint()
@@ -127,6 +131,12 @@ void EvalExecutor::execute(int arg_count, char* args[])
   // Input SBG program file handling -------------------------------------------
 
   if (input_file_) {
+    AutomImplVisitor autom_impl;
+    std::streambuf* old_cout_buffer = std::cout.rdbuf();
+    std::cout.rdbuf(nullptr);
+    autom_impl.visit(Parser::parseFile(*input_file_));
+    std::cout.rdbuf(old_cout_buffer);
+
     EvalUserInput input = gatherUserInput();
     InputTranslator input_translator;
     input_translator.translate(input);

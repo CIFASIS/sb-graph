@@ -16,34 +16,41 @@
 
  ******************************************************************************/
 
+#include <chrono>
+#include <iostream>
+#include <string>
+#include <unordered_map>
+
 #pragma once
 
-#include "partition_graph.hpp"
+namespace SBG {
 
-namespace sbg_partitioner {
+namespace Util {
 
-namespace metrics {
+namespace Internal {
 
+/**
+ * @brief This is an internal class to measure the accumulated execution time of
+ * several selected functions.
+ * @note This class is internal for the library and should not be included and/or
+ * used by users. The user should be able to call `time_profiler_results` but not
+ * defining TimeProfiler objects.
+ */
+struct TimeProfiler {
+    TimeProfiler(std::string&& function_name);
 
-struct communication_metrics {
-    int edge_cut;
-    int comm_volume;
-    int max_comm_volume;
-    float maximum_imbalance;
+    ~TimeProfiler();
+
+    static void print_execution_time();
+
+private:
+    std::string _function_name;
+    std::chrono::_V2::system_clock::time_point _start;
+    static std::unordered_map<std::string, double> _execution_time;
 };
 
+}
 
-int edge_cut(const PartitionMap& partitions, const SBG::LIB::WeightedSBGraph& sb_graph);
-
-std::pair<int, int> communication_volume(
-    const PartitionMap& partitions,
-    const SBG::LIB::WeightedSBGraph& sb_graph);
-
-float maximum_imbalance(const PartitionMap& partitions, const SBG::LIB::WeightedSBGraph& sb_graph);
-
-PartitionMap read_partition_from_file(const std::string& name, const SBG::LIB::WeightedSBGraph& sb_graph);
-
-std::ostream& operator<<(std::ostream& os, const communication_metrics& comm_metrics);
 }
 
 }

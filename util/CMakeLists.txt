@@ -8,6 +8,7 @@ target_sources(
     sbg-util-lib
     PRIVATE
     logger.cpp
+    time_profiler.cpp
     user_input_handler.cpp
 )
 

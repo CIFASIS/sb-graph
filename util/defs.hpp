@@ -55,6 +55,18 @@ namespace Util {
 #define member_imp(C, X, Y)          \
   const X &C::Y() const { return Y##_; }
 
+/**
+ * @brief Execution time of selected functions will be printed if it's true.
+ */
+constexpr bool time_profiler_enabled = false;
+
+/**
+ * @brief Calling this before the program returns.
+ * The execution time of the measured functions will be printed
+ * iff `time_profiler_enabled` is true.
+ */
+void time_profiler_results();
+
 } // namespace Util
 
 } // namespace SBG

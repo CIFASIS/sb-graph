@@ -25,7 +25,7 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Maximum Degree Cut Vertex AF ------------------------------------------------
+// Maximum Degree Cut Vertex Factory -------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 CutVertex MaxDegCVFact::createCVAlgorithm() const

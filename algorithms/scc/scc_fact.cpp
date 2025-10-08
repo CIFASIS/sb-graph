@@ -25,24 +25,38 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Minimum Reachable SCC AF ----------------------------------------------------
+// Minimum Reachable SCC V1 Factory --------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-SCC MinReachSCCFact::createSCCAlgorithm() const
+SCC MinReachSCCV1Fact::createSCCAlgorithm() const
 {
-  return SCC(std::make_unique<MinReachSCC>());
+  return SCC(std::make_unique<MinReachSCCV1>());
 }
 
-std::string MinReachSCCFact::prettyPrint() const
+std::string MinReachSCCV1Fact::prettyPrint() const
 {
-  return "MRV";
+  return "MRV V1";
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Minimum Reachable SCC V2 Factory --------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+SCC MinReachSCCV2Fact::createSCCAlgorithm() const
+{
+  return SCC(std::make_unique<MinReachSCCV2>());
+}
+
+std::string MinReachSCCV2Fact::prettyPrint() const
+{
+  return "MRV V2";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Factory for clients --------------------------------------------------------- 
 ////////////////////////////////////////////////////////////////////////////////
 
-SCCFactory::SCCFactory() : scc_fact_(std::make_unique<MinReachSCCFact>()) {}
+SCCFactory::SCCFactory() : scc_fact_(std::make_unique<MinReachSCCV2Fact>()) {}
 
 SCCFact& SCCFactory::scc_fact()
 {

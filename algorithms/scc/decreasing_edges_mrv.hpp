@@ -1,4 +1,4 @@
-/** @file minadj_mrv.hpp
+/** @file decreasing_edges_mrv.hpp
 
  @brief <b>Concrete SBG MRV Algorithm</b>
 
@@ -23,8 +23,8 @@
 
  ******************************************************************************/
 
-#ifndef SBG_MINADJ_MRV_HPP
-#define SBG_MINADJ_MRV_HPP
+#ifndef SBG_DECREASING_EDGES_MRV_HPP
+#define SBG_DECREASING_EDGES_MRV_HPP
 
 #include "algorithms/scc/mrv.hpp"
 
@@ -37,20 +37,40 @@ namespace LIB {
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * @brief Minimum Adjacent implementation to calculate MRV.
+ * @brief Decreasing Edges implementation to calculate MRV.
  */
-class MinAdjMRV : public MRVContext<MinAdjMRV> {
+class LtEdgesMRV : public MRVContext<LtEdgesMRV> {
   public:
-  MinAdjMRV();
+  LtEdgesMRV();
  
   /**
    * @brief Concrete implementation that starts with the identity pw for every
-   * vertex. Then, for every vertex it compares the current MRV with the MRVs
-   * of their adjacent reachable vertices.
+   * vertex. Then, it finds edges with a greater representative in its start
+   * than its end. With those edges it constructs a successor map, which is
+   * composed with itself up to convergence.
    * It also handles recursive paths (i.e. paths that have a length depending
    * on the size of the intervals that define the DSBG).
    */
   PWMap calculate(const DSBG& dsbg);
+
+  private:
+  /**
+   * @brief Given the current state of rmap_, returns the set of edges (u, v)
+   * such that rmap_(u) > rmap_(v), which are edges leading to a new
+   * minimum MRV.
+   */
+  Set decreasingRepresentative(const PWMap& rmap) const;
+
+  Set edgesInPaths(const PWMap& smap) const;
+
+  /*
+   * @brief Calculates the MRV for recursive paths.
+   */
+  PWMap recursivePaths(const Set& paths_edges, const Set& outgoing);
+
+  DSBG dsbg_;
+  PWMap smap_;
+  Set visitedSE_;
 };
 
 } // namespace LIB

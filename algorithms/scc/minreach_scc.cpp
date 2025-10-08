@@ -19,6 +19,7 @@
 
 #include <chrono>
 
+#include "algorithms/scc/decreasing_edges_mrv.hpp"
 #include "algorithms/scc/minreach_scc.hpp"
 #include "algorithms/scc/minadj_mrv.hpp"
 #include "util/logger.hpp"
@@ -49,27 +50,6 @@ void MinReachSCC::swapEdgesDirection(const Set& E)
     , mapB.compact(), mapD.compact(), Emap.compact(), subEmap.compact());
 
   return;
-}
-
-PWMap MinReachSCC::sccStep()
-{
-  // Calculate MRV
-  MinAdjMRV mrv;
-  PWMap new_rmap = mrv.calculate(dsbg_);
-  Util::DEBUG_LOG << "MinReachSCC new_rmap: " << new_rmap << "\n";
-
-  // Leave edges in the same SCC
-  PWMap rmapB = new_rmap.composition(dsbg_.mapB());
-  PWMap rmapD = new_rmap.composition(dsbg_.mapD());
-  Set Esame = rmapB.equalImage(rmapD);
-  E_ = Esame;
-  Util::DEBUG_LOG << "MinReachSCC erased edges: "
-    << dsbg_.E().difference(E_) << "\n\n";
-
-  // Swap directions
-  swapEdgesDirection(E_);
-
-  return new_rmap;
 }
 
 void MinReachSCC::init(const DSBG& dsbg)
@@ -106,6 +86,60 @@ SCCData MinReachSCC::calculate(const DSBG& dsbg)
   Util::DEBUG_LOG << "MinReachSCC result: " << rmap << "\n\n";
 
   return SCCData(dsbg, rmap, Ediff);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// First version ---------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+MinReachSCCV1::MinReachSCCV1() {}
+
+PWMap MinReachSCCV1::sccStep()
+{
+  // Calculate MRV
+  MinAdjMRV mrv;
+  PWMap new_rmap = mrv.calculate(dsbg_);
+  Util::DEBUG_LOG << "MinReachSCC new_rmap: " << new_rmap << "\n";
+
+  // Leave edges in the same SCC
+  PWMap rmapB = new_rmap.composition(dsbg_.mapB());
+  PWMap rmapD = new_rmap.composition(dsbg_.mapD());
+  Set Esame = rmapB.equalImage(rmapD);
+  E_ = Esame;
+  Util::DEBUG_LOG << "MinReachSCCV1 erased edges: "
+    << dsbg_.E().difference(E_) << "\n\n";
+
+  // Swap directions
+  swapEdgesDirection(E_);
+
+  return new_rmap;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Second version --------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+MinReachSCCV2::MinReachSCCV2() {}
+
+PWMap MinReachSCCV2::sccStep()
+{
+  // Calculate MRV
+  LtEdgesMRV mrv;
+  PWMap new_rmap = mrv.calculate(dsbg_);
+  Util::DEBUG_LOG << "MinReachSCC new_rmap: " << new_rmap << "\n";
+
+  // Leave edges in the same SCC
+  PWMap rmapB = new_rmap.composition(dsbg_.mapB());
+  PWMap rmapD = new_rmap.composition(dsbg_.mapD());
+  Set Esame = rmapB.equalImage(rmapD);
+  E_ = Esame;
+  Util::DEBUG_LOG << "MinReachSCCV1 erased edges: "
+    << dsbg_.E().difference(E_) << "\n\n";
+
+  // Swap directions
+  swapEdgesDirection(E_);
+
+  return new_rmap;
 }
 
 } // namespace LIB

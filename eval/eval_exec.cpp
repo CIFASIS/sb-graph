@@ -63,12 +63,15 @@ void printHeader(Util::prog_opts::variables_map vm)
 EvalExecutor::EvalExecutor() : set_impl_(0)
 {
   config_.add_options()
-
     ("set_impl,s", Util::prog_opts::value(&set_impl_),
-      " Desired set implementation:"
-      "\n  - 0 for unordered sets (default option)"
-      "\n  - 1 for ordered sets"
-      "\n  - 2 for unidimensional ordered dense sets");
+     " Desired set implementation:"
+     "\n  - 0 for unordered sets (default option)"
+     "\n  - 1 for ordered sets"
+     "\n  - 2 for unidimensional ordered dense sets")
+    ("scc_impl", Util::prog_opts::value(&scc_impl_),
+     "Desired SCC algorithm implementation:"
+     "\n  - 0 for V1 of minimum reachable SCC (default option)"
+     "\n  - 1 for V2 of minimum reachable SCC");
 
   cmd_line_opts_.add(generic_).add(config_).add(hidden_);
   cfg_file_opts_.add(config_).add(hidden_);
@@ -80,6 +83,7 @@ EvalUserInput EvalExecutor::gatherUserInput()
   EvalUserInput result;
 
   result.set_set_impl(set_impl_);
+  result.set_scc_impl(scc_impl_);
 
   return result;
 }

@@ -103,6 +103,7 @@ class UserImplMap {
 ////////////////////////////////////////////////////////////////////////////////
 
 void setSetFactory(int set_impl);
+void setSCCFactory(int scc_impl);
 
 } // namespace Eval
 

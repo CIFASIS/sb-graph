@@ -31,10 +31,12 @@ void InputTranslator::translate(EvalUserInput& input)
 {
   EvalUserInput::MaybeInt s = input.set_impl();
   if (s) {
-    int set_impl = *s;
-    LIB::SetFactPtr set_fact = std::get<LIB::SetFactPtr>(IMPL_MAP
-      .getFactory("set", set_impl));
-    LIB::SetFactory::instance().set_set_fact(std::move(set_fact));
+    setSetFactory(*s);
+  }
+
+  EvalUserInput::MaybeInt scc = input.scc_impl();
+  if (scc) {
+    setSCCFactory(*scc);
   }
 
   return;

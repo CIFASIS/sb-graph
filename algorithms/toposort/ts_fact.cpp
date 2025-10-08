@@ -25,7 +25,7 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Minimum Vertex Topological Sort AF ------------------------------------------
+// Minimum Vertex Topological Sort Factory -------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 TopoSort MinVertexTSFact::createTSAlgorithm() const

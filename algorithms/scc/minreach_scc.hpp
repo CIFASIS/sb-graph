@@ -48,7 +48,7 @@ class MinReachSCC : public SCCStrategy {
 
   SCCData calculate(const DSBG& dsbg) override;
 
-  private:
+  protected:
   /**
    * @brief Initializes data members determined by the input SBG.
    */
@@ -58,7 +58,7 @@ class MinReachSCC : public SCCStrategy {
    * @brief Performs a step of the algorithm in a certain direction, detecting
    * and erasing edges that belong to different SCC.
    */
-  PWMap sccStep();
+  virtual PWMap sccStep() = 0;
 
   /**
    * @brief Modifies the `dsbg_` member, restricting the domain of edges maps
@@ -73,6 +73,30 @@ class MinReachSCC : public SCCStrategy {
 
   DSBG dsbg_; ///< Input DSBG
   Set E_;     ///< Edges with both endings in the same SCC
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// First version with mininimum adjacent MRV ----------------------------------- 
+////////////////////////////////////////////////////////////////////////////////
+
+class MinReachSCCV1 : public MinReachSCC {
+  public:
+  MinReachSCCV1();
+
+  protected:
+  PWMap sccStep() override;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Second version with decreasing edges MRV ------------------------------------ 
+////////////////////////////////////////////////////////////////////////////////
+
+class MinReachSCCV2 : public MinReachSCC {
+  public:
+  MinReachSCCV2();
+
+  protected:
+  PWMap sccStep() override;
 };
 
 } // namespace LIB

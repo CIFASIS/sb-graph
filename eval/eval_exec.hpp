@@ -41,6 +41,7 @@ class EvalExecutor : public Util::UserInputHandler {
   EvalUserInput gatherUserInput();
 
   boost::optional<int> set_impl_;
+  boost::optional<int> scc_impl_;
 };
 
 } // namespace Eval

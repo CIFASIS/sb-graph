@@ -80,7 +80,8 @@ UserImplMap::StructImplMap matchMap()
 UserImplMap::StructImplMap sccMap()
 {
   UserImplMap::StructImplMap scc_mapping;
-  scc_mapping[0] = []() { return std::make_unique<LIB::MinReachSCCFact>(); };
+  scc_mapping[0] = []() { return std::make_unique<LIB::MinReachSCCV1Fact>(); };
+  scc_mapping[1] = []() { return std::make_unique<LIB::MinReachSCCV2Fact>(); };
   scc_mapping.freeze();
   return scc_mapping;
 }
@@ -130,6 +131,15 @@ void setSetFactory(int set_impl)
   LIB::SetFactPtr set_fact = std::get<LIB::SetFactPtr>(IMPL_MAP.getFactory("set"
     , set_impl));
   LIB::SetFactory::instance().set_set_fact(std::move(set_fact));
+
+  return;
+}
+
+void setSCCFactory(int scc_impl)
+{
+  LIB::SCCFactPtr scc_fact = std::get<LIB::SCCFactPtr>(IMPL_MAP.getFactory("scc"
+    , scc_impl));
+  LIB::SCCFactory::instance().set_scc_fact(std::move(scc_fact));
 
   return;
 }

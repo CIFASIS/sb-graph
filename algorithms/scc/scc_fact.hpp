@@ -41,9 +41,17 @@ class SCCFact {
   virtual std::string prettyPrint() const = 0;
 };
 
-class MinReachSCCFact : public SCCFact {
+class MinReachSCCV1Fact : public SCCFact {
   public:
-  MinReachSCCFact() = default;
+  MinReachSCCV1Fact() = default;
+
+  SCC createSCCAlgorithm() const override;
+  std::string prettyPrint() const override;
+};
+
+class MinReachSCCV2Fact : public SCCFact {
+  public:
+  MinReachSCCV2Fact() = default;
 
   SCC createSCCAlgorithm() const override;
   std::string prettyPrint() const override;

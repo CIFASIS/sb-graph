@@ -378,20 +378,6 @@ struct Set {
 };
 std::ostream &operator<<(std::ostream &out, const Set &s);
 
-
-////////////////////////////////////////////////////////////////////////////////
-// Set Hashes ------------------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-struct SetPieceHash {
-  static std::size_t set_piece_hash(const SetPiece& set_piece);  
-  std::size_t operator()(const SetPiece& set_piece) const;
-};
-
-struct SetHash {
-  std::size_t operator()(const Set& set) const;
-};
-
-
 } // namespace LIB
 
 }  // namespace SBG

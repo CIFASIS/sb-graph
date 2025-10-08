@@ -25,8 +25,6 @@
 #include <algorithms/partitioner/build_sb_graph.hpp>
 #include <algorithms/partitioner/kernighan_lin_partitioner.hpp>
 #include <algorithms/partitioner/partition_graph.hpp>
-#include <sbg/af_map.hpp>
-#include <sbg/af_set.hpp>
 
 /// @file parser_test.cpp
 ///

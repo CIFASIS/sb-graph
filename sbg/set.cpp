@@ -829,6 +829,39 @@ Set Set::offset(const MD_NAT &off) const { return delegate_->offset(off); }
 
 Set Set::compact() const { return delegate_->compact(); }
 
+
+////////////////////////////////////////////////////////////////////////////////
+// Set Hashes ------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+std::size_t SetPieceHash::set_piece_hash(const SetPiece& set_piece) {
+  constexpr size_t magic_number = 0x9e3779b9;
+  std::size_t seed = 0;
+  for (const auto& interval : set_piece) {
+    seed ^= std::hash<int>()(interval.begin()) + magic_number + (seed << 6) + (seed >> 2);
+    seed ^= std::hash<int>()(interval.end()) + magic_number + (seed << 6) + (seed >> 2);
+  }
+
+  return seed;
+}
+
+std::size_t SetPieceHash::operator()(const SetPiece& set_piece) const {
+  std::size_t seed = set_piece_hash(set_piece);
+
+  return seed;
+}
+
+ 
+std::size_t SetHash::operator()(const Set& set) const {
+  std::size_t seed = 0;
+  SetPieceHash set_piece_hash;
+  for (const auto& set_piece : set) {
+    seed ^= set_piece_hash(set_piece);
+  }
+
+  return seed;
+}
+
 }  // namespace LIB
 
 }  // namespace SBG

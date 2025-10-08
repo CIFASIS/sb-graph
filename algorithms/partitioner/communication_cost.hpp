@@ -156,4 +156,4 @@ void set_communication_cost(CommunicationCostPtr&& cost_matrix);
 */
 ICommunicationCost& get_communication_cost();
 
-}
+} // namespace sbg-partitioner

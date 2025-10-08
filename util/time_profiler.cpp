@@ -16,8 +16,13 @@
 
  ******************************************************************************/
 
+<<<<<<< HEAD
 #include "util/defs.hpp"
 #include "util/time_profiler.hpp"
+=======
+#include "defs.hpp"
+#include "time_profiler.hpp"
+>>>>>>> sb-graph-dev
 
 namespace SBG {
 
@@ -68,4 +73,8 @@ void TimeProfiler::print_execution_time() {
 
 }
 
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> sb-graph-dev

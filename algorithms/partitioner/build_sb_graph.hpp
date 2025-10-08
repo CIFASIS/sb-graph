@@ -114,4 +114,5 @@ std::pair<SBG::LIB::Set, SBG::LIB::Set> cut_interval_by_dimension(
     std::size_t size);
 
 std::pair<SBG::LIB::SetPiece, SBG::LIB::SetPiece> cut_interval(const SBG::LIB::SetPiece& interval, int cut_value);
-}
+
+} // namespace sbg-partitioner

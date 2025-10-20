@@ -33,11 +33,13 @@
 
 namespace sbg_partitioner {
 
+typedef std::unique_ptr<PartitionStrategy> PartitionStrategyPtr;
+
 namespace search {
 
 void initialize_partitioning(SBG::LIB::WeightedSBGraph& graph, unsigned number_of_partitions);
 
-void add_strategy(PartitionStrategy& strategy, bool pre_order);
+void add_strategy(PartitionStrategyPtr&& strategy, bool pre_order);
 
 std::vector<std::map<unsigned, std::set<SBG::LIB::SetPiece>>> partitionate();
 
@@ -63,7 +65,7 @@ public:
     std::vector<std::map<unsigned, std::set<SBG::LIB::SetPiece>>> partitions() const;
 
     /// @note strategy object should live while this class does
-    void add_partition_strategy(PartitionStrategy& strategy, bool pre_order);
+    void add_partition_strategy(PartitionStrategyPtr&& strategy, bool pre_order);
 
 private:
     typedef SBG::LIB::Set::Iterator node_identifier;
@@ -81,8 +83,8 @@ private:
     SBG::LIB::WeightedSBGraph* _graph;
     SBG::LIB::Set _nodes;
 
-    std::vector<PartitionStrategy*> _partition_strategy_pre_order;
-    std::vector<PartitionStrategy*> _partition_strategy_post_order;
+    std::vector<PartitionStrategyPtr> _partition_strategy_pre_order;
+    std::vector<PartitionStrategyPtr> _partition_strategy_post_order;
 
     void initialize_adjacents();
 

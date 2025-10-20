@@ -41,7 +41,7 @@ void initialize_partitioning(SBG::LIB::WeightedSBGraph& graph, unsigned number_o
   sort_object = DFS(graph, number_of_partitions);
 }
 
-void add_strategy(PartitionStrategy& strategy, bool pre_order) { sort_object.add_partition_strategy(strategy, pre_order); }
+void add_strategy(PartitionStrategyPtr&& strategy, bool pre_order) { sort_object.add_partition_strategy(move(strategy), pre_order); }
 
 vector<map<unsigned, set<SetPiece>>> partitionate()
 {
@@ -167,12 +167,12 @@ void DFS::iterate()
   }
 }
 
-void DFS::add_partition_strategy(PartitionStrategy& strategy, bool pre_order)
+void DFS::add_partition_strategy(PartitionStrategyPtr&& strategy, bool pre_order)
 {
   if (pre_order) {
-    _partition_strategy_pre_order.push_back(&strategy);
+    _partition_strategy_pre_order.push_back(move(strategy));
   } else {
-    _partition_strategy_post_order.push_back(&strategy);
+    _partition_strategy_post_order.push_back(move(strategy));
   }
 }
 

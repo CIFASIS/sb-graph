@@ -30,7 +30,6 @@
 #include "partition_graph.hpp"
 #include "sbg_partitioner_log.hpp"
 
-#define TRY_MULTIPLE_STRATEGIES 1
 
 using namespace std;
 
@@ -68,48 +67,34 @@ Set get_communication_edges(Set partition, const PWMap& map_1, const PWMap& map_
   return size;
 }
 
-constexpr bool using_many_initial_partitions = TRY_MULTIPLE_STRATEGIES;
-}  // namespace
 
-
-// we could cache solutions here
-Set from_vector(const Partition& partition, const SetAF& set_fact) {
-    Set partition_set = set_fact.createSet();
-    for (size_t i = 0; i < partition.size(); i++) {
-        partition_set.emplace(partition[i]);
-    }
-
-    return partition_set;
-}
-
-
-Partition to_vector(const Set& partition_set)
-{
-    Partition partition;
-    for (auto set_piece : partition_set) {
-        partition.push_back(move(set_piece));
-    }
-
-    return partition;
-}
-
-
-vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, unsigned number_of_partitions)
+vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, unsigned number_of_partitions,
+    const InitialPartitionStrategy strategy)
 {
   vector<PartitionMap> partitions_sets;
   initialize_partitioning(graph, number_of_partitions);
 
   constexpr bool pre_order = true;
-  auto s1 = PartitionStrategyDistributive(number_of_partitions, graph);
-  add_strategy(s1, pre_order);
-#if TRY_MULTIPLE_STRATEGIES
-  auto s2 = PartitionStrategyDistributive(number_of_partitions, graph);
-  add_strategy(s2, not pre_order);
-  auto s3 = PartitionStrategyGreedy(number_of_partitions, graph);
-  add_strategy(s3, pre_order);
-  auto s4 = PartitionStrategyGreedy(number_of_partitions, graph);
-  add_strategy(s4, not pre_order);
-#endif
+  const bool all_strategies = strategy == InitialPartitionStrategy::ALL;
+  if (all_strategies or strategy == InitialPartitionStrategy::DFS_DISTRIBUTIVE_PREORDER) {
+    auto s1 = make_unique<PartitionStrategyDistributive>(number_of_partitions, graph);
+    add_strategy(move(s1), pre_order);
+  }
+
+  if (all_strategies or strategy == InitialPartitionStrategy::DFS_DISTRIBUTIVE_POSTORDER) {
+    auto s2 = make_unique<PartitionStrategyDistributive>(number_of_partitions, graph);
+    add_strategy(move(s2), not pre_order);
+  }
+
+  if (all_strategies or strategy == InitialPartitionStrategy::DFS_GREEDY_PREORDER) {
+    auto s3 = make_unique<PartitionStrategyGreedy>(number_of_partitions, graph);
+    add_strategy(move(s3), pre_order);
+  }
+
+  if (all_strategies or strategy == InitialPartitionStrategy::DFS_GREEDY_POSTORDER) {
+    auto s4 = make_unique<PartitionStrategyGreedy>(number_of_partitions, graph);
+    add_strategy(move(s4), not pre_order);
+  }
 
   vector<map<unsigned, set<SetPiece>>> partitions = partitionate();
 
@@ -144,31 +129,68 @@ vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, u
   return partitions_sets;
 }
 
-PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_partitions)
+}  // namespace
+
+
+// we could cache solutions here
+Set from_vector(const Partition& partition, const SetAF& set_fact) {
+    Set partition_set = set_fact.createSet();
+    for (size_t i = 0; i < partition.size(); i++) {
+        partition_set.emplace(partition[i]);
+    }
+
+    return partition_set;
+}
+
+
+Partition to_vector(const Set& partition_set)
 {
-  std::vector<sbg_partitioner::PartitionMap> partition_maps = make_initial_partitions(graph, number_of_partitions);
+    Partition partition;
+    for (auto set_piece : partition_set) {
+        partition.push_back(move(set_piece));
+    }
+
+    return partition;
+}
+
+
+PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_partitions,
+    const InitialPartitionStrategy strategy, bool multithreading_enabled)
+{
+  logging::sbg_log << "computing strategy number " << strategy << endl;
+  std::vector<sbg_partitioner::PartitionMap> partition_maps = make_initial_partitions(graph, number_of_partitions, strategy);
 
   auto& best_initial_partitions = partition_maps.front();
-  CommunicationCost comm_cost = CommunicationCost(graph, best_initial_partitions);
-  if (using_many_initial_partitions) {
-    size_t best_communication_set_cardinality = get_partition_communication(graph, best_initial_partitions);
+  CommunicationCostPtr comm_cost = create_communication_cost(graph, best_initial_partitions, multithreading_enabled);
+  if (strategy == InitialPartitionStrategy::ALL) {
+
+    auto best_communication_set = graph.fact().createSet();
     for (unsigned i = 0; i < number_of_partitions; i++) {
-        best_communication_set_cardinality += get_set_size(comm_cost.get_ec_by_partition_id(i));
+        best_communication_set = best_communication_set.cup(comm_cost->get_ec_by_partition_id(i));
     }
+    size_t best_communication_set_size = best_communication_set.cardinal();
 
     for (size_t i = 1; i < partition_maps.size(); i++) {
         auto temp_intial_partitions = partition_maps[i];
-        CommunicationCost temp_comm_cost = CommunicationCost(graph, temp_intial_partitions);
-        size_t temp_partition_comm_size = get_partition_communication(graph, temp_intial_partitions);
+        CommunicationCostPtr temp_comm_cost = create_communication_cost(graph, temp_intial_partitions, multithreading_enabled);
+
+        auto temp_partition_comm = graph.fact().createSet();
         for (unsigned i = 0; i < number_of_partitions; i++) {
-            temp_partition_comm_size += get_set_size(comm_cost.get_ec_by_partition_id(i));
+            temp_partition_comm = temp_partition_comm.cup(comm_cost->get_ec_by_partition_id(i));
+        }
+
+        size_t temp_intial_partitions_size = temp_partition_comm.cardinal();
+
+        if (temp_intial_partitions_size < best_communication_set_size) {
+          comm_cost = move(temp_comm_cost);
+          best_initial_partitions = move(partition_maps[i]);
         }
     }
 
-    logging::sbg_log << "Best is " << best_initial_partitions << " with communication " << best_communication_set_cardinality << endl;
+    logging::sbg_log << "Best is " << best_initial_partitions << " with communication " << best_communication_set << endl;
   }
 
-  set_communication_cost(comm_cost);
+  set_communication_cost(move(comm_cost));
 
   return best_initial_partitions;
 }

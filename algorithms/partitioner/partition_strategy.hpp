@@ -36,7 +36,7 @@ class PartitionStrategy
 public:
     PartitionStrategy() = default;
 
-    ~PartitionStrategy() = default;
+    virtual ~PartitionStrategy() = default;
 
     virtual void operator() (const SBG::LIB::SetPiece& node) = 0;
 

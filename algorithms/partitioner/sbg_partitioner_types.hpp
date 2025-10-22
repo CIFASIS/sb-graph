@@ -36,4 +36,24 @@ std::ostream& operator<<(std::ostream& os, const Partition& partitions);
 /// @brief Overloading operator `<<` to print `PartitionMap` objects
 std::ostream& operator<<(std::ostream& os, const PartitionMap& partitions);
 
+
+namespace using_cc {
+
+struct SetPointer {
+    SBG::LIB::SetPiece set_piece;
+    unsigned index;
+
+    bool operator==(const SetPointer& other) { return index == other.index; }
+};
+
+using SetPointers = std::vector<SetPointer>;
+
+/// @brief Overloading operator `<<` to print `SetPointer` objects
+std::ostream& operator<<(std::ostream& os, const SetPointer& set_pointer);
+
+/// @brief Overloading operator `<<` to print `SetPointers` objects
+std::ostream& operator<<(std::ostream& os, const SetPointers& set_pointers);
+
+}
+
 }

@@ -12,12 +12,13 @@ target_sources(
         dfs_on_sbg.cpp
         kernighan_lin_partitioner.cpp
         partition_graph.cpp
+        partition_graph_cc.cpp
         partition_metrics_api.cpp
         partition_strategy.cpp
         weighted_sb_graph.cpp
 )
 
-add_dependencies(sbg-part-lib sbg-util-lib)
+add_dependencies(sbg-part-lib sbg-util-lib sbg-cc-lib)
 
 
 target_link_directories(
@@ -31,6 +32,7 @@ target_link_libraries(
     PRIVATE
         sbg-dev
         sbg-util-lib
+        sbg-cc-lib
 )
 
 

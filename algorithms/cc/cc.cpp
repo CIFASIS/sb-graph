@@ -61,7 +61,7 @@ PWMap connectedComponents(SBG g)
       }
     } while (rmap != old_rmap); 
 
-    return rmap.compact();
+    return rmap;
   }
   auto end = std::chrono::high_resolution_clock::now();
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(

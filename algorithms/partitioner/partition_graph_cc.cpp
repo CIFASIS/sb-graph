@@ -25,6 +25,7 @@
 #include "communication_cost.hpp"
 #include "dfs_on_sbg.hpp"
 #include "partition_graph.hpp"
+#include "partition_graph_cc.hpp"
 #include "sbg_partitioner_log.hpp"
 #include "sbg_partitioner_types.hpp"
 
@@ -225,7 +226,6 @@ int run_bisection(
             } else {
                 cout << "sizes " << it->size << ", " << a.size << endl;
                 it->size -= a.size;
-                it->set_piece = Interval(it->set_piece.begin()[0].begin(), 1, it->set_piece.begin()[0].begin() + it->size - 1);
                 cout << "new size " << it->size << endl;
                 cout << partition_a << endl;
             }
@@ -241,21 +241,20 @@ int run_bisection(
             } else {
                 cout << "sizes " << it->size << ", " << b.size << endl;
                 it->size -= b.size;
-                it->set_piece = Interval(it->set_piece.begin()[0].end() - it->size + 1, 1, it->set_piece.begin()[0].end());
                 cout << "new size " << it->size << endl;
             }
         }
 
         for (const auto& p : max_par_sum_set.second) {
             cout << Interval(p.set_piece.begin()[0].begin(), 1, p.set_piece.begin()[0].begin() + p.size - 1)<< " " << p.size << endl;
-            partition_a.emplace_back(p.index, Interval(p.set_piece.begin()[0].begin(), 1, p.set_piece.begin()[0].begin() + p.size - 1), p.size);
+            partition_a.emplace_back(p.index, p.set_piece, p.size);
         }
         cout << endl;
 
         for (const auto& p : max_par_sum_set.first) {
             assert(p.size > 0);
             cout << Interval(p.set_piece.begin()[0].end() - p.size + 1, 1, p.set_piece.begin()[0].end()) << " " << p.size << endl;
-            partition_b.emplace_back(p.index, Interval(p.set_piece.begin()[0].end() - p.size + 1, 1, p.set_piece.begin()[0].end()), p.size);
+            partition_b.emplace_back(p.index, p.set_piece, p.size);
         }
     }
 
@@ -268,6 +267,7 @@ int run_bisection(
 void bisection(
     const SBG::LIB::WeightedSBGraph& graph,
     CommunicationCostCC& cost_matrix,
+    const SetPointers& sorted_nodes,
     SetPointers& partition_a,
     SetPointers& partition_b,
     const PWMap& cc_map,
@@ -279,11 +279,7 @@ void bisection(
 
     int gain = sbg_partitioner::using_cc::run_bisection(graph, cost_matrix, partition_a_copy, partition_b_copy, cc_map, 0, 0);
 
-    PartitionMap partitions;
-    partitions.emplace_back();
-    for_each(partition_a_copy.begin(), partition_a_copy.end(), [&partitions](const SetPointer& p) { partitions.back().push_back(p.set_piece); });
-    partitions.emplace_back();
-    for_each(partition_b_copy.begin(), partition_b_copy.end(), [&partitions](const SetPointer& p) { partitions.back().push_back(p.set_piece); });
+    PartitionMap partitions = rebuild_partitions(sorted_nodes, { partition_a_copy, partition_b_copy });
     sanity_check(graph, partitions, 2);
     partitions.clear();
 
@@ -293,10 +289,7 @@ void bisection(
 
         gain = sbg_partitioner::using_cc::run_bisection(graph, cost_matrix, partition_a_copy, partition_b_copy, cc_map, 0, 0);
 
-        partitions.emplace_back();
-        for_each(partition_a_copy.begin(), partition_a_copy.end(), [&partitions](const SetPointer& p) { partitions.back().push_back(p.set_piece); });
-        partitions.emplace_back();
-        for_each(partition_b_copy.begin(), partition_b_copy.end(), [&partitions](const SetPointer& p) { partitions.back().push_back(p.set_piece); });
+        partitions = rebuild_partitions(sorted_nodes, { partition_a_copy, partition_b_copy });
         sanity_check(graph, partitions, 2);
         partitions.clear();
 
@@ -304,6 +297,27 @@ void bisection(
     }
 }
 
+
+PartitionMap rebuild_partitions(const SetPointers& sorted_nodes, const vector<SetPointers>& partitions)
+{
+    vector<unsigned> pivots(sorted_nodes.size(), 0);
+    for (const auto& s : sorted_nodes) {
+        pivots[s.index] = s.set_piece.begin()[0].begin();
+    }
+
+    PartitionMap new_partitions;
+    new_partitions.reserve(partitions.size());
+    for (const auto& partition : partitions) {
+        new_partitions.emplace_back();
+        for (const auto& set_pointer : partition) {
+            unsigned begin = pivots[set_pointer.index];
+            new_partitions.back().push_back(Interval(begin, 1, begin + set_pointer.size - 1));
+            pivots[set_pointer.index] += set_pointer.size;
+        }
+    }
+
+    return new_partitions;
+}
 
 }
 

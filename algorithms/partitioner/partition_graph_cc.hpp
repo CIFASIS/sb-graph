@@ -46,11 +46,17 @@ int run_bisection(
 void bisection(
     const SBG::LIB::WeightedSBGraph& graph,
     CommunicationCostCC& cost_matrix,
+    const SetPointers& sorted_nodes,
     SetPointers& partition_a,
     SetPointers& partition_b,
     const SBG::LIB::PWMap& cc_map,
     unsigned LMin,
     unsigned LMax);
+
+PartitionMap rebuild_partitions(
+    const SetPointers& new_nodes,
+    const std::vector<SetPointers>& partitions);
+
 
 }
 

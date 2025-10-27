@@ -361,7 +361,7 @@ int main(int argc, char** argv)
         sbg_partitioner::CommunicationCostCC comm_cc(*sb_graph, new_nodes);
 
         auto partition_1 = sorted_partitions.at(0), partition_2 = sorted_partitions.at(1);
-        sbg_partitioner::using_cc::bisection(*sb_graph, comm_cc, sorted_partitions[0], sorted_partitions[1], cc_pw_map, 0, 0);
+        sbg_partitioner::using_cc::bisection(*sb_graph, comm_cc, new_nodes, sorted_partitions[0], sorted_partitions[1], cc_pw_map, 0, 0);
 
         sanity_check(*sb_graph, partitions, *params.number_of_partitions);
     }

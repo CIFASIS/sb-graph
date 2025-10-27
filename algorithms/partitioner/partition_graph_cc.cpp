@@ -26,6 +26,7 @@
 #include "dfs_on_sbg.hpp"
 #include "partition_graph.hpp"
 #include "sbg_partitioner_log.hpp"
+#include "sbg_partitioner_types.hpp"
 
 using namespace std;
 using namespace SBG::LIB;
@@ -37,7 +38,7 @@ namespace using_cc {
 
 ostream& operator<<(ostream& os, const SetPointer& set_pointer)
 {
-    os << "[" << set_pointer.index << ", " << set_pointer.set_piece << "]";
+    os << "[" << set_pointer.index << ", " << set_pointer.set_piece << ", " << set_pointer.size << "]";
 
     return os;
 }
@@ -103,27 +104,6 @@ ostream& operator<<(ostream& os, const GainObjects& gains)
 }
 
 
-
-// typedef vector<pair<unsigned, unsigned>> PartitionByIdx;
-
-
-// ostream& operator<<(ostream& os, const PartitionByIdx& nodes)
-// {
-//     os << "[";
-//     for (const auto& n : nodes) {
-//         os << "(" << n.first << ", " << n.second << ") ";
-//     }
-
-//     if (nodes.size() > 0) {
-//         os << "\b";
-//     }
-//     os << "]";
-
-//     return os;
-// }
-
-
-
 tuple<optional<GainObject>, GainObjects> compute_gains(
     const SetPointers& partition_a,
     const SetPointers& partition_b,
@@ -159,10 +139,13 @@ tuple<optional<GainObject>, GainObjects> compute_gains(
 
             int D_j = j_ec - j_ic;
 
-            int s = min(partition_a.at(i).set_piece.cardinal(), partition_b.at(j).set_piece.cardinal());
+            int s = min(partition_a.at(i).size, partition_b.at(j).size);
 
-            int gain = D_i + D_j;
-            gain -= 2 * cost_matrix_cc.get_communication(partition_a.at(i).index, partition_b.at(j).index);
+            float alpha_i = s / float(partition_a.at(i).size);
+            float alpha_j = s / float(partition_b.at(j).size);
+
+            float gain = D_i * alpha_i + D_j * alpha_j;
+            gain -= 2 * cost_matrix_cc.get_communication(partition_a.at(i).index, partition_b.at(j).index) * min(alpha_i, alpha_j);
 
             gains.emplace_back(partition_a.at(i), partition_b.at(j), s, gain);
 
@@ -189,6 +172,7 @@ int run_bisection(
     unsigned LMin,
     unsigned LMax)
 {
+    cout << "calling run_bisection with\n" << partition_a << "\n" << partition_b << endl;
     auto partition_a_copy = partition_a;
     auto partition_b_copy = partition_b;
 
@@ -207,14 +191,22 @@ int run_bisection(
 
     while (not partition_a_copy.empty() and not partition_b_copy.empty()) {
         par_sum += max_gain->gain;
-        a_v.push_back(max_gain->a);
-        b_v.push_back(max_gain->b);
+        a_v.emplace_back(max_gain->a.index, max_gain->a.set_piece, max_gain->size);
+        b_v.emplace_back(max_gain->b.index, max_gain->b.set_piece, max_gain->size);
         if (par_sum > max_par_sum) {
             max_par_sum = par_sum;
             max_par_sum_set = make_pair(a_v, b_v);
         }
+
         partition_a_copy.erase(remove(partition_a_copy.begin(), partition_a_copy.end(), max_gain->a));
+        if (max_gain->size < max_gain->a.size) {
+            partition_a_copy.emplace_back(max_gain->a.index, max_gain->a.set_piece, max_gain->a.size - max_gain->size);
+        }
+
         partition_b_copy.erase(remove(partition_b_copy.begin(), partition_b_copy.end(), max_gain->b));
+        if (max_gain->size < max_gain->b.size) {
+            partition_b_copy.emplace_back(max_gain->b.index, max_gain->b.set_piece, max_gain->b.size - max_gain->size);
+        }
 
         if (not partition_a_copy.empty() and not partition_b_copy.empty()) {
             tie(max_gain, gm) = compute_gains(partition_a_copy, partition_b_copy, cost_matrix);
@@ -222,16 +214,49 @@ int run_bisection(
     }
 
     if (max_par_sum > 0) {
+        cout << "\n" << max_par_sum_set.first << "\n" << max_par_sum_set.second << endl;
         for (const auto& a : max_par_sum_set.first) {
-            partition_a.erase(remove(partition_a.begin(), partition_a.end(), a));
+            cout << "moving " << a << endl;
+            auto it = find_if(partition_a.begin(), partition_a.end(), [&a](const auto& s) { return s.index == a.index; } );
+            assert(it != partition_a.end());
+            cout << "found " << *it << endl;
+            if (it->size == a.size) {
+                partition_a.erase(it);
+            } else {
+                cout << "sizes " << it->size << ", " << a.size << endl;
+                it->size -= a.size;
+                it->set_piece = Interval(it->set_piece.begin()[0].begin(), 1, it->set_piece.begin()[0].begin() + it->size - 1);
+                cout << "new size " << it->size << endl;
+                cout << partition_a << endl;
+            }
         }
 
         for (const auto& b : max_par_sum_set.second) {
-            partition_b.erase(remove(partition_b.begin(), partition_b.end(), b));
+            cout << "moving " << b << endl;
+            auto it = find_if(partition_b.begin(), partition_b.end(), [&b](const auto& s) { return s.index == b.index; } );
+            cout << "found " << *it << endl;
+            assert(it != partition_b.end());
+            if (it->size == b.size) {
+                partition_b.erase(it);
+            } else {
+                cout << "sizes " << it->size << ", " << b.size << endl;
+                it->size -= b.size;
+                it->set_piece = Interval(it->set_piece.begin()[0].end() - it->size + 1, 1, it->set_piece.begin()[0].end());
+                cout << "new size " << it->size << endl;
+            }
         }
 
-        partition_a.insert(partition_a.end(), max_par_sum_set.second.begin(), max_par_sum_set.second.end());
-        partition_b.insert(partition_b.end(), max_par_sum_set.first.begin(), max_par_sum_set.first.end());
+        for (const auto& p : max_par_sum_set.second) {
+            cout << Interval(p.set_piece.begin()[0].begin(), 1, p.set_piece.begin()[0].begin() + p.size - 1)<< " " << p.size << endl;
+            partition_a.emplace_back(p.index, Interval(p.set_piece.begin()[0].begin(), 1, p.set_piece.begin()[0].begin() + p.size - 1), p.size);
+        }
+        cout << endl;
+
+        for (const auto& p : max_par_sum_set.first) {
+            assert(p.size > 0);
+            cout << Interval(p.set_piece.begin()[0].end() - p.size + 1, 1, p.set_piece.begin()[0].end()) << " " << p.size << endl;
+            partition_b.emplace_back(p.index, Interval(p.set_piece.begin()[0].end() - p.size + 1, 1, p.set_piece.begin()[0].end()), p.size);
+        }
     }
 
     cout << "result:\nmax par sum: " << max_par_sum << "\npartition a: " << partition_a << "\npartition b: " << partition_b << endl;
@@ -256,9 +281,9 @@ void bisection(
 
     PartitionMap partitions;
     partitions.emplace_back();
-    for_each(partition_a_copy.begin(), partition_a_copy.end(), [&partitions](auto p) { partitions.back().push_back(p.set_piece); });
+    for_each(partition_a_copy.begin(), partition_a_copy.end(), [&partitions](const SetPointer& p) { partitions.back().push_back(p.set_piece); });
     partitions.emplace_back();
-    for_each(partition_b_copy.begin(), partition_b_copy.end(), [&partitions](auto p) { partitions.back().push_back(p.set_piece); });
+    for_each(partition_b_copy.begin(), partition_b_copy.end(), [&partitions](const SetPointer& p) { partitions.back().push_back(p.set_piece); });
     sanity_check(graph, partitions, 2);
     partitions.clear();
 
@@ -269,9 +294,9 @@ void bisection(
         gain = sbg_partitioner::using_cc::run_bisection(graph, cost_matrix, partition_a_copy, partition_b_copy, cc_map, 0, 0);
 
         partitions.emplace_back();
-        for_each(partition_a_copy.begin(), partition_a_copy.end(), [&partitions](auto p) { partitions.back().push_back(p.set_piece); });
+        for_each(partition_a_copy.begin(), partition_a_copy.end(), [&partitions](const SetPointer& p) { partitions.back().push_back(p.set_piece); });
         partitions.emplace_back();
-        for_each(partition_b_copy.begin(), partition_b_copy.end(), [&partitions](auto p) { partitions.back().push_back(p.set_piece); });
+        for_each(partition_b_copy.begin(), partition_b_copy.end(), [&partitions](const SetPointer& p) { partitions.back().push_back(p.set_piece); });
         sanity_check(graph, partitions, 2);
         partitions.clear();
 

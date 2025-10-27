@@ -40,8 +40,15 @@ std::ostream& operator<<(std::ostream& os, const PartitionMap& partitions);
 namespace using_cc {
 
 struct SetPointer {
-    SBG::LIB::SetPiece set_piece;
     unsigned index;
+    SBG::LIB::SetPiece set_piece;
+    size_t size;
+
+    SetPointer(unsigned index, SBG::LIB::SetPiece set_piece, size_t size)
+        : index(index),
+        set_piece(set_piece),
+        size(size)
+    {}
 
     bool operator==(const SetPointer& other) { return index == other.index; }
 };

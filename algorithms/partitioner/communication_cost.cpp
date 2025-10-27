@@ -271,12 +271,14 @@ void CommunicationCostCC::initialize()
         }
     }
 
+#ifdef SBG_PARTITIONER_LOGGING
     for (size_t i = 0; i <  _sorted_nodes.size(); i++) {
         for (size_t j = 0; j < _sorted_nodes.size(); j++) {
             cout << int(_adjacency_matrix[_sorted_nodes.at(i).index][_sorted_nodes.at(j).index]) << " ";
         }
         cout << endl;
     }
+#endif
 }
 
 

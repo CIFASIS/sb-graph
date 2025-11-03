@@ -25,69 +25,22 @@
 
  ******************************************************************************/
 
-#ifndef AST_VISITOR_AUTOM_IMPL
-#define AST_VISITOR_AUTOM_IMPL
+#ifndef AUTOM_IMPL_VISITOR 
+#define AUTOM_IMPL_VISITOR 
 
 #include <boost/variant.hpp>
 
 #include "ast/sbg_program.hpp"
-#include "eval/visitors/eval_nat.hpp"
-#include "eval/visitors/eval_rat.hpp"
-#include "eval/visitors/stm_visitor.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-// Desired implementation of sets and pws.
-// If set to "-1", the evaluator decides automatically, if not, use the
-// value passed as argument in the command line.
-struct Impl {
-  member_class(int, set_impl);
-  member_class(int, pw_impl);
-
-  Impl(int set_impl, int pw_impl);
-};
-
-struct AutomImplVisitor : public boost::static_visitor<Impl> {
-  member_class(Impl, user_impl);
-
-  /**
-   * @brief user_impl is the command line input implementation (-1 if the user
-   * didn't specify a value).
-   */
-  AutomImplVisitor(Impl user_impl);
-
-  Impl operator()(AST::Program p) const;
-
-  private:
-  mutable VarEnv env_;
-};
-
-struct SetImplVisitor : public boost::static_visitor<bool> {
+class AutomImplVisitor {
   public:
-  SetImplVisitor();
-  SetImplVisitor(VarEnv env);
+  AutomImplVisitor();
 
-  bool operator()(AST::Natural v) const;
-  bool operator()(AST::Rational v) const;
-  bool operator()(AST::Name v) const;
-  bool operator()(AST::UnaryOp v) const;
-  bool operator()(AST::BinOp v) const;
-  bool operator()(AST::Call v) const;
-  bool operator()(AST::Interval v) const;
-  bool operator()(AST::MultiDimInter v) const;
-  bool operator()(AST::Set v) const;
-  bool operator()(AST::LinearExp v) const;
-  bool operator()(AST::MDLExp v) const;
-  bool operator()(AST::LinearMap v) const;
-  bool operator()(AST::PWLMap v) const;
-  bool operator()(AST::SBG v) const;
-  bool operator()(AST::DSBG v) const;
-  bool operator()(AST::ParenExpr) const;
-
-  private:
-  mutable VarEnv env_;
+  void visit(AST::SBGProgram p) const;
 };
 
 } // namespace Eval

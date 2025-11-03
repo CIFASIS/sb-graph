@@ -30,7 +30,7 @@ namespace sbg_partitioner {
 /// a node for each access to a variable and an edge for each connection
 /// between variables.
 /// If a variable appears on the left and on the right side, an edge is created.
-SBG::LIB::WeightedSBGraph build_sb_graph(const std::string& filename, SBG::LIB::PWMapAF& pw_map_fact);
+SBG::LIB::WeightedSBGraph build_sb_graph(const std::string& filename);
 
 
 /// Ad hoc function to get pre image of an expression from its image.
@@ -53,15 +53,15 @@ SBG::LIB::Set get_adjacents(const SBG::LIB::SBG& graph, const SBG::LIB::Set& nod
 /// {[1:10], [1:10]} has 100 elements.
 /// @param node input set we want to calculate the size.
 /// @return the number of elements
-unsigned get_node_size(const SBG::LIB::SetPiece& node, const SBG::LIB::NodeWeight& node_weight, const SBG::LIB::SetAF& set_fact);
+unsigned get_node_size(const SBG::LIB::SetPiece& node, const SBG::LIB::NodeWeight& node_weight);
 
 
 /// Takes each set piece and calculates its size, it returns the sum of them
-unsigned get_node_size(const SBG::LIB::Set& node, const SBG::LIB::NodeWeight& node_weight, const SBG::LIB::SetAF& set_fact);
+unsigned get_node_size(const SBG::LIB::Set& node, const SBG::LIB::NodeWeight& node_weight);
 
 
 /// Takes each set piece of the partition and calculates its size, it returns the sum of them
-unsigned get_partition_size(const std::vector<SBG::LIB::SetPiece>& node, const SBG::LIB::NodeWeight& node_weight, const SBG::LIB::SetAF& set_fact);
+unsigned get_partition_size(const std::vector<SBG::LIB::SetPiece>& node, const SBG::LIB::NodeWeight& node_weight);
 
 
 /// Takes a set of edges and compute its cost.
@@ -91,10 +91,10 @@ SBG::LIB::WeightedSBGraph create_air_conditioners_graph();
 /// @param costs hashtable with set/costs.
 /// @return the cost of set.
 template<typename T>
-int get_set_cost(const SBG::LIB::SetPiece& set_piece, const T& costs, const SBG::LIB::SetAF& set_fact)
+int get_set_cost(const SBG::LIB::SetPiece& set_piece, const T& costs)
 {
   int weight = 1;
-  auto set = set_fact.createSet(set_piece);
+  auto set = SBG::LIB::SET_FACT.createSet(set_piece);
   for (const auto& [cost_set, w] : costs) {
     if (set.intersection(cost_set).size() > 0) {
       weight = costs.at(cost_set);
@@ -111,8 +111,8 @@ size_t get_set_size(const SBG::LIB::Set& set);
 std::pair<SBG::LIB::Set, SBG::LIB::Set> cut_interval_by_dimension(
     SBG::LIB::Set& set_piece,
     const SBG::LIB::NodeWeight& node_weight,
-    std::size_t size,
-    const SBG::LIB::SetAF& set_fact);
+    std::size_t size);
 
 std::pair<SBG::LIB::SetPiece, SBG::LIB::SetPiece> cut_interval(const SBG::LIB::SetPiece& interval, int cut_value);
-}
+
+} // namespace sbg-partitioner

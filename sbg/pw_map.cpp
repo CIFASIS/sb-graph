@@ -17,6 +17,7 @@
 
  ******************************************************************************/
 
+#include <iostream>
 #include "sbg/pw_map.hpp"
 
 namespace SBG {
@@ -27,7 +28,7 @@ namespace LIB {
 // PWMap Delegate Constructors -------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-PWMapDelegate::PWMapDelegate(const MapAF &fact) : fact_(std::move(fact)) {}
+PWMapDelegate::PWMapDelegate() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Unordered PWMap Implementation ----------------------------------------------
@@ -35,23 +36,20 @@ PWMapDelegate::PWMapDelegate(const MapAF &fact) : fact_(std::move(fact)) {}
 
 member_imp(UnordPWMap, UnordMapCollection, pieces);
 
-UnordPWMap::UnordPWMap(const MapAF &fact) : PWMapDelegate(fact) {}
-UnordPWMap::UnordPWMap(const MapAF &fact, const Set &s)
-  : PWMapDelegate(fact), pieces_() {
+UnordPWMap::UnordPWMap() {}
+UnordPWMap::UnordPWMap(const Set &s) : pieces_() {
   if (!s.isEmpty()) {
     SetPiece first = s.begin().operator*();
-    pieces_.push_back(fact_.createMap(s, Exp(first.arity(), LExp())));
+    pieces_.push_back(Map(s, Exp(first.arity(), LExp())));
   }
 }
-UnordPWMap::UnordPWMap(const MapAF &fact, const Map &m)
-  : PWMapDelegate(fact), pieces_() {
+UnordPWMap::UnordPWMap(const Map &m) : pieces_() {
   if (!m.dom().isEmpty())
     pieces_.push_back(m);
 }
-UnordPWMap::UnordPWMap(const MapAF &fact, const UnordMapCollection &pieces)
-  : PWMapDelegate(fact), pieces_(std::move(pieces)) {}
-UnordPWMap::UnordPWMap(const UnordPWMap &pw)
-  : PWMapDelegate(pw.fact_), pieces_(pw.pieces_) {}
+UnordPWMap::UnordPWMap(const UnordMapCollection &pieces)
+  : pieces_(std::move(pieces)) {}
+UnordPWMap::UnordPWMap(const UnordPWMap &pw) : pieces_(pw.pieces_) {}
 
 PWMapDelegPtr UnordPWMap::clone() const
 {
@@ -113,8 +111,8 @@ bool UnordPWMap::operator==(const PWMapDelegate &other) const
         // two different lexps.
         // Example: [1:1:1] -> 10 and [1:1:1] -> x+9
         if (cap_dom.cardinal() == 1) {
-          Map map1 = fact_.createMap(cap_dom, m1.exp());
-          Map map2 = fact_.createMap(cap_dom, m2.exp());
+          Map map1(cap_dom, m1.exp());
+          Map map2(cap_dom, m2.exp());
           if (map1.image() != map2.image())
             return false;
         }
@@ -156,17 +154,17 @@ PWMapDelegPtr UnordPWMap::operator+(const PWMapDelegate &other) const
     for (const Map &m2 : othr.pieces_) 
       res.push_back(m1 + m2);
 
-  return std::make_unique<UnordPWMap>(fact_, res);
+  return std::make_unique<UnordPWMap>(res);
 }
 
 PWMapDelegPtr UnordPWMap::operator-(const PWMapDelegate &other) const
 {
-  PWMapDelegPtr res = std::make_unique<UnordPWMap>(fact_);
+  PWMapDelegPtr res = std::make_unique<UnordPWMap>();
 
   if (isEmpty() || other.isEmpty())
     return res;
 
-  Set univ = fact_.createSet(SetPiece(arity(), Interval(0, 1, Inf)));
+  Set univ = SET_FACT.createSet(SetPiece(arity(), Interval(0, 1, Inf)));
 
   UnordPWMapCRef othr = static_cast<UnordPWMapCRef>(other);
   for (const Map &m1 : pieces_) {
@@ -175,7 +173,7 @@ PWMapDelegPtr UnordPWMap::operator-(const PWMapDelegate &other) const
       Set dom = dom1.intersection(dom2);
       if (!dom.isEmpty()) {
         Exp minus_exp = m1.exp() - m2.exp();
-        UnordPWMap ith(fact_, univ);
+        UnordPWMap ith(univ);
         for (unsigned int j = 0; j < arity(); ++j) {
           RATIONAL m = minus_exp[j].slope(), h = minus_exp[j].offset();
           // Negative values in the jth dimension
@@ -195,7 +193,7 @@ PWMapDelegPtr UnordPWMap::operator-(const PWMapDelegate &other) const
           }
           // Increasing expression
           else if (m > 0) {
-            RATIONAL cross = -h / m;
+            RATIONAL cross = -h/m;
             if (cross > 0 || cross == 0) {
               begin_pos = boost::rational_cast<NAT>(cross.value()) + 1;
               if (begin_pos > 0)
@@ -205,14 +203,22 @@ PWMapDelegPtr UnordPWMap::operator-(const PWMapDelegate &other) const
                 end_neg = 0;
               }
             }
+            else {
+              begin_neg = 1;
+              end_neg = 0;
+            }
           }
           // Decresing expression
           else { 
-            RATIONAL cross = -h / m;
+            RATIONAL cross = -h/m;
             if (cross > 0 || cross == 0) {
               end_pos = boost::rational_cast<NAT>(cross.value());
               if (end_pos > 0)
                 begin_neg = end_pos + 1;
+              else {
+                begin_pos = 1;
+                end_pos = 0;
+              }
             }
             else {
               begin_pos = 1;
@@ -220,7 +226,7 @@ PWMapDelegPtr UnordPWMap::operator-(const PWMapDelegate &other) const
             }
           }
 
-          UnordPWMap jth(fact_);
+          UnordPWMap jth;
           Interval neg(begin_neg, 1, end_neg);
           Interval pos(begin_pos, 1, end_pos);
           for (const Map &m : ith.pieces_) {
@@ -230,13 +236,13 @@ PWMapDelegPtr UnordPWMap::operator-(const PWMapDelegate &other) const
             if (!neg.isEmpty()) {
               mdi[j] = neg;
               e[j] = LExp(0, 0);
-              jth.emplaceBack(fact_.createMap(mdi, e));
+              jth.emplaceBack(Map(mdi, e));
             }
 
             if (!pos.isEmpty()) {
               mdi[j] = pos;
               e[j] = minus_exp[j];
-              jth.emplaceBack(fact_.createMap(mdi, e));
+              jth.emplaceBack(Map(mdi, e));
             }
           }
 
@@ -281,7 +287,7 @@ bool UnordPWMap::isEmpty() const { return pieces_.empty(); }
 
 Set UnordPWMap::dom() const
 {
-  Set res = fact_.createSet();
+  Set res = SET_FACT.createSet();
   for (const Map &m : pieces_) {
     Set d = m.dom();
     res = res.disjointCup(d);
@@ -292,7 +298,7 @@ Set UnordPWMap::dom() const
 
 PWMapDelegPtr UnordPWMap::restrict(const Set &subdom) const
 {
-  PWMapDelegPtr res = std::make_unique<UnordPWMap>(fact_);
+  PWMapDelegPtr res = std::make_unique<UnordPWMap>();
 
   for (const Map &m : pieces_)
     res->emplaceBack(m.restrict(subdom));
@@ -302,7 +308,7 @@ PWMapDelegPtr UnordPWMap::restrict(const Set &subdom) const
 
 Set UnordPWMap::image() const
 {
-  Set res = fact_.createSet();
+  Set res = SET_FACT.createSet();
 
   for (const Map &m : pieces_) {
     res = res.cup(m.image());
@@ -318,7 +324,7 @@ Set UnordPWMap::image(const Set &subdom) const
 
 Set UnordPWMap::preImage(const Set &subcodom) const
 {
-  Set res = fact_.createSet();
+  Set res = SET_FACT.createSet();
 
   for (const Map &m : pieces_)
     res = res.disjointCup(m.preImage(subcodom));
@@ -328,7 +334,7 @@ Set UnordPWMap::preImage(const Set &subcodom) const
 
 PWMapDelegPtr UnordPWMap::inverse() const
 {
-  PWMapDelegPtr res = std::make_unique<UnordPWMap>(fact_);
+  PWMapDelegPtr res = std::make_unique<UnordPWMap>();
 
   for (const Map &m : pieces_)
     res->emplaceBack(m.minInv());
@@ -338,7 +344,7 @@ PWMapDelegPtr UnordPWMap::inverse() const
 
 PWMapDelegPtr UnordPWMap::composition(const PWMapDelegate &other) const
 {
-  PWMapDelegPtr res = std::make_unique<UnordPWMap>(fact_);
+  PWMapDelegPtr res = std::make_unique<UnordPWMap>();
 
   UnordPWMapCRef othr = static_cast<UnordPWMapCRef>(other);
   Set im = othr.image(), new_dom = othr.preImage(im.intersection(dom()));
@@ -355,7 +361,7 @@ PWMapDelegPtr UnordPWMap::composition(const PWMapDelegate &other) const
 PWMapDelegPtr UnordPWMap::mapInf(unsigned int n) const
 {
   PWMapDelegPtr res = std::make_unique<UnordPWMap>(*this);
-  PWMapDelegPtr old_res = std::make_unique<UnordPWMap>(fact_);
+  PWMapDelegPtr old_res = std::make_unique<UnordPWMap>();
 
   if (!dom().isEmpty()) {
     for (unsigned int j = 0; old_res != res && j < n; ++j) {
@@ -387,7 +393,7 @@ PWMapDelegPtr UnordPWMap::mapInf() const { return mapInf(0); }
 
 Set UnordPWMap::fixedPoints() const
 {
-  Set res = fact_.createSet();
+  Set res = SET_FACT.createSet();
 
   for (const Map &m : pieces_)
     res = res.disjointCup(m.fixedPoints());
@@ -422,7 +428,7 @@ PWMapDelegPtr UnordPWMap::combine(const PWMapDelegate &other) const
   Set dom1 = dom();
   for (const Map &m2 : othr.pieces_) {
     Set dom2 = m2.dom(), new_dom = dom2.difference(dom1);
-    res->emplaceBack(fact_.createMap(new_dom, m2.exp()));
+    res->emplaceBack(Map(new_dom, m2.exp()));
   }
 
   return res;
@@ -430,7 +436,7 @@ PWMapDelegPtr UnordPWMap::combine(const PWMapDelegate &other) const
 
 PWMapDelegPtr UnordPWMap::reduce(const Interval &i, const LExp &le) const
 {
-  UnordPWMap res(fact_);
+  UnordPWMap res;
 
   if (!i.isEmpty()) {
     RATIONAL zero(0, 1);
@@ -442,20 +448,20 @@ PWMapDelegPtr UnordPWMap::reduce(const Interval &i, const LExp &le) const
         NAT hi = i.end();
         RATIONAL const_expr(hi + st, 1);
         if (st < Inf - hi)
-          res = UnordPWMap(fact_, fact_.createMap(i, LExp(zero, const_expr)));
+          res = UnordPWMap(Map(i, LExp(zero, const_expr)));
       }
 
       else if (h == (INT) -st) {
         NAT lo = i.begin();
         RATIONAL const_expr(lo - st, 1);
         if (lo >= st)
-          res = UnordPWMap(fact_, fact_.createMap(i, LExp(zero, const_expr)));
+          res = UnordPWMap(Map(i, LExp(zero, const_expr)));
       }
 
       else if (h % (INT) st == 0) {
         // Is convenient the partition of the piece?
         if ((INT) i.cardinal() > h*h) {
-          res = UnordPWMap(fact_);
+          res = UnordPWMap();
           INT absh = std::abs(h);
 
           for (int k = 1; k <= absh; ++k) {
@@ -468,14 +474,14 @@ PWMapDelegPtr UnordPWMap::reduce(const Interval &i, const LExp &le) const
             else
               kth_off = kth_piece.begin() + h;
 
-            res.emplaceBack(fact_.createMap(kth_piece, LExp(0, kth_off)));
+            res.emplaceBack(Map(kth_piece, LExp(0, kth_off)));
           }
         }
       }
     }
 
     else
-      res.emplaceBack(fact_.createMap(i, le));
+      res.emplaceBack(Map(i, le));
   }
 
   return std::make_unique<UnordPWMap>(res);
@@ -483,9 +489,9 @@ PWMapDelegPtr UnordPWMap::reduce(const Interval &i, const LExp &le) const
 
 PWMapDelegPtr UnordPWMap::reduce(const Map &map) const
 {
-  UnordPWMap res(fact_);
+  UnordPWMap res;
 
-  Set not_reduced = fact_.createSet();
+  Set not_reduced = SET_FACT.createSet();
   Exp e = map.exp();
   for (const SetPiece &dom_piece : map.dom()) {
     SetPiece aux_piece = dom_piece;
@@ -498,7 +504,7 @@ PWMapDelegPtr UnordPWMap::reduce(const Map &map) const
         aux_piece[j] = ith_reduced.dom().begin().operator*().operator[](0);
         aux_exp[j] = ith_reduced.exp()[0];
         if (aux_piece != dom_piece || aux_exp != e) {
-          res.emplaceBack(fact_.createMap(aux_piece, aux_exp));
+          res.emplaceBack(Map(aux_piece, aux_exp));
           was_reduced = true;
         }
 
@@ -513,14 +519,14 @@ PWMapDelegPtr UnordPWMap::reduce(const Map &map) const
       not_reduced.emplaceBack(dom_piece);
   }
 
-  res.emplaceBack(fact_.createMap(not_reduced, e)); // Add unreduced subpieces
+  res.emplaceBack(Map(not_reduced, e)); // Add unreduced subpieces
 
   return std::make_unique<UnordPWMap>(res);
 }
 
 PWMapDelegPtr UnordPWMap::reduce() const
 {
-  PWMapDelegPtr res = std::make_unique<UnordPWMap>(fact_);
+  PWMapDelegPtr res = std::make_unique<UnordPWMap>();
 
   for (const Map &m : pieces_) {
     PWMapDelegPtr ith = reduce(m);
@@ -533,11 +539,11 @@ PWMapDelegPtr UnordPWMap::reduce() const
 PWMapDelegPtr UnordPWMap::minMap(const PWMapDelegate &other) const
 {
   if (isEmpty() || other.isEmpty())
-    return std::make_unique<UnordPWMap>(fact_);
+    return std::make_unique<UnordPWMap>();
 
   PWMapDelegPtr aux1 = restrict(other.dom()), aux2 = other.restrict(dom());
 
-  Set min_in_pw1 = fact_.createSet();
+  Set min_in_pw1 = SET_FACT.createSet();
   PWMapDelegPtr off1 = aux1->offsetImage(MD_NAT(arity(), 1)); 
   PWMapDelegPtr subt = (*off1 - *aux2);
   SetPiece im(arity(), Interval(0, 1, Inf));
@@ -546,7 +552,7 @@ PWMapDelegPtr UnordPWMap::minMap(const PWMapDelegate &other) const
     if (k > 0)
       im[k-1] = Interval(1, 1, 1);
 
-    Set kth = subt->preImage(fact_.createSet(im));
+    Set kth = subt->preImage(SET_FACT.createSet(im));
     min_in_pw1 = min_in_pw1.disjointCup(kth);
   }
 
@@ -555,13 +561,13 @@ PWMapDelegPtr UnordPWMap::minMap(const PWMapDelegate &other) const
 
 PWMapDelegPtr UnordPWMap::minAdjMap(const PWMapDelegate &other) const
 {
-  PWMapDelegPtr res = std::make_unique<UnordPWMap>(fact_);
+  PWMapDelegPtr res = std::make_unique<UnordPWMap>();
 
   UnordPWMapCRef othr = static_cast<UnordPWMapCRef>(other);
-  Set visited = fact_.createSet();
+  Set visited = SET_FACT.createSet();
   for (const Map &m1 : pieces_) {
     for (const Map &m2 : othr.pieces_) {
-      Set dom_res = fact_.createSet();
+      Set dom_res = SET_FACT.createSet();
       Set ith_dom = m1.dom().intersection(m2.dom());
       if (!ith_dom.isEmpty()) {
         Exp e_res, e1;
@@ -576,8 +582,8 @@ PWMapDelegPtr UnordPWMap::minAdjMap(const PWMapDelegate &other) const
           e_res = MDLExp(im2.minElem());
 
         if (!dom_res.isEmpty()) {
-          Map ith = fact_.createMap(dom_res, e_res);
-          UnordPWMap ith_pw(fact_, ith);
+          Map ith(dom_res, e_res);
+          UnordPWMap ith_pw(ith);
           Set again = dom_res.intersection(visited);
           if (!again.isEmpty()) {
             PWMapDelegPtr aux_res = res->restrict(dom_res);
@@ -600,13 +606,13 @@ PWMapDelegPtr UnordPWMap::minAdjMap(const PWMapDelegate &other) const
 
 PWMapDelegPtr UnordPWMap::firstInv(const Set &subdom) const
 {
-  UnordPWMap res(fact_);
+  UnordPWMap res;
 
-  Set visited = fact_.createSet();
+  Set visited = SET_FACT.createSet();
   for (const Map &m : pieces_) {
     Set res_dom = m.image(subdom).difference(visited);
     if (!res_dom.isEmpty()) {
-      Map new_map = fact_.createMap(m.preImage(res_dom), m.exp());
+      Map new_map(m.preImage(res_dom), m.exp());
       res.emplaceBack(new_map.minInv());
 
       visited = visited.cup(m.image(subdom));
@@ -620,7 +626,7 @@ PWMapDelegPtr UnordPWMap::firstInv() const { return firstInv(dom()); }
 
 PWMapDelegPtr UnordPWMap::filterMap(bool (*f)(const Map &)) const
 {
-  PWMapDelegPtr res = std::make_unique<UnordPWMap>(fact_);
+  PWMapDelegPtr res = std::make_unique<UnordPWMap>();
 
   for (const Map &m : pieces_)
     if (f(m))
@@ -631,15 +637,15 @@ PWMapDelegPtr UnordPWMap::filterMap(bool (*f)(const Map &)) const
 
 Set UnordPWMap::equalImage(const PWMapDelegate &other) const
 {
-  Set res = fact_.createSet();
+  Set res = SET_FACT.createSet();
 
   UnordPWMapCRef othr = static_cast<UnordPWMapCRef>(other);
   for (const Map &m1 : pieces_) {
     for (const Map &m2 : othr.pieces_) {
       Set cap_dom = m1.dom().intersection(m2.dom());
       if (!cap_dom.isEmpty()) {
-        Map m1_cap = fact_.createMap(cap_dom, m1.exp());
-        Map m2_cap = fact_.createMap(cap_dom, m2.exp());
+        Map m1_cap(cap_dom, m1.exp());
+        Map m2_cap(cap_dom, m2.exp());
         if (m1_cap == m2_cap)
           res = res.disjointCup(cap_dom);
       }
@@ -659,21 +665,21 @@ Set UnordPWMap::sharedImage() const
 
 PWMapDelegPtr UnordPWMap::offsetDom(const MD_NAT &off) const
 {
-  PWMapDelegPtr res = std::make_unique<UnordPWMap>(fact_);
+  PWMapDelegPtr res = std::make_unique<UnordPWMap>();
 
   for (const Map &m : pieces_)
-    res->emplaceBack(fact_.createMap(m.dom().offset(off), m.exp()));
+    res->emplaceBack(Map(m.dom().offset(off), m.exp()));
 
   return res;
 }
 
 PWMapDelegPtr UnordPWMap::offsetDom(const PWMapDelegate &off) const
 {
-  PWMapDelegPtr res = std::make_unique<UnordPWMap>(fact_);
+  PWMapDelegPtr res = std::make_unique<UnordPWMap>();
 
   for (const Map &m : pieces_) {
     Set ith_dom = off.image(m.dom());
-    res->emplaceBack(fact_.createMap(ith_dom, m.exp()));
+    res->emplaceBack(Map(ith_dom, m.exp()));
   }
 
   return res;
@@ -681,7 +687,7 @@ PWMapDelegPtr UnordPWMap::offsetDom(const PWMapDelegate &off) const
 
 PWMapDelegPtr UnordPWMap::offsetImage(const MD_NAT &off) const
 {
-  PWMapDelegPtr res = std::make_unique<UnordPWMap>(fact_);
+  PWMapDelegPtr res = std::make_unique<UnordPWMap>();
 
   for (const Map &m : pieces_) {
     Exp e = m.exp(), res_e;
@@ -690,7 +696,7 @@ PWMapDelegPtr UnordPWMap::offsetImage(const MD_NAT &off) const
       res_e.emplaceBack(res_lexp);
     }
 
-    res->emplaceBack(fact_.createMap(m.dom(), res_e));
+    res->emplaceBack(Map(m.dom(), res_e));
   }
 
   return res;
@@ -698,28 +704,28 @@ PWMapDelegPtr UnordPWMap::offsetImage(const MD_NAT &off) const
 
 PWMapDelegPtr UnordPWMap::offsetImage(const Exp &off) const
 {
-  PWMapDelegPtr res = std::make_unique<UnordPWMap>(fact_);
+  PWMapDelegPtr res = std::make_unique<UnordPWMap>();
 
   for (const Map &m : pieces_) 
-    res->emplaceBack(fact_.createMap(m.dom(), off + m.exp()));
+    res->emplaceBack(Map(m.dom(), off + m.exp()));
 
   return res;
 }
 
 PWMapDelegPtr UnordPWMap::compact() const
 {
-  UnordPWMap res(fact_);
+  UnordPWMap res;
 
   if (dom().isEmpty())
     return std::make_unique<UnordPWMap>(res);
 
-  Set compacted = fact_.createSet();
+  Set compacted = SET_FACT.createSet();
   for (auto it = pieces_.begin(); it != pieces_.end(); ++it) {
     auto next_it = it;
     ++next_it;
     Set ith_compacted = compacted.intersection(it->dom());
     if (ith_compacted.isEmpty()) {
-      Map new_ith = fact_.createMap(it->dom().compact(), it->exp());
+      Map new_ith(it->dom().compact(), it->exp());
       for (; next_it != pieces_.end(); ++next_it) {
         Set next_compacted = compacted.intersection(next_it->dom());
         if (next_compacted.isEmpty()) {

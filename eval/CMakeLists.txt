@@ -7,16 +7,27 @@ target_include_directories(sbg-eval-lib PUBLIC ${PROJECT_SOURCE_DIR})
 target_sources(
     sbg-eval-lib
     PRIVATE
-	    defs.cpp
+      eval_context.cpp
+      eval_exec.cpp
+      file_evaluator.cpp
+      func_env.cpp
+      input_translator.cpp
+      pretty_print.cpp
+      user_impl_map.cpp
+      user_input.cpp
+      var_env.cpp
 )
 
 add_subdirectory(visitors)
 
 add_dependencies(sbg-eval-lib sbg-dev sbg-parser-lib)
 
+find_package(Boost REQUIRED COMPONENTS program_options)
+
 target_link_libraries(
     sbg-eval-lib
     PRIVATE
+        Boost::program_options
         sbgraph
         sbg-parser-lib
         sbg-util-lib

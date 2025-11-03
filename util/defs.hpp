@@ -55,7 +55,6 @@ namespace Util {
 #define member_imp(C, X, Y)          \
   const X &C::Y() const { return Y##_; }
 
-
 /**
  * @brief Execution time of selected functions will be printed if it's true.
  */

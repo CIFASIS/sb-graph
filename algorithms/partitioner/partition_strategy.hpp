@@ -64,7 +64,6 @@ private:
     size_t _expected_size_by_partition;
     std::map<unsigned, unsigned> _current_size_by_partition;
     SBG::LIB::NodeWeight _node_weight;
-    const SBG::LIB::SetAF* _set_fact;
 };
 
 
@@ -97,7 +96,6 @@ private:
     std::map<unsigned, unsigned> _current_size_by_partition;
     SBG::LIB::Set _nodes;
     SBG::LIB::NodeWeight _node_weight;
-    const SBG::LIB::SetAF* _set_fact;
 };
 
 std::ostream& operator<<(std::ostream& os, const PartitionStrategy& pgraph);

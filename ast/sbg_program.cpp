@@ -23,17 +23,17 @@ namespace SBG {
 
 namespace AST {
 
-Program::Program() : nmbr_dims_(1), stms_(), exprs_() {}
-Program::Program(StatementList stms, ExprList exprs) : nmbr_dims_(1)
+SBGProgram::SBGProgram() : nmbr_dims_(1), stms_(), exprs_() {}
+SBGProgram::SBGProgram(StatementList stms, ExprList exprs) : nmbr_dims_(1)
   , stms_(stms), exprs_(exprs) {}
-Program::Program(LIB::NAT nmbr_dims, StatementList stms, ExprList exprs) 
+SBGProgram::SBGProgram(LIB::NAT nmbr_dims, StatementList stms, ExprList exprs) 
   : nmbr_dims_(nmbr_dims), stms_(stms), exprs_(exprs) {}
 
-member_imp(Program, LIB::NAT, nmbr_dims);
-member_imp(Program, StatementList, stms);
-member_imp(Program, ExprList, exprs);
+member_imp(SBGProgram, LIB::NAT, nmbr_dims);
+member_imp(SBGProgram, StatementList, stms);
+member_imp(SBGProgram, ExprList, exprs);
 
-std::ostream &operator<<(std::ostream &out, const Program &prog)
+std::ostream &operator<<(std::ostream &out, const SBGProgram &prog)
 {
   if (!prog.stms().empty())
     out << prog.stms() << "\n";

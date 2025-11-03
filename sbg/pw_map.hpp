@@ -30,7 +30,7 @@
 #ifndef SBG_PWMAP_HPP
 #define SBG_PWMAP_HPP
 
-#include "sbg/af_map.hpp"
+#include "sbg/map.hpp"
 
 namespace SBG {
 
@@ -45,16 +45,13 @@ struct PWMapDelegate;
 typedef std::unique_ptr<PWMapDelegate> PWMapDelegPtr;
 
 struct PWMapDelegate {
-  protected:
-  const MapAF &fact_;
-
   public:
   virtual ~PWMapDelegate() = default;
 
   /**
    * @brief Constructs an empty pw.
    */
-  PWMapDelegate(const MapAF &fact);
+  PWMapDelegate();
 
   /**
    * @brief Auxiliary function for defining the copy constructor of PWMap.
@@ -278,10 +275,10 @@ struct UnordPWMap : public PWMapDelegate {
   member_class(UnordMapCollection, pieces);
 
   ~UnordPWMap() = default;
-  UnordPWMap(const MapAF &fact);
-  UnordPWMap(const MapAF &fact, const Set &s);
-  UnordPWMap(const MapAF &fact, const Map &m);
-  UnordPWMap(const MapAF &fact, const UnordMapCollection &pieces);
+  UnordPWMap();
+  UnordPWMap(const Set &s);
+  UnordPWMap(const Map &m);
+  UnordPWMap(const UnordMapCollection &pieces);
   UnordPWMap(const UnordPWMap &pw);
 
   PWMapDelegPtr clone() const override;

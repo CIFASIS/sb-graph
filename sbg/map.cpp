@@ -83,15 +83,15 @@ member_imp(Map, Set, dom);
 member_imp(Map, Exp, exp);
 
 Map::~Map() {}
-Map::Map(const SetAF &fact) : fact_(fact), dom_(fact.createSet()) {}
-Map::Map(const SetAF &fact, MD_NAT x, Exp exp)
-  : fact_(fact), dom_(fact.createSet(x)), exp_(exp) {}
-Map::Map(const SetAF &fact, Interval i, LExp le)
-  : fact_(fact), dom_(fact.createSet(i)), exp_(Exp(le)) {}
-Map::Map(const SetAF &fact, SetPiece mdi, Exp exp)
-  : fact_(fact), dom_(fact.createSet(mdi)), exp_(exp) {}
-Map::Map(const SetAF &fact, Set s, Exp exp)
-  : fact_(fact), dom_(std::move(s)), exp_(exp) {}
+Map::Map() : dom_(SET_FACT.createSet()) {}
+Map::Map(MD_NAT x, Exp exp)
+  : dom_(SET_FACT.createSet(x)), exp_(exp) {}
+Map::Map(Interval i, LExp le)
+  : dom_(SET_FACT.createSet(i)), exp_(Exp(le)) {}
+Map::Map(SetPiece mdi, Exp exp)
+  : dom_(SET_FACT.createSet(mdi)), exp_(exp) {}
+Map::Map(Set s, Exp exp)
+  : dom_(std::move(s)), exp_(exp) {}
 
 bool Map::operator==(const Map &other) const
 {
@@ -124,7 +124,7 @@ Map Map::operator+(const Map &other) const
   Set res_dom = dom_.intersection(other.dom());
   Exp res_exp = exp_ + other.exp();
 
-  return Map(fact_, res_dom, res_exp);
+  return Map(res_dom, res_exp);
 }
 
 std::ostream &operator<<(std::ostream &out, const Map &m)
@@ -142,14 +142,14 @@ bool Map::isEmpty() const { return dom_.isEmpty(); }
 
 Map Map::restrict(const Set &subdom) const
 {
-  return Map(fact_, dom_.intersection(subdom), exp_);
+  return Map(dom_.intersection(subdom), exp_);
 }
 
 Set Map::image() const { return image(dom_); }
 
 Set Map::image(const Set &subdom) const
 {
-  Set res = fact_.createSet();
+  Set res = SET_FACT.createSet();
 
   if (subdom.isEmpty())
     return res;
@@ -171,7 +171,7 @@ Set Map::image(const Set &subdom) const
     }
     else {
       for (const SetPiece &mdi : capdom)
-        res = res.cup(fact_.createSet(SBG::LIB::image(mdi, exp_)));
+        res = res.cup(SET_FACT.createSet(SBG::LIB::image(mdi, exp_)));
     }
   }
 
@@ -183,7 +183,7 @@ Set Map::preImage(const Set &subcodom) const
   Set im = image();
   Set cap_subcodom = im.intersection(subcodom);
   if (cap_subcodom.isEmpty()) 
-    return fact_.createSet();
+    return SET_FACT.createSet();
 
   RATIONAL rat_inf(INT_Inf, 1);
   Set inv_dom = cap_subcodom;
@@ -196,7 +196,7 @@ Set Map::preImage(const Set &subcodom) const
       inv_exp[j] = LExp(1, 0);
     }
   }
-  Map inv(fact_, cap_subcodom, inv_exp);
+  Map inv(cap_subcodom, inv_exp);
   Set inv_im = inv.image();
 
   return dom_.intersection(inv_im);
@@ -208,7 +208,7 @@ Map Map::composition(const Map &other) const
   res_dom = other.preImage(res_dom);
   Exp res_exp = exp_.composition(other.exp_);
 
-  return Map(fact_, res_dom, res_exp);
+  return Map(res_dom, res_exp);
 }
 
 Set Map::fixedPoints() const
@@ -225,10 +225,10 @@ Set Map::fixedPoints() const
       allowed.emplaceBack(Interval(jth.offset().toNat()));
  
     else
-      return fact_.createSet();
+      return SET_FACT.createSet();
   }
 
-  return dom_.intersection(fact_.createSet(allowed));
+  return dom_.intersection(SET_FACT.createSet(allowed));
 }
 
 // Extra operations ------------------------------------------------------------
@@ -243,7 +243,7 @@ Map Map::minInv() const
   else
     res_exp = exp_.inverse();
 
-  return Map(fact_, res_dom, res_exp);
+  return Map(res_dom, res_exp);
 }
 
 bool Map::isId() const
@@ -256,9 +256,9 @@ bool Map::isId() const
 
 MaybeMap Map::compact(const Map &other) const
 {
-  Set res_dom = fact_.createSet();
+  Set res_dom = SET_FACT.createSet();
   if (exp_ == other.exp())
-    return Map(fact_, dom_.cup(other.dom()).compact(), exp_);
+    return Map(dom_.cup(other.dom()).compact(), exp_);
 
   return {};
 }

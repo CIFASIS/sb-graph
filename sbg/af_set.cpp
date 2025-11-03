@@ -47,6 +47,11 @@ Set UnordAF::createSet(const SetPiece &mdi) const
   return Set(std::make_unique<UnorderedSet>(mdi));
 }
 
+std::string UnordAF::prettyPrint() const
+{
+  return "unordered";
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Ordered Set (1 dimension, dense intervals) AF -------------------------------
 ////////////////////////////////////////////////////////////////////////////////
@@ -69,6 +74,27 @@ Set OrdDenseAF::createSet(const Interval &i) const
 Set OrdDenseAF::createSet(const SetPiece &mdi) const
 {
   return Set(std::make_unique<OrderedDenseSet>(mdi));
+}
+
+std::string OrdDenseAF::prettyPrint() const
+{
+  return "ordered unidimensional dense";
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Factory for clients --------------------------------------------------------- 
+////////////////////////////////////////////////////////////////////////////////
+
+SetFactory::SetFactory() : set_fact_(std::make_unique<UnordAF>()) {}
+
+SetAF& SetFactory::set_fact()
+{
+  return *set_fact_;
+}
+
+void SetFactory::set_set_fact(SetFactPtr set_fact)
+{
+  set_fact_ = std::move(set_fact);
 }
 
 } // namespace LIB

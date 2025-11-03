@@ -7,7 +7,6 @@ target_include_directories(sbg-dev PUBLIC ${PROJECT_SOURCE_DIR})
 target_sources(
     sbg-dev
     PRIVATE
-    af_map.cpp
     af_pwmap.cpp
     af_set.cpp
     interval.cpp

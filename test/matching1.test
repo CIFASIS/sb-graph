@@ -12,7 +12,7 @@ equation
 end matching1;
 */
 
-N = 100000;
+N = 100;
 
 V1 = 1;
 V2 = N-1+V1;

@@ -1,6 +1,6 @@
 /** @file map.hpp
 
- @brief <b>Map delegate pattern</b>
+ @brief <b>SBG Map</b>
 
  A SBG map dom -> exp is an entity composed by a set (domain) and a law.
  Currently only linear expressions are supported. Both the domain and law should
@@ -30,6 +30,7 @@
 #define SBG_MAP_HPP
 
 #include "sbg/af_set.hpp"
+
 #include "sbg/multidim_lexp.hpp"
 
 namespace SBG {
@@ -40,14 +41,7 @@ struct Map;
 
 typedef std::optional<Map> MaybeMap;
 
-/**
- * @brief Implementation of maps. Every map has as member a SetAF that keeps
- * track of the chosen implementation for Sets.
- */
 struct Map {
-  private:
-  const SetAF &fact_;
-
   public:
   member_class(Set, dom);
   member_class(Exp, exp);
@@ -57,30 +51,30 @@ struct Map {
   /**
    * @brief Construct a map with empty domain and expression.
    */
-  Map(const SetAF &fact);
+  Map();
 
   /**
    * @brief Construct a map with a single element \p x in its domain, and with
    * \p exp as its law.
    */
-  Map(const SetAF &fact, MD_NAT x, Exp exp);
+  Map(MD_NAT x, Exp exp);
 
   /**
    * @brief Construct a map with all the elements of \p i in its domain, and law
    * \p le.
    */
-  Map(const SetAF &fact, Interval i, LExp le);
+  Map(Interval i, LExp le);
 
   /**
    * @brief Construct a map with all the elements of \p mdi in its domain, and
    * law \p exp. 
    */
-  Map(const SetAF &fact, SetPiece mdi, Exp exp);
+  Map(SetPiece mdi, Exp exp);
 
   /**
    * @brief Construct a map defining its domain as \p s and law as \p exp.
    */
-  Map(const SetAF &fact, Set s, Exp exp);
+  Map(Set s, Exp exp);
 
   bool operator==(const Map &other) const;
   bool operator!=(const Map &other) const;

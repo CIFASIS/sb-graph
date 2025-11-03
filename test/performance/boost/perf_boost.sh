@@ -5,8 +5,8 @@
 # 				USAGE: perf_boost.sh FILE ALGORITHM ITERS SIZE
 #
 # 	DESCRIPTION: Helper script that given a SBG test file FILE replaces line
-#                "N = ..." with "N = SIZE" and then finds the first
-#                defined SBG in the file, constructing a traditional graph
+#                "N = ..." with "N = SIZE" and then finds all SBG defined
+#                SBG in the file, constructing a traditional graph
 #                with the BGL library. Then, executes the selected algorithm
 #                according to option ALGORITHM. This is repeated ITERS times,
 #                and the average of all executions is reported.
@@ -39,7 +39,7 @@ echo > builder_values
 
 while read line; do
   if echo "$line" | grep -q "N = "; then 
-    echo $line > eval; awk -v s=$size '{print "N = " s}' eval >> test_file; start=true;
+    echo $line > eval; awk -v s=$size '{print "N = " s ";"}' eval >> test_file; start=true;
   else
     echo $line >> test_file
   fi
@@ -47,8 +47,7 @@ done < aux_file
 
 
 for i in $(seq "$iterations"); do
-	echo $i
-	./bin/boost-performance -a $algo -f test_file
+	../../build/bin/boost-perf test_file -s $algo
 	mv SBG.log SBG_${i}.log
 	echo
     if [[ $algo==0 ]]; then

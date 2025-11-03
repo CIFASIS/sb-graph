@@ -9,6 +9,7 @@ target_sources(
     PRIVATE
     logger.cpp
     time_profiler.cpp
+    user_input_handler.cpp
 )
 
 add_custom_target(util-doc

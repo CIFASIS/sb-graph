@@ -16,8 +16,8 @@
 
  ******************************************************************************/
 
-#include "defs.hpp"
-#include "time_profiler.hpp"
+#include "util/defs.hpp"
+#include "util/time_profiler.hpp"
 
 namespace SBG {
 
@@ -66,6 +66,6 @@ void TimeProfiler::print_execution_time() {
 
 }
 
-}
+} // namespace Util
 
-}
+} // namespace SBG

@@ -43,10 +43,10 @@ struct WeightedSBGraph : public SBG
 public:
     WeightedSBGraph(SBG& graph) : SBG(graph) {}
     WeightedSBGraph(SBG&& graph) : SBG(graph) {}
-    WeightedSBGraph(const PWMapAF &fact, const Set &V, const PWMap &Vmap
+    WeightedSBGraph(const Set &V, const PWMap &Vmap
         , const PWMap &map1, const PWMap &map2
         , const PWMap &Emap, const PWMap &subEmap)
-        : SBG(fact, V, Vmap, map1, map2, Emap, subEmap)
+        : SBG(V, Vmap, map1, map2, Emap, subEmap)
     {}
 
     void set_node_weights(NodeWeight& node_weights) { _node_weights = std::move(node_weights); }

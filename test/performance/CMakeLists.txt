@@ -17,6 +17,7 @@ target_compile_options(sbg-performance PRIVATE "-Wall")
 target_link_libraries(sbg-performance
                       PRIVATE
                       sbg-dev
+                      sbg-eval-lib
                       ${GOOGLE_TEST_LIB}
                       ${GOOGLE_MOCK_LIB}
                       pthread

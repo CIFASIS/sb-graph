@@ -37,8 +37,8 @@
 #include "algorithms/matching/matching_fact.hpp"
 #include "algorithms/scc/scc_fact.hpp"
 #include "algorithms/toposort/ts_fact.hpp"
-#include "sbg/af_pwmap.hpp"
-#include "sbg/af_set.hpp"
+#include "sbg/pwmap_fact.hpp"
+#include "sbg/set_fact.hpp"
 
 namespace SBG {
 
@@ -103,6 +103,7 @@ class UserImplMap {
 ////////////////////////////////////////////////////////////////////////////////
 
 void setSetFactory(int set_impl);
+void setPWFactory(int pw_impl);
 void setSCCFactory(int scc_impl);
 
 } // namespace Eval

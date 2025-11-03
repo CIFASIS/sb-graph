@@ -21,7 +21,7 @@
 #include "eval/visitors/autom_impl_visitor.hpp"
 #include "eval/visitors/stm_evaluator.hpp"
 #include "eval/visitors/set_impl_visitor.hpp"
-#include "sbg/af_pwmap.hpp"
+#include "sbg/pwmap_fact.hpp"
 
 namespace SBG {
 

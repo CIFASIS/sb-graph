@@ -19,7 +19,7 @@
 
 #include "eval/input_translator.hpp"
 #include "eval/user_impl_map.hpp"
-#include "sbg/af_set.hpp"
+#include "sbg/set_fact.hpp"
 
 namespace SBG {
 

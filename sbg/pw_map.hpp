@@ -1,12 +1,14 @@
 /** @file pw_map.hpp
 
- @brief <b>Piecewise map implementation</b>
+ @brief <b>SBG Piecewise Map</b>
 
- A piecewise map (pw) <<m1, ..., mj>> is the implementation of compact functions
+ A piecewise map (pw) <<m1, ..., mj>> is a representation for functions
  using collections of domain-disjoint Maps, all sharing the same arity. Maps
  of the collection will be named "pieces" (i.e. m1, ..., mj). The domain of the
- function is the union of all domains of every map. Currently only one
- implementation is supported: UnorderedPW.
+ function is the union of all domains of every map. Currently two
+ implementations are supported:
+   - Unordered PWMaps.
+   - Ordered PWMaps, allowing different optimizations.
 
  <hr>
 
@@ -30,6 +32,8 @@
 #ifndef SBG_PWMAP_HPP
 #define SBG_PWMAP_HPP
 
+#include <forward_list>
+
 #include "sbg/map.hpp"
 
 namespace SBG {
@@ -37,26 +41,26 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// PWMap Abstract Delegate -----------------------------------------------------
+// PWMap Abstract Strategy -----------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct PWMapDelegate;
+struct PWMapStrategy;
 
-typedef std::unique_ptr<PWMapDelegate> PWMapDelegPtr;
+typedef std::unique_ptr<PWMapStrategy> PWMapStratPtr;
 
-struct PWMapDelegate {
+struct PWMapStrategy {
   public:
-  virtual ~PWMapDelegate() = default;
+  virtual ~PWMapStrategy() = default;
 
   /**
    * @brief Constructs an empty pw.
    */
-  PWMapDelegate();
+  PWMapStrategy();
 
   /**
    * @brief Auxiliary function for defining the copy constructor of PWMap.
    */
-  virtual PWMapDelegPtr clone() const = 0;
+  virtual PWMapStratPtr clone() const = 0;
 
   struct Iterator {
     public:
@@ -78,20 +82,20 @@ struct PWMapDelegate {
    * @brief Two pws are equal if they satisfy the function extensionality
    * principle.
    */
-  virtual bool operator==(const PWMapDelegate &other) const = 0;
-  virtual bool operator!=(const PWMapDelegate &other) const = 0;
+  virtual bool operator==(const PWMapStrategy &other) const = 0;
+  virtual bool operator!=(const PWMapStrategy &other) const = 0;
   virtual std::ostream &print(std::ostream &out) const = 0;
 
   /**
    * @brief Sum of two pws.
    */
-  virtual PWMapDelegPtr operator+(const PWMapDelegate &other) const = 0;
+  virtual PWMapStratPtr operator+(const PWMapStrategy &other) const = 0;
 
   /** 
    * @brief Bounded subtraction of pws. If for same value the result is
    * negative, it is replace by 0.
    */
-  virtual PWMapDelegPtr operator-(const PWMapDelegate &other) const = 0;
+  virtual PWMapStratPtr operator-(const PWMapStrategy &other) const = 0;
 
   // Traditional maps operations -----------------------------------------------
 
@@ -115,7 +119,7 @@ struct PWMapDelegate {
   /**
    * @brief Restrict the domain of the pw to \p subdom.
    */
-  virtual PWMapDelegPtr restrict(const Set &subdom) const = 0;
+  virtual PWMapStratPtr restrict(const Set &subdom) const = 0;
 
   /**
    * @brief Calculates all possible images for all elements in the domain of
@@ -141,24 +145,24 @@ struct PWMapDelegate {
    * @brief Calculate the inverse of a bijective pw.\n  
    * Precondition: the pw must be bijective.
    */
-  virtual PWMapDelegPtr inverse() const = 0;
+  virtual PWMapStratPtr inverse() const = 0;
 
   /**
    * @brief Calculate the composition of \p this with \p other, i.e.
    * \p this(\p other).
    */
-  virtual PWMapDelegPtr composition(const PWMapDelegate &pw2) const = 0;
+  virtual PWMapStratPtr composition(const PWMapStrategy &pw2) const = 0;
 
   /**
    * @brief First compose the pw with itself \p n times, obtaining pw'. Then,
    * compose pw' with itself up to convergence.
    */
-  virtual PWMapDelegPtr mapInf(unsigned int n) const = 0;
+  virtual PWMapStratPtr mapInf(unsigned int n) const = 0;
 
   /**
    * @brief Compose a map with itself up to convergence.
    */
-  virtual PWMapDelegPtr mapInf() const = 0;
+  virtual PWMapStratPtr mapInf() const = 0;
 
   /**
    * @brief Calculates the set of elements in the domain such that f(x) = x.
@@ -171,12 +175,12 @@ struct PWMapDelegate {
    * @brief Concatenation of two pws.\n 
    * Precondition: pws should domain-disjoint.
    */
-  virtual PWMapDelegPtr concatenation(const PWMapDelegate &other) const = 0;
+  virtual PWMapStratPtr concatenation(const PWMapStrategy &other) const = 0;
 
   /**
    * @brief Extend the pw with exclusive elements in the domain of \p other.
    */
-  virtual PWMapDelegPtr combine(const PWMapDelegate &other) const = 0;
+  virtual PWMapStratPtr combine(const PWMapStrategy &other) const = 0;
 
   /** 
    * @brief Calculates (if possible) compactly the result of mapInf.\n  
@@ -186,15 +190,15 @@ struct PWMapDelegate {
    *   - x-h
    *   - h
    */
-  virtual PWMapDelegPtr reduce(const Interval &i, const LExp &e) const = 0;
-  virtual PWMapDelegPtr reduce(const Map &sbgmap) const = 0;
-  virtual PWMapDelegPtr reduce() const = 0;
+  virtual PWMapStratPtr reduce(const Interval &i, const LExp &e) const = 0;
+  virtual PWMapStratPtr reduce(const Map &sbgmap) const = 0;
+  virtual PWMapStratPtr reduce() const = 0;
 
   /**
    * @brief For every element in both domains assign the law that returns the
    * minimum value.
    */
-  virtual PWMapDelegPtr minMap(const PWMapDelegate &other) const = 0;
+  virtual PWMapStratPtr minMap(const PWMapStrategy &other) const = 0;
 
   /**
    * @brief Given two maps pw1 (\p this) and pw2 (\p other), for every element y1
@@ -203,31 +207,31 @@ struct PWMapDelegate {
    * calculate for every vertex which of its adjacent vertices returns the
    * minimum value according to pw other.
    */
-  virtual PWMapDelegPtr minAdjMap(const PWMapDelegate &other) const = 0;
+  virtual PWMapStratPtr minAdjMap(const PWMapStrategy &other) const = 0;
 
   /** 
    * @brief Pseudo-inverse of a pw restricted to \p subdom. If a value is the
    * image of several elements of the original domain, it will mapped to any
    * of the possible candidates. 
    */
-  virtual PWMapDelegPtr firstInv(const Set &subdom) const = 0;
+  virtual PWMapStratPtr firstInv(const Set &subdom) const = 0;
 
   /** 
    * @brief Pseudo-inverse of a pw.
    */
-  virtual PWMapDelegPtr firstInv() const = 0;
+  virtual PWMapStratPtr firstInv() const = 0;
 
   /**
    * Returns a pw that keeps pieces of the original pw that satisfy the
    * predicate argument.
    */
-  virtual PWMapDelegPtr filterMap(bool (*f)(const Map &)) const = 0;
+  virtual PWMapStratPtr filterMap(bool (*f)(const Map &)) const = 0;
 
   /** 
    * @brief Return elements in both domains, that have the same image in both
    * pws.
    */
-  virtual Set equalImage(const PWMapDelegate &other) const = 0;
+  virtual Set equalImage(const PWMapStrategy &other) const = 0;
 
   /** 
    * @brief Given a map, return elements of the domain that share its image with
@@ -239,136 +243,50 @@ struct PWMapDelegate {
    * @brief Sum a constant value to every element in the domain of the pw. The
    * law remains unchanged.
    */
-  virtual PWMapDelegPtr offsetDom(const MD_NAT &off) const = 0;
+  virtual PWMapStratPtr offsetDom(const MD_NAT &off) const = 0;
 
   /**
    * @brief Sum the value indicated by pw \p off for every value in the domain
    * of the pw \p this. The law remains unchanged.
    */
-  virtual PWMapDelegPtr offsetDom(const PWMapDelegate &off) const = 0;
+  virtual PWMapStratPtr offsetDom(const PWMapStrategy &off) const = 0;
 
   /**
    * @brief Sum a constant value to every element in the image of the pw, that
    * is, the law of the pw is modified without altering its domain.
    */
-  virtual PWMapDelegPtr offsetImage(const MD_NAT &off) const = 0;
+  virtual PWMapStratPtr offsetImage(const MD_NAT &off) const = 0;
 
   /**
    * @brief Sum the expression \p off to every element in the image of the pw,
    * that is, the law is modified without altering its domain.
    */
-  virtual PWMapDelegPtr offsetImage(const Exp &off) const = 0;
+  virtual PWMapStratPtr offsetImage(const Exp &off) const = 0;
 
   /**
    * @brief Compact in the same piece all maps that have the same expression.
    */
-  virtual PWMapDelegPtr compact() const = 0;
+  virtual PWMapStratPtr compact() const = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// Unordered PWMap Implementation (concrete delegate) --------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-typedef std::vector<Map> UnordMapCollection;
-
-struct UnordPWMap : public PWMapDelegate {
-  member_class(UnordMapCollection, pieces);
-
-  ~UnordPWMap() = default;
-  UnordPWMap();
-  UnordPWMap(const Set &s);
-  UnordPWMap(const Map &m);
-  UnordPWMap(const UnordMapCollection &pieces);
-  UnordPWMap(const UnordPWMap &pw);
-
-  PWMapDelegPtr clone() const override;
-
-  struct Iterator : public PWMapDelegate::Iterator {
-    member_class(UnordMapCollection::const_iterator, it);
-
-    Iterator(UnordMapCollection::const_iterator it);
-    void operator++() override;
-    bool operator!=(const PWMapDelegate::Iterator &other) const override;
-    const Map &operator*() const override;
-  };
-
-  std::shared_ptr<PWMapDelegate::Iterator> begin() const override;
-  std::shared_ptr<PWMapDelegate::Iterator> end() const override;
-
-  void emplaceBack(const Map &m) override;
-
-  bool operator==(const PWMapDelegate &other) const override;
-  bool operator!=(const PWMapDelegate &other) const override;
-  UnordPWMap &operator=(UnordPWMap &&other);
-  std::ostream &print(std::ostream &out) const override;
-
-  PWMapDelegPtr operator+(const PWMapDelegate &other) const override;
-  PWMapDelegPtr operator-(const PWMapDelegate &other) const override;
-
-  // Traditional map operations ------------------------------------------------
-
-  std::size_t arity() const override;
-  bool isEmpty() const override;
-  Set dom() const override;
-  PWMapDelegPtr restrict(const Set &subdom) const override;
-  Set image() const override;
-  Set image(const Set &subdom) const override;
-  Set preImage(const Set &subcodom) const override;
-  PWMapDelegPtr inverse() const override;
-  PWMapDelegPtr composition(const PWMapDelegate &pw2) const override;
-
-  PWMapDelegPtr mapInf(unsigned int n) const override;
-  PWMapDelegPtr mapInf() const override;
-  Set fixedPoints() const override;
-
-  // Extra operations ----------------------------------------------------------
-
-  PWMapDelegPtr concatenation(const PWMapDelegate &other) const override;
-  PWMapDelegPtr combine(const PWMapDelegate &other) const override;
-  PWMapDelegPtr reduce(const Interval &i, const LExp &e) const override;
-  PWMapDelegPtr reduce(const Map &sbgmap) const override;
-  PWMapDelegPtr reduce() const override;
-
-  PWMapDelegPtr minMap(const PWMapDelegate &other) const override;
-  PWMapDelegPtr minAdjMap(const PWMapDelegate &other) const override;
-
-  PWMapDelegPtr firstInv(const Set &subdom) const override;
-  PWMapDelegPtr firstInv() const override;
-
-  PWMapDelegPtr filterMap(bool (*f)(const Map &)) const override;
-
-  Set equalImage(const PWMapDelegate &other) const override;
-  Set sharedImage() const override;
-
-  PWMapDelegPtr offsetDom(const MD_NAT &off) const override;
-  PWMapDelegPtr offsetDom(const PWMapDelegate &off) const override;
-  PWMapDelegPtr offsetImage(const MD_NAT &off) const override;
-  PWMapDelegPtr offsetImage(const Exp &off) const override;
-
-  PWMapDelegPtr compact() const override;
-};
-
-typedef const UnordPWMap &UnordPWMapCRef;
-typedef std::unique_ptr<UnordPWMap> UnordPWMapPtr;
-
-////////////////////////////////////////////////////////////////////////////////
-// PWMap Implementation (delegator) --------------------------------------------
+// PWMap Interface (context) ---------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 struct PWMap {
   private:
-  PWMapDelegPtr delegate_;
+  PWMapStratPtr strategy_;
 
   public:
-  PWMap(PWMapDelegPtr deleg);
+  PWMap(PWMapStratPtr strat);
   PWMap(const PWMap &other);
 
   struct Iterator {
     private:
-    std::shared_ptr<PWMapDelegate::Iterator> it_;
+    std::shared_ptr<PWMapStrategy::Iterator> it_;
 
     public:
-    Iterator(std::shared_ptr<PWMapDelegate::Iterator> it);
+    Iterator(std::shared_ptr<PWMapStrategy::Iterator> it);
     void operator++();
     bool operator!=(const PWMap::Iterator &other) const;
     Map operator*() const;

@@ -25,7 +25,6 @@
 #define EXPR_EVALUATOR 
 
 #include "eval/eval_context.hpp"
-#include "sbg/af_pwmap.hpp"
 
 namespace SBG {
 

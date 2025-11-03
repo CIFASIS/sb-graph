@@ -75,6 +75,8 @@ SetPiece image(SetPiece mdi, Exp mdle)
   return res;
 }
 
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Map Implementation ----------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
@@ -118,6 +120,7 @@ Map &Map::operator=(const Map &other)
 
   return *this;
 }
+
 
 Map Map::operator+(const Map &other) const
 {

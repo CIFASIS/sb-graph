@@ -29,8 +29,7 @@
 #ifndef SBG_MAP_HPP
 #define SBG_MAP_HPP
 
-#include "sbg/af_set.hpp"
-
+#include "sbg/set_fact.hpp"
 #include "sbg/multidim_lexp.hpp"
 
 namespace SBG {
@@ -41,6 +40,10 @@ struct Map;
 
 typedef std::optional<Map> MaybeMap;
 
+/**
+ * @brief Implementation of maps. Every map has as member a SetFact that keeps
+ * track of the chosen implementation for Sets.
+ */
 struct Map {
   public:
   member_class(Set, dom);
@@ -79,7 +82,7 @@ struct Map {
   bool operator==(const Map &other) const;
   bool operator!=(const Map &other) const;
   Map &operator=(const Map &other);
-
+  
   /**
    * @brief Calculates the sum of both maps for elements that belong to both
    * domains.
@@ -147,6 +150,7 @@ struct Map {
    * not, the result isn't a map, so no value is returned.
    */
   MaybeMap compact(const Map &other) const;
+  
 };
 std::ostream &operator<<(std::ostream &out, const Map &s);
 

@@ -20,7 +20,7 @@
 #include <chrono>
 
 #include "algorithms/misc/causalization_builders.hpp"
-#include "sbg/af_pwmap.hpp"
+#include "sbg/pwmap_fact.hpp"
 #include "util/logger.hpp"
 
 namespace MISC {

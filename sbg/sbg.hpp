@@ -41,7 +41,7 @@
 #ifndef SBG_SBG_HPP
 #define SBG_SBG_HPP
 
-#include "sbg/af_pwmap.hpp"
+#include "sbg/pwmap_fact.hpp"
 #include "util/debug.hpp"
 
 namespace SBG {

@@ -1,9 +1,6 @@
-/** @file af_pwmap.hpp
+/** @file pwmap_fact.hpp
 
- @brief <b>PWMap Abstract Factory</b>
-
- Currently only one implementation of PWMaps is supported: unordered. In the
- future an ordered implementation might be added.
+ @brief <b>PWMap Factory</b>
 
  <hr>
 
@@ -24,8 +21,8 @@
 
  ******************************************************************************/
 
-#ifndef SBG_AF_PWMAP_HPP
-#define SBG_AF_PWMAP_HPP
+#ifndef SBG_PWMAP_FACT_HPP
+#define SBG_PWMAP_FACT_HPP
 
 #include "pw_map.hpp"
 
@@ -35,10 +32,10 @@ namespace LIB {
 
 #define PW_FACT PWFactory::instance().pw_fact()
 
-struct PWMapAF {
+struct PWMapFact {
   public:
-  virtual ~PWMapAF() = default;
-  PWMapAF();
+  virtual ~PWMapFact() = default;
+  PWMapFact();
 
   virtual PWMap createPWMap() const = 0;
   virtual PWMap createPWMap(const Set &s) const = 0;
@@ -46,9 +43,9 @@ struct PWMapAF {
   virtual std::string prettyPrint() const = 0;
 };
 
-struct UnordPWMapAF : public PWMapAF {
+struct UnordPWMapFact : public PWMapFact {
   public:
-  UnordPWMapAF();
+  UnordPWMapFact();
 
   PWMap createPWMap() const override;
   PWMap createPWMap(const Set &s) const override;
@@ -56,7 +53,17 @@ struct UnordPWMapAF : public PWMapAF {
   std::string prettyPrint() const override;
 };
 
-using PWMapFactPtr = std::unique_ptr<PWMapAF>;
+struct OrdPWMapFact : public PWMapFact {
+  public:
+  OrdPWMapFact();
+
+  PWMap createPWMap() const override;
+  PWMap createPWMap(const Set &s) const override;
+  PWMap createPWMap(const Map &m) const override;
+  std::string prettyPrint() const override;
+};
+
+using PWMapFactPtr = std::unique_ptr<PWMapFact>;
 
 /**
  * @brief Single instance of pw factory to be used by clients in need of
@@ -71,13 +78,15 @@ class PWFactory {
     return instance_;
   }
 
-  PWMapAF& pw_fact();
+  PWMapFact& pw_fact();
   void set_pw_fact(PWMapFactPtr set_fact);
 
   private:
   PWFactory();
   PWMapFactPtr pw_fact_;
 };
+
+
 
 } // namespace LIB
 

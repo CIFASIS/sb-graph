@@ -17,51 +17,79 @@
 
  ******************************************************************************/
 
-#include "sbg/af_pwmap.hpp"
+#include "sbg/pwmap_fact.hpp"
+#include "sbg/ord_pwmap.hpp"
+#include "sbg/unord_pwmap.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// PWMap AF --------------------------------------------------------------------
+// PWMap Factory ---------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-PWMapAF::PWMapAF() {}
+PWMapFact::PWMapFact() {}
 
 ////////////////////////////////////////////////////////////////////////////////
-// UnordPWMap AF ---------------------------------------------------------------
+// UnordPWMap Factory ----------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-UnordPWMapAF::UnordPWMapAF() {}
+UnordPWMapFact::UnordPWMapFact() {}
 
-PWMap UnordPWMapAF::createPWMap() const
+PWMap UnordPWMapFact::createPWMap() const
 {
   return PWMap(std::make_unique<UnordPWMap>());
 }
 
-PWMap UnordPWMapAF::createPWMap(const Set &s) const
+PWMap UnordPWMapFact::createPWMap(const Set &s) const
 {
   return PWMap(std::make_unique<UnordPWMap>(s));
 }
 
-PWMap UnordPWMapAF::createPWMap(const Map &m) const
+PWMap UnordPWMapFact::createPWMap(const Map &m) const
 {
   return PWMap(std::make_unique<UnordPWMap>(m));
 }
 
-std::string UnordPWMapAF::prettyPrint() const
+std::string UnordPWMapFact::prettyPrint() const
 {
   return "unordered";
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// OrdPWMap Factory ------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+OrdPWMapFact::OrdPWMapFact() {}
+
+PWMap OrdPWMapFact::createPWMap() const
+{
+  return PWMap(std::make_unique<OrdPWMap>());
+}
+
+PWMap OrdPWMapFact::createPWMap(const Set &s) const
+{
+  return PWMap(std::make_unique<OrdPWMap>(s));
+}
+
+PWMap OrdPWMapFact::createPWMap(const Map &m) const
+{
+  return PWMap(std::make_unique<OrdPWMap>(m));
+}
+
+std::string OrdPWMapFact::prettyPrint() const
+{
+  return "ordered";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Factory for clients --------------------------------------------------------- 
 ////////////////////////////////////////////////////////////////////////////////
 
-PWFactory::PWFactory() : pw_fact_(std::make_unique<UnordPWMapAF>()) {}
+PWFactory::PWFactory() : pw_fact_(std::make_unique<UnordPWMapFact>()) {}
 
-PWMapAF& PWFactory::pw_fact()
+PWMapFact& PWFactory::pw_fact()
 {
   return *pw_fact_;
 }

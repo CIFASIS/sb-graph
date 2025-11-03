@@ -83,7 +83,7 @@ OG::EdgeDesc OrdinaryGraphBuilder::addEdge(
 {
   SBG::LIB::SetPiece mdi(id);
   SBG::LIB::PWMap map1 = _sb_graph.map1(), map2 = _sb_graph.map2();
-  SBG::LIB::UnordAF fact;
+  SBG::LIB::UnordSetFact fact;
   SBG::LIB::MD_NAT v1 = map1.image(fact.createSet(mdi)).minElem();
   SBG::LIB::MD_NAT v2 = map2.image(fact.createSet(mdi)).minElem();
 
@@ -119,7 +119,7 @@ OG::DGraph OrdinaryDGraphBuilder::build()
     addVertex(end, graph);
   }
 
-  SBG::LIB::UnordAF fact;
+  SBG::LIB::UnordSetFact fact;
   SBG::LIB::PWMap mapb = _sb_graph.mapB(), mapd = _sb_graph.mapD();
   for (const SBG::LIB::SetPiece &e : _sb_graph.E()) {
     assert(!e.isEmpty());

@@ -53,9 +53,11 @@ void UserImplMap::StructImplMap::freeze()
 UserImplMap::StructImplMap setMap()
 {
   UserImplMap::StructImplMap set_mapping;
-  set_mapping[0] = []() { return std::make_unique<LIB::UnordAF>(); };
-  set_mapping[1] = []() { return std::make_unique<LIB::UnordAF>(); };
-  set_mapping[2] = []() { return std::make_unique<LIB::OrdDenseAF>(); };
+  set_mapping[0] = []() { return std::make_unique<LIB::UnordSetFact>(); };
+  set_mapping[1] = []() { return std::make_unique<LIB::OrdSetFact>(); };
+  set_mapping[2] = []() {
+    return std::make_unique<LIB::OrdUnidimDenseSetFact>();
+  };
   set_mapping.freeze();
   return set_mapping;
 }
@@ -63,8 +65,8 @@ UserImplMap::StructImplMap setMap()
 UserImplMap::StructImplMap pwMap()
 {
   UserImplMap::StructImplMap pw_mapping;
-  pw_mapping[0] = []() { return std::make_unique<LIB::UnordPWMapAF>(); };
-  //pw_mapping[1] = std::make_unique<LIB::OrdPWMapAF>();
+  pw_mapping[0] = []() { return std::make_unique<LIB::UnordPWMapFact>(); };
+  pw_mapping[1] = []() { return std::make_unique<LIB::OrdPWMapFact>(); };
   pw_mapping.freeze();
   return pw_mapping;
 }
@@ -131,6 +133,15 @@ void setSetFactory(int set_impl)
   LIB::SetFactPtr set_fact = std::get<LIB::SetFactPtr>(IMPL_MAP.getFactory("set"
     , set_impl));
   LIB::SetFactory::instance().set_set_fact(std::move(set_fact));
+
+  return;
+}
+
+void setPWFactory(int pw_impl)
+{
+  LIB::PWMapFactPtr pw_fact = std::get<LIB::PWMapFactPtr>(
+    IMPL_MAP.getFactory("pw", pw_impl));
+  LIB::PWFactory::instance().set_pw_fact(std::move(pw_fact));
 
   return;
 }

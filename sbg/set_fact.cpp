@@ -17,77 +17,109 @@
 
  ******************************************************************************/
 
-#include "sbg/af_set.hpp"
+#include "sbg/set_fact.hpp"
+#include "sbg/ord_set.hpp"
+#include "sbg/ord_unidim_dense_set.hpp"
+#include "sbg/unord_set.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Unordered Set AF ------------------------------------------------------------
+// Unordered Set Factory -------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-Set UnordAF::createSet() const
+Set UnordSetFact::createSet() const
 {
   return Set(std::make_unique<UnorderedSet>());
 }
 
-Set UnordAF::createSet(const MD_NAT &x) const
+Set UnordSetFact::createSet(const MD_NAT &x) const
 {
   return Set(std::make_unique<UnorderedSet>(x));
 }
 
-Set UnordAF::createSet(const Interval &i) const
+Set UnordSetFact::createSet(const Interval &i) const
 {
   return Set(std::make_unique<UnorderedSet>(i));
 }
 
-Set UnordAF::createSet(const SetPiece &mdi) const
+Set UnordSetFact::createSet(const SetPiece &mdi) const
 {
   return Set(std::make_unique<UnorderedSet>(mdi));
 }
 
-std::string UnordAF::prettyPrint() const
+std::string UnordSetFact::prettyPrint() const
 {
   return "unordered";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Ordered Set (1 dimension, dense intervals) AF -------------------------------
+// Ordered Unidimensional Dense Set Factory ------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-Set OrdDenseAF::createSet() const
+Set OrdUnidimDenseSetFact::createSet() const
 {
-  return Set(std::make_unique<OrderedDenseSet>());
+  return Set(std::make_unique<OrdUnidimDenseSet>());
 }
 
-Set OrdDenseAF::createSet(const MD_NAT &x) const
+Set OrdUnidimDenseSetFact::createSet(const MD_NAT &x) const
 {
-  return Set(std::make_unique<OrderedDenseSet>(x));
+  return Set(std::make_unique<OrdUnidimDenseSet>(x));
 }
 
-Set OrdDenseAF::createSet(const Interval &i) const
+Set OrdUnidimDenseSetFact::createSet(const Interval &i) const
 {
-  return Set(std::make_unique<OrderedDenseSet>(i));
+  return Set(std::make_unique<OrdUnidimDenseSet>(i));
 }
 
-Set OrdDenseAF::createSet(const SetPiece &mdi) const
+Set OrdUnidimDenseSetFact::createSet(const SetPiece &mdi) const
 {
-  return Set(std::make_unique<OrderedDenseSet>(mdi));
+  return Set(std::make_unique<OrdUnidimDenseSet>(mdi));
 }
 
-std::string OrdDenseAF::prettyPrint() const
+std::string OrdUnidimDenseSetFact::prettyPrint() const
 {
   return "ordered unidimensional dense";
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Ordered Set Factory ---------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+Set OrdSetFact::createSet() const
+{
+  return Set(std::make_unique<OrderedSet>());
+}
+
+Set OrdSetFact::createSet(const MD_NAT &x) const
+{
+  return Set(std::make_unique<OrderedSet>(x));
+}
+
+Set OrdSetFact::createSet(const Interval &i) const
+{
+  return Set(std::make_unique<OrderedSet>(i));
+}
+
+Set OrdSetFact::createSet(const SetPiece &mdi) const
+{
+  return Set(std::make_unique<OrderedSet>(mdi));
+}
+
+std::string OrdSetFact::prettyPrint() const
+{
+  return "ordered";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Factory for clients --------------------------------------------------------- 
 ////////////////////////////////////////////////////////////////////////////////
 
-SetFactory::SetFactory() : set_fact_(std::make_unique<UnordAF>()) {}
+SetFactory::SetFactory() : set_fact_(std::make_unique<UnordSetFact>()) {}
 
-SetAF& SetFactory::set_fact()
+SetFact& SetFactory::set_fact()
 {
   return *set_fact_;
 }

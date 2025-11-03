@@ -34,34 +34,67 @@ namespace SBG {
 
 namespace LIB {
 
-struct SetFact {
+#define SET_FACT SetFactory::instance().set_fact()
+
+class SetFact {
+  public:
   virtual ~SetFact() = default;
 
   virtual Set createSet() const = 0;
   virtual Set createSet(const MD_NAT &x) const = 0;
   virtual Set createSet(const Interval &i) const = 0;
   virtual Set createSet(const SetPiece &mdi) const = 0;
+  virtual std::string prettyPrint() const = 0;
 };
 
-struct UnordSetFact : public SetFact {
+class UnordSetFact : public SetFact {
+  public:
   Set createSet() const override;
   Set createSet(const MD_NAT &x) const override;
   Set createSet(const Interval &i) const override;
   Set createSet(const SetPiece &mdi) const override;
+  std::string prettyPrint() const override;
 };
 
-struct OrdUnidimDenseSetFact : public SetFact {
+class OrdUnidimDenseSetFact : public SetFact {
+  public:
   Set createSet()  const override;
   Set createSet(const MD_NAT &x) const override;
   Set createSet(const Interval &i) const override;
   Set createSet(const SetPiece &mdi) const override;
+  std::string prettyPrint() const override;
 };
 
-struct OrdSetFact : public SetFact {
+class OrdSetFact : public SetFact {
+  public:
   Set createSet()  const override;
   Set createSet(const MD_NAT &x) const override;
   Set createSet(const Interval &i) const override;
   Set createSet(const SetPiece &mdi) const override;
+  std::string prettyPrint() const override;
+};
+
+using SetFactPtr = std::unique_ptr<SetFact>;
+
+/**
+ * @brief Single instance of set factory to be used by clients in need of
+ * creating sets. A client includes this file and calls
+ * SET_FACT.createSet(args).
+ */
+class SetFactory {
+  public:
+  ~SetFactory() = default;
+  static SetFactory& instance() {
+    static SetFactory instance_;
+    return instance_;
+  }
+
+  SetFact& set_fact();
+  void set_set_fact(SetFactPtr set_fact);
+
+  private:
+  SetFactory();
+  SetFactPtr set_fact_;
 };
 
 } // namespace LIB

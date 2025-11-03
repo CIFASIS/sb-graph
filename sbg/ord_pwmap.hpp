@@ -35,7 +35,6 @@ namespace LIB {
 // Ordered PWMap Implementation (concrete strategy) ----------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-
 struct OrdPWMap : public PWMapStrategy {
   using SetPerimeter = std::pair<MD_NAT, MD_NAT>;
   using MapEntry = std::pair<Map, SetPerimeter>;
@@ -44,10 +43,10 @@ struct OrdPWMap : public PWMapStrategy {
   member_class(OrdMapCollection, pieces);
 
   ~OrdPWMap() = default;
-  OrdPWMap(const MapFact &fact);
-  OrdPWMap(const MapFact &fact, const Set &s);
-  OrdPWMap(const MapFact &fact, const Map &m);
-  OrdPWMap(const MapFact &fact, const OrdMapCollection &pieces);
+  OrdPWMap();
+  OrdPWMap(const Set &s);
+  OrdPWMap(const Map &m);
+  OrdPWMap(const OrdMapCollection &pieces);
   OrdPWMap(const OrdPWMap &pw);
 
   PWMapStratPtr clone() const override;
@@ -88,6 +87,7 @@ struct OrdPWMap : public PWMapStrategy {
 
   PWMapStratPtr mapInf(unsigned int n) const override;
   PWMapStratPtr mapInf() const override;
+  Set fixedPoints() const override;
 
   // Extra operations ----------------------------------------------------------
 
@@ -116,11 +116,9 @@ struct OrdPWMap : public PWMapStrategy {
   PWMapStratPtr compact() const override;
   
   private:
-  
   /**
    * @brief Calculates the minAdjMap core, which contains the entire main process of the function.
    */
-  
   void processMinAdjMap(
   const Map &m1, 
   const Map &m2, 
@@ -132,7 +130,6 @@ struct OrdPWMap : public PWMapStrategy {
   /**
    * @brief Calculates the minus core, which contains the entire main process of the function.
    */
-  
   void processMinus(
   const Map &m1, 
   const Map &m2, 
@@ -144,7 +141,6 @@ struct OrdPWMap : public PWMapStrategy {
   /**
    * @brief Calculates the add core, which contains the entire main process of the function.
    */
-  
   void processAdd(
   const Map &m1, 
   const Map &m2, 
@@ -156,7 +152,6 @@ struct OrdPWMap : public PWMapStrategy {
   /**
    * @brief Calculates the equalImage core, which contains the entire main process of the function.
    */
-  
   void processEqualImage(
   const Map &m1, 
   const Map &m2, 
@@ -169,7 +164,6 @@ struct OrdPWMap : public PWMapStrategy {
    * @brief Type used in the 'processMapsOrd' declaration to reduce its size.
    * This type is the same as the process functions above.
    */
-  
   using ProcessFunc = void (OrdPWMap::*)(
   const Map &, const Map &, 
   Set &, Set &, OrdMapCollection &, 
@@ -179,7 +173,6 @@ struct OrdPWMap : public PWMapStrategy {
   /**
    * @brief Provides an efficient method for processing two ordered piecewise maps.
    */
-  
   void processMapsOrd(
     const PWMapStrategy &other,
     Set &set_in,
@@ -189,7 +182,6 @@ struct OrdPWMap : public PWMapStrategy {
     bool order_mts
   ) const;
 };
-
 
 typedef const OrdPWMap &OrdPWMapCRef;
 typedef OrdPWMap &OrdPWMapRef;

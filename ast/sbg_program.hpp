@@ -30,18 +30,16 @@ namespace SBG {
 
 namespace AST {
 
-struct Program {
+struct SBGProgram {
   member_class(LIB::NAT, nmbr_dims);
   member_class(StatementList, stms);
   member_class(ExprList, exprs);
 
-  Program();
-  Program(StatementList stms, ExprList exprs);
-  Program(LIB::NAT nmbr_dims, StatementList stms, ExprList exprs);
+  SBGProgram();
+  SBGProgram(StatementList stms, ExprList exprs);
+  SBGProgram(LIB::NAT nmbr_dims, StatementList stms, ExprList exprs);
 };
-std::ostream &operator<<(std::ostream &out, const Program &prog);
-
-typedef boost::variant<Program> SBGProgram;
+std::ostream &operator<<(std::ostream &out, const SBGProgram &prog);
 
 } // namespace AST
 

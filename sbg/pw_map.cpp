@@ -27,13 +27,14 @@ namespace LIB {
 // PWMap Abstract Strategy Constructors ----------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-PWMapStrategy::PWMapStrategy(const MapFact &fact) : fact_(std::move(fact)) {}
+PWMapStrategy::PWMapStrategy() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // PWMap Interface -------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 PWMap::PWMap(PWMapStratPtr strat) : strategy_(std::move(strat)) {}
+
 PWMap::PWMap(const PWMap &other)
   : strategy_(other.strategy_ ? other.strategy_->clone() : nullptr) {}
 
@@ -137,6 +138,8 @@ PWMap PWMap::composition(const PWMap &other) const
 PWMap PWMap::mapInf(unsigned int n) const { return strategy_->mapInf(n); }
 
 PWMap PWMap::mapInf() const { return strategy_->mapInf(); }
+
+Set PWMap::fixedPoints() const { return strategy_->fixedPoints(); }
 
 PWMap PWMap::concatenation(const PWMap &other) const
 {

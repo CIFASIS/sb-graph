@@ -28,10 +28,7 @@
 #ifndef SBG_MULTIDIM_INTERVAL_HPP
 #define SBG_MULTIDIM_INTERVAL_HPP
 
-#include <iostream>
 #include "sbg/interval.hpp"
-
-
 
 namespace SBG {
 

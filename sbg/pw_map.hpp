@@ -33,8 +33,8 @@
 #define SBG_PWMAP_HPP
 
 #include <forward_list>
-#include <iostream>
-#include "sbg/map_fact.hpp"
+
+#include "sbg/map.hpp"
 
 namespace SBG {
 
@@ -49,16 +49,13 @@ struct PWMapStrategy;
 typedef std::unique_ptr<PWMapStrategy> PWMapStratPtr;
 
 struct PWMapStrategy {
-  protected:
-  const MapFact &fact_;
-
   public:
   virtual ~PWMapStrategy() = default;
 
   /**
    * @brief Constructs an empty pw.
    */
-  PWMapStrategy(const MapFact &fact);
+  PWMapStrategy();
 
   /**
    * @brief Auxiliary function for defining the copy constructor of PWMap.
@@ -166,6 +163,11 @@ struct PWMapStrategy {
    * @brief Compose a map with itself up to convergence.
    */
   virtual PWMapStratPtr mapInf() const = 0;
+
+  /**
+   * @brief Calculates the set of elements in the domain such that f(x) = x.
+   */
+  virtual Set fixedPoints() const = 0;
 
   // Extra operations ----------------------------------------------------------
 
@@ -318,6 +320,7 @@ struct PWMap {
 
   PWMap mapInf(unsigned int n) const;
   PWMap mapInf() const;
+  Set fixedPoints() const;
 
   // Extra operations ----------------------------------------------------------
 

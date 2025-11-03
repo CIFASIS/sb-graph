@@ -17,6 +17,8 @@
 
  ******************************************************************************/
 
+#include <set>
+
 #include "sbg/set.hpp"
 
 namespace SBG {
@@ -51,10 +53,11 @@ void Set::Iterator::operator++()
 
 SetPiece Set::Iterator::operator*() const { return **it_; }
 
-bool Set::Iterator::operator!=(const Iterator &other) const
-{
-  return *it_ != *other.it_;
-}
+bool Set::Iterator::operator!=(const Iterator &other) const { return *it_ != *other.it_; }
+
+bool Set::Iterator::operator==(const Iterator &other) const { return *it_ == *other.it_; }
+
+bool Set::Iterator::operator<(const Iterator &other) const { return it_ < other.it_; }
 
 Set::Iterator Set::begin() const { return strategy_->begin(); }
 Set::Iterator Set::end() const { return strategy_->end(); }
@@ -125,7 +128,10 @@ Set Set::cup(const Set &other) const
   return Set(strategy_->cup(*other.strategy_));
 }
 
-Set Set::complement() const { return Set(strategy_->complement()); }
+Set Set::complement() const
+{
+  return Set(strategy_->complement());
+}
 
 Set Set::difference(const Set &other) const
 {
@@ -151,6 +157,6 @@ Set Set::offset(const MD_NAT &off) const
 
 Set Set::compact() const { return strategy_->compact(); }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

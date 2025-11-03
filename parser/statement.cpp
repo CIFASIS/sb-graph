@@ -18,39 +18,11 @@
  ******************************************************************************/
 
 #include "parser/statement.hpp"
-
-// Adapt structures ------------------------------------------------------------
-
-BOOST_FUSION_ADAPT_STRUCT(
-  SBG::AST::Assign, (SBG::AST::VariableName, l_)(SBG::AST::Expr, r_)
-)
-
-BOOST_FUSION_ADAPT_STRUCT(SBG::AST::ConfigDims, (SBG::LIB::NAT, nmbr_dims_))
-
-// Statement parser ------------------------------------------------------------
+#include "parser/statement_def.hpp"
 
 namespace SBG {
 
 namespace Parser {
-
-template <typename Iterator>
-StmRule<Iterator>::StmRule(Iterator &it) : StmRule::base_type(stms) 
-  , it(it) 
-  , expr(it)
-  , ASSIGN("=")
-  , NMBR_DIMS("dims =") 
-{
-  cfg_dims = (NMBR_DIMS >> qi::uint_)
-    [qi::_val = phx::construct<AST::ConfigDims>(qi::_1)];
-
-  assign = (expr.ident >> ASSIGN >> expr.arithmetic_expr)
-    [qi::_val = phx::construct<AST::Assign>(qi::_1, qi::_2)];
-
-  stm = assign >> expr.SEMI;
-
-  stms = -(cfg_dims[phx::push_back(qi::_val, qi::_1)] >> expr.SEMI)
-    >> *(stm[phx::push_back(qi::_val, qi::_1)]);
-};
 
 template struct StmRule<StrIt>;
 

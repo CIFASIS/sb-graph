@@ -20,7 +20,19 @@
 #include <chrono>
 #include <gtest/gtest.h>
 
-#include "sbg/pwmap_fact.hpp"
+#include "eval/user_impl_map.hpp"
+
+namespace Test {
+
+namespace Internal {
+
+using SBG::LIB::Interval;
+using SBG::LIB::SetPiece;
+using SBG::LIB::Set;
+using SBG::LIB::LExp;
+using SBG::LIB::Exp;
+using SBG::LIB::Map;
+using SBG::LIB::PWMap;
 
 TEST(PWMapPerf, UnordCombine)
 {
@@ -28,48 +40,49 @@ TEST(PWMapPerf, UnordCombine)
   unsigned int set_sz = 10;
   unsigned int map_sz = 100;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::UnordPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap(),pw2 = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(0);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
+  PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = map_sz * 25 / 100; k < map_sz * 75 / 100; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
   
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw2.emplaceBack(map_fact.createMap(s1, exp));
+    pw2.emplaceBack(Map(s1, exp));
 
   }
   
@@ -83,56 +96,55 @@ TEST(PWMapPerf, UnordCombine)
   SUCCEED();
 }
 
-
-
 TEST(PWMapPerf, OrdCombine)
 {
   unsigned int inter_sz = 10000;
   unsigned int set_sz = 10;
   unsigned int map_sz = 100;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::OrdPWMapFact pw_fact(map_fact);
-    SBG::LIB::PWMap pw = pw_fact.createPWMap(),pw2 = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(1);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
+  PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = map_sz * 25 / 100; k < map_sz * 75 / 100; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
   
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw2.emplaceBack(map_fact.createMap(s1, exp));
+    pw2.emplaceBack(Map(s1, exp));
 
   }
 
@@ -151,21 +163,22 @@ TEST(PWMapPerf, UnordConcatenation)
   unsigned int set_sz = 10;
   unsigned int map_sz = 1000;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::Set s = set_fact.createSet();
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::UnordPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap(), pw2 = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(0);
+
+  Set s = SBG::LIB::SET_FACT.createSet();
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
+  PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = 0; k < map_sz*2; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
@@ -173,9 +186,9 @@ TEST(PWMapPerf, UnordConcatenation)
       s1.emplaceBack(mdi);
     }
     if(k%2==0)
-      pw.emplaceBack(map_fact.createMap(s1, exp));
+      pw.emplaceBack(Map(s1, exp));
     else
-      pw2.emplaceBack(map_fact.createMap(s1, exp));
+      pw2.emplaceBack(Map(s1, exp));
 
   }
 
@@ -195,21 +208,22 @@ TEST(PWMapPerf, OrdConcatenation)
   unsigned int set_sz = 10;
   unsigned int map_sz = 1000;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::Set s = set_fact.createSet();
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::OrdPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap(), pw2 = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(1);
+
+  Set s = SBG::LIB::SET_FACT.createSet();
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
+  PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = 0; k < map_sz*2; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
@@ -217,9 +231,9 @@ TEST(PWMapPerf, OrdConcatenation)
       s1.emplaceBack(mdi);
     }
     if(k%2==0)
-      pw.emplaceBack(map_fact.createMap(s1, exp));
+      pw.emplaceBack(Map(s1, exp));
     else
-      pw2.emplaceBack(map_fact.createMap(s1, exp));
+      pw2.emplaceBack(Map(s1, exp));
 
   }
 
@@ -233,28 +247,27 @@ TEST(PWMapPerf, OrdConcatenation)
   SUCCEED();
 }
 
-
 TEST(PWMapPerf, UnordRestrict)
 {
   unsigned int inter_sz = 10000;
   unsigned int set_sz = 100;
   unsigned int map_sz = 400;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::Set s = set_fact.createSet();
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::UnordPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(0);
+
+  Set s = SBG::LIB::SET_FACT.createSet();
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
@@ -264,7 +277,7 @@ TEST(PWMapPerf, UnordRestrict)
     }
     if(k > map_sz * 25 / 100 && k%2==0 && k < map_sz * 75 / 100 )
         s=s.cup(s1);
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
 
@@ -278,28 +291,27 @@ TEST(PWMapPerf, UnordRestrict)
   SUCCEED();
 }
 
-
 TEST(PWMapPerf, OrdRestrict)
 {
   unsigned int inter_sz = 10000;
   unsigned int set_sz = 100;
   unsigned int map_sz = 400;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::Set s = set_fact.createSet();
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::OrdPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(1);
+
+  Set s = SBG::LIB::SET_FACT.createSet();
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
@@ -308,7 +320,7 @@ TEST(PWMapPerf, OrdRestrict)
     }
     if(k > map_sz * 25 / 100 && k%2==0 && k < map_sz * 75 / 100 )
         s=s.cup(s1);
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
 
@@ -328,48 +340,49 @@ TEST(PWMapPerf, UnordComposition)
   unsigned int set_sz = 100;
   unsigned int map_sz = 100;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::UnordPWMapFact pw_fact(map_fact);
-   SBG::LIB::PWMap pw = pw_fact.createPWMap(),pw2 = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(0);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
+  PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
   
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw2.emplaceBack(map_fact.createMap(s1, exp));
+    pw2.emplaceBack(Map(s1, exp));
 
   }
 
@@ -389,48 +402,49 @@ TEST(PWMapPerf, OrdComposition)
   unsigned int set_sz = 100;
   unsigned int map_sz = 100;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::OrdPWMapFact pw_fact(map_fact);
-     SBG::LIB::PWMap pw = pw_fact.createPWMap(),pw2 = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(1);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
+  PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
   
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw2.emplaceBack(map_fact.createMap(s1, exp));
+    pw2.emplaceBack(Map(s1, exp));
 
   }
 
@@ -450,48 +464,49 @@ TEST(PWMapPerf, UnordOffsetDomMap)
   unsigned int set_sz = 100;
   unsigned int map_sz = 1000;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::UnordPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap(),pw2 = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(0);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
+  PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
   
   for (unsigned int k = map_sz*25/100; k < map_sz*75/100; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw2.emplaceBack(map_fact.createMap(s1, exp));
+    pw2.emplaceBack(Map(s1, exp));
 
   }
   
@@ -510,48 +525,49 @@ TEST(PWMapPerf, OrdOffsetDomMap)
   unsigned int set_sz = 100;
   unsigned int map_sz = 1000;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::OrdPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap(),pw2 = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(1);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
+  PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = map_sz*25/100; k < map_sz*75/100; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
   
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw2.emplaceBack(map_fact.createMap(s1, exp));
+    pw2.emplaceBack(Map(s1, exp));
 
   }
   
@@ -570,21 +586,21 @@ TEST(PWMapPerf, UnordFirstInvSet)
   unsigned int set_sz = 100;
   unsigned int map_sz = 1000;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::Set s = set_fact.createSet();
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::UnordPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(0);
+
+  Set s = SBG::LIB::SET_FACT.createSet();
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
@@ -593,7 +609,7 @@ TEST(PWMapPerf, UnordFirstInvSet)
     }
     if(k > map_sz * 25 / 100 && k%2==0 && k < map_sz * 75 / 100 )
         s=s.cup(s1);
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
 
@@ -614,21 +630,21 @@ TEST(PWMapPerf, OrdFirstInvSet)
   unsigned int set_sz = 100;
   unsigned int map_sz = 1000;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::Set s = set_fact.createSet();
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::OrdPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(1);
+
+  Set s = SBG::LIB::SET_FACT.createSet();
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
     for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
@@ -637,7 +653,7 @@ TEST(PWMapPerf, OrdFirstInvSet)
     }
     if(k > map_sz * 25 / 100 && k%2==0 && k < map_sz * 75 / 100 )
         s=s.cup(s1);
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
 
@@ -659,22 +675,22 @@ TEST(PWMapPerf, UnordCompact)
   unsigned int set_sz = 10;
   unsigned int map_sz = 100;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::UnordPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(0);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   int fin;
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
      int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i0(map_offset + 1, 1, map_offset + inter_sz);
-      SBG::LIB::Interval idims(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i0(map_offset + 1, 1, map_offset + inter_sz);
+      Interval idims(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       fin = map_offset + (j+1)*inter_sz;
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i0);
@@ -682,29 +698,29 @@ TEST(PWMapPerf, UnordCompact)
       mdi.emplaceBack(idims); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
 
   }
   
    for (unsigned int k = 1; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int new_map_offset = (map_sz+k) * fin * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i0(new_map_offset+ 1, 1, new_map_offset + inter_sz);
-      SBG::LIB::Interval idims(new_map_offset + (j*inter_sz) + 1, 1, new_map_offset + (j+1)*inter_sz);
+      Interval i0(new_map_offset+ 1, 1, new_map_offset + inter_sz);
+      Interval idims(new_map_offset + (j*inter_sz) + 1, 1, new_map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i0);
       mdi.emplaceBack(idims);
       mdi.emplaceBack(idims); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
 
@@ -725,22 +741,22 @@ TEST(PWMapPerf, OrdCompact)
   unsigned int set_sz = 10;
   unsigned int map_sz = 100;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::OrdPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(1);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   int fin;
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
      int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i0(map_offset + 1, 1, map_offset + inter_sz);
-      SBG::LIB::Interval idims(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i0(map_offset + 1, 1, map_offset + inter_sz);
+      Interval idims(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       fin = map_offset + (j+1)*inter_sz;
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i0);
@@ -748,29 +764,29 @@ TEST(PWMapPerf, OrdCompact)
       mdi.emplaceBack(idims); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
 
   }
   
    for (unsigned int k = 1; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int new_map_offset = (map_sz+k) * fin * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i0(new_map_offset+ 1, 1, new_map_offset + inter_sz);
-      SBG::LIB::Interval idims(new_map_offset + (j*inter_sz) + 1, 1, new_map_offset + (j+1)*inter_sz);
+      Interval i0(new_map_offset+ 1, 1, new_map_offset + inter_sz);
+      Interval idims(new_map_offset + (j*inter_sz) + 1, 1, new_map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i0);
       mdi.emplaceBack(idims);
       mdi.emplaceBack(idims); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
 
@@ -784,59 +800,55 @@ TEST(PWMapPerf, OrdCompact)
   SUCCEED();
 }
 
-
-
-
-
-
 TEST(PWMapPerf, UnordAdd)
 {
   unsigned int inter_sz = 10000;
   unsigned int set_sz = 100;
   unsigned int map_sz = 200;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::UnordPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap(),pw2 = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(0);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
+  PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = map_sz*25/100; k < map_sz*75/100; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
   
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw2.emplaceBack(map_fact.createMap(s1, exp));
+    pw2.emplaceBack(Map(s1, exp));
 
   }
 
@@ -856,48 +868,49 @@ TEST(PWMapPerf, OrdAdd)
   unsigned int set_sz = 100;
   unsigned int map_sz = 200;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::OrdPWMapFact pw_fact(map_fact);
-    SBG::LIB::PWMap pw = pw_fact.createPWMap(),pw2 = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(1);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
+  PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = map_sz*25/100; k < map_sz*75/100; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
   
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw2.emplaceBack(map_fact.createMap(s1, exp));
+    pw2.emplaceBack(Map(s1, exp));
 
   }
   
@@ -917,48 +930,49 @@ TEST(PWMapPerf, UnordMinus)
   unsigned int set_sz = 10;
   unsigned int map_sz = 1000;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::UnordPWMapFact pw_fact(map_fact);
-      SBG::LIB::PWMap pw = pw_fact.createPWMap(),pw2 = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(0);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
+  PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = map_sz*25/100; k < map_sz*75/100; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
   
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw2.emplaceBack(map_fact.createMap(s1, exp));
+    pw2.emplaceBack(Map(s1, exp));
 
   }
   
@@ -978,48 +992,49 @@ TEST(PWMapPerf, OrdMinus)
   unsigned int set_sz = 10;
   unsigned int map_sz = 1000;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::OrdPWMapFact pw_fact(map_fact);
-      SBG::LIB::PWMap pw = pw_fact.createPWMap(),pw2 = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(0);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
+  PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = map_sz*25/100; k < map_sz*75/100; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
   
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw2.emplaceBack(map_fact.createMap(s1, exp));
+    pw2.emplaceBack(Map(s1, exp));
 
   }
   
@@ -1039,48 +1054,49 @@ TEST(PWMapPerf, UnordIqualImage)
   unsigned int set_sz = 10;
   unsigned int map_sz = 1000;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::UnordPWMapFact pw_fact(map_fact);
-        SBG::LIB::PWMap pw = pw_fact.createPWMap(),pw2 = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(0);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
+  PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = map_sz*25/100; k < map_sz*75/100; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
   
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw2.emplaceBack(map_fact.createMap(s1, exp));
+    pw2.emplaceBack(Map(s1, exp));
 
   }
   
@@ -1099,48 +1115,49 @@ TEST(PWMapPerf, OrdIqualImage)
   unsigned int set_sz = 10;
   unsigned int map_sz = 1000;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::OrdPWMapFact pw_fact(map_fact);
-        SBG::LIB::PWMap pw = pw_fact.createPWMap(),pw2 = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(1);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
+  PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = map_sz*25/100; k < map_sz*75/100; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
   
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw2.emplaceBack(map_fact.createMap(s1, exp));
+    pw2.emplaceBack(Map(s1, exp));
 
   }
 
@@ -1161,27 +1178,27 @@ TEST(PWMapPerf, UnordMinAdj)
   unsigned int set_sz = 10;
   unsigned int map_sz = 1000;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::UnordPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(0);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
   
@@ -1201,27 +1218,27 @@ TEST(PWMapPerf, OrdMinAdj)
   unsigned int set_sz = 10;
   unsigned int map_sz = 1000;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::OrdPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(1);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
   
@@ -1234,42 +1251,37 @@ TEST(PWMapPerf, OrdMinAdj)
   SUCCEED();
 }
 
-
-
-
-
-
 TEST(PWMapPerf, UnordMinMap)
 {
   unsigned int inter_sz = 10000;
   unsigned int set_sz = 10;
   unsigned int map_sz = 100;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::UnordPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(0);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
 
-  SBG::LIB::PWMap sum = pw+pw;
+  PWMap sum = pw+pw;
   auto start = std::chrono::high_resolution_clock::now();
   pw.minMap(sum);
   auto end = std::chrono::high_resolution_clock::now();
@@ -1285,31 +1297,31 @@ TEST(PWMapPerf, OrdMinMap)
   unsigned int set_sz = 10;
   unsigned int map_sz = 100;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::OrdPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(1);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
 
-  SBG::LIB::PWMap sum = pw+pw;
+  PWMap sum = pw+pw;
   auto start = std::chrono::high_resolution_clock::now();
   pw.minMap(sum);
   auto end = std::chrono::high_resolution_clock::now();
@@ -1319,35 +1331,33 @@ TEST(PWMapPerf, OrdMinMap)
   SUCCEED();
 }
 
-
-
 TEST(PWMapPerf, UnordInverse)
 {
   unsigned int inter_sz = 10000;
   unsigned int set_sz = 100;
   unsigned int map_sz = 1000;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::UnordPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(0);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
   
@@ -1367,27 +1377,27 @@ TEST(PWMapPerf, OrdInverse)
   unsigned int set_sz = 100;
   unsigned int map_sz = 1000;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::OrdPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(1);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
   
@@ -1406,27 +1416,27 @@ TEST(PWMapPerf, UnordReduce)
   unsigned int set_sz = 10;
   unsigned int map_sz = 300;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::UnordPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(0);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
 
@@ -1447,27 +1457,27 @@ TEST(PWMapPerf, OrdReduce)
   unsigned int set_sz = 10;
   unsigned int map_sz = 50;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::OrdPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(1);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
 
@@ -1482,24 +1492,25 @@ TEST(PWMapPerf, OrdReduce)
 }
 
 
-TEST(PWMapPerf, UnordMapInf) {
+TEST(PWMapPerf, UnordMapInf)
+{
   int N = 1000;
   int sz = 1000;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::UnordPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(0);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   for (int i = 0; i < N; i += 6) {
-    SBG::LIB::Interval i1(i * sz + 1, 1, (i + 1) * sz);
-    SBG::LIB::Interval i2((i + 1) * sz + 1, 1, (i + 2) * sz);
-    SBG::LIB::Interval i3((i + 2) * sz + 1, 1, (i + 3) * sz);
-    SBG::LIB::Interval i4((i + 3) * sz + 1, 1, (i + 4) * sz);
-    SBG::LIB::Interval i5((i + 4) * sz + 1, 1, (i + 5) * sz);
-    SBG::LIB::Interval i6((i + 5) * sz + 1, 1, (i + 6) * sz);
+    Interval i1(i * sz + 1, 1, (i + 1) * sz);
+    Interval i2((i + 1) * sz + 1, 1, (i + 2) * sz);
+    Interval i3((i + 2) * sz + 1, 1, (i + 3) * sz);
+    Interval i4((i + 3) * sz + 1, 1, (i + 4) * sz);
+    Interval i5((i + 4) * sz + 1, 1, (i + 5) * sz);
+    Interval i6((i + 5) * sz + 1, 1, (i + 6) * sz);
     
-    SBG::LIB::LExp le(1, sz);
-    SBG::LIB::Exp exp1;
+    LExp le(1, sz);
+    Exp exp1;
     exp1.emplaceBack(le);
     exp1.emplaceBack(le);
 
@@ -1527,17 +1538,17 @@ TEST(PWMapPerf, UnordMapInf) {
     mdi6.emplaceBack(i6);
     mdi6.emplaceBack(i6);
     
-    SBG::LIB::Map sm1 = map_fact.createMap(mdi1, exp1);
+    Map sm1(mdi1, exp1);
     pw.emplaceBack(sm1);
-    SBG::LIB::Map sm2 = map_fact.createMap(mdi2, exp1);
+    Map sm2(mdi2, exp1);
     pw.emplaceBack(sm2);
-    SBG::LIB::Map sm3 = map_fact.createMap(mdi3, exp1);
+    Map sm3(mdi3, exp1);
     pw.emplaceBack(sm3);
-    SBG::LIB::Map sm4 = map_fact.createMap(mdi4, exp1);
+    Map sm4(mdi4, exp1);
     pw.emplaceBack(sm4);
-    SBG::LIB::Map sm5 = map_fact.createMap(mdi5, exp1);
+    Map sm5(mdi5, exp1);
     pw.emplaceBack(sm5);
-    SBG::LIB::Map sm6 = map_fact.createMap(mdi6, exp1);
+    Map sm6(mdi6, exp1);
     pw.emplaceBack(sm6);
   }
 
@@ -1549,24 +1560,25 @@ TEST(PWMapPerf, UnordMapInf) {
 }
 
 
-TEST(PWMapPerf, OrdMapInf) {
+TEST(PWMapPerf, OrdMapInf)
+{
   int N = 1000;
   int sz = 1000;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::OrdPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(1);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   for (int i = 0; i < N; i += 6) {
-    SBG::LIB::Interval i1(i * sz + 1, 1, (i + 1) * sz);
-    SBG::LIB::Interval i2((i + 1) * sz + 1, 1, (i + 2) * sz);
-    SBG::LIB::Interval i3((i + 2) * sz + 1, 1, (i + 3) * sz);
-    SBG::LIB::Interval i4((i + 3) * sz + 1, 1, (i + 4) * sz);
-    SBG::LIB::Interval i5((i + 4) * sz + 1, 1, (i + 5) * sz);
-    SBG::LIB::Interval i6((i + 5) * sz + 1, 1, (i + 6) * sz);
+    Interval i1(i * sz + 1, 1, (i + 1) * sz);
+    Interval i2((i + 1) * sz + 1, 1, (i + 2) * sz);
+    Interval i3((i + 2) * sz + 1, 1, (i + 3) * sz);
+    Interval i4((i + 3) * sz + 1, 1, (i + 4) * sz);
+    Interval i5((i + 4) * sz + 1, 1, (i + 5) * sz);
+    Interval i6((i + 5) * sz + 1, 1, (i + 6) * sz);
     
-    SBG::LIB::LExp le(1, sz);
-    SBG::LIB::Exp exp1;
+    LExp le(1, sz);
+    Exp exp1;
     exp1.emplaceBack(le);
     exp1.emplaceBack(le);
 
@@ -1594,17 +1606,17 @@ TEST(PWMapPerf, OrdMapInf) {
     mdi6.emplaceBack(i6);
     mdi6.emplaceBack(i6);
     
-    SBG::LIB::Map sm1 = map_fact.createMap(mdi1, exp1);
+    Map sm1(mdi1, exp1);
     pw.emplaceBack(sm1);
-    SBG::LIB::Map sm2 = map_fact.createMap(mdi2, exp1);
+    Map sm2(mdi2, exp1);
     pw.emplaceBack(sm2);
-    SBG::LIB::Map sm3 = map_fact.createMap(mdi3, exp1);
+    Map sm3(mdi3, exp1);
     pw.emplaceBack(sm3);
-    SBG::LIB::Map sm4 = map_fact.createMap(mdi4, exp1);
+    Map sm4(mdi4, exp1);
     pw.emplaceBack(sm4);
-    SBG::LIB::Map sm5 = map_fact.createMap(mdi5, exp1);
+    Map sm5(mdi5, exp1);
     pw.emplaceBack(sm5);
-    SBG::LIB::Map sm6 = map_fact.createMap(mdi6, exp1);
+    Map sm6(mdi6, exp1);
     pw.emplaceBack(sm6);
   }
 
@@ -1615,36 +1627,33 @@ TEST(PWMapPerf, OrdMapInf) {
   std::cout << "PWL MAP ORDERED MAPINF TEST elapsed time: " << elapsed.count() << "ms\n";
 }
 
-
-
-
 TEST(PWMapPerf, UnordFirstInv)
 {
   unsigned int inter_sz = 10000;
   unsigned int set_sz = 10;
   unsigned int map_sz = 100;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::UnordPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(0);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
   
@@ -1657,34 +1666,33 @@ TEST(PWMapPerf, UnordFirstInv)
   SUCCEED();
 }
 
-
 TEST(PWMapPerf, OrdFirstInv)
 {
   unsigned int inter_sz = 10000;
   unsigned int set_sz = 10;
   unsigned int map_sz = 100;
 
-  SBG::LIB::OrdSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::OrdPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(1);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Exp exp;
+    LExp le1(1, k);
+    Exp exp;
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::Set s1 = map_fact.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(map_fact.createMap(s1, exp));
+    pw.emplaceBack(Map(s1, exp));
 
   }
   
@@ -1697,26 +1705,25 @@ TEST(PWMapPerf, OrdFirstInv)
   SUCCEED();
 }
 
-
 TEST(PWMapPerf, minAdj)
 {
   unsigned int inter_sz = 100000;
   unsigned int set_sz = 100;
   unsigned int map_sz = 100;
 
-  SBG::LIB::OrdUnidimDenseSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::UnordPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(2);
+  SBG::Eval::setPWFactory(0);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   for (unsigned int k = 0; k < map_sz; k++) {
-    SBG::LIB::LExp le1(1, k);
-    SBG::LIB::Set s1 = set_fact.createSet();
+    LExp le1(1, k);
+    Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; j++) {
-      SBG::LIB::Interval i(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
-      s1.emplaceBack(SBG::LIB::SetPiece(i));
+      Interval i(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      s1.emplaceBack(SetPiece(i));
     }
-    pw.emplaceBack(map_fact.createMap(s1, SBG::LIB::Exp(le1)));
+    pw.emplaceBack(Map(s1, Exp(le1)));
   }
 
   auto start = std::chrono::high_resolution_clock::now();
@@ -1728,42 +1735,41 @@ TEST(PWMapPerf, minAdj)
   SUCCEED();
 }
 
-
-
-TEST(PWMapPerf, MapInf) {
+TEST(PWMapPerf, MapInf)
+{
   int N = 300;
   int sz = 1000;
 
-  SBG::LIB::OrdUnidimDenseSetFact set_fact;
-  SBG::LIB::MapFact map_fact(set_fact);
-  SBG::LIB::UnordPWMapFact pw_fact(map_fact);
-  SBG::LIB::PWMap pw = pw_fact.createPWMap();
+  SBG::Eval::setSetFactory(2);
+  SBG::Eval::setPWFactory(0);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   for (int i = 0; i < N; i += 6) {
-    SBG::LIB::Interval i1(i * sz + 1, 1, (i + 1) * sz);
-    SBG::LIB::Interval i2((i + 1) * sz + 1, 1, (i + 2) * sz);
-    SBG::LIB::Interval i3((i + 2) * sz + 1, 1, (i + 3) * sz);
-    SBG::LIB::Interval i4((i + 3) * sz + 1, 1, (i + 4) * sz);
-    SBG::LIB::Interval i5((i + 4) * sz + 1, 1, (i + 5) * sz);
-    SBG::LIB::Interval i6((i + 5) * sz + 1, 1, (i + 6) * sz);
+    Interval i1(i * sz + 1, 1, (i + 1) * sz);
+    Interval i2((i + 1) * sz + 1, 1, (i + 2) * sz);
+    Interval i3((i + 2) * sz + 1, 1, (i + 3) * sz);
+    Interval i4((i + 3) * sz + 1, 1, (i + 4) * sz);
+    Interval i5((i + 4) * sz + 1, 1, (i + 5) * sz);
+    Interval i6((i + 5) * sz + 1, 1, (i + 6) * sz);
 
-    SBG::LIB::LExp le1(1, sz);
-    SBG::LIB::LExp le2(1, sz);
-    SBG::LIB::LExp le3(1, sz);
-    SBG::LIB::LExp le4(1, sz);
-    SBG::LIB::LExp le5(1, sz);
-    SBG::LIB::LExp le6(1, sz);
+    LExp le1(1, sz);
+    LExp le2(1, sz);
+    LExp le3(1, sz);
+    LExp le4(1, sz);
+    LExp le5(1, sz);
+    LExp le6(1, sz);
 
-    SBG::LIB::Map sm1 = map_fact.createMap(i1, le1);
+    Map sm1(i1, le1);
     pw.emplaceBack(sm1);
-    SBG::LIB::Map sm2 = map_fact.createMap(i2, le2);
+    Map sm2(i2, le2);
     pw.emplaceBack(sm2);
-    SBG::LIB::Map sm3 = map_fact.createMap(i3, le3);
+    Map sm3(i3, le3);
     pw.emplaceBack(sm3);
-    SBG::LIB::Map sm4 = map_fact.createMap(i4, le4);
+    Map sm4(i4, le4);
     pw.emplaceBack(sm4);
-    SBG::LIB::Map sm5 = map_fact.createMap(i5, le5);
+    Map sm5(i5, le5);
     pw.emplaceBack(sm5);
-    SBG::LIB::Map sm6 = map_fact.createMap(i6, le6);
+    Map sm6(i6, le6);
     pw.emplaceBack(sm6);
   }
 
@@ -1774,5 +1780,6 @@ TEST(PWMapPerf, MapInf) {
   std::cout << "PWL MAP MAPINF TEST elapsed time: " << elapsed.count() << "ms\n";
 }
 
+} // namespace Internal
 
-
+} // namespace Test

@@ -125,25 +125,22 @@ void advanceHint(OrdPWMap::OrdMapCollection &ord_pw, const MD_NAT crit
 
 member_imp(OrdPWMap, OrdPWMap::OrdMapCollection, pieces);
 
-OrdPWMap::OrdPWMap(const MapFact &fact) : PWMapStrategy(fact) {}
-OrdPWMap::OrdPWMap(const MapFact &fact, const Set &s)
-  : PWMapStrategy(fact), pieces_(){
+OrdPWMap::OrdPWMap() : pieces_() {}
+OrdPWMap::OrdPWMap(const Set &s) : pieces_() {
   if (!s.isEmpty()) {
     SetPiece first = s.begin().operator*();
-    pieces_.push_back(createMapEntry(fact_.createMap(s, Exp(first.arity()
+    pieces_.push_back(createMapEntry(Map(s, Exp(first.arity()
       , LExp()))));
   }
 }
-OrdPWMap::OrdPWMap(const MapFact &fact, const Map &m)
-  : PWMapStrategy(fact), pieces_(){
+OrdPWMap::OrdPWMap(const Map &m) : pieces_() {
   if (!m.isEmpty()){
     pieces_.push_back(createMapEntry(m));
   }
 }
-OrdPWMap::OrdPWMap(const MapFact &fact, const OrdMapCollection &pieces)
-  : PWMapStrategy(fact), pieces_(std::move(pieces)){}
-OrdPWMap::OrdPWMap(const OrdPWMap &pw)
-  : PWMapStrategy(pw.fact_), pieces_(pw.pieces_){}
+OrdPWMap::OrdPWMap(const OrdMapCollection &pieces)
+  : pieces_(std::move(pieces)) {}
+OrdPWMap::OrdPWMap(const OrdPWMap &pw) : pieces_(pw.pieces_){}
 
 PWMapStratPtr OrdPWMap::clone() const
 {
@@ -244,8 +241,8 @@ bool OrdPWMap::operator==(const PWMapStrategy &other) const
           // two different lexps.
           // Example: [1:1:1] -> 10 and [1:1:1] -> x+9
           if (cap_dom.cardinal() == 1) {
-            Map map1 = fact_.createMap(cap_dom, l_m.exp());
-            Map map2 = fact_.createMap(cap_dom, s_m.exp());
+            Map map1(cap_dom, l_m.exp());
+            Map map2(cap_dom, s_m.exp());
             if (map1.image() != map2.image())
               return false;
           }
@@ -287,11 +284,11 @@ OrdPWMap &OrdPWMap::operator=(OrdPWMap &&other)
 
 PWMapStratPtr OrdPWMap::operator+(const PWMapStrategy &other) const
 {
-  Set set_in = fact_.createSet();
-  Set set_out = fact_.createSet();
+  Set set_in = SET_FACT.createSet();
+  Set set_out = SET_FACT.createSet();
   OrdMapCollection res;
   processMapsOrd(other,set_in, set_out, res, &OrdPWMap::processAdd, false);
-  return std::make_unique<OrdPWMap>(fact_, res);
+  return std::make_unique<OrdPWMap>(res);
 }
 
 void OrdPWMap::processAdd(const Map &m1, const Map &m2, 
@@ -312,14 +309,14 @@ PWMapStratPtr OrdPWMap::operator-(const PWMapStrategy &other) const
   OrdMapCollection res;
 
   if (isEmpty() || other.isEmpty())
-    return std::make_unique<OrdPWMap>(fact_, res);
+    return std::make_unique<OrdPWMap>( res);
 
   Interval all(0, 1, Inf);
-  Set set_in = fact_.createSet(SetPiece(arity(), all));
-  Set set_out = fact_.createSet(SetPiece(arity(), all));
+  Set set_in = SET_FACT.createSet(SetPiece(arity(), all));
+  Set set_out = SET_FACT.createSet(SetPiece(arity(), all));
   processMapsOrd(other,set_in, set_out, res, &OrdPWMap::processMinus, true);
   std::sort(res.begin(),res.end(), mapEntryComp);
-  return std::make_unique<OrdPWMap>(fact_, res);
+  return std::make_unique<OrdPWMap>(res);
 }
 
 void OrdPWMap::processMinus(const Map &m1, const Map &m2, 
@@ -332,7 +329,7 @@ void OrdPWMap::processMinus(const Map &m1, const Map &m2,
     return;
   
   Exp minus_exp = m1.exp() - m2.exp();
-  OrdPWMap ith(fact_, set_in);
+  OrdPWMap ith(set_in);
   
   for (unsigned int j = 0, n = arity(); j < n; ++j) {
     RATIONAL m = minus_exp[j].slope();
@@ -350,31 +347,42 @@ void OrdPWMap::processMinus(const Map &m1, const Map &m2,
         end_neg = 0;
       }
     }
-    else if (m > 0) {  
-      RATIONAL cross = -h / m;
+    // Increasing expression
+    else if (m > 0) {
+      RATIONAL cross = -h/m;
       if (cross > 0 || cross == 0) {
-        begin_pos = boost::rational_cast<NAT>(cross.value());
+        begin_pos = boost::rational_cast<NAT>(cross.value()) + 1;
         if (begin_pos > 0)
           end_neg = begin_pos - 1;
         else {
           begin_neg = 1;
-          end_neg   = 0;
+          end_neg = 0;
         }
       }
+      else {
+        begin_neg = 1;
+        end_neg = 0;
+      }
     }
+    // Decresing expression
     else { 
-      RATIONAL cross = -h / m;
+      RATIONAL cross = -h/m;
       if (cross > 0 || cross == 0) {
         end_pos = boost::rational_cast<NAT>(cross.value());
         if (end_pos > 0)
           begin_neg = end_pos + 1;
-      } else {
+        else {
+          begin_pos = 1;
+          end_pos = 0;
+        }
+      }
+      else {
         begin_pos = 1;
         end_pos = 0;
       }
     }
     
-    OrdPWMap jth(fact_);
+    OrdPWMap jth;
     Interval neg(begin_neg, 1, end_neg);
     Interval pos(begin_pos, 1, end_pos);
     for (const MapEntry &mpe: ith.pieces_) {
@@ -385,13 +393,13 @@ void OrdPWMap::processMinus(const Map &m1, const Map &m2,
       if (!neg.isEmpty()) {
         mdi[j] = neg;
         e[j] = LExp(0, 0);
-        pushBack(jth.pieces_,fact_.createMap(mdi, e));
+        pushBack(jth.pieces_, Map(mdi, e));
       }
 
       if (!pos.isEmpty()) {
         mdi[j] = pos;
         e[j] = minus_exp[j];
-        pushBack(jth.pieces_,fact_.createMap(mdi, e));
+        pushBack(jth.pieces_, Map(mdi, e));
       }
     }
 
@@ -439,7 +447,7 @@ bool OrdPWMap::isEmpty() const
 
 Set OrdPWMap::dom() const
 {
-  Set res = fact_.createSet();
+  Set res = SET_FACT.createSet();
   for (const MapEntry &mpe : pieces_) {
     Set d = mpe.first.dom();
     res = res.disjointCup(d);
@@ -454,7 +462,7 @@ PWMapStratPtr OrdPWMap::restrict(const Set &subdom) const
   OrdMapCollection res;
   
   if (subdom.isEmpty())
-    return std::make_unique<OrdPWMap>(fact_, res);
+    return std::make_unique<OrdPWMap>(res);
     
   NAT global_pos = 0;
   
@@ -480,12 +488,12 @@ PWMapStratPtr OrdPWMap::restrict(const Set &subdom) const
 
 
   }
-  return std::make_unique<OrdPWMap>(fact_, res);
+  return std::make_unique<OrdPWMap>(res);
 }
 
 Set OrdPWMap::image() const
 {
-  Set res = fact_.createSet();
+  Set res = SET_FACT.createSet();
 
   for (const MapEntry &mpe : pieces_)
     res = res.cup(mpe.first.image());
@@ -500,7 +508,7 @@ Set OrdPWMap::image(const Set &subdom) const
 
 Set OrdPWMap::preImage(const Set &subcodom) const
 {
-  Set res = fact_.createSet();
+  Set res = SET_FACT.createSet();
 
   for (const MapEntry &mpe : pieces_)
     res = res.disjointCup(mpe.first.preImage(subcodom));
@@ -520,7 +528,7 @@ PWMapStratPtr OrdPWMap::inverse() const
   
   std::sort(res.begin(),res.end(), mapEntryComp);
 
-  return std::make_unique<OrdPWMap>(fact_, res);
+  return std::make_unique<OrdPWMap>(res);
 }
 
 PWMapStratPtr OrdPWMap::composition(const PWMapStrategy &other) const 
@@ -556,13 +564,13 @@ PWMapStratPtr OrdPWMap::composition(const PWMapStrategy &other) const
     }
   }
 
-  return std::make_unique<OrdPWMap>(fact_, res);
+  return std::make_unique<OrdPWMap>(res);
 }
 
 PWMapStratPtr OrdPWMap::mapInf(unsigned int n) const
 {
   PWMapStratPtr res = std::make_unique<OrdPWMap>(*this);
-  PWMapStratPtr old_res = std::make_unique<OrdPWMap>(fact_);
+  PWMapStratPtr old_res = std::make_unique<OrdPWMap>();
 
   if (!dom().isEmpty()) {
     for (unsigned int j = 0; old_res != res && j < n; ++j) {
@@ -595,6 +603,16 @@ PWMapStratPtr OrdPWMap::mapInf(unsigned int n) const
 
 PWMapStratPtr OrdPWMap::mapInf() const { return mapInf(0); }
 
+Set OrdPWMap::fixedPoints() const
+{
+  Set res = SET_FACT.createSet();
+
+  for (const MapEntry &entry : pieces_)
+    res = res.disjointCup(entry.first.fixedPoints());
+
+  return res;
+}
+
 // Extra operations ------------------------------------------------------------
 
 
@@ -613,13 +631,13 @@ PWMapStratPtr OrdPWMap::concatenation(const PWMapStrategy &other) const
   if (pieces_.back().second.first < othr.pieces_.front().second.first) {
     res.insert(res.end(), pieces_.begin(), pieces_.end());
     res.insert(res.end(), othr.pieces_.begin(), othr.pieces_.end());
-    return std::make_unique<OrdPWMap>(fact_, res);
+    return std::make_unique<OrdPWMap>(res);
   }
   
   if (othr.pieces_.back().second.first < pieces_.front().second.first) {
     res.insert(res.end(), othr.pieces_.begin(), othr.pieces_.end());
     res.insert(res.end(), pieces_.begin(), pieces_.end());
-    return std::make_unique<OrdPWMap>(fact_, res);
+    return std::make_unique<OrdPWMap>(res);
   }
   
   auto it1 = pieces_.begin(), it2 = othr.pieces_.begin();
@@ -642,7 +660,7 @@ PWMapStratPtr OrdPWMap::concatenation(const PWMapStrategy &other) const
   res.insert(res.end(), it1, end1);
   res.insert(res.end(), it2, end2);
 
-  return std::make_unique<OrdPWMap>(fact_, res);
+  return std::make_unique<OrdPWMap>(res);
 }
 
 
@@ -665,20 +683,20 @@ PWMapStratPtr OrdPWMap::combine(const PWMapStrategy &other) const
   for (const MapEntry &o_mpe : othr.pieces_) {
     const Map &o_m = o_mpe.first;
     const SetPerimeter &o_sp = o_mpe.second;
-    Map res_comb = fact_.createMap(o_m.dom(), o_m.exp());
+    Map res_comb(o_m.dom(), o_m.exp());
     
     if (doInt(o_sp, t_sp)){
       Set dom_o_m = o_m.dom(), new_dom = dom_o_m.difference(dom());
       if (new_dom.isEmpty())
         continue;
-      res_comb = fact_.createMap(new_dom, o_m.exp());
+      res_comb = Map(new_dom, o_m.exp());
     }
     
     advanceHint(res, o_sp.first, global_pos);
     emplaceHint(res, res_comb, global_pos);
   }
   
-  return  std::make_unique<OrdPWMap>(fact_, res);
+  return  std::make_unique<OrdPWMap>(res);
 }
 
 PWMapStratPtr OrdPWMap::reduce(const Interval &i, const LExp &le) const
@@ -695,14 +713,14 @@ PWMapStratPtr OrdPWMap::reduce(const Interval &i, const LExp &le) const
         NAT hi = i.end();
         RATIONAL const_expr(hi + st, 1);
         if (st < Inf - hi)
-          pushBack(res, fact_.createMap(i, LExp(zero, const_expr)));
+          pushBack(res, Map(i, LExp(zero, const_expr)));
       }
 
       else if (h == (INT) -st) {
         NAT lo = i.begin();
         RATIONAL const_expr(lo - st, 1);
         if (lo >= st)
-          pushBack(res, fact_.createMap(i, LExp(zero, const_expr)));
+          pushBack(res, Map(i, LExp(zero, const_expr)));
       }
 
       else if (h % (INT) st == 0) {
@@ -720,24 +738,24 @@ PWMapStratPtr OrdPWMap::reduce(const Interval &i, const LExp &le) const
             else
               kth_off = kth_piece.begin() + h;
               
-            pushBack(res, fact_.createMap(kth_piece, LExp(0, kth_off)));
+            pushBack(res, Map(kth_piece, LExp(0, kth_off)));
           }
         }
       }
     }
 
     else
-      pushBack(res, fact_.createMap(i, le));
+      pushBack(res, Map(i, le));
   }
 
-  return std::make_unique<OrdPWMap>(fact_, res);
+  return std::make_unique<OrdPWMap>(res);
 }
 
 
 PWMapStratPtr OrdPWMap::reduce(const Map &map) const
 {
   OrdMapCollection res;
-  Set not_reduced = fact_.createSet();
+  Set not_reduced = SET_FACT.createSet();
   Exp e = map.exp();
   for (const SetPiece &dom_piece : map.dom()) {
     SetPiece aux_piece = dom_piece;
@@ -751,7 +769,7 @@ PWMapStratPtr OrdPWMap::reduce(const Map &map) const
         aux_piece[j] = ith_reduced.dom().begin().operator*().operator[](0);
         aux_exp[j] = ith_reduced.exp()[0];
         if (aux_piece != dom_piece || aux_exp != e) {
-          pushBack(res, fact_.createMap(aux_piece, aux_exp));
+          pushBack(res, Map(aux_piece, aux_exp));
           was_reduced = true;
         }
 
@@ -767,9 +785,9 @@ PWMapStratPtr OrdPWMap::reduce(const Map &map) const
   }
   
   if(!not_reduced.isEmpty())
-    pushBack(res, fact_.createMap(not_reduced, e)); // Add unreduced subpieces
+    pushBack(res, Map(not_reduced, e)); // Add unreduced subpieces
 
-  return std::make_unique<OrdPWMap>(fact_, res);
+  return std::make_unique<OrdPWMap>(res);
 }
 
 PWMapStratPtr OrdPWMap::reduce() const
@@ -784,33 +802,42 @@ PWMapStratPtr OrdPWMap::reduce() const
 
   std::sort(res.begin(), res.end(), mapEntryComp);
   
-  return std::make_unique<OrdPWMap>(fact_, res);
+  return std::make_unique<OrdPWMap>(res);
 }
 
 PWMapStratPtr OrdPWMap::minMap(const PWMapStrategy &other) const
 {
   if (isEmpty() || other.isEmpty())
-    return std::make_unique<OrdPWMap>(fact_);
+    return std::make_unique<OrdPWMap>();
 
   PWMapStratPtr aux1 = restrict(other.dom()), aux2 = other.restrict(dom());
-  Set zero = fact_.createSet(SetPiece(arity(), Interval(0, 1, 0)));
-  Set to_zero = (*aux1 - *aux2)->preImage(zero);
-  Set not_zero = aux2->dom().difference(to_zero);
-  aux1 = aux1->restrict(to_zero);
-  aux2 = aux2->restrict(not_zero);
-  return aux1->combine(*aux2);
+
+  Set min_in_pw1 = SET_FACT.createSet();
+  PWMapStratPtr off1 = aux1->offsetImage(MD_NAT(arity(), 1)); 
+  PWMapStratPtr subt = (*off1 - *aux2);
+  SetPiece im(arity(), Interval(0, 1, Inf));
+  for (unsigned int k = 0; k < arity(); ++k) {
+    im[k] = Interval(0, 1, 0);
+    if (k > 0)
+      im[k-1] = Interval(1, 1, 1);
+
+    Set kth = subt->preImage(SET_FACT.createSet(im));
+    min_in_pw1 = min_in_pw1.disjointCup(kth);
+  }
+
+  return aux1->restrict(min_in_pw1)->combine(*aux2);
 }
 
 
 
 PWMapStratPtr OrdPWMap::minAdjMap(const PWMapStrategy &other) const
 {
-  Set set_in = fact_.createSet();
-  Set set_out = fact_.createSet();
+  Set set_in = SET_FACT.createSet();
+  Set set_out = SET_FACT.createSet();
   OrdMapCollection res;
   processMapsOrd(other, set_in, set_out, res, &OrdPWMap::processMinAdjMap, true);
   std::sort(res.begin(), res.end(), mapEntryComp); 
-  return std::make_unique<OrdPWMap>(fact_, res);
+  return std::make_unique<OrdPWMap>(res);
 }
 
 void OrdPWMap::processMinAdjMap(const Map &m1, const Map &m2, 
@@ -818,7 +845,7 @@ void OrdPWMap::processMinAdjMap(const Map &m1, const Map &m2,
   OrdMapCollection &ord_pwmap,
   NAT &global_pos) const 
 { 
-  Set dom_res = fact_.createSet();
+  Set dom_res = SET_FACT.createSet();
   Set ith_dom = m1.dom().intersection(m2.dom());
   if (!ith_dom.isEmpty()) {
     Exp e_res, e1;
@@ -833,11 +860,11 @@ void OrdPWMap::processMinAdjMap(const Map &m1, const Map &m2,
       e_res = MDLExp(im2.minElem());
 
     if (!dom_res.isEmpty()) {
-      Map ith = fact_.createMap(dom_res, e_res);
-      OrdPWMap ith_pw(fact_, ith);
+      Map ith(dom_res, e_res);
+      OrdPWMap ith_pw(ith);
       Set again = dom_res.intersection(set_in);
       if (!again.isEmpty()) {
-        OrdPWMap ord_pwmap_aux(fact_, ord_pwmap);
+        OrdPWMap ord_pwmap_aux(ord_pwmap);
         std::sort(ord_pwmap_aux.pieces_.begin(), ord_pwmap_aux.pieces_.end(), mapEntryComp);
         PWMapStratPtr aux_res = ord_pwmap_aux.restrict(dom_res);
         PWMapStratPtr min_map = aux_res->minMap(ith_pw);
@@ -858,11 +885,11 @@ PWMapStratPtr OrdPWMap::firstInv(const Set &subdom) const
 {
   OrdMapCollection res;
   if (isEmpty() || subdom.isEmpty() )
-    return std::make_unique<OrdPWMap>(fact_, res);
+    return std::make_unique<OrdPWMap>(res);
 
   SetPerimeter s_sp = calculatePerimeter(subdom);
   auto s_max_per = s_sp.second;
-  Set visited = fact_.createSet();
+  Set visited = SET_FACT.createSet();
   
   for (const MapEntry &t_mpe : pieces_) {
     const Map &t_m = t_mpe.first;
@@ -887,7 +914,7 @@ PWMapStratPtr OrdPWMap::firstInv(const Set &subdom) const
               continue;
           }
         }
-        Map new_map = fact_.createMap(t_m.preImage(img), t_m.exp());
+        Map new_map(t_m.preImage(img), t_m.exp());
         pushBack(res, new_map.minInv());
         visited = visited.disjointCup(img);
         continue;
@@ -898,7 +925,7 @@ PWMapStratPtr OrdPWMap::firstInv(const Set &subdom) const
 
   std::sort(res.begin(), res.end(), mapEntryComp);
 
-  return std::make_unique<OrdPWMap>(fact_, res);
+  return std::make_unique<OrdPWMap>(res);
 }
 
 PWMapStratPtr OrdPWMap::firstInv() const { return firstInv(dom()); }
@@ -911,13 +938,13 @@ PWMapStratPtr OrdPWMap::filterMap(bool (*f)(const Map &)) const
       pushBack(res, mpe);
   }
   
-  return std::make_unique<OrdPWMap>(fact_, res);
+  return std::make_unique<OrdPWMap>(res);
 }
 
 Set OrdPWMap::equalImage(const PWMapStrategy &other) const
 { 
-  Set set_in = fact_.createSet();
-  Set set_out = fact_.createSet();
+  Set set_in = SET_FACT.createSet();
+  Set set_out = SET_FACT.createSet();
   OrdMapCollection no_used;
   processMapsOrd(other, set_in, set_out, no_used, &OrdPWMap::processEqualImage
     , false);
@@ -931,8 +958,8 @@ void OrdPWMap::processEqualImage(const Map &m1, const Map &m2,
 { 
   Set cap_dom = m1.dom().intersection(m2.dom());
   if (!cap_dom.isEmpty()) {
-    Map m1_cap = fact_.createMap(cap_dom, m1.exp());
-    Map m2_cap = fact_.createMap(cap_dom, m2.exp());
+    Map m1_cap(cap_dom, m1.exp());
+    Map m2_cap(cap_dom, m2.exp());
     if (m1_cap == m2_cap)
       set_out = set_out.disjointCup(cap_dom);
   }
@@ -1014,12 +1041,12 @@ PWMapStratPtr OrdPWMap::offsetDom(const MD_NAT &off) const
   OrdMapCollection res;
 
   for (const MapEntry &mpe : pieces_){
-    Map map = fact_.createMap(mpe.first.dom().offset(off), mpe.first.exp());
+    Map map(mpe.first.dom().offset(off), mpe.first.exp());
     if(!map.isEmpty())
       pushBack(res, map);
   }
 
-  return std::make_unique<OrdPWMap>(fact_, res);
+  return std::make_unique<OrdPWMap>(res);
 }
 
 PWMapStratPtr OrdPWMap::offsetDom(const PWMapStrategy &off) const
@@ -1036,7 +1063,7 @@ PWMapStratPtr OrdPWMap::offsetDom(const PWMapStrategy &off) const
       Set ith_dom = off.image(t_m.dom());
       
       if (!ith_dom.isEmpty()){
-          Map res_map = fact_.createMap(ith_dom, t_m.exp());
+          Map res_map(ith_dom, t_m.exp());
           pushBack(res, res_map);
       }
       continue;
@@ -1048,7 +1075,7 @@ PWMapStratPtr OrdPWMap::offsetDom(const PWMapStrategy &off) const
 
   std::sort(res.begin(),res.end(), mapEntryComp);
   
-  return std::make_unique<OrdPWMap>(fact_, res);
+  return std::make_unique<OrdPWMap>(res);
 
 }
 
@@ -1063,10 +1090,10 @@ PWMapStratPtr OrdPWMap::offsetImage(const MD_NAT &off) const
       res_e.emplaceBack(res_lexp);
     }
 
-    pushBack(res, fact_.createMap(mpe.first.dom(), res_e));
+    pushBack(res, Map(mpe.first.dom(), res_e));
   }
 
-  return std::make_unique<OrdPWMap>(fact_, res);
+  return std::make_unique<OrdPWMap>(res);
 }
 
 PWMapStratPtr OrdPWMap::offsetImage(const Exp &off) const
@@ -1074,16 +1101,16 @@ PWMapStratPtr OrdPWMap::offsetImage(const Exp &off) const
   OrdMapCollection res;
 
   for (const MapEntry &mpe : pieces_) 
-    pushBack(res, fact_.createMap(mpe.first.dom(), off + mpe.first.exp()));
+    pushBack(res, Map(mpe.first.dom(), off + mpe.first.exp()));
 
-  return std::make_unique<OrdPWMap>(fact_, res);
+  return std::make_unique<OrdPWMap>(res);
 }
 
 PWMapStratPtr OrdPWMap::compact() const
 {
   OrdMapCollection res;
   if (dom().isEmpty())
-    return std::make_unique<OrdPWMap>(fact_, res);
+    return std::make_unique<OrdPWMap>(res);
   
   std::forward_list<size_t> indexes;
   auto li_it = indexes.before_begin();
@@ -1100,7 +1127,7 @@ PWMapStratPtr OrdPWMap::compact() const
       size_t id = *li_curr;
       const MapEntry &mpe = *(begin + id);
       const Map &m = mpe.first;
-      Map new_m = fact_.createMap(m.dom().compact(), m.exp());
+      Map new_m(m.dom().compact(), m.exp());
 
       li_curr = indexes.erase_after(li_prev);
     
@@ -1125,7 +1152,7 @@ PWMapStratPtr OrdPWMap::compact() const
       li_curr = indexes.begin();
   }
 
-  return std::make_unique<OrdPWMap>(fact_, res);
+  return std::make_unique<OrdPWMap>(res);
 }
 
 } // namespace LIB

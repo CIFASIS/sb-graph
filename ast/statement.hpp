@@ -25,7 +25,6 @@
 #define PARSER_STATEMENT_AST_HPP
 
 #include "ast/expr.hpp"
-#include "sbg/natural.hpp"
 #include "util/debug.hpp"
 
 namespace SBG {
@@ -33,11 +32,11 @@ namespace SBG {
 namespace AST {
 
 struct Assign {
-  member_class(VariableName, l);
+  member_class(Name, l);
   member_class(Expr, r);
 
   Assign();
-  Assign(VariableName l, Expr r);
+  Assign(Name l, Expr r);
 };
 std::ostream &operator<<(std::ostream &out, const Assign &asgn);
 
@@ -57,8 +56,8 @@ struct IsConfig : public boost::static_visitor<bool> {
   bool operator()(ConfigDims v) const;
 };
 
-typedef boost::variant<Assign, ConfigDims> Statement;
-typedef std::vector<Statement> StatementList;
+using Statement = boost::variant<Assign, ConfigDims>;
+using StatementList = std::vector<Statement>;
 std::ostream &operator<<(std::ostream &out, const StatementList &stm);
 
 } // namespace AST

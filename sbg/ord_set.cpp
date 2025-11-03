@@ -135,6 +135,16 @@ bool OrderedSet::Iterator::operator!=(const SetStrategy::Iterator &other)
   return it_ != static_cast<const OrderedSet::Iterator *>(&other)->it_;
 }
 
+bool OrderedSet::Iterator::operator==(const SetStrategy::Iterator &other) const
+{
+  return it_ == static_cast<const OrderedSet::Iterator *>(&other)->it_;
+}
+
+bool OrderedSet::Iterator::operator<(const SetStrategy::Iterator &other) const
+{
+  return it_ < static_cast<const OrderedSet::Iterator *>(&other)->it_;
+}
+
 const SetPiece &OrderedSet::Iterator::operator*() const { return *it_; }
 
 std::shared_ptr<SetStrategy::Iterator> OrderedSet::begin() const

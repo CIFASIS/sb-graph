@@ -26,20 +26,14 @@
 #ifndef EXPR_PARSER_HPP
 #define EXPR_PARSER_HPP
 
-#define BOOST_SPIRIT_DEBUG
-
-#include <boost/phoenix.hpp>
-#include <boost/rational.hpp>
-
 #include "ast/expr.hpp"
 #include "parser/skipper.hpp"
-#include "sbg/rational.hpp"
 
 namespace SBG {
 
 namespace Parser {
 
-namespace phx = boost::phoenix;
+namespace qi = boost::spirit::qi;
 
 template <typename Iterator>
 struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
@@ -68,45 +62,34 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> nat_term;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> nat_expr;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> interval;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> interval_unary;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> interval_binary;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> interval_expr;
 
-  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> inter_times;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> md_inter;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> mdi_unary;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> mdi_binary;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> mdi_expr;
 
   qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> mdi_list;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> set;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> set_unary;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> set_binary;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> set_expr;
 
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp_left;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp_binary;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> lexp_expr;
-
-  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> lexp_pipe;
+  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> lexp_list;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> mdlexp;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> mdlexp_binary;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> mdlexp_expr;
 
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> map_expr;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> map;
 
   qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> map_list;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> pwl_expr;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> pwl;
 
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> dsbg;
 
-  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> function_call_args;
+  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> arg_list;
+  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> function_call_arg;
   qi::rule<Iterator, Skipper<Iterator>, AST::Call()> call_expr;
+
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg_primary;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg_factor;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg_term;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg_expr;
+
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> expr;
   qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> expr_list;
-  qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> exprs;
 
   Iterator &it;
 };

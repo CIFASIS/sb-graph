@@ -1,0 +1,14 @@
+target_sources(
+    sbg-eval-lib
+    PRIVATE
+        autom_impl_visitor.cpp
+        expr_evaluator.cpp
+        func_evaluator.cpp
+        int_evaluator.cpp
+        nat_evaluator.cpp
+        linear_expr_evaluator.cpp
+        program_evaluator.cpp
+        rational_evaluator.cpp
+        set_impl_visitor.cpp
+        stm_evaluator.cpp
+)

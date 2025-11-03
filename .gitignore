@@ -1,38 +1,20 @@
-# Compiled objects.
-/obj
+# Install folder..
+/install
 
-# Generated library.
-/lib
+# Build folder.
+/build
 
-# Binary files
-/bin
-/test/performance/boost/bin
-/test/performance/boost/obj
+# Doc folder.
+/doc
 
 # 3rd-party libraries.
-/3rd-party/gtest/usr/
+/3rd-party/build/**
 /3rd-party/boost/*
 
 # Test files. 
 /test/parser/test_data/*
-/test/parser/obj/*
-/test/parser/bin/*
 /test/eval/test_data/*
-/test/eval/obj/*
-/test/eval/bin/*
-/test/performance/obj/*
-/test/performance/bin/*
-
-# Doc files.
-/doc/*
-/sbg/doc/*
-/sbg/util/doc/*
-
-# Compile/Autoconf files.
-config.*
-configure
-Makefile
-/autom4te.cache
+/test/build/bin/
 
 # Log files
 *.log

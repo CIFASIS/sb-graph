@@ -55,6 +55,8 @@ struct OrderedSet : public SetStrategy {
     Iterator(MDIOrdCollection::const_iterator it);
     void operator++() override;
     bool operator!=(const SetStrategy::Iterator &other) const override;
+    bool operator==(const SetStrategy::Iterator &other) const override;
+    bool operator<(const SetStrategy::Iterator &other) const override;
     const SetPiece &operator*() const override;
   };
 

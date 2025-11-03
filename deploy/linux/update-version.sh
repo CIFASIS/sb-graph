@@ -22,6 +22,7 @@ sed -i "s/VERSION:.*/VERSION: $VER/" ./build.sh
 
 # Update doxyfiles.
 sed -i "s/PROJECT_NUMBER =.*/PROJECT_NUMBER = $VER/" ../../sbg/SBG.doxyfile
+sed -i "s/PROJECT_NUMBER =.*/PROJECT_NUMBER = $VER/" ../../eval/EVAL.doxyfile
 sed -i "s/PROJECT_NUMBER =.*/PROJECT_NUMBER = $VER/" ../../util/UTIL.doxyfile
 
 # Update main bynary files version.

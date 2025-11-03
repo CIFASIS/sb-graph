@@ -82,6 +82,8 @@ struct SetStrategy {
     virtual ~Iterator() = default;
     virtual void operator++() = 0;
     virtual bool operator!=(const Iterator &other) const = 0;
+    virtual bool operator==(const Iterator &other) const = 0;
+    virtual bool operator<(const Iterator &other) const = 0;
     virtual const SetPiece &operator*() const = 0;
   };
 
@@ -189,6 +191,8 @@ struct Set {
     Iterator(std::shared_ptr<SetStrategy::Iterator> it);
     void operator++();
     bool operator!=(const Iterator& other) const;
+    bool operator==(const Iterator& other) const;
+    bool operator<(const Iterator& other) const;
     SetPiece operator*() const;
   };
 
@@ -225,7 +229,6 @@ struct Set {
   Set compact() const;
 };
 std::ostream &operator<<(std::ostream &out, const Set &s);
-
 
 } // namespace LIB
 

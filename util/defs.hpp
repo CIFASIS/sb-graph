@@ -1,4 +1,4 @@
-/** @file common.hpp
+/** @file defs.hpp
 
  @brief <b>Common definitions for all SBG modules</b>
  
@@ -43,27 +43,29 @@ namespace Util {
  *
  * It will define the following:
  *  + A member variable called: @c Y_
- *  + An constant getter method: @c Y()
- *  + A setter method: @c set_Y()
- *  + A getter ref method @c Y_ref()
+ *  + A constant ref getter method: @c Y()
  *
  */
 #define member_class(X, Y) \
   private:                 \
   X Y##_;                  \
-  void set_##Y(X x);       \
   public:                  \
-  X Y() const;             \
-  X &Y##_ref();
+  const X &Y() const;
 
 #define member_imp(C, X, Y)          \
-  X C::Y() const { return Y##_; }    \
-  void C::set_##Y(X x) { Y##_ = x; } \
-  X &C::Y##_ref() { return Y##_; }
+  const X &C::Y() const { return Y##_; }
 
-#define member_move_imp(C, X, Y)     \
-  X C::Y() const { return Y##_; }    \
-  void C::set_##Y(X x) { Y##_ = std::move(x); } \
+/**
+ * @brief Execution time of selected functions will be printed if it's true.
+ */
+constexpr bool time_profiler_enabled = false;
+
+/**
+ * @brief Calling this before the program returns.
+ * The execution time of the measured functions will be printed
+ * iff `time_profiler_enabled` is true.
+ */
+void time_profiler_results();
 
 } // namespace Util
 

@@ -24,8 +24,6 @@
 #ifndef SBG_UNORD_PWMAP_HPP
 #define SBG_UNORD_PWMAP_HPP
 
-#include <forward_list>
-#include <iostream>
 #include "sbg/pw_map.hpp"
 
 namespace SBG {
@@ -42,10 +40,10 @@ struct UnordPWMap : public PWMapStrategy {
   member_class(UnordMapCollection, pieces);
 
   ~UnordPWMap() = default;
-  UnordPWMap(const MapFact &fact);
-  UnordPWMap(const MapFact &fact, const Set &s);
-  UnordPWMap(const MapFact &fact, const Map &m);
-  UnordPWMap(const MapFact &fact, const UnordMapCollection &pieces);
+  UnordPWMap();
+  UnordPWMap(const Set &s);
+  UnordPWMap(const Map &m);
+  UnordPWMap(const UnordMapCollection &pieces);
   UnordPWMap(const UnordPWMap &pw);
 
   PWMapStratPtr clone() const override;
@@ -86,6 +84,7 @@ struct UnordPWMap : public PWMapStrategy {
 
   PWMapStratPtr mapInf(unsigned int n) const override;
   PWMapStratPtr mapInf() const override;
+  Set fixedPoints() const override;
 
   // Extra operations ----------------------------------------------------------
 

@@ -68,6 +68,18 @@ bool OrdUnidimDenseSet::Iterator::operator!=(const SetStrategy::Iterator &other)
   return it_ != static_cast<const OrdUnidimDenseSet::Iterator *>(&other)->it_;
 }
 
+bool OrdUnidimDenseSet::Iterator::operator==(const SetStrategy::Iterator &other)
+  const
+{
+  return it_ == static_cast<const OrdUnidimDenseSet::Iterator *>(&other)->it_;
+}
+
+bool OrdUnidimDenseSet::Iterator::operator<(const SetStrategy::Iterator &other)
+  const
+{
+  return it_ < static_cast<const OrdUnidimDenseSet::Iterator *>(&other)->it_;
+}
+
 const SetPiece &OrdUnidimDenseSet::Iterator::operator*() const { return *it_; }
 
 std::shared_ptr<SetStrategy::Iterator> OrdUnidimDenseSet::begin() const

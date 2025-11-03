@@ -70,6 +70,17 @@ bool UnorderedSet::Iterator::operator!=(const SetStrategy::Iterator &other)
   return it_ != static_cast<const UnorderedSet::Iterator *>(&other)->it_;
 }
 
+bool UnorderedSet::Iterator::operator==(const SetStrategy::Iterator &other)
+  const
+{
+  return it_ == static_cast<const UnorderedSet::Iterator *>(&other)->it_;
+}
+
+bool UnorderedSet::Iterator::operator<(const SetStrategy::Iterator &other) const
+{
+  return it_ < static_cast<const UnorderedSet::Iterator *>(&other)->it_;
+}
+
 const SetPiece &UnorderedSet::Iterator::operator*() const { return *it_; }
 
 std::shared_ptr<SetStrategy::Iterator> UnorderedSet::begin() const

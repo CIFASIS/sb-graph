@@ -30,35 +30,60 @@ namespace SBG {
 
 namespace LIB {
 
-struct PWMapFact : public MapFact {
-  protected:
-  const MapFact &map_fact_;
+#define PW_FACT PWFactory::instance().pw_fact()
 
+struct PWMapFact {
   public:
   virtual ~PWMapFact() = default;
-  PWMapFact(const MapFact &map_fact);
+  PWMapFact();
 
   virtual PWMap createPWMap() const = 0;
   virtual PWMap createPWMap(const Set &s) const = 0;
   virtual PWMap createPWMap(const Map &m) const = 0;
+  virtual std::string prettyPrint() const = 0;
 };
 
 struct UnordPWMapFact : public PWMapFact {
   public:
-  UnordPWMapFact(const MapFact &map_fact);
+  UnordPWMapFact();
 
   PWMap createPWMap() const override;
   PWMap createPWMap(const Set &s) const override;
   PWMap createPWMap(const Map &m) const override;
+  std::string prettyPrint() const override;
 };
 
 struct OrdPWMapFact : public PWMapFact {
   public:
-  OrdPWMapFact(const MapFact &map_fact);
+  OrdPWMapFact();
 
   PWMap createPWMap() const override;
   PWMap createPWMap(const Set &s) const override;
   PWMap createPWMap(const Map &m) const override;
+  std::string prettyPrint() const override;
+};
+
+using PWMapFactPtr = std::unique_ptr<PWMapFact>;
+
+/**
+ * @brief Single instance of pw factory to be used by clients in need of
+ * creating pws. A client includes this file and calls
+ * PW_FACT.createPWMap(args).
+ */
+class PWFactory {
+  public:
+  ~PWFactory() = default;
+  static PWFactory& instance() {
+    static PWFactory instance_;
+    return instance_;
+  }
+
+  PWMapFact& pw_fact();
+  void set_pw_fact(PWMapFactPtr set_fact);
+
+  private:
+  PWFactory();
+  PWMapFactPtr pw_fact_;
 };
 
 

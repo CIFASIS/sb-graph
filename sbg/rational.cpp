@@ -28,7 +28,7 @@ RATIONAL::RATIONAL(NAT n) : value_(RatType(n, 1)) {}
 RATIONAL::RATIONAL(const RatType &value) : value_(value) {}
 RATIONAL::RATIONAL(INT n, INT d) : value_() {
   boost::rational<long long int> v(n, d);
-  set_value(v);
+  value_ = v;
 }
 
 member_imp(RATIONAL, RatType, value);
@@ -119,7 +119,6 @@ RATIONAL RATIONAL::operator/(const RATIONAL &other) const
 {
   return *this /= other;
 }
-
 
 INT RATIONAL::numerator() const { return value_.numerator(); }
 

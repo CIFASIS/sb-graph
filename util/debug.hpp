@@ -43,7 +43,7 @@ namespace Util {
 template<class... Args>
 void ERROR(Args... args)
 {
-  (std::cerr << "ERROR>>" << ... << args);
+  (std::cerr << "ERROR>> " << ... << args);
   exit(EXIT_FAILURE);
 }
 
@@ -55,7 +55,7 @@ template<class... Args>
 void ERROR_UNLESS(bool cond, Args... args)
 {
   if (!cond) {
-    (std::cerr << "ERROR>>" << ... << args);
+    (std::cerr << "ERROR>> " << ... << args);
     exit(EXIT_FAILURE);
   }
 }

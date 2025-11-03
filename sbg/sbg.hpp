@@ -53,9 +53,6 @@ namespace LIB {
 ////////////////////////////////////////////////////////////////////////////////
 
 struct SBG {
-  private:
-  const PWMapFact &fact_;
-
   public:
   // Vertex definitions
   member_class(Set, V);
@@ -71,14 +68,14 @@ struct SBG {
   /**
    * @brief Empty SBG constructor.
    */
-  SBG(const PWMapFact &fact);
+  SBG();
 
   /**
    * @brief SBG constructor that copies arguments to construct member variables.
    * A set of edges E is not needed, as it will be obtained from the domain of
    * map1_ and map2_.
    */
-  SBG(const PWMapFact &fact, const Set &V, const PWMap &Vmap
+  SBG(const Set &V, const PWMap &Vmap
     , const PWMap &map1, const PWMap &map2
     , const PWMap &Emap, const PWMap &subEmap);
 
@@ -102,8 +99,6 @@ struct SBG {
    * where each copy is isomorphic to the argument.
    */
   SBG copy(unsigned int times) const;
-
-  const PWMapFact &fact() const;
 };
 std::ostream &operator<<(std::ostream &out, const SBG &g);
 
@@ -112,9 +107,6 @@ std::ostream &operator<<(std::ostream &out, const SBG &g);
 ////////////////////////////////////////////////////////////////////////////////
 
 struct DSBG {
-  private:
-  const PWMapFact &fact_;
-
   public:
   // Vertex definitions
   member_class(Set, V);
@@ -130,14 +122,14 @@ struct DSBG {
   /**
    * @brief Empty SBG constructor.
    */
-  DSBG(const PWMapFact &fact);
+  DSBG();
 
   /**
    * @brief SBG constructor that copies arguments to construct member variables.
    * A set of edges E is not needed, as it will be obtained from the domain of
    * map1_ and map2_.
    */
-  DSBG(const PWMapFact &fact, const Set &V, const PWMap &Vmap
+  DSBG(const Set &V, const PWMap &Vmap
    , const PWMap &mapB, const PWMap &mapD
    , const PWMap &Emap, const PWMap &subEmap);
 
@@ -161,8 +153,6 @@ struct DSBG {
    * with \p vs.
    */
   DSBG eraseVertices(const Set &vs) const;
-
-  const PWMapFact &fact() const;
 };
 std::ostream &operator<<(std::ostream &out, const DSBG &dg);
 

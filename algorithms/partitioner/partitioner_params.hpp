@@ -45,6 +45,7 @@ struct PartitionerParams
     InitialPartitionStrategy initial_partition_strategy = InitialPartitionStrategy::ALL;
     bool enable_multithreading = false;
     bool compute_metrics = false;
+    bool use_connected_components = false;
 };
 
 }

@@ -125,20 +125,12 @@ float compute_D(
 {
     float ic = 0;
     for (size_t i = 0; i < partition.size(); i++) {
-        float size = min(partition.at(i).size, set_pointer.size);
-        float alpha_i = size / partition.at(i).set_piece.cardinal();
-        float alpha_set_pointer = size / set_pointer.set_piece.cardinal();
-        float alpha = min(alpha_set_pointer, alpha_i);
-        ic += cost_matrix_cc.get_communication(set_pointer.index, partition.at(i).index) * alpha;
+        ic += cost_matrix_cc.get_communication(set_pointer.index, partition.at(i).index);
     }
 
     float ec = 0;
     for (size_t i = 0; i < complementary_partition.size(); i++) {
-        float size = min(complementary_partition.at(i).size, set_pointer.size);
-        float alpha_i = size / complementary_partition.at(i).set_piece.cardinal();
-        float alpha_set_pointer = size / set_pointer.set_piece.cardinal();
-        float alpha = min(alpha_set_pointer, alpha_i);
-        ec += cost_matrix_cc.get_communication(set_pointer.index, complementary_partition.at(i).index) * alpha;
+        ec += cost_matrix_cc.get_communication(set_pointer.index, complementary_partition.at(i).index);
     }
 
     float D = ec - ic;

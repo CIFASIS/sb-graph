@@ -1,6 +1,6 @@
 // SCC test with O(N) executing time
 
-N = 100;
+N = 100000;
 
 V1 = N;
 

@@ -125,6 +125,7 @@ struct MultiDimInter {
    * not an mdi, so no value is returned.
    */
   MaybeMDI compact(const MultiDimInter &other) const;
+  
 };
 std::ostream &operator<<(std::ostream &out, const MultiDimInter &mi);
 

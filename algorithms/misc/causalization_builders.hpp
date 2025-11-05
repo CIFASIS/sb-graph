@@ -33,10 +33,9 @@
 
 namespace MISC {
 
-SBG::LIB::DSBG buildSCCFromMatching(const SBG::LIB::BFSMatching &match);
+SBG::LIB::DSBG buildSCCFromMatching(const SBG::LIB::MatchData &data);
 
-SBG::LIB::DSBG buildSortFromSCC(const SBG::LIB::SCC &scc
-  , const SBG::LIB::PWMap &rmap);
+SBG::LIB::DSBG buildSortFromSCC(const SBG::LIB::SCCData &data);
 
 }  // namespace MISC
 

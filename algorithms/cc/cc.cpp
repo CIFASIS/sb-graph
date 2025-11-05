@@ -33,10 +33,9 @@ namespace LIB {
 PWMap connectedComponents(SBG g)
 {
   auto begin = std::chrono::high_resolution_clock::now();
-  const PWMapAF &fact_ = g.fact();
 
   if (!g.V().isEmpty()) {
-    PWMap rmap = fact_.createPWMap(g.V()), old_rmap = fact_.createPWMap();
+    PWMap rmap = PW_FACT.createPWMap(g.V()), old_rmap = PW_FACT.createPWMap();
 
     if (g.E().isEmpty())
       return rmap;
@@ -68,7 +67,7 @@ PWMap connectedComponents(SBG g)
     end - begin);
   Util::SBG_LOG << "Total CC exec time: " << total.count() << "\n";
 
-  return fact_.createPWMap();
+  return PW_FACT.createPWMap();
 }
 
 } // namespace LIB

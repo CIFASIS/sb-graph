@@ -7,20 +7,15 @@ target_include_directories(sbg-parser-lib PUBLIC ${PROJECT_SOURCE_DIR})
 target_sources(
     sbg-parser-lib
     PRIVATE
-    parser.cpp
-    statement.cpp
     expr.cpp
+    file_parser.cpp
+    parser_exec.cpp
     sbg_program.cpp
     skipper.cpp
+    statement.cpp
 )
 
 add_dependencies(sbg-parser-lib sbg-dev)
-
-target_link_libraries(
-    sbg-eval-lib
-    PRIVATE
-    sbg-dev
-)
 
 # Add executable
 add_executable(
@@ -33,10 +28,15 @@ target_sources(
     main.cpp
 )
 
+find_package(Boost REQUIRED COMPONENTS program_options)
+
 target_link_libraries(
     sbg-parser
     PRIVATE
+    sbg-dev
     sbg-parser-lib
+    sbg-util-lib
+    Boost::program_options
 )
 
 # install

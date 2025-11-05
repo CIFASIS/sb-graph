@@ -63,6 +63,7 @@ bool MD_NAT::operator<(const MD_NAT &other) const
   return false;
 }
 
+
 bool MD_NAT::operator<=(const MD_NAT &other) const
 {
   return *this == other || *this < other;

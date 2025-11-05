@@ -211,6 +211,7 @@ Set get_connectivity_set(SBG::LIB::SBG& graph, const PartitionMap& partitions, s
 
 void sanity_check(const WeightedSBGraph& graph, PartitionMap& partitions_set, unsigned number_of_partitions)
 {
+  cout << "\nsanity_check\n" << partitions_set << endl;
   // This is just a sanity check
   Set nodes_to_check = graph.fact().createSet();
   for (unsigned i = 0; i < number_of_partitions; i++) {
@@ -218,6 +219,11 @@ void sanity_check(const WeightedSBGraph& graph, PartitionMap& partitions_set, un
   }
 
   Set diff = nodes_to_check.difference(graph.V());
+  cout << "diff1 " << diff << endl;
+  assert(get_node_size(diff, graph.get_node_weights(), graph.fact()) == 0 and "The intial partition has more elements than the graph");
+
+  diff = graph.V().difference(nodes_to_check);
+  cout << "diff2 " << diff << endl;
   assert(get_node_size(diff, graph.get_node_weights(), graph.fact()) == 0 and "The intial partition has less elements than the graph");
 
   for (unsigned i = 0; i < number_of_partitions; i++) {
@@ -226,6 +232,11 @@ void sanity_check(const WeightedSBGraph& graph, PartitionMap& partitions_set, un
       auto p_2 = from_vector(partitions_set[j], graph.fact());
       stringstream error_msg;
       error_msg << "Intersection between " << i << " and " << j << " is not empty." << endl;
+      if (not p_1.intersection(p_2).isEmpty()) {
+        cerr << "Intersection between " << i << " and " << j << " is not empty." << endl;
+        cerr << p_1.intersection(p_2) << endl;
+      }
+
       assert(p_1.intersection(p_2).isEmpty() and error_msg.str().c_str());
     }
   }

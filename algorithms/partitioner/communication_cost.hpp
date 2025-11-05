@@ -31,6 +31,10 @@
 
 namespace sbg_partitioner {
 
+struct SetPieceHash {
+  static std::size_t set_piece_hash(const SBG::LIB::SetPiece& set_piece);  
+  std::size_t operator()(const SBG::LIB::SetPiece& set_piece) const;
+};
 
 class ICommunicationCost {
 public:
@@ -112,10 +116,10 @@ private:
     PartitionMap _partitions;
 
     // since communication is independent from the partitions, we can share it between many objects
-    static std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SBG::LIB::SetPieceHash> _communication_by_set_piece;
+    static std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SetPieceHash> _communication_by_set_piece;
     std::vector<std::pair<SBG::LIB::Set, SBG::LIB::Set>> _cost_by_partition;
-    std::vector<std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SBG::LIB::SetPieceHash>> _ec_cost_by_interval;
-    std::vector<std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SBG::LIB::SetPieceHash>> _ic_cost_by_interval;
+    std::vector<std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SetPieceHash>> _ec_cost_by_interval;
+    std::vector<std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SetPieceHash>> _ic_cost_by_interval;
 
     void initialize();
     std::pair<SBG::LIB::Set, SBG::LIB::Set> compute_ec_ic(unsigned partition_id, const SBG::LIB::SetPiece& nodes);
@@ -172,11 +176,11 @@ private:
     using_cc::SetPointers _sorted_nodes;
     SBG::LIB::PWMap _set_piece_indices;
     AdjacencyMatrix _adjacency_matrix;
-    std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SBG::LIB::SetPieceHash> _communication_by_set_piece;
+    std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SetPieceHash> _communication_by_set_piece;
 
     std::vector<std::pair<SBG::LIB::Set, SBG::LIB::Set>> _cost_by_partition;
-    std::vector<std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SBG::LIB::SetPieceHash>> _ec_cost_by_interval;
-    std::vector<std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SBG::LIB::SetPieceHash>> _ic_cost_by_interval;
+    std::vector<std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SetPieceHash>> _ec_cost_by_interval;
+    std::vector<std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SetPieceHash>> _ic_cost_by_interval;
 
 };
 
@@ -193,4 +197,4 @@ void set_communication_cost(CommunicationCostPtr&& cost_matrix);
 */
 ICommunicationCost& get_communication_cost();
 
-}
+} // namespace sbg-partitioner

@@ -31,6 +31,23 @@ using namespace SBG::LIB;
 
 namespace sbg_partitioner {
 
+std::size_t SetPieceHash::set_piece_hash(const SetPiece& set_piece) {
+  constexpr size_t magic_number = 0x9e3779b9;
+  std::size_t seed = 0;
+  for (const auto& interval : set_piece) {
+    seed ^= std::hash<int>()(interval.begin()) + magic_number + (seed << 6) + (seed >> 2);
+    seed ^= std::hash<int>()(interval.end()) + magic_number + (seed << 6) + (seed >> 2);
+  }
+
+  return seed;
+}
+
+std::size_t SetPieceHash::operator()(const SetPiece& set_piece) const {
+  std::size_t seed = set_piece_hash(set_piece);
+
+  return seed;
+}
+
 unordered_map<SetPiece, Set, SetPieceHash> CommunicationCost::_communication_by_set_piece = {};
 
 namespace internal {
@@ -42,10 +59,11 @@ CommunicationCostPtr cost_matrix = nullptr;
 
 namespace {
 
+
 Set set_piece_communication(const SetPiece& nodes, const WeightedSBGraph& graph)
 {
     // convert nodes into a set
-    auto node_set = graph.fact().createSet(nodes);
+    auto node_set = SET_FACT.createSet(nodes);
 
     // compute preImage of map1 and map2 to get the edges that connects `nodes`
     auto edges_map1 = graph.map1().preImage(node_set);
@@ -78,8 +96,8 @@ void CommunicationCost::initialize()
     _ec_cost_by_interval.reserve(_partitions.size());
     _ic_cost_by_interval.reserve(_partitions.size());
     for (size_t i = 0; i < _partitions.size(); i++) {
-        Set partition_i_communication = _graph.fact().createSet();
-        Set internal_communication_partition_i = _graph.fact().createSet();
+        Set partition_i_communication = SET_FACT.createSet();
+        Set internal_communication_partition_i = SET_FACT.createSet();
 
         for (const auto& node : _partitions.at(i)) {
             if (_communication_by_set_piece.find(node) == _communication_by_set_piece.end()) {
@@ -106,8 +124,8 @@ void CommunicationCost::update_partitions(PartitionMap& partitions, optional<ref
     if (modified_partitions) {
         // now, update communication for partitions that were updated
         for (size_t i : modified_partitions->get()) {
-            Set partition_i_communication = _graph.fact().createSet();
-            Set internal_communication_partition_i = _graph.fact().createSet();
+            Set partition_i_communication = SET_FACT.createSet();
+            Set internal_communication_partition_i = SET_FACT.createSet();
 
             for (const auto& node : _partitions.at(i)) {
                 if (_communication_by_set_piece.find(node) == _communication_by_set_piece.end()) {
@@ -246,7 +264,7 @@ Set CommunicationCostSync::get_set_piece_edges(const SetPiece& nodes)
 CommunicationCostCC::CommunicationCostCC(const WeightedSBGraph& graph, const using_cc::SetPointers& nodes)
     : _graph(graph),
     _sorted_nodes(nodes),
-    _set_piece_indices(_graph.fact().createPWMap())
+    _set_piece_indices(PW_FACT.createPWMap())
 {
     initialize();
 }
@@ -284,8 +302,8 @@ void CommunicationCostCC::initialize()
 
 unsigned CommunicationCostCC::get_communication(const SBG::LIB::SetPiece& a, const SBG::LIB::SetPiece& b) const
 {
-    auto a_set = _graph.fact().createSet(a);
-    auto b_set = _graph.fact().createSet(b);
+    auto a_set = SET_FACT.createSet(a);
+    auto b_set = SET_FACT.createSet(b);
 
     unsigned a_idx = (*_set_piece_indices.image(a_set).begin())[0].begin();
     unsigned b_idx = (*_set_piece_indices.image(b_set).begin())[0].begin();
@@ -298,7 +316,7 @@ unsigned CommunicationCostCC::get_communication(const SBG::LIB::SetPiece& a, con
 
 unsigned CommunicationCostCC::get_communication(const SBG::LIB::SetPiece& a) const
 {
-    auto a_set = _graph.fact().createSet(a);
+    auto a_set = SET_FACT.createSet(a);
     unsigned a_idx = (*_set_piece_indices.image(a_set).begin())[0].begin();
     unsigned cost = 0;
     for_each(_adjacency_matrix[a_idx].cbegin(), _adjacency_matrix[a_idx].cend(), [&cost](unsigned c) { cost += c; });
@@ -333,7 +351,7 @@ Set CommunicationCostCC::get_set_piece_edges(const SBG::LIB::SetPiece& nodes)
 
 unsigned CommunicationCostCC::get_index(const SBG::LIB::SetPiece& nodes) const
 {
-    return (*_set_piece_indices.image(_graph.fact().createSet(nodes)).begin())[0].begin();
+    return (*_set_piece_indices.image(SET_FACT.createSet(nodes)).begin())[0].begin();
 }
 
 

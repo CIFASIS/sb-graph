@@ -33,17 +33,15 @@ struct communication_metrics {
 };
 
 
-int edge_cut(const PartitionMap& partitions, const SBG::LIB::WeightedSBGraph& sb_graph, SBG::LIB::SetAF& set_fact);
+int edge_cut(const PartitionMap& partitions, const SBG::LIB::WeightedSBGraph& sb_graph);
 
 std::pair<int, int> communication_volume(
     const PartitionMap& partitions,
-    const SBG::LIB::WeightedSBGraph& sb_graph,
-    SBG::LIB::SetAF& set_fact,
-    SBG::LIB::MapAF& map_fact);
+    const SBG::LIB::WeightedSBGraph& sb_graph);
 
-float maximum_imbalance(const PartitionMap& partitions, const SBG::LIB::WeightedSBGraph& sb_graph, SBG::LIB::SetAF& set_fact);
+float maximum_imbalance(const PartitionMap& partitions, const SBG::LIB::WeightedSBGraph& sb_graph);
 
-PartitionMap read_partition_from_file(const std::string& name, const SBG::LIB::WeightedSBGraph& sb_graph, SBG::LIB::SetAF& set_fact);
+PartitionMap read_partition_from_file(const std::string& name, const SBG::LIB::WeightedSBGraph& sb_graph);
 
 std::ostream& operator<<(std::ostream& os, const communication_metrics& comm_metrics);
 }

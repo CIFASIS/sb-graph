@@ -56,8 +56,8 @@ struct IsConfig : public boost::static_visitor<bool> {
   bool operator()(ConfigDims v) const;
 };
 
-typedef boost::variant<Assign, ConfigDims> Statement;
-typedef std::vector<Statement> StatementList;
+using Statement = boost::variant<Assign, ConfigDims>;
+using StatementList = std::vector<Statement>;
 std::ostream &operator<<(std::ostream &out, const StatementList &stm);
 
 } // namespace AST

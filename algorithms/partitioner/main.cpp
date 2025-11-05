@@ -131,8 +131,7 @@ static void version()
     cout << "There is NO WARRANTY, to the extent permitted by law." << endl;
 }
 
-
-void sort_before_print(PartitionMap partitions, const SBG::LIB::WeightedSBGraph& sb_graph, SBG::LIB::SetAF& set_fact)
+void sort_before_print(PartitionMap partitions, const SBG::LIB::WeightedSBGraph& sb_graph)
 {
     for (auto& p : partitions) {
         sort_partition_intervals(p);
@@ -153,11 +152,10 @@ void read_directory(const std::string& name, std::vector<std::string>& v)
 
 
 tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> run_current_version(
-    const PartitionerParams& params,
-    const SBG::LIB::UnordPWMapAF& pw_fact)
+    const PartitionerParams& params)
 {
     auto start_build_graph = chrono::high_resolution_clock::now();
-    auto sb_graph = build_sb_graph(params.filename->c_str(), pw_fact);
+    auto sb_graph = build_sb_graph(params.filename->c_str());
     auto end_build_graph = chrono::high_resolution_clock::now();
     auto time_to_build_graph = chrono::duration<double, std::milli>(end_build_graph - start_build_graph).count();
 
@@ -314,18 +312,14 @@ int main(int argc, char** argv)
         s = "";
     }
 
-    SBG::LIB::UnordAF set_fact;
-    SBG::LIB::MapAF map_fact(set_fact);
-    SBG::LIB::UnordPWMapAF pw_fact(map_fact);
-
     unique_ptr<SBG::LIB::WeightedSBGraph> sb_graph;
     PartitionMap partitions;
     double time_to_build_graph, time_to_partitionate = 0.0;
     if (not params.use_connected_components) {
-        tie(sb_graph, partitions, time_to_build_graph, time_to_partitionate) = run_current_version(params, pw_fact);
+        tie(sb_graph, partitions, time_to_build_graph, time_to_partitionate) = run_current_version(params);
     } else {
         auto start_build_graph = chrono::high_resolution_clock::now();
-        sb_graph = make_unique<SBG::LIB::WeightedSBGraph>(build_sb_graph(params.filename->c_str(), pw_fact));
+        sb_graph = make_unique<SBG::LIB::WeightedSBGraph>(build_sb_graph(params.filename->c_str()));
         auto end_build_graph = chrono::high_resolution_clock::now();
         time_to_build_graph = chrono::duration<double, std::milli>(end_build_graph - start_build_graph).count();
 
@@ -343,7 +337,6 @@ int main(int argc, char** argv)
         sbg_partitioner::CommunicationCostCC comm_cc(*sb_graph, sorted_nodes);
 
         auto new_graph = SBG::LIB::WeightedSBGraph(
-            pw_fact,
             cc_pw_map.dom(),
             sb_graph->Vmap(),
             sb_graph->map1(),
@@ -383,9 +376,12 @@ int main(int argc, char** argv)
 
     if (params.compute_metrics) {
         map<string, metrics::communication_metrics> metrics;
-        int edge_cut = metrics::edge_cut(partitions, *sb_graph, set_fact);
-        auto [comm_volume, max_comm_volume] = metrics::communication_volume(partitions, *sb_graph, set_fact, map_fact);
-        auto max_imb = metrics::maximum_imbalance(partitions, *sb_graph, set_fact);
+
+        int edge_cut = metrics::edge_cut(partitions, *sb_graph);
+
+        auto [comm_volume, max_comm_volume] = metrics::communication_volume(partitions, *sb_graph);
+
+        auto max_imb = metrics::maximum_imbalance(partitions, *sb_graph);
 
         metrics::communication_metrics comm_metrics = metrics::communication_metrics{edge_cut, comm_volume, max_comm_volume, max_imb};
         metrics["sbg-partitioner"] = comm_metrics;
@@ -399,10 +395,13 @@ int main(int argc, char** argv)
             read_directory(*params.directory, dir_files);
 
             for (const auto& f : dir_files) {
-                auto partition_from_file = metrics::read_partition_from_file(f, *sb_graph, set_fact);
-                int edge_cut = metrics::edge_cut(partition_from_file, *sb_graph, set_fact);
-                auto [comm_volume, max_comm_volume] = metrics::communication_volume(partition_from_file, *sb_graph, set_fact, map_fact);
-                auto max_imb = metrics::maximum_imbalance(partition_from_file, *sb_graph, set_fact);
+                auto partition_from_file = metrics::read_partition_from_file(f, *sb_graph);
+
+                int edge_cut = metrics::edge_cut(partition_from_file, *sb_graph);
+
+                auto [comm_volume, max_comm_volume] = metrics::communication_volume(partition_from_file, *sb_graph);
+
+                auto max_imb = metrics::maximum_imbalance(partition_from_file, *sb_graph);
 
                 metrics::communication_metrics comm_metrics = metrics::communication_metrics{edge_cut, comm_volume, max_comm_volume, max_imb};
                 metrics[std::filesystem::path(f).filename().string()] = comm_metrics;
@@ -424,7 +423,7 @@ int main(int argc, char** argv)
         s = get_pretty_sb_graph(*sb_graph);
     }
 
-    sort_before_print(partitions, *sb_graph, set_fact);
+    sort_before_print(partitions, *sb_graph);
 
     string output = get_output(partitions);
 

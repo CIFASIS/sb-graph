@@ -30,7 +30,7 @@
 // Adapt structures ------------------------------------------------------------
 
 BOOST_FUSION_ADAPT_STRUCT(
-  SBG::AST::Program
+  SBG::AST::SBGProgram
   , (SBG::LIB::NAT, nmbr_dims_)
     (SBG::AST::StatementList, stms_)
     (SBG::AST::ExprList, exprs_)
@@ -52,7 +52,7 @@ SBGProgramRule<Iterator>::SBGProgramRule(Iterator &it) :
   stm(it)
 {
   program_comments = (stm.stms >> *(expr.expr >> expr.SEMI))
-    [qi::_val = phx::construct<AST::Program>(
+    [qi::_val = phx::construct<AST::SBGProgram>(
       phx::construct<AST::StatementList>(qi::_1)
       , phx::construct<AST::ExprList>(qi::_2)
     )];

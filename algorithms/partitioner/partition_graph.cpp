@@ -56,7 +56,7 @@ Set get_communication_edges(Set partition, const PWMap& map_1, const PWMap& map_
 
 [[maybe_unused]] size_t get_partition_communication(WeightedSBGraph& graph, const PartitionMap& partitions)
 {
-  Set s = graph.fact().createSet();
+  Set s = SET_FACT.createSet();
   for (size_t i = 0; i < partitions.size(); i++) {
     auto ss = get_connectivity_set(graph, partitions, i);
     s = ss.cup(s);
@@ -101,7 +101,7 @@ vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, u
   for (const auto& partition : partitions) {
     PartitionMap partition_set;
     for (const auto& [id, set] : partition) {
-      Set one_partition_set = graph.fact().createSet();
+      Set one_partition_set = SET_FACT.createSet();
       Partition p;
       for (auto& s : set) {
         SetPiece intervals;
@@ -133,8 +133,8 @@ vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, u
 
 
 // we could cache solutions here
-Set from_vector(const Partition& partition, const SetAF& set_fact) {
-    Set partition_set = set_fact.createSet();
+Set from_vector(const Partition& partition) {
+    Set partition_set = SET_FACT.createSet();
     for (size_t i = 0; i < partition.size(); i++) {
         partition_set.emplace(partition[i]);
     }
@@ -164,7 +164,7 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
   CommunicationCostPtr comm_cost = create_communication_cost(graph, best_initial_partitions, multithreading_enabled);
   if (strategy == InitialPartitionStrategy::ALL) {
 
-    auto best_communication_set = graph.fact().createSet();
+    auto best_communication_set = SET_FACT.createSet();
     for (unsigned i = 0; i < number_of_partitions; i++) {
         best_communication_set = best_communication_set.cup(comm_cost->get_ec_by_partition_id(i));
     }
@@ -174,7 +174,7 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
         auto temp_intial_partitions = partition_maps[i];
         CommunicationCostPtr temp_comm_cost = create_communication_cost(graph, temp_intial_partitions, multithreading_enabled);
 
-        auto temp_partition_comm = graph.fact().createSet();
+        auto temp_partition_comm = SET_FACT.createSet();
         for (unsigned i = 0; i < number_of_partitions; i++) {
             temp_partition_comm = temp_partition_comm.cup(comm_cost->get_ec_by_partition_id(i));
         }
@@ -198,7 +198,7 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
 Set get_connectivity_set(SBG::LIB::SBG& graph, const PartitionMap& partitions, size_t partition_index)
 {
     const auto& partition_vector = partitions.at(partition_index);
-    Set partition = graph.fact().createSet();
+    Set partition = SET_FACT.createSet();
     for_each(partition_vector.cbegin(), partition_vector.cend(), [&partition] (auto s) { partition.emplaceBack(s); });
 
     auto comm_edges_1 = get_communication_edges(partition, graph.map1(), graph.map2());
@@ -213,23 +213,23 @@ void sanity_check(const WeightedSBGraph& graph, PartitionMap& partitions_set, un
 {
   cout << "\nsanity_check\n" << partitions_set << endl;
   // This is just a sanity check
-  Set nodes_to_check = graph.fact().createSet();
+  Set nodes_to_check = SET_FACT.createSet();
   for (unsigned i = 0; i < number_of_partitions; i++) {
-    nodes_to_check = nodes_to_check.cup(from_vector(partitions_set[i], graph.fact()));
+    nodes_to_check = nodes_to_check.cup(from_vector(partitions_set[i]));
   }
 
   Set diff = nodes_to_check.difference(graph.V());
   cout << "diff1 " << diff << endl;
-  assert(get_node_size(diff, graph.get_node_weights(), graph.fact()) == 0 and "The intial partition has more elements than the graph");
+  assert(get_node_size(diff, graph.get_node_weights()) == 0 and "The intial partition has more elements than the graph");
 
   diff = graph.V().difference(nodes_to_check);
   cout << "diff2 " << diff << endl;
-  assert(get_node_size(diff, graph.get_node_weights(), graph.fact()) == 0 and "The intial partition has less elements than the graph");
+  assert(get_node_size(diff, graph.get_node_weights()) == 0 and "The intial partition has less elements than the graph");
 
   for (unsigned i = 0; i < number_of_partitions; i++) {
     for (unsigned j = i + 1; j < number_of_partitions; j++) {
-      auto p_1 = from_vector(partitions_set[i], graph.fact());
-      auto p_2 = from_vector(partitions_set[j], graph.fact());
+      auto p_1 = from_vector(partitions_set[i]);
+      auto p_2 = from_vector(partitions_set[j]);
       stringstream error_msg;
       error_msg << "Intersection between " << i << " and " << j << " is not empty." << endl;
       if (not p_1.intersection(p_2).isEmpty()) {

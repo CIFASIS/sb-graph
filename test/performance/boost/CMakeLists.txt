@@ -6,6 +6,7 @@ add_executable(
 target_sources(
     boost-perf
     PRIVATE
+        boost_exec.cpp
         main.cpp
         ordinary_graph.cpp    
         ordinary_graph_builder.cpp

@@ -54,9 +54,9 @@ MultiDimInter::const_iterator MultiDimInter::end() const
 }
 
 void MultiDimInter::emplaceBack(Interval i) 
-{
-  if (i.isEmpty())
-    intervals_ = InterVector();
+{ 
+  if (i.isEmpty()){
+    intervals_ = InterVector();}
   else
     intervals_.push_back(i);
   return;
@@ -92,6 +92,7 @@ bool MultiDimInter::operator<(const MultiDimInter &other) const
 
   return minElem() < other.minElem();
 }
+
 
 std::ostream &operator<<(std::ostream &out, const MultiDimInter &mdi)
 {

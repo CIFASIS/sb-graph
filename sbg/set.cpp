@@ -8,7 +8,7 @@
  (at your option) any later version.
 
  SBG Library is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the delegied warranty of
+ but WITHOUT ANY WARRANTY; without even the stratied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
@@ -26,722 +26,24 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Set Delegate Constructors ---------------------------------------------------
+// Set Abstract Strategy Constructors ------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-SetDelegate::SetDelegate() {}
-SetDelegate::SetDelegate(const MD_NAT &x) {}
-SetDelegate::SetDelegate(const Interval &i) {}
-SetDelegate::SetDelegate(const SetPiece &mdi) {}
+SetStrategy::SetStrategy() {}
+SetStrategy::SetStrategy(const MD_NAT &x) {}
+SetStrategy::SetStrategy(const Interval &i) {}
+SetStrategy::SetStrategy(const SetPiece &mdi) {}
 
 ////////////////////////////////////////////////////////////////////////////////
-// Unordered Set Implementation ------------------------------------------------
+// Set Interface ---------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-member_imp(UnorderedSet, MDIUnordSet, pieces);
-
-UnorderedSet::~UnorderedSet() {}
-UnorderedSet::UnorderedSet() : pieces_() {}
-UnorderedSet::UnorderedSet(const MD_NAT &x) : pieces_() { pieces_.push_back(SetPiece(x)); }
-UnorderedSet::UnorderedSet(const Interval &i) : pieces_()
-{
-  if (!i.isEmpty()) pieces_.push_back(SetPiece(i));
-}
-UnorderedSet::UnorderedSet(const SetPiece &mdi) : pieces_()
-{
-  if (!mdi.isEmpty()) pieces_.push_back(mdi);
-}
-UnorderedSet::UnorderedSet(const MDIUnordSet &pieces) : pieces_(std::move(pieces)) {}
-
-SetDelegPtr UnorderedSet::clone() const { return std::make_unique<UnorderedSet>(*this); }
-
-member_imp(UnorderedSet::Iterator, MDIUnordSet::const_iterator, it);
-
-UnorderedSet::Iterator::Iterator(MDIUnordSet::const_iterator it) : it_(it) {}
-
-void UnorderedSet::Iterator::operator++()
-{
-  ++it_;
-  return;
-}
-
-bool UnorderedSet::Iterator::operator!=(const SetDelegate::Iterator &other) const
-{
-  return it_ != static_cast<const UnorderedSet::Iterator *>(&other)->it_;
-}
-
-bool UnorderedSet::Iterator::operator==(const SetDelegate::Iterator &other) const
-{
-  return it_ == static_cast<const UnorderedSet::Iterator *>(&other)->it_;
-}
-
-bool UnorderedSet::Iterator::operator<(const SetDelegate::Iterator &other) const
-{
-  return it_ < static_cast<const UnorderedSet::Iterator *>(&other)->it_;
-}
-
-const SetPiece &UnorderedSet::Iterator::operator*() const { return *it_; }
-
-std::shared_ptr<SetDelegate::Iterator> UnorderedSet::begin() const { return std::make_shared<UnorderedSet::Iterator>(pieces_.begin()); }
-
-std::shared_ptr<SetDelegate::Iterator> UnorderedSet::end() const { return std::make_shared<UnorderedSet::Iterator>(pieces_.end()); }
-
-std::size_t UnorderedSet::size() const { return pieces_.size(); }
-
-void UnorderedSet::emplace(const SetPiece &mdi)
-{
-  if (!mdi.isEmpty()) pieces_.push_back(mdi);
-  return;
-}
-void UnorderedSet::emplaceBack(const SetPiece &mdi)
-{
-  if (!mdi.isEmpty()) pieces_.push_back(mdi);
-  return;
-}
-
-bool UnorderedSet::operator==(const SetDelegate &other) const
-{
-  UnordSetCRef othr = static_cast<UnordSetCRef>(other);
-
-  if (pieces_ == othr.pieces_) return true;
-
-  return difference(other)->isEmpty() && other.difference(*this)->isEmpty();
-}
-
-bool UnorderedSet::operator!=(const SetDelegate &other) const { return !(*this == other); }
-
-std::ostream &UnorderedSet::print(std::ostream &out) const
-{
-  std::size_t sz = size();
-
-  out << "{";
-  if (sz > 0) {
-    unsigned int j = 0;
-    for (const SetPiece &mdi : pieces_) {
-      if (j < sz - 1)
-        out << mdi << ", ";
-      else
-        out << mdi;
-
-      ++j;
-    }
-  }
-  out << "}";
-
-  return out;
-}
-
-// Set operations --------------------------------------------------------------
-
-unsigned int UnorderedSet::cardinal() const
-{
-  unsigned int result = 0;
-
-  for (const SetPiece &mdi : pieces_) result += mdi.cardinal();
-
-  return result;
-}
-
-bool UnorderedSet::isEmpty() const { return pieces_.empty(); }
-
-MD_NAT UnorderedSet::minElem() const
-{
-  MD_NAT res = pieces_.begin()->minElem();
-  for (const SetPiece &mdi : pieces_) {
-    MD_NAT ith = mdi.minElem();
-    if (ith < res) res = ith;
-  }
-
-  return res;
-}
-
-MD_NAT UnorderedSet::maxElem() const
-{
-  MD_NAT res = pieces_.begin()->maxElem();
-  for (const SetPiece &mdi : pieces_) {
-    MD_NAT ith = mdi.maxElem();
-    if (res < ith) res = ith;
-  }
-
-  return res;
-}
-
-SetDelegPtr UnorderedSet::intersection(const SetDelegate &other) const
-{
-  MDIUnordSet res;
-
-  // Special cases to enhance performance
-  if (isEmpty() || other.isEmpty()) return std::make_unique<UnorderedSet>(res);
-
-  if (maxElem() < other.minElem()) return std::make_unique<UnorderedSet>(res);
-
-  if (other.maxElem() < minElem()) return std::make_unique<UnorderedSet>(res);
-
-  if (maxElem() == other.minElem()) {
-    res.push_back(SetPiece(maxElem()));
-    return std::make_unique<UnorderedSet>(res);
-  }
-
-  if (other.maxElem() == minElem()) {
-    res.push_back(SetPiece(minElem()));
-    return std::make_unique<UnorderedSet>(res);
-  }
-
-  UnordSetCRef othr = static_cast<UnordSetCRef>(other);
-  if (pieces_ == othr.pieces_) return std::make_unique<UnorderedSet>(pieces_);
-
-  UnorderedSet aux_res;
-  for (const SetPiece &mdi1 : pieces_)
-    for (const SetPiece &mdi2 : othr.pieces_) aux_res.emplace(mdi1.intersection(mdi2));
-
-  return std::make_unique<UnorderedSet>(aux_res.pieces_);
-}
-
-SetDelegPtr UnorderedSet::cup(const SetDelegate &other) const
-{
-  UnordSetCRef othr = static_cast<UnordSetCRef>(other);
-
-  if (isEmpty()) return std::make_unique<UnorderedSet>(othr.pieces_);
-
-  if (other.isEmpty() || pieces_ == othr.pieces_) return std::make_unique<UnorderedSet>(pieces_);
-
-  if (maxElem() < othr.minElem()) {
-    MDIUnordSet un(pieces_.begin(), pieces_.end());
-
-    for (const SetPiece &mdi : othr.pieces_) un.push_back(mdi);
-
-    return std::make_unique<UnorderedSet>(un);
-  }
-
-  if (othr.maxElem() < minElem()) {
-    MDIUnordSet un(othr.pieces_.begin(), othr.pieces_.end());
-
-    for (const SetPiece &mdi : pieces_) un.push_back(mdi);
-
-    return std::make_unique<UnorderedSet>(un);
-  }
-
-  SetDelegPtr diff = difference(other);
-  UnordSetCRef diff_cast = static_cast<UnordSetCRef>(*diff);
-
-  return othr.disjointCup(diff_cast);
-}
-
-SetDelegPtr UnorderedSet::complementAtom() const
-{
-  MDIUnordSet res;
-
-  SetPiece mdi = *pieces_.begin();
-  SetPiece dense_mdi;
-  for (const Interval &i : mdi) dense_mdi.emplaceBack(Interval(i.begin(), 1, i.end()));
-  SetPiece during_mdi = dense_mdi;
-
-  Interval univ_one_dim(0, 1, Inf);
-  SetPiece univ(mdi.arity(), univ_one_dim);
-
-  unsigned int dim = 0;
-  for (const Interval &i : mdi) {
-    MDIUnordSet c;
-
-    // Before interval
-    if (i.begin() != 0) {
-      Interval i_res(0, 1, i.begin() - 1);
-      if (!i_res.isEmpty()) {
-        univ[dim] = i_res;
-        c.push_back(univ);
-        univ[dim] = univ_one_dim;
-      }
-    }
-
-    // "During" interval
-    if (i.begin() < Inf) {
-      if (i.step() > 1) {
-        for (unsigned int j = 0; j < i.step() - 1; ++j) {
-          Interval i_res(i.begin() + j + 1, i.step(), i.end());
-          if (!i_res.isEmpty()) {
-            during_mdi[dim] = i_res;
-            c.push_back(during_mdi);
-          }
-        }
-      }
-    }
-
-    // After interval
-    if (i.end() < Inf) {
-      Interval i_res(i.end() + 1, 1, Inf);
-      if (!i_res.isEmpty()) {
-        univ[dim] = i_res;
-        c.push_back(univ);
-        univ[dim] = univ_one_dim;
-      }
-    }
-    univ[dim] = dense_mdi[dim];
-    during_mdi[dim] = i;
-
-    // Insert results of current dim
-    for (const SetPiece &mdi : c) res.push_back(mdi);
-
-    ++dim;
-  }
-
-  return std::make_unique<UnorderedSet>(res);
-}
-
-SetDelegPtr UnorderedSet::complement() const
-{
-  SetDelegPtr res = std::make_unique<UnorderedSet>(MDIUnordSet());
-
-  if (!isEmpty()) {
-    auto first_it = pieces_.begin();
-    SetPiece first = *first_it;
-    res = std::move(UnorderedSet(first).complementAtom());
-
-    ++first_it;
-    MDIUnordSet second(first_it, pieces_.end());
-    for (const SetPiece &mdi : second) {
-      SetDelegPtr c = UnorderedSet(mdi).complementAtom();
-      res = std::move(res->intersection(*c));
-    }
-  }
-
-  return res;
-}
-
-SetDelegPtr UnorderedSet::difference(const SetDelegate &other) const
-{
-  if (isEmpty() || other.isEmpty()) return std::make_unique<UnorderedSet>(*this);
-
-  UnordSetCRef othr = static_cast<UnordSetCRef>(other);
-  return intersection(*othr.complement());
-}
-
-// Extra operations ------------------------------------------------------------
-
-std::size_t UnorderedSet::arity() const
-{
-  if (isEmpty()) return 0;
-
-  return pieces_.begin()->arity();
-}
-
-SetDelegPtr UnorderedSet::disjointCup(const SetDelegate &other) const
-{
-  UnordSetCRef othr = static_cast<UnordSetCRef>(other);
-
-  if (isEmpty()) return std::make_unique<UnorderedSet>(othr.pieces_);
-
-  if (other.isEmpty() || pieces_ == othr.pieces_) return std::make_unique<UnorderedSet>(pieces_);
-
-  MDIUnordSet res(pieces_.begin(), pieces_.end());
-  for (const SetPiece &mdi : othr.pieces_) res.push_back(mdi);
-
-  return std::make_unique<UnorderedSet>(res);
-}
-
-SetDelegPtr UnorderedSet::filterSet(bool (*f)(const SetPiece &mdi)) const
-{
-  MDIUnordSet res;
-
-  for (const SetPiece &mdi : pieces_)
-    if (f(mdi)) res.push_back(mdi);
-
-  return std::make_unique<UnorderedSet>(res);
-}
-
-SetDelegPtr UnorderedSet::offset(const MD_NAT &off) const
-{
-  MDIUnordSet res;
-
-  for (const SetPiece &mdi : pieces_) res.push_back(mdi.offset(off));
-
-  return std::make_unique<UnorderedSet>(res);
-}
-
-SetDelegPtr UnorderedSet::compact() const
-{
-  MDIUnordSet res;
-
-  if (!isEmpty()) {
-    std::set<SetPiece> prev(pieces_.begin(), pieces_.end()), actual = prev;
-    do {
-      prev = actual;
-      actual = std::set<SetPiece>();
-
-      std::set<SetPiece>::iterator ith = prev.begin(), last = prev.end();
-      std::set<SetPiece> to_erase;
-      for (; ith != last; ++ith) {
-        SetPiece ith_compact = *ith;
-        std::set<SetPiece>::iterator next = ith;
-        ++next;
-        for (; next != last; ++next) {
-          MaybeMDI new_compact = ith_compact.compact(*next);
-          if (new_compact) {
-            ith_compact = new_compact.value();
-            to_erase.insert(*next);
-          }
-        }
-
-        if (to_erase.find(ith_compact) == to_erase.end())
-          actual.insert(ith_compact);
-      }
-    } while (actual != prev);
-
-    for (const SetPiece &mdi : actual)
-      res.push_back(mdi);
-  }
-
-  return std::make_unique<UnorderedSet>(res);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Ordered Set Implementation (1 dimension, dense intervals) -------------------
-////////////////////////////////////////////////////////////////////////////////
-
-member_imp(OrderedDenseSet, MDIOrdSet, pieces);
-
-OrderedDenseSet::~OrderedDenseSet() {}
-OrderedDenseSet::OrderedDenseSet() : pieces_() {}
-OrderedDenseSet::OrderedDenseSet(MD_NAT x) : pieces_() { pieces_.push_back(SetPiece(x)); }
-OrderedDenseSet::OrderedDenseSet(Interval i) : pieces_()
-{
-  if (!i.isEmpty()) pieces_.push_back(SetPiece(i));
-}
-OrderedDenseSet::OrderedDenseSet(SetPiece mdi) : pieces_()
-{
-  if (!mdi.isEmpty()) pieces_.push_back(mdi);
-}
-OrderedDenseSet::OrderedDenseSet(MDIOrdSet pieces) : pieces_(std::move(pieces)) {}
-
-SetDelegPtr OrderedDenseSet::clone() const { return std::make_unique<OrderedDenseSet>(*this); }
-
-member_imp(OrderedDenseSet::Iterator, MDIOrdSet::const_iterator, it);
-
-OrderedDenseSet::Iterator::Iterator(MDIOrdSet::const_iterator it) : it_(it) {}
-
-void OrderedDenseSet::Iterator::operator++()
-{
-  ++it_;
-  return;
-}
-
-bool OrderedDenseSet::Iterator::operator!=(const SetDelegate::Iterator &other) const
-{
-  return it_ != static_cast<const OrderedDenseSet::Iterator *>(&other)->it_;
-}
-
-bool OrderedDenseSet::Iterator::operator==(const SetDelegate::Iterator &other) const
-{
-  return it_ == static_cast<const OrderedDenseSet::Iterator *>(&other)->it_;
-}
-
-bool OrderedDenseSet::Iterator::operator<(const SetDelegate::Iterator &other) const
-{
-  return it_ < static_cast<const OrderedDenseSet::Iterator *>(&other)->it_;
-}
-
-const SetPiece &OrderedDenseSet::Iterator::operator*() const { return *it_; }
-
-std::shared_ptr<SetDelegate::Iterator> OrderedDenseSet::begin() const
-{
-  return std::make_shared<OrderedDenseSet::Iterator>(pieces_.begin());
-}
-
-std::shared_ptr<SetDelegate::Iterator> OrderedDenseSet::end() const { return std::make_shared<OrderedDenseSet::Iterator>(pieces_.end()); }
-
-std::size_t OrderedDenseSet::size() const { return pieces_.size(); }
-
-void OrderedDenseSet::emplace(const SetPiece &mdi)
-{
-  if (!mdi.isEmpty()) pieces_.push_back(mdi);
-  return;
-}
-void OrderedDenseSet::emplaceBack(const SetPiece &mdi)
-{
-  if (!mdi.isEmpty()) pieces_.emplace(pieces_.end(), mdi);
-  return;
-}
-
-bool OrderedDenseSet::operator==(const SetDelegate &other) const
-{
-  SetDelegPtr this_comp = compact();
-  OrdDenseSetCRef ths = static_cast<OrdDenseSetCRef>(*this_comp);
-  SetDelegPtr other_comp = other.compact();
-  OrdDenseSetCRef othr = static_cast<OrdDenseSetCRef>(*other_comp);
-
-  return ths.pieces_ == othr.pieces_;
-}
-
-bool OrderedDenseSet::operator!=(const SetDelegate &other) const { return !(*this == other); }
-
-std::ostream &OrderedDenseSet::print(std::ostream &out) const
-{
-  std::size_t sz = size();
-
-  out << "{";
-  if (sz > 0) {
-    unsigned int j = 0;
-    for (const SetPiece &mdi : pieces_) {
-      if (j < sz - 1)
-        out << mdi << ", ";
-      else
-        out << mdi;
-
-      ++j;
-    }
-  }
-  out << "}";
-
-  return out;
-}
-
-// Set operations --------------------------------------------------------------
-
-unsigned int OrderedDenseSet::cardinal() const
-{
-  unsigned int result = 0;
-
-  for (const SetPiece &mdi : pieces_) result += mdi.cardinal();
-
-  return result;
-}
-
-bool OrderedDenseSet::isEmpty() const { return pieces_.empty(); }
-
-MD_NAT OrderedDenseSet::minElem() const { return pieces_.begin()->minElem(); }
-
-MD_NAT OrderedDenseSet::maxElem() const
-{
-  auto it = pieces_.end();
-  --it;
-  return it->maxElem();
-}
-
-SetDelegPtr OrderedDenseSet::intersection(const SetDelegate &other) const
-{
-  MDIOrdSet res;
-
-  // Special cases to enhance performance
-  if (isEmpty() || other.isEmpty()) return std::make_unique<OrderedDenseSet>(res);
-
-  if (maxElem() < other.minElem()) return std::make_unique<OrderedDenseSet>(res);
-
-  if (other.maxElem() < minElem()) return std::make_unique<OrderedDenseSet>(res);
-
-  if (maxElem() == other.minElem()) {
-    res.push_back(SetPiece(maxElem()));
-    return std::make_unique<OrderedDenseSet>(res);
-  }
-
-  if (other.maxElem() == minElem()) {
-    res.push_back(SetPiece(minElem()));
-    return std::make_unique<OrderedDenseSet>(res);
-  }
-
-  OrdDenseSetCRef othr = static_cast<OrdDenseSetCRef>(other);
-  if (pieces_ == othr.pieces_) return std::make_unique<OrderedDenseSet>(pieces_);
-
-  MDIOrdSet cap = boundedTraverse(&SetPiece::intersection, othr.pieces_);
-
-  return std::make_unique<OrderedDenseSet>(cap);
-}
-
-SetDelegPtr OrderedDenseSet::cup(const SetDelegate &other) const
-{
-  OrdDenseSetCRef othr = static_cast<OrdDenseSetCRef>(other);
-
-  if (isEmpty()) return std::make_unique<OrderedDenseSet>(othr.pieces_);
-
-  if (other.isEmpty() || pieces_ == othr.pieces_) return std::make_unique<OrderedDenseSet>(pieces_);
-
-  if (maxElem() < othr.minElem()) {
-    MDIOrdSet un(pieces_.begin(), pieces_.end());
-
-    for (const SetPiece &mdi : othr.pieces_) un.push_back(mdi);
-
-    return std::make_unique<OrderedDenseSet>(un);
-  }
-
-  if (othr.maxElem() < minElem()) {
-    MDIOrdSet un(othr.pieces_.begin(), othr.pieces_.end());
-
-    for (const SetPiece &mdi : pieces_) un.push_back(mdi);
-
-    return std::make_unique<OrderedDenseSet>(un);
-  }
-
-  SetDelegPtr diff = difference(other);
-  OrdDenseSetCRef diff_cast = static_cast<OrdDenseSetCRef>(*diff);
-
-  return othr.disjointCup(diff_cast);
-}
-
-SetDelegPtr OrderedDenseSet::complement() const
-{
-  OrderedDenseSet res;
-
-  if (isEmpty()) {
-    res.emplaceBack(SetPiece(Interval(0, 1, Inf)));
-    return std::make_unique<OrderedDenseSet>(res);
-  }
-
-  auto first_it = pieces_.begin();
-  Interval first(0, 1, first_it->operator[](0).begin() - 1);
-  if (!first.isEmpty()) res.emplaceBack(SetPiece(first));
-  NAT last = first_it->maxElem()[0];
-
-  ++first_it;
-  MDIOrdSet second(first_it, pieces_.end());
-  for (const SetPiece &mdi : second) {
-    Interval ith(last + 1, 1, mdi[0].begin() - 1);
-    if (!ith.isEmpty()) res.emplaceBack(SetPiece(ith));
-    last = mdi.maxElem()[0];
-  }
-  Interval end(last + 1, 1, Inf);
-  res.emplaceBack(SetPiece(end));
-
-  return std::make_unique<OrderedDenseSet>(res);
-}
-
-SetDelegPtr OrderedDenseSet::difference(const SetDelegate &other) const
-{
-  if (isEmpty() || other.isEmpty()) return std::make_unique<OrderedDenseSet>(*this);
-
-  OrdDenseSetCRef othr = static_cast<OrdDenseSetCRef>(other);
-  return intersection(*othr.complement());
-}
-
-// Extra operations ------------------------------------------------------------
-
-std::size_t OrderedDenseSet::arity() const
-{
-  if (isEmpty()) return 0;
-
-  return pieces_.begin()->arity();
-}
-
-SetDelegPtr OrderedDenseSet::disjointCup(const SetDelegate &other) const
-{
-  OrdDenseSetCRef othr = static_cast<OrdDenseSetCRef>(other);
-  MDIOrdSet cup = traverse(&SetPiece::least, othr.pieces_);
-
-  return std::make_unique<OrderedDenseSet>(cup);
-}
-
-SetDelegPtr OrderedDenseSet::filterSet(bool (*f)(const SetPiece &mdi)) const
-{
-  MDIOrdSet res;
-
-  for (const SetPiece &mdi : pieces_)
-    if (f(mdi)) res.push_back(mdi);
-
-  return std::make_unique<OrderedDenseSet>(res);
-}
-
-SetDelegPtr OrderedDenseSet::offset(const MD_NAT &off) const
-{
-  MDIOrdSet res;
-
-  for (const SetPiece &mdi : pieces_) res.push_back(mdi.offset(off));
-
-  return std::make_unique<OrderedDenseSet>(res);
-}
-
-SetDelegPtr OrderedDenseSet::compact() const
-{
-  MDIOrdSet res;
-
-  if (isEmpty()) return std::make_unique<OrderedDenseSet>(res);
-
-  auto next_it = pieces_.begin();
-  ++next_it;
-  SetPiece compacted = *pieces_.begin();
-  for (auto it = pieces_.begin(); next_it != pieces_.end(); ++it) {
-    MaybeMDI ith = compacted.compact(*next_it);
-    if (!ith) {
-      res.push_back(compacted);
-      compacted = *next_it;
-    } else
-      compacted = ith.value();
-
-    ++next_it;
-  }
-  res.push_back(compacted);
-
-  return std::make_unique<OrderedDenseSet>(res);
-}
-
-MDIOrdSet OrderedDenseSet::boundedTraverse(SetPiece (SetPiece::*f)(const SetPiece &) const, const MDIOrdSet &other) const
-{
-  MDIOrdSet res;
-
-  if (isEmpty() || other.empty()) return res;
-
-  auto it1 = pieces_.begin(), it2 = other.begin();
-  auto end1 = pieces_.end(), end2 = other.end();
-
-  SetPiece mdi1, mdi2;
-  for (int j = 0; it1 != end1 && it2 != end2; ++j) {
-    mdi1 = *it1;
-    mdi2 = *it2;
-
-    SetPiece funci = (mdi1.*f)(mdi2);
-    if (!funci.isEmpty()) res.emplace(res.end(), funci);
-
-    if (mdi1.maxElem() < mdi2.maxElem())
-      ++it1;
-    else
-      ++it2;
-  }
-
-  return res;
-}
-
-MDIOrdSet OrderedDenseSet::traverse(SetPiece (SetPiece::*f)(const SetPiece &) const, const MDIOrdSet &other) const
-{
-  MDIOrdSet res;
-
-  if (isEmpty()) return other;
-
-  if (other.empty()) return pieces_;
-
-  auto it1 = pieces_.begin(), it2 = other.begin();
-  auto end1 = pieces_.end(), end2 = other.end();
-
-  SetPiece mdi1, mdi2;
-  for (; it1 != end1 && it2 != end2;) {
-    mdi1 = *it1;
-    mdi2 = *it2;
-
-    SetPiece funci = (mdi1.*f)(mdi2);
-    if (!funci.isEmpty()) res.emplace(res.end(), funci);
-
-    if (mdi1.maxElem() < mdi2.maxElem())
-      ++it1;
-    else
-      ++it2;
-  }
-
-  for (; it1 != end1; ++it1) {
-    mdi1 = *it1;
-    res.emplace(res.end(), mdi1);
-  }
-
-  for (; it2 != end2; ++it2) {
-    mdi2 = *it2;
-    res.emplace(res.end(), mdi2);
-  }
-
-  return res;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Set Implementation ----------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-Set::Set(SetDelegPtr deleg) : delegate_(std::move(deleg)) {}
-Set::Set(const Set &other) : delegate_(other.delegate_ ? other.delegate_->clone() : nullptr) {}
-
-Set::Iterator::Iterator(std::shared_ptr<SetDelegate::Iterator> it) : it_(std::move(it)) {}
+Set::Set(SetStratPtr strat) : strategy_(std::move(strat)) {}
+Set::Set(const Set &other)
+  : strategy_(other.strategy_ ? other.strategy_->clone() : nullptr) {}
+
+Set::Iterator::Iterator(std::shared_ptr<SetStrategy::Iterator> it)
+  : it_(std::move(it)) {}
 
 void Set::Iterator::operator++()
 {
@@ -757,43 +59,48 @@ bool Set::Iterator::operator==(const Iterator &other) const { return *it_ == *ot
 
 bool Set::Iterator::operator<(const Iterator &other) const { return it_ < other.it_; }
 
-Set::Iterator Set::begin() const { return delegate_->begin(); }
-Set::Iterator Set::end() const { return delegate_->end(); }
+Set::Iterator Set::begin() const { return strategy_->begin(); }
+Set::Iterator Set::end() const { return strategy_->end(); }
 
-std::size_t Set::size() const { return delegate_->size(); }
+std::size_t Set::size() const { return strategy_->size(); }
 
 void Set::emplace(SetPiece mdi)
 {
-  delegate_->emplace(mdi);
+  strategy_->emplace(mdi);
   return;
 }
 void Set::emplaceBack(SetPiece mdi)
 {
-  delegate_->emplaceBack(mdi);
+  strategy_->emplaceBack(mdi);
   return;
 }
 
-bool Set::operator==(const Set &other) const { return *delegate_ == *other.delegate_; }
+bool Set::operator==(const Set &other) const
+{
+  return *strategy_ == *other.strategy_;
+}
 
 bool Set::operator!=(const Set &other) const { return !(*this == other); }
 
 Set &Set::operator=(const Set &other)
 {
-  if (this != &other) delegate_ = other.delegate_->clone();
+  if (this != &other)
+    strategy_ = other.strategy_->clone();
 
   return *this;
 }
 
 Set &Set::operator=(Set &&other)
 {
-  if (this != &other) delegate_ = std::move(other.delegate_);
+  if (this != &other)
+    strategy_ = std::move(other.strategy_);
 
   return *this;
 }
 
 std::ostream &Set::print(std::ostream &out) const
 {
-  delegate_->print(out);
+  strategy_->print(out);
   return out;
 }
 
@@ -803,64 +110,52 @@ std::ostream &operator<<(std::ostream &out, const Set &s)
   return out;
 }
 
-unsigned int Set::cardinal() const { return delegate_->cardinal(); }
+unsigned int Set::cardinal() const { return strategy_->cardinal(); }
 
-bool Set::isEmpty() const { return delegate_->isEmpty(); }
+bool Set::isEmpty() const { return strategy_->isEmpty(); }
 
-MD_NAT Set::minElem() const { return delegate_->minElem(); }
+MD_NAT Set::minElem() const { return strategy_->minElem(); }
 
-MD_NAT Set::maxElem() const { return delegate_->maxElem(); }
+MD_NAT Set::maxElem() const { return strategy_->maxElem(); }
 
-Set Set::intersection(const Set &other) const { return Set(delegate_->intersection(*other.delegate_)); }
-
-Set Set::cup(const Set &other) const { return Set(delegate_->cup(*other.delegate_)); }
-
-Set Set::complement() const { return Set(delegate_->complement()); }
-
-Set Set::difference(const Set &other) const { return Set(delegate_->difference(*other.delegate_)); }
-
-std::size_t Set::arity() const { return delegate_->arity(); }
-
-Set Set::disjointCup(const Set &other) const { return Set(delegate_->disjointCup(*other.delegate_)); }
-
-Set Set::filterSet(bool (*f)(const SetPiece &mdi)) const { return delegate_->filterSet(f); }
-
-Set Set::offset(const MD_NAT &off) const { return delegate_->offset(off); }
-
-Set Set::compact() const { return delegate_->compact(); }
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Set Hashes ------------------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-std::size_t SetPieceHash::set_piece_hash(const SetPiece& set_piece) {
-  constexpr size_t magic_number = 0x9e3779b9;
-  std::size_t seed = 0;
-  for (const auto& interval : set_piece) {
-    seed ^= std::hash<int>()(interval.begin()) + magic_number + (seed << 6) + (seed >> 2);
-    seed ^= std::hash<int>()(interval.end()) + magic_number + (seed << 6) + (seed >> 2);
-  }
-
-  return seed;
+Set Set::intersection(const Set &other) const
+{
+  return Set(strategy_->intersection(*other.strategy_));
 }
 
-std::size_t SetPieceHash::operator()(const SetPiece& set_piece) const {
-  std::size_t seed = set_piece_hash(set_piece);
-
-  return seed;
+Set Set::cup(const Set &other) const
+{
+  return Set(strategy_->cup(*other.strategy_));
 }
 
- 
-std::size_t SetHash::operator()(const Set& set) const {
-  std::size_t seed = 0;
-  SetPieceHash set_piece_hash;
-  for (const auto& set_piece : set) {
-    seed ^= set_piece_hash(set_piece);
-  }
-
-  return seed;
+Set Set::complement() const
+{
+  return Set(strategy_->complement());
 }
+
+Set Set::difference(const Set &other) const
+{
+  return Set(strategy_->difference(*other.strategy_));
+}
+
+std::size_t Set::arity() const  { return strategy_->arity(); }
+
+Set Set::disjointCup(const Set &other) const
+{
+  return Set(strategy_->disjointCup(*other.strategy_));
+}
+
+Set Set::filterSet(bool (*f)(const SetPiece &mdi)) const
+{
+  return strategy_->filterSet(f);
+}
+
+Set Set::offset(const MD_NAT &off) const
+{
+  return strategy_->offset(off);
+}
+
+Set Set::compact() const { return strategy_->compact(); }
 
 }  // namespace LIB
 

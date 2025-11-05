@@ -7,19 +7,23 @@ target_include_directories(sbg-dev PUBLIC ${PROJECT_SOURCE_DIR})
 target_sources(
     sbg-dev
     PRIVATE
-    af_map.cpp
-    af_pwmap.cpp
-    af_set.cpp
     interval.cpp
     lexp.cpp
     map.cpp
     multidim_inter.cpp
     multidim_lexp.cpp
     natural.cpp
+    ord_set.cpp
+    ord_unidim_dense_set.cpp
+    ord_pwmap.cpp
     pw_map.cpp
+    pwmap_fact.cpp
     rational.cpp
     sbg.cpp
     set.cpp
+    set_fact.cpp
+    unord_set.cpp
+    unord_pwmap.cpp
 )
 
 add_custom_target(sbg-doc

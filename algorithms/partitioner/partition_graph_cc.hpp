@@ -34,29 +34,44 @@ namespace sbg_partitioner {
 namespace using_cc {
 
 
-int run_bisection(
+struct BisectionResult
+{
+    size_t i;
+    size_t j;
+    int gain;
+    SetPointers A;
+    SetPointers B;
+};
+
+
+std::vector<SetPointers> best_initial_partition(
+    const SBG::LIB::WeightedSBGraph& graph,
+    const SetPointers& sorted_nodes,
+    const CommunicationCostCC& comm_cc,
+    unsigned number_of_partitions,
+    const InitialPartitionStrategy strategy);
+
+
+int bisection(
     const SBG::LIB::WeightedSBGraph& graph,
     CommunicationCostCC& cost_matrix,
     SetPointers& partition_a,
     SetPointers& partition_b,
-    const SBG::LIB::PWMap& cc_map,
     unsigned LMin,
     unsigned LMax);
 
-void bisection(
-    const SBG::LIB::WeightedSBGraph& graph,
-    CommunicationCostCC& cost_matrix,
-    const SetPointers& sorted_nodes,
-    SetPointers& partition_a,
-    SetPointers& partition_b,
-    const SBG::LIB::PWMap& cc_map,
-    unsigned LMin,
-    unsigned LMax);
 
 PartitionMap rebuild_partitions(
     const SetPointers& new_nodes,
     const std::vector<SetPointers>& partitions);
 
+
+void kl_sbg_imbalance_partitioner(
+    const SBG::LIB::WeightedSBGraph& graph,
+    const SetPointers& sorted_nodes,
+    std::vector<SetPointers>& partitions,
+    CommunicationCostCC& cost_matrix,
+    const float imbalance_epsilon);
 
 }
 

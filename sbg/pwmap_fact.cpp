@@ -84,6 +84,32 @@ std::string OrdPWMapFact::prettyPrint() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// DomOrdPWMap Factory ------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+DomOrdPWMapFact::DomOrdPWMapFact() {}
+
+PWMap DomOrdPWMapFact::createPWMap() const
+{
+  return PWMap(std::make_unique<DomOrdPWMap>());
+}
+
+PWMap DomOrdPWMapFact::createPWMap(const Set &s) const
+{
+  return PWMap(std::make_unique<DomOrdPWMap>(s));
+}
+
+PWMap DomOrdPWMapFact::createPWMap(const Map &m) const
+{
+  return PWMap(std::make_unique<DomOrdPWMap>(m));
+}
+
+std::string DomOrdPWMapFact::prettyPrint() const
+{
+  return "domain ordered";
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Factory for clients --------------------------------------------------------- 
 ////////////////////////////////////////////////////////////////////////////////
 

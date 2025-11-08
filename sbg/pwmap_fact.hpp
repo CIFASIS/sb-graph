@@ -63,6 +63,16 @@ struct OrdPWMapFact : public PWMapFact {
   std::string prettyPrint() const override;
 };
 
+struct DomOrdPWMapFact : public PWMapFact {
+  public:
+  DomOrdPWMapFact();
+
+  PWMap createPWMap() const override;
+  PWMap createPWMap(const Set &s) const override;
+  PWMap createPWMap(const Map &m) const override;
+  std::string prettyPrint() const override;
+};
+
 using PWMapFactPtr = std::unique_ptr<PWMapFact>;
 
 /**

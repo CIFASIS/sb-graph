@@ -7,6 +7,7 @@ target_include_directories(sbg-dev PUBLIC ${PROJECT_SOURCE_DIR})
 target_sources(
     sbg-dev
     PRIVATE
+    dom_ord_pwmap.cpp
     interval.cpp
     lexp.cpp
     map.cpp

@@ -1,6 +1,6 @@
 /** @file scc.hpp
 
- @brief <b>SCC SBG implementation</b>
+ @brief <b>SBG SCC Algorithm Abstract Interface</b>
 
  <hr>
 
@@ -31,43 +31,55 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// SCC -------------------------------------------------------------------------
+// Auxiliary classures --------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct SCC {
-  private:
-  const PWMapAF &fact_;
-
-  //*** SBG info, constant
-  member_class(DSBG, dsbg);
-
-  member_class(Set, V);
-  member_class(PWMap, Vmap);
-
-  member_class(PWMap, Emap);
-  member_class(PWMap, subEmap);
-
-  //-----------------------------
-  member_class(Set, E); // Edges in the same SCC in each step
-  member_class(Set, Ediff); // Edges between different SCC in each step
-
-  member_class(PWMap, mapB);
-  member_class(PWMap, mapD);
- 
-  member_class(PWMap, rmap);
-
-  member_class(bool, debug);
-
+/**
+ * @brief Saves input and output data from a SCC algorithm run.
+ */
+struct SCCData {
   public:
-  SCC(const DSBG &dsbg, bool debug);
+  SCCData(DSBG dsbg, PWMap rmap, Set Ediff);
 
-  PWMap calculate();
-
-  const PWMapAF &fact() const;
+  const DSBG& dsbg() const;
+  const PWMap& rmap() const;
+  const Set& Ediff() const;
 
   private:
-  PWMap sccMinReach(const DSBG &dg) const;
-  PWMap sccStep();
+  DSBG dsbg_;  ///< Original input directed SBG
+  PWMap rmap_; ///< Resulting SCCs
+  Set Ediff_;  ///< Edges connecting vertices in different SCC
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// SCC Algorithm Abstract Strategy ---------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+class SCCStrategy;
+
+typedef std::unique_ptr<SCCStrategy> SCCStratPtr;
+
+class SCCStrategy {
+  public:
+  virtual ~SCCStrategy() = default;
+
+  SCCStrategy();
+
+  virtual SCCData calculate(const DSBG& dsbg) = 0;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// SCC Algorithm Interface (context) -------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+class SCC {
+  public:
+  SCC(SCCStratPtr strat);
+
+  SCCData calculate(const DSBG& dsbg);
+
+  private:
+  SCCStratPtr strategy_;
 };
 
 } // namespace LIB

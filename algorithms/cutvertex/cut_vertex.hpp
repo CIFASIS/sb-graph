@@ -1,6 +1,6 @@
 /** @file cut_vertex.hpp
 
- @brief <b>Cut Vertex Set SBG implementation</b>
+ @brief <b>SBG Vertex Cut Set Algorithm Abstract Interface</b>
 
  <hr>
 
@@ -24,40 +24,47 @@
 #ifndef SBG_CUTVERTEX_HPP
 #define SBG_CUTVERTEX_HPP
 
-#include "sbg/sbg.hpp"
+#include "algorithms/scc/scc_fact.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Cut-set algorithm ----------------------------------------------------------
+// Vertex Cut Set Algorithm Abstract Strategy ---------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
+class CVStrategy;
+
+typedef std::unique_ptr<CVStrategy> CVStratPtr;
+
 /**
-* @brief Aims to calculate a minimum cut-set of vertices, that is, a set of
+* @brief Aims to calculate a minimum cut set of vertices, that is, a set of
 * vertices such that if these vertices are taken out, the resulting graph has no
 * SCC left. Since this is a NP-hard problem, heuristics are used, and thus is
 * not guaranteed that the set is actually minimum.
 */
-
-struct CutVertex {
-  private:
-  const PWMapAF &fact_;
-
-  //*** SBG info, constant
-  member_class(DSBG, dsbg);
-
-  //-----------------------------
-  member_class(bool, debug);
-
+class CVStrategy {
   public:
-  CutVertex(const DSBG &dsbg, bool debug);
+  virtual ~CVStrategy() = default;
 
-  Set calculate(); 
+  CVStrategy();
+
+  virtual Set calculate(const DSBG& dsbg) const = 0;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// Vertex Cut Set Algorithm Interface (context) ------------------------------- 
+///////////////////////////////////////////////////////////////////////////////
+
+class CutVertex {
+  public:
+  CutVertex(CVStratPtr strat);
+
+  Set calculate(const DSBG& dsbg) const;
 
   private:
-  PWMap getDegMap(const DSBG &dsbg);
+  CVStratPtr strategy_;
 };
 
 } // namespace LIB

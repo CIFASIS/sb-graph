@@ -1,6 +1,6 @@
 /** @file topo_sort.hpp
 
- @brief <b>Topological Sort SBG implementation</b>
+ @brief <b>SBG Topological Sort Algorithm Abstract Interface</b>
 
  <hr>
 
@@ -21,8 +21,8 @@
 
  ******************************************************************************/
 
-#ifndef SBG_TOPSORT_HPP
-#define SBG_TOPSORT_HPP
+#ifndef SBG_TOPOSORT_HPP
+#define SBG_TOPOSORT_HPP
 
 #include "sbg/sbg.hpp"
 
@@ -31,28 +31,34 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Topological sort ------------------------------------------------------------
+// Topological Sort Algorithm Abstract Strategy --------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct TopoSort {
+class TSStrategy;
+
+typedef std::unique_ptr<TSStrategy> TSStratPtr;
+
+class TSStrategy {
+  public:
+  virtual ~TSStrategy() = default;
+
+  TSStrategy();
+
+  virtual PWMap calculate(const DSBG& dsbg) const = 0;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Topological Sort Algorithm Interface (context) ------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+class TopoSort {
   private:
-  const PWMapAF &fact_;
-
-  //*** SBG info, constant
-  member_class(DSBG, dsbg);
-
-  //-----------------------------
-  member_class(bool, debug);
+  TSStratPtr strategy_;
 
   public:
-  TopoSort(const DSBG &dsbg, bool debug);
+  TopoSort(TSStratPtr strat);
 
-  PWMap calculate(); 
-
-  const PWMapAF &fact() const;
-
-  private:
-  Exp calculateExp(const MD_NAT &from, const MD_NAT &to);
+  PWMap calculate(const DSBG& dsbg) const;
 };
 
 } // namespace LIB

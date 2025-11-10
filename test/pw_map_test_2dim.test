@@ -1,0 +1,278 @@
+/* Causalization test for the following model:
+model Test2D
+ //Implicit 2D advection equation
+ //contains NxM small algebraic loops
+  constant Integer N=10,M=10;
+  Real a[N,M],b[N,M],x[N,M];
+equation
+  a[1,1]+b[1,1]=1; // a[1, 1]
+  b[1,1]-a[1,1]=2*x[1,1]-1; // b[1, 1]
+  
+  for i in 2:N loop
+    a[i,1]+b[i,1]=b[i-1,1]; // a[2:N, 1]
+    b[i,1]-a[i,1]= 2*x[i,1]-x[i-1,1]; // b[2:N, 1]
+  end for;    
+  
+  for i in 2:M loop
+    a[1,i]+b[1,i]=b[1,i-1]; // a[1, 2:M]
+    b[1,i]-a[1,i]= 2*x[1,i]-x[1,i-1]; // b[1, 2:M]
+  end for;    
+  
+  for i in 2:N loop
+    for j in 2:M loop
+      a[i,j]+2*b[i,j]=b[i,j-1]+b[i-1,j]; // a[2:N, 2:M]
+      b[i,j]-a[i,j]=3*x[i,j]-x[i-1,j]-x[i,j-1]; // b[2:N, 2:M]
+    end for;    
+  end for;    
+  
+  for i in 1:N loop
+    for j in 1:N loop
+      der(x[i,j])=a[i,j]; // der(x[i, j])
+    end for;
+  end for;
+end Test2D;
+*/
+
+dims = 2;
+
+M = 100;
+N = 100;
+
+V1x = N; // a_x
+V1y = M; // a_y
+V2x = V1x+N; // b_x
+V2y = V1y+M; // b_y
+V3x = V2x+N; // der(x)_x
+V3y = V2y+M; // der(x)_y
+
+V4x = V3x+1; // a[1, 1]+b[1, 1] = 1;_x Eq1
+V4y = V3y+1; // a[1, 1]+b[1, 1] = 1;_y
+V5x = V4x+1; //b[1,1]-a[1,1]=2*x[1,1]-1;_x Eq2
+V5y = V4y+1; //b[1,1]-a[1,1]=2*x[1,1]-1;_y
+
+V6x = V5x+N-1; // a[i,1]+b[i,1]=b[i-1,1];_x Eq3
+V6y = V5y+1; // a[i,1]+b[i,1]=b[i-1,1];_y
+V7x = V6x+N-1; // b[i,1]-a[i,1]= 2*x[i,1]-x[i-1,1];_x Eq4
+V7y = V6y+1; // b[i,1]-a[i,1]= 2*x[i,1]-x[i-1,1];_y
+
+V8x = V7x+1; // a[1,i]+b[1,i]=b[1,i-1];_x Eq5
+V8y = V7y+M-1; // a[1,i]+b[1,i]=b[1,i-1];_y
+V9x = V8x+1; // b[1,i]-a[1,i]= 2*x[1,i]-x[1,i-1];_x Eq6
+V9y = V8y+M-1; // b[1,i]-a[1,i]= 2*x[1,i]-x[1,i-1];_y
+
+V10x = V9x+N-1; // a[i,j]+2*b[i,j]=b[i,j-1]+b[i-1,j];_x Eq7
+V10y = V9y+M-1; // a[i,j]+2*b[i,j]=b[i,j-1]+b[i-1,j];_y
+V11x = V10x+N-1; // b[i,j]-a[i,j]=3*x[i,j]-x[i-1,j]-x[i,j-1];_x Eq8
+V11y = V10y+M-1; //  b[i,j]-a[i,j]=3*x[i,j]-x[i-1,j]-x[i,j-1];_y
+
+V12x = V11x+N; // der(x[i,j])=a[i,j];_x Eq9
+V12y = V11y+M; // der(x[i,j])=a[i,j];_y
+
+E1x = 1; // Eq1 - a_x
+E1y = 1; // Eq1 - a_y
+E2x = E1x+1; // Eq1 - b_x
+E2y = E1y+1; // Eq1 - b_y
+
+off1dx = V4x - E1x;
+off1dy = V4y - E1y;
+off2dx = V4x - E2x;
+off2dy = V4y - E2y;
+
+off1bx = V1x - E1x - N+1;
+off1by = V1y - E1y - M+1;
+off2bx = V2x - E2x - N+1;
+off2by = V2y - E2y - M+1;
+
+E3x = E2x+1; // Eq2 - a_x
+E3y = E2y+1; // Eq2 - a_y
+E4x = E3x+1; // Eq2 - b_x
+E4y = E3y+1; // Eq2 - b_y
+
+off3dx = V5x - E3x;
+off3dy = V5y - E3y;
+off4dx = V5x - E4x;
+off4dy = V5y - E4y;
+
+off3bx = V1x - E3x - N+1;
+off3by = V1y - E3y - M+1;
+off4bx = V2x - E4x - N+1;
+off4by = V2y - E4y - M+1;
+
+E5x = E4x+N-1; // Eq3 - a_x
+E5y = E4y+1; // Eq3 - a_y
+E6x = E5x+N-1; // Eq3 - b_x[i-1, 1]
+E6y = E5y+1; // Eq3 - b_y[i-1, 1]
+E7x = E6x+N-1; // Eq3 - b_y[i, 1]
+E7y = E6y+1; // Eq3 - b_y[i, 1]
+
+off5dx = V6x - E5x;
+off5dy = V6y - E5y;
+off6dx = V6x - E6x;
+off6dy = V6y - E6y;
+off7dx = V6x - E7x;
+off7dy = V6y - E7y;
+
+off5bx = V1x - E5x;
+off5by = V1y - E5y - M+1;
+off6bx = V2x - E6x - 1;
+off6by = V2y - E6y - M+1;
+off7bx = V2x - E7x;
+off7by = V2y - E7y - M+1;
+
+E8x = E7x+N-1; // Eq4 - a_x
+E8y = E7y+1; // Eq4 - a_y
+E9x = E8x+N-1; // Eq4 - b_x
+E9y = E8y+1; // Eq4 - b_y
+
+off8dx = V7x - E8x;
+off8dy = V7y - E8y;
+off9dx = V7x - E9x;
+off9dy = V7y - E9y;
+
+off8bx = V1x - E8x;
+off8by = V1y - E8y - M+1;
+off9bx = V2x - E9x;
+off9by = V2y - E9y - M+1;
+
+E10x = E9x+1; // Eq5 - a_x
+E10y = E9y+M-1; // Eq5 - a_y
+E11x = E10x+1; // Eq5 - b_x[1, i-1]
+E11y = E10y+M-1; // Eq5 - b_y[1, i-1]
+E12x = E11x+1; // Eq5 - b_x[1, i]
+E12y = E11y+M-1; // Eq5 - b_y[1, i]
+
+off10dx = V8x - E10x;
+off10dy = V8y - E10y;
+off11dx = V8x - E11x;
+off11dy = V8y - E11y;
+off12dx = V8x - E12x;
+off12dy = V8y - E12y;
+
+off10bx = V1x - E10x - N+1;
+off10by = V1y - E10y;
+off11bx = V2x - E11x - N+1;
+off11by = V2y - E11y - 1;
+off12bx = V2x - E12x - N+1;
+off12by = V2y - E12y;
+
+E13x = E12x+1; // Eq6 - a_x
+E13y = E12y+M-1; // Eq6 - a_y
+E14x = E13x+1; // Eq6 - b_x
+E14y = E13y+M-1; // Eq6 - b_y
+
+off13dx = V9x - E13x;
+off13dy = V9y - E13y;
+off14dx = V9x - E14x;
+off14dy = V9y - E14y;
+
+off13bx = V1x - E13x - N+1;
+off13by = V1y - E13y;
+off14bx = V2x - E14x - N+1;
+off14by = V2y - E14y;
+
+E15x = E14x+N-1; // Eq7 - a_x
+E15y = E14y+M-1; // Eq7 - a_y
+E16x = E15x+N-1; // Eq7 - b_x[i-1, j]
+E16y = E15y+M-1; // Eq7 - b_y[i-1, j]
+E17x = E16x+N-1; // Eq7 - b_x[i, j-1]
+E17y = E16y+M-1; // Eq7 - b_y[i, j-1]
+E18x = E17x+N-1; // Eq7 - b_x[i, j]
+E18y = E17y+M-1; // Eq7 - b_y[i, j]
+
+off15dx = V10x - E15x;
+off15dy = V10y - E15y;
+off16dx = V10x - E16x;
+off16dy = V10y - E16y;
+off17dx = V10x - E17x;
+off17dy = V10y - E17y;
+off18dx = V10x - E18x;
+off18dy = V10y - E18y;
+
+off15bx = V1x - E15x;
+off15by = V1y - E15y;
+off16bx = V2x - E16x - 1;
+off16by = V2y - E16y;
+off17bx = V2x - E17x;
+off17by = V2y - E17y - 1;
+off18bx = V2x - E18x;
+off18by = V2y - E18y;
+
+E19x = E18x+N-1; // Eq8 - a_x
+E19y = E18y+M-1; // Eq8 - a_y
+E20x = E19x+N-1; // Eq8 - b_x
+E20y = E19y+M-1; // Eq8 - b_y
+
+off19dx = V11x - E19x;
+off19dy = V11y - E19y;
+off20dx = V11x - E20x;
+off20dy = V11y - E20y;
+
+off19bx = V1x - E19x;
+off19by = V1y - E19y;
+off20bx = V2x - E20x;
+off20by = V2y - E20y;
+
+E21x = E20x+N; // Eq9 - a_x
+E21y = E20y+M; // Eq9 - a_y
+E22x = E21x+N; // Eq10 - der(x)_x
+E22y = E21y+M; // Eq10 - der(x)_y
+
+off21dx = V12x - E21x;
+off21dy = V12y - E21y;
+off22dx = V12x - E22x;
+off22dy = V12y - E22y;
+
+off21bx = V1x - E21x;
+off21by = V1y - E21y;
+off22bx = V3x - E22x;
+off22by = V3y - E22y;
+
+matchSCC(
+V: {[1:1:V1x]x[1:1:V1y], [V1x+1:1:V2x]x[V1y+1:1:V2y], [V2x+1:1:V3x]x[V2y+1:1:V3y]
+, [V3x+1:1:V4x]x[V3y+1:1:V4y], [V4x+1:1:V5x]x[V4y+1:1:V5y], [V5x+1:1:V6x]x[V5y+1:1:V6y]
+, [V6x+1:1:V7x]x[V6y+1:1:V7y], [V7x+1:1:V8x]x[V7y+1:1:V8y], [V8x+1:1:V9x]x[V8y+1:1:V9y]
+, [V9x+1:1:V10x]x[V9y+1:1:V10y], [V10x+1:1:V11x]x[V10y:1:V11y], [V11x+1:1:V12x]x[V11y+1:1:V12y]}
+
+Vmap: <<{[1:1:V1x]x[1:1:V1y]} -> 0*x+1|0*x+1, {[V1x+1:1:V2x]x[V1y+1:1:V2y]} -> 0*x+2|0*x+2
+, {[V2x+1:1:V3x]x[V2y+1:1:V3y]} -> 0*x+3|0*x+3, {[V3x+1:1:V4x]x[V3y+1:1:V4y]} -> 0*x+4|0*x+4
+, {[V4x+1:1:V5x]x[V4y+1:1:V5y]} -> 0*x+5|0*x+5, {[V5x+1:1:V6x]x[V5y+1:1:V6y]} -> 0*x+6|0*x+6
+, {[V6x+1:1:V7x]x[V6y+1:1:V7y]} -> 0*x+7|0*x+7, {[V7x+1:1:V8x]x[V7y+1:1:V8y]} -> 0*x+8|0*x+8
+, {[V8x+1:1:V9x]x[V8y+1:1:V9y]} -> 0*x+9|0*x+9, {[V9x+1:1:V10x]x[V9y+1:1:V10y]} -> 0*x+10|0*x+10
+, {[V10x+1:1:V11x]x[V10y+1:1:V11y]} -> 0*x+11|0*x+11, {[V11x+1:1:V12x]x[V11y+1:1:V12y]} -> 0*x+12|0*x+12>>
+
+map1: <<{[1:1:E1x]x[1:1:E1y]} -> 1*x+off1bx|1*x+off1by, {[E1x+1:1:E2x]x[E1y+1:1:E2y]} -> 1*x+off2bx|1*x+off2by
+, {[E2x+1:1:E3x]x[E2y+1:1:E3y]} -> 1*x+off3bx|1*x+off3by, {[E3x+1:1:E4x]x[E3y+1:1:E4y]} -> 1*x+off4bx|1*x+off4by
+, {[E4x+1:1:E5x]x[E4y+1:1:E5y]} -> 1*x+off5bx|1*x+off5by, {[E5x+1:1:E6x]x[E5y+1:1:E6y]} -> 1*x+off6bx|1*x+off6by
+, {[E6x+1:1:E7x]x[E6y+1:1:E7y]} -> 1*x+off7bx|1*x+off7by, {[E7x+1:1:E8x]x[E7y+1:1:E8y]} -> 1*x+off8bx|1*x+off8by
+, {[E8x+1:1:E9x]x[E8y+1:1:E9y]} -> 1*x+off9bx|1*x+off9by, {[E9x+1:1:E10x]x[E9y+1:1:E10y]} -> 1*x+off10bx|1*x+off10by
+, {[E10x+1:1:E11x]x[E10y+1:1:E11y]} -> 1*x+off11bx|1*x+off11by, {[E11x+1:1:E12x]x[E11y+1:1:E12y]} -> 1*x+off12bx|1*x+off12by
+, {[E12x+1:1:E13x]x[E12y+1:1:E13y]} -> 1*x+off13bx|1*x+off13by, {[E13x+1:1:E14x]x[E13y+1:1:E14y]} -> 1*x+off14bx|1*x+off14by
+, {[E14x+1:1:E15x]x[E14y+1:1:E15y]} -> 1*x+off15bx|1*x+off15by, {[E15x+1:1:E16x]x[E15y+1:1:E16y]} -> 1*x+off16bx|1*x+off16by
+, {[E16x+1:1:E17x]x[E16y+1:1:E17y]} -> 1*x+off17bx|1*x+off17by, {[E17x+1:1:E18x]x[E17y+1:1:E18y]} -> 1*x+off18bx|1*x+off18by
+, {[E18x+1:1:E19x]x[E18y+1:1:E19y]} -> 1*x+off19bx|1*x+off19by, {[E19x+1:1:E20x]x[E19y+1:1:E20y]} -> 1*x+off20bx|1*x+off20by
+, {[E20x+1:1:E21x]x[E20y+1:1:E21y]} -> 1*x+off21bx|1*x+off21by, {[E21x+1:1:E22x]x[E21y+1:1:E22y]} -> 1*x+off22bx|1*x+off22by>>
+
+map2: <<{[1:1:E1x]x[1:1:E1y]} -> 1*x+off1dx|1*x+off1dy, {[E1x+1:1:E2x]x[E1y+1:1:E2y]} -> 1*x+off2dx|1*x+off2dy
+, {[E2x+1:1:E3x]x[E2y+1:1:E3y]} -> 1*x+off3dx|1*x+off3dy, {[E3x+1:1:E4x]x[E3y+1:1:E4y]} -> 1*x+off4dx|1*x+off4dy
+, {[E4x+1:1:E5x]x[E4y+1:1:E5y]} -> 1*x+off5dx|1*x+off5dy, {[E5x+1:1:E6x]x[E5y+1:1:E6y]} -> 1*x+off6dx|1*x+off6dy
+, {[E6x+1:1:E7x]x[E6y+1:1:E7y]} -> 1*x+off7dx|1*x+off7dy, {[E7x+1:1:E8x]x[E7y+1:1:E8y]} -> 1*x+off8dx|1*x+off8dy
+, {[E8x+1:1:E9x]x[E8y+1:1:E9y]} -> 1*x+off9dx|1*x+off9dy, {[E9x+1:1:E10x]x[E9y+1:1:E10y]} -> 1*x+off10dx|1*x+off10dy
+, {[E10x+1:1:E11x]x[E10y+1:1:E11y]} -> 1*x+off11dx|1*x+off11dy, {[E11x+1:1:E12x]x[E11y+1:1:E12y]} -> 1*x+off12dx|1*x+off12dy
+, {[E12x+1:1:E13x]x[E12y+1:1:E13y]} -> 1*x+off13dx|1*x+off13dy, {[E13x+1:1:E14x]x[E13y+1:1:E14y]} -> 1*x+off14dx|1*x+off14dy
+, {[E14x+1:1:E15x]x[E14y+1:1:E15y]} -> 1*x+off15dx|1*x+off15dy, {[E15x+1:1:E16x]x[E15y+1:1:E16y]} -> 1*x+off16dx|1*x+off16dy
+, {[E16x+1:1:E17x]x[E16y+1:1:E17y]} -> 1*x+off17dx|1*x+off17dy, {[E17x+1:1:E18x]x[E17y+1:1:E18y]} -> 1*x+off18dx|1*x+off18dy
+, {[E18x+1:1:E19x]x[E18y+1:1:E19y]} -> 1*x+off19dx|1*x+off19dy, {[E19x+1:1:E20x]x[E19y+1:1:E20y]} -> 1*x+off20dx|1*x+off20dy
+, {[E20x+1:1:E21x]x[E20y+1:1:E21y]} -> 1*x+off21dx|1*x+off21dy, {[E21x+1:1:E22x]x[E21y+1:1:E22y]} -> 1*x+off22dx|1*x+off22dy>>
+
+Emap: <<{[1:1:E1x]x[1:1:E1y]} -> 0*x+1|0*x+1, {[E1x+1:1:E2x]x[E1y+1:1:E2y]} -> 0*x+2|0*x+2
+, {[E2x+1:1:E3x]x[E2y+1:1:E3y]} -> 0*x+3|0*x+3, {[E3x+1:1:E4x]x[E3y+1:1:E4y]} -> 0*x+4|0*x+4
+, {[E4x+1:1:E5x]x[E4y+1:1:E5y]} -> 0*x+5|0*x+5, {[E5x+1:1:E6x]x[E5y+1:1:E6y]} -> 0*x+6|0*x+6
+, {[E6x+1:1:E7x]x[E6y+1:1:E7y]} -> 0*x+6|0*x+6, {[E7x+1:1:E8x]x[E7y+1:1:E8y]} -> 0*x+7|0*x+7
+, {[E8x+1:1:E9x]x[E8y+1:1:E9y]} -> 0*x+8|0*x+8, {[E9x+1:1:E10x]x[E9y+1:1:E10y]} -> 0*x+9|0*x+9
+, {[E10x+1:1:E11x]x[E10y+1:1:E11y]} -> 0*x+10|0*x+10, {[E11x+1:1:E12x]x[E11y+1:1:E12y]} -> 0*x+10|0*x+10
+, {[E12x+1:1:E13x]x[E12y+1:1:E13y]} -> 0*x+11|0*x+11, {[E13x+1:1:E14x]x[E13y+1:1:E14y]} -> 0*x+12|0*x+12
+, {[E14x+1:1:E15x]x[E14y+1:1:E15y]} -> 0*x+13|0*x+13, {[E15x+1:1:E16x]x[E15y+1:1:E16y]} -> 0*x+14|0*x+14
+, {[E16x+1:1:E17x]x[E16y+1:1:E17y]} -> 0*x+14|0*x+14, {[E17x+1:1:E18x]x[E17y+1:1:E18y]} -> 0*x+14|0*x+14
+, {[E18x+1:1:E19x]x[E18y+1:1:E19y]} -> 0*x+15|0*x+15, {[E19x+1:1:E20x]x[E19y+1:1:E20y]} -> 0*x+16|0*x+16
+, {[E20x+1:1:E21x]x[E20y+1:1:E21y]} -> 0*x+17|0*x+17, {[E21x+1:1:E22x]x[E21y+1:1:E22y]} -> 0*x+18|0*x+18>>
+, 1);

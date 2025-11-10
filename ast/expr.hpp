@@ -35,8 +35,8 @@ namespace AST {
 
 // Arithmetic and call structures ----------------------------------------------
 
-typedef std::string Name;
-typedef LIB::NAT Natural;
+using Name = std::string;
+using Natural = LIB::NAT;
 struct Rational;
 struct UnaryOp;
 struct BinOp;
@@ -52,7 +52,7 @@ struct SBG;
 struct DSBG;
 struct ParenExpr;
 
-typedef boost::variant<Natural, Name,
+using Expr = boost::variant<Natural, Name,
   boost::recursive_wrapper<Rational>,
   boost::recursive_wrapper<UnaryOp>, 
   boost::recursive_wrapper<BinOp>, 
@@ -66,8 +66,8 @@ typedef boost::variant<Natural, Name,
   boost::recursive_wrapper<PWLMap>,
   boost::recursive_wrapper<SBG>,
   boost::recursive_wrapper<DSBG>,
-  boost::recursive_wrapper<ParenExpr>> Expr;
-typedef std::vector<Expr> ExprList;
+  boost::recursive_wrapper<ParenExpr>>;
+using ExprList = std::vector<Expr>;
 std::ostream &operator<<(std::ostream &out, const ExprList &el);
 
 template <typename T>

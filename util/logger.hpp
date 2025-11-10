@@ -34,7 +34,17 @@ namespace SBG {
 
 namespace Util {
 
-#define SBG_LOG SBGLogger::instance().log
+enum class LogLevel { Info = 0, Debug = 1, Warning = 2 };
+
+class NullBuffer : public std::streambuf {
+  int overflow(int c) override { return c; }
+};
+
+static NullBuffer null_buffer;
+static std::ostream null_stream(&null_buffer);
+
+#define SBG_LOG SBGLogger::instance().log(::SBG::Util::LogLevel::Info)
+#define DEBUG_LOG SBGLogger::instance().log(::SBG::Util::LogLevel::Debug)
 
 class SBGLogger {
   public:
@@ -46,10 +56,13 @@ class SBGLogger {
 
   ~SBGLogger();
 
-  std::ofstream log;
+  void setLevel(LogLevel lvl);
+  std::ostream& log(LogLevel msgLevel);
 
   private:
   SBGLogger();
+  std::ofstream file_;
+  LogLevel level_{LogLevel::Info};
 };
 
 } // namespace Util

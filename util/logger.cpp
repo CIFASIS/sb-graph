@@ -25,9 +25,16 @@ namespace SBG {
 
 namespace Util {
 
-SBGLogger::SBGLogger() { log.open("SBG.log", std::ofstream::out); }
+SBGLogger::SBGLogger() { file_.open("SBG.log", std::ofstream::out); }
 
-SBGLogger::~SBGLogger() { log.close(); }
+SBGLogger::~SBGLogger() { file_.close(); }
+
+void SBGLogger::setLevel(LogLevel lvl) { level_ = lvl; }
+
+std::ostream& SBGLogger::log(LogLevel msg_lvl)
+{
+  return (msg_lvl <= level_) ? file_ : null_stream;
+}
 
 } // namespace Util
 

@@ -30,7 +30,9 @@
 #include <variant>
 
 #include "ast/expr.hpp"
-#include "algorithms/matching/matching.hpp"
+#include "ast/statement.hpp"
+#include "sbg/pwmap_fact.hpp"
+#include "sbg/sbg_algorithms.hpp"
 
 namespace SBG {
 
@@ -38,9 +40,7 @@ namespace Eval {
 
 // Type definitions ------------------------------------------------------------
 
-typedef std::variant<bool
-  , LIB::NAT
-  , LIB::MD_NAT
+typedef std::variant<LIB::MD_NAT
   , LIB::RATIONAL
   , LIB::Interval
   , LIB::SetPiece
@@ -55,7 +55,7 @@ typedef std::optional<ExprBaseType> MaybeEBT;
 
 // Environments ----------------------------------------------------------------
 
-typedef AST::Name VKey;
+typedef AST::VariableName VKey;
 typedef ExprBaseType VValue;
 typedef std::optional<VValue> MaybeVValue;
 typedef std::map<VKey, VValue> VarEnvType;
@@ -104,10 +104,6 @@ typedef enum { empty, min, max, comp, inv, im, preim, dom, comb
 template<typename T, typename... Ts>
 std::ostream &operator<<(std::ostream &out, const std::variant<T, Ts...> &v);
 
-typedef std::tuple<AST::Name, ExprBaseType> StmEval;
-std::ostream &operator<<(std::ostream &out, const StmEval &e);
-typedef std::vector<StmEval> StmEvalList;
-std::ostream &operator<<(std::ostream &out, const StmEvalList &e);
 typedef std::tuple<AST::Expr, ExprBaseType> ExprEval;
 std::ostream &operator<<(std::ostream &out, const ExprEval &e);
 typedef std::vector<ExprEval> ExprEvalList; 
@@ -121,11 +117,11 @@ std::ostream &operator<<(std::ostream &out, const ExprEvalList &ee);
  */
 struct ProgramIO {
   member_class(unsigned int, nmbr_dims);
-  member_class(StmEvalList, stms);
-  member_class(ExprEvalList, exprs);
+  member_class(AST::StatementList, stms);
+  ExprEvalList exprs_;
  
-  ProgramIO(StmEvalList stms, ExprEvalList exprs);
-  ProgramIO(unsigned int nmbr_dims, StmEvalList stms, ExprEvalList exprs);
+  ProgramIO(AST::StatementList stms, ExprEvalList exprs);
+  ProgramIO(unsigned int nmbr_dims, AST::StatementList stms, ExprEvalList exprs);
 };
 std::ostream &operator<<(std::ostream &out, const ProgramIO &p);
 

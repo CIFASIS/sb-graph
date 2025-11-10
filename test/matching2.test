@@ -2,7 +2,7 @@
 at the middle of the first one, 
 originated from the following model:
 
-model matching1
+model matching2
   constant Integer N = 100000;
   Real a[N];
 equation
@@ -10,7 +10,7 @@ equation
   for i in 2:N loop
     a[i-1] + a[i] = 0;
   end for;
-end matching1;
+end matching2;
 */
 
 N = 100000;

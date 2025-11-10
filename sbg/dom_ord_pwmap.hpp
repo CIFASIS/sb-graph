@@ -2,7 +2,9 @@
 
  @brief <b>Domain Ordered PWMap Implementation</b>
 
- Domain ordered and map ordered piecewise map implementation.
+ Domain ordered and map ordered piecewise map implementation. The evaluator will
+ be in charge of checking that the choosen set implementation is ordered when
+ this structure is used.
 
  <hr>
 

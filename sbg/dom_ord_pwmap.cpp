@@ -29,7 +29,9 @@ namespace LIB {
 // Domain Ordered PWMap Implementation -----------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-// Auxiliary functions - Ordered Piecewise maps --------------------------------
+// Auxiliary functions - Domain Ordered Piecewise maps -------------------------
+
+namespace {
 
 DomOrdPWMap::SetPerimeter calculatePerimeter(const Set &s)
 {
@@ -121,7 +123,9 @@ void advanceHint(DomOrdPWMap::OrdMapCollection &ord_pw, const MD_NAT crit
   }  
 }
 
-// Member functions - Ordered Piecewise maps -----------------------------------
+}
+
+// Member functions - Domain Ordered Piecewise maps ----------------------------
 
 member_imp(DomOrdPWMap, DomOrdPWMap::OrdMapCollection, pieces);
 

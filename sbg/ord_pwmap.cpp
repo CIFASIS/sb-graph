@@ -31,6 +31,8 @@ namespace LIB {
 
 // Auxiliary functions - Ordered Piecewise maps --------------------------------
 
+namespace {
+
 OrdPWMap::SetPerimeter calculatePerimeter(const Set &s)
 {
   MD_NAT max_per(s.arity(), 0);
@@ -119,6 +121,8 @@ void advanceHint(OrdPWMap::OrdMapCollection &ord_pw, const MD_NAT crit
     else
       break;
   }  
+}
+
 }
 
 // Member functions - Ordered Piecewise maps -----------------------------------

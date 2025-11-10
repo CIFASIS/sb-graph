@@ -70,6 +70,10 @@ int SetImplExprVisitor::operator()(AST::Interval v) const
 int SetImplExprVisitor::operator()(AST::MultiDimInter v) const
 {
   int impl = 2;
+
+  if (v.intervals().size() > 1)
+    return 1;
+
   for (const AST::Expr &e : v.intervals())
     impl = std::min(impl, boost::apply_visitor(*this, e));
 

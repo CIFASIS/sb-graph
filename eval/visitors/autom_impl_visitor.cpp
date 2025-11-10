@@ -33,7 +33,7 @@ namespace Eval {
 
 AutomImplVisitor::AutomImplVisitor() {}
 
-void AutomImplVisitor::visit(AST::SBGProgram p) const
+EvalUserInput AutomImplVisitor::visit(AST::SBGProgram p) const
 { 
   // Statement inspection ------------------------------------------------------ 
 
@@ -55,17 +55,23 @@ void AutomImplVisitor::visit(AST::SBGProgram p) const
   // Set Implementation --------------------------------------------------------
 
   int auto_set_impl = 2;
-  if (dims < 2) {
-    SetImplExprVisitor set_impl_visit(stm_eval.eval_ctx().venv());
-    for (AST::Expr expr : p.exprs()) {
-      int ith_set_impl = boost::apply_visitor(set_impl_visit, expr);
-      auto_set_impl = std::min(auto_set_impl, ith_set_impl);
-    }
+  SetImplExprVisitor set_impl_visit(stm_eval.eval_ctx().venv());
+  for (AST::Expr expr : p.exprs()) {
+    int ith_set_impl = boost::apply_visitor(set_impl_visit, expr);
+    auto_set_impl = std::min(auto_set_impl, ith_set_impl);
   }
 
-  setSetFactory(auto_set_impl);
+  EvalUserInput result;
+  result.set_set_impl(auto_set_impl);
 
-  return;
+  // PW Implementation ---------------------------------------------------------
+
+  result.set_pw_impl(1);
+  if (auto_set_impl > 0) {
+    result.set_pw_impl(2);
+  }
+
+  return result;
 }
 
 } // namespace Eval

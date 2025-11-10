@@ -64,7 +64,7 @@ void printHeader(Util::prog_opts::variables_map vm)
 // Evaluation Executor ---------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-EvalExecutor::EvalExecutor() : set_impl_(0)
+EvalExecutor::EvalExecutor() : scc_impl_(1)
 {
   config_.add_options()
     ("set_impl,s", Util::prog_opts::value(&set_impl_),
@@ -72,6 +72,11 @@ EvalExecutor::EvalExecutor() : set_impl_(0)
      "\n  - 0 for unordered sets (default option)"
      "\n  - 1 for ordered sets"
      "\n  - 2 for unidimensional ordered dense sets")
+    ("pw_impl,p", Util::prog_opts::value(&pw_impl_),
+     " Desired PWMap implementation:"
+     "\n  - 0 for unordered PWMaps (default option)"
+     "\n  - 1 for ordered PWMaps"
+     "\n  - 2 for domain ordered PWMaps")
     ("scc_impl", Util::prog_opts::value(&scc_impl_),
      "Desired SCC algorithm implementation:"
      "\n  - 0 for V1 of minimum reachable SCC (default option)"
@@ -82,11 +87,32 @@ EvalExecutor::EvalExecutor() : set_impl_(0)
   visible_.add(generic_).add(config_);
 }
 
-EvalUserInput EvalExecutor::gatherUserInput()
+EvalUserInput EvalExecutor::chooseImplementation()
 {
   EvalUserInput result;
 
-  result.set_set_impl(set_impl_);
+  AutomImplVisitor autom_impl_visitor;
+  std::streambuf* old_cout_buffer = std::cout.rdbuf();
+  std::cout.rdbuf(nullptr);
+  EvalUserInput autom_impl = autom_impl_visitor.visit(Parser::parseFile(
+    *input_file_));
+  std::cout.rdbuf(old_cout_buffer);
+
+  result.set_set_impl(autom_impl.set_impl());
+  result.set_pw_impl(autom_impl.pw_impl());
+
+  if (set_impl_) {
+    if (set_impl_ > autom_impl.set_impl())
+      Util::ERROR("Incompatible set implementation for the SBG input\n");
+
+    result.set_set_impl(set_impl_);
+  }
+  if (pw_impl_) {
+    if (pw_impl_ > autom_impl.pw_impl())
+      Util::ERROR("Incompatible PW implementation for the SBG input\n");
+
+    result.set_pw_impl(pw_impl_);
+  }
   result.set_scc_impl(scc_impl_);
 
   return result;
@@ -131,13 +157,7 @@ void EvalExecutor::execute(int arg_count, char* args[])
   // Input SBG program file handling -------------------------------------------
 
   if (input_file_) {
-    AutomImplVisitor autom_impl;
-    std::streambuf* old_cout_buffer = std::cout.rdbuf();
-    std::cout.rdbuf(nullptr);
-    autom_impl.visit(Parser::parseFile(*input_file_));
-    std::cout.rdbuf(old_cout_buffer);
-
-    EvalUserInput input = gatherUserInput();
+    EvalUserInput input = chooseImplementation();
     InputTranslator input_translator;
     input_translator.translate(input);
     ProgramIO eval_result = parseEvalFile(*input_file_); 

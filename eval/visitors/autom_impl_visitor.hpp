@@ -31,6 +31,7 @@
 #include <boost/variant.hpp>
 
 #include "ast/sbg_program.hpp"
+#include "eval/user_input.hpp"
 
 namespace SBG {
 
@@ -40,7 +41,7 @@ class AutomImplVisitor {
   public:
   AutomImplVisitor();
 
-  void visit(AST::SBGProgram p) const;
+  EvalUserInput visit(AST::SBGProgram p) const;
 };
 
 } // namespace Eval

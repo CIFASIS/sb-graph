@@ -262,8 +262,8 @@ SetStratPtr UnorderedSet::complementAtom() const
     dense_mdi.emplaceBack(Interval(i.begin(), 1, i.end()));
   SetPiece during_mdi = dense_mdi;
 
-  Interval univ(0, 1, Inf);
-  SetPiece all(mdi.arity(), univ);
+  Interval univ_one_dim(0, 1, Inf);
+  SetPiece univ(mdi.arity(), univ_one_dim);
 
   unsigned int dim = 0;
   for (const Interval &i : mdi) {
@@ -273,9 +273,9 @@ SetStratPtr UnorderedSet::complementAtom() const
     if (i.begin() != 0) {
       Interval i_res(0, 1, i.begin() - 1);
       if (!i_res.isEmpty()) {
-        all[dim] = i_res;
-        c.push_back(all);
-        all[dim] = univ;
+        univ[dim] = i_res;
+        c.push_back(univ);
+        univ[dim] = univ_one_dim;
       }
     }
 
@@ -296,12 +296,12 @@ SetStratPtr UnorderedSet::complementAtom() const
     if (i.end() < Inf) {
       Interval i_res(i.end() + 1, 1, Inf);
       if (!i_res.isEmpty()) {
-        all[dim] = i_res;
-        c.push_back(all);
-        all[dim] = univ;
+        univ[dim] = i_res;
+        c.push_back(univ);
+        univ[dim] = univ_one_dim;
       }
     }
-    all[dim] = dense_mdi[dim];
+    univ[dim] = dense_mdi[dim];
     during_mdi[dim] = i;
 
     // Insert results of current dim

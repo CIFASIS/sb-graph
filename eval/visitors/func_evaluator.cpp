@@ -382,6 +382,22 @@ ExprBaseType BuiltInFunctions::maxEvaluator(const EBTList& args)
   };
   return std::visit(max_evaluator, args[0]);
 }
+
+ExprBaseType BuiltInFunctions::restrictEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 2
+    , "restrictEvaluator: wrong number of arguments\n");
+
+  const auto restrict_evaluator = Overload {
+    [](LIB::PWMap a, LIB::Set b) { return ExprBaseType(a.restrict(b)); },
+    [](auto a, auto b) {
+      Util::ERROR("restrictEvaluator: wrong arguments ", a, ", ", b
+        , " for restrict\n"); 
+      return ExprBaseType(); 
+     }
+  };
+  return std::visit(restrict_evaluator, args[0], args[1]);
+}
  
 ExprBaseType BuiltInFunctions::composeEvaluator(const EBTList& args)
 {

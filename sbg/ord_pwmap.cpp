@@ -315,11 +315,11 @@ PWMapStratPtr OrdPWMap::operator-(const PWMapStrategy &other) const
   if (isEmpty() || other.isEmpty())
     return std::make_unique<OrdPWMap>( res);
 
-  Interval all(0, 1, Inf);
-  Set set_in = SET_FACT.createSet(SetPiece(arity(), all));
-  Set set_out = SET_FACT.createSet(SetPiece(arity(), all));
-  processMapsOrd(other,set_in, set_out, res, &OrdPWMap::processMinus, true);
-  std::sort(res.begin(),res.end(), mapEntryComp);
+  Interval univ_one_dim(0, 1, Inf);
+  Set set_in = SET_FACT.createSet(SetPiece(arity(), univ_one_dim));
+  Set set_out = SET_FACT.createSet(SetPiece(arity(), univ_one_dim));
+  processMapsOrd(other, set_in, set_out, res, &OrdPWMap::processMinus, true);
+  std::sort(res.begin(), res.end(), mapEntryComp);
   return std::make_unique<OrdPWMap>(res);
 }
 
@@ -368,7 +368,7 @@ void OrdPWMap::processMinus(const Map &m1, const Map &m2,
         end_neg = 0;
       }
     }
-    // Decresing expression
+    // Decreasing expression
     else { 
       RATIONAL cross = -h/m;
       if (cross > 0 || cross == 0) {
@@ -409,9 +409,9 @@ void OrdPWMap::processMinus(const Map &m1, const Map &m2,
 
     ith = std::move(jth);
   }
-   
 
-  PWMapStratPtr new_ith_ptr =ith.restrict(dom); 
+  std::sort(ith.pieces_.begin(), ith.pieces_.end(), mapEntryComp);
+  PWMapStratPtr new_ith_ptr = ith.restrict(dom); 
   OrdPWMapCRef new_ith = static_cast<OrdPWMapCRef>(*new_ith_ptr);
   for (const MapEntry &e : new_ith.pieces_)
     pushBack(ord_pwmap, e);
@@ -467,7 +467,7 @@ PWMapStratPtr OrdPWMap::restrict(const Set &subdom) const
   
   if (subdom.isEmpty())
     return std::make_unique<OrdPWMap>(res);
-    
+
   NAT global_pos = 0;
   
   SetPerimeter s_sp = calculatePerimeter(subdom);
@@ -489,9 +489,8 @@ PWMapStratPtr OrdPWMap::restrict(const Set &subdom) const
     
     if (s_max_per < m_min_per)
       break;
-
-
   }
+
   return std::make_unique<OrdPWMap>(res);
 }
 
@@ -831,8 +830,6 @@ PWMapStratPtr OrdPWMap::minMap(const PWMapStrategy &other) const
 
   return aux1->restrict(min_in_pw1)->combine(*aux2);
 }
-
-
 
 PWMapStratPtr OrdPWMap::minAdjMap(const PWMapStrategy &other) const
 {

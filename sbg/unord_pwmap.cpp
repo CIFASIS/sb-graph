@@ -214,7 +214,7 @@ PWMapStratPtr UnordPWMap::operator-(const PWMapStrategy &other) const
               end_neg = 0;
             }
           }
-          // Decresing expression
+          // Decreasing expression
           else { 
             RATIONAL cross = -h/m;
             if (cross > 0 || cross == 0) {
@@ -258,7 +258,7 @@ PWMapStratPtr UnordPWMap::operator-(const PWMapStrategy &other) const
         PWMapStratPtr new_ith_ptr = ith.restrict(dom); 
         UnordPWMapCRef new_ith = static_cast<UnordPWMapCRef>(*new_ith_ptr);
         for (const Map &map : new_ith.pieces_)
-          pushBack(res,map);
+          pushBack(res, map);
       }
     }
   }
@@ -547,7 +547,6 @@ PWMapStratPtr UnordPWMap::reduce() const
 
 PWMapStratPtr UnordPWMap::minMap(const PWMapStrategy &other) const
 {
-  
   if (isEmpty() || other.isEmpty())
     return std::make_unique<UnordPWMap>();
 

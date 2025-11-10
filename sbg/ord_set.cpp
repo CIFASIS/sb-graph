@@ -376,8 +376,8 @@ SetStratPtr OrderedSet::complementAtom() const
 
   SetPiece during_mdi = dense_mdi;
 
-  const Interval univ(0, 1, Inf);
-  SetPiece all(mdi.arity(), univ);
+  const Interval univ_one_dim(0, 1, Inf);
+  SetPiece univ(mdi.arity(), univ_one_dim);
 
   unsigned int dim = 0;
   int global_pos = 0;
@@ -388,11 +388,11 @@ SetStratPtr OrderedSet::complementAtom() const
     if (i.begin() != 0) {
       Interval i_res(0, 1, i.begin() - 1);
       if (!i_res.isEmpty()) {
-        all[dim] = i_res;
-        res.insert(res.begin() + local_pos, all);
+        univ[dim] = i_res;
+        res.insert(res.begin() + local_pos, univ);
         ++local_pos;
         ++global_pos;
-        all[dim] = univ;
+        univ[dim] = univ_one_dim;
       }
     }
 
@@ -410,14 +410,14 @@ SetStratPtr OrderedSet::complementAtom() const
     if (i.end() < Inf) {
       Interval i_res(i.end() + 1, 1, Inf);
       if (!i_res.isEmpty()) {
-        all[dim] = i_res;
-        res.insert(res.begin() + local_pos, all);
+        univ[dim] = i_res;
+        res.insert(res.begin() + local_pos, univ);
         ++local_pos;
-        all[dim] = univ;
+        univ[dim] = univ_one_dim;
       }
     }
 
-    all[dim] = dense_mdi[dim];
+    univ[dim] = dense_mdi[dim];
     during_mdi[dim] = i;
     ++dim;
   }

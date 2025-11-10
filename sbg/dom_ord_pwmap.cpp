@@ -410,7 +410,7 @@ void DomOrdPWMap::processMinus(const Map &m1, const Map &m2,
     ith = std::move(jth);
   }
    
-
+  std::sort(ith.pieces_.begin(), ith.pieces_.end(), mapEntryComp);
   PWMapStratPtr new_ith_ptr =ith.restrict(dom); 
   DomOrdPWMapCRef new_ith = static_cast<DomOrdPWMapCRef>(*new_ith_ptr);
   for (const MapEntry &e : new_ith.pieces_)

@@ -19,111 +19,24 @@
 
 #include <forward_list>
 
+#include "sbg/map_entry.hpp"
 #include "sbg/ord_pwmap.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
+using Internal::calculatePerimeter;
+using Internal::doInt;
+using Internal::createMapEntry;
+using Internal::operator<;
+using Internal::pushBack;
+using Internal::emplaceHint;
+using Internal::advanceHint;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Ordered PWMap Implementation ------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
-
-// Auxiliary functions - Ordered Piecewise maps --------------------------------
-
-namespace {
-
-OrdPWMap::SetPerimeter calculatePerimeter(const Set &s)
-{
-  MD_NAT max_per(s.arity(), 0);
-  MD_NAT min_per(s.arity(), Inf); 
-  
-  for (const SetPiece &mdi : s) {
-    MD_NAT candidate_max = mdi.maxElem();
-    MD_NAT candidate_min = mdi.minElem();
-    
-    for (std::size_t i = 0; i < max_per.arity(); ++i) {
-      max_per[i] = std::max(max_per[i], candidate_max[i]);
-      min_per[i] = std::min(min_per[i], candidate_min[i]);
-    }
-  }
-  
-  return {min_per, max_per};
-}
-
-bool doInt(const OrdPWMap::SetPerimeter &p1, const OrdPWMap::SetPerimeter &p2)
-{
-  const auto max_per_p1 = p1.second;
-  const auto min_per_p1 = p1.first;
-  const auto max_per_p2 = p2.second;
-  const auto min_per_p2 = p2.first;
-  const unsigned int arity = max_per_p1.arity();
-
-  for (unsigned int j = 0; j < arity; ++j) {
-    if (max_per_p1[j] < min_per_p2[j] || max_per_p2[j] < min_per_p1[j]) {
-      return false;  // No intersection
-    }
-  }
-  
-  return true;  // Intersection detected
-}
-
-
-OrdPWMap::MapEntry createMapEntry(const Map &m)
-{
-  OrdPWMap::SetPerimeter sp = calculatePerimeter(m.dom());
-  return {m, sp}; 
-}
-
-
-bool mapEntryComp(const OrdPWMap::MapEntry &mpe1
-  , const OrdPWMap::MapEntry &mpe2) 
-{
-  return mpe1.second.first < mpe2.second.first;
-}
-
-void pushBack(OrdPWMap::OrdMapCollection &ord_pw, const OrdPWMap::MapEntry &m)
-{
-  ord_pw.emplace_back(m);
-}
-
-void pushBack(OrdPWMap::OrdMapCollection &ord_pw, const Map &m)
-{
-  ord_pw.emplace_back(createMapEntry(m));
-}
-
-void emplaceHint(OrdPWMap::OrdMapCollection &ord_pw, const Map &m, NAT hint)
-{
-  auto end = ord_pw.end();
-  auto it = ord_pw.begin();
-  std::advance(it, hint);
-  OrdPWMap::MapEntry mpe = createMapEntry(m);
-  while (it != end) {
-    if (it->second.first < mpe.second.first)
-      ++it;
-    else 
-      break;
-  }
-  ord_pw.insert(it, mpe);
-}
-
-void advanceHint(OrdPWMap::OrdMapCollection &ord_pw, const MD_NAT crit
-  , NAT &hint)
-{
-  auto end = ord_pw.end();
-  auto it = ord_pw.begin();
-  std::advance(it,hint);
-  while (it != end){
-    if (it->second.first < crit){
-      ++it;
-      ++hint;
-    }
-    else
-      break;
-  }  
-}
-
-}
 
 // Member functions - Ordered Piecewise maps -----------------------------------
 
@@ -319,7 +232,7 @@ PWMapStratPtr OrdPWMap::operator-(const PWMapStrategy &other) const
   Set set_in = SET_FACT.createSet(SetPiece(arity(), univ_one_dim));
   Set set_out = SET_FACT.createSet(SetPiece(arity(), univ_one_dim));
   processMapsOrd(other, set_in, set_out, res, &OrdPWMap::processMinus, true);
-  std::sort(res.begin(), res.end(), mapEntryComp);
+  std::sort(res.begin(), res.end(), operator<);
   return std::make_unique<OrdPWMap>(res);
 }
 
@@ -410,7 +323,7 @@ void OrdPWMap::processMinus(const Map &m1, const Map &m2,
     ith = std::move(jth);
   }
 
-  std::sort(ith.pieces_.begin(), ith.pieces_.end(), mapEntryComp);
+  std::sort(ith.pieces_.begin(), ith.pieces_.end(), operator<);
   PWMapStratPtr new_ith_ptr = ith.restrict(dom); 
   OrdPWMapCRef new_ith = static_cast<OrdPWMapCRef>(*new_ith_ptr);
   for (const MapEntry &e : new_ith.pieces_)
@@ -529,7 +442,7 @@ PWMapStratPtr OrdPWMap::inverse() const
       pushBack(res, inv);  
   }
   
-  std::sort(res.begin(),res.end(), mapEntryComp);
+  std::sort(res.begin(),res.end(), operator<);
 
   return std::make_unique<OrdPWMap>(res);
 }
@@ -617,7 +530,6 @@ Set OrdPWMap::fixedPoints() const
 }
 
 // Extra operations ------------------------------------------------------------
-
 
 PWMapStratPtr OrdPWMap::concatenation(const PWMapStrategy &other) const
 {
@@ -803,7 +715,7 @@ PWMapStratPtr OrdPWMap::reduce() const
       pushBack(res, mpe_ith_elem);
   } 
 
-  std::sort(res.begin(), res.end(), mapEntryComp);
+  std::sort(res.begin(), res.end(), operator<);
   
   return std::make_unique<OrdPWMap>(res);
 }
@@ -837,7 +749,7 @@ PWMapStratPtr OrdPWMap::minAdjMap(const PWMapStrategy &other) const
   Set set_out = SET_FACT.createSet();
   OrdMapCollection res;
   processMapsOrd(other, set_in, set_out, res, &OrdPWMap::processMinAdjMap, true);
-  std::sort(res.begin(), res.end(), mapEntryComp); 
+  std::sort(res.begin(), res.end(), operator<); 
   return std::make_unique<OrdPWMap>(res);
 }
 
@@ -866,7 +778,8 @@ void OrdPWMap::processMinAdjMap(const Map &m1, const Map &m2,
       Set again = dom_res.intersection(set_in);
       if (!again.isEmpty()) {
         OrdPWMap ord_pwmap_aux(ord_pwmap);
-        std::sort(ord_pwmap_aux.pieces_.begin(), ord_pwmap_aux.pieces_.end(), mapEntryComp);
+        std::sort(ord_pwmap_aux.pieces_.begin(), ord_pwmap_aux.pieces_.end()
+          , operator<);
         PWMapStratPtr aux_res = ord_pwmap_aux.restrict(dom_res);
         PWMapStratPtr min_map = aux_res->minMap(ith_pw);
         PWMapStratPtr new_resPtr = min_map->combine(ith_pw)->combine(ord_pwmap_aux);
@@ -924,7 +837,7 @@ PWMapStratPtr OrdPWMap::firstInv(const Set &subdom) const
     if (s_max_per < t_min_per) break;
   }
 
-  std::sort(res.begin(), res.end(), mapEntryComp);
+  std::sort(res.begin(), res.end(), operator<);
 
   return std::make_unique<OrdPWMap>(res);
 }
@@ -1074,7 +987,7 @@ PWMapStratPtr OrdPWMap::offsetDom(const PWMapStrategy &off) const
       break;
   }
 
-  std::sort(res.begin(),res.end(), mapEntryComp);
+  std::sort(res.begin(),res.end(), operator<);
   
   return std::make_unique<OrdPWMap>(res);
 

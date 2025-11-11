@@ -19,111 +19,24 @@
 
 #include <forward_list>
 
+#include "sbg/map_entry.hpp"
 #include "sbg/dom_ord_pwmap.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
+using Internal::calculatePerimeter;
+using Internal::doInt;
+using Internal::createMapEntry;
+using Internal::operator<;
+using Internal::pushBack;
+using Internal::emplaceHint;
+using Internal::advanceHint;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Domain Ordered PWMap Implementation -----------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
-
-// Auxiliary functions - Domain Ordered Piecewise maps -------------------------
-
-namespace {
-
-DomOrdPWMap::SetPerimeter calculatePerimeter(const Set &s)
-{
-  MD_NAT max_per(s.arity(), 0);
-  MD_NAT min_per(s.arity(), Inf); 
-  
-  for (const SetPiece &mdi : s) {
-    MD_NAT candidate_max = mdi.maxElem();
-    MD_NAT candidate_min = mdi.minElem();
-    
-    for (std::size_t i = 0; i < max_per.arity(); ++i) {
-      max_per[i] = std::max(max_per[i], candidate_max[i]);
-      min_per[i] = std::min(min_per[i], candidate_min[i]);
-    }
-  }
-  
-  return {min_per, max_per};
-}
-
-bool doInt(const DomOrdPWMap::SetPerimeter &p1, const DomOrdPWMap::SetPerimeter &p2)
-{
-  const auto max_per_p1 = p1.second;
-  const auto min_per_p1 = p1.first;
-  const auto max_per_p2 = p2.second;
-  const auto min_per_p2 = p2.first;
-  const unsigned int arity = max_per_p1.arity();
-
-  for (unsigned int j = 0; j < arity; ++j) {
-    if (max_per_p1[j] < min_per_p2[j] || max_per_p2[j] < min_per_p1[j]) {
-      return false;  // No intersection
-    }
-  }
-  
-  return true;  // Intersection detected
-}
-
-
-DomOrdPWMap::MapEntry createMapEntry(const Map &m)
-{
-  DomOrdPWMap::SetPerimeter sp = calculatePerimeter(m.dom());
-  return {m, sp}; 
-}
-
-
-bool mapEntryComp(const DomOrdPWMap::MapEntry &mpe1
-  , const DomOrdPWMap::MapEntry &mpe2) 
-{
-  return mpe1.second.first < mpe2.second.first;
-}
-
-void pushBack(DomOrdPWMap::OrdMapCollection &ord_pw, const DomOrdPWMap::MapEntry &m)
-{
-  ord_pw.emplace_back(m);
-}
-
-void pushBack(DomOrdPWMap::OrdMapCollection &ord_pw, const Map &m)
-{
-  ord_pw.emplace_back(createMapEntry(m));
-}
-
-void emplaceHint(DomOrdPWMap::OrdMapCollection &ord_pw, const Map &m, NAT hint)
-{
-  auto end = ord_pw.end();
-  auto it = ord_pw.begin();
-  std::advance(it, hint);
-  DomOrdPWMap::MapEntry mpe = createMapEntry(m);
-  while (it != end) {
-    if (it->second.first < mpe.second.first)
-      ++it;
-    else 
-      break;
-  }
-  ord_pw.insert(it, mpe);
-}
-
-void advanceHint(DomOrdPWMap::OrdMapCollection &ord_pw, const MD_NAT crit
-  , NAT &hint)
-{
-  auto end = ord_pw.end();
-  auto it = ord_pw.begin();
-  std::advance(it,hint);
-  while (it != end){
-    if (it->second.first < crit){
-      ++it;
-      ++hint;
-    }
-    else
-      break;
-  }  
-}
-
-}
 
 // Member functions - Domain Ordered Piecewise maps ----------------------------
 
@@ -319,7 +232,7 @@ PWMapStratPtr DomOrdPWMap::operator-(const PWMapStrategy &other) const
   Set set_in = SET_FACT.createSet(SetPiece(arity(), all));
   Set set_out = SET_FACT.createSet(SetPiece(arity(), all));
   processMapsOrd(other,set_in, set_out, res, &DomOrdPWMap::processMinus, true);
-  std::sort(res.begin(),res.end(), mapEntryComp);
+  std::sort(res.begin(),res.end(), operator<);
   return std::make_unique<DomOrdPWMap>(res);
 }
 
@@ -410,7 +323,7 @@ void DomOrdPWMap::processMinus(const Map &m1, const Map &m2,
     ith = std::move(jth);
   }
    
-  std::sort(ith.pieces_.begin(), ith.pieces_.end(), mapEntryComp);
+  std::sort(ith.pieces_.begin(), ith.pieces_.end(), operator<);
   PWMapStratPtr new_ith_ptr =ith.restrict(dom); 
   DomOrdPWMapCRef new_ith = static_cast<DomOrdPWMapCRef>(*new_ith_ptr);
   for (const MapEntry &e : new_ith.pieces_)
@@ -530,7 +443,7 @@ PWMapStratPtr DomOrdPWMap::inverse() const
       pushBack(res, inv);  
   }
   
-  std::sort(res.begin(),res.end(), mapEntryComp);
+  std::sort(res.begin(),res.end(), operator<);
 
   return std::make_unique<DomOrdPWMap>(res);
 }
@@ -618,7 +531,6 @@ Set DomOrdPWMap::fixedPoints() const
 }
 
 // Extra operations ------------------------------------------------------------
-
 
 PWMapStratPtr DomOrdPWMap::concatenation(const PWMapStrategy &other) const
 {
@@ -804,7 +716,7 @@ PWMapStratPtr DomOrdPWMap::reduce() const
       pushBack(res, mpe_ith_elem);
   } 
 
-  std::sort(res.begin(), res.end(), mapEntryComp);
+  std::sort(res.begin(), res.end(), operator<);
   
   return std::make_unique<DomOrdPWMap>(res);
 }
@@ -840,7 +752,7 @@ PWMapStratPtr DomOrdPWMap::minAdjMap(const PWMapStrategy &other) const
   Set set_out = SET_FACT.createSet();
   OrdMapCollection res;
   processMapsOrd(other, set_in, set_out, res, &DomOrdPWMap::processMinAdjMap, true);
-  std::sort(res.begin(), res.end(), mapEntryComp); 
+  std::sort(res.begin(), res.end(), operator<); 
   return std::make_unique<DomOrdPWMap>(res);
 }
 
@@ -869,7 +781,7 @@ void DomOrdPWMap::processMinAdjMap(const Map &m1, const Map &m2,
       Set again = dom_res.intersection(set_in);
       if (!again.isEmpty()) {
         DomOrdPWMap ord_pwmap_aux(ord_pwmap);
-        std::sort(ord_pwmap_aux.pieces_.begin(), ord_pwmap_aux.pieces_.end(), mapEntryComp);
+        std::sort(ord_pwmap_aux.pieces_.begin(), ord_pwmap_aux.pieces_.end(), operator<);
         PWMapStratPtr aux_res = ord_pwmap_aux.restrict(dom_res);
         PWMapStratPtr min_map = aux_res->minMap(ith_pw);
         PWMapStratPtr new_resPtr = min_map->combine(ith_pw)->combine(ord_pwmap_aux);
@@ -927,7 +839,7 @@ PWMapStratPtr DomOrdPWMap::firstInv(const Set &subdom) const
     if (s_max_per < t_min_per) break;
   }
 
-  std::sort(res.begin(), res.end(), mapEntryComp);
+  std::sort(res.begin(), res.end(), operator<);
 
   return std::make_unique<DomOrdPWMap>(res);
 }
@@ -1077,7 +989,7 @@ PWMapStratPtr DomOrdPWMap::offsetDom(const PWMapStrategy &off) const
       break;
   }
 
-  std::sort(res.begin(),res.end(), mapEntryComp);
+  std::sort(res.begin(),res.end(), operator<);
   
   return std::make_unique<DomOrdPWMap>(res);
 

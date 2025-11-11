@@ -24,21 +24,21 @@
 #ifndef SBG_ORD_PWMAP_HPP
 #define SBG_ORD_PWMAP_HPP
 
+#include "sbg/map_entry.hpp"
 #include "sbg/pw_map.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // Ordered PWMap Implementation (concrete strategy) ----------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 struct OrdPWMap : public PWMapStrategy {
-  using SetPerimeter = std::pair<MD_NAT, MD_NAT>;
-  using MapEntry = std::pair<Map, SetPerimeter>;
-  using OrdMapCollection = std::vector<MapEntry>;
+  using SetPerimeter = Internal::SetPerimeter;
+  using MapEntry = Internal::MapEntry;
+  using OrdMapCollection = Internal::OrdMapCollection;
 
   member_class(OrdMapCollection, pieces);
 

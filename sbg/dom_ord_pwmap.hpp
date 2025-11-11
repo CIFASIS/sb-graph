@@ -34,15 +34,14 @@ namespace SBG {
 
 namespace LIB {
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // Domain Ordered PWMap Implementation (concrete strategy) ---------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 struct DomOrdPWMap : public OrdPWMap {
-  using SetPerimeter = std::pair<MD_NAT, MD_NAT>;
-  using MapEntry = std::pair<Map, SetPerimeter>;
-  using OrdMapCollection = std::vector<MapEntry>;
+  using SetPerimeter = OrdPWMap::SetPerimeter;
+  using MapEntry = OrdPWMap::MapEntry;
+  using OrdMapCollection = OrdPWMap::OrdMapCollection;
 
   member_class(OrdMapCollection, pieces);
 

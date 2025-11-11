@@ -11,6 +11,7 @@ target_sources(
     interval.cpp
     lexp.cpp
     map.cpp
+    map_entry.cpp
     multidim_inter.cpp
     multidim_lexp.cpp
     natural.cpp

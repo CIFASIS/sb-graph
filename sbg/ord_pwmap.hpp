@@ -49,8 +49,6 @@ struct OrdPWMap : public PWMapStrategy {
   OrdPWMap(const OrdMapCollection &pieces);
   OrdPWMap(const OrdPWMap &pw);
 
-  PWMapStratPtr clone() const override;
-
   struct Iterator : public PWMapStrategy::Iterator {
     member_class(OrdMapCollection::const_iterator, it);
 
@@ -72,6 +70,8 @@ struct OrdPWMap : public PWMapStrategy {
 
   PWMapStratPtr operator+(const PWMapStrategy &other) const override;
   PWMapStratPtr operator-(const PWMapStrategy &other) const override;
+
+  PWMapStratPtr clone() const override;
 
   // Traditional map operations ------------------------------------------------
 
@@ -124,8 +124,8 @@ struct OrdPWMap : public PWMapStrategy {
   const Map &m2, 
   Set &set_in,
   Set &set_out, 
-  OrdMapCollection  &ord_pwmap,
-  NAT &global_pos) const;
+  OrdMapCollection &ord_pwmap,
+  NAT global_pos) const;
   
   /**
    * @brief Calculates the minus core, which contains the entire main process of the function.
@@ -135,8 +135,8 @@ struct OrdPWMap : public PWMapStrategy {
   const Map &m2, 
   Set &set_in,
   Set &set_out, 
-  OrdMapCollection  &ord_pwmap,
-  NAT &global_pos) const; 
+  OrdMapCollection &ord_pwmap,
+  NAT global_pos) const; 
   
   /**
    * @brief Calculates the add core, which contains the entire main process of the function.
@@ -146,8 +146,8 @@ struct OrdPWMap : public PWMapStrategy {
   const Map &m2, 
   Set &set_in,
   Set &set_out, 
-  OrdMapCollection  &ord_pwmap,
-  NAT &global_pos) const; 
+  OrdMapCollection &ord_pwmap,
+  NAT global_pos) const; 
   
   /**
    * @brief Calculates the equalImage core, which contains the entire main process of the function.
@@ -157,8 +157,8 @@ struct OrdPWMap : public PWMapStrategy {
   const Map &m2, 
   Set &set_in,
   Set &set_out,
-  OrdMapCollection  &ord_pwmap,
-  NAT &global_pos) const; 
+  OrdMapCollection &ord_pwmap,
+  NAT global_pos) const; 
   
   /**
    * @brief Type used in the 'processMapsOrd' declaration to reduce its size.
@@ -167,7 +167,7 @@ struct OrdPWMap : public PWMapStrategy {
   using ProcessFunc = void (OrdPWMap::*)(
   const Map &, const Map &, 
   Set &, Set &, OrdMapCollection &, 
-  NAT&
+  NAT
   ) const;
   
   /**
@@ -177,7 +177,7 @@ struct OrdPWMap : public PWMapStrategy {
     const PWMapStrategy &other,
     Set &set_in,
     Set &set_out,
-    OrdMapCollection  &ord_pwmap,
+    OrdMapCollection &ord_pwmap,
     ProcessFunc process,
     bool order_mts
   ) const;

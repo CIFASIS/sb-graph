@@ -47,46 +47,46 @@ struct DomOrdPWMap : public OrdPWMap {
 
   ~DomOrdPWMap() = default;
   DomOrdPWMap();
-  DomOrdPWMap(const Set &s);
-  DomOrdPWMap(const Map &m);
-  DomOrdPWMap(const OrdMapCollection &pieces);
-  DomOrdPWMap(const DomOrdPWMap &pw);
-
-  PWMapStratPtr clone() const override;
+  DomOrdPWMap(const Set& s);
+  DomOrdPWMap(const Map& m);
+  DomOrdPWMap(const OrdMapCollection& pieces);
+  DomOrdPWMap(const DomOrdPWMap& pw);
 
   struct Iterator : public PWMapStrategy::Iterator {
     member_class(OrdMapCollection::const_iterator, it);
 
     Iterator(OrdMapCollection::const_iterator it);
     void operator++() override;
-    bool operator!=(const PWMapStrategy::Iterator &other) const override;
-    const Map &operator*() const override;
+    bool operator!=(const PWMapStrategy::Iterator& other) const override;
+    const Map& operator*() const override;
   };
 
   std::shared_ptr<PWMapStrategy::Iterator> begin() const override;
   std::shared_ptr<PWMapStrategy::Iterator> end() const override;
 
-  void emplaceBack(const Map &m) override;
+  void emplaceBack(const Map& m) override;
 
-  bool operator==(const PWMapStrategy &other) const override;
-  bool operator!=(const PWMapStrategy &other) const override;
-  DomOrdPWMap &operator=(DomOrdPWMap &&other);
-  std::ostream &print(std::ostream &out) const override;
+  bool operator==(const PWMapStrategy& other) const override;
+  bool operator!=(const PWMapStrategy& other) const override;
+  DomOrdPWMap& operator=(DomOrdPWMap&& other);
+  std::ostream& print(std::ostream& out) const override;
 
-  PWMapStratPtr operator+(const PWMapStrategy &other) const override;
-  PWMapStratPtr operator-(const PWMapStrategy &other) const override;
+  PWMapStratPtr operator+(const PWMapStrategy& other) const override;
+  PWMapStratPtr operator-(const PWMapStrategy& other) const override;
+
+  PWMapStratPtr clone() const override;
 
   // Traditional map operations ------------------------------------------------
 
   std::size_t arity() const override;
   bool isEmpty() const override;
   Set dom() const override;
-  PWMapStratPtr restrict(const Set &subdom) const override;
+  PWMapStratPtr restrict(const Set& subdom) const override;
   Set image() const override;
-  Set image(const Set &subdom) const override;
-  Set preImage(const Set &subcodom) const override;
+  Set image(const Set& subdom) const override;
+  Set preImage(const Set& subcodom) const override;
   PWMapStratPtr inverse() const override;
-  PWMapStratPtr composition(const PWMapStrategy &pw2) const override;
+  PWMapStratPtr composition(const PWMapStrategy& pw2) const override;
 
   PWMapStratPtr mapInf(unsigned int n) const override;
   PWMapStratPtr mapInf() const override;
@@ -94,27 +94,27 @@ struct DomOrdPWMap : public OrdPWMap {
 
   // Extra operations ----------------------------------------------------------
 
-  PWMapStratPtr concatenation(const PWMapStrategy &other) const override;
-  PWMapStratPtr combine(const PWMapStrategy &other) const override;
-  PWMapStratPtr reduce(const Interval &i, const LExp &e) const override;
-  PWMapStratPtr reduce(const Map &sbgmap) const override;
+  PWMapStratPtr concatenation(const PWMapStrategy& other) const override;
+  PWMapStratPtr combine(const PWMapStrategy& other) const override;
+  PWMapStratPtr reduce(const Interval& i, const LExp& e) const override;
+  PWMapStratPtr reduce(const Map& sbgmap) const override;
   PWMapStratPtr reduce() const override;
 
-  PWMapStratPtr minMap(const PWMapStrategy &other) const override;
-  PWMapStratPtr minAdjMap(const PWMapStrategy &other) const override;
+  PWMapStratPtr minMap(const PWMapStrategy& other) const override;
+  PWMapStratPtr minAdjMap(const PWMapStrategy& other) const override;
 
-  PWMapStratPtr firstInv(const Set &subdom) const override;
+  PWMapStratPtr firstInv(const Set& subdom) const override;
   PWMapStratPtr firstInv() const override;
 
-  PWMapStratPtr filterMap(bool (*f)(const Map &)) const override;
+  PWMapStratPtr filterMap(bool (*f)(const Map& )) const override;
 
-  Set equalImage(const PWMapStrategy &other) const override;
+  Set equalImage(const PWMapStrategy& other) const override;
   Set sharedImage() const override;
 
-  PWMapStratPtr offsetDom(const MD_NAT &off) const override;
-  PWMapStratPtr offsetDom(const PWMapStrategy &off) const override;
-  PWMapStratPtr offsetImage(const MD_NAT &off) const override;
-  PWMapStratPtr offsetImage(const Exp &off) const override;
+  PWMapStratPtr offsetDom(const MD_NAT& off) const override;
+  PWMapStratPtr offsetDom(const PWMapStrategy& off) const override;
+  PWMapStratPtr offsetImage(const MD_NAT& off) const override;
+  PWMapStratPtr offsetImage(const Exp& off) const override;
 
   PWMapStratPtr compact() const override;
   
@@ -124,57 +124,57 @@ struct DomOrdPWMap : public OrdPWMap {
    * of the function.
    */
   void processMinAdjMap(
-  const Map &m1, 
-  const Map &m2, 
-  Set &set_in,
-  Set &set_out, 
-  OrdMapCollection  &ord_pwmap,
-  NAT &global_pos) const;
+  const Map& m1, 
+  const Map& m2, 
+  Set& set_in,
+  Set& set_out, 
+  OrdMapCollection& ord_pwmap,
+  NAT global_pos) const;
   
   /**
    * @brief Calculates the minus core, which contains the entire main process of
    * the function.
    */
   void processMinus(
-  const Map &m1, 
-  const Map &m2, 
-  Set &set_in,
-  Set &set_out, 
-  OrdMapCollection  &ord_pwmap,
-  NAT &global_pos) const; 
+  const Map& m1, 
+  const Map& m2, 
+  Set& set_in,
+  Set& set_out, 
+  OrdMapCollection& ord_pwmap,
+  NAT global_pos) const; 
   
   /**
    * @brief Calculates the add core, which contains the entire main process of
    * the function.
    */
   void processAdd(
-  const Map &m1, 
-  const Map &m2, 
-  Set &set_in,
-  Set &set_out, 
-  OrdMapCollection  &ord_pwmap,
-  NAT &global_pos) const; 
+  const Map& m1, 
+  const Map& m2, 
+  Set& set_in,
+  Set& set_out, 
+  OrdMapCollection& ord_pwmap,
+  NAT global_pos) const; 
   
   /**
    * @brief Calculates the equalImage core, which contains the entire main
    * process of the function.
    */
   void processEqualImage(
-  const Map &m1, 
-  const Map &m2, 
-  Set &set_in,
-  Set &set_out,
-  OrdMapCollection  &ord_pwmap,
-  NAT &global_pos) const; 
+  const Map& m1, 
+  const Map& m2, 
+  Set& set_in,
+  Set& set_out,
+  OrdMapCollection& ord_pwmap,
+  NAT global_pos) const; 
   
   /**
    * @brief Type used in the 'processMapsOrd' declaration to reduce its size.
    * This type is the same as the process functions above.
    */
   using ProcessFunc = void (DomOrdPWMap::*)(
-  const Map &, const Map &, 
-  Set &, Set &, OrdMapCollection &, 
-  NAT&
+  const Map& , const Map& , 
+  Set& , Set& , OrdMapCollection&, 
+  NAT
   ) const;
   
   /**
@@ -182,17 +182,17 @@ struct DomOrdPWMap : public OrdPWMap {
    * maps.
    */
   void processMapsOrd(
-    const PWMapStrategy &other,
-    Set &set_in,
-    Set &set_out,
-    OrdMapCollection  &ord_pwmap,
+    const PWMapStrategy& other,
+    Set& set_in,
+    Set& set_out,
+    OrdMapCollection& ord_pwmap,
     ProcessFunc process,
     bool order_mts
   ) const;
 };
 
-typedef const DomOrdPWMap &DomOrdPWMapCRef;
-typedef DomOrdPWMap &DomOrdPWMapRef;
+typedef const DomOrdPWMap& DomOrdPWMapCRef;
+typedef DomOrdPWMap& DomOrdPWMapRef;
 typedef std::unique_ptr<DomOrdPWMap> DomOrdPWMapPtr;
 
 } // namespace LIB

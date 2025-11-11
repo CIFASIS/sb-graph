@@ -28,12 +28,12 @@ TEST(SetPerf, OrdDenseIntersection)
 
   SBG::LIB::OrdUnidimDenseSetFact fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
     s1.emplaceBack(i);
   }
 
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
     s2.emplaceBack(i);
   }
@@ -54,12 +54,12 @@ TEST(SetPerf, OrdDenseDifference)
 
   SBG::LIB::OrdUnidimDenseSetFact fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
     s1.emplaceBack(i);
   }
 
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
     s2.emplaceBack(i);
   }
@@ -79,12 +79,12 @@ TEST(SetPerf, OrdDenseUnion)
 
   SBG::LIB::OrdUnidimDenseSetFact fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
     s1.emplaceBack(i);
   }
 
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
     s2.emplaceBack(i);
   }
@@ -126,7 +126,7 @@ TEST(SetPerf, OrdDenseComplement)
 
   SBG::LIB::OrdUnidimDenseSetFact fact;
   SBG::LIB::Set s1 = fact.createSet();
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
     s1.emplaceBack(i);
   }
@@ -147,12 +147,12 @@ TEST(SetPerf, UnordIntersection)
 
   SBG::LIB::UnordSetFact fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
     s1.emplaceBack(i);
   }
 
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
     s2.emplaceBack(i);
   }
@@ -172,12 +172,12 @@ TEST(SetPerf, UnordDifference)
 
   SBG::LIB::UnordSetFact fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
     s1.emplaceBack(i);
   }
 
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
     s2.emplaceBack(i);
   }
@@ -197,12 +197,12 @@ TEST(SetPerf, UnordUnion)
 
   SBG::LIB::UnordSetFact fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
     s1.emplaceBack(i);
   }
 
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
     s2.emplaceBack(i);
   }
@@ -245,7 +245,7 @@ TEST(SetPerf, UnordComplement)
 
   SBG::LIB::UnordSetFact fact;
   SBG::LIB::Set s1 = fact.createSet();
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
     s1.emplaceBack(i);
   }
@@ -266,12 +266,12 @@ TEST(SetPerf, OrdIntersection)
 
   SBG::LIB::OrdSetFact fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
     s1.emplaceBack(i);
   }
 
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
     s2.emplaceBack(i);
   }
@@ -291,12 +291,12 @@ TEST(SetPerf, OrdDifference)
 
   SBG::LIB::OrdSetFact fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
     s1.emplaceBack(i);
   }
 
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
     s2.emplaceBack(i);
   }
@@ -316,12 +316,12 @@ TEST(SetPerf, OrdUnion)
 
   SBG::LIB::OrdSetFact fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i(j*100+1, 1, (j+1)*100);
     s1.emplaceBack(i);
   }
 
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i(j*105+1, 1, (j+1)*105);
     s2.emplaceBack(i);
   }
@@ -365,7 +365,7 @@ TEST(SetPerf, OrdComplement)
 
   SBG::LIB::OrdSetFact fact;
   SBG::LIB::Set s1 = fact.createSet();
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i(j*100, 1, (j+1)*100);
     s1.emplaceBack(i);
     
@@ -396,7 +396,7 @@ TEST(SetPerf, OrdIntersectionThreeDims)
 
   SBG::LIB::OrdSetFact fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i1(j*100+1, 2, (j+1)*100);
     SBG::LIB::Interval i2(j*100+1, 1, (j+1)*100);
     SBG::LIB::Interval i3(j*100+1, 1, (j+1)*100);
@@ -407,7 +407,7 @@ TEST(SetPerf, OrdIntersectionThreeDims)
     s1.emplaceBack(mdi);
   }
 
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i1(j*105+1, 2, (j+1)*105);
     SBG::LIB::Interval i2(j*105+1, 1, (j+1)*105);
     SBG::LIB::Interval i3(j*105+1, 1, (j+1)*105);
@@ -433,7 +433,7 @@ TEST(SetPerf, OrdDifferenceThreeDims)
 
   SBG::LIB::OrdSetFact fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i1(j*100+1, 2, (j+1)*100);
     SBG::LIB::Interval i2(j*100+1, 1, (j+1)*100);
     SBG::LIB::Interval i3(j*100+1, 1, (j+1)*100);
@@ -444,7 +444,7 @@ TEST(SetPerf, OrdDifferenceThreeDims)
     s1.emplaceBack(mdi);
   }
 
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i1(j*105+1, 2, (j+1)*105);
     SBG::LIB::Interval i2(j*105+1, 1, (j+1)*105);
     SBG::LIB::Interval i3(j*105+1, 1, (j+1)*105);
@@ -472,7 +472,7 @@ TEST(SetPerf, OrdUnionThreeDims)
 
   SBG::LIB::OrdSetFact fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i1(j*100+1, 2, (j+1)*100);
     SBG::LIB::Interval i2(j*100+1, 1, (j+1)*100);
     SBG::LIB::Interval i3(j*100+1, 1, (j+1)*100);
@@ -483,7 +483,7 @@ TEST(SetPerf, OrdUnionThreeDims)
     s1.emplaceBack(mdi);
   }
 
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i1(j*105+1, 2, (j+1)*105);
     SBG::LIB::Interval i2(j*105+1, 1, (j+1)*105);
     SBG::LIB::Interval i3(j*105+1, 1, (j+1)*105);
@@ -577,7 +577,7 @@ TEST(SetPerf, UnordIntersectionThreeDims)
 
   SBG::LIB::UnordSetFact fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i1(j*100+1, 2, (j+1)*100);
     SBG::LIB::Interval i2(j*100+1, 1, (j+1)*100);
     SBG::LIB::Interval i3(j*100+1, 1, (j+1)*100);
@@ -588,7 +588,7 @@ TEST(SetPerf, UnordIntersectionThreeDims)
     s1.emplaceBack(mdi);
   }
 
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i1(j*105+1, 1, (j+1)*105);
     SBG::LIB::Interval i2(j*105+1, 1, (j+1)*105);
     SBG::LIB::Interval i3(j*105+1, 1, (j+1)*105);
@@ -614,7 +614,7 @@ TEST(SetPerf, UnordDifferenceThreeDims)
 
   SBG::LIB::UnordSetFact fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i1(j*100+1, 2, (j+1)*100);
     SBG::LIB::Interval i2(j*100+1, 1, (j+1)*100);
     SBG::LIB::Interval i3(j*100+1, 1, (j+1)*100);
@@ -625,7 +625,7 @@ TEST(SetPerf, UnordDifferenceThreeDims)
     s1.emplaceBack(mdi);
   }
 
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i1(j*105+1, 2, (j+1)*105);
     SBG::LIB::Interval i2(j*105+1, 1, (j+1)*105);
     SBG::LIB::Interval i3(j*105+1, 1, (j+1)*105);
@@ -651,7 +651,7 @@ TEST(SetPerf, UnordUnionThreeDims)
 
   SBG::LIB::UnordSetFact fact;
   SBG::LIB::Set s1 = fact.createSet(), s2 = fact.createSet();
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i1(j*100+1, 2, (j+1)*100);
     SBG::LIB::Interval i2(j*100+1, 1, (j+1)*100);
     SBG::LIB::Interval i3(j*100+1, 1, (j+1)*100);
@@ -662,7 +662,7 @@ TEST(SetPerf, UnordUnionThreeDims)
     s1.emplaceBack(mdi);
   }
 
-  for (int j = 0; j < N; j++) {
+  for (int j = 0; j < N; ++j) {
     SBG::LIB::Interval i1(j*105+1, 2, (j+1)*105);
     SBG::LIB::Interval i2(j*105+1, 1, (j+1)*105);
     SBG::LIB::Interval i3(j*105+1, 1, (j+1)*105);

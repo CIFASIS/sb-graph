@@ -46,8 +46,6 @@ struct UnordPWMap : public PWMapStrategy {
   UnordPWMap(const UnordMapCollection &pieces);
   UnordPWMap(const UnordPWMap &pw);
 
-  PWMapStratPtr clone() const override;
-
   struct Iterator : public PWMapStrategy::Iterator {
     member_class(UnordMapCollection::const_iterator, it);
 
@@ -69,6 +67,8 @@ struct UnordPWMap : public PWMapStrategy {
 
   PWMapStratPtr operator+(const PWMapStrategy &other) const override;
   PWMapStratPtr operator-(const PWMapStrategy &other) const override;
+
+  PWMapStratPtr clone() const override;
 
   // Traditional map operations ------------------------------------------------
 

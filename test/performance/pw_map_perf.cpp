@@ -53,7 +53,7 @@ TEST(PWMapPerf, UnordCombine)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -74,7 +74,7 @@ TEST(PWMapPerf, UnordCombine)
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -115,7 +115,7 @@ TEST(PWMapPerf, OrdCombine)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -136,7 +136,7 @@ TEST(PWMapPerf, OrdCombine)
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -177,7 +177,7 @@ TEST(PWMapPerf, UnordConcatenation)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -222,7 +222,7 @@ TEST(PWMapPerf, OrdConcatenation)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -266,7 +266,7 @@ TEST(PWMapPerf, UnordRestrict)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -310,7 +310,7 @@ TEST(PWMapPerf, OrdRestrict)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -353,7 +353,7 @@ TEST(PWMapPerf, UnordComposition)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -374,7 +374,7 @@ TEST(PWMapPerf, UnordComposition)
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -415,7 +415,7 @@ TEST(PWMapPerf, OrdComposition)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -436,7 +436,7 @@ TEST(PWMapPerf, OrdComposition)
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -477,7 +477,7 @@ TEST(PWMapPerf, UnordOffsetDomMap)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -498,7 +498,7 @@ TEST(PWMapPerf, UnordOffsetDomMap)
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -538,7 +538,7 @@ TEST(PWMapPerf, OrdOffsetDomMap)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -559,7 +559,7 @@ TEST(PWMapPerf, OrdOffsetDomMap)
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -599,7 +599,7 @@ TEST(PWMapPerf, UnordFirstInvSet)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -643,7 +643,7 @@ TEST(PWMapPerf, OrdFirstInvSet)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -688,7 +688,7 @@ TEST(PWMapPerf, UnordCompact)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
      int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i0(map_offset + 1, 1, map_offset + inter_sz);
       Interval idims(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       fin = map_offset + (j+1)*inter_sz;
@@ -711,7 +711,7 @@ TEST(PWMapPerf, UnordCompact)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int new_map_offset = (map_sz+k) * fin * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i0(new_map_offset+ 1, 1, new_map_offset + inter_sz);
       Interval idims(new_map_offset + (j*inter_sz) + 1, 1, new_map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
@@ -754,7 +754,7 @@ TEST(PWMapPerf, OrdCompact)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
      int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i0(map_offset + 1, 1, map_offset + inter_sz);
       Interval idims(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       fin = map_offset + (j+1)*inter_sz;
@@ -777,7 +777,7 @@ TEST(PWMapPerf, OrdCompact)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int new_map_offset = (map_sz+k) * fin * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i0(new_map_offset+ 1, 1, new_map_offset + inter_sz);
       Interval idims(new_map_offset + (j*inter_sz) + 1, 1, new_map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
@@ -819,7 +819,7 @@ TEST(PWMapPerf, UnordAdd)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -840,7 +840,7 @@ TEST(PWMapPerf, UnordAdd)
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -881,7 +881,7 @@ TEST(PWMapPerf, OrdAdd)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -902,7 +902,7 @@ TEST(PWMapPerf, OrdAdd)
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -943,7 +943,7 @@ TEST(PWMapPerf, UnordMinus)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -964,7 +964,7 @@ TEST(PWMapPerf, UnordMinus)
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -1005,7 +1005,7 @@ TEST(PWMapPerf, OrdMinus)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -1026,7 +1026,7 @@ TEST(PWMapPerf, OrdMinus)
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -1067,7 +1067,7 @@ TEST(PWMapPerf, UnordIqualImage)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -1088,7 +1088,7 @@ TEST(PWMapPerf, UnordIqualImage)
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -1128,7 +1128,7 @@ TEST(PWMapPerf, OrdIqualImage)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -1149,7 +1149,7 @@ TEST(PWMapPerf, OrdIqualImage)
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
     map_offset += map_offset/2;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -1190,7 +1190,7 @@ TEST(PWMapPerf, UnordMinAdj)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -1230,7 +1230,7 @@ TEST(PWMapPerf, OrdMinAdj)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -1269,7 +1269,7 @@ TEST(PWMapPerf, UnordMinMap)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -1309,7 +1309,7 @@ TEST(PWMapPerf, OrdMinMap)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -1349,7 +1349,7 @@ TEST(PWMapPerf, UnordInverse)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -1389,7 +1389,7 @@ TEST(PWMapPerf, OrdInverse)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -1428,7 +1428,7 @@ TEST(PWMapPerf, UnordReduce)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -1469,7 +1469,7 @@ TEST(PWMapPerf, OrdReduce)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -1645,7 +1645,7 @@ TEST(PWMapPerf, UnordFirstInv)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -1684,7 +1684,7 @@ TEST(PWMapPerf, OrdFirstInv)
     exp.emplaceBack(le1);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
@@ -1719,7 +1719,7 @@ TEST(PWMapPerf, minAdj)
     LExp le1(1, k);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;
-    for (unsigned int j = 0; j < set_sz; j++) {
+    for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
       s1.emplaceBack(SetPiece(i));
     }

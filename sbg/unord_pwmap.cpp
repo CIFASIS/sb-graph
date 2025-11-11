@@ -55,11 +55,6 @@ UnordPWMap::UnordPWMap(const UnordPWMap::UnordMapCollection &pieces)
   : pieces_(std::move(pieces)) {}
 UnordPWMap::UnordPWMap(const UnordPWMap &pw) :pieces_(pw.pieces_) {}
 
-PWMapStratPtr UnordPWMap::clone() const
-{
-  return std::make_unique<UnordPWMap>(*this);
-}
-
 member_imp(UnordPWMap::Iterator, UnordPWMap::UnordMapCollection::const_iterator
   , it);
 
@@ -148,6 +143,23 @@ UnordPWMap &UnordPWMap::operator=(UnordPWMap &&other)
     pieces_ = std::move(other.pieces_);
 
   return *this;
+}
+
+std::ostream &UnordPWMap::print(std::ostream &out) const
+{
+  int sz = pieces_.size();
+
+  out << "<<";
+  if (sz > 0) {
+    int i = 0;
+    for (; i < sz - 1; ++i) {
+      out << pieces_[i] << ", ";
+    }
+    out << pieces_[i];
+  }
+  out << ">>";
+
+  return out;
 }
 
 PWMapStratPtr UnordPWMap::operator+(const PWMapStrategy &other) const
@@ -266,21 +278,9 @@ PWMapStratPtr UnordPWMap::operator-(const PWMapStrategy &other) const
   return std::make_unique<UnordPWMap>(res);
 }
 
-std::ostream &UnordPWMap::print(std::ostream &out) const
+PWMapStratPtr UnordPWMap::clone() const
 {
-  int sz = pieces_.size();
-
-  out << "<<";
-  if (sz > 0) {
-    int i = 0;
-    for (; i < sz - 1; ++i) {
-      out << pieces_[i] << ", ";
-    }
-    out << pieces_[i];
-  }
-  out << ">>";
-
-  return out;
+  return std::make_unique<UnordPWMap>(*this);
 }
 
 // PWMap functions -------------------------------------------------------------

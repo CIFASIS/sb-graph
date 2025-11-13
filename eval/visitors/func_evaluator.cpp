@@ -132,7 +132,6 @@ ExprBaseType BuiltInOperators::subEvaluator(const EBTList& args)
       return ExprBaseType(a - LIB::RATIONAL(b));
     },
     [](LIB::Exp a, LIB::Exp b) { return ExprBaseType(a - b); },
-    [](LIB::Map a, LIB::Map b) { return ExprBaseType(a - b); },
     [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a - b); },
     [](auto a, auto b) { 
       Util::ERROR("subEvaluator: wrong arguments ", a, ", ", b

@@ -40,12 +40,13 @@ ExprBaseType BuiltInOperators::oppositeEvaluator(const EBTList& args)
     , "oppositeEvaluator: wrong number of arguments\n");
 
   auto opposite_evaluator = Overload {
-    [](LIB::NAT a) { return LIB::RATIONAL(a, -1); },
-    [](LIB::RATIONAL a) { return LIB::RATIONAL(-1)*a; },
+    [](LIB::NAT a) { return ExprBaseType(LIB::RATIONAL(a, -1)); },
+    [](LIB::RATIONAL a) { return ExprBaseType(LIB::RATIONAL(-1)*a); },
+    [](LIB::Set a) { return ExprBaseType(a.complement()); },
     [](auto a) { 
       Util::ERROR("oppositeEvaluator: wrong type argument ", a
         , " for - (opposite)\n");
-      return LIB::RATIONAL(0);
+      return ExprBaseType(LIB::RATIONAL(0));
     }
   };
   return std::visit(opposite_evaluator, args[0]);
@@ -131,6 +132,7 @@ ExprBaseType BuiltInOperators::subEvaluator(const EBTList& args)
       return ExprBaseType(a - LIB::RATIONAL(b));
     },
     [](LIB::Exp a, LIB::Exp b) { return ExprBaseType(a - b); },
+    [](LIB::Map a, LIB::Map b) { return ExprBaseType(a - b); },
     [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a - b); },
     [](auto a, auto b) { 
       Util::ERROR("subEvaluator: wrong arguments ", a, ", ", b

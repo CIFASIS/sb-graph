@@ -174,110 +174,6 @@ PWMapStratPtr UnordPWMap::operator+(const PWMapStrategy &other) const
   return res;
 }
 
-PWMapStratPtr UnordPWMap::operator-(const PWMapStrategy &other) const
-{ 
-
-  UnordMapCollection res;
-
-  if (isEmpty() || other.isEmpty())
-    return std::make_unique<UnordPWMap>(res);
-
-  Set univ = SET_FACT.createSet(SetPiece(arity(), Interval(0, 1, Inf)));
-
-  UnordPWMapCRef othr = static_cast<UnordPWMapCRef>(other);
-  for (const Map &m1 : pieces_) {
-    for (const Map &m2 : othr.pieces_) {
-      Set dom1 = m1.dom(), dom2 = m2.dom();  
-      Set dom = dom1.intersection(dom2);
-      if (!dom.isEmpty()) {
-        Exp minus_exp = m1.exp() - m2.exp();
-        UnordPWMap ith(univ);
-        for (unsigned int j = 0; j < arity(); ++j) {
-          RATIONAL m = minus_exp[j].slope(), h = minus_exp[j].offset();
-          // Negative values in the jth dimension
-          NAT begin_neg = 0, end_neg = Inf;
-          // Positive values in the jth dimension
-          NAT begin_pos = 0, end_pos = Inf;
-          // Constant expression
-          if (m == 0) {
-            if (h < 0) {
-              begin_pos = 1;
-              end_pos = 0;
-            }
-            else {
-              begin_neg = 1;
-              end_neg = 0;
-            }
-          }
-          // Increasing expression
-          else if (m > 0) {
-            RATIONAL cross = -h/m;
-            if (cross > 0 || cross == 0) {
-              begin_pos = boost::rational_cast<NAT>(cross.value()) + 1;
-              if (begin_pos > 0)
-                end_neg = begin_pos - 1;
-              else {
-                begin_neg = 1;
-                end_neg = 0;
-              }
-            }
-            else {
-              begin_neg = 1;
-              end_neg = 0;
-            }
-          }
-          // Decreasing expression
-          else { 
-            RATIONAL cross = -h/m;
-            if (cross > 0 || cross == 0) {
-              end_pos = boost::rational_cast<NAT>(cross.value());
-              if (end_pos > 0)
-                begin_neg = end_pos + 1;
-              else {
-                begin_pos = 1;
-                end_pos = 0;
-              }
-            }
-            else {
-              begin_pos = 1;
-              end_pos = 0;
-            }
-          }
-
-          UnordPWMap jth;
-          Interval neg(begin_neg, 1, end_neg);
-          Interval pos(begin_pos, 1, end_pos);
-          for (const Map &m : ith.pieces_) {
-            SetPiece mdi = *(m.dom().begin());
-            Exp e = m.exp(); 
-
-            if (!neg.isEmpty()) {
-              mdi[j] = neg;
-              e[j] = LExp(0, 0);
-              pushBack(jth.pieces_, Map(mdi, e));
-            }
-
-            if (!pos.isEmpty()) {
-              mdi[j] = pos;
-              e[j] = minus_exp[j];
-              pushBack(jth.pieces_, Map(mdi, e));
-            }
-          }
-
-          ith = std::move(jth);
-        }
-
-        PWMapStratPtr new_ith_ptr = ith.restrict(dom); 
-        UnordPWMapCRef new_ith = static_cast<UnordPWMapCRef>(*new_ith_ptr);
-        for (const Map &map : new_ith.pieces_)
-          pushBack(res, map);
-      }
-    }
-  }
-  
-  return std::make_unique<UnordPWMap>(res);
-}
-
 PWMapStratPtr UnordPWMap::clone() const
 {
   return std::make_unique<UnordPWMap>(*this);
@@ -545,28 +441,14 @@ PWMapStratPtr UnordPWMap::reduce() const
   return std::make_unique<UnordPWMap>(res);
 }
 
-PWMapStratPtr UnordPWMap::minMap(const PWMapStrategy &other) const
+PWMapStratPtr UnordPWMap::minMap(const PWMapStrategy& other) const
 {
   if (isEmpty() || other.isEmpty())
     return std::make_unique<UnordPWMap>();
 
-  PWMapStratPtr aux1 = restrict(other.dom()), aux2 = other.restrict(dom());
-
-  Set min_in_pw1 = SET_FACT.createSet();
-  PWMapStratPtr off1 = aux1->offsetImage(MD_NAT(arity(), 1)); 
-  PWMapStratPtr subt = (*off1 - *aux2);
-  SetPiece im(arity(), Interval(0, 1, Inf));
-  for (unsigned int k = 0; k < arity(); ++k) {
-    im[k] = Interval(0, 1, 0);
-    if (k > 0)
-      im[k-1] = Interval(1, 1, 1);
-
-    Set kth = subt->preImage(SET_FACT.createSet(im));
-    min_in_pw1 = min_in_pw1.disjointCup(kth);
-  }
-
-  return aux1->restrict(min_in_pw1)->combine(*aux2);  
-}
+  Set min_in_pw1 = lessEqImage(other);
+  return restrict(min_in_pw1)->combine(*other.restrict(dom())); 
+}  
 
 PWMapStratPtr UnordPWMap::minAdjMap(const PWMapStrategy &other) const
 {
@@ -663,6 +545,22 @@ Set UnordPWMap::equalImage(const PWMapStrategy &other) const
   return res;
 }
 
+Set UnordPWMap::lessEqImage(const PWMapStrategy& other) const
+{
+  if (isEmpty() || other.isEmpty())
+    return SET_FACT.createSet();
+
+  UnordPWMapCRef othr = static_cast<UnordPWMapCRef>(other);
+  Set min_in_pw1 = SET_FACT.createSet();
+  for (const Map& m1 : pieces_) {
+    for (const Map& m2 : othr.pieces_) {
+      min_in_pw1 = min_in_pw1.disjointCup(m1.lessEqImage(m2));
+    }
+  }
+
+  return min_in_pw1; 
+}  
+
 Set UnordPWMap::sharedImage() const
 {
   Set not_present = dom().difference(firstInv()->image());
@@ -732,38 +630,36 @@ PWMapStratPtr UnordPWMap::compact() const
   const size_t lSize = pieces_.size();
   for (size_t i = 0; i < lSize; ++i)
     liIt = indices.insert_after(liIt, i);
-
   
   auto begin = pieces_.begin();
   auto liPrev = indices.before_begin();
   auto liCurr = indices.begin();
   while (liCurr != indices.end()) {
-      size_t id = *liCurr;
-      const Map &it = *(begin + id);
-      Map new_ith(it.dom().compact(), it.exp());
+    size_t id = *liCurr;
+    const Map &it = *(begin + id);
+    Map new_ith(it.dom().compact(), it.exp());
 
-      liCurr = indices.erase_after(liPrev);
+    liCurr = indices.erase_after(liPrev);
 
-    
-      while (liCurr != indices.end()) {
-        size_t idx = *liCurr;
-        const Map &nextMap = *(begin + idx);
+    while (liCurr != indices.end()) {
+      size_t idx = *liCurr;
+      const Map &nextMap = *(begin + idx);
 
-        auto ith = new_ith.compact(nextMap);
-        if (ith) {
-          new_ith = ith.value();
-          liCurr = indices.erase_after(liPrev);
-          continue;
-        }
-    
-
-        ++liPrev;
-        ++liCurr;
+      auto ith = new_ith.compact(nextMap);
+      if (ith) {
+        new_ith = ith.value();
+        liCurr = indices.erase_after(liPrev);
+        continue;
       }
-      
-      pushBack(res, new_ith);
-      liPrev = indices.before_begin();
-      liCurr = indices.begin();
+    
+
+      ++liPrev;
+      ++liCurr;
+    }
+    
+    pushBack(res, new_ith);
+    liPrev = indices.before_begin();
+    liCurr = indices.begin();
   }
 
   return std::make_unique<UnordPWMap>(res);

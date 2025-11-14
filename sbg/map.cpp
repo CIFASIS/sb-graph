@@ -75,8 +75,6 @@ SetPiece image(SetPiece mdi, Exp mdle)
   return res;
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Map Implementation ----------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
@@ -120,7 +118,6 @@ Map &Map::operator=(const Map &other)
 
   return *this;
 }
-
 
 Map Map::operator+(const Map &other) const
 {
@@ -255,6 +252,47 @@ bool Map::isId() const
     return dom_ == image();
 
   return exp_.isId();
+}
+
+Set Map::lessEqImage(const Map& other) const
+{
+  Set result = SET_FACT.createSet();
+
+  int ar = arity();
+  SetPiece min_in_m1(ar, Interval(0, 1, Inf));
+  Exp exp1 = exp_;
+  Exp exp2 = other.exp_;
+
+  Set cap_dom = dom_.intersection(other.dom_);
+  if (exp1 == exp2)
+    return cap_dom; 
+
+  for (int k = 0; k < ar; ++k) {
+    LExp linear_exp1 = exp1[k];
+    LExp linear_exp2 = exp2[k];
+
+    RATIONAL m1 = linear_exp1.slope();
+    RATIONAL m2 = linear_exp2.slope();
+    if (m1 == m2) {
+      RATIONAL h1 = linear_exp1.offset();
+      RATIONAL h2 = linear_exp2.offset();
+      if (h1 < h2)
+        result.emplaceBack(min_in_m1);
+      break;
+    }
+    else {
+      RATIONAL point = linear_exp1.intersectionPoint(linear_exp2);
+      NAT x = point.value() >= 0 ? boost::rational_cast<NAT>(point.value()) : 0;
+      Interval kth = m1 < m2 ? Interval(x + 1, 1, Inf) : Interval(0, 1, x - 1);
+
+      min_in_m1[k] = kth;
+      result.emplaceBack(min_in_m1);
+      min_in_m1[k] = Interval(x, 1, x);
+    }
+  }
+
+  result = result.intersection(cap_dom);
+  return result;
 }
 
 MaybeMap Map::compact(const Map &other) const

@@ -103,11 +103,6 @@ PWMap PWMap::operator+(const PWMap &other) const
   return strategy_->operator+(*other.strategy_);
 }
 
-PWMap PWMap::operator-(const PWMap &other) const
-{
-  return strategy_->operator-(*other.strategy_);
-}
-
 std::size_t PWMap::arity() const { return strategy_->arity(); }
 
 bool PWMap::isEmpty() const { return strategy_->isEmpty(); }
@@ -178,6 +173,11 @@ PWMap PWMap::filterMap(bool (*f)(const Map &)) const
 Set PWMap::equalImage(const PWMap &other) const
 {
   return strategy_->equalImage(*other.strategy_);
+}
+
+Set PWMap::lessEqImage(const PWMap& other) const
+{
+  return strategy_->lessEqImage(*other.strategy_);
 }
 
 Set PWMap::sharedImage() const { return strategy_->sharedImage(); }

@@ -91,12 +91,6 @@ struct PWMapStrategy {
    */
   virtual PWMapStratPtr operator+(const PWMapStrategy &other) const = 0;
 
-  /** 
-   * @brief Bounded subtraction of pws. If for same value the result is
-   * negative, it is replace by 0.
-   */
-  virtual PWMapStratPtr operator-(const PWMapStrategy &other) const = 0;
-
   // Traditional maps operations -----------------------------------------------
 
   /**
@@ -233,6 +227,13 @@ struct PWMapStrategy {
    */
   virtual Set equalImage(const PWMapStrategy &other) const = 0;
 
+  /**
+   * @brief Returns the set of elements of the domain that have a lesser or
+   * equal image in the first argument.
+   * For example: lessEqImage({[1:100]} -> x, {[1:100]} -> -x+100) = {[1:50]}.
+   */
+  virtual Set lessEqImage(const PWMapStrategy& other) const = 0;
+
   /** 
    * @brief Given a map, return elements of the domain that share its image with
    * other values of the domain.
@@ -304,7 +305,6 @@ struct PWMap {
   std::ostream &print(std::ostream &out) const;
 
   PWMap operator+(const PWMap &other) const;
-  PWMap operator-(const PWMap &other) const;
 
   // Traditional map operations ------------------------------------------------
 
@@ -337,6 +337,7 @@ struct PWMap {
   PWMap filterMap(bool (*f)(const Map &)) const;
 
   Set equalImage(const PWMap &other) const;
+  Set lessEqImage(const PWMap& other) const;
   Set sharedImage() const;
 
   PWMap offsetDom(const MD_NAT &off) const;

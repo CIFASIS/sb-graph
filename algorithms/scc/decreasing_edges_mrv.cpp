@@ -33,32 +33,20 @@ LtEdgesMRV::LtEdgesMRV() : dsbg_(), smap_(PW_FACT.createPWMap())
 
 Set LtEdgesMRV::decreasingRepresentative(const PWMap& rmap) const
 {
-  Set result = SET_FACT.createSet();
-
   PWMap mapB = dsbg_.mapB();
   PWMap mapD = dsbg_.mapD();
 
   if (mapB.isEmpty() || mapD.isEmpty())
-    return result;
+    return SET_FACT.createSet();
 
   PWMap rmapB = rmap.composition(mapB);
   PWMap rmapD = rmap.composition(mapD);
 
-  unsigned int dims = rmapD.arity();
-  PWMap offD = rmapD.offsetImage(MD_NAT(dims, 1)); 
-  PWMap subt = (offD - rmapB);
-  SetPiece im(dims, Interval(0, 1, Inf));
-  Set min_in_mapD = SET_FACT.createSet();
-  for (unsigned int k = 0; k < dims; ++k) {
-    im[k] = Interval(0, 1, 0);
-    if (k > 0)
-      im[k-1] = Interval(1, 1, 1);
+  Set less_eq1 = rmapD.lessEqImage(rmapB);
+  Set less_eq2 = rmapB.lessEqImage(rmapD);
+  less_eq1 = less_eq1.difference(less_eq2);
 
-    Set kth = subt.preImage(SET_FACT.createSet(im));
-    min_in_mapD = min_in_mapD.disjointCup(kth);
-  }
-
-  return min_in_mapD;
+  return less_eq1;
 }
 
 Set LtEdgesMRV::edgesInPaths(const PWMap& smap) const

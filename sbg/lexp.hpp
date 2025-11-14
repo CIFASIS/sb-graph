@@ -71,6 +71,8 @@ struct LExp {
 
   bool isId() const;
   bool isConstant() const;
+  bool isIncreasing() const;
+  RATIONAL intersectionPoint(const LExp& other) const;
 };
 std::ostream &operator<<(std::ostream &out, const LExp &le);
 

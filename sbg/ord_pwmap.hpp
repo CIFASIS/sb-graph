@@ -69,7 +69,6 @@ struct OrdPWMap : public PWMapStrategy {
   std::ostream &print(std::ostream &out) const override;
 
   PWMapStratPtr operator+(const PWMapStrategy &other) const override;
-  PWMapStratPtr operator-(const PWMapStrategy &other) const override;
 
   PWMapStratPtr clone() const override;
 
@@ -106,6 +105,7 @@ struct OrdPWMap : public PWMapStrategy {
   PWMapStratPtr filterMap(bool (*f)(const Map &)) const override;
 
   Set equalImage(const PWMapStrategy &other) const override;
+  Set lessEqImage(const PWMapStrategy &other) const override;
   Set sharedImage() const override;
 
   PWMapStratPtr offsetDom(const MD_NAT &off) const override;
@@ -189,6 +189,6 @@ typedef std::unique_ptr<OrdPWMap> OrdPWMapPtr;
 
 } // namespace LIB
 
-}  // namespace SBG
+} // namespace SBG
 
 #endif

@@ -92,11 +92,8 @@ EvalUserInput EvalExecutor::chooseImplementation()
   EvalUserInput result;
 
   AutomImplVisitor autom_impl_visitor;
-  std::streambuf* old_cout_buffer = std::cout.rdbuf();
-  std::cout.rdbuf(nullptr);
   EvalUserInput autom_impl = autom_impl_visitor.visit(Parser::parseFile(
-    *input_file_));
-  std::cout.rdbuf(old_cout_buffer);
+    *input_file_, false));
 
   result.set_set_impl(autom_impl.set_impl());
   result.set_pw_impl(autom_impl.pw_impl());

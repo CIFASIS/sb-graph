@@ -25,7 +25,7 @@ namespace SBG {
 
 namespace Parser {
 
-AST::SBGProgram parseFile(std::string fname)
+AST::SBGProgram parseFile(std::string fname, bool print_output)
 {
   std::ifstream in(fname.c_str());
   if (in.fail()) 
@@ -42,17 +42,20 @@ AST::SBGProgram parseFile(std::string fname)
   bool r = boost::spirit::qi::phrase_parse(iter, end, g
     , SBG::Parser::Skipper<SBG::Parser::StrIt>(), result);
 
-  std::cout << "-----------------------------------\n";
-  if (r && iter == end) {
-    std::cout << ">>>>>>>>> Parser result <<<<<<<<<<<\n";
+  if (print_output) {
     std::cout << "-----------------------------------\n";
-    std::cout << "\n" << result << "\n";
-  }
-  else {
-    std::string rest(iter, end);
-    std::cout << "Parsing failed\n";
-    std::cout << "-----------------------------------\n";
-    std::cout << "\nstopped at: \n" << rest << "\n";
+    if (r && iter == end) {
+      std::cout << ">>>>>>>>> Parser result <<<<<<<<<<<\n";
+      std::cout << "-----------------------------------\n";
+      std::cout << "\n" << result << "\n";
+    }
+    else {
+      std::string rest(iter, end);
+      std::cout << "Parsing failed\n";
+      std::cout << "-----------------------------------\n";
+      std::cout << "\nstopped at: \n" << rest << "\n";
+      exit(EXIT_FAILURE);
+    }
   }
 
   return result;

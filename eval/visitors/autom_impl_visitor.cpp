@@ -39,13 +39,13 @@ EvalUserInput AutomImplVisitor::visit(AST::SBGProgram p) const
 
   LIB::NAT dims = 1;
   AST::IsConfig cfg_visit;
+  EvalContext eval_ctx;
   if (!p.stms().empty()) {
     AST::Statement first = p.stms()[0];
     if (boost::apply_visitor(cfg_visit, first))
-      dims = boost::get<AST::ConfigDims>(first).nmbr_dims();
+      eval_ctx.setArity(boost::get<AST::ConfigDims>(first).nmbr_dims());
   }
 
-  EvalContext eval_ctx;
   StmEvaluator stm_eval(eval_ctx);
   for (AST::Statement stm : p.stms()) {
     if (!boost::apply_visitor(cfg_visit, stm))

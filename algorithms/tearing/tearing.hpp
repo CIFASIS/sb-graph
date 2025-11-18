@@ -1,6 +1,6 @@
 /** @file scc.hpp
 
- @brief <b>SCC SBG implementation</b>
+ @brief <b>SBG Tearing Algorithm Abstract Interface</b>
 
  <hr>
 
@@ -21,8 +21,8 @@
 
  ******************************************************************************/
 
-#ifndef SBG_SCC_HPP
-#define SBG_SCC_HPP
+#ifndef SBG_TEARING_HPP
+#define SBG_TEARING_HPP
 
 #include "sbg/sbg.hpp"
 
@@ -31,45 +31,55 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// SCC -------------------------------------------------------------------------
+// Auxiliary classures --------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct Tearing {
-  private:
-  const PWMapAF &fact_;
-
-  //*** SBG info, constant
-  member_class(DSBG, dsbg);
-
-  member_class(Set, V);
-  member_class(PWMap, Vmap);
-
-  member_class(PWMap, Emap);
-  member_class(PWMap, subEmap);
-
-  //-----------------------------
-  member_class(Set, E); // Edges in the same SCC in each step
-  member_class(Set, Ediff); // Edges between different SCC in each step
-
-  member_class(PWMap, mapB);
-  member_class(PWMap, mapD);
- 
-  member_class(PWMap, rmap);
-
-  member_class(bool, debug);
-
+/**
+ * @brief Saves input and output data from a Tearing algorithm run.
+ */
+struct TearingData {
   public:
-  Tearing(const DSBG &dsbg, bool debug);
+  TearingData(DSBG dsbg, PWMap rmap, PWMap tearIOMap);
 
-  PWMap calculate();
-
-  const PWMapAF &fact() const;
+  const DSBG& dsbg() const;
+  const PWMap& rmap() const;
+  const PWMap& tearIOMap() const;
 
   private:
-  PWMap sccMinReach(const DSBG &dg) const;
-  PWMap sccStep();
-  PWMap calculateSCC();
-  void restoreSBG();
+  DSBG dsbg_;  ///< Original input directed SBG
+  PWMap rmap_; ///< Resulting SCCs
+  PWMap tearIOMap_;  ///< Paired tearing vertices
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Tearing Algorithm Abstract Strategy ---------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+class TearingStrategy;
+
+typedef std::unique_ptr<TearingStrategy> TearingStratPtr;
+
+class TearingStrategy {
+  public:
+  virtual ~TearingStrategy() = default;
+
+  TearingStrategy();
+
+  virtual TearingData calculate(const DSBG& dsbg) = 0;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Tearing Algorithm Interface (context) -------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+class Tearing {
+  public:
+  Tearing(TearingStratPtr strat);
+
+  TearingData calculate(const DSBG& dsbg);
+
+  private:
+  TearingStratPtr strategy_;
 };
 
 } // namespace LIB

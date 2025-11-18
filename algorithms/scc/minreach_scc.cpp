@@ -70,10 +70,12 @@ SCCData MinReachSCC::calculate(const DSBG& dsbg)
   PWMap rmap = PW_FACT.createPWMap();
   Set Ediff = SET_FACT.createSet();
   Set oldE = dsbg.E();
+  Set deleted_edges = SET_FACT.createSet();
   do {
     oldE = dsbg_.E();
     rmap = sccStep();
     Ediff = oldE.difference(dsbg_.E());
+    deleted_edges = deleted_edges.disjointCup(Ediff);
   } while (Ediff != SET_FACT.createSet());
   rmap = rmap.compact();
   auto end = std::chrono::high_resolution_clock::now();
@@ -85,7 +87,7 @@ SCCData MinReachSCC::calculate(const DSBG& dsbg)
 
   Util::DEBUG_LOG << "MinReachSCC result: " << rmap << "\n\n";
 
-  return SCCData(dsbg, rmap, Ediff);
+  return SCCData(dsbg, rmap, deleted_edges);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

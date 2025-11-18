@@ -81,12 +81,12 @@ static void test_create_sb_graph(const std::string& filename, const std::vector<
   }
 
   // test edges are correct
-  EXPECT_EQ(lhs_maps.dom(), sb_graph.E());
-  EXPECT_EQ(rhs_maps.dom(), sb_graph.E());
+  EXPECT_EQ(true, lhs_maps.dom() == sb_graph.E());
+  EXPECT_EQ(true, rhs_maps.dom() == sb_graph.E());
 
-  // test that maps are as expected
-  EXPECT_EQ(lhs_maps, sb_graph.map1());
-  EXPECT_EQ(rhs_maps, sb_graph.map2());
+  //// test that maps are as expected
+  EXPECT_EQ(true, lhs_maps == sb_graph.map1());
+  EXPECT_EQ(true, rhs_maps == sb_graph.map2());
 }
 
 TEST(create_sb_graph, PartitionerTests)

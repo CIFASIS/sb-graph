@@ -154,8 +154,9 @@ bool DomOrdPWMap::operator==(const PWMapStrategy& other) const
         Set cap_dom = short_map.dom().intersection(long_map.dom());
         Map short_cap_map(cap_dom, short_map.exp());
         Map long_cap_map(cap_dom, long_map.exp());
-        if (short_cap_map != long_cap_map)
+        if (short_cap_map != long_cap_map) {
           return false;
+        }
       }
 
       ++prev_index;

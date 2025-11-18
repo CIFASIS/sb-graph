@@ -276,18 +276,35 @@ Set Map::lessEqImage(const Map& other) const
     if (m1 == m2) {
       RATIONAL h1 = linear_exp1.offset();
       RATIONAL h2 = linear_exp2.offset();
-      if (h1 < h2)
+      if (h2 >= h1) {
         result.emplaceBack(min_in_m1);
+      }
       break;
     }
     else {
       RATIONAL point = linear_exp1.intersectionPoint(linear_exp2);
-      NAT x = point.value() >= 0 ? boost::rational_cast<NAT>(point.value()) : 0;
-      Interval kth = m1 < m2 ? Interval(x + 1, 1, Inf) : Interval(0, 1, x - 1);
-
-      min_in_m1[k] = kth;
-      result.emplaceBack(min_in_m1);
-      min_in_m1[k] = Interval(x, 1, x);
+      if (point >= 0) {
+        NAT floor = point.floor();
+        NAT ceil = point.ceiling();
+        if (ceil == floor) {
+          NAT floor_minus = floor == 0 ? 0 : floor - 1;
+          NAT ceil_plus = ceil == Inf ? Inf : ceil + 1;
+          Interval kth = m1 < m2 ? Interval(ceil_plus, 1, Inf)
+            : Interval (0, 1, floor_minus);
+          min_in_m1[k] = kth;
+          result.emplaceBack(min_in_m1);
+          min_in_m1[k] = Interval(ceil, 1, floor);
+        }
+        else {
+          break;
+        }
+      }
+      else {
+        if (m1 < m2) {
+          result.emplaceBack(min_in_m1);
+        }
+        break;
+      }
     }
   }
 

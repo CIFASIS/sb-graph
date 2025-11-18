@@ -108,70 +108,52 @@ bool OrdPWMap::operator==(const PWMapStrategy &other) const
   if (pieces_ == othr.pieces_)
     return true;
   
-  const OrdPWMap *short_pw = this;
-  const OrdPWMap *long_pw  = &othr;
+  OrdMapCollection short_pw = pieces_;
+  OrdMapCollection long_pw = othr.pieces_;
   if (othr.pieces_.size() < pieces_.size()) {
-    short_pw = &othr;
-    long_pw  = this;
+    short_pw = othr.pieces_;
+    long_pw  = pieces_;
   }
 
+  // Indexes list corresponding to remaining maps in short_pw
   std::forward_list<size_t> indexes;
-  auto si_it = indexes.before_begin();
+  int short_size = short_pw.size();
+  for (int i = short_size - 1; i >= 0; --i) {
+    indexes.push_front(i);
+  }
 
-  const size_t short_size = short_pw->pieces_.size();
-  for (size_t i = 0; i < short_size; ++i)
-    si_it = indexes.insert_after(si_it, i);
-
-  auto short_begin = short_pw->pieces_.begin();
-
-  for (const MapEntry &long_mpe : long_pw->pieces_) {
+  auto short_begin = short_pw.begin();
+  for (const MapEntry &long_mpe : long_pw) {
     const Map &long_map = long_mpe.first;
     const SetPerimeter &long_sp = long_mpe.second; 
     
-    auto si_prev = indexes.before_begin();
-    auto si_curr = indexes.begin();
-
-    while (si_curr != indexes.end()) {
-      size_t idx = *si_curr;
-      const MapEntry &s_mpe = *(short_begin + idx);
-      const Map &s_m = s_mpe.first;
-      const SetPerimeter &s_sp = s_mpe.second; 
+    auto prev_index = indexes.before_begin();
+    auto curr_index = indexes.begin();
+    while (curr_index != indexes.end()) {
+      size_t idx = *curr_index;
+      const MapEntry &short_mpe = *(short_begin + idx);
+      const Map &short_map = short_mpe.first;
+      const SetPerimeter &short_sp = short_mpe.second; 
       
-      if (s_sp.second < long_sp.first) {
-        si_curr = indexes.erase_after(si_prev);
+      if (short_sp.second < long_sp.first) {
+        curr_index = indexes.erase_after(prev_index);
         continue;
       }
 
-      if (long_sp.second < s_sp.first)
+      if (long_sp.second < short_sp.first)
         break;
 
-      if (doInt(s_sp, long_sp)) {
-        auto cap_dom = s_m.dom().intersection(long_map.dom());
-        if(!cap_dom.isEmpty()){
-          // Here we check by image because the same image can be obtained through
-          // two different lexps.
-          // Example: [1:1:1] -> 10 and [1:1:1] -> x+9
-          if (cap_dom.cardinal() == 1) {
-            Map map1(cap_dom, long_map.exp());
-            Map map2(cap_dom, s_m.exp());
-            if (map1.image() != map2.image())
-              return false;
-          }
-
-          // When there is more than one element we can't check equality on the
-          // image because there are at least two linear pieces with the same
-          // domain and image.
-          // Example: [1:1:10] -> x and [1:1:10] -> -x+10
-          else {
-            if (s_m.exp() != long_map.exp())
-              return false;
-          }
+      if (doInt(short_sp, long_sp)) {
+        Set cap_dom = short_map.dom().intersection(long_map.dom());
+        Map short_cap_map(cap_dom, short_map.exp()); 
+        Map long_cap_map(cap_dom, long_map.exp()); 
+        if (!cap_dom.isEmpty()) {
+          return false;
         }
- 
       }
 
-      ++si_prev;
-      ++si_curr;
+      ++prev_index;
+      ++curr_index;
     }
     if (indexes.empty())
       break;

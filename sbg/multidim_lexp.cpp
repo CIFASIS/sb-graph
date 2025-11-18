@@ -44,7 +44,7 @@ MDLExp::iterator MDLExp::end() { return exps_.end(); }
 MDLExp::const_iterator MDLExp::begin() const { return exps_.begin(); }
 MDLExp::const_iterator MDLExp::end() const { return exps_.end(); }
 
-void MDLExp::emplaceBack(LExp le) { exps_.push_back(le); }
+void MDLExp::emplaceBack(LExp le) { exps_.emplace_back(le); }
 
 LExp &MDLExp::operator[](std::size_t n) { return exps_[n]; }
 const LExp &MDLExp::operator[](std::size_t n) const { return exps_[n]; }

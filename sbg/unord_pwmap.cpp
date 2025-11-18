@@ -85,13 +85,13 @@ std::shared_ptr<PWMapStrategy::Iterator> UnordPWMap::end() const
   return std::make_shared<UnordPWMap::Iterator>(pieces_.end());
 }
 
-void UnordPWMap::emplaceBack(const Map &m)
+void UnordPWMap::emplaceBack(const Map& m)
 {
-  if (!m.dom().isEmpty())
-    pieces_.push_back(m);
+  if (!m.isEmpty())
+    pieces_.emplace_back(m);
 }
 
-bool UnordPWMap::operator==(const PWMapStrategy &other) const 
+bool UnordPWMap::operator==(const PWMapStrategy& other) const 
 {
   UnordPWMapCRef othr = static_cast<UnordPWMapCRef>(other);
 
@@ -101,30 +101,13 @@ bool UnordPWMap::operator==(const PWMapStrategy &other) const
   if (pieces_ == othr.pieces_)
     return true;
 
-  for (const Map &m1 : pieces_) {
-    for (const Map &m2 : othr.pieces_) {
-      Set dom1 = m1.dom(), dom2 = m2.dom();
-      Set cap_dom = dom1.intersection(dom2);
-
-      if (!cap_dom.isEmpty()) {
-        // Here we check by image because the same image can be obtained through
-        // two different lexps.
-        // Example: [1:1:1] -> 10 and [1:1:1] -> x+9
-        if (cap_dom.cardinal() == 1) {
-          Map map1(cap_dom, m1.exp());
-          Map map2(cap_dom, m2.exp());
-          if (map1.image() != map2.image())
-            return false;
-        }
-
-        // When there is more than one element we can't check equality on the
-        // image because there are at least two linear pieces with the same
-        // domain and image.
-        // Example: [1:1:10] -> x and [1:1:10] -> -x+10
-        else {
-          if (m1.exp() != m2.exp())
-            return false;
-        }
+  for (const Map& m1 : pieces_) {
+    for (const Map& m2 : othr.pieces_) {
+      Set cap_dom = m1.dom().intersection(m2.dom());
+      Map cap_m1(cap_dom, m1.exp());
+      Map cap_m2(cap_dom, m2.exp());
+      if (!cap_dom.isEmpty() && cap_m1 != cap_m2) {
+        return false;
       }
     }
   }
@@ -132,12 +115,12 @@ bool UnordPWMap::operator==(const PWMapStrategy &other) const
   return true;
 }
 
-bool UnordPWMap::operator!=(const PWMapStrategy &other) const
+bool UnordPWMap::operator!=(const PWMapStrategy& other) const
 { 
   return !(*this == other);
 }
 
-UnordPWMap &UnordPWMap::operator=(UnordPWMap &&other)
+UnordPWMap &UnordPWMap::operator=(UnordPWMap&& other)
 {
   if (this != &other)
     pieces_ = std::move(other.pieces_);
@@ -145,7 +128,7 @@ UnordPWMap &UnordPWMap::operator=(UnordPWMap &&other)
   return *this;
 }
 
-std::ostream &UnordPWMap::print(std::ostream &out) const
+std::ostream &UnordPWMap::print(std::ostream& out) const
 {
   int sz = pieces_.size();
 
@@ -162,7 +145,7 @@ std::ostream &UnordPWMap::print(std::ostream &out) const
   return out;
 }
 
-PWMapStratPtr UnordPWMap::operator+(const PWMapStrategy &other) const
+PWMapStratPtr UnordPWMap::operator+(const PWMapStrategy& other) const
 {
   PWMapStratPtr res = std::make_unique<UnordPWMap>();
   
@@ -202,7 +185,7 @@ Set UnordPWMap::dom() const
   return res;
 }
 
-PWMapStratPtr UnordPWMap::restrict(const Set &subdom) const
+PWMapStratPtr UnordPWMap::restrict(const Set& subdom) const
 {
   PWMapStratPtr res = std::make_unique<UnordPWMap>();
 

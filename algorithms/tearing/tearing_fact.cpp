@@ -17,41 +17,43 @@
 
  ******************************************************************************/
 
-#include <chrono>
-
-#include "algorithms/tearing/tearing.hpp"
-#include "util/logger.hpp"
+#include "algorithms/tearing/tearing_impl.hpp"
+#include "algorithms/tearing/tearing_fact.hpp"
+#include "algorithms/scc/scc_fact.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Auxiliary structures --------------------------------------------------------
+// Tearing V1 Factory --------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-TearingData::TearingData(DSBG dsbg, PWMap rmap, PWMap tearIOMap)
-  : dsbg_(dsbg), rmap_(rmap), tearIOMap_(tearIOMap) {}
+Tearing TearingV1Fact::createTearingAlgorithm() const
+{ 
+  SCCPtr sccPtr = std::make_unique<SCC>(SCC_FACT.createSCCAlgorithm()); 
+  return Tearing(std::make_unique<TearingV1>(std::move(sccPtr)));
+}
 
-const DSBG& TearingData::dsbg() const { return dsbg_; }
-const PWMap& TearingData::rmap() const { return rmap_; }
-const PWMap& TearingData::tearIOMap() const { return tearIOMap_; }
-
-////////////////////////////////////////////////////////////////////////////////
-// Tearing Algorithm Abstract Strategy Constructors --------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-TearingStrategy::TearingStrategy() {}
-
-////////////////////////////////////////////////////////////////////////////////
-// Tearing Algorithm Interface -----------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-Tearing::Tearing(TearingStratPtr strat) : strategy_(std::move(strat)) {}
-
-TearingData Tearing::calculate(const DSBG& dsbg)
+std::string TearingV1Fact::prettyPrint() const
 {
-  return strategy_->calculate(dsbg);
+  return "TEARING V1";
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Factory for clients --------------------------------------------------------- 
+////////////////////////////////////////////////////////////////////////////////
+
+TearingFactory::TearingFactory() : tearing_fact_(std::make_unique<TearingV1Fact>()) {}
+
+TearingFact& TearingFactory::tearing_fact()
+{
+  return *tearing_fact_;
+}
+
+void TearingFactory::set_tearing_fact(TearingFactPtr tearing_fact)
+{
+  tearing_fact_ = std::move(tearing_fact);
 }
 
 } // namespace LIB

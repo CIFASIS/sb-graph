@@ -27,13 +27,14 @@ namespace Internal {
 
 SetPerimeter calculatePerimeter(const Set& s)
 {
-  MD_NAT min_per(s.arity(), Inf); 
-  MD_NAT max_per(s.arity(), 0);
+  std::size_t ar = s.arity();
+  MD_NAT min_per(ar, Inf); 
+  MD_NAT max_per(ar, 0);
   
   for (const SetPiece& mdi : s) {
     MD_NAT candidate_min = mdi.minElem();
     MD_NAT candidate_max = mdi.maxElem();
-    for (std::size_t i = 0; i < max_per.arity(); ++i) {
+    for (size_t i = 0; i < ar; ++i) {
       min_per[i] = std::min(min_per[i], candidate_min[i]);
       max_per[i] = std::max(max_per[i], candidate_max[i]);
     }
@@ -69,29 +70,33 @@ bool operator<(const MapEntry& mpe1, const MapEntry& mpe2)
   return mpe1.second.first < mpe2.second.first;
 }
 
-void emplaceBack(OrdMapCollection& ord_pw, const MapEntry& m)
+void emplaceBack(OrdMapCollection& ord_pw, const MapEntry& entry)
 {
-  ord_pw.emplace_back(m);
+  if (!entry.first.isEmpty())
+    ord_pw.emplace_back(entry);
 }
 
 void emplaceBack(OrdMapCollection& ord_pw, const Map& m)
 {
-  ord_pw.emplace_back(createMapEntry(m));
+  if (!m.isEmpty())
+    ord_pw.emplace_back(createMapEntry(m));
 }
 
 void emplaceHint(OrdMapCollection& ord_pw, const Map& m, NAT hint)
 {
-  auto it = ord_pw.begin();
-  std::advance(it, hint);
-  auto end = ord_pw.end();
-  MapEntry mpe = createMapEntry(m);
-  while (it != end) {
-    if (it->second.first < mpe.second.first)
-      ++it;
-    else 
-      break;
+  if (!m.isEmpty()) {
+    auto it = ord_pw.begin();
+    std::advance(it, hint);
+    auto end = ord_pw.end();
+    MapEntry mpe = createMapEntry(m);
+    while (it != end) {
+      if (it->second.first < mpe.second.first)
+        ++it;
+      else 
+        break;
+    }
+    ord_pw.insert(it, mpe);
   }
-  ord_pw.insert(it, mpe);
 }
 
 void advanceHint(OrdMapCollection& ord_pw, const MD_NAT crit, NAT hint)

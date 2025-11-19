@@ -93,7 +93,7 @@ Map::Map(SetPiece mdi, Exp exp)
 Map::Map(Set s, Exp exp)
   : dom_(std::move(s)), exp_(exp) {}
 
-bool Map::operator==(const Map &other) const
+bool Map::operator==(const Map& other) const
 {
   if (dom_ == other.dom()) {
     if (dom_.cardinal() == 1) {
@@ -106,12 +106,12 @@ bool Map::operator==(const Map &other) const
   return false;
 }
 
-bool Map::operator!=(const Map &other) const
+bool Map::operator!=(const Map& other) const
 {
   return !(*this == other);
 }
 
-Map &Map::operator=(const Map &other)
+Map& Map::operator=(const Map& other)
 {
   dom_ = other.dom_;
   exp_ = other.exp_;
@@ -119,7 +119,7 @@ Map &Map::operator=(const Map &other)
   return *this;
 }
 
-Map Map::operator+(const Map &other) const
+Map Map::operator+(const Map& other) const
 {
   Set res_dom = dom_.intersection(other.dom());
   Exp res_exp = exp_ + other.exp();
@@ -127,7 +127,7 @@ Map Map::operator+(const Map &other) const
   return Map(res_dom, res_exp);
 }
 
-std::ostream &operator<<(std::ostream &out, const Map &m)
+std::ostream& operator<<(std::ostream& out, const Map& m)
 {
   out << m.dom() << " -> " << m.exp();
 
@@ -140,14 +140,14 @@ std::size_t Map::arity() const { return exp_.arity(); }
 
 bool Map::isEmpty() const { return dom_.isEmpty(); }
 
-Map Map::restrict(const Set &subdom) const
+Map Map::restrict(const Set& subdom) const
 {
   return Map(dom_.intersection(subdom), exp_);
 }
 
 Set Map::image() const { return image(dom_); }
 
-Set Map::image(const Set &subdom) const
+Set Map::image(const Set& subdom) const
 {
   Set res = SET_FACT.createSet();
 
@@ -161,16 +161,16 @@ Set Map::image(const Set &subdom) const
     // Check if all expressions are bijective; in the affirmative case all
     // images can be added without further checks
     bool cond = true;
-    for (const LExp &le : exp_)
+    for (const LExp& le : exp_)
       if (le.isConstant())
         cond = false;
 
     if (cond) {
-      for (const SetPiece &mdi : capdom)
+      for (const SetPiece& mdi : capdom)
         res.emplaceBack(SBG::LIB::image(mdi, exp_));
     }
     else {
-      for (const SetPiece &mdi : capdom)
+      for (const SetPiece& mdi : capdom)
         res = res.cup(SET_FACT.createSet(SBG::LIB::image(mdi, exp_)));
     }
   }
@@ -178,7 +178,7 @@ Set Map::image(const Set &subdom) const
   return res;
 }
 
-Set Map::preImage(const Set &subcodom) const
+Set Map::preImage(const Set& subcodom) const
 {
   Set im = image();
   Set cap_subcodom = im.intersection(subcodom);
@@ -202,10 +202,12 @@ Set Map::preImage(const Set &subcodom) const
   return dom_.intersection(inv_im);
 }
 
-Map Map::composition(const Map &other) const
+Map Map::composition(const Map& other) const
 {
   Set res_dom = dom_.intersection(other.image());
-  res_dom = other.preImage(res_dom);
+  if (!res_dom.isEmpty()) {
+    res_dom = other.preImage(res_dom);
+  }
   Exp res_exp = exp_.composition(other.exp_);
 
   return Map(res_dom, res_exp);
@@ -312,7 +314,7 @@ Set Map::lessImage(const Map& other) const
   return result;
 }
 
-MaybeMap Map::compact(const Map &other) const
+MaybeMap Map::compact(const Map& other) const
 {
   Set res_dom = SET_FACT.createSet();
   if (exp_ == other.exp())

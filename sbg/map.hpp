@@ -79,15 +79,15 @@ struct Map {
    */
   Map(Set s, Exp exp);
 
-  bool operator==(const Map &other) const;
-  bool operator!=(const Map &other) const;
-  Map &operator=(const Map &other);
+  bool operator==(const Map& other) const;
+  bool operator!=(const Map& other) const;
+  Map& operator=(const Map& other);
   
   /**
    * @brief Calculates the sum of both maps for elements that belong to both
    * domains.
    */
-  Map operator+(const Map &other) const;
+  Map operator+(const Map& other) const;
 
   // Traditional map operations ------------------------------------------------
 
@@ -102,7 +102,7 @@ struct Map {
   /**
    * @brief Restrict the domain of the map to \p subdom.
    */
-  Map restrict(const Set &subdom) const;
+  Map restrict(const Set& subdom) const;
 
   /**
    * @brief Return all the elements that are the image of a value in the domain.
@@ -112,7 +112,7 @@ struct Map {
   /**
    * @brief Return the image of the map with its domain restricted to \p subdom.
    */
-  Set image(const Set &subdom) const;
+  Set image(const Set& subdom) const;
 
   /**
    * @brief Calculate the pre image of certain elements of the image.
@@ -120,13 +120,13 @@ struct Map {
    * @param subcodom Set of elements in the image of the map for which the
    * pre image will be calculated.
    */
-  Set preImage(const Set &subcodom) const;
+  Set preImage(const Set& subcodom) const;
 
   /**
    * @brief Calculate the composition of \p this with \p other, i.e.
    * \p this(\p other).
    */
-  Map composition(const Map &other) const;
+  Map composition(const Map& other) const;
 
   /**
    * @brief Calculates the set of elements in the domain such that f(x) = x.
@@ -156,10 +156,10 @@ struct Map {
    * @brief Compact the domain of two maps if both share the same expression. If
    * not, the result isn't a map, so no value is returned.
    */
-  MaybeMap compact(const Map &other) const;
+  MaybeMap compact(const Map& other) const;
   
 };
-std::ostream &operator<<(std::ostream &out, const Map &s);
+std::ostream& operator<<(std::ostream& out, const Map& s);
 
 } // namespace LIB
 

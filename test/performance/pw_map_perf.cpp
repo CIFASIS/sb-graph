@@ -286,7 +286,7 @@ TEST(PWMapPerf, UnordRestrict)
   pw.restrict(s);
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  std::cout << "PWL MAP UNORDERED RESTTRICT TEST elapsed time: " << elapsed.count() << "ms\n";
+  std::cout << "PWL MAP UNORDERED RESTRICT TEST elapsed time: " << elapsed.count() << "ms\n";
 
   SUCCEED();
 }
@@ -318,10 +318,10 @@ TEST(PWMapPerf, OrdRestrict)
       mdi.emplaceBack(i1); 
       s1.emplaceBack(mdi);
     }
-    if(k > map_sz * 25 / 100 && k%2==0 && k < map_sz * 75 / 100 )
-        s=s.cup(s1);
+    if (k > map_sz*25/100 && k%2 == 0 && k < map_sz*75/100) {
+      s = s.cup(s1);
+    }
     pw.emplaceBack(Map(s1, exp));
-
   }
 
   
@@ -329,7 +329,7 @@ TEST(PWMapPerf, OrdRestrict)
   pw.restrict(s);
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  std::cout << "PWL MAP ORDERED RESTTRICT TEST elapsed time: " << elapsed.count() << "ms\n";
+  std::cout << "PWL MAP ORDERED RESTRICT TEST elapsed time: " << elapsed.count() << "ms\n";
 
   SUCCEED();
 }
@@ -1045,8 +1045,6 @@ TEST(PWMapPerf, OrdEqualImage)
   SUCCEED();
 }
 
-
-
 TEST(PWMapPerf, UnordMinAdj)
 {
   unsigned int inter_sz = 10000;
@@ -1085,7 +1083,6 @@ TEST(PWMapPerf, UnordMinAdj)
 
   SUCCEED();
 }
-
 
 TEST(PWMapPerf, OrdMinAdj)
 {

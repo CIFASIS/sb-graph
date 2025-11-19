@@ -18,6 +18,7 @@
  ******************************************************************************/
 
 #include <forward_list>
+#include <iostream>
 
 #include "sbg/map_entry.hpp"
 #include "sbg/dom_ord_pwmap.hpp"
@@ -154,7 +155,7 @@ bool DomOrdPWMap::operator==(const PWMapStrategy& other) const
         Set cap_dom = short_map.dom().intersection(long_map.dom());
         Map short_cap_map(cap_dom, short_map.exp());
         Map long_cap_map(cap_dom, long_map.exp());
-        if (short_cap_map != long_cap_map) {
+        if (!cap_dom.isEmpty() && short_cap_map != long_cap_map) {
           return false;
         }
       }
@@ -188,7 +189,7 @@ PWMapStratPtr DomOrdPWMap::operator+(const PWMapStrategy& other) const
   Set set_in = SET_FACT.createSet();
   Set set_out = SET_FACT.createSet();
   OrdMapCollection res;
-  processMapsOrd(other,set_in, set_out, res,& DomOrdPWMap::processAdd, false);
+  processMapsOrd(other, set_in, set_out, res, &DomOrdPWMap::processAdd, false);
   return std::make_unique<DomOrdPWMap>(res);
 }
 
@@ -197,7 +198,7 @@ void DomOrdPWMap::processAdd(const Map& m1, const Map& m2,
   OrdMapCollection& ord_pwmap,
   NAT global_pos) const
 {   
-  auto res_add = m1 + m2;
+  Map res_add = m1 + m2;
   if (!res_add.dom().isEmpty()) {
     advanceHint(ord_pwmap, calculatePerimeter(m2.dom()).first, global_pos);
     emplaceHint(ord_pwmap, res_add, global_pos);
@@ -255,29 +256,51 @@ PWMapStratPtr DomOrdPWMap::restrict(const Set& subdom) const
 {
   OrdMapCollection res;
   
-  if (subdom.isEmpty())
+  if (subdom.isEmpty() || isEmpty())
     return std::make_unique<DomOrdPWMap>(res);
+
+  // Indexes list corresponding to remaining maps in short_pw
+  std::forward_list<size_t> indexes;
+  int sz = pieces_.size();
+  for (int i = sz - 1; i >= 0; --i) {
+    indexes.push_front(i);
+  }
+
+  auto begin = pieces_.begin();
+  for (const SetPiece& mdi : subdom) {
+    auto prev_index = indexes.before_begin();
+    auto curr_index = indexes.begin();
+    while (curr_index != indexes.end()) {
+      size_t idx = *curr_index;
+      const MapEntry& mpe = *(begin + idx);
+      const Map& map = mpe.first;
+      const SetPerimeter& map_sp = mpe.second; 
     
-  NAT global_pos = 0;
-  
-  SetPerimeter short_sp = calculatePerimeter(subdom);
-  auto s_max_per = short_sp.second;
-  
-  for (const MapEntry& mpe : pieces_) {
-    const Map& m = mpe.first;
-    const SetPerimeter& m_sp = mpe.second;
-    auto m_min_per = m_sp.first;
-    
-    if (doInt(m_sp, short_sp)) {
-      Map res_rest = m.restrict(subdom);
-      if (!res_rest.isEmpty()) {
-       advanceHint(res, m_min_per, global_pos);
-       emplaceHint(res, res_rest, global_pos);
+      // Here map is "before" mdi, so it is also "before" all the
+      // remaining set pieces in subdom, thus it can be discarded. 
+      if (map_sp.second < mdi.minElem()) {
+        curr_index = indexes.erase_after(prev_index);
+        continue;
       }
-      continue;
+
+      // Here map is "after" mdi, so no comparison is needed, and
+      // the loop of subdom continues to check if this map interacts
+      // with the following elements of subdom. 
+      if (mdi.maxElem() < map_sp.first)
+        break;
+
+      // Comparison between map and mdi needed.
+      Set mdi_set = SET_FACT.createSet(mdi);
+      SetPerimeter mdi_sp = calculatePerimeter(mdi_set);
+      if (doInt(map_sp, mdi_sp)) {
+        Internal::emplaceBack(res, map.restrict(mdi_set));
+      }
+
+      ++prev_index;
+      ++curr_index;
     }
-    
-    if (s_max_per < m_min_per)
+
+    if (indexes.empty())
       break;
   }
 
@@ -315,8 +338,9 @@ PWMapStratPtr DomOrdPWMap::inverse() const
 
   for (const MapEntry& mpe : pieces_){
     const Map& inv = mpe.first.minInv();
-    if(!inv.isEmpty())
+    if (!inv.isEmpty()) {
       Internal::emplaceBack(res, inv);  
+    }
   }
   
   std::sort(res.begin(),res.end(), operator<);
@@ -330,7 +354,6 @@ PWMapStratPtr DomOrdPWMap::composition(const PWMapStrategy& other) const
   DomOrdPWMapCRef othr = static_cast<DomOrdPWMapCRef>(other);
 
   NAT global_pos = 0;
-
   for (const MapEntry& o_mpe : othr.pieces_) {
     const auto& o_m = o_mpe.first;
     auto img = o_m.image();
@@ -347,13 +370,15 @@ PWMapStratPtr DomOrdPWMap::composition(const PWMapStrategy& other) const
       
       if (doInt(t_sp, i_sp)) {
         auto res_com = t_m.composition(o_m);
-        if (!res_com.isEmpty())
+        if (!res_com.isEmpty()) {
           emplaceHint(res, res_com, global_pos);
+        }
         continue;
       }
 
-      if (i_max_per < t_min_per)
+      if (i_max_per < t_min_per) {
         break;
+      }
     }
   }
 
@@ -382,11 +407,8 @@ PWMapStratPtr DomOrdPWMap::mapInf(unsigned int n) const
       DomOrdPWMap *rs = static_cast<DomOrdPWMap *>(res.get());
       old_res = std::make_unique<DomOrdPWMap>(*rs);
       
-      
       PWMapStratPtr new_res = res->composition(*res);
-      
       new_res = new_res->reduce();
-      
       res = std::move(new_res);
     } while (*old_res != *res);
   }
@@ -611,7 +633,7 @@ PWMapStratPtr DomOrdPWMap::minAdjMap(const PWMapStrategy& other) const
   Set set_in = SET_FACT.createSet();
   Set set_out = SET_FACT.createSet();
   OrdMapCollection res;
-  processMapsOrd(other, set_in, set_out, res,& DomOrdPWMap::processMinAdjMap, true);
+  processMapsOrd(other, set_in, set_out, res, &DomOrdPWMap::processMinAdjMap, true);
   std::sort(res.begin(), res.end(), operator<); 
   return std::make_unique<DomOrdPWMap>(res);
 }
@@ -696,7 +718,9 @@ PWMapStratPtr DomOrdPWMap::firstInv(const Set& subdom) const
         continue;
       }
     }
-    if (s_max_per < t_min_per) break;
+    if (s_max_per < t_min_per) {
+      break;
+    }
   }
 
   std::sort(res.begin(), res.end(), operator<);
@@ -719,10 +743,13 @@ PWMapStratPtr DomOrdPWMap::filterMap(bool (*f)(const Map& )) const
 
 Set DomOrdPWMap::equalImage(const PWMapStrategy& other) const
 { 
+  if (isEmpty() || other.isEmpty())
+    return SET_FACT.createSet();
+
   Set set_in = SET_FACT.createSet();
   Set set_out = SET_FACT.createSet();
-  OrdMapCollection no_used;
-  processMapsOrd(other, set_in, set_out, no_used,& DomOrdPWMap::processEqualImage
+  OrdMapCollection unused;
+  processMapsOrd(other, set_in, set_out, unused, &DomOrdPWMap::processEqualImage
     , false);
   return set_out;
 }
@@ -743,19 +770,21 @@ void DomOrdPWMap::processEqualImage(const Map& m1, const Map& m2,
 
 Set DomOrdPWMap::lessImage(const PWMapStrategy& other) const
 {
-  if (isEmpty() || other.isEmpty())
-    return SET_FACT.createSet();
+  Set set_in = SET_FACT.createSet();
+  Set set_out = SET_FACT.createSet();
+  OrdMapCollection unused;
+  processMapsOrd(other, set_in, set_out, unused, &DomOrdPWMap::processLessImage
+    , true);
+  return set_out;
+} 
 
-  DomOrdPWMapCRef othr = static_cast<DomOrdPWMapCRef>(other);
-  Set min_in_pw1 = SET_FACT.createSet();
-  for (const MapEntry& me1 : pieces_) {
-    for (const MapEntry& me2 : othr.pieces_) {
-      min_in_pw1 = min_in_pw1.disjointCup(me1.first.lessImage(me2.first));
-    }
-  }
-
-  return min_in_pw1; 
-}  
+void DomOrdPWMap::processLessImage(const Map& m1, const Map& m2, 
+  Set& set_in, Set& set_out, 
+  OrdMapCollection& ord_pwmap,
+  NAT global_pos) const 
+{ 
+  set_out = set_out.disjointCup(m1.lessImage(m2));
+}
 
 void DomOrdPWMap::processMapsOrd(
   const PWMapStrategy& other,
@@ -915,32 +944,32 @@ PWMapStratPtr DomOrdPWMap::compact() const
   auto li_curr = indexes.begin();
   
   while (li_curr != indexes.end()) {
-      size_t id = *li_curr;
-      const MapEntry& mpe = *(begin + id);
-      const Map& m = mpe.first;
-      Map new_m(m.dom().compact(), m.exp());
+    size_t id = *li_curr;
+    const MapEntry& mpe = *(begin + id);
+    const Map& m = mpe.first;
+    Map new_m(m.dom().compact(), m.exp());
 
-      li_curr = indexes.erase_after(li_prev);
+    li_curr = indexes.erase_after(li_prev);
     
-      while (li_curr != indexes.end()) {
-        size_t idx = *li_curr;
-        const MapEntry& next_mpe = *(begin + idx);
-        const Map& next_map = next_mpe.first;
+    while (li_curr != indexes.end()) {
+      size_t idx = *li_curr;
+      const MapEntry& next_mpe = *(begin + idx);
+      const Map& next_map = next_mpe.first;
 
-        auto comp = new_m.compact(next_map);
-        if (comp) {
-          new_m = comp.value();
-          li_curr = indexes.erase_after(li_prev);
-          continue;
-        }
-    
-        ++li_prev;
-        ++li_curr;
+      auto comp = new_m.compact(next_map);
+      if (comp) {
+        new_m = comp.value();
+        li_curr = indexes.erase_after(li_prev);
+        continue;
       }
-      
-      Internal::emplaceBack(res, new_m);
-      li_prev = indexes.before_begin();
-      li_curr = indexes.begin();
+    
+      ++li_prev;
+      ++li_curr;
+    }
+    
+    Internal::emplaceBack(res, new_m);
+    li_prev = indexes.before_begin();
+    li_curr = indexes.begin();
   }
 
   return std::make_unique<DomOrdPWMap>(res);

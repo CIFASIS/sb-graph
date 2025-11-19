@@ -21,6 +21,7 @@
 #include <gtest/gtest.h>
 
 #include "sbg/set_fact.hpp"
+#include "sbg/pwmap_fact.hpp"
 
 TEST(SetPerf, OrdDenseIntersection)
 {

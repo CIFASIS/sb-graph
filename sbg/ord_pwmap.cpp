@@ -147,7 +147,7 @@ bool OrdPWMap::operator==(const PWMapStrategy& other) const
         Set cap_dom = short_map.dom().intersection(long_map.dom());
         Map short_cap_map(cap_dom, short_map.exp()); 
         Map long_cap_map(cap_dom, long_map.exp()); 
-        if (!cap_dom.isEmpty()) {
+        if (!cap_dom.isEmpty() && short_cap_map != long_cap_map) {
           return false;
         }
       }
@@ -197,7 +197,7 @@ PWMapStratPtr OrdPWMap::operator+(const PWMapStrategy& other) const
   Set set_in = SET_FACT.createSet();
   Set set_out = SET_FACT.createSet();
   OrdMapCollection res;
-  processMapsOrd(other,set_in, set_out, res,& OrdPWMap::processAdd, false);
+  processMapsOrd(other,set_in, set_out, res, &OrdPWMap::processAdd, false);
   return std::make_unique<OrdPWMap>(res);
 }
 
@@ -206,7 +206,7 @@ void OrdPWMap::processAdd(const Map& m1, const Map& m2,
   OrdMapCollection& ord_pwmap,
   NAT global_pos) const
 {   
-  auto res_add = m1 + m2;
+  Map res_add = m1 + m2;
   if (!res_add.dom().isEmpty()){
     advanceHint(ord_pwmap, calculatePerimeter(m2.dom()).first, global_pos);
     emplaceHint(ord_pwmap, res_add, global_pos);
@@ -603,7 +603,7 @@ PWMapStratPtr OrdPWMap::minAdjMap(const PWMapStrategy& other) const
   Set set_in = SET_FACT.createSet();
   Set set_out = SET_FACT.createSet();
   OrdMapCollection res;
-  processMapsOrd(other, set_in, set_out, res,& OrdPWMap::processMinAdjMap, true);
+  processMapsOrd(other, set_in, set_out, res, &OrdPWMap::processMinAdjMap, true);
   std::sort(res.begin(), res.end(), operator<); 
   return std::make_unique<OrdPWMap>(res);
 }
@@ -715,7 +715,7 @@ Set OrdPWMap::equalImage(const PWMapStrategy& other) const
   Set set_in = SET_FACT.createSet();
   Set set_out = SET_FACT.createSet();
   OrdMapCollection no_used;
-  processMapsOrd(other, set_in, set_out, no_used,& OrdPWMap::processEqualImage
+  processMapsOrd(other, set_in, set_out, no_used, &OrdPWMap::processEqualImage
     , false);
   return set_out;
 }
@@ -757,7 +757,7 @@ void OrdPWMap::processMapsOrd(
   OrdMapCollection& ord_map,
   ProcessFunc process,
   bool order_mts
-  ) const
+) const
 {
   OrdPWMapCRef othr = static_cast<OrdPWMapCRef>(other);
 
@@ -778,7 +778,7 @@ void OrdPWMap::processMapsOrd(
   auto short_begin = short_pw->pieces_.begin();
   NAT global_pos = 0;
   
-  for(const MapEntry& long_mpe : long_pw->pieces_ ) {
+  for (const MapEntry& long_mpe : long_pw->pieces_) {
     const Map& long_map = long_mpe.first;
     const SetPerimeter& long_sp = long_mpe.second; 
     

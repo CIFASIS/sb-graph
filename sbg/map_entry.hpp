@@ -42,7 +42,7 @@ SetPerimeter calculatePerimeter(const Set &s);
 bool doInt(const SetPerimeter& p1, const SetPerimeter& p2);
 MapEntry createMapEntry(const Map& m);
 bool operator<(const MapEntry& mpe1, const MapEntry& mpe2);
-void emplaceBack(OrdMapCollection& ord_pw, const MapEntry& m);
+void emplaceBack(OrdMapCollection& ord_pw, const MapEntry& entry);
 void emplaceBack(OrdMapCollection& ord_pw, const Map& m);
 void emplaceHint(OrdMapCollection& ord_pw, const Map& m, NAT hint);
 void advanceHint(OrdMapCollection& ord_pw, const MD_NAT crit, NAT hint);

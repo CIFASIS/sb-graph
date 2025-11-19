@@ -91,9 +91,7 @@ PWMap MinAdjMRV::calculate(const DSBG& dsbg)
                 }
                 PWMap dmapB = dmap.composition(mapB), dmapD = dmap.composition(mapD);
                 // Get edges where the end is closer to the rep than the beginning
-                Set not_cycle_edges = dmapD.lessEqImage(dmapB);
-                Set less_eq2 = dmapB.lessEqImage(dmapD);
-                not_cycle_edges = not_cycle_edges.difference(less_eq2);
+                Set not_cycle_edges = dmapD.lessImage(dmapB);
                 ER = ER.intersection(not_cycle_edges);
 
                 // Extend to subset-edge

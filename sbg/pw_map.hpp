@@ -66,8 +66,8 @@ struct PWMapStrategy {
     public:
     virtual ~Iterator() = default;
     virtual void operator++() = 0;
-    virtual bool operator!=(const Iterator &other) const = 0;
-    virtual const Map &operator*() const = 0;
+    virtual bool operator!=(const Iterator& other) const = 0;
+    virtual const Map& operator*() const = 0;
   };
 
   virtual std::shared_ptr<Iterator> begin() const = 0;
@@ -76,20 +76,20 @@ struct PWMapStrategy {
   /**
    * @brief Adds a piece to the pw.
    */
-  virtual void emplaceBack(const Map &m) = 0;
+  virtual void emplaceBack(const Map& m) = 0;
 
   /**
    * @brief Two pws are equal if they satisfy the function extensionality
    * principle.
    */
-  virtual bool operator==(const PWMapStrategy &other) const = 0;
-  virtual bool operator!=(const PWMapStrategy &other) const = 0;
-  virtual std::ostream &print(std::ostream &out) const = 0;
+  virtual bool operator==(const PWMapStrategy& other) const = 0;
+  virtual bool operator!=(const PWMapStrategy& other) const = 0;
+  virtual std::ostream& print(std::ostream& out) const = 0;
 
   /**
    * @brief Sum of two pws.
    */
-  virtual PWMapStratPtr operator+(const PWMapStrategy &other) const = 0;
+  virtual PWMapStratPtr operator+(const PWMapStrategy& other) const = 0;
 
   // Traditional maps operations -----------------------------------------------
 
@@ -113,7 +113,7 @@ struct PWMapStrategy {
   /**
    * @brief Restrict the domain of the pw to \p subdom.
    */
-  virtual PWMapStratPtr restrict(const Set &subdom) const = 0;
+  virtual PWMapStratPtr restrict(const Set& subdom) const = 0;
 
   /**
    * @brief Calculates all possible images for all elements in the domain of
@@ -125,7 +125,7 @@ struct PWMapStrategy {
    * @brief Calculates all possible images for all elements in the domain of
    * the pw restricted to \p subdom.
    */
-  virtual Set image(const Set &subdom) const = 0;
+  virtual Set image(const Set& subdom) const = 0;
 
   /**
    * @brief Calculates the pre image of certain elements of the image.
@@ -133,7 +133,7 @@ struct PWMapStrategy {
    * @param subcodom Set of elements in the image of the map for which the pre
    * image will be calculated.
    */
-  virtual Set preImage(const Set &subcodom) const = 0;
+  virtual Set preImage(const Set& subcodom) const = 0;
 
   /** 
    * @brief Calculate the inverse of a bijective pw.\n  
@@ -145,7 +145,7 @@ struct PWMapStrategy {
    * @brief Calculate the composition of \p this with \p other, i.e.
    * \p this(\p other).
    */
-  virtual PWMapStratPtr composition(const PWMapStrategy &pw2) const = 0;
+  virtual PWMapStratPtr composition(const PWMapStrategy& pw2) const = 0;
 
   /**
    * @brief First compose the pw with itself \p n times, obtaining pw'. Then,
@@ -169,12 +169,12 @@ struct PWMapStrategy {
    * @brief Concatenation of two pws.\n 
    * Precondition: pws should domain-disjoint.
    */
-  virtual PWMapStratPtr concatenation(const PWMapStrategy &other) const = 0;
+  virtual PWMapStratPtr concatenation(const PWMapStrategy& other) const = 0;
 
   /**
    * @brief Extend the pw with exclusive elements in the domain of \p other.
    */
-  virtual PWMapStratPtr combine(const PWMapStrategy &other) const = 0;
+  virtual PWMapStratPtr combine(const PWMapStrategy& other) const = 0;
 
   /** 
    * @brief Calculates (if possible) compactly the result of mapInf.\n  
@@ -184,15 +184,15 @@ struct PWMapStrategy {
    *   - x-h
    *   - h
    */
-  virtual PWMapStratPtr reduce(const Interval &i, const LExp &e) const = 0;
-  virtual PWMapStratPtr reduce(const Map &sbgmap) const = 0;
+  virtual PWMapStratPtr reduce(const Interval& i, const LExp& e) const = 0;
+  virtual PWMapStratPtr reduce(const Map& sbgmap) const = 0;
   virtual PWMapStratPtr reduce() const = 0;
 
   /**
    * @brief For every element in both domains assign the law that returns the
    * minimum value.
    */
-  virtual PWMapStratPtr minMap(const PWMapStrategy &other) const = 0;
+  virtual PWMapStratPtr minMap(const PWMapStrategy& other) const = 0;
 
   /**
    * @brief Given two maps pw1 (\p this) and pw2 (\p other), for every element y1
@@ -201,14 +201,14 @@ struct PWMapStrategy {
    * calculate for every vertex which of its adjacent vertices returns the
    * minimum value according to pw other.
    */
-  virtual PWMapStratPtr minAdjMap(const PWMapStrategy &other) const = 0;
+  virtual PWMapStratPtr minAdjMap(const PWMapStrategy& other) const = 0;
 
   /** 
    * @brief Pseudo-inverse of a pw restricted to \p subdom. If a value is the
    * image of several elements of the original domain, it will mapped to any
    * of the possible candidates. 
    */
-  virtual PWMapStratPtr firstInv(const Set &subdom) const = 0;
+  virtual PWMapStratPtr firstInv(const Set& subdom) const = 0;
 
   /** 
    * @brief Pseudo-inverse of a pw.
@@ -219,20 +219,20 @@ struct PWMapStrategy {
    * Returns a pw that keeps pieces of the original pw that satisfy the
    * predicate argument.
    */
-  virtual PWMapStratPtr filterMap(bool (*f)(const Map &)) const = 0;
+  virtual PWMapStratPtr filterMap(bool (*f)(const Map& )) const = 0;
 
   /** 
    * @brief Return elements in both domains, that have the same image in both
    * pws.
    */
-  virtual Set equalImage(const PWMapStrategy &other) const = 0;
+  virtual Set equalImage(const PWMapStrategy& other) const = 0;
 
   /**
-   * @brief Returns the set of elements of the domain that have a lesser or
-   * equal image in the first argument.
-   * For example: lessEqImage({[1:100]} -> x, {[1:100]} -> -x+100) = {[1:50]}.
+   * @brief Returns the set of elements of the domain that have a lesser
+   * image in the first argument.
+   * For example: lessImage({[1:100]} -> x, {[1:100]} -> -x+100) = {[1:49]}.
    */
-  virtual Set lessEqImage(const PWMapStrategy& other) const = 0;
+  virtual Set lessImage(const PWMapStrategy& other) const = 0;
 
   /** 
    * @brief Given a map, return elements of the domain that share its image with
@@ -244,25 +244,25 @@ struct PWMapStrategy {
    * @brief Sum a constant value to every element in the domain of the pw. The
    * law remains unchanged.
    */
-  virtual PWMapStratPtr offsetDom(const MD_NAT &off) const = 0;
+  virtual PWMapStratPtr offsetDom(const MD_NAT& off) const = 0;
 
   /**
    * @brief Sum the value indicated by pw \p off for every value in the domain
    * of the pw \p this. The law remains unchanged.
    */
-  virtual PWMapStratPtr offsetDom(const PWMapStrategy &off) const = 0;
+  virtual PWMapStratPtr offsetDom(const PWMapStrategy& off) const = 0;
 
   /**
    * @brief Sum a constant value to every element in the image of the pw, that
    * is, the law of the pw is modified without altering its domain.
    */
-  virtual PWMapStratPtr offsetImage(const MD_NAT &off) const = 0;
+  virtual PWMapStratPtr offsetImage(const MD_NAT& off) const = 0;
 
   /**
    * @brief Sum the expression \p off to every element in the image of the pw,
    * that is, the law is modified without altering its domain.
    */
-  virtual PWMapStratPtr offsetImage(const Exp &off) const = 0;
+  virtual PWMapStratPtr offsetImage(const Exp& off) const = 0;
 
   /**
    * @brief Compact in the same piece all maps that have the same expression.
@@ -280,7 +280,7 @@ struct PWMap {
 
   public:
   PWMap(PWMapStratPtr strat);
-  PWMap(const PWMap &other);
+  PWMap(const PWMap& other);
 
   struct Iterator {
     private:
@@ -289,34 +289,34 @@ struct PWMap {
     public:
     Iterator(std::shared_ptr<PWMapStrategy::Iterator> it);
     void operator++();
-    bool operator!=(const PWMap::Iterator &other) const;
+    bool operator!=(const PWMap::Iterator& other) const;
     Map operator*() const;
   };
 
   Iterator begin() const;
   Iterator end() const;
 
-  void emplaceBack(const Map &m);
+  void emplaceBack(const Map& m);
 
-  bool operator==(const PWMap &other) const;
-  bool operator!=(const PWMap &other) const;
-  PWMap &operator=(const PWMap &other);
-  PWMap &operator=(PWMap &&other);
-  std::ostream &print(std::ostream &out) const;
+  bool operator==(const PWMap& other) const;
+  bool operator!=(const PWMap& other) const;
+  PWMap& operator=(const PWMap& other);
+  PWMap& operator=(PWMap&& other);
+  std::ostream& print(std::ostream& out) const;
 
-  PWMap operator+(const PWMap &other) const;
+  PWMap operator+(const PWMap& other) const;
 
   // Traditional map operations ------------------------------------------------
 
   std::size_t arity() const;
   bool isEmpty() const;
   Set dom() const;
-  PWMap restrict(const Set &subdom) const;
+  PWMap restrict(const Set& subdom) const;
   Set image() const;
-  Set image(const Set &subdom) const;
-  Set preImage(const Set &subcodom) const;
+  Set image(const Set& subdom) const;
+  Set preImage(const Set& subcodom) const;
   PWMap inverse() const;
-  PWMap composition(const PWMap &other) const;
+  PWMap composition(const PWMap& other) const;
 
   PWMap mapInf(unsigned int n) const;
   PWMap mapInf() const;
@@ -324,30 +324,30 @@ struct PWMap {
 
   // Extra operations ----------------------------------------------------------
 
-  PWMap concatenation(const PWMap &other) const;
-  PWMap combine(const PWMap &other) const;
+  PWMap concatenation(const PWMap& other) const;
+  PWMap combine(const PWMap& other) const;
   PWMap reduce() const;
 
-  PWMap minMap(const PWMap &other) const;
-  PWMap minAdjMap(const PWMap &other) const;
+  PWMap minMap(const PWMap& other) const;
+  PWMap minAdjMap(const PWMap& other) const;
 
-  PWMap firstInv(const Set &subdom) const;
+  PWMap firstInv(const Set& subdom) const;
   PWMap firstInv() const;
 
-  PWMap filterMap(bool (*f)(const Map &)) const;
+  PWMap filterMap(bool (*f)(const Map& )) const;
 
-  Set equalImage(const PWMap &other) const;
-  Set lessEqImage(const PWMap& other) const;
+  Set equalImage(const PWMap& other) const;
+  Set lessImage(const PWMap& other) const;
   Set sharedImage() const;
 
-  PWMap offsetDom(const MD_NAT &off) const;
-  PWMap offsetDom(const PWMap &off) const;
-  PWMap offsetImage(const MD_NAT &off) const;
-  PWMap offsetImage(const Exp &off) const;
+  PWMap offsetDom(const MD_NAT& off) const;
+  PWMap offsetDom(const PWMap& off) const;
+  PWMap offsetImage(const MD_NAT& off) const;
+  PWMap offsetImage(const Exp& off) const;
 
   PWMap compact() const;
 };
-std::ostream &operator<<(std::ostream &out, const PWMap &pw);
+std::ostream& operator<<(std::ostream& out, const PWMap& pw);
 
 } // namespace LIB
 

@@ -254,7 +254,7 @@ bool Map::isId() const
   return exp_.isId();
 }
 
-Set Map::lessEqImage(const Map& other) const
+Set Map::lessImage(const Map& other) const
 {
   Set result = SET_FACT.createSet();
 
@@ -264,7 +264,7 @@ Set Map::lessEqImage(const Map& other) const
   Exp exp2 = other.exp_;
 
   Set cap_dom = dom_.intersection(other.dom_);
-  if (exp1 == exp2)
+  if (cap_dom.isEmpty())
     return cap_dom; 
 
   for (int k = 0; k < ar; ++k) {
@@ -276,7 +276,7 @@ Set Map::lessEqImage(const Map& other) const
     if (m1 == m2) {
       RATIONAL h1 = linear_exp1.offset();
       RATIONAL h2 = linear_exp2.offset();
-      if (h2 >= h1) {
+      if (h1 < h2) {
         result.emplaceBack(min_in_m1);
       }
       break;

@@ -146,11 +146,11 @@ struct Map {
   bool isId() const;
 
   /**
-   * @brief Returns the set of elements of the domain that have a lesser or
-   * equal image in the first argument.
-   * For example: lessEqImage({[1:100]} -> x, {[1:100]} -> -x+100) = {[1:50]}.
+   * @brief Returns the set of elements of the domain that have a lesser
+   * image in the first argument.
+   * For example: lessImage({[1:100]} -> x, {[1:100]} -> -x+100) = {[1:49]}.
    */
-  Set lessEqImage(const Map& other) const;
+  Set lessImage(const Map& other) const;
 
   /**
    * @brief Compact the domain of two maps if both share the same expression. If

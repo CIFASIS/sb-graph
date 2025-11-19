@@ -108,7 +108,7 @@ struct DomOrdPWMap : public OrdPWMap {
   PWMapStratPtr filterMap(bool (*f)(const Map& )) const override;
 
   Set equalImage(const PWMapStrategy& other) const override;
-  Set lessEqImage(const PWMapStrategy& other) const override;
+  Set lessImage(const PWMapStrategy& other) const override;
   Set sharedImage() const override;
 
   PWMapStratPtr offsetDom(const MD_NAT& off) const override;

@@ -79,8 +79,8 @@ EvalExecutor::EvalExecutor() : scc_impl_(1)
      "\n  - 2 for domain ordered PWMaps")
     ("scc_impl", Util::prog_opts::value(&scc_impl_),
      "Desired SCC algorithm implementation:"
-     "\n  - 0 for V1 of minimum reachable SCC (default option)"
-     "\n  - 1 for V2 of minimum reachable SCC");
+     "\n  - 0 for V1 of minimum reachable SCC"
+     "\n  - 1 for V2 of minimum reachable SCC (default option)");
 
   cmd_line_opts_.add(generic_).add(config_).add(hidden_);
   cfg_file_opts_.add(config_).add(hidden_);

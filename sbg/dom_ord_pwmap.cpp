@@ -188,7 +188,7 @@ PWMapStratPtr DomOrdPWMap::operator+(const PWMapStrategy& other) const
   Set set_in = SET_FACT.createSet();
   Set set_out = SET_FACT.createSet();
   OrdMapCollection res;
-  processMapsOrd(other,set_in, set_out, res, &DomOrdPWMap::processAdd, false);
+  processMapsOrd(other,set_in, set_out, res,& DomOrdPWMap::processAdd, false);
   return std::make_unique<DomOrdPWMap>(res);
 }
 
@@ -602,7 +602,7 @@ PWMapStratPtr DomOrdPWMap::minMap(const PWMapStrategy& other) const
   if (isEmpty() || other.isEmpty())
     return std::make_unique<DomOrdPWMap>();
 
-  Set min_in_pw1 = lessEqImage(other);
+  Set min_in_pw1 = lessImage(other);
   return restrict(min_in_pw1)->combine(*other.restrict(dom())); 
 }
 
@@ -611,7 +611,7 @@ PWMapStratPtr DomOrdPWMap::minAdjMap(const PWMapStrategy& other) const
   Set set_in = SET_FACT.createSet();
   Set set_out = SET_FACT.createSet();
   OrdMapCollection res;
-  processMapsOrd(other, set_in, set_out, res, &DomOrdPWMap::processMinAdjMap, true);
+  processMapsOrd(other, set_in, set_out, res,& DomOrdPWMap::processMinAdjMap, true);
   std::sort(res.begin(), res.end(), operator<); 
   return std::make_unique<DomOrdPWMap>(res);
 }
@@ -722,7 +722,7 @@ Set DomOrdPWMap::equalImage(const PWMapStrategy& other) const
   Set set_in = SET_FACT.createSet();
   Set set_out = SET_FACT.createSet();
   OrdMapCollection no_used;
-  processMapsOrd(other, set_in, set_out, no_used, &DomOrdPWMap::processEqualImage
+  processMapsOrd(other, set_in, set_out, no_used,& DomOrdPWMap::processEqualImage
     , false);
   return set_out;
 }
@@ -741,7 +741,7 @@ void DomOrdPWMap::processEqualImage(const Map& m1, const Map& m2,
   }
 }
 
-Set DomOrdPWMap::lessEqImage(const PWMapStrategy& other) const
+Set DomOrdPWMap::lessImage(const PWMapStrategy& other) const
 {
   if (isEmpty() || other.isEmpty())
     return SET_FACT.createSet();
@@ -750,7 +750,7 @@ Set DomOrdPWMap::lessEqImage(const PWMapStrategy& other) const
   Set min_in_pw1 = SET_FACT.createSet();
   for (const MapEntry& me1 : pieces_) {
     for (const MapEntry& me2 : othr.pieces_) {
-      min_in_pw1 = min_in_pw1.disjointCup(me1.first.lessEqImage(me2.first));
+      min_in_pw1 = min_in_pw1.disjointCup(me1.first.lessImage(me2.first));
     }
   }
 
@@ -761,7 +761,7 @@ void DomOrdPWMap::processMapsOrd(
   const PWMapStrategy& other,
   Set& set_in,
   Set& set_out,
-  OrdMapCollection & ord_map,
+  OrdMapCollection&  ord_map,
   ProcessFunc process,
   bool order_mts
   ) const

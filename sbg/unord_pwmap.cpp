@@ -429,7 +429,7 @@ PWMapStratPtr UnordPWMap::minMap(const PWMapStrategy& other) const
   if (isEmpty() || other.isEmpty())
     return std::make_unique<UnordPWMap>();
 
-  Set min_in_pw1 = lessEqImage(other);
+  Set min_in_pw1 = lessImage(other);
   return restrict(min_in_pw1)->combine(*other.restrict(dom())); 
 }  
 
@@ -528,7 +528,7 @@ Set UnordPWMap::equalImage(const PWMapStrategy &other) const
   return res;
 }
 
-Set UnordPWMap::lessEqImage(const PWMapStrategy& other) const
+Set UnordPWMap::lessImage(const PWMapStrategy& other) const
 {
   if (isEmpty() || other.isEmpty())
     return SET_FACT.createSet();
@@ -537,7 +537,7 @@ Set UnordPWMap::lessEqImage(const PWMapStrategy& other) const
   Set min_in_pw1 = SET_FACT.createSet();
   for (const Map& m1 : pieces_) {
     for (const Map& m2 : othr.pieces_) {
-      min_in_pw1 = min_in_pw1.disjointCup(m1.lessEqImage(m2));
+      min_in_pw1 = min_in_pw1.disjointCup(m1.lessImage(m2));
     }
   }
 

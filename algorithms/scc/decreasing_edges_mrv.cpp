@@ -42,11 +42,8 @@ Set LtEdgesMRV::decreasingRepresentative(const PWMap& rmap) const
   PWMap rmapB = rmap.composition(mapB);
   PWMap rmapD = rmap.composition(mapD);
 
-  Set less_eq1 = rmapD.lessEqImage(rmapB);
-  Set less_eq2 = rmapB.lessEqImage(rmapD);
-  less_eq1 = less_eq1.difference(less_eq2);
-
-  return less_eq1;
+  Set result = rmapD.lessImage(rmapB);
+  return result;
 }
 
 Set LtEdgesMRV::edgesInPaths(const PWMap& smap) const

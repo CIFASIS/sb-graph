@@ -32,6 +32,7 @@
 #include "eval/visitors/autom_impl_visitor.hpp"
 #include "parser/file_parser.hpp"
 #include "util/debug.hpp"
+#include "util/logger.hpp"
 
 namespace SBG {
 
@@ -152,6 +153,10 @@ void EvalExecutor::execute(int arg_count, char* args[])
   }
 
   // Input SBG program file handling -------------------------------------------
+
+  if (vm.count("debug")) {
+    Util::SBGLogger::instance().setLevel(Util::LogLevel::Debug);
+  }
 
   if (input_file_) {
     EvalUserInput input = chooseImplementation();

@@ -18,7 +18,6 @@
  ******************************************************************************/
 
 #include <forward_list>
-#include <iostream>
 
 #include "sbg/map_entry.hpp"
 #include "sbg/dom_ord_pwmap.hpp"

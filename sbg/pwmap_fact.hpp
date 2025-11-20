@@ -89,7 +89,7 @@ class PWFactory {
   }
 
   PWMapFact& pw_fact();
-  void set_pw_fact(PWMapFactPtr set_fact);
+  void set_pw_fact(PWMapFactPtr pw_fact);
 
   private:
   PWFactory();

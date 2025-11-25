@@ -341,7 +341,6 @@ PWMapStratPtr DomOrdPWMap::inverse() const
       Internal::emplaceBack(res, inv);  
     }
   }
-  
   std::sort(res.begin(),res.end(), operator<);
 
   return std::make_unique<DomOrdPWMap>(res);
@@ -353,29 +352,28 @@ PWMapStratPtr DomOrdPWMap::composition(const PWMapStrategy& other) const
   DomOrdPWMapCRef othr = static_cast<DomOrdPWMapCRef>(other);
 
   NAT global_pos = 0;
-  for (const MapEntry& o_mpe : othr.pieces_) {
-    const auto& o_m = o_mpe.first;
-    auto img = o_m.image();
+  for (const MapEntry& other_mpe : othr.pieces_) {
+    const Map& other_map = other_mpe.first;
+    Set img = other_map.image();
     
-    SetPerimeter i_sp = calculatePerimeter(img);
-    auto i_max_per = i_sp.second;
+    SetPerimeter image_sp = calculatePerimeter(img);
+    MD_NAT image_max = image_sp.second;
+    advanceHint(res, other_mpe.second.first, global_pos);
 
-    advanceHint(res, o_mpe.second.first, global_pos);
-
-    for (const MapEntry& t_mpe : pieces_) {
-      const auto& t_m = t_mpe.first;
-      const SetPerimeter& t_sp = t_mpe.second;
-      auto t_min_per = t_sp.first;
+    for (const MapEntry& this_mpe : pieces_) {
+      const Map& this_map = this_mpe.first;
+      const SetPerimeter& this_sp = this_mpe.second;
+      MD_NAT this_min = this_sp.first;
       
-      if (doInt(t_sp, i_sp)) {
-        auto res_com = t_m.composition(o_m);
-        if (!res_com.isEmpty()) {
-          emplaceHint(res, res_com, global_pos);
+      if (doInt(this_sp, image_sp)) {
+        Map composition = this_map.composition(other_map);
+        if (!composition.isEmpty()) {
+          emplaceHint(res, composition, global_pos);
         }
         continue;
       }
 
-      if (i_max_per < t_min_per) {
+      if (image_max < this_min) {
         break;
       }
     }
@@ -455,7 +453,6 @@ PWMapStratPtr DomOrdPWMap::concatenation(const PWMapStrategy& other) const
   
   auto it1 = pieces_.begin(), it2 = othr.pieces_.begin();
   auto end1 = pieces_.end(), end2 = othr.pieces_.end();
-  
 
   for (; it1 != end1 && it2 != end2;) {
     auto min_per_m1 = it1->second.first;
@@ -490,26 +487,25 @@ PWMapStratPtr DomOrdPWMap::combine(const PWMapStrategy& other) const
   OrdMapCollection res = pieces_;
 
   NAT global_pos = 0;
-  
-  SetPerimeter t_sp = calculatePerimeter(dom());
+  SetPerimeter this_sp = calculatePerimeter(dom());
+  for (const MapEntry& other_mpe : othr.pieces_) {
+    const Map& other_map = other_mpe.first;
+    const SetPerimeter& other_sp = other_mpe.second;
 
-  for (const MapEntry& o_mpe : othr.pieces_) {
-    const Map& o_m = o_mpe.first;
-    const SetPerimeter& o_sp = o_mpe.second;
-    Map res_comb(o_m.dom(), o_m.exp());
-    
-    if (doInt(o_sp, t_sp)){
-      Set dom_o_m = o_m.dom(), new_dom = dom_o_m.difference(dom());
-      if (new_dom.isEmpty())
+    // There is intersection of domains
+    Map exclusive_other(other_map.dom(), other_map.exp());
+    if (doInt(other_sp, this_sp)) {
+      Set new_dom = other_map.dom().difference(dom());
+      if (new_dom.isEmpty()) {
         continue;
-      res_comb = Map(new_dom, o_m.exp());
+      }
+      exclusive_other = Map(new_dom, other_map.exp());
     }
-    
-    advanceHint(res, o_sp.first, global_pos);
-    emplaceHint(res, res_comb, global_pos);
+    advanceHint(res, other_sp.first, global_pos);
+    emplaceHint(res, exclusive_other, global_pos);
   }
   
-  return  std::make_unique<DomOrdPWMap>(res);
+  return std::make_unique<DomOrdPWMap>(res);
 }
 
 PWMapStratPtr DomOrdPWMap::reduce(const Interval& i, const LExp& le) const
@@ -596,9 +592,10 @@ PWMapStratPtr DomOrdPWMap::reduce(const Map& map) const
     if (!was_reduced)
       not_reduced.emplaceBack(dom_piece);
   }
-  
-  if(!not_reduced.isEmpty())
-    Internal::emplaceBack(res, Map(not_reduced, e)); // Add unreduced subpieces
+ 
+  // Add not reduced subpieces 
+  if (!not_reduced.isEmpty())
+    Internal::emplaceBack(res, Map(not_reduced, e));
 
   return std::make_unique<DomOrdPWMap>(res);
 }
@@ -606,13 +603,13 @@ PWMapStratPtr DomOrdPWMap::reduce(const Map& map) const
 PWMapStratPtr DomOrdPWMap::reduce() const
 { 
   OrdMapCollection res;
+
   for (const MapEntry& mpe : pieces_) {
     PWMapStratPtr ith = reduce(mpe.first);
     DomOrdPWMap *ith_c = static_cast<DomOrdPWMap *>(ith.get());
     for (const MapEntry& mpe_ith_elem : ith_c->pieces_) 
       Internal::emplaceBack(res, mpe_ith_elem);
   } 
-
   std::sort(res.begin(), res.end(), operator<);
   
   return std::make_unique<DomOrdPWMap>(res);
@@ -693,12 +690,10 @@ PWMapStratPtr DomOrdPWMap::firstInv(const Set& subdom) const
     const SetPerimeter& t_sp = t_mpe.second;
     auto t_min_per = t_sp.first;
 
-    
     if (doInt(t_sp, short_sp)) {
       Set img = t_m.image(subdom);
       
       if (!img.isEmpty()) {
-        
         if (!visited.isEmpty()) {
           SetPerimeter i_sp = calculatePerimeter(img);
           SetPerimeter v_sp = calculatePerimeter(visited);

@@ -81,11 +81,13 @@ std::ostream &operator<<(std::ostream &out, const MDLExp &mdle)
 {
   unsigned int sz = mdle.arity();
 
+  out << "|";
   if (sz > 0) {
     for (unsigned int j = 0; j < sz-1; ++j) 
       out << mdle[j] << "|";
     out << mdle[sz-1];
   }
+  out << "|";
 
   return out;
 }

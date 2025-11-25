@@ -729,7 +729,7 @@ TEST(PWMapPerf, UnordCompact)
   pw.compact();
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  std::cout << "PWL MAP ORDERED COMPACT TEST elapsed time: " << elapsed.count() << "ms\n";
+  std::cout << "PWL MAP UNORDERED COMPACT TEST elapsed time: " << elapsed.count() << "ms\n";
 
   SUCCEED();
 }
@@ -1040,7 +1040,7 @@ TEST(PWMapPerf, OrdEqualImage)
   pw.equalImage(pw2);
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  std::cout << "PWL MAP UNORDERED EQUALIMAGE TEST elapsed time: " << elapsed.count() << "ms\n";
+  std::cout << "PWL MAP ORDERED EQUALIMAGE TEST elapsed time: " << elapsed.count() << "ms\n";
 
   SUCCEED();
 }

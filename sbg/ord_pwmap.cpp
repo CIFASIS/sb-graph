@@ -714,27 +714,11 @@ Set OrdPWMap::equalImage(const PWMapStrategy& other) const
 { 
   Set set_in = SET_FACT.createSet();
   Set set_out = SET_FACT.createSet();
-  OrdMapCollection no_used;
-  processMapsOrd(other, set_in, set_out, no_used, &OrdPWMap::processEqualImage
+  OrdMapCollection unused;
+  processMapsOrd(other, set_in, set_out, unused, &OrdPWMap::processEqualImage
     , false);
   return set_out;
 }
-
-Set OrdPWMap::lessImage(const PWMapStrategy& other) const
-{
-  if (isEmpty() || other.isEmpty())
-    return SET_FACT.createSet();
-
-  OrdPWMapCRef othr = static_cast<OrdPWMapCRef>(other);
-  Set min_in_pw1 = SET_FACT.createSet();
-  for (const MapEntry& me1 : pieces_) {
-    for (const MapEntry& me2 : othr.pieces_) {
-      min_in_pw1 = min_in_pw1.disjointCup(me1.first.lessImage(me2.first));
-    }
-  }
-
-  return min_in_pw1; 
-}  
 
 void OrdPWMap::processEqualImage(const Map& m1, const Map& m2, 
   Set& set_in, Set& set_out, 
@@ -748,6 +732,24 @@ void OrdPWMap::processEqualImage(const Map& m1, const Map& m2,
     if (m1_cap == m2_cap)
       set_out = set_out.disjointCup(cap_dom);
   }
+}
+
+Set OrdPWMap::lessImage(const PWMapStrategy& other) const
+{ 
+  Set set_in = SET_FACT.createSet();
+  Set set_out = SET_FACT.createSet();
+  OrdMapCollection unused;
+  processMapsOrd(other, set_in, set_out, unused, &OrdPWMap::processLessImage
+    , true);
+  return set_out;
+}
+
+void OrdPWMap::processLessImage(const Map& m1, const Map& m2, 
+  Set& set_in, Set& set_out, 
+  OrdMapCollection& ord_pwmap,
+  NAT global_pos) const 
+{ 
+  set_out = set_out.disjointCup(m1.lessImage(m2));
 }
 
 void OrdPWMap::processMapsOrd(

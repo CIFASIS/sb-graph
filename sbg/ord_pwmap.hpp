@@ -159,6 +159,17 @@ struct OrdPWMap : public PWMapStrategy {
   Set& set_out,
   OrdMapCollection& ord_pwmap,
   NAT global_pos) const; 
+
+  /**
+   * @brief Calculates the lessImage core, which contains the entire main process of the function.
+   */
+  void processLessImage(
+  const Map& m1, 
+  const Map& m2, 
+  Set& set_in,
+  Set& set_out,
+  OrdMapCollection& ord_pwmap,
+  NAT global_pos) const; 
   
   /**
    * @brief Type used in the 'processMapsOrd' declaration to reduce its size.

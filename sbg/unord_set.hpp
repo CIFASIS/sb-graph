@@ -42,10 +42,10 @@ struct UnorderedSet : public SetStrategy {
 
   ~UnorderedSet();
   UnorderedSet();
-  UnorderedSet(const MD_NAT &x);
-  UnorderedSet(const Interval &i);
-  UnorderedSet(const SetPiece &mdi);
-  UnorderedSet(const MDIUnordCollection &pieces);
+  UnorderedSet(const MD_NAT& x);
+  UnorderedSet(const Interval& i);
+  UnorderedSet(const SetPiece& mdi);
+  UnorderedSet(const MDIUnordCollection& pieces);
 
   SetStratPtr clone() const override;
 
@@ -54,22 +54,22 @@ struct UnorderedSet : public SetStrategy {
 
     Iterator(MDIUnordCollection::const_iterator it);
     void operator++() override;
-    bool operator!=(const SetStrategy::Iterator &other) const override;
-    bool operator==(const SetStrategy::Iterator &other) const override;
-    bool operator<(const SetStrategy::Iterator &other) const override;
-    const SetPiece &operator*() const override;
+    bool operator!=(const SetStrategy::Iterator& other) const override;
+    bool operator==(const SetStrategy::Iterator& other) const override;
+    bool operator<(const SetStrategy::Iterator& other) const override;
+    const SetPiece& operator*() const override;
   };
 
   std::shared_ptr<SetStrategy::Iterator> begin() const override;
   std::shared_ptr<SetStrategy::Iterator> end() const override;
 
   std::size_t size() const override;
-  void emplace(const SetPiece &mdi) override;
-  void emplaceBack(const SetPiece &mdi) override;
+  void emplace(const SetPiece& mdi) override;
+  void emplaceBack(const SetPiece& mdi) override;
 
-  bool operator==(const SetStrategy &other) const override;
-  bool operator!=(const SetStrategy &other) const override;
-  std::ostream &print(std::ostream &out) const override;
+  bool operator==(const SetStrategy& other) const override;
+  bool operator!=(const SetStrategy& other) const override;
+  std::ostream& print(std::ostream& out) const override;
 
   // Traditional set operations ------------------------------------------------
 
@@ -77,17 +77,17 @@ struct UnorderedSet : public SetStrategy {
   bool isEmpty() const override;
   MD_NAT minElem() const override;
   MD_NAT maxElem() const override;
-  SetStratPtr intersection(const SetStrategy &other) const override;
-  SetStratPtr cup(const SetStrategy &other) const override;
+  SetStratPtr intersection(const SetStrategy& other) const override;
+  SetStratPtr cup(const SetStrategy& other) const override;
   SetStratPtr complement() const;
-  SetStratPtr difference(const SetStrategy &other) const override;
+  SetStratPtr difference(const SetStrategy& other) const override;
 
   // Extra operations ----------------------------------------------------------
 
   std::size_t arity() const override;
-  SetStratPtr disjointCup(const SetStrategy &other) const override;
-  SetStratPtr filterSet(bool (*f)(const SetPiece &mdi)) const override;
-  SetStratPtr offset(const MD_NAT &off) const override;
+  SetStratPtr disjointCup(const SetStrategy& other) const override;
+  SetStratPtr filterSet(bool (*f)(const SetPiece& mdi)) const override;
+  SetStratPtr offset(const MD_NAT& off) const override;
   SetStratPtr compact() const override;
 
   private:
@@ -97,7 +97,7 @@ struct UnorderedSet : public SetStrategy {
   SetStratPtr complementAtom() const;
 };
 
-typedef const UnorderedSet &UnordSetCRef;
+typedef const UnorderedSet& UnordSetCRef;
 
 } // namespace LIB
 

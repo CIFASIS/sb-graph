@@ -54,22 +54,22 @@ struct OrderedSet : public SetStrategy {
 
     Iterator(MDIOrdCollection::const_iterator it);
     void operator++() override;
-    bool operator!=(const SetStrategy::Iterator &other) const override;
-    bool operator==(const SetStrategy::Iterator &other) const override;
-    bool operator<(const SetStrategy::Iterator &other) const override;
-    const SetPiece &operator*() const override;
+    bool operator!=(const SetStrategy::Iterator& other) const override;
+    bool operator==(const SetStrategy::Iterator& other) const override;
+    bool operator<(const SetStrategy::Iterator& other) const override;
+    const SetPiece& operator*() const override;
   };
 
   std::shared_ptr<SetStrategy::Iterator> begin() const override;
   std::shared_ptr<SetStrategy::Iterator> end() const override;
 
   std::size_t size() const override;
-  void emplace(const SetPiece &mdi) override;
-  void emplaceBack(const SetPiece &mdi) override;
+  void emplace(const SetPiece& mdi) override;
+  void emplaceBack(const SetPiece& mdi) override;
 
-  bool operator==(const SetStrategy &other) const override;
-  bool operator!=(const SetStrategy &other) const override;
-  std::ostream &print(std::ostream &out) const override;
+  bool operator==(const SetStrategy& other) const override;
+  bool operator!=(const SetStrategy& other) const override;
+  std::ostream& print(std::ostream& out) const override;
 
   // Traditional set operations ------------------------------------------------
 
@@ -77,21 +77,24 @@ struct OrderedSet : public SetStrategy {
   bool isEmpty() const override;
   MD_NAT minElem() const override;
   MD_NAT maxElem() const override;
-  SetStratPtr intersection(const SetStrategy &other) const override;
-  SetStratPtr cup(const SetStrategy &other) const override;
+  SetStratPtr intersection(const SetStrategy& other) const override;
+  SetStratPtr cup(const SetStrategy& other) const override;
   SetStratPtr complement() const;
-  SetStratPtr difference(const SetStrategy &other) const override;
+  SetStratPtr difference(const SetStrategy& other) const override;
 
   // Extra operations ----------------------------------------------------------
 
   std::size_t arity() const override;
-  SetStratPtr disjointCup(const SetStrategy &other) const override;
-  SetStratPtr filterSet(bool (*f)(const SetPiece &mdi)) const override;
-  SetStratPtr offset(const MD_NAT &off) const override;
+  SetStratPtr disjointCup(const SetStrategy& other) const override;
+  SetStratPtr filterSet(bool (*f)(const SetPiece& mdi)) const override;
+  SetStratPtr offset(const MD_NAT& off) const override;
   SetStratPtr compact() const override;
 
   private:
-  
+  void emplaceHint(NAT hint, const SetPiece& mdi);
+
+  NAT advanceHint(NAT hint, const SetPiece& mdi);
+
   /**
    * @brief Calculates the complement of an ordered set with a single piece.
    */
@@ -102,12 +105,12 @@ struct OrderedSet : public SetStrategy {
    * which represents the complement of an ordered set, and an ordered set
    * (other), which represents the complement of an atomic ordered set.
    */
-  SetStratPtr intersectionComp(const SetStrategy &other,const SetPiece &mdi
-    , SetStrategy &rem) const;
+  void intersectionComp(const SetStrategy& other, const SetPiece& mdi
+    , SetStrategy& rem);
 };
 
-typedef const OrderedSet &OrdSetCRef;
-typedef OrderedSet &OrdSetRef;
+typedef const OrderedSet& OrdSetCRef;
+typedef OrderedSet& OrdSetRef;
 
 } // namespace LIB
 

@@ -60,17 +60,17 @@ struct SetStrategy {
   /**
    * @brief Constructs a set with an unique element \p x.
    */
-  SetStrategy(const MD_NAT &x);
+  SetStrategy(const MD_NAT& x);
 
   /**
    * @brief Constructs a one-dimensional set with the same elements as \p i.
    */
-  SetStrategy(const Interval &i);
+  SetStrategy(const Interval& i);
 
   /**
    * @brief Constructs a set with the same elements as \p mdi.
    */
-  SetStrategy(const SetPiece &mdi);
+  SetStrategy(const SetPiece& mdi);
 
   /**
    * @brief Auxiliary function for defining the copy constructor of Set.
@@ -81,10 +81,10 @@ struct SetStrategy {
     public:
     virtual ~Iterator() = default;
     virtual void operator++() = 0;
-    virtual bool operator!=(const Iterator &other) const = 0;
-    virtual bool operator==(const Iterator &other) const = 0;
-    virtual bool operator<(const Iterator &other) const = 0;
-    virtual const SetPiece &operator*() const = 0;
+    virtual bool operator!=(const Iterator& other) const = 0;
+    virtual bool operator==(const Iterator& other) const = 0;
+    virtual bool operator<(const Iterator& other) const = 0;
+    virtual const SetPiece& operator*() const = 0;
   };
 
   virtual std::shared_ptr<Iterator> begin() const = 0;
@@ -97,24 +97,18 @@ struct SetStrategy {
   virtual std::size_t size() const = 0;
 
   /**
-   * @brief Adds a compact piece to the set.
-   *
-   * Complexity: O(size(\p this)) for ordered collections and O(1) for unordered
-   * collections.
+   * @brief Adds a compact piece to the set, traversing in forward order.
    */
-  virtual void emplace(const SetPiece &mdi) = 0;
+  virtual void emplace(const SetPiece& mdi) = 0;
 
   /**
-   * @brief Used specially by operations of ordered collections that keep
-   * the result in order, that have to insert at the end. 
-   *
-   * Complexity: O(1) for ordered and unordered collections.
+   * @brief Adds a compact piece to the set, traversing in reverse order.
    */
-  virtual void emplaceBack(const SetPiece &mdi) = 0;
+  virtual void emplaceBack(const SetPiece& mdi) = 0;
 
-  virtual bool operator==(const SetStrategy &other) const = 0;
-  virtual bool operator!=(const SetStrategy &other) const = 0;
-  virtual std::ostream &print(std::ostream &out) const = 0;
+  virtual bool operator==(const SetStrategy& other) const = 0;
+  virtual bool operator!=(const SetStrategy& other) const = 0;
+  virtual std::ostream& print(std::ostream& out) const = 0;
 
   // Traditional set operations ------------------------------------------------
 
@@ -126,19 +120,19 @@ struct SetStrategy {
   virtual bool isEmpty() const = 0;
   virtual MD_NAT minElem() const = 0;
   virtual MD_NAT maxElem() const = 0;
-  virtual SetStratPtr intersection(const SetStrategy &other) const = 0;
+  virtual SetStratPtr intersection(const SetStrategy& other) const = 0;
 
   /**
    * @brief Calculates the union of two sets.
    */
-  virtual SetStratPtr cup(const SetStrategy &other) const = 0;
+  virtual SetStratPtr cup(const SetStrategy& other) const = 0;
 
   /**
    * @brief Calculates the complement of a set.\n 
    * Precondition: set must not be empty (undetermined arity).
    */
   virtual SetStratPtr complement() const = 0;
-  virtual SetStratPtr difference(const SetStrategy &other) const = 0;
+  virtual SetStratPtr difference(const SetStrategy& other) const = 0;
 
   // Extra operations ----------------------------------------------------------
 
@@ -152,18 +146,18 @@ struct SetStrategy {
    * @brief Calculates the union of two disjoint sets. \n 
    * Precondition: this->intersection(other) = {}.
    */
-  virtual SetStratPtr disjointCup(const SetStrategy &other) const = 0;
+  virtual SetStratPtr disjointCup(const SetStrategy& other) const = 0;
 
   /**
    * @brief Returns a set that keeps pieces of the original set that satisfy
    * the predicate argument.
    */
-  virtual SetStratPtr filterSet(bool (*f)(const SetPiece &mdi)) const = 0;
+  virtual SetStratPtr filterSet(bool (*f)(const SetPiece& mdi)) const = 0;
 
   /**
    * @brief Sum a constant value to every element of the set.
    */
-  virtual SetStratPtr offset(const MD_NAT &off) const = 0;
+  virtual SetStratPtr offset(const MD_NAT& off) const = 0;
 
   /**
    * @brief Merge as many pieces of the set as possible. Heuristic guided.
@@ -181,7 +175,7 @@ struct Set {
 
   public:
   Set(SetStratPtr strat);
-  Set(const Set &other);
+  Set(const Set& other);
 
   struct Iterator {
     private:
@@ -203,11 +197,11 @@ struct Set {
   void emplace(SetPiece mdi);
   void emplaceBack(SetPiece mdi);
 
-  bool operator==(const Set &other) const;
-  bool operator!=(const Set &other) const;
-  Set &operator=(const Set &other);
-  Set &operator=(Set &&other);
-  std::ostream &print(std::ostream &out) const;
+  bool operator==(const Set& other) const;
+  bool operator!=(const Set& other) const;
+  Set& operator=(const Set& other);
+  Set& operator=(Set&& other);
+  std::ostream& print(std::ostream& out) const;
 
   // Traditional set operations ------------------------------------------------
 
@@ -215,20 +209,20 @@ struct Set {
   bool isEmpty() const;
   MD_NAT minElem() const;
   MD_NAT maxElem() const;
-  Set intersection(const Set &other) const;
-  Set cup(const Set &other) const;
+  Set intersection(const Set& other) const;
+  Set cup(const Set& other) const;
   Set complement() const;
-  Set difference(const Set &other) const;
+  Set difference(const Set& other) const;
 
   // Extra operations ----------------------------------------------------------
 
   std::size_t arity() const;
-  Set disjointCup(const Set &other) const;
-  Set filterSet(bool (*f)(const SetPiece &mdi)) const;
-  Set offset(const MD_NAT &off) const;
+  Set disjointCup(const Set& other) const;
+  Set filterSet(bool (*f)(const SetPiece& mdi)) const;
+  Set offset(const MD_NAT& off) const;
   Set compact() const;
 };
-std::ostream &operator<<(std::ostream &out, const Set &s);
+std::ostream& operator<<(std::ostream& out, const Set& s);
 
 } // namespace LIB
 

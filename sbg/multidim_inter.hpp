@@ -88,6 +88,7 @@ struct MultiDimInter {
    * This operation is later needed to implement ordered sets.
    */ 
   bool operator<(const MultiDimInter &other) const;
+  bool operator>(const MultiDimInter &other) const;
 
   // Traditional set operations ------------------------------------------------
 

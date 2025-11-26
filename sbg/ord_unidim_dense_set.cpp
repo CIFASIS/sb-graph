@@ -224,15 +224,15 @@ SetStratPtr OrdUnidimDenseSet::intersection(const SetStrategy& other) const
   if (max_elem < other_min || other_max < min_elem) 
     return std::make_unique<OrdUnidimDenseSet>();
 
-  MDIOrdCollection result;
+  OrdUnidimDenseSet result;
   if (max_elem == other_min) {
-    result.emplace_back(SetPiece(max_elem));
+    result.emplaceBack(SetPiece(max_elem));
     return std::make_unique<OrdUnidimDenseSet>(result);
   }
 
   if (min_elem == other_max) {
     result.emplaceBack(SetPiece(min_elem));
-    return std::make_unique<OrderedSet>(result);
+    return std::make_unique<OrdUnidimDenseSet>(result);
   }
 
   const OrdUnidimDenseSetCRef othr = static_cast<OrdUnidimDenseSetCRef>(other);
@@ -264,13 +264,13 @@ SetStratPtr OrdUnidimDenseSet::cup(const SetStrategy& other) const
   if (max_elem < other_min) {
     result.insert(result.end(), pieces_.begin(), pieces_.end());
     result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
-    return std::make_unique<OrderedSet>(result);
+    return std::make_unique<OrdUnidimDenseSet>(result);
   }
 
   if (other_max < min_elem) {
     result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
     result.insert(result.end(), pieces_.begin(), pieces_.end());
-    return std::make_unique<OrderedSet>(result);
+    return std::make_unique<OrdUnidimDenseSet>(result);
   }
 
   // General case

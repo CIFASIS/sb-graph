@@ -102,7 +102,7 @@ struct OrdPWMap : public PWMapStrategy {
   PWMapStratPtr firstInv(const Set& subdom) const override;
   PWMapStratPtr firstInv() const override;
 
-  PWMapStratPtr filterMap(bool (*f)(const Map& )) const override;
+  PWMapStratPtr filterMap(bool (*f)(const Map&)) const override;
 
   Set equalImage(const PWMapStrategy& other) const override;
   Set lessImage(const PWMapStrategy& other) const override;

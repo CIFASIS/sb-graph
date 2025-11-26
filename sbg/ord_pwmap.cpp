@@ -480,7 +480,7 @@ PWMapStratPtr OrdPWMap::combine(const PWMapStrategy& other) const
     emplaceHint(res, res_comb, global_pos);
   }
   
-  return  std::make_unique<OrdPWMap>(res);
+  return std::make_unique<OrdPWMap>(res);
 }
 
 PWMapStratPtr OrdPWMap::reduce(const Interval& i, const LExp& le) const

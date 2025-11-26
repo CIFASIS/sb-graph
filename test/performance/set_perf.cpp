@@ -48,7 +48,6 @@ TEST(SetPerf, OrdDenseIntersection)
   SUCCEED();
 }
 
-
 TEST(SetPerf, OrdDenseDifference)
 {
   int N = 10000;
@@ -641,7 +640,7 @@ TEST(SetPerf, UnordDifferenceThreeDims)
   s1.difference(s2);
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  std::cout << "ORDERED UNDIFFERENCE TEST elapsed time: " << elapsed.count() << "ms\n";
+  std::cout << "UNORDERED DIFFERENCE TEST elapsed time: " << elapsed.count() << "ms\n";
 
   SUCCEED();
 }

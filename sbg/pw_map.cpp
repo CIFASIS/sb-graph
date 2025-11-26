@@ -165,7 +165,7 @@ PWMap PWMap::firstInv(const Set& subdom) const
 
 PWMap PWMap::firstInv() const { return strategy_->firstInv(); }
 
-PWMap PWMap::filterMap(bool (*f)(const Map& )) const
+PWMap PWMap::filterMap(bool (*f)(const Map&)) const
 {
   return strategy_->filterMap(f);
 }

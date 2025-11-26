@@ -45,7 +45,7 @@ TEST(PWMapPerf, UnordCombine)
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = map_sz * 25 / 100; k < map_sz * 75 / 100; k++) {
+  for (unsigned int k = map_sz * 25 / 100; k < map_sz * 75 / 100; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -65,7 +65,7 @@ TEST(PWMapPerf, UnordCombine)
 
   }
   
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -107,7 +107,7 @@ TEST(PWMapPerf, OrdCombine)
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = map_sz * 25 / 100; k < map_sz * 75 / 100; k++) {
+  for (unsigned int k = map_sz * 25 / 100; k < map_sz * 75 / 100; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -127,7 +127,7 @@ TEST(PWMapPerf, OrdCombine)
 
   }
   
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -169,7 +169,7 @@ TEST(PWMapPerf, UnordConcatenation)
   Set s = SBG::LIB::SET_FACT.createSet();
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = 0; k < map_sz*2; k++) {
+  for (unsigned int k = 0; k < map_sz*2; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -214,7 +214,7 @@ TEST(PWMapPerf, OrdConcatenation)
   Set s = SBG::LIB::SET_FACT.createSet();
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = 0; k < map_sz*2; k++) {
+  for (unsigned int k = 0; k < map_sz*2; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -258,7 +258,7 @@ TEST(PWMapPerf, UnordRestrict)
 
   Set s = SBG::LIB::SET_FACT.createSet();
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -302,7 +302,7 @@ TEST(PWMapPerf, OrdRestrict)
 
   Set s = SBG::LIB::SET_FACT.createSet();
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -345,7 +345,7 @@ TEST(PWMapPerf, UnordComposition)
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -365,7 +365,7 @@ TEST(PWMapPerf, UnordComposition)
 
   }
   
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -407,7 +407,7 @@ TEST(PWMapPerf, OrdComposition)
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -427,7 +427,7 @@ TEST(PWMapPerf, OrdComposition)
 
   }
   
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -469,7 +469,7 @@ TEST(PWMapPerf, UnordOffsetDomMap)
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -489,7 +489,7 @@ TEST(PWMapPerf, UnordOffsetDomMap)
 
   }
   
-  for (unsigned int k = map_sz*25/100; k < map_sz*75/100; k++) {
+  for (unsigned int k = map_sz*25/100; k < map_sz*75/100; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -530,7 +530,7 @@ TEST(PWMapPerf, OrdOffsetDomMap)
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = map_sz*25/100; k < map_sz*75/100; k++) {
+  for (unsigned int k = map_sz*25/100; k < map_sz*75/100; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -550,7 +550,7 @@ TEST(PWMapPerf, OrdOffsetDomMap)
 
   }
   
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -591,7 +591,7 @@ TEST(PWMapPerf, UnordFirstInvSet)
 
   Set s = SBG::LIB::SET_FACT.createSet();
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -635,7 +635,7 @@ TEST(PWMapPerf, OrdFirstInvSet)
 
   Set s = SBG::LIB::SET_FACT.createSet();
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
-    for (unsigned int k = 0; k < map_sz; k++) {
+    for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -680,7 +680,7 @@ TEST(PWMapPerf, UnordCompact)
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   int fin;
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -703,7 +703,7 @@ TEST(PWMapPerf, UnordCompact)
 
   }
   
-   for (unsigned int k = 1; k < map_sz; k++) {
+   for (unsigned int k = 1; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -746,7 +746,7 @@ TEST(PWMapPerf, OrdCompact)
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   int fin;
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -769,7 +769,7 @@ TEST(PWMapPerf, OrdCompact)
 
   }
   
-   for (unsigned int k = 1; k < map_sz; k++) {
+   for (unsigned int k = 1; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -811,7 +811,7 @@ TEST(PWMapPerf, UnordAdd)
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = map_sz*25/100; k < map_sz*75/100; k++) {
+  for (unsigned int k = map_sz*25/100; k < map_sz*75/100; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -831,7 +831,7 @@ TEST(PWMapPerf, UnordAdd)
 
   }
   
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -873,7 +873,7 @@ TEST(PWMapPerf, OrdAdd)
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = map_sz*25/100; k < map_sz*75/100; k++) {
+  for (unsigned int k = map_sz*25/100; k < map_sz*75/100; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -893,7 +893,7 @@ TEST(PWMapPerf, OrdAdd)
 
   }
   
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -934,7 +934,7 @@ TEST(PWMapPerf, UnordEqualImage)
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = map_sz*25/100; k < map_sz*75/100; k++) {
+  for (unsigned int k = map_sz*25/100; k < map_sz*75/100; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -954,7 +954,7 @@ TEST(PWMapPerf, UnordEqualImage)
 
   }
   
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -995,7 +995,7 @@ TEST(PWMapPerf, OrdEqualImage)
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
   PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = map_sz*25/100; k < map_sz*75/100; k++) {
+  for (unsigned int k = map_sz*25/100; k < map_sz*75/100; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -1015,7 +1015,7 @@ TEST(PWMapPerf, OrdEqualImage)
 
   }
   
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -1055,7 +1055,7 @@ TEST(PWMapPerf, UnordMinAdj)
   SBG::Eval::setPWFactory(0);
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -1094,7 +1094,7 @@ TEST(PWMapPerf, OrdMinAdj)
   SBG::Eval::setPWFactory(1);
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -1133,7 +1133,7 @@ TEST(PWMapPerf, UnordMinMap)
   SBG::Eval::setPWFactory(0);
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -1173,7 +1173,7 @@ TEST(PWMapPerf, OrdMinMap)
   SBG::Eval::setPWFactory(1);
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -1213,7 +1213,7 @@ TEST(PWMapPerf, UnordInverse)
   SBG::Eval::setPWFactory(0);
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -1253,7 +1253,7 @@ TEST(PWMapPerf, OrdInverse)
   SBG::Eval::setPWFactory(1);
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -1292,7 +1292,7 @@ TEST(PWMapPerf, UnordReduce)
   SBG::Eval::setPWFactory(0);
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -1333,7 +1333,7 @@ TEST(PWMapPerf, OrdReduce)
   SBG::Eval::setPWFactory(1);
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -1509,7 +1509,7 @@ TEST(PWMapPerf, UnordFirstInv)
   SBG::Eval::setPWFactory(0);
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -1548,7 +1548,7 @@ TEST(PWMapPerf, OrdFirstInv)
   SBG::Eval::setPWFactory(1);
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Exp exp;
     exp.emplaceBack(le1);
@@ -1587,7 +1587,7 @@ TEST(PWMapPerf, minAdj)
   SBG::Eval::setPWFactory(0);
 
   PWMap pw = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = 0; k < map_sz; k++) {
+  for (unsigned int k = 0; k < map_sz; ++k) {
     LExp le1(1, k);
     Set s1 = SBG::LIB::SET_FACT.createSet();
     int map_offset = k * inter_sz * set_sz;

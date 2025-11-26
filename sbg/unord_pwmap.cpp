@@ -499,7 +499,7 @@ PWMapStratPtr UnordPWMap::firstInv(const Set& subdom) const
 
 PWMapStratPtr UnordPWMap::firstInv() const { return firstInv(dom()); }
 
-PWMapStratPtr UnordPWMap::filterMap(bool (*f)(const Map& )) const
+PWMapStratPtr UnordPWMap::filterMap(bool (*f)(const Map&)) const
 {
   PWMapStratPtr res = std::make_unique<UnordPWMap>();
 

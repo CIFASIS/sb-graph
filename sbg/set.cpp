@@ -69,9 +69,22 @@ void Set::emplace(SetPiece mdi)
   strategy_->emplace(mdi);
   return;
 }
+
 void Set::emplaceBack(SetPiece mdi)
 {
   strategy_->emplaceBack(mdi);
+  return;
+}
+
+void Set::insert(const Set& other)
+{
+  strategy_->insert(*other.strategy_);
+  return;
+}
+
+void Set::insertBack(const Set& other)
+{
+  strategy_->insertBack(*other.strategy_);
   return;
 }
 

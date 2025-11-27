@@ -106,6 +106,18 @@ struct SetStrategy {
    */
   virtual void emplaceBack(const SetPiece& mdi) = 0;
 
+  /**
+   * @brief Adds all pieces from the argument to the current Set from the
+   * beginning.
+   */
+  virtual void insert(const SetStrategy& other) = 0;
+
+  /**
+   * @brief Adds all pieces from the argument to the current Set from the
+   * end.
+   */
+  virtual void insertBack(const SetStrategy& other) = 0;
+
   virtual bool operator==(const SetStrategy& other) const = 0;
   virtual bool operator!=(const SetStrategy& other) const = 0;
   virtual std::ostream& print(std::ostream& out) const = 0;
@@ -196,6 +208,8 @@ struct Set {
   std::size_t size() const;
   void emplace(SetPiece mdi);
   void emplaceBack(SetPiece mdi);
+  void insert(const Set& other);
+  void insertBack(const Set& other);
 
   bool operator==(const Set& other) const;
   bool operator!=(const Set& other) const;

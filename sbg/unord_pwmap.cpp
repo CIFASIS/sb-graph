@@ -177,13 +177,15 @@ bool UnordPWMap::isEmpty() const { return pieces_.empty(); }
 
 Set UnordPWMap::dom() const
 {
-  Set res = SET_FACT.createSet();
+  Set result = SET_FACT.createSet();
   for (const Map& m : pieces_) {
-    Set d = m.dom();
-    res = res.disjointCup(d);
+    Set dom = m.dom();
+    for (const SetPiece& mdi : dom) {
+      result.emplaceBack(mdi);
+    }
   }
 
-  return res;
+  return result;
 }
 
 PWMapStratPtr UnordPWMap::restrict(const Set& subdom) const
@@ -304,23 +306,19 @@ PWMapStratPtr UnordPWMap::concatenation(const PWMapStrategy& other) const
 
 PWMapStratPtr UnordPWMap::combine(const PWMapStrategy& other) const
 { 
-  
   UnordPWMapCRef othr = static_cast<UnordPWMapCRef>(other);
-
   if (isEmpty())
     return std::make_unique<UnordPWMap>(othr);
 
   if (other.isEmpty())
-    return std::make_unique<UnordPWMap>(*this);
+    return std::make_unique<UnordPWMap>(pieces_);
 
-  PWMapStratPtr res = std::make_unique<UnordPWMap>(*this);
-  Set dom1 = dom();
-  for (const Map& m2 : othr.pieces_) {
-    Set dom2 = m2.dom(), new_dom = dom2.difference(dom1);
-    res->emplaceBack(Map(new_dom, m2.exp()));
-  }
+  if (pieces_ == othr.pieces_)
+    return std::make_unique<UnordPWMap>(pieces_);
 
-  return res;
+  Set exclusive_other = other.dom().difference(dom());
+
+  return concatenation(*other.restrict(exclusive_other));
 }
 
 PWMapStratPtr UnordPWMap::reduce(const Interval& i, const LExp& le) const
@@ -481,20 +479,21 @@ PWMapStratPtr UnordPWMap::minAdjMap(const PWMapStrategy& other) const
 
 PWMapStratPtr UnordPWMap::firstInv(const Set& subdom) const
 {
-  UnordMapCollection res;
+  UnordMapCollection result;
 
   Set visited = SET_FACT.createSet();
   for (const Map& m : pieces_) {
     Set res_dom = m.image(subdom).difference(visited);
     if (!res_dom.isEmpty()) {
       Map new_map(m.preImage(res_dom), m.exp());
-      pushBack(res, new_map.minInv());
+      result.emplace_back(new_map.minInv());
 
-      visited = visited.disjointCup(res_dom);
+      for (const SetPiece& mdi : res_dom)
+        visited.emplaceBack(mdi);
     }
   }
 
-  return std::make_unique<UnordPWMap>(res);
+  return std::make_unique<UnordPWMap>(result);
 }
 
 PWMapStratPtr UnordPWMap::firstInv() const { return firstInv(dom()); }

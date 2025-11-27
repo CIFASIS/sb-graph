@@ -103,12 +103,53 @@ void UnorderedSet::emplace(const SetPiece& mdi)
   pieces_.emplace(pieces_.begin(), mdi);
   return;
 }
+
 void UnorderedSet::emplaceBack(const SetPiece& mdi)
 {
   if (mdi.isEmpty())
     return;
 
   pieces_.emplace_back(mdi);
+  return;
+}
+
+void UnorderedSet::insert(const SetStrategy& other)
+{
+  if (other.isEmpty())
+    return;
+
+  UnordSetCRef othr = static_cast<UnordSetCRef>(other);
+  if (isEmpty()) {
+    for (const SetPiece& mdi : othr.pieces_) {
+      pieces_.emplace_back(mdi);
+    }
+    return;
+  }
+
+  for (const SetPiece& mdi : othr.pieces_) {
+    emplace(mdi);
+  }
+
+  return;
+}
+
+void UnorderedSet::insertBack(const SetStrategy& other)
+{
+  if (other.isEmpty())
+    return;
+
+  UnordSetCRef othr = static_cast<UnordSetCRef>(other);
+  if (isEmpty()) {
+    for (const SetPiece& mdi : othr.pieces_) {
+      pieces_.emplace_back(mdi);
+    }
+    return;
+  }
+
+  for (const SetPiece& mdi : othr.pieces_) {
+    emplaceBack(mdi);
+  }
+
   return;
 }
 
@@ -393,12 +434,14 @@ SetStratPtr UnorderedSet::compact() const
   MDIUnordCollection res;
 
   if (!isEmpty()) {
-    std::set<SetPiece> prev(pieces_.begin(), pieces_.end()), actual = prev;
+    std::set<SetPiece> prev(pieces_.begin(), pieces_.end());
+    std::set<SetPiece> actual = prev;
     do {
       prev = actual;
       actual = std::set<SetPiece>();
 
-      std::set<SetPiece>::iterator ith = prev.begin(), last = prev.end();
+      std::set<SetPiece>::iterator ith = prev.begin();
+      std::set<SetPiece>::iterator last = prev.end();
       std::set<SetPiece> to_erase;
       for (; ith != last; ++ith) {
         SetPiece ith_compact = *ith;

@@ -148,6 +148,70 @@ void OrdUnidimDenseSet::emplaceBack(const SetPiece& mdi)
   return;
 }
 
+void OrdUnidimDenseSet::insert(const SetStrategy& other)
+{
+  if (other.isEmpty())
+    return;
+
+  OrdUnidimDenseSetCRef othr = static_cast<OrdUnidimDenseSetCRef>(other);
+  if (isEmpty() || pieces_.back() < othr.pieces_.front()) {
+    for (const SetPiece& mdi : othr.pieces_) {
+      pieces_.emplace_back(mdi);
+    }
+    return;
+  }
+
+  if (othr.pieces_.back() < pieces_.front()) {
+    MDIOrdCollection temp;
+    for (const SetPiece& mdi : othr.pieces_) {
+      temp.emplace_back(mdi);
+    }
+    for (const SetPiece& mdi : pieces_) {
+      temp.emplace_back(mdi);
+    }
+    pieces_ = std::move(temp);
+    return;
+  }
+
+  for (const SetPiece& mdi : othr.pieces_) {
+    emplace(mdi);
+  }
+
+  return;
+}
+
+void OrdUnidimDenseSet::insertBack(const SetStrategy& other)
+{
+  if (other.isEmpty())
+    return;
+
+  OrdUnidimDenseSetCRef othr = static_cast<OrdUnidimDenseSetCRef>(other);
+  if (isEmpty() || pieces_.back() < othr.pieces_.front()) {
+    for (const SetPiece& mdi : othr.pieces_) {
+      pieces_.emplace_back(mdi);
+    }
+    return;
+  }
+
+  if (othr.pieces_.back() < pieces_.front()) {
+    MDIOrdCollection temp;
+    for (const SetPiece& mdi : othr.pieces_) {
+      temp.emplace_back(mdi);
+    }
+    for (const SetPiece& mdi : pieces_) {
+      temp.emplace_back(mdi);
+    }
+    pieces_ = std::move(temp);
+    return;
+  }
+
+  for (const SetPiece& mdi : othr.pieces_) {
+    emplaceBack(mdi);
+  }
+
+  return;
+}
+
 bool OrdUnidimDenseSet::operator==(const SetStrategy& other) const
 {
   SetStratPtr this_comp = compact();

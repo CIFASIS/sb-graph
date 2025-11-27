@@ -235,12 +235,15 @@ bool OrdPWMap::isEmpty() const
 
 Set OrdPWMap::dom() const
 {
-  Set res = SET_FACT.createSet();
+  Set result = SET_FACT.createSet();
   for (const MapEntry& mpe : pieces_) {
-    res = res.disjointCup(mpe.first.dom());
+    Set dom = mpe.first.dom();
+    for (const SetPiece& mdi : dom) {
+      result.emplaceBack(mdi);
+    }
   }
 
-  return res;
+  return result;
 }
 
 PWMapStratPtr OrdPWMap::restrict(const Set& subdom) const
@@ -451,36 +454,18 @@ PWMapStratPtr OrdPWMap::concatenation(const PWMapStrategy& other) const
 PWMapStratPtr OrdPWMap::combine(const PWMapStrategy& other) const
 {
   OrdPWMapCRef othr = static_cast<OrdPWMapCRef>(other);
-
   if (isEmpty())
-    return std::make_unique<OrdPWMap>(othr);
+    return std::make_unique<OrdPWMap>(othr.pieces_);
 
   if (other.isEmpty())
-    return std::make_unique<OrdPWMap>(*this);
+    return std::make_unique<OrdPWMap>(pieces_);
 
-  OrdMapCollection res = pieces_;
+  if (pieces_ == othr.pieces_)
+    return std::make_unique<OrdPWMap>(pieces_);
 
-  NAT global_pos = 0;
-  
-  SetPerimeter t_sp = calculatePerimeter(dom());
+  Set exclusive_other = other.dom().difference(dom());
 
-  for (const MapEntry& o_mpe : othr.pieces_) {
-    const Map& o_m = o_mpe.first;
-    const SetPerimeter& o_sp = o_mpe.second;
-    Map res_comb(o_m.dom(), o_m.exp());
-    
-    if (doInt(o_sp, t_sp)){
-      Set dom_o_m = o_m.dom(), new_dom = dom_o_m.difference(dom());
-      if (new_dom.isEmpty())
-        continue;
-      res_comb = Map(new_dom, o_m.exp());
-    }
-    
-    advanceHint(res, o_sp.first, global_pos);
-    emplaceHint(res, res_comb, global_pos);
-  }
-  
-  return std::make_unique<OrdPWMap>(res);
+  return concatenation(*other.restrict(exclusive_other));
 }
 
 PWMapStratPtr OrdPWMap::reduce(const Interval& i, const LExp& le) const

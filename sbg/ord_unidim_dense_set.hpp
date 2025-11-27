@@ -68,6 +68,8 @@ struct OrdUnidimDenseSet : public SetStrategy {
   std::size_t size() const override;
   void emplace(const SetPiece& mdi) override;
   void emplaceBack(const SetPiece& mdi) override;
+  void insert(const SetStrategy& other) override;
+  void insertBack(const SetStrategy& other) override;
 
   bool operator==(const SetStrategy& other) const override;
   bool operator!=(const SetStrategy& other) const override;

@@ -32,8 +32,13 @@
 namespace sbg_partitioner {
 
 struct SetPieceHash {
-  static std::size_t set_piece_hash(const SBG::LIB::SetPiece& set_piece);  
-  std::size_t operator()(const SBG::LIB::SetPiece& set_piece) const;
+    SetPieceHash() = default;
+    static std::size_t set_piece_hash(const SBG::LIB::SetPiece& set_piece);
+    std::size_t operator()(const SBG::LIB::SetPiece& set_piece) const;
+};
+
+struct SetHash {
+    std::size_t operator()(const SBG::LIB::Set& set_piece) const;
 };
 
 class ICommunicationCost {
@@ -169,7 +174,7 @@ public:
 private:
     void initialize();
 
-    using AdjacencyMatrix = std::vector<std::vector<uint8_t>>;
+    using AdjacencyMatrix = std::vector<std::vector<unsigned>>;
 
     const SBG::LIB::WeightedSBGraph& _graph; // read-only members
 

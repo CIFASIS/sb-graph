@@ -42,15 +42,17 @@ namespace using_cc {
 struct SetPointer {
     unsigned index;
     SBG::LIB::SetPiece set_piece;
+    size_t offset;
     size_t size;
 
-    SetPointer(unsigned index, SBG::LIB::SetPiece set_piece, size_t size)
+    SetPointer(unsigned index, const SBG::LIB::SetPiece& set_piece, size_t offset, size_t size)
         : index(index),
         set_piece(set_piece),
+        offset(offset),
         size(size)
     {}
 
-    bool operator==(const SetPointer& other) { return index == other.index; }
+    bool operator==(const SetPointer& other) { return index == other.index and offset == other.offset and size == other.size; }
 };
 
 using SetPointers = std::vector<SetPointer>;

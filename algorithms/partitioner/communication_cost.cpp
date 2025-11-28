@@ -23,6 +23,7 @@
 #include "communication_cost.hpp"
 #include "partition_graph.hpp"
 #include "partition_graph_cc.hpp"
+#include "sbg_partitioner_log.hpp"
 
 
 using namespace std;
@@ -48,6 +49,17 @@ std::size_t SetPieceHash::operator()(const SetPiece& set_piece) const {
   return seed;
 }
 
+
+std::size_t SetHash::operator()(const SBG::LIB::Set& set) const
+{
+    std::size_t seed = set.size();
+    for (const auto& set_piece : set) {
+        seed ^= SetPieceHash::set_piece_hash(set_piece) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+    return seed;
+}
+
+
 unordered_map<SetPiece, Set, SetPieceHash> CommunicationCost::_communication_by_set_piece = {};
 
 namespace internal {
@@ -70,7 +82,8 @@ Set set_piece_communication(const SetPiece& nodes, const WeightedSBGraph& graph)
     auto edges_map2 = graph.map2().preImage(node_set);
 
     // Now compute the disjoint union to remove loop edges
-    auto communication = edges_map1.cup(edges_map2).difference(edges_map1.intersection(edges_map2));
+    auto common_edges = edges_map1.intersection(edges_map2);
+    auto communication = edges_map1.cup(edges_map2).difference(common_edges);
 
     return communication;
 }
@@ -272,7 +285,7 @@ CommunicationCostCC::CommunicationCostCC(const WeightedSBGraph& graph, const usi
 
 void CommunicationCostCC::initialize()
 {
-    _adjacency_matrix = vector<vector<uint8_t> >(_sorted_nodes.size(), vector<uint8_t>(_sorted_nodes.size(), 0));
+    _adjacency_matrix = vector<vector<unsigned> >(_sorted_nodes.size(), vector<unsigned>(_sorted_nodes.size(), 0));
 
     for (size_t i = 0; i <  _sorted_nodes.size(); i++) {
         const auto& set_piece_pointer = _sorted_nodes.at(i);
@@ -283,6 +296,7 @@ void CommunicationCostCC::initialize()
             auto edges2 = get_set_piece_edges(set_piece_pointer_j.set_piece);
             auto shared_edges_cardinal = edges.intersection(edges2).cardinal();
             if (not edges.intersection(edges2).isEmpty()) {
+                logging::sbg_log << set_piece_pointer.set_piece << ", " << set_piece_pointer_j.set_piece << ": " << shared_edges_cardinal << endl;
                 _adjacency_matrix[set_piece_pointer.index][set_piece_pointer_j.index] = shared_edges_cardinal;
                 _adjacency_matrix[set_piece_pointer_j.index][set_piece_pointer.index] = shared_edges_cardinal;
             }
@@ -292,7 +306,7 @@ void CommunicationCostCC::initialize()
 #ifdef SBG_PARTITIONER_LOGGING
     for (size_t i = 0; i <  _sorted_nodes.size(); i++) {
         for (size_t j = 0; j < _sorted_nodes.size(); j++) {
-            cout << int(_adjacency_matrix[_sorted_nodes.at(i).index][_sorted_nodes.at(j).index]) << " ";
+            cout << unsigned(_adjacency_matrix[_sorted_nodes.at(i).index][_sorted_nodes.at(j).index]) << " ";
         }
         cout << endl;
     }

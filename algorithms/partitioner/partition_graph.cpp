@@ -155,13 +155,16 @@ Partition to_vector(const Set& partition_set)
 
 
 PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_partitions,
-    const InitialPartitionStrategy strategy, bool multithreading_enabled)
+    const InitialPartitionStrategy strategy, bool multithreading_enabled, bool create_comm_cost)
 {
   logging::sbg_log << "computing strategy number " << strategy << endl;
   std::vector<sbg_partitioner::PartitionMap> partition_maps = make_initial_partitions(graph, number_of_partitions, strategy);
 
   auto& best_initial_partitions = partition_maps.front();
-  CommunicationCostPtr comm_cost = create_communication_cost(graph, best_initial_partitions, multithreading_enabled);
+  CommunicationCostPtr comm_cost;
+  if (create_comm_cost) {
+    comm_cost = create_communication_cost(graph, best_initial_partitions, multithreading_enabled);
+  }
   if (strategy == InitialPartitionStrategy::ALL) {
 
     auto best_communication_set = SET_FACT.createSet();
@@ -190,7 +193,9 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
     logging::sbg_log << "Best is " << best_initial_partitions << " with communication " << best_communication_set << endl;
   }
 
-  set_communication_cost(move(comm_cost));
+  if (create_comm_cost) {
+    set_communication_cost(move(comm_cost));
+  }
 
   return best_initial_partitions;
 }
@@ -209,21 +214,22 @@ Set get_connectivity_set(SBG::LIB::SBG& graph, const PartitionMap& partitions, s
 }
 
 
-void sanity_check(const WeightedSBGraph& graph, PartitionMap& partitions_set, unsigned number_of_partitions)
+void sanity_check(const WeightedSBGraph& graph, const PartitionMap& partitions_set, unsigned number_of_partitions)
 {
-  cout << "\nsanity_check\n" << partitions_set << endl;
   // This is just a sanity check
   Set nodes_to_check = SET_FACT.createSet();
   for (unsigned i = 0; i < number_of_partitions; i++) {
-    nodes_to_check = nodes_to_check.cup(from_vector(partitions_set[i]));
+    auto s_i = from_vector(partitions_set[i]);
+    assert(s_i.intersection(nodes_to_check).isEmpty());
+    nodes_to_check = nodes_to_check.cup(s_i);
   }
 
   Set diff = nodes_to_check.difference(graph.V());
-  cout << "diff1 " << diff << endl;
+  logging::sbg_log << "diff1 " << diff << endl;
   assert(get_node_size(diff, graph.get_node_weights()) == 0 and "The intial partition has more elements than the graph");
 
   diff = graph.V().difference(nodes_to_check);
-  cout << "diff2 " << diff << endl;
+  logging::sbg_log << "diff2 " << diff << endl;
   assert(get_node_size(diff, graph.get_node_weights()) == 0 and "The intial partition has less elements than the graph");
 
   for (unsigned i = 0; i < number_of_partitions; i++) {

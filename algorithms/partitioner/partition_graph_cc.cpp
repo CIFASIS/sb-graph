@@ -39,7 +39,7 @@ namespace using_cc {
 
 ostream& operator<<(ostream& os, const SetPointer& set_pointer)
 {
-    os << "[" << set_pointer.index << ", " << set_pointer.set_piece << ", " << set_pointer.size << "]";
+    os << "[" << set_pointer.index << ", " << set_pointer.set_piece << ", " << set_pointer.offset << ", " << set_pointer.size << "]";
 
     return os;
 }
@@ -91,13 +91,13 @@ ostream& operator<<(ostream& os, const GainObject& gain_obj)
        << gain_obj.a
        << ", "
        << gain_obj.b
-       << ", "
+       << ", size: "
        << gain_obj.size
-       << ", "
+       << ", gain: "
        << gain_obj.gain
-       << ", "
+       << ", alpha_a "
        << gain_obj.alpha_a
-       << ", "
+       << ", alpha_b "
        << gain_obj.alpha_b
        << "}";
 
@@ -117,6 +117,195 @@ ostream& operator<<(ostream& os, const GainObjects& gains)
 
 namespace {
 
+Set granular_union(const Set& s_1, const Set& s_2)
+{
+    set<unsigned> points;
+    for (const auto& set_piece : s_1) {
+        points.insert((set_piece)[0].begin());
+        points.insert(set_piece[0].end() + 1);
+    }
+
+    for (const auto& set_piece : s_2) {
+        points.insert(set_piece[0].begin());
+        points.insert(set_piece[0].end() + 1);
+    }
+
+    vector<unsigned> points_vector(points.begin(), points.end());
+
+    vector<SBG::LIB::SetPiece> granular_union_vector;
+    for (size_t i = 0; i < points_vector.size() - 1; i++) {
+        granular_union_vector.push_back(SBG::LIB::Interval(points_vector[i], 1, points_vector[i + 1] - 1));
+    }
+
+    auto s1_s2_cup = s_1.cup(s_2);
+    auto granular_union_set = SBG::LIB::SET_FACT.createSet();
+    for (const auto& set_piece : granular_union_vector) {
+        auto set = SBG::LIB::SET_FACT.createSet(set_piece);
+        if (not s1_s2_cup.intersection(set).isEmpty()){
+            granular_union_set = granular_union_set.cup(set);
+        }
+    }
+
+    return granular_union_set;
+}
+
+
+pair<Set, Set> take_granular_option(const Set& set_1, const Set& set_2)
+{
+    vector<unsigned> lenghts;
+    assert(set_1.cardinal() == set_2.cardinal());
+
+    auto vector_set_1 = to_vector(set_1);
+    auto vector_set_2 = to_vector(set_2);
+
+    auto new_set_1 = SBG::LIB::SET_FACT.createSet();
+    auto new_set_2 = SBG::LIB::SET_FACT.createSet();
+    for (size_t i = 0, j = 0; i < vector_set_1.size() and j < vector_set_2.size();) {
+        unsigned l1 = vector_set_1.at(i).cardinal();
+        unsigned l2 = vector_set_2.at(j).cardinal();
+
+        unsigned l = min(l1, l2);
+
+        new_set_1.emplaceBack(SBG::LIB::Interval(vector_set_1.at(i).begin()[0].begin(), 1, vector_set_1.at(i).begin()[0].begin() + l - 1));
+        new_set_2.emplaceBack(SBG::LIB::Interval(vector_set_2.at(j).begin()[0].begin(), 1, vector_set_2.at(j).begin()[0].begin() + l - 1));
+
+        if (vector_set_1.at(i).begin()[0].begin() + l > vector_set_1.at(i).begin()[0].end()) {
+            i++;
+        } else {
+            vector_set_1[i] = SBG::LIB::Interval(vector_set_1.at(i).begin()[0].begin() + l, 1, vector_set_1.at(i).begin()[0].end());
+        }
+
+        if (vector_set_2.at(j).begin()[0].begin() + l > vector_set_2.at(j).begin()[0].end()) {
+            j++;
+        } else {
+            vector_set_2[j] = SBG::LIB::Interval(vector_set_2.at(j).begin()[0].begin() + l, 1, vector_set_2.at(j).begin()[0].end());
+        }
+    }
+
+    // logging::sbg_log << "take_granular_option " << new_set_1 << ", " << new_set_2 << endl;
+
+    return {new_set_1, new_set_2};
+}
+
+
+list<pair<SBG::LIB::Set, SBG::LIB::Set>> granularize_intervals_into_injective_domains(const WeightedSBGraph& sb_graph)
+{
+    list<pair<SBG::LIB::Set, SBG::LIB::Set>> linked_intervals;
+    
+    for (auto it1 = sb_graph.map1().begin(), it2 = sb_graph.map2().begin(); it1 != sb_graph.map1().end() and it2 != sb_graph.map2().end(); ++it1, ++it2) {
+        auto slope1 = (*it1).exp().exps()[0].slope();
+        auto slope2 = (*it2).exp().exps()[0].slope();
+
+        if ((slope1 > 0 and slope2 > 0) or (*it1).dom().cardinal() == 1) {
+            auto im1_ = (*it1).image();
+            auto im2_ = (*it2).image();
+            assert(im1_.intersection(im2_).isEmpty());
+
+            auto [im1, im2] = take_granular_option(im1_, im2_);
+
+            linked_intervals.push_back(make_pair(im1, im2));
+        }
+    }
+
+    for (size_t i = 0; i < 10; i++) {
+        for (const auto& [im1, im2] : linked_intervals) {
+            for (auto& [p1, p2] : linked_intervals) {
+                if (not p1.intersection(im1).isEmpty()) {
+                    // logging::sbg_log << "intersection between " << p1 << ", " << im1 << " " << granular_union(im1.intersection(p1), p1) << endl;
+                    p1 = granular_union(im1.intersection(p1), p1);
+                    tie(p1, p2) = take_granular_option(p1, p2);
+                }
+
+                if (not p2.intersection(im1).isEmpty()) {
+                    // logging::sbg_log << "intersection between " << p2 << ", " << im1 << " " << granular_union(im1.intersection(p2), p2) << endl;
+                    p2 = granular_union(im1.intersection(p2), p2);
+                    tie(p1, p2) = take_granular_option(p1, p2);
+                }
+
+                if (not p1.intersection(im2).isEmpty()) {
+                    // logging::sbg_log << "intersection between " << p1 << ", " << im2 << " " << granular_union(im2.intersection(p1), p1) << endl;
+                    p1 = granular_union(im2.intersection(p1), p1);
+                    tie(p1, p2) = take_granular_option(p1, p2);
+                }
+
+                if (not p2.intersection(im2).isEmpty()) {
+                    // logging::sbg_log << "intersection between " << p2 << ", " << im2  << " " << granular_union(im2.intersection(p2), p2) << endl;
+                    p2 = granular_union(im2.intersection(p2), p2);
+                    tie(p1, p2) = take_granular_option(p1, p2);
+                }
+            }
+        }
+    }
+
+    return linked_intervals;
+}
+
+
+Set convert_linked_intervals_into_sets(const list<pair<Set, Set>>& linked_intervals)
+{
+    auto injective_conn = SBG::LIB::SET_FACT.createSet();
+    set<unsigned> points;
+    for (const auto& [p1, p2] : linked_intervals) {
+        for (const auto& p : p1){
+            points.insert(p[0].begin());
+            points.insert(p[0].end() + 1);
+        }
+
+        for (const auto& p : p2){
+            points.insert(p[0].begin());
+            points.insert(p[0].end() + 1);
+        }
+    }
+
+    logging::sbg_log << "[";
+    for_each(points.begin(), points.end(), [](auto& p) { logging::sbg_log << p << " "; });
+    logging::sbg_log << "]" << endl;
+
+    vector<unsigned> points_vector(points.begin(), points.end());
+
+    for (size_t i = 0; i < points_vector.size() - 1; i++) {
+        injective_conn.emplaceBack(SBG::LIB::Interval(points_vector[i], 1, points_vector[i + 1] - 1));
+    }
+
+    return injective_conn;
+}
+
+}
+
+
+Set split_nodes_into_injective_domains(const WeightedSBGraph& sb_graph)
+{
+    auto linked_intervals = granularize_intervals_into_injective_domains(sb_graph);
+    auto injective_conn = convert_linked_intervals_into_sets(linked_intervals);
+
+    return injective_conn;
+}
+
+
+namespace {
+
+float get_comm_between_two_set_pieces(
+    const SetPointer& a,
+    const SetPointer& b,
+    const CommunicationCostCC& cost_matrix_cc)
+{
+    auto comm = cost_matrix_cc.get_communication(a.index, b.index);
+    if (comm == 0) {
+        return 0;
+    }
+
+    size_t offset = max(b.offset, a.offset);
+    size_t end_by_offset = min(b.offset + b.size - 1, a.offset + a.size - 1);
+    float alpha = 0.;
+    if (offset < end_by_offset) {
+        size_t actual_size =  end_by_offset - offset;
+        assert(a.set_piece.cardinal() == b.set_piece.cardinal());
+        alpha = float(actual_size) / a.set_piece.cardinal();
+    }
+
+    return comm * alpha;
+}
+
 float compute_D(
     const SetPointer& set_pointer,
     const SetPointers& partition,
@@ -125,12 +314,43 @@ float compute_D(
 {
     float ic = 0;
     for (size_t i = 0; i < partition.size(); i++) {
-        ic += cost_matrix_cc.get_communication(set_pointer.index, partition.at(i).index);
+        if (partition.at(i).index == set_pointer.index) {
+            continue;
+        }
+
+        // auto comm = cost_matrix_cc.get_communication(set_pointer.index, partition.at(i).index);
+        // if (comm == 0) {
+        //     continue;
+        // }
+
+        // size_t offset = max(partition.at(i).offset, set_pointer.offset);
+        // size_t end_by_offset = min(partition.at(i).offset + partition.at(i).size - 1, set_pointer.offset + set_pointer.size - 1);
+        // float alpha = 0.;
+        // if (offset < end_by_offset) {
+        //     size_t actual_size =  end_by_offset - offset + 1;
+        //     assert(set_pointer.set_piece.cardinal() == partition.at(i).set_piece.cardinal());
+        //     alpha = float(actual_size) / set_pointer.set_piece.cardinal();
+        // }
+        
+        ic += get_comm_between_two_set_pieces(set_pointer, partition.at(i), cost_matrix_cc);
     }
 
     float ec = 0;
     for (size_t i = 0; i < complementary_partition.size(); i++) {
-        ec += cost_matrix_cc.get_communication(set_pointer.index, complementary_partition.at(i).index);
+        // auto comm = cost_matrix_cc.get_communication(set_pointer.index, complementary_partition.at(i).index);
+        // if (comm == 0) {
+        //     continue;
+        // }
+
+        // size_t offset = max(complementary_partition.at(i).offset, set_pointer.offset);
+        // size_t end_by_offset = min(complementary_partition.at(i).offset + complementary_partition.at(i).size - 1, set_pointer.offset + set_pointer.size - 1);
+        // float alpha = 0.;
+        // if (offset < end_by_offset) {
+        //     size_t actual_size =  end_by_offset - offset;
+        //     assert(set_pointer.set_piece.cardinal() == complementary_partition.at(i).set_piece.cardinal());
+        //     alpha = float(actual_size) / set_pointer.set_piece.cardinal();
+        // }
+        ec += get_comm_between_two_set_pieces(set_pointer, complementary_partition.at(i), cost_matrix_cc);
     }
 
     float D = ec - ic;
@@ -177,11 +397,21 @@ tuple<optional<GainObject>, GainObjects> compute_gains(
 
             int s = min(p_a_i.size, p_b_j.size);
 
-            float alpha_i = s / float(p_a_i.set_piece.cardinal());
-            float alpha_j = s / float(p_b_j.set_piece.cardinal());
+            float alpha_i = s / float(p_a_i.size);
+            float alpha_j = s / float(p_b_j.size);
 
             float gain = D_i * alpha_i + D_j * alpha_j;
-            gain -= 2 * cost_matrix_cc.get_communication(p_a_i.index, p_b_j.index) * min(alpha_i, alpha_j);
+
+            // check if there are decimal values
+            float integer_part = std::trunc(gain);
+            float fractional_part = gain - integer_part;
+            cout << "gain: " << gain << ", fractional_part: " << fractional_part << endl;
+            if (std::abs(fractional_part) > 0.000001f) {
+                cout << "decimals in gain!" << endl;
+                cout << p_a_i << ": [" << D_i << ", " << alpha_i << "] " << p_b_j << ": [" << D_j << ", " << alpha_j << "]: gain: " << gain << endl;
+            }
+
+            gain -= 2 * get_comm_between_two_set_pieces(p_a_i, p_b_j, cost_matrix_cc);
 
             gains.emplace_back(p_a_i, p_b_j, s, gain, alpha_i, alpha_j);
 
@@ -205,7 +435,7 @@ void remove_elements_from_partition(SetPointers& partition, const SetPointers& m
 {
     for (const auto& p : max_sum_set) {
         logging::sbg_log << "moving from a " << p << endl;
-        auto it = find_if(partition.begin(), partition.end(), [&p](const auto& s) { return s.index == p.index; } );
+        auto it = find_if(partition.begin(), partition.end(), [&p](const auto& s) { return s.index == p.index and s.offset == p.offset; } );
         assert(it != partition.end());
         logging::sbg_log << "found " << *it << endl;
         if (it->size == p.size) {
@@ -213,6 +443,7 @@ void remove_elements_from_partition(SetPointers& partition, const SetPointers& m
         } else {
             logging::sbg_log << "sizes " << it->size << ", " << p.size << endl;
             it->size -= p.size;
+            it->offset += p.size;
             logging::sbg_log << "new size " << it->size << endl;
             logging::sbg_log << partition << endl;
         }
@@ -228,11 +459,70 @@ void add_elements_to_partition(SetPointers& partition, const SetPointers& max_su
         if (it == partition.end()) {
             partition.push_back(p);
         } else {
-            logging::sbg_log << "add_elements_to_partition " << *it << ", " << p.size << " ";
-            it->size += p.size;
+            logging::sbg_log << "add_elements_to_partition " << *it << ", " << p.size << ", " << p.offset << " ";
+            if (it->offset == p.offset) {
+                cout << "SAME OFFSET! This shouldn't happen " << *it << ", " << p << endl;
+                it->size += p.size;
+            } else {
+                partition.push_back(p);
+            }
             logging::sbg_log << partition << endl;
         }
     }
+}
+
+
+void flatten_set(SetPointers& set_pointers)
+{
+    cout << "flatten_set " << set_pointers << endl;
+    // 1. Define the custom logic
+    // Comparator for sorting (Strict Weak Ordering)
+    auto sortComp = [](const SetPointer& a, const SetPointer& b) {
+        if (a.index != b.index) {
+            return a.index < b.index;
+        } else {
+            return a.offset < b.offset;
+        }
+    };
+
+    // Predicate for finding duplicates (Equality)
+    auto areEqual = [](const SetPointer& a, const SetPointer& b) {
+        return a.index == b.index;
+    };
+
+    std::sort(set_pointers.begin(), set_pointers.end(), sortComp);
+
+    cout << "sorted set " << set_pointers << endl;
+    
+    // Start searching from the beginning
+    auto it = set_pointers.begin();
+    
+    while (it != set_pointers.end()) {
+        // adjacent_find searches for two consecutive identical elements
+        it = std::adjacent_find(it, set_pointers.end(), areEqual);
+
+        if (it != set_pointers.end()) {
+            logging::sbg_log << "Duplicate index found: " << it->index
+                    << " (" << *it << " matches " << *(it+1) << ")\n";
+            logging::sbg_log << it->set_piece.begin()[0].begin() + it->offset + it->size 
+                             << ", "
+                             << (it + 1)->set_piece.begin()[0].begin() + (it + 1)->offset
+                             << endl;
+
+            // if this condition is not achivied, we found
+            if (it->set_piece.begin()[0].begin() + it->offset + it->size == (it + 1)->set_piece.begin()[0].begin() + (it + 1)->offset) {
+                it->size += (it+1)->size;
+                cout << "new size! " << *it << endl;
+                it = set_pointers.erase(it + 1);
+            } else {
+                // Skip past the current duplicate to find the next one
+                // We increment twice to avoid finding the same pair again if there are 3 copies
+                it++; 
+            }
+        }
+    }
+
+    cout << "flattened_set " << set_pointers << endl;
 }
 
 }
@@ -254,7 +544,16 @@ int bisection(
     int max_par_sum = 0;
     pair<SetPointers, SetPointers> max_par_sum_set = {};
     unordered_map<unsigned, float> Ds_a = compute_Ds(partition_a, partition_b, cost_matrix);
+    cout << "D Values:" << endl;
+    for_each(Ds_a.cbegin(), Ds_a.cend(), [&partition_a](const pair<unsigned, float>& p) {
+        auto it = find_if(partition_a.cbegin(), partition_a.cend(), [&p](const auto& s) { return s.index == p.first; });
+        cout << *it  << ", " << p.second << endl; 
+    });
     unordered_map<unsigned, float> Ds_b = compute_Ds(partition_b, partition_a, cost_matrix);
+    for_each(Ds_b.cbegin(), Ds_b.cend(), [&partition_b](const pair<unsigned, float>& p) {
+        auto it = find_if(partition_b.cbegin(), partition_b.cend(), [&p](const auto& s) { return s.index == p.first; });
+        cout << *it  << ", " << p.second << endl; 
+    });
     auto [max_gain, gm] = compute_gains(partition_a_copy, partition_b_copy, cost_matrix, Ds_a, Ds_b);
 
     if (not max_gain) {
@@ -271,8 +570,8 @@ int bisection(
 
         // save partial sets and sum
         par_sum += max_gain->gain;
-        a_v.emplace_back(max_gain->a.index, max_gain->a.set_piece, max_gain->size);
-        b_v.emplace_back(max_gain->b.index, max_gain->b.set_piece, max_gain->size);
+        a_v.emplace_back(max_gain->a.index, max_gain->a.set_piece, max_gain->a.offset, max_gain->size);
+        b_v.emplace_back(max_gain->b.index, max_gain->b.set_piece, max_gain->b.offset, max_gain->size);
         if (par_sum > max_par_sum) {
             max_par_sum = par_sum;
             max_par_sum_set = make_pair(a_v, b_v);
@@ -281,17 +580,19 @@ int bisection(
         // remove chosen elements for partition a
         partition_a_copy.erase(remove(partition_a_copy.begin(), partition_a_copy.end(), max_gain->a));
         if (max_gain->size < max_gain->a.size) {
-            partition_a_copy.emplace_back(max_gain->a.index, max_gain->a.set_piece, max_gain->a.size - max_gain->size);
+            partition_a_copy.emplace_back(max_gain->a.index, max_gain->a.set_piece, max_gain->a.offset + max_gain->size, max_gain->a.size - max_gain->size);
         }
 
         // remove chosen elements for partition b
         partition_b_copy.erase(remove(partition_b_copy.begin(), partition_b_copy.end(), max_gain->b));
         if (max_gain->size < max_gain->b.size) {
-            partition_b_copy.emplace_back(max_gain->b.index, max_gain->b.set_piece, max_gain->b.size - max_gain->size);
+            partition_b_copy.emplace_back(max_gain->b.index, max_gain->b.set_piece, max_gain->b.offset + max_gain->size, max_gain->b.size - max_gain->size);
         }
 
         // update gains
         if (not partition_a_copy.empty() and not partition_b_copy.empty()) {
+            auto updated_Ds_a = Ds_a;
+
             Ds_a = compute_Ds(partition_a_copy, partition_b_copy, cost_matrix);
             Ds_b = compute_Ds(partition_b_copy, partition_a_copy, cost_matrix);
 
@@ -309,6 +610,9 @@ int bisection(
     add_elements_to_partition(partition_a, max_par_sum_set.second);
     add_elements_to_partition(partition_b, max_par_sum_set.first);
 
+    flatten_set(partition_a);
+    flatten_set(partition_b);
+
 #ifdef SBG_PARTITIONER_LOGGING
     logging::sbg_log << "result:\nmax par sum: " << max_par_sum  << "\nprev_a: " << prev_a << "\nprev_b: " << prev_b << "\nmax_par_set: " << max_par_sum_set.first << "\n" << max_par_sum_set.second << "\npartition a: " << partition_a << "\npartition b: " << partition_b << endl;
 #endif
@@ -319,19 +623,14 @@ int bisection(
 
 PartitionMap rebuild_partitions(const SetPointers& sorted_nodes, const vector<SetPointers>& partitions)
 {
-    vector<unsigned> pivots(sorted_nodes.size(), 0);
-    for (const auto& s : sorted_nodes) {
-        pivots[s.index] = s.set_piece.begin()[0].begin();
-    }
-
+    logging::sbg_log << "rebuilding partitions" << endl;
     PartitionMap new_partitions;
     new_partitions.reserve(partitions.size());
     for (const auto& partition : partitions) {
         new_partitions.emplace_back();
         for (const auto& set_pointer : partition) {
-            unsigned begin = pivots[set_pointer.index];
+            unsigned begin = set_pointer.set_piece.begin()[0].begin() + set_pointer.offset;
             new_partitions.back().push_back(Interval(begin, 1, begin + set_pointer.size - 1));
-            pivots[set_pointer.index] += set_pointer.size;
         }
     }
 
@@ -380,11 +679,10 @@ void kl_sbg_imbalance_partitioner(const WeightedSBGraph& graph, const SetPointer
 
     list<BisectionResult> gains;
     while (change) {
-        logging::sbg_log << "*****ITERATION NUMBER " << counter++ << endl;
+        cout << "*****ITERATION NUMBER " << counter++ << endl;
         change = false;
 
         BisectionResult best_gain;
-        gains.clear();
         best_gain = refine_partitions_function(graph, partitions, cost_matrix, LMin, LMax, gains);
 
         logging::sbg_log << "Best gain results is: " << best_gain.gain << endl;
@@ -401,9 +699,9 @@ void kl_sbg_imbalance_partitioner(const WeightedSBGraph& graph, const SetPointer
             change = true;
             partitions[best_gain.i] = best_gain.A;
             partitions[best_gain.j] = best_gain.B;
+            sanity_check(graph, rebuild_partitions(sorted_nodes, partitions), partitions.size());
 
             gains.erase(std::remove_if(gains.begin(), gains.end(), gain_comp), gains.end());
-            gains.clear();
 
             logging::sbg_log << "best gain is " << best_gain.gain << endl;
             logging::sbg_log << "gains length " << gains.size() << endl;
@@ -447,8 +745,9 @@ vector<SetPointers> best_initial_partition(
             for (auto it = nodes_to_add.begin(); it != nodes_to_add.end();) {
                 if (it->size + current_size > expected_size) {
                     unsigned s = expected_size - current_size;
-                    partitions[i].emplace_back(it->index, it->set_piece, s);
+                    partitions[i].emplace_back(it->index, it->set_piece, it->offset, s);
                     it->size -= s;
+                    it->offset += s;
                     current_size += s;
                     // we don't update the iterator in this case
                 } else {
@@ -490,31 +789,42 @@ vector<SetPointers> best_initial_partition(
             int rest = v.size % number_of_partitions;
             logging::sbg_log << v << " size " << v.size << " quotient " << quotient << ", rest " << rest << endl;
 
-            if (quotient > 0) {
-                for (size_t i = 0; i < number_of_partitions; i++) {
-                    temp_partition[i].emplace_back(v.index, v.set_piece, quotient);
-                    size_by_partition[i] += quotient;
-                }
-            }
+            size_t current_offset = 0;
+            unsigned min_size = 0;
 
             if (rest > 0) {
-                unsigned min_size = 0;
                 for (size_t i = 1; i < number_of_partitions; i++) {
                     if (size_by_partition.at(i) < size_by_partition.at(min_size)) {
                         min_size = i;
                     }
                 }
-            
-                // if quotient is greater than 0, we need to extend one of the intervals
-                if (quotient > 0) {
-                    // the last one inserted is `v`, so we add rest to it
-                    assert(v.set_piece == temp_partition[min_size].back().set_piece);
-                    temp_partition[min_size].back().size += rest;
-                    size_by_partition[min_size] += rest;
-                } else { // quotient is 0, we need to insert it
-                    temp_partition[min_size].push_back(v);
-                }
             }
+
+            if (quotient > 0) {
+
+                for (size_t i = 0; i < number_of_partitions; i++) {
+                    auto current_quotient = quotient;
+                    if (rest > 0 and i == min_size){
+                        current_quotient += rest;
+                    }
+
+                    temp_partition[i].emplace_back(v.index, v.set_piece, current_offset, current_quotient);
+                    size_by_partition[i] += current_quotient;
+                    current_offset += current_quotient;
+                }
+            } else {
+                temp_partition[min_size].emplace_back(v.index, v.set_piece, current_offset, rest);
+            }
+            //     // if quotient is greater than 0, we need to extend one of the intervals
+            //     if (quotient > 0) {
+            //         // the last one inserted is `v`, so we add rest to it
+            //         assert(v.set_piece == temp_partition[min_size].back().set_piece);
+            //         temp_partition[min_size].back().size += rest;
+            //         size_by_partition[min_size] += rest;
+            //     } else { // quotient is 0, we need to insert it
+            //         temp_partition[min_size].push_back(v);
+            //     }
+            // }
         }
 
 #ifdef SBG_PARTITIONER_LOGGING
@@ -536,6 +846,7 @@ vector<SetPointers> best_initial_partition(
                 }
             }
 
+            logging::sbg_log << "this_edge_cut " << this_edge_cut << " edge_cut " << edge_cut << endl;
             if (this_edge_cut < edge_cut) {
                 partitions = temp_partition;
             }

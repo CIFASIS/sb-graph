@@ -52,6 +52,9 @@ std::vector<SetPointers> best_initial_partition(
     const InitialPartitionStrategy strategy);
 
 
+SBG::LIB::Set split_nodes_into_injective_domains(const SBG::LIB::WeightedSBGraph& sb_graph);
+
+
 int bisection(
     const SBG::LIB::WeightedSBGraph& graph,
     CommunicationCostCC& cost_matrix,

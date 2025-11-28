@@ -23,9 +23,11 @@
 #include <getopt.h>
 #include <iostream>
 #include <optional>
+#include <set>
 #include <string>
 
 #include <algorithms/cc/cc.hpp>
+#include <sbg/set_fact.hpp>
 #include <util/time_profiler.hpp>
 
 #include "build_sb_graph.hpp"
@@ -151,7 +153,7 @@ void read_directory(const std::string& name, std::vector<std::string>& v)
 }
 
 
-tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> run_current_version(
+tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> partitionate_not_using_cc(
     const PartitionerParams& params)
 {
     auto start_build_graph = chrono::high_resolution_clock::now();
@@ -170,6 +172,93 @@ tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> run_c
     auto time_to_partitionate = chrono::duration<double, std::milli>(end_partitionate - start_partitionate).count();
 
     return { make_unique<SBG::LIB::WeightedSBGraph>(move(sb_graph)), partitions, time_to_build_graph, time_to_partitionate };
+}
+
+
+tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> partitionate_using_cc(const PartitionerParams& params)
+{
+    auto start_build_graph = chrono::high_resolution_clock::now();
+    auto sb_graph = make_unique<SBG::LIB::WeightedSBGraph>(build_sb_graph(params.filename->c_str(), false));
+    auto end_build_graph = chrono::high_resolution_clock::now();
+    auto time_to_build_graph = chrono::duration<double, std::milli>(end_build_graph - start_build_graph).count();
+
+    cout << "sb_graph: " << *sb_graph << endl;
+
+    auto injective_conn = using_cc::split_nodes_into_injective_domains(*sb_graph);
+
+    logging::sbg_log << "injective connections " << injective_conn << endl;
+#if SBG_PARTITIONER_LOGGING
+    logging::sbg_log << "remaining " << sb_graph->V().difference(injective_conn) << endl;
+#endif
+
+    auto start_partitionate = chrono::high_resolution_clock::now();
+    using_cc::SetPointers sorted_nodes = {};
+    unsigned index = 0;
+    for (const auto& s : injective_conn) {
+        sorted_nodes.push_back(using_cc::SetPointer(index++, s, 0, s.cardinal()));
+    }
+
+    sbg_partitioner::CommunicationCostCC comm_cc(*sb_graph, sorted_nodes);
+
+    std::vector<sbg_partitioner::using_cc::SetPointers> sorted_partitions;
+    auto new_graph = SBG::LIB::WeightedSBGraph(
+        injective_conn,
+        sb_graph->Vmap(),
+        sb_graph->map1(),
+        sb_graph->map2(),
+        sb_graph->Emap(),
+        sb_graph->subEmap()
+    );
+
+    auto non_sorted_partitions = best_initial_partition(new_graph, *params.number_of_partitions, params.initial_partition_strategy, params.enable_multithreading);
+
+    // logging::sbg_log << "converting nodes into set pointers" << endl;
+    auto start_conversion = chrono::high_resolution_clock::now();
+    for (const auto& partition : non_sorted_partitions) {
+        sorted_partitions.emplace_back();
+        for (const auto& v : partition) {
+            for (const auto& n : sorted_nodes) {
+                if (not v.intersection(n.set_piece).isEmpty()) {
+                    size_t offset = v.begin()[0].begin() - n.set_piece.begin()[0].begin();
+                    sorted_partitions.back().emplace_back(n.index, n.set_piece, offset, v.cardinal());
+                }
+            }
+        }
+    }
+    auto end_conversion = chrono::high_resolution_clock::now();
+    auto conversion_time = chrono::duration<double, std::milli>(end_conversion - start_conversion).count();
+    // auto sorted_partitions = using_cc::best_initial_partition(*sb_graph, sorted_nodes, comm_cc, *params.number_of_partitions, InitialPartitionStrategy::DFS_DISTRIBUTIVE_POSTORDER);
+    for (const auto& sp : sorted_partitions){
+        cout << sp << endl;
+    }
+
+    for (size_t i = 0; i < sorted_nodes.size(); i++) {
+        const auto& s1 = sorted_nodes.at(i);
+        for (size_t j = i + 1; j < sorted_nodes.size(); j++) {
+            const auto& s2 = sorted_nodes.at(j);
+
+            auto comm = comm_cc.get_communication(s1.index, s2.index);
+            cout << s1.set_piece << " " <<  s1.set_piece.cardinal() << " - " << s2.set_piece << " " <<  s2.set_piece.cardinal() << ": " << comm << endl;
+            if (comm > 0) {
+                assert(s1.set_piece.cardinal() == s2.set_piece.cardinal());
+            }
+        }
+    }
+
+    sanity_check(*sb_graph, sbg_partitioner::using_cc::rebuild_partitions(sorted_nodes, sorted_partitions), *params.number_of_partitions);
+
+    using_cc::kl_sbg_imbalance_partitioner(*sb_graph, sorted_nodes, sorted_partitions, comm_cc, 0.);
+
+    auto partitions = sbg_partitioner::using_cc::rebuild_partitions(sorted_nodes, sorted_partitions);
+    auto end_partitionate = chrono::high_resolution_clock::now();
+    auto time_to_partitionate = chrono::duration<double, std::milli>(end_partitionate - start_partitionate).count();
+    time_to_partitionate -= conversion_time;
+
+    // if (sanity_check_enabled) {
+        sanity_check(*sb_graph, partitions, *params.number_of_partitions);
+    // }
+
+    return { move(sb_graph), partitions, time_to_build_graph, time_to_partitionate };
 }
 
 
@@ -316,57 +405,9 @@ int main(int argc, char** argv)
     PartitionMap partitions;
     double time_to_build_graph, time_to_partitionate = 0.0;
     if (not params.use_connected_components) {
-        tie(sb_graph, partitions, time_to_build_graph, time_to_partitionate) = run_current_version(params);
+        tie(sb_graph, partitions, time_to_build_graph, time_to_partitionate) = partitionate_not_using_cc(params);
     } else {
-        auto start_build_graph = chrono::high_resolution_clock::now();
-        sb_graph = make_unique<SBG::LIB::WeightedSBGraph>(build_sb_graph(params.filename->c_str()));
-        auto end_build_graph = chrono::high_resolution_clock::now();
-        time_to_build_graph = chrono::duration<double, std::milli>(end_build_graph - start_build_graph).count();
-
-        auto cc_pw_map = SBG::LIB::connectedComponents(*sb_graph);
-
-        cout << "sb_graph: " << *sb_graph << endl;
-        cout << cc_pw_map.dom() << endl;
-
-        using_cc::SetPointers sorted_nodes = {};
-        unsigned index = 0;
-        for (const auto& s : cc_pw_map.dom()) {
-            sorted_nodes.push_back(using_cc::SetPointer(index++, s, s.cardinal()));
-        }
-
-        sbg_partitioner::CommunicationCostCC comm_cc(*sb_graph, sorted_nodes);
-
-        auto new_graph = SBG::LIB::WeightedSBGraph(
-            cc_pw_map.dom(),
-            sb_graph->Vmap(),
-            sb_graph->map1(),
-            sb_graph->map2(),
-            sb_graph->Emap(),
-            sb_graph->subEmap()
-        );
-
-        vector<using_cc::SetPointers> sorted_partitions;
-        auto non_sorted_partitions = best_initial_partition(new_graph, *params.number_of_partitions, params.initial_partition_strategy, params.enable_multithreading);
-
-        for(const auto& partition : non_sorted_partitions) {
-            sorted_partitions.emplace_back();
-            for (const auto& s : partition) {
-                for (const auto& ss : sorted_nodes) {
-                    if (not s.intersection(ss.set_piece).isEmpty()) {
-                        sorted_partitions.back().emplace_back(ss.index, ss.set_piece, s.cardinal());
-                        break;
-                    }
-                }
-            }
-        }
-
-        partitions = sbg_partitioner::using_cc::rebuild_partitions(sorted_nodes, sorted_partitions);
-        sanity_check(*sb_graph, partitions, *params.number_of_partitions);
-
-        sbg_partitioner::using_cc::kl_sbg_imbalance_partitioner(*sb_graph, sorted_nodes, sorted_partitions, comm_cc, 0.);
-
-        partitions = sbg_partitioner::using_cc::rebuild_partitions(sorted_nodes, sorted_partitions);
-        sanity_check(*sb_graph, partitions, *params.number_of_partitions);
+        tie(sb_graph, partitions, time_to_build_graph, time_to_partitionate) = partitionate_using_cc(params);
     }
 
     if (not sb_graph) {

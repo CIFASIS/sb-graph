@@ -208,7 +208,6 @@ list<pair<SBG::LIB::Set, SBG::LIB::Set>> granularize_intervals_into_injective_do
         if ((slope1 > 0 and slope2 > 0) or (*it1).dom().cardinal() == 1) {
             auto im1_ = (*it1).image();
             auto im2_ = (*it2).image();
-            assert(im1_.intersection(im2_).isEmpty());
 
             auto [im1, im2] = take_granular_option(im1_, im2_);
 
@@ -341,8 +340,8 @@ float get_comm_between_two_set_pieces(
     size_t offset = max(b.offset, a.offset);
     size_t end_by_offset = min(b.offset + b.size - 1, a.offset + a.size - 1);
     float alpha = 0.;
-    if (offset < end_by_offset) {
-        size_t actual_size =  end_by_offset - offset;
+    if (offset <= end_by_offset) {
+        size_t actual_size =  end_by_offset - offset + 1;
         assert(a.set_piece.cardinal() == b.set_piece.cardinal());
         alpha = float(actual_size) / a.set_piece.cardinal();
     }

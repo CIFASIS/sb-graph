@@ -238,8 +238,10 @@ tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> parti
             const auto& s2 = sorted_nodes.at(j);
 
             auto comm = comm_cc.get_communication(s1.index, s2.index);
-            cout << s1.set_piece << " " <<  s1.set_piece.cardinal() << " - " << s2.set_piece << " " <<  s2.set_piece.cardinal() << ": " << comm << endl;
             if (comm > 0) {
+                if (s1.set_piece.cardinal() != s2.set_piece.cardinal()) {
+                    cout << "This is unexpected " << s1 << ", " << s2 << ", " << comm << endl;
+                }
                 assert(s1.set_piece.cardinal() == s2.set_piece.cardinal());
             }
         }

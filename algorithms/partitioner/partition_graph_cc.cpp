@@ -22,12 +22,11 @@
 #include <util/logger.hpp>
 
 #include "build_sb_graph.hpp"
-#include "communication_cost.hpp"
 #include "dfs_on_sbg.hpp"
 #include "partition_graph.hpp"
 #include "partition_graph_cc.hpp"
 #include "sbg_partitioner_log.hpp"
-#include "sbg_partitioner_types.hpp"
+
 
 using namespace std;
 using namespace SBG::LIB;
@@ -62,16 +61,12 @@ struct GainObject {
     SetPointer b;
     size_t size;
     float gain;
-    float alpha_a;
-    float alpha_b;
 
-    GainObject(SetPointer a_idx, SetPointer b_idx, size_t size, float gain, float alpha_a, float alpha_b)
+    GainObject(SetPointer a_idx, SetPointer b_idx, size_t size, float gain)
     : a(move(a_idx)),
       b(move(b_idx)),
       size(size),
-      gain(gain),
-      alpha_a(alpha_a),
-      alpha_b(alpha_b)
+      gain(gain)
     {}
 
     bool operator==(const GainObject& other) {
@@ -95,10 +90,6 @@ ostream& operator<<(ostream& os, const GainObject& gain_obj)
        << gain_obj.size
        << ", gain: "
        << gain_obj.gain
-       << ", alpha_a "
-       << gain_obj.alpha_a
-       << ", alpha_b "
-       << gain_obj.alpha_b
        << "}";
 
     return os;
@@ -148,6 +139,24 @@ Set granular_union(const Set& s_1, const Set& s_2)
 
     return granular_union_set;
 }
+
+
+bool set_comparison(const Set& s, const Set& q)
+{
+    if (s.size() != q.size()) {
+        return false;
+    }
+
+    for (auto i1 = s.begin(), i2 = q.begin(); i1 != s.end() and i1 != q.end(); ++i1, ++i2) {
+        auto sp1 = *i1;
+        auto sp2 = *i2;
+        if (not (sp1 == sp2)) {
+            return false;
+        }
+    }
+
+    return true;
+};
 
 
 pair<Set, Set> take_granular_option(const Set& set_1, const Set& set_2)
@@ -207,31 +216,65 @@ list<pair<SBG::LIB::Set, SBG::LIB::Set>> granularize_intervals_into_injective_do
         }
     }
 
-    for (size_t i = 0; i < 10; i++) {
+    bool change =  true;
+    while (change) {
+        change = false;
         for (const auto& [im1, im2] : linked_intervals) {
             for (auto& [p1, p2] : linked_intervals) {
                 if (not p1.intersection(im1).isEmpty()) {
                     // logging::sbg_log << "intersection between " << p1 << ", " << im1 << " " << granular_union(im1.intersection(p1), p1) << endl;
-                    p1 = granular_union(im1.intersection(p1), p1);
-                    tie(p1, p2) = take_granular_option(p1, p2);
+                    auto new_p1 = p1;
+                    auto new_p2 = p2;
+                    new_p1 = granular_union(im1.intersection(new_p1), new_p1);
+                    tie(new_p1, new_p2) = take_granular_option(new_p1, new_p2);
+
+                    if (not (set_comparison(p1, new_p1) and set_comparison(p2, new_p2))) {
+                        p1 = new_p1;
+                        p2 = new_p2;
+                        change = true;
+                    }
                 }
 
                 if (not p2.intersection(im1).isEmpty()) {
                     // logging::sbg_log << "intersection between " << p2 << ", " << im1 << " " << granular_union(im1.intersection(p2), p2) << endl;
-                    p2 = granular_union(im1.intersection(p2), p2);
-                    tie(p1, p2) = take_granular_option(p1, p2);
+                    auto new_p1 = p1;
+                    auto new_p2 = p2;
+                    new_p2 = granular_union(im1.intersection(new_p2), new_p2);
+                    tie(new_p1, new_p2) = take_granular_option(new_p1, new_p2);
+
+                    if (not (set_comparison(p1, new_p1) and set_comparison(p2, new_p2))) {
+                        p1 = new_p1;
+                        p2 = new_p2;
+                        change = true;
+                    }
                 }
 
                 if (not p1.intersection(im2).isEmpty()) {
                     // logging::sbg_log << "intersection between " << p1 << ", " << im2 << " " << granular_union(im2.intersection(p1), p1) << endl;
-                    p1 = granular_union(im2.intersection(p1), p1);
-                    tie(p1, p2) = take_granular_option(p1, p2);
+                    auto new_p1 = p1;
+                    auto new_p2 = p2;
+                    new_p1 = granular_union(im2.intersection(new_p1), new_p1);
+                    tie(new_p1, new_p2) = take_granular_option(new_p1, new_p2);
+
+                    if (not (set_comparison(p1, new_p1) and set_comparison(p2, new_p2))) {
+                        p1 = new_p1;
+                        p2 = new_p2;
+                        change = true;
+                    }
                 }
 
                 if (not p2.intersection(im2).isEmpty()) {
                     // logging::sbg_log << "intersection between " << p2 << ", " << im2  << " " << granular_union(im2.intersection(p2), p2) << endl;
-                    p2 = granular_union(im2.intersection(p2), p2);
-                    tie(p1, p2) = take_granular_option(p1, p2);
+                    auto new_p1 = p1;
+                    auto new_p2 = p2;
+                    new_p2 = granular_union(im2.intersection(new_p2), new_p2);
+                    tie(new_p1, new_p2) = take_granular_option(new_p1, new_p2);
+
+                    if (not (set_comparison(p1, new_p1) and set_comparison(p2, new_p2))) {
+                        p1 = new_p1;
+                        p2 = new_p2;
+                        change = true;
+                    }
                 }
             }
         }
@@ -277,6 +320,7 @@ Set split_nodes_into_injective_domains(const WeightedSBGraph& sb_graph)
 {
     auto linked_intervals = granularize_intervals_into_injective_domains(sb_graph);
     auto injective_conn = convert_linked_intervals_into_sets(linked_intervals);
+    cout << "injective_conn: " << injective_conn << endl;
 
     return injective_conn;
 }
@@ -306,6 +350,7 @@ float get_comm_between_two_set_pieces(
     return comm * alpha;
 }
 
+
 float compute_D(
     const SetPointer& set_pointer,
     const SetPointers& partition,
@@ -317,39 +362,11 @@ float compute_D(
         if (partition.at(i).index == set_pointer.index) {
             continue;
         }
-
-        // auto comm = cost_matrix_cc.get_communication(set_pointer.index, partition.at(i).index);
-        // if (comm == 0) {
-        //     continue;
-        // }
-
-        // size_t offset = max(partition.at(i).offset, set_pointer.offset);
-        // size_t end_by_offset = min(partition.at(i).offset + partition.at(i).size - 1, set_pointer.offset + set_pointer.size - 1);
-        // float alpha = 0.;
-        // if (offset < end_by_offset) {
-        //     size_t actual_size =  end_by_offset - offset + 1;
-        //     assert(set_pointer.set_piece.cardinal() == partition.at(i).set_piece.cardinal());
-        //     alpha = float(actual_size) / set_pointer.set_piece.cardinal();
-        // }
-        
         ic += get_comm_between_two_set_pieces(set_pointer, partition.at(i), cost_matrix_cc);
     }
 
     float ec = 0;
     for (size_t i = 0; i < complementary_partition.size(); i++) {
-        // auto comm = cost_matrix_cc.get_communication(set_pointer.index, complementary_partition.at(i).index);
-        // if (comm == 0) {
-        //     continue;
-        // }
-
-        // size_t offset = max(complementary_partition.at(i).offset, set_pointer.offset);
-        // size_t end_by_offset = min(complementary_partition.at(i).offset + complementary_partition.at(i).size - 1, set_pointer.offset + set_pointer.size - 1);
-        // float alpha = 0.;
-        // if (offset < end_by_offset) {
-        //     size_t actual_size =  end_by_offset - offset;
-        //     assert(set_pointer.set_piece.cardinal() == complementary_partition.at(i).set_piece.cardinal());
-        //     alpha = float(actual_size) / set_pointer.set_piece.cardinal();
-        // }
         ec += get_comm_between_two_set_pieces(set_pointer, complementary_partition.at(i), cost_matrix_cc);
     }
 
@@ -358,7 +375,7 @@ float compute_D(
 }
 
 
-unordered_map<unsigned, float> compute_Ds(const SetPointers& partition,
+[[maybe_unused]]unordered_map<unsigned, float> compute_Ds(const SetPointers& partition,
     const SetPointers& complementary_partition,
     const CommunicationCostCC& cost_matrix_cc)
 {
@@ -378,9 +395,7 @@ unordered_map<unsigned, float> compute_Ds(const SetPointers& partition,
 tuple<optional<GainObject>, GainObjects> compute_gains(
     const SetPointers& partition_a,
     const SetPointers& partition_b,
-    CommunicationCostCC& cost_matrix_cc,
-    const unordered_map<unsigned, float>& Ds_a,
-    const unordered_map<unsigned, float>& Ds_b)
+    CommunicationCostCC& cost_matrix_cc)
 {
     GainObjects gains;
     int max_gain_index = -1;
@@ -388,32 +403,21 @@ tuple<optional<GainObject>, GainObjects> compute_gains(
     for (size_t i = 0; i < partition_a.size(); i++) {
 
         auto p_a_i = partition_a.at(i);
-        float D_i = Ds_a.at(p_a_i.index);
     
         for (size_t j = 0; j < partition_b.size(); j++) {
 
             auto p_b_j = partition_b.at(j);
-            float D_j = Ds_b.at(p_b_j.index);
 
             int s = min(p_a_i.size, p_b_j.size);
 
-            float alpha_i = s / float(p_a_i.size);
-            float alpha_j = s / float(p_b_j.size);
+            float D_i = compute_D(SetPointer(p_a_i.index, p_a_i.set_piece, p_a_i.offset, p_a_i.size), partition_a, partition_b, cost_matrix_cc);
+            float D_j = compute_D(SetPointer(p_b_j.index, p_b_j.set_piece, p_b_j.offset, p_b_j.size), partition_b, partition_a, cost_matrix_cc);
 
-            float gain = D_i * alpha_i + D_j * alpha_j;
-
-            // check if there are decimal values
-            float integer_part = std::trunc(gain);
-            float fractional_part = gain - integer_part;
-            cout << "gain: " << gain << ", fractional_part: " << fractional_part << endl;
-            if (std::abs(fractional_part) > 0.000001f) {
-                cout << "decimals in gain!" << endl;
-                cout << p_a_i << ": [" << D_i << ", " << alpha_i << "] " << p_b_j << ": [" << D_j << ", " << alpha_j << "]: gain: " << gain << endl;
-            }
+            float gain = D_i + D_j;
 
             gain -= 2 * get_comm_between_two_set_pieces(p_a_i, p_b_j, cost_matrix_cc);
 
-            gains.emplace_back(p_a_i, p_b_j, s, gain, alpha_i, alpha_j);
+            gains.emplace_back(p_a_i, p_b_j, s, gain);
 
             if (max_gain_index < 0 or gains.at(max_gain_index).gain < gain) {
                 max_gain_index = gains.size() - 1;
@@ -474,7 +478,6 @@ void add_elements_to_partition(SetPointers& partition, const SetPointers& max_su
 
 void flatten_set(SetPointers& set_pointers)
 {
-    cout << "flatten_set " << set_pointers << endl;
     // 1. Define the custom logic
     // Comparator for sorting (Strict Weak Ordering)
     auto sortComp = [](const SetPointer& a, const SetPointer& b) {
@@ -491,8 +494,6 @@ void flatten_set(SetPointers& set_pointers)
     };
 
     std::sort(set_pointers.begin(), set_pointers.end(), sortComp);
-
-    cout << "sorted set " << set_pointers << endl;
     
     // Start searching from the beginning
     auto it = set_pointers.begin();
@@ -512,7 +513,6 @@ void flatten_set(SetPointers& set_pointers)
             // if this condition is not achivied, we found
             if (it->set_piece.begin()[0].begin() + it->offset + it->size == (it + 1)->set_piece.begin()[0].begin() + (it + 1)->offset) {
                 it->size += (it+1)->size;
-                cout << "new size! " << *it << endl;
                 it = set_pointers.erase(it + 1);
             } else {
                 // Skip past the current duplicate to find the next one
@@ -521,8 +521,6 @@ void flatten_set(SetPointers& set_pointers)
             }
         }
     }
-
-    cout << "flattened_set " << set_pointers << endl;
 }
 
 }
@@ -543,18 +541,7 @@ int bisection(
     int par_sum = 0;
     int max_par_sum = 0;
     pair<SetPointers, SetPointers> max_par_sum_set = {};
-    unordered_map<unsigned, float> Ds_a = compute_Ds(partition_a, partition_b, cost_matrix);
-    cout << "D Values:" << endl;
-    for_each(Ds_a.cbegin(), Ds_a.cend(), [&partition_a](const pair<unsigned, float>& p) {
-        auto it = find_if(partition_a.cbegin(), partition_a.cend(), [&p](const auto& s) { return s.index == p.first; });
-        cout << *it  << ", " << p.second << endl; 
-    });
-    unordered_map<unsigned, float> Ds_b = compute_Ds(partition_b, partition_a, cost_matrix);
-    for_each(Ds_b.cbegin(), Ds_b.cend(), [&partition_b](const pair<unsigned, float>& p) {
-        auto it = find_if(partition_b.cbegin(), partition_b.cend(), [&p](const auto& s) { return s.index == p.first; });
-        cout << *it  << ", " << p.second << endl; 
-    });
-    auto [max_gain, gm] = compute_gains(partition_a_copy, partition_b_copy, cost_matrix, Ds_a, Ds_b);
+    auto [max_gain, gm] = compute_gains(partition_a_copy, partition_b_copy, cost_matrix);
 
     if (not max_gain) {
         return 0;
@@ -591,12 +578,7 @@ int bisection(
 
         // update gains
         if (not partition_a_copy.empty() and not partition_b_copy.empty()) {
-            auto updated_Ds_a = Ds_a;
-
-            Ds_a = compute_Ds(partition_a_copy, partition_b_copy, cost_matrix);
-            Ds_b = compute_Ds(partition_b_copy, partition_a_copy, cost_matrix);
-
-            tie(max_gain, gm) = compute_gains(partition_a_copy, partition_b_copy, cost_matrix, Ds_a, Ds_b);
+            tie(max_gain, gm) = compute_gains(partition_a_copy, partition_b_copy, cost_matrix);
         }
     }
 
@@ -693,6 +675,7 @@ void kl_sbg_imbalance_partitioner(const WeightedSBGraph& graph, const SetPointer
         };
 
         int it_counter = 0;
+        cout << "best gain: " << best_gain.gain << endl;
         while ((not gains.empty()) and best_gain.gain > 0) {
             logging::sbg_log << "change number " << it_counter << " changing " << best_gain.i << ", " << best_gain.j << endl;
             it_counter++;

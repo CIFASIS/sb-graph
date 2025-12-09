@@ -681,7 +681,9 @@ void kl_sbg_imbalance_partitioner(const WeightedSBGraph& graph, const SetPointer
             change = true;
             partitions[best_gain.i] = best_gain.A;
             partitions[best_gain.j] = best_gain.B;
-            sanity_check(graph, rebuild_partitions(sorted_nodes, partitions), partitions.size());
+            if (sanity_check_enabled) {
+                sanity_check(graph, rebuild_partitions(sorted_nodes, partitions), partitions.size());
+            }
 
             gains.erase(std::remove_if(gains.begin(), gains.end(), gain_comp), gains.end());
 

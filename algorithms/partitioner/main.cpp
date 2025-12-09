@@ -228,26 +228,10 @@ tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> parti
     auto end_conversion = chrono::high_resolution_clock::now();
     auto conversion_time = chrono::duration<double, std::milli>(end_conversion - start_conversion).count();
     // auto sorted_partitions = using_cc::best_initial_partition(*sb_graph, sorted_nodes, comm_cc, *params.number_of_partitions, InitialPartitionStrategy::DFS_DISTRIBUTIVE_POSTORDER);
-    for (const auto& sp : sorted_partitions){
-        cout << sp << endl;
+
+    if (sanity_check_enabled) {
+        sanity_check(*sb_graph, sbg_partitioner::using_cc::rebuild_partitions(sorted_nodes, sorted_partitions), *params.number_of_partitions);
     }
-
-    for (size_t i = 0; i < sorted_nodes.size(); i++) {
-        const auto& s1 = sorted_nodes.at(i);
-        for (size_t j = i + 1; j < sorted_nodes.size(); j++) {
-            const auto& s2 = sorted_nodes.at(j);
-
-            auto comm = comm_cc.get_communication(s1.index, s2.index);
-            if (comm > 0) {
-                if (s1.set_piece.cardinal() != s2.set_piece.cardinal()) {
-                    cout << "This is unexpected " << s1 << ", " << s2 << ", " << comm << endl;
-                }
-                assert(s1.set_piece.cardinal() == s2.set_piece.cardinal());
-            }
-        }
-    }
-
-    sanity_check(*sb_graph, sbg_partitioner::using_cc::rebuild_partitions(sorted_nodes, sorted_partitions), *params.number_of_partitions);
 
     using_cc::kl_sbg_imbalance_partitioner(*sb_graph, sorted_nodes, sorted_partitions, comm_cc, 0.);
 
@@ -256,9 +240,9 @@ tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> parti
     auto time_to_partitionate = chrono::duration<double, std::milli>(end_partitionate - start_partitionate).count();
     time_to_partitionate -= conversion_time;
 
-    // if (sanity_check_enabled) {
+    if (sanity_check_enabled) {
         sanity_check(*sb_graph, partitions, *params.number_of_partitions);
-    // }
+    }
 
     return { move(sb_graph), partitions, time_to_build_graph, time_to_partitionate };
 }

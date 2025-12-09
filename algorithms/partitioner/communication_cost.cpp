@@ -231,6 +231,9 @@ Set CommunicationCost::get_set_piece_edges(const SBG::LIB::SetPiece& nodes)
 }
 
 
+void CommunicationCost::clear_communication_cache() { _communication_by_set_piece.clear(); }
+
+
 
 CommunicationCostSync::CommunicationCostSync(const WeightedSBGraph& graph, PartitionMap partitions)
     :ICommunicationCost(),
@@ -270,6 +273,13 @@ Set CommunicationCostSync::get_set_piece_edges(const SetPiece& nodes)
 {
     const lock_guard<mutex> lock(_mutex);
     return _comm_cost.get_set_piece_edges(nodes);
+}
+
+
+void CommunicationCostSync::clear_communication_cache()
+{
+    const lock_guard<mutex> lock(_mutex);
+    return _comm_cost.clear_communication_cache();
 }
 
 

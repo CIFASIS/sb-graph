@@ -91,6 +91,8 @@ public:
 
 
     virtual SBG::LIB::Set get_set_piece_edges(const SBG::LIB::SetPiece& nodes) = 0;
+
+    virtual void clear_communication_cache() = 0;
 };
 
 
@@ -115,6 +117,8 @@ public:
     SBG::LIB::Set get_ic_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes) override;
 
     SBG::LIB::Set get_set_piece_edges(const SBG::LIB::SetPiece& nodes) override;
+
+    void clear_communication_cache() override;
 
 private:
     const SBG::LIB::WeightedSBGraph& _graph; // read-only members
@@ -149,6 +153,8 @@ public:
     SBG::LIB::Set get_ic_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes) override;
 
     SBG::LIB::Set get_set_piece_edges(const SBG::LIB::SetPiece& nodes) override;
+
+    void clear_communication_cache() override;
 
 private:
     CommunicationCost _comm_cost;

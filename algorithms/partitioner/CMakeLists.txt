@@ -18,7 +18,7 @@ target_sources(
         weighted_sb_graph.cpp
 )
 
-add_dependencies(sbg-part-lib sbg-util-lib sbg-cc-lib)
+add_dependencies(sbg-part-lib sbg-util-lib)
 
 
 target_link_directories(
@@ -32,7 +32,6 @@ target_link_libraries(
     PRIVATE
         sbg-dev
         sbg-util-lib
-        sbg-cc-lib
 )
 
 

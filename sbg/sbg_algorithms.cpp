@@ -57,7 +57,7 @@ PWMap connectedComponents(SBG g)
       }
     } while (rmap != old_rmap); 
 
-    return rmap.compact();
+    return rmap;
   }
 
   return fact_.createPWMap();

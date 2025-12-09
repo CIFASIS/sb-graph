@@ -153,7 +153,7 @@ void read_directory(const std::string& name, std::vector<std::string>& v)
 }
 
 
-tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> partitionate_not_using_cc(
+tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> partitionate_traditional(
     const PartitionerParams& params)
 {
     auto start_build_graph = chrono::high_resolution_clock::now();
@@ -175,7 +175,7 @@ tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> parti
 }
 
 
-tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> partitionate_using_cc(const PartitionerParams& params)
+tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> partitionate_using_adjacency_matrix(const PartitionerParams& params)
 {
     auto start_build_graph = chrono::high_resolution_clock::now();
     auto sb_graph = make_unique<SBG::LIB::WeightedSBGraph>(build_sb_graph(params.filename->c_str(), false));
@@ -253,7 +253,7 @@ static struct option long_options[] = {{"config-filename", required_argument, 0,
                                        {"output-file", required_argument, 0, 'g'}, {"output-graph", required_argument, 0, 'o'},
                                        {"compute-metrics", no_argument, 0, 'm'},   {"directory", required_argument, 0, 'd'},
                                        {"initial-partition-strategy", required_argument, 0, 'i'}, {"enable-multithreading", no_argument, 0, 't'},
-                                       {"use-cc", no_argument, 0, 'k'}, {"version", no_argument, 0, 'v'},
+                                       {"use-adjacency-matrix", no_argument, 0, 'k'}, {"version", no_argument, 0, 'v'},
                                        {"help", no_argument, 0, 'h'}};
 
 
@@ -391,9 +391,9 @@ int main(int argc, char** argv)
     PartitionMap partitions;
     double time_to_build_graph, time_to_partitionate = 0.0;
     if (not params.use_connected_components) {
-        tie(sb_graph, partitions, time_to_build_graph, time_to_partitionate) = partitionate_not_using_cc(params);
+        tie(sb_graph, partitions, time_to_build_graph, time_to_partitionate) = partitionate_traditional(params);
     } else {
-        tie(sb_graph, partitions, time_to_build_graph, time_to_partitionate) = partitionate_using_cc(params);
+        tie(sb_graph, partitions, time_to_build_graph, time_to_partitionate) = partitionate_using_adjacency_matrix(params);
     }
 
     if (not sb_graph) {

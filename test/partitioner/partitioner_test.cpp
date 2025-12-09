@@ -23,8 +23,10 @@
 #include <iostream>
 
 #include <algorithms/partitioner/build_sb_graph.hpp>
+#include <algorithms/partitioner/communication_cost.hpp>
 #include <algorithms/partitioner/kernighan_lin_partitioner.hpp>
 #include <algorithms/partitioner/partition_graph.hpp>
+#include <algorithms/partitioner/partition_graph_cc.hpp>
 
 /// @file parser_test.cpp
 ///
@@ -143,6 +145,8 @@ TEST(initial_partition, PartitionerTests)
   expected_distributed_pre_order_3.emplaceBack(Interval(3750, 1, 3999));
   Set partition_3 = sbg_partitioner::from_vector(partition.at(3));
   EXPECT_EQ(expected_distributed_pre_order_3, partition_3);
+
+  sbg_partitioner::get_communication_cost().clear_communication_cache();
 }
 
 static void test_partitioning(const std::string& filename, int number_of_partitions)
@@ -153,6 +157,9 @@ static void test_partitioning(const std::string& filename, int number_of_partiti
   sbg_partitioner::kl_sbg_imbalance_partitioner(sb_graph, partitions, 0.0, enable_multithreading);
 
   sbg_partitioner::sanity_check(sb_graph, partitions, number_of_partitions);
+
+  // clear cache after running it
+  sbg_partitioner::get_communication_cost().clear_communication_cache();
 }
 
 TEST(partitioning, PartitionerTests)
@@ -168,4 +175,91 @@ TEST(partitioning, PartitionerTests)
   test_partitioning(get_full_file_name("air_conditioners_cont_4_1000.json"), 4);
 }
 
+TEST(test_adjacency_matrix, PartitionerTests)
+{
+    std::array<std::string, 3> files = { "air_conditioners_1000.json", "air_conditioners_cont_4_1000.json", "advection.json" };
+
+    for (const auto& f : files) {
+        // clear communication cache
+        sbg_partitioner::get_communication_cost().clear_communication_cache();
+
+        auto sb_graph = sbg_partitioner::build_sb_graph(get_full_file_name(f), false);
+
+        auto injective_conn = sbg_partitioner::using_cc::split_nodes_into_injective_domains(sb_graph);
+
+        sbg_partitioner::using_cc::SetPointers sorted_nodes = {};
+        unsigned index = 0;
+        for (const auto& s : injective_conn) {
+            sorted_nodes.push_back(sbg_partitioner::using_cc::SetPointer(index++, s, 0, s.cardinal()));
+        }
+
+        sbg_partitioner::CommunicationCostCC comm_cc(sb_graph, sorted_nodes);
+
+        for (size_t i = 0; i < sorted_nodes.size(); i++) {
+            const auto& s1 = sorted_nodes.at(i);
+            for (size_t j = i + 1; j < sorted_nodes.size(); j++) {
+                const auto& s2 = sorted_nodes.at(j);
+
+                auto comm = comm_cc.get_communication(s1.index, s2.index);
+                if (comm > 0) {
+                    EXPECT_EQ(s1.set_piece.cardinal(), s2.set_piece.cardinal());
+                }
+            }
+        }
+
+        std::vector<sbg_partitioner::using_cc::SetPointers> sorted_partitions;
+        auto new_graph = SBG::LIB::WeightedSBGraph(
+            injective_conn,
+            sb_graph.Vmap(),
+            sb_graph.map1(),
+            sb_graph.map2(),
+            sb_graph.Emap(),
+            sb_graph.subEmap()
+        );
+
+        auto non_sorted_partitions = sbg_partitioner::best_initial_partition(new_graph, 2, sbg_partitioner::InitialPartitionStrategy::ALL, false);
+
+        for (const auto& partition : non_sorted_partitions) {
+            sorted_partitions.emplace_back();
+            for (const auto& v : partition) {
+                for (const auto& n : sorted_nodes) {
+                    if (not v.intersection(n.set_piece).isEmpty()) {
+                        size_t offset = v.begin()[0].begin() - n.set_piece.begin()[0].begin();
+                        sorted_partitions.back().emplace_back(n.index, n.set_piece, offset, v.cardinal());
+                    }
+                }
+            }
+        }
+
+        auto comm = sbg_partitioner::CommunicationCost(new_graph, non_sorted_partitions);
+        for (size_t i = 0; i < sorted_partitions.size(); i++) {
+            const auto p1 = sorted_partitions.at(i);
+            for (const auto& s1 : p1) {
+                auto common_edges = comm.get_ec_by_interval(i, s1.set_piece);
+                common_edges = common_edges.cup(comm.get_ic_by_interval(i, s1.set_piece));
+                auto comm_number = comm_cc.get_communication(s1.index);
+
+                EXPECT_EQ(common_edges.cardinal(), comm_number);
+            }
+        }
+
+        for (size_t i = 0; i < sorted_partitions.size(); i++) {
+            const auto p1 = sorted_partitions.at(i);
+            for (size_t j = i + 1; j < sorted_partitions.size(); j++) {
+                const auto p2 = sorted_partitions.at(j);
+                for (const auto& s1 : p1) {
+                    for (const auto& s2 : p2) {
+                        if (s1.index == s2.index) { continue; }
+                        auto edges_1 = comm.get_set_piece_edges(s1.set_piece);
+                        auto edges_2 = comm.get_set_piece_edges(s2.set_piece);
+                        auto edges = edges_1.intersection(edges_2);
+                        auto comm_number = comm_cc.get_communication(s1.index, s2.index);
+
+                        EXPECT_EQ(edges.cardinal(), comm_number);
+                    }
+                }
+            }
+        }
+    }
+}
 /// @}

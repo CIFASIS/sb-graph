@@ -23,15 +23,23 @@
 #include <getopt.h>
 #include <iostream>
 #include <optional>
+#include <set>
 #include <string>
 
+#include <algorithms/cc/cc.hpp>
+#include <sbg/set_fact.hpp>
 #include <util/time_profiler.hpp>
 
 #include "build_sb_graph.hpp"
+#include "communication_cost.hpp"
 #include "kernighan_lin_partitioner.hpp"
 #include "partition_graph.hpp"
+#include "partition_graph_cc.hpp"
 #include "partition_metrics_api.hpp"
 #include "sbg_partitioner_log.hpp"
+#include "sbg_partitioner_types.hpp"
+#include "weighted_sb_graph.hpp"
+
 
 using namespace std;
 
@@ -145,6 +153,110 @@ void read_directory(const std::string& name, std::vector<std::string>& v)
 }
 
 
+tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> partitionate_traditional(
+    const PartitionerParams& params)
+{
+    auto start_build_graph = chrono::high_resolution_clock::now();
+    auto sb_graph = build_sb_graph(params.filename->c_str());
+    auto end_build_graph = chrono::high_resolution_clock::now();
+    auto time_to_build_graph = chrono::duration<double, std::milli>(end_build_graph - start_build_graph).count();
+
+    cout << "sb_graph: " << sb_graph << endl;
+
+    auto start_partitionate = chrono::high_resolution_clock::now();
+    auto partitions = best_initial_partition(sb_graph, *params.number_of_partitions, params.initial_partition_strategy, params.enable_multithreading);
+    cout << "chosen partition " << partitions << endl;
+
+    kl_sbg_imbalance_partitioner(sb_graph, partitions, params.epsilon, params.enable_multithreading);
+    auto end_partitionate = chrono::high_resolution_clock::now();
+    auto time_to_partitionate = chrono::duration<double, std::milli>(end_partitionate - start_partitionate).count();
+
+    return { make_unique<SBG::LIB::WeightedSBGraph>(move(sb_graph)), partitions, time_to_build_graph, time_to_partitionate };
+}
+
+
+tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> partitionate_using_adjacency_matrix(const PartitionerParams& params)
+{
+    auto start_build_graph = chrono::high_resolution_clock::now();
+    auto sb_graph = make_unique<SBG::LIB::WeightedSBGraph>(build_sb_graph(params.filename->c_str(), false));
+    auto end_build_graph = chrono::high_resolution_clock::now();
+    auto time_to_build_graph = chrono::duration<double, std::milli>(end_build_graph - start_build_graph).count();
+
+    cout << "sb_graph: " << *sb_graph << endl;
+
+    auto injective_conn = using_cc::split_nodes_into_injective_domains(*sb_graph);
+
+    logging::sbg_log << "injective connections " << injective_conn << endl;
+#if SBG_PARTITIONER_LOGGING
+    logging::sbg_log << "remaining " << sb_graph->V().difference(injective_conn) << endl;
+#endif
+
+    auto start_partitionate = chrono::high_resolution_clock::now();
+    using_cc::SetPointers sorted_nodes = {};
+    unsigned index = 0;
+    for (const auto& s : injective_conn) {
+        sorted_nodes.push_back(using_cc::SetPointer(index++, s, 0, s.cardinal()));
+    }
+
+    sbg_partitioner::CommunicationCostCC comm_cc(*sb_graph, sorted_nodes);
+
+    std::vector<sbg_partitioner::using_cc::SetPointers> sorted_partitions;
+    auto new_graph = SBG::LIB::WeightedSBGraph(
+        injective_conn,
+        sb_graph->Vmap(),
+        sb_graph->map1(),
+        sb_graph->map2(),
+        sb_graph->Emap(),
+        sb_graph->subEmap()
+    );
+
+    auto non_sorted_partitions = best_initial_partition(new_graph, *params.number_of_partitions, params.initial_partition_strategy, params.enable_multithreading);
+
+    // logging::sbg_log << "converting nodes into set pointers" << endl;
+    auto start_conversion = chrono::high_resolution_clock::now();
+    for (const auto& partition : non_sorted_partitions) {
+        sorted_partitions.emplace_back();
+        for (const auto& v : partition) {
+            for (const auto& n : sorted_nodes) {
+                if (not v.intersection(n.set_piece).isEmpty()) {
+                    size_t offset = v.begin()[0].begin() - n.set_piece.begin()[0].begin();
+                    sorted_partitions.back().emplace_back(n.index, n.set_piece, offset, v.cardinal());
+                }
+            }
+        }
+    }
+    auto end_conversion = chrono::high_resolution_clock::now();
+    auto conversion_time = chrono::duration<double, std::milli>(end_conversion - start_conversion).count();
+    // auto sorted_partitions = using_cc::best_initial_partition(*sb_graph, sorted_nodes, comm_cc, *params.number_of_partitions, InitialPartitionStrategy::DFS_DISTRIBUTIVE_POSTORDER);
+
+    if (sanity_check_enabled) {
+        sanity_check(*sb_graph, sbg_partitioner::using_cc::rebuild_partitions(sorted_nodes, sorted_partitions), *params.number_of_partitions);
+    }
+
+    using_cc::kl_sbg_imbalance_partitioner(*sb_graph, sorted_nodes, sorted_partitions, comm_cc, 0.);
+
+    auto partitions = sbg_partitioner::using_cc::rebuild_partitions(sorted_nodes, sorted_partitions);
+    auto end_partitionate = chrono::high_resolution_clock::now();
+    auto time_to_partitionate = chrono::duration<double, std::milli>(end_partitionate - start_partitionate).count();
+    time_to_partitionate -= conversion_time;
+
+    if (sanity_check_enabled) {
+        sanity_check(*sb_graph, partitions, *params.number_of_partitions);
+    }
+
+    return { move(sb_graph), partitions, time_to_build_graph, time_to_partitionate };
+}
+
+
+static struct option long_options[] = {{"config-filename", required_argument, 0, 'c'},
+                                       {"filename", required_argument, 0, 'f'},    {"partitions", required_argument, 0, 'p'},
+                                       {"output-file", required_argument, 0, 'g'}, {"output-graph", required_argument, 0, 'o'},
+                                       {"compute-metrics", no_argument, 0, 'm'},   {"directory", required_argument, 0, 'd'},
+                                       {"initial-partition-strategy", required_argument, 0, 'i'}, {"enable-multithreading", no_argument, 0, 't'},
+                                       {"use-adjacency-matrix", no_argument, 0, 'k'}, {"version", no_argument, 0, 'v'},
+                                       {"help", no_argument, 0, 'h'}};
+
+
 int main(int argc, char** argv)
 {
     int opt;
@@ -154,14 +266,7 @@ int main(int argc, char** argv)
     while (true)
     {
         int option_index = 0;
-        static struct option long_options[] = {{"config-filename", required_argument, 0, 'c'},
-                                                {"filename", required_argument, 0, 'f'},    {"partitions", required_argument, 0, 'p'},
-                                                {"output-file", required_argument, 0, 'g'}, {"output-graph", required_argument, 0, 'o'},
-                                                {"compute-metrics", no_argument, 0, 'm'},   {"directory", required_argument, 0, 'd'},
-                                                {"initial-partition-strategy", required_argument, 0, 'i'}, {"enable-multithreading", no_argument, 0, 't'},
-                                                {"version", no_argument, 0, 'v'}, {"help", no_argument, 0, 'h'}};
-
-        opt = getopt_long(argc, argv, "c:f:p:e:o:g:d:i:tmvh:", long_options, &option_index);
+        opt = getopt_long(argc, argv, "c:f:p:e:o:g:d:i:ktmvh:", long_options, &option_index);
         if (opt == EOF) break;
 
         switch (opt) {
@@ -185,13 +290,6 @@ int main(int argc, char** argv)
     optind = 0;
     while (true) {
         int option_index = 0;
-        static struct option long_options[] = {{"config-filename", required_argument, 0, 'c'},
-                                                {"filename", required_argument, 0, 'f'},    {"partitions", required_argument, 0, 'p'},
-                                                {"output-file", required_argument, 0, 'g'}, {"output-graph", required_argument, 0, 'o'},
-                                                {"compute-metrics", no_argument, 0, 'm'},   {"directory", required_argument, 0, 'd'},
-                                                {"initial-partition-strategy", required_argument, 0, 'i'}, {"enable-multithreading", no_argument, 0, 't'},
-                                                {"version", no_argument, 0, 'v'}, {"help", no_argument, 0, 'h'}};
-
         opt = getopt_long(argc, argv, "c:f:p:e:o:g:d:i:tmvh:", long_options, &option_index);
         if (opt == EOF) break;
 
@@ -249,6 +347,10 @@ int main(int argc, char** argv)
             params.enable_multithreading = true;
             break;
 
+            case 'k':
+            params.use_connected_components = true;
+            break;
+
             case 'v':
             version();
             exit(0);
@@ -285,27 +387,28 @@ int main(int argc, char** argv)
         s = "";
     }
 
-    auto start_build_graph = chrono::high_resolution_clock::now();
-    auto sb_graph = build_sb_graph(params.filename->c_str());
-    auto end_build_graph = chrono::high_resolution_clock::now();
-    auto time_to_build_graph = chrono::duration<double, std::milli>(end_build_graph - start_build_graph).count();
+    unique_ptr<SBG::LIB::WeightedSBGraph> sb_graph;
+    PartitionMap partitions;
+    double time_to_build_graph, time_to_partitionate = 0.0;
+    if (not params.use_connected_components) {
+        tie(sb_graph, partitions, time_to_build_graph, time_to_partitionate) = partitionate_traditional(params);
+    } else {
+        tie(sb_graph, partitions, time_to_build_graph, time_to_partitionate) = partitionate_using_adjacency_matrix(params);
+    }
 
-    cout << "sb_graph: " << sb_graph << endl;
-
-    auto start_partitionate = chrono::high_resolution_clock::now();
-    auto partitions = best_initial_partition(sb_graph, *params.number_of_partitions, params.initial_partition_strategy, params.enable_multithreading);
-    kl_sbg_imbalance_partitioner(sb_graph, partitions, params.epsilon, params.enable_multithreading);
-    auto end_partitionate = chrono::high_resolution_clock::now();
-    auto time_to_partitionate = chrono::duration<double, std::milli>(end_partitionate - start_partitionate).count();
+    if (not sb_graph) {
+        cerr <<  "Something happened and the graph was not even created. Returning earlier" << endl;
+        return 1;
+    }
 
     if (params.compute_metrics) {
         map<string, metrics::communication_metrics> metrics;
 
-        int edge_cut = metrics::edge_cut(partitions, sb_graph);
+        int edge_cut = metrics::edge_cut(partitions, *sb_graph);
 
-        auto [comm_volume, max_comm_volume] = metrics::communication_volume(partitions, sb_graph);
+        auto [comm_volume, max_comm_volume] = metrics::communication_volume(partitions, *sb_graph);
 
-        auto max_imb = metrics::maximum_imbalance(partitions, sb_graph);
+        auto max_imb = metrics::maximum_imbalance(partitions, *sb_graph);
 
         metrics::communication_metrics comm_metrics = metrics::communication_metrics{edge_cut, comm_volume, max_comm_volume, max_imb};
         metrics["sbg-partitioner"] = comm_metrics;
@@ -319,13 +422,13 @@ int main(int argc, char** argv)
             read_directory(*params.directory, dir_files);
 
             for (const auto& f : dir_files) {
-                auto partition_from_file = metrics::read_partition_from_file(f, sb_graph);
+                auto partition_from_file = metrics::read_partition_from_file(f, *sb_graph);
 
-                int edge_cut = metrics::edge_cut(partition_from_file, sb_graph);
+                int edge_cut = metrics::edge_cut(partition_from_file, *sb_graph);
 
-                auto [comm_volume, max_comm_volume] = metrics::communication_volume(partition_from_file, sb_graph);
+                auto [comm_volume, max_comm_volume] = metrics::communication_volume(partition_from_file, *sb_graph);
 
-                auto max_imb = metrics::maximum_imbalance(partition_from_file, sb_graph);
+                auto max_imb = metrics::maximum_imbalance(partition_from_file, *sb_graph);
 
                 metrics::communication_metrics comm_metrics = metrics::communication_metrics{edge_cut, comm_volume, max_comm_volume, max_imb};
                 metrics[std::filesystem::path(f).filename().string()] = comm_metrics;
@@ -340,14 +443,14 @@ int main(int argc, char** argv)
     cout << "time_to_partitionate = " << time_to_partitionate << " ms" << endl;
 
     if (sanity_check_enabled) {
-        sanity_check(sb_graph, partitions, *params.number_of_partitions);
+        sanity_check(*sb_graph, partitions, *params.number_of_partitions);
     }
 
     if (s) {
-        s = get_pretty_sb_graph(sb_graph);
+        s = get_pretty_sb_graph(*sb_graph);
     }
 
-    sort_before_print(partitions, sb_graph);
+    sort_before_print(partitions, *sb_graph);
 
     string output = get_output(partitions);
 

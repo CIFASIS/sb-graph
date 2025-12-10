@@ -52,7 +52,8 @@ best_initial_partition(
     SBG::LIB::WeightedSBGraph& graph,
     unsigned number_of_partitions,
     const InitialPartitionStrategy strategy,
-    bool multithreading_enabled);
+    bool multithreading_enabled,
+    bool create_comm_cost = true);
 
 
 /// Returns the connectivity set of a set of edges contained in map1 and map2 of
@@ -82,6 +83,6 @@ std::string get_output(const PartitionMap& partition_map);
 /// @param graph The graph that have been partitioned.
 /// @param partitions_set The obtained partition.
 /// @param number_of_partitions The number of partitions
-void sanity_check(const SBG::LIB::WeightedSBGraph& graph, PartitionMap& partitions_set, unsigned number_of_partitions);
+void sanity_check(const SBG::LIB::WeightedSBGraph& graph, const PartitionMap& partitions_set, unsigned number_of_partitions);
 
 }

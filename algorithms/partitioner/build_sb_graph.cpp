@@ -365,7 +365,7 @@ Set get_edge_domain(Set image_intersection_set, Set& edge_set, int& max_value)
   return edge_domain_set;
 }
 
-tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>& nodes, const map<int, int>& node_offsets, int& max_value)
+tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>& nodes, const map<int, int>& node_offsets, int& max_value, bool compact_maps)
 {
   Set edge_set = SET_FACT.createSet();      // Our set of edges
   PWMap rhs_maps = PW_FACT.createPWMap();  // Map object of one of the sides
@@ -534,8 +534,10 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
     }
   }
 
-  rhs_maps = rhs_maps.compact();
-  lhs_maps = lhs_maps.compact();
+  if (compact_maps) {
+    rhs_maps = rhs_maps.compact();
+    lhs_maps = lhs_maps.compact();
+  }
 
   return {edge_set, rhs_maps, lhs_maps, costs};
 }
@@ -543,7 +545,7 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
 /// @brief  Add documentation
 /// @param nodes
 /// @return
-SBG::LIB::WeightedSBGraph create_sb_graph(const std::map<int, Node>& nodes)
+SBG::LIB::WeightedSBGraph create_sb_graph(const std::map<int, Node>& nodes, bool compact_maps)
 {
   int max_value = 0;  // We track the max value, so we avoid domain collision between edges and nodes
   map<int, int> node_offsets;
@@ -553,7 +555,7 @@ SBG::LIB::WeightedSBGraph create_sb_graph(const std::map<int, Node>& nodes)
   logging::sbg_log << "node_set " << node_set << endl;
 
   // Create edges and maps.
-  auto [edge_set, left_maps, right_maps, costs] = create_graph_edges(nodes, node_offsets, max_value);
+  auto [edge_set, left_maps, right_maps, costs] = create_graph_edges(nodes, node_offsets, max_value, compact_maps);
 
   // Now, let's create a graph
   SBG::LIB::WeightedSBGraph graph(node_set, PW_FACT.createPWMap(), left_maps, right_maps, PW_FACT.createPWMap(),
@@ -610,7 +612,7 @@ size_t get_set_size(const Set& set)
   return size;
 }
 
-SBG::LIB::WeightedSBGraph build_sb_graph(const string& filename)
+SBG::LIB::WeightedSBGraph build_sb_graph(const string& filename, bool compact_maps)
 {
   logging::sbg_log << "Reading " << filename << "..." << endl;
 
@@ -624,7 +626,7 @@ SBG::LIB::WeightedSBGraph build_sb_graph(const string& filename)
   auto nodes = create_node_objects_from_json(document);
 
   // Now, let's get our graph
-  auto graph = create_sb_graph(nodes);
+  auto graph = create_sb_graph(nodes, compact_maps);
 
   SBG_LOG << graph;
 

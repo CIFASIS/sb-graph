@@ -38,11 +38,20 @@ using EdgeCost = std::map<Set, unsigned, setCompare>;
 
 using NodeWeight = std::map<Set, int, setCompare>;
 
-struct WeightedSBGraph : public SBG
+class WeightedSBGraph : public SBG
 {
 public:
-    WeightedSBGraph(SBG& graph) : SBG(graph) {}
-    WeightedSBGraph(SBG&& graph) : SBG(graph) {}
+    WeightedSBGraph(WeightedSBGraph& graph)
+        : SBG(graph),
+        _node_weights(graph.get_node_weights()),
+        _edge_costs(graph.get_edge_costs())
+    {}
+    WeightedSBGraph(WeightedSBGraph&& graph)
+        : SBG(graph),
+        _node_weights(graph.get_node_weights()),
+        _edge_costs(graph.get_edge_costs())
+    {}
+
     WeightedSBGraph(const Set &V, const PWMap &Vmap
         , const PWMap &map1, const PWMap &map2
         , const PWMap &Emap, const PWMap &subEmap)
@@ -71,10 +80,6 @@ private:
 
     EdgeCost _edge_costs;
 };
-
-WeightedSBGraph addSVW(Set nodes, NodeWeight weights, WeightedSBGraph g);
-
-WeightedSBGraph addSEW(PWMap pw1, PWMap pw2, EdgeCost costs, WeightedSBGraph g);
 
 std::ostream& operator<<(std::ostream& os, const WeightedSBGraph& graph);
 

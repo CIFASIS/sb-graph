@@ -57,7 +57,7 @@ PWMap connectedComponents(SBG g)
       }
     } while (rmap != old_rmap); 
 
-    return rmap;
+    return rmap.compact();
   }
 
   return fact_.createPWMap();
@@ -1046,3 +1046,4 @@ void buildJson(const Set &matching, const PWMap &scc, const PWMap &order)
 } // namespace LIB
 
 } // namespace SBG
+

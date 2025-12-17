@@ -4,7 +4,7 @@ N = 100000;
 
 V1 = N;
 
-matchSCCTS(
+matchSCC(
   V: {[1:1:V1]}
   Vmap: <<{[1:1:V1]} -> |0*x+1|>> 
   map1: <<>>

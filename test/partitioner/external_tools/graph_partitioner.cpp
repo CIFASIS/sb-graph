@@ -36,6 +36,8 @@
 #include <kaHIP_interface.h>
 
 #include "graph_partitioner.hpp"
+#include <algorithms/partitioner/build_sb_graph.hpp>
+#include <algorithms/partitioner/weighted_sb_graph.hpp>
 
 constexpr const char *VALID_PARTITION_METHODS = "{ Scotch, Metis, HMetis, Kahip}";
 
@@ -49,16 +51,16 @@ GraphPartitioner::GraphPartitioner(const std::string &name) : _name(name) { gene
 
 std::string GraphPartitioner::validPartitionMethodsStr()
 {
-    std::ostringstream valid_methods;
-    valid_methods << "{";
-    for (const auto& pair : PARTITION_METHOD_MAP) {
-        if (&pair != &*PARTITION_METHOD_MAP.begin()) {
-            valid_methods << ",";
-        }
-        valid_methods << pair.first;
+  std::ostringstream valid_methods;
+  valid_methods << "{";
+  for (const auto &pair : PARTITION_METHOD_MAP) {
+    if (&pair != &*PARTITION_METHOD_MAP.begin()) {
+      valid_methods << ",";
     }
-    valid_methods << "}";
-    return valid_methods.str();
+    valid_methods << pair.first;
+  }
+  valid_methods << "}";
+  return valid_methods.str();
 }
 
 Partition GraphPartitioner::createPartition(const std::string &partition_method_name, unsigned int partitions)
@@ -67,7 +69,7 @@ Partition GraphPartitioner::createPartition(const std::string &partition_method_
   PartitionMethod partition_method = partitionMethod(partition_method_name);
 
   if (partition_method == PartitionMethod::Unknown) {
-      std::cerr << "Unknown partition method, valid values are: " << validPartitionMethodsStr() << std::endl;
+    std::cerr << "Unknown partition method, valid values are: " << validPartitionMethodsStr() << std::endl;
     return partition;
   }
 
@@ -107,10 +109,7 @@ Partition GraphPartitioner::createPartition(const std::string &partition_method_
   return partition;
 }
 
-bool GraphPartitioner::endsWithJson()
-{
-  return _name.size() >= 5 && _name.compare(_name.size() - 5, 5, ".json") == 0;
-}
+bool GraphPartitioner::endsWithJson() { return _name.size() >= 5 && _name.compare(_name.size() - 5, 5, ".json") == 0; }
 
 void GraphPartitioner::generateInputGraph()
 {
@@ -123,7 +122,8 @@ void GraphPartitioner::generateInputGraph()
 
 void GraphPartitioner::readGraphFromJson()
 {
-  // @todo: Integrate SBG generated graph, probably not using a JSON but the library.
+  auto sb_graph = sbg_partitioner::build_sb_graph(_name);
+  readGraphFromSBG(sb_graph);
 }
 
 void GraphPartitioner::readGraph()
@@ -133,36 +133,36 @@ void GraphPartitioner::readGraph()
 
   std::ifstream graph_size_file(graph_size_file_name, std::ios::binary);
   if (!graph_size_file) {
-      std::cerr << "Error opening file: " << graph_size_file_name << std::endl;
-      return;
+    std::cerr << "Error opening file: " << graph_size_file_name << std::endl;
+    return;
   }
 
   std::ifstream graph_file(graph_file_name, std::ios::binary);
   if (!graph_file) {
-      std::cerr << "Error opening file: " << graph_file_name << std::endl;
-      return;
+    std::cerr << "Error opening file: " << graph_file_name << std::endl;
+    return;
   }
-  
-  graph_size_file.read(reinterpret_cast<char*>(&_nbr_vtxs), sizeof(_nbr_vtxs));
-  graph_size_file.read(reinterpret_cast<char*>(&_edges), sizeof(_edges));
 
-  graph_size_file.close();  
+  graph_size_file.read(reinterpret_cast<char *>(&_nbr_vtxs), sizeof(_nbr_vtxs));
+  graph_size_file.read(reinterpret_cast<char *>(&_edges), sizeof(_edges));
 
-  _xadj.resize(_nbr_vtxs + 1);  
+  graph_size_file.close();
+
+  _xadj.resize(_nbr_vtxs + 1);
   _xadj[0] = 0;
 
   for (int i = 1; i <= _nbr_vtxs; ++i) {
     long read_val;
-    graph_file.read(reinterpret_cast<char*>(&read_val), sizeof(long));
+    graph_file.read(reinterpret_cast<char *>(&read_val), sizeof(long));
     _xadj[i] = read_val;
   }
 
-  _adjncy.resize(_edges, 1);  
+  _adjncy.resize(_edges, 1);
   for (int i = 0; i < _edges; ++i) {
-      long read_val;
-      graph_file.read(reinterpret_cast<char*>(&read_val), sizeof(long)); 
-      _adjncy[i] = read_val;
-    }
+    long read_val;
+    graph_file.read(reinterpret_cast<char *>(&read_val), sizeof(long));
+    _adjncy[i] = read_val;
+  }
 
   /* @todo: Add logging, for the moment just comment the code.
   for (int i = 0; i < _nbr_vtxs; ++i) {
@@ -183,8 +183,8 @@ void GraphPartitioner::readGraph()
 PartitionMethod GraphPartitioner::partitionMethod(const std::string &partition_method) const
 {
   if (auto it = PARTITION_METHOD_MAP.find(partition_method); it != PARTITION_METHOD_MAP.end()) {
-      return it->second;
-  } 
+    return it->second;
+  }
   return PartitionMethod::Unknown;
 }
 
@@ -279,18 +279,18 @@ void GraphPartitioner::partitionUsingScotch(Partition &partition)
     std::cerr << "Error allocating graph" << std::endl;
     return;
   }
-  
+
   SCOTCH_Strat *strat = SCOTCH_stratAlloc();
   if (SCOTCH_stratInit(strat)) {
     std::cerr << "Error allocating graph" << std::endl;
     return;
   }
-  
+
   if (SCOTCH_stratGraphMapBuild(strat, SCOTCH_STRATDEFAULT, 4, 0.05)) {
     std::cerr << "Error allocating graph" << std::endl;
     return;
   }
-  
+
   if (SCOTCH_graphBuild(graph_sc, 0, _nbr_vtxs, _xadj.data(), nullptr, _vwgt.data(), nullptr, _edges, _adjncy.data(), _ewgt.data()) != 0) {
     std::cerr << "Error: Scotch Graph Build" << std::endl;
     return;
@@ -304,7 +304,6 @@ void GraphPartitioner::partitionUsingScotch(Partition &partition)
   SCOTCH_graphFree(graph_sc);
 }
 
-
 void GraphPartitioner::partitionUsingKaHip(Partition &partition)
 {
   int edge_cut = 0;
@@ -313,4 +312,56 @@ void GraphPartitioner::partitionUsingKaHip(Partition &partition)
 
   kaffpa(&_nbr_vtxs, nullptr, _xadj.data(), nullptr, _adjncy.data(), &_nbr_parts, &_imbalance, SUPPRESS_OUTPUT, seed, STRONG, &edge_cut,
          partition.values.data());
+}
+
+void GraphPartitioner::readGraphFromSBG(const SBG::LIB::WeightedSBGraph &sbg_graph)
+{
+  _nbr_vtxs = sbg_graph.V().cardinal();
+  _edges = sbg_graph.E().cardinal();
+  // asumming all setpiece are unidimensional and have step 1
+  int max_node = -1;
+  for (const auto &v : sbg_graph.V()) {
+    if (int(v.begin()[0].end()) > max_node) {
+      max_node = int(v.begin()[0].end());
+    }
+  }
+
+  _xadj.push_back(0);
+
+  for (int i = 0; i <= max_node; i++) {
+    auto s = SBG::LIB::SET_FACT.createSet(SBG::LIB::Interval(i, 1, i));
+    auto edges1 = sbg_graph.map1().preImage(s);
+    auto nodes1 = sbg_graph.map2().image(edges1);
+
+    auto edges2 = sbg_graph.map2().preImage(s);
+    auto nodes2 = sbg_graph.map1().image(edges2);
+
+    auto nodes = nodes1.cup(nodes2);
+    auto nodes_vector = std::vector<int>();
+    nodes_vector.reserve(nodes.cardinal());
+
+    for (const auto &n : nodes) {
+      for (int val = n.begin()[0].begin(); val <= n.begin()[0].end(); val++) {
+        nodes_vector.push_back(val);
+      }
+    }
+
+    sort(nodes_vector.begin(), nodes_vector.end());
+
+    for_each(nodes_vector.cbegin(), nodes_vector.cend(), [this](const auto &val) { _adjncy.push_back(int(val)); });
+    _xadj.push_back(_xadj.back() + nodes_vector.size());
+  }
+
+  /*// @todo: Add logging, for the moment just comment the code.
+  for (int i = 0; i < _nbr_vtxs; ++i) {
+    std::cout << "Node " << i << " Connections: ";
+    for(int j = _xadj[i]; j < _xadj[i+1]; ++j) {
+      std::cout << _adjncy[j] << " ";
+    }
+    std:: cout << std::endl;
+  }*/
+
+  // @todo: Read weights files.
+  _vwgt.resize(_nbr_vtxs, 1);
+  _ewgt.resize(_edges, 1);
 }

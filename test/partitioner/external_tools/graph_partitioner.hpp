@@ -22,6 +22,14 @@
 #include <metis.h>
 #include <scotch/scotch.h>
 
+
+namespace SBG {
+  namespace LIB {
+    class WeightedSBGraph;
+  }
+}
+
+
 using grp_t = int;
 
 enum class PartitionMethod {
@@ -68,6 +76,8 @@ class GraphPartitioner {
   void partitionUsingScotch(Partition &partition);
 
   void partitionUsingKaHip(Partition &partition);
+
+  void readGraphFromSBG(const SBG::LIB::WeightedSBGraph& sbg_graph);
 
   std::string _name;
   grp_t _edges;

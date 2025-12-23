@@ -32,7 +32,7 @@ SBG::LIB::MD_NAT nextElem(SBG::LIB::MD_NAT curr, SBG::LIB::SetPiece mdi)
     else {
       res.emplaceBack(curr[j] + 1);
       for (unsigned int k = 1; k < mdi.arity() - j; ++k)
-        res.emplaceBack(curr[j]);
+        res.emplaceBack(curr[j + k]);
       break;
     } 
   }

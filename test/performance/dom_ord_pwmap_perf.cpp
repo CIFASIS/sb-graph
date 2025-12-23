@@ -34,70 +34,16 @@ using SBG::LIB::Exp;
 using SBG::LIB::Map;
 using SBG::LIB::PWMap;
 
-////////////////////////////////////////////////////////////////////////////////
-// Set operations --------------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-TEST(DomOrdPWPerf, OrdDifference)
-{
-  int N = 10000;
-
-  SBG::Eval::setSetFactory(1);
-
-  Set s1 = SBG::LIB::SET_FACT.createSet();
-  Set s2 = SBG::LIB::SET_FACT.createSet();
-  for (int j = 0; j < N; ++j) {
-    Interval i(j*100+1, 1, (j+1)*100);
-    s1.emplaceBack(i);
-  }
-
-  for (int j = 0; j < N; ++j) {
-    Interval i(j*105+1, 1, (j+1)*105);
-    s2.emplaceBack(i);
-  }
-
-  auto start = std::chrono::high_resolution_clock::now();
-  s1.difference(s2);
-  auto end = std::chrono::high_resolution_clock::now();
-  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  std::cout << "ORDERED DIFFERENCE TEST elapsed time: " << elapsed.count() << "ms\n";
-
-  SUCCEED();
-}
-
-TEST(DomOrdPWPerf, OrdDisjointUnion)
-{
-  int N = 10000;
-
-  SBG::Eval::setSetFactory(1);
-
-  Set s1 = SBG::LIB::SET_FACT.createSet();
-  Set s2 = SBG::LIB::SET_FACT.createSet();
-  for (int j = 0; j < N; j+=2) {
-    Interval i(j*100+1, 1, (j+1)*100);
-    s1.emplaceBack(i);
-    Interval i2((j+1)*100+1, 1, (j+2)*100);
-    s2.emplaceBack(i2);
-  }
-
-  auto start = std::chrono::high_resolution_clock::now();
-  s1.disjointCup(s2);
-  auto end = std::chrono::high_resolution_clock::now();
-  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  std::cout << "ORDERED DISJOINT UNION TEST elapsed time: " << elapsed.count() << "ms\n";
-
-  SUCCEED();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// PWMap operations ------------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
+/**
+ * @class DomOrdPWPerf
+ * @brief Test suite created to analyze the time growth of the different domain
+ * ordered PWs operations.
+ */
 class DomOrdPWPerf : public ::testing::TestWithParam<SBG::LIB::NAT> {
   protected:
-  std::pair<PWMap, PWMap> quadraticTest(SBG::LIB::NAT map_sz) {
+  std::pair<PWMap, PWMap> contiguousMaps(SBG::LIB::NAT map_sz) {
     SBG::LIB::NAT inter_sz = 100;
-    SBG::LIB::NAT set_sz = 1;
+    SBG::LIB::NAT set_sz = 100;
 
     Interval second_dim(0, 1, inter_sz - 1);
     PWMap pw1 = SBG::LIB::PW_FACT.createPWMap();
@@ -139,16 +85,14 @@ TEST_P(DomOrdPWPerf, DomOrdEq)
 
   SBG::LIB::NAT map_sz = GetParam();
   bool result = false;
-  if (map_sz < 10000) {
-    auto [pw1, pw2] = quadraticTest(map_sz);
 
-    auto start = std::chrono::high_resolution_clock::now();
-    result = pw1 == pw2;
-    auto end = std::chrono::high_resolution_clock::now();
-    auto curr_time = std::chrono::duration_cast<std::chrono::milliseconds>(
-      end - start);
-    std::cout << curr_time.count() << "\n";
-  }
+  auto [pw1, pw2] = contiguousMaps(map_sz);
+  auto start = std::chrono::high_resolution_clock::now();
+  result = pw1 == pw2;
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+    end - start);
+  std::cout << elapsed.count() << "ms\n";
 
   EXPECT_EQ(result, false);
 }
@@ -159,14 +103,32 @@ TEST_P(DomOrdPWPerf, DomOrdPlus)
   SBG::Eval::setPWFactory(2);
 
   SBG::LIB::NAT map_sz = GetParam();
-  auto [pw1, pw2] = quadraticTest(map_sz);
+  auto [pw1, pw2] = contiguousMaps(map_sz);
 
   auto start = std::chrono::high_resolution_clock::now();
   pw1 + pw2;
   auto end = std::chrono::high_resolution_clock::now();
-  auto curr_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
     end - start);
-  std::cout << curr_time.count() << "\n";
+  std::cout << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+TEST_P(DomOrdPWPerf, DomOrdDom)
+{
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(2);
+
+  SBG::LIB::NAT map_sz = GetParam();
+  auto [pw1, pw2] = contiguousMaps(map_sz);
+
+  auto start = std::chrono::high_resolution_clock::now();
+  pw1.dom();
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+    end - start);
+  std::cout << elapsed.count() << "ms\n";
 
   SUCCEED();
 }
@@ -174,46 +136,8 @@ TEST_P(DomOrdPWPerf, DomOrdPlus)
 INSTANTIATE_TEST_SUITE_P(
   DomOrdPWGrowth,
   DomOrdPWPerf,
-  ::testing::Values(1000, 10000, 20000)
+  ::testing::Values(1000, 10000, 100000, 1000000)
 );
-
-TEST(DomOrdPWPerfOld, DomOrdDom)
-{
-  SBG::LIB::NAT inter_sz = 100;
-  SBG::LIB::NAT set_sz = 10;
-  SBG::LIB::NAT map_sz = 1000;
-
-  SBG::Eval::setSetFactory(1);
-  SBG::Eval::setPWFactory(2);
-
-  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
-  for (unsigned int k = 0; k < map_sz; ++k) {
-    LExp le1(1, k);
-    Exp exp;
-    exp.emplaceBack(le1);
-    exp.emplaceBack(le1);
-    exp.emplaceBack(le1);
-    SBG::LIB::NAT map_offset = k*inter_sz*set_sz;
-    Set s = SBG::LIB::SET_FACT.createSet();
-    for (unsigned int j = 0; j < set_sz; ++j) {
-      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
-      SetPiece mdi;
-      mdi.emplaceBack(i1);
-      mdi.emplaceBack(i1);
-      mdi.emplaceBack(i1); 
-      s.emplaceBack(mdi);
-    }
-    pw.emplaceBack(Map(s, exp));
-  }
-
-  auto start = std::chrono::high_resolution_clock::now();
-  pw.dom();
-  auto end = std::chrono::high_resolution_clock::now();
-  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  std::cout << "PWL MAP ORDERED DOM TEST elapsed time: " << elapsed.count() << "ms\n";
-
-  SUCCEED();
-}
 
 TEST(DomOrdPWPerfOld, DomOrdRestrict)
 {
@@ -380,7 +304,7 @@ TEST(DomOrdPWPerfOld, DomOrdFirstInvSet)
 
 // equalImage
 
-TEST(DomOrdPWPerf, DomOrdLessImage)
+TEST(DomOrdPWPerfOld, DomOrdLessImage)
 {
   unsigned int inter_sz = 100;
   unsigned int set_sz = 10;

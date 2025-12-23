@@ -38,9 +38,3 @@ and actual results).
 ## eval
 
 Analogous to parser module, for the evaluator.
-
-## Compilation and execution
-
-Script /test/compile_run_tests.sh builds and runs all tests if no argument is
-specified. It also accepts one argument to run an individual suite such as:
-`performance`, `parser` or `eval`.  

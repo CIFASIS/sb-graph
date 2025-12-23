@@ -37,8 +37,33 @@ set_target_properties(sbg-performance PROPERTIES
 )
 
 add_custom_target(run-performance-test
-      COMMAND echo "Running Partitioner Tests."
+      COMMAND echo "Running Performance Tests."
       COMMAND cd ${BIN_DIR} && ./sbg-performance
 )
 
 add_dependencies(run-performance-test sbg-performance)
+
+# Benchmark executable
+add_executable(sbg-benchmark benchmark_main.cpp)
+
+target_sources(sbg-benchmark
+               PRIVATE
+               benchmark_main.cpp
+               ord_set_bm.cpp)
+
+set_target_properties(sbg-benchmark PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY
+    ${BIN_DIR}
+)
+
+add_custom_target(run-benchmark
+      COMMAND echo "Running SBG Benchmark."
+      COMMAND cd ${BIN_DIR} && ./sbg-benchmark
+)
+
+target_link_libraries(sbg-benchmark
+                      PUBLIC
+                      benchmark::benchmark
+                      PRIVATE
+                      sbg-dev
+                      sbg-eval-lib)

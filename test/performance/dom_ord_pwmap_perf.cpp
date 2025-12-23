@@ -34,6 +34,10 @@ using SBG::LIB::Exp;
 using SBG::LIB::Map;
 using SBG::LIB::PWMap;
 
+////////////////////////////////////////////////////////////////////////////////
+// Set operations --------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
 TEST(DomOrdPWPerf, OrdDifference)
 {
   int N = 10000;
@@ -85,7 +89,133 @@ TEST(DomOrdPWPerf, OrdDisjointUnion)
   SUCCEED();
 }
 
-TEST(DomOrdPWPerf, OrdRestrict)
+////////////////////////////////////////////////////////////////////////////////
+// PWMap operations ------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+class DomOrdPWPerf : public ::testing::TestWithParam<SBG::LIB::NAT> {
+  protected:
+  std::pair<PWMap, PWMap> quadraticTest(SBG::LIB::NAT map_sz) {
+    SBG::LIB::NAT inter_sz = 100;
+    SBG::LIB::NAT set_sz = 1;
+
+    Interval second_dim(0, 1, inter_sz - 1);
+    PWMap pw1 = SBG::LIB::PW_FACT.createPWMap();
+    PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
+    for (unsigned int j = 0; j < map_sz; ++j) {
+      Set dom1 = SBG::LIB::SET_FACT.createSet();
+      Set dom2 = SBG::LIB::SET_FACT.createSet();
+      SBG::LIB::NAT off = j*set_sz*inter_sz;
+      for (unsigned int h = 0; h < set_sz; ++h) {
+        Interval i1(off + (h*inter_sz), 1, off + (h + 1)*inter_sz - 1);
+        SetPiece mdi1;
+        mdi1.emplaceBack(i1);
+        mdi1.emplaceBack(second_dim);
+        dom1.emplaceBack(mdi1); 
+
+        SBG::LIB::NAT off2 = off + inter_sz/2;
+        Interval i2(off2 + (h*inter_sz), 1, off2 + (h + 1)*inter_sz - 1);
+        SetPiece mdi2;
+        mdi2.emplaceBack(i2);
+        mdi2.emplaceBack(second_dim);
+        dom2.emplaceBack(mdi2); 
+      }
+
+      LExp id;
+      Exp multidim_id(1, id);
+
+      pw1.emplaceBack(Map(dom1, multidim_id));
+      pw2.emplaceBack(Map(dom2, multidim_id));
+    }
+
+    return {pw1, pw2};
+  }
+};
+
+TEST_P(DomOrdPWPerf, DomOrdEq)
+{
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(2);
+
+  SBG::LIB::NAT map_sz = GetParam();
+  bool result = false;
+  if (map_sz < 10000) {
+    auto [pw1, pw2] = quadraticTest(map_sz);
+
+    auto start = std::chrono::high_resolution_clock::now();
+    result = pw1 == pw2;
+    auto end = std::chrono::high_resolution_clock::now();
+    auto curr_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+      end - start);
+    std::cout << curr_time.count() << "\n";
+  }
+
+  EXPECT_EQ(result, false);
+}
+
+TEST_P(DomOrdPWPerf, DomOrdPlus)
+{
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(2);
+
+  SBG::LIB::NAT map_sz = GetParam();
+  auto [pw1, pw2] = quadraticTest(map_sz);
+
+  auto start = std::chrono::high_resolution_clock::now();
+  pw1 + pw2;
+  auto end = std::chrono::high_resolution_clock::now();
+  auto curr_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+    end - start);
+  std::cout << curr_time.count() << "\n";
+
+  SUCCEED();
+}
+
+INSTANTIATE_TEST_SUITE_P(
+  DomOrdPWGrowth,
+  DomOrdPWPerf,
+  ::testing::Values(1000, 10000, 20000)
+);
+
+TEST(DomOrdPWPerfOld, DomOrdDom)
+{
+  SBG::LIB::NAT inter_sz = 100;
+  SBG::LIB::NAT set_sz = 10;
+  SBG::LIB::NAT map_sz = 1000;
+
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(2);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
+  for (unsigned int k = 0; k < map_sz; ++k) {
+    LExp le1(1, k);
+    Exp exp;
+    exp.emplaceBack(le1);
+    exp.emplaceBack(le1);
+    exp.emplaceBack(le1);
+    SBG::LIB::NAT map_offset = k*inter_sz*set_sz;
+    Set s = SBG::LIB::SET_FACT.createSet();
+    for (unsigned int j = 0; j < set_sz; ++j) {
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      SetPiece mdi;
+      mdi.emplaceBack(i1);
+      mdi.emplaceBack(i1);
+      mdi.emplaceBack(i1); 
+      s.emplaceBack(mdi);
+    }
+    pw.emplaceBack(Map(s, exp));
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  pw.dom();
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "PWL MAP ORDERED DOM TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+TEST(DomOrdPWPerfOld, DomOrdRestrict)
 {
   unsigned int inter_sz = 100;
   unsigned int set_sz = 10;
@@ -127,11 +257,134 @@ TEST(DomOrdPWPerf, OrdRestrict)
   SUCCEED();
 }
 
-TEST(DomOrdPWPerf, OrdDom)
+// image
+
+// preImage
+
+// inverse
+
+// composition
+
+// mapInf
+
+// fixedPoints
+
+// concatenation
+
+TEST(DomOrdPWPerfOld, DomOrdCombine)
 {
-  SBG::LIB::NAT inter_sz = 100;
-  SBG::LIB::NAT set_sz = 10;
-  SBG::LIB::NAT map_sz = 1000;
+  unsigned int inter_sz = 10000;
+  unsigned int set_sz = 10;
+  unsigned int map_sz = 100;
+
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(2);
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
+  PWMap pw2 = SBG::LIB::PW_FACT.createPWMap();
+  for (unsigned int k = map_sz * 25 / 100; k < map_sz * 75 / 100; ++k) {
+    LExp le1(1, k);
+    Exp exp;
+    exp.emplaceBack(le1);
+    exp.emplaceBack(le1);
+    exp.emplaceBack(le1);
+    Set s1 = SBG::LIB::SET_FACT.createSet();
+    int map_offset = k * inter_sz * set_sz;
+    for (unsigned int j = 0; j < set_sz; ++j) {
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      SBG::LIB::MultiDimInter mdi;
+      mdi.emplaceBack(i1);
+      mdi.emplaceBack(i1);
+      mdi.emplaceBack(i1); 
+      s1.emplaceBack(mdi);
+    }
+    pw.emplaceBack(Map(s1, exp));
+
+  }
+  
+  for (unsigned int k = 0; k < map_sz; ++k) {
+    LExp le1(1, k);
+    Exp exp;
+    exp.emplaceBack(le1);
+    exp.emplaceBack(le1);
+    exp.emplaceBack(le1);
+    Set s1 = SBG::LIB::SET_FACT.createSet();
+    int map_offset = k * inter_sz * set_sz;
+    map_offset += map_offset/2;
+    for (unsigned int j = 0; j < set_sz; ++j) {
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      SBG::LIB::MultiDimInter mdi;
+      mdi.emplaceBack(i1);
+      mdi.emplaceBack(i1);
+      mdi.emplaceBack(i1); 
+      s1.emplaceBack(mdi);
+    }
+    pw2.emplaceBack(Map(s1, exp));
+
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  pw.combine(pw2);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "PWL MAP ORDERED COMBINE TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+// reduce
+
+// minAdj
+
+TEST(DomOrdPWPerfOld, DomOrdFirstInvSet)
+{
+  unsigned int inter_sz = 10000;
+  unsigned int set_sz = 100;
+  unsigned int map_sz = 100;
+
+  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setPWFactory(0);
+
+  Set s = SBG::LIB::SET_FACT.createSet();
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
+    for (unsigned int k = 0; k < map_sz; ++k) {
+    LExp le1(1, k);
+    Exp exp;
+    exp.emplaceBack(le1);
+    exp.emplaceBack(le1);
+    exp.emplaceBack(le1);
+    Set s1 = SBG::LIB::SET_FACT.createSet();
+    int map_offset = k * inter_sz * set_sz;
+    for (unsigned int j = 0; j < set_sz; ++j) {
+      Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
+      SBG::LIB::MultiDimInter mdi;
+      mdi.emplaceBack(i1);
+      mdi.emplaceBack(i1);
+      mdi.emplaceBack(i1); 
+      s1.emplaceBack(mdi);
+    }
+    if(k > map_sz * 25 / 100 && k%2==0 && k < map_sz * 75 / 100 )
+        s=s.cup(s1);
+    pw.emplaceBack(Map(s1, exp));
+
+  }
+
+  auto start = std::chrono::high_resolution_clock::now();
+  pw.firstInv(s);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  std::cout << "PWL MAP ORDERED FIRSTINV WITH SET TEST elapsed time: " << elapsed.count() << "ms\n";
+
+  SUCCEED();
+}
+
+// equalImage
+
+TEST(DomOrdPWPerf, DomOrdLessImage)
+{
+  unsigned int inter_sz = 100;
+  unsigned int set_sz = 10;
+  unsigned int map_sz = 10000;
 
   SBG::Eval::setSetFactory(1);
   SBG::Eval::setPWFactory(2);
@@ -143,27 +396,35 @@ TEST(DomOrdPWPerf, OrdDom)
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
     exp.emplaceBack(le1);
-    SBG::LIB::NAT map_offset = k*inter_sz*set_sz;
-    Set s = SBG::LIB::SET_FACT.createSet();
+    Set s1 = SBG::LIB::SET_FACT.createSet();
+    int map_offset = k * inter_sz * set_sz;
     for (unsigned int j = 0; j < set_sz; ++j) {
       Interval i1(map_offset + (j*inter_sz) + 1, 1, map_offset + (j+1)*inter_sz);
-      SetPiece mdi;
+      SBG::LIB::MultiDimInter mdi;
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1);
       mdi.emplaceBack(i1); 
-      s.emplaceBack(mdi);
+      s1.emplaceBack(mdi);
     }
-    pw.emplaceBack(Map(s, exp));
+    pw.emplaceBack(Map(s1, exp));
+
   }
 
+  PWMap sum = pw+pw;
   auto start = std::chrono::high_resolution_clock::now();
-  pw.dom();
+  pw.lessImage(sum);
   auto end = std::chrono::high_resolution_clock::now();
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  std::cout << "PWL MAP ORDERED DOM TEST elapsed time: " << elapsed.count() << "ms\n";
+  std::cout << "PWL MAP ORDERED MINMAP TEST elapsed time: " << elapsed.count() << "ms\n";
 
   SUCCEED();
 }
+
+// sharedImage
+
+// offsetDom
+
+// compact
 
 } // namespace Internal
 

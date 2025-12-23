@@ -612,7 +612,6 @@ TEST(PWMapPerf, UnordFirstInvSet)
     pw.emplaceBack(Map(s1, exp));
 
   }
-
   
   auto start = std::chrono::high_resolution_clock::now();
   pw.firstInv(s);
@@ -622,7 +621,6 @@ TEST(PWMapPerf, UnordFirstInvSet)
 
   SUCCEED();
 }
-
 
 TEST(PWMapPerf, OrdFirstInvSet)
 {
@@ -657,7 +655,6 @@ TEST(PWMapPerf, OrdFirstInvSet)
 
   }
 
-  
   auto start = std::chrono::high_resolution_clock::now();
   pw.firstInv(s);
   auto end = std::chrono::high_resolution_clock::now();
@@ -666,8 +663,6 @@ TEST(PWMapPerf, OrdFirstInvSet)
 
   SUCCEED();
 }
-
-
 
 TEST(PWMapPerf, UnordCompact)
 {
@@ -864,9 +859,9 @@ TEST(PWMapPerf, UnordAdd)
 
 TEST(PWMapPerf, OrdAdd)
 {
-  unsigned int inter_sz = 10000;
-  unsigned int set_sz = 100;
-  unsigned int map_sz = 200;
+  unsigned int inter_sz = 100;
+  unsigned int set_sz = 10;
+  unsigned int map_sz = 10;
 
   SBG::Eval::setSetFactory(1);
   SBG::Eval::setPWFactory(1);

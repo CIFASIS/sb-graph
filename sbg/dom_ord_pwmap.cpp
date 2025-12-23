@@ -126,6 +126,7 @@ bool DomOrdPWMap::operator==(const PWMapStrategy& other) const
   }
 
   auto short_begin = short_pw.begin();
+  int iters = 0;
   for (const MapEntry& long_mpe : long_pw) {
     const Map& long_map = long_mpe.first;
     const SetPerimeter& long_sp = long_mpe.second; 
@@ -133,6 +134,7 @@ bool DomOrdPWMap::operator==(const PWMapStrategy& other) const
     auto prev_index = indexes.before_begin();
     auto curr_index = indexes.begin();
     while (curr_index != indexes.end()) {
+      ++iters;
       const size_t idx = *curr_index;
       const MapEntry& short_mpe = *(short_begin + idx);
       const Map& short_map = short_mpe.first;
@@ -177,6 +179,8 @@ bool DomOrdPWMap::operator==(const PWMapStrategy& other) const
       break;
     }
   }
+
+  std::cout << "iters: " << "\n\n";
   
   return true;
 }

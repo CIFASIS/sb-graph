@@ -17,7 +17,6 @@
 
  ******************************************************************************/
 
-#include <iostream>
 #include "sbg/map_entry.hpp"
 
 namespace SBG {

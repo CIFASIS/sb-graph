@@ -275,17 +275,14 @@ NAT OrderedSet::advanceHint(NAT hint, const SetPiece& mdi)
 
 bool OrderedSet::operator==(const SetStrategy& other) const
 { 
-  SetStratPtr this_comp = compact();
-  OrdSetCRef ths = static_cast<OrdSetCRef>(*this_comp);
-  SetStratPtr other_comp = other.compact();
-  OrdSetCRef othr = static_cast<OrdSetCRef>(*other_comp);
+  OrdSetCRef othr = static_cast<OrdSetCRef>(other);
   
-  if (ths.pieces_ == othr.pieces_) {
+  if (pieces_ == othr.pieces_) {
     return true;
-  } else {
-    return (ths.difference(othr))->isEmpty()
-     && (othr.difference(ths))->isEmpty();
   }
+
+  return (this->difference(othr))->isEmpty()
+    && (othr.difference(*this))->isEmpty();
 }
 
 bool OrderedSet::operator!=(const SetStrategy& other) const

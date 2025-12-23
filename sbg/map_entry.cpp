@@ -17,6 +17,7 @@
 
  ******************************************************************************/
 
+#include <iostream>
 #include "sbg/map_entry.hpp"
 
 namespace SBG {
@@ -90,28 +91,29 @@ void emplaceHint(OrdMapCollection& ord_pw, const Map& m, NAT hint)
     auto end = ord_pw.end();
     MapEntry mpe = createMapEntry(m);
     while (it != end) {
-      if (it->second.first < mpe.second.first)
+      if (it->second.first < mpe.second.first) {
         ++it;
-      else 
+      } else {
         break;
+      }
     }
-    ord_pw.insert(it, mpe);
+    ord_pw.emplace(it, mpe);
   }
 }
 
-void advanceHint(OrdMapCollection& ord_pw, const MD_NAT crit, NAT hint)
+void advanceHint(OrdMapCollection& ord_pw, const MD_NAT crit, NAT& hint)
 {
   auto it = ord_pw.begin();
-  std::advance(it,hint);
+  std::advance(it, hint);
   auto end = ord_pw.end();
-  while (it != end){
-    if (it->second.first < crit){
+  while (it != end) {
+    if (it->second.first < crit) {
       ++it;
       ++hint;
-    }
-    else
+    } else {
       break;
-  }  
+    }
+  } 
 }
 
 } // namespace Internal

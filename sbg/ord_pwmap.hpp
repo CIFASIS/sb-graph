@@ -125,7 +125,7 @@ struct OrdPWMap : public PWMapStrategy {
   Set& set_in,
   Set& set_out, 
   OrdMapCollection& ord_pwmap,
-  NAT global_pos) const;
+  NAT& global_pos) const;
   
   /**
    * @brief Calculates the minus core, which contains the entire main process of the function.
@@ -136,7 +136,7 @@ struct OrdPWMap : public PWMapStrategy {
   Set& set_in,
   Set& set_out, 
   OrdMapCollection& ord_pwmap,
-  NAT global_pos) const; 
+  NAT& global_pos) const; 
   
   /**
    * @brief Calculates the add core, which contains the entire main process of the function.
@@ -147,7 +147,7 @@ struct OrdPWMap : public PWMapStrategy {
   Set& set_in,
   Set& set_out, 
   OrdMapCollection& ord_pwmap,
-  NAT global_pos) const; 
+  NAT& global_pos) const; 
   
   /**
    * @brief Calculates the equalImage core, which contains the entire main process of the function.
@@ -158,7 +158,7 @@ struct OrdPWMap : public PWMapStrategy {
   Set& set_in,
   Set& set_out,
   OrdMapCollection& ord_pwmap,
-  NAT global_pos) const; 
+  NAT& global_pos) const; 
 
   /**
    * @brief Calculates the lessImage core, which contains the entire main process of the function.
@@ -169,16 +169,16 @@ struct OrdPWMap : public PWMapStrategy {
   Set& set_in,
   Set& set_out,
   OrdMapCollection& ord_pwmap,
-  NAT global_pos) const; 
+  NAT& global_pos) const; 
   
   /**
    * @brief Type used in the 'processMapsOrd' declaration to reduce its size.
    * This type is the same as the process functions above.
    */
   using ProcessFunc = void (OrdPWMap::*)(
-  const Map& , const Map& , 
-  Set& , Set& , OrdMapCollection& , 
-  NAT
+    const Map& , const Map& , 
+    Set& , Set& , OrdMapCollection& , 
+    NAT&
   ) const;
   
   /**

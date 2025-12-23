@@ -105,10 +105,18 @@ bool UnordPWMap::operator==(const PWMapStrategy& other) const
   for (const Map& m1 : pieces_) {
     for (const Map& m2 : othr.pieces_) {
       Set cap_dom = m1.dom().intersection(m2.dom());
-      Map cap_m1(cap_dom, m1.exp());
-      Map cap_m2(cap_dom, m2.exp());
-      if (!cap_dom.isEmpty() && cap_m1 != cap_m2) {
-        return false;
+      if (!cap_dom.isEmpty()) {
+        Exp exp1 = m1.exp();
+        Exp exp2 = m2.exp();
+        if (exp1 != exp2) {
+          return false;
+        }
+
+        Map cap_m1(cap_dom, exp1);
+        Map cap_m2(cap_dom, exp2);
+        if (cap_m1 != cap_m2) {
+          return false;
+        }
       }
     }
   }

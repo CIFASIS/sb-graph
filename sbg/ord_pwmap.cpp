@@ -145,18 +145,28 @@ bool OrdPWMap::operator==(const PWMapStrategy& other) const
 
       if (doInt(short_sp, long_sp)) {
         Set cap_dom = short_map.dom().intersection(long_map.dom());
-        Map short_cap_map(cap_dom, short_map.exp()); 
-        Map long_cap_map(cap_dom, long_map.exp()); 
-        if (!cap_dom.isEmpty() && short_cap_map != long_cap_map) {
-          return false;
+        if (!cap_dom.isEmpty()) {
+          Exp short_exp = short_map.exp();
+          Exp long_exp = long_map.exp();
+          if (short_exp != long_exp) {
+            return false;
+          }
+
+          Map short_cap_map(cap_dom, short_exp);
+          Map long_cap_map(cap_dom, long_exp);
+          if (short_cap_map != long_cap_map) {
+            return false;
+          }
         }
       }
 
       ++prev_index;
       ++curr_index;
     }
-    if (indexes.empty())
+
+    if (indexes.empty()) {
       break;
+    }
   }
   
   return true;
@@ -204,7 +214,7 @@ PWMapStratPtr OrdPWMap::operator+(const PWMapStrategy& other) const
 void OrdPWMap::processAdd(const Map& m1, const Map& m2, 
   Set& set_in, Set& set_out, 
   OrdMapCollection& ord_pwmap,
-  NAT global_pos) const
+  NAT& global_pos) const
 {   
   Map res_add = m1 + m2;
   if (!res_add.dom().isEmpty()){
@@ -596,7 +606,7 @@ PWMapStratPtr OrdPWMap::minAdjMap(const PWMapStrategy& other) const
 void OrdPWMap::processMinAdjMap(const Map& m1, const Map& m2, 
   Set& set_in, Set& set_out, 
   OrdMapCollection& ord_pwmap,
-  NAT global_pos) const 
+  NAT& global_pos) const 
 { 
   Set dom_res = SET_FACT.createSet();
   Set ith_dom = m1.dom().intersection(m2.dom());
@@ -708,7 +718,7 @@ Set OrdPWMap::equalImage(const PWMapStrategy& other) const
 void OrdPWMap::processEqualImage(const Map& m1, const Map& m2, 
   Set& set_in, Set& set_out, 
   OrdMapCollection& ord_pwmap,
-  NAT global_pos) const 
+  NAT& global_pos) const 
 { 
   Set cap_dom = m1.dom().intersection(m2.dom());
   if (!cap_dom.isEmpty()) {
@@ -732,7 +742,7 @@ Set OrdPWMap::lessImage(const PWMapStrategy& other) const
 void OrdPWMap::processLessImage(const Map& m1, const Map& m2, 
   Set& set_in, Set& set_out, 
   OrdMapCollection& ord_pwmap,
-  NAT global_pos) const 
+  NAT& global_pos) const 
 { 
   set_out = set_out.disjointCup(m1.lessImage(m2));
 }
@@ -812,7 +822,7 @@ PWMapStratPtr OrdPWMap::offsetDom(const MD_NAT& off) const
 {
   OrdMapCollection res;
 
-  for (const MapEntry& mpe : pieces_){
+  for (const MapEntry& mpe : pieces_) {
     Map map(mpe.first.dom().offset(off), mpe.first.exp());
     if(!map.isEmpty())
       Internal::emplaceBack(res, map);

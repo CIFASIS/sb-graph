@@ -45,7 +45,7 @@ bool operator<(const MapEntry& mpe1, const MapEntry& mpe2);
 void emplaceBack(OrdMapCollection& ord_pw, const MapEntry& entry);
 void emplaceBack(OrdMapCollection& ord_pw, const Map& m);
 void emplaceHint(OrdMapCollection& ord_pw, const Map& m, NAT hint);
-void advanceHint(OrdMapCollection& ord_pw, const MD_NAT crit, NAT hint);
+void advanceHint(OrdMapCollection& ord_pw, const MD_NAT crit, NAT& hint);
 
 } // namespace Internal
 

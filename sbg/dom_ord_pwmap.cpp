@@ -18,6 +18,7 @@
  ******************************************************************************/
 
 #include <forward_list>
+#include <iostream>
 #include <set>
 
 #include "sbg/map_entry.hpp"
@@ -153,10 +154,18 @@ bool DomOrdPWMap::operator==(const PWMapStrategy& other) const
       // Comparison between short_map and long_map needed.
       if (doInt(short_sp, long_sp)) {
         Set cap_dom = short_map.dom().intersection(long_map.dom());
-        Map short_cap_map(cap_dom, short_map.exp());
-        Map long_cap_map(cap_dom, long_map.exp());
-        if (!cap_dom.isEmpty() && short_cap_map != long_cap_map) {
-          return false;
+        if (!cap_dom.isEmpty()) {
+          Exp short_exp = short_map.exp();
+          Exp long_exp = long_map.exp();
+          if (short_exp != long_exp) {
+            return false;
+          }
+
+          Map short_cap_map(cap_dom, short_exp);
+          Map long_cap_map(cap_dom, long_exp);
+          if (short_cap_map != long_cap_map) {
+            return false;
+          }
         }
       }
 
@@ -164,8 +173,9 @@ bool DomOrdPWMap::operator==(const PWMapStrategy& other) const
       ++curr_index;
     }
 
-    if (indexes.empty())
+    if (indexes.empty()) {
       break;
+    }
   }
   
   return true;
@@ -196,7 +206,7 @@ PWMapStratPtr DomOrdPWMap::operator+(const PWMapStrategy& other) const
 void DomOrdPWMap::processAdd(const Map& m1, const Map& m2, 
   Set& set_in, Set& set_out, 
   OrdMapCollection& ord_pwmap,
-  NAT global_pos) const
+  NAT& global_pos) const
 {   
   Map res_add = m1 + m2;
   if (!res_add.dom().isEmpty()) {
@@ -621,7 +631,7 @@ PWMapStratPtr DomOrdPWMap::minAdjMap(const PWMapStrategy& other) const
 void DomOrdPWMap::processMinAdjMap(const Map& m1, const Map& m2, 
   Set& set_in, Set& set_out, 
   OrdMapCollection& ord_pwmap,
-  NAT global_pos) const 
+  NAT& global_pos) const 
 { 
   Set dom_res = SET_FACT.createSet();
   Set ith_dom = m1.dom().intersection(m2.dom());
@@ -735,7 +745,7 @@ Set DomOrdPWMap::equalImage(const PWMapStrategy& other) const
 void DomOrdPWMap::processEqualImage(const Map& m1, const Map& m2, 
   Set& set_in, Set& set_out, 
   OrdMapCollection& ord_pwmap,
-  NAT global_pos) const 
+  NAT& global_pos) const 
 { 
   Set cap_dom = m1.dom().intersection(m2.dom());
   if (!cap_dom.isEmpty()) {
@@ -759,7 +769,7 @@ Set DomOrdPWMap::lessImage(const PWMapStrategy& other) const
 void DomOrdPWMap::processLessImage(const Map& m1, const Map& m2, 
   Set& set_in, Set& set_out, 
   OrdMapCollection& ord_pwmap,
-  NAT global_pos) const 
+  NAT& global_pos) const 
 { 
   set_out.insertBack(m1.lessImage(m2));
 }
@@ -791,38 +801,41 @@ void DomOrdPWMap::processMapsOrd(
 
   auto short_begin = short_pw->pieces_.begin();
   NAT global_pos = 0;
-  
-  for(const MapEntry& long_mpe : long_pw->pieces_ ) {
+  for (const MapEntry& long_mpe : long_pw->pieces_ ) {
     const Map& long_map = long_mpe.first;
     const SetPerimeter& long_sp = long_mpe.second; 
     
     auto prev_index = indexes.before_begin();
     auto curr_index = indexes.begin();
-
     while (curr_index != indexes.end()) {
       size_t idx = *curr_index;
       const MapEntry& short_mpe = *(short_begin + idx);
-      const Map& s_m = short_mpe.first;
+      const Map& short_map = short_mpe.first;
       const SetPerimeter& short_sp = short_mpe.second; 
-      
+
       if (short_sp.second < long_sp.first) {
         curr_index = indexes.erase_after(prev_index);
         continue;
       }
 
-      if (long_sp.second < short_sp.first)
+      if (long_sp.second < short_sp.first) {
         break;
+      }
 
       // Process overlapping perimeters
       if (doInt(short_sp, long_sp)) {
-        (this->*process)(s_m, long_map, set_in, set_out, ord_map, global_pos);
+        (this->*process)(short_map, long_map, set_in, set_out, ord_map
+          , global_pos);
       }
 
       ++prev_index;
       ++curr_index;
+      //++aux_it;
     }
-    if (indexes.empty())
+
+    if (indexes.empty()) {
       break;
+    }
   }
 }
 

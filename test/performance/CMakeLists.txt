@@ -49,6 +49,7 @@ add_executable(sbg-benchmark benchmark_main.cpp)
 target_sources(sbg-benchmark
                PRIVATE
                benchmark_main.cpp
+               dom_ord_pwmap_bm.cpp
                ord_set_bm.cpp)
 
 set_target_properties(sbg-benchmark PROPERTIES

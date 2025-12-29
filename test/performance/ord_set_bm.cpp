@@ -29,7 +29,12 @@ using SBG::LIB::Interval;
 using SBG::LIB::SetPiece;
 using SBG::LIB::Set;
 
-std::pair<Set, Set> contiguousPieces(int set_sz) {
+/**
+ * @brief Test suite created to analyze the time growth of the different ordered
+ * set operations.
+ */
+std::pair<Set, Set> contiguousPieces(int set_sz)
+{
   SBG::LIB::NAT inter_sz = 100;
 
   Interval second_dim(0, 1, inter_sz - 1);
@@ -53,7 +58,61 @@ std::pair<Set, Set> contiguousPieces(int set_sz) {
   return {s1, s2};
 }
 
-static void BM_OrdSetDiff(benchmark::State& state) {
+static void BM_OrdSetEq(benchmark::State& state)
+{
+  int set_sz = state.range(0);
+  SBG::Eval::setSetFactory(1);
+  auto [s1, s2] = contiguousPieces(set_sz);
+
+  for (auto _ : state) {
+    benchmark::DoNotOptimize(s1 == s2);
+  }
+  state.SetComplexityN(set_sz);
+}
+BENCHMARK(BM_OrdSetEq)->RangeMultiplier(10)->Range(1000, 1e6)->Complexity();
+
+static void BM_OrdSetCap(benchmark::State& state)
+{
+  int set_sz = state.range(0);
+  SBG::Eval::setSetFactory(1);
+  auto [s1, s2] = contiguousPieces(set_sz);
+
+  for (auto _ : state) {
+    benchmark::DoNotOptimize(s1.intersection(s2));
+  }
+  state.SetComplexityN(set_sz);
+}
+BENCHMARK(BM_OrdSetCap)->RangeMultiplier(10)->Range(1000, 1e6)->Complexity();
+
+static void BM_OrdSetCup(benchmark::State& state)
+{
+  int set_sz = state.range(0);
+  SBG::Eval::setSetFactory(1);
+  auto [s1, s2] = contiguousPieces(set_sz);
+
+  for (auto _ : state) {
+    benchmark::DoNotOptimize(s1.cup(s2));
+  }
+  state.SetComplexityN(set_sz);
+}
+BENCHMARK(BM_OrdSetCup)->RangeMultiplier(10)->Range(1000, 1e6)->Complexity();
+
+static void BM_OrdSetComplement(benchmark::State& state)
+{
+  int set_sz = state.range(0);
+  SBG::Eval::setSetFactory(1);
+  auto [s1, s2] = contiguousPieces(set_sz);
+
+  for (auto _ : state) {
+    benchmark::DoNotOptimize(s1.complement());
+  }
+  state.SetComplexityN(set_sz);
+}
+BENCHMARK(BM_OrdSetComplement)->RangeMultiplier(10)->Range(1000, 1e6)
+  ->Complexity();
+
+static void BM_OrdSetDiff(benchmark::State& state)
+{
   int set_sz = state.range(0);
   SBG::Eval::setSetFactory(1);
   auto [s1, s2] = contiguousPieces(set_sz);
@@ -65,7 +124,8 @@ static void BM_OrdSetDiff(benchmark::State& state) {
 }
 BENCHMARK(BM_OrdSetDiff)->RangeMultiplier(10)->Range(1000, 1e6)->Complexity();
 
-static void BM_OrdSetDisjointUnion(benchmark::State& state) {
+static void BM_OrdSetDisjointUnion(benchmark::State& state)
+{
   int set_sz = state.range(0);
   SBG::Eval::setSetFactory(1);
   Set s1 = SBG::LIB::SET_FACT.createSet();
@@ -85,17 +145,19 @@ static void BM_OrdSetDisjointUnion(benchmark::State& state) {
 BENCHMARK(BM_OrdSetDisjointUnion)->RangeMultiplier(10)->Range(1000, 1e6)
   ->Complexity();
 
-static void BM_OrdSetEq(benchmark::State& state) {
+static void BM_OrdSetCompact(benchmark::State& state)
+{
   int set_sz = state.range(0);
   SBG::Eval::setSetFactory(1);
   auto [s1, s2] = contiguousPieces(set_sz);
 
   for (auto _ : state) {
-    benchmark::DoNotOptimize(s1 == s2);
+    benchmark::DoNotOptimize(s1.compact());
   }
   state.SetComplexityN(set_sz);
 }
-BENCHMARK(BM_OrdSetEq)->RangeMultiplier(10)->Range(1000, 1e6)->Complexity();
+BENCHMARK(BM_OrdSetCompact)->RangeMultiplier(10)->Range(10, 1e3)
+  ->Complexity();
 
 } // namespace Internal
 

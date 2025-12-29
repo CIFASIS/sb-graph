@@ -346,15 +346,17 @@ MD_NAT OrderedSet::maxElem() const
 SetStratPtr OrderedSet::intersection(const SetStrategy& other) const 
 {     
   // Special cases
-  if (isEmpty() || other.isEmpty())
+  if (isEmpty() || other.isEmpty()) {
     return std::make_unique<OrderedSet>();
+  }
 
   const MD_NAT min_elem = minElem();
   const MD_NAT max_elem = maxElem();
   const MD_NAT other_min = other.minElem();
   const MD_NAT other_max = other.maxElem();
-  if (max_elem < other_min || other_max < min_elem)
+  if (max_elem < other_min || other_max < min_elem) {
     return std::make_unique<OrderedSet>();
+  }
 
   OrderedSet result;
   if (max_elem == other_min) {
@@ -368,8 +370,9 @@ SetStratPtr OrderedSet::intersection(const SetStrategy& other) const
   }
 
   const OrdSetCRef othr = static_cast<OrdSetCRef>(other);
-  if (pieces_ == othr.pieces_)
+  if (pieces_ == othr.pieces_) {
     return std::make_unique<OrderedSet>(pieces_);
+  }
  
   // General case
   MDIOrdCollection short_set = pieces_;
@@ -427,18 +430,20 @@ SetStratPtr OrderedSet::intersection(const SetStrategy& other) const
         break;
   }
 
-  return std::make_unique<OrderedSet>(result);
+  return std::make_unique<OrderedSet>(std::move(result));
 }
 
-SetStratPtr OrderedSet::cup(const SetStrategy& other) const
+SetStratPtr OrderedSet::cup(const SetStrategy& other) const &
 { 
   // Special cases
   OrdSetCRef othr = static_cast<OrdSetCRef>(other);
-  if (isEmpty()) 
+  if (isEmpty()) { 
     return std::make_unique<OrderedSet>(othr.pieces_);
+  }
 
-  if (other.isEmpty() || pieces_ == othr.pieces_)
+  if (other.isEmpty() || pieces_ == othr.pieces_) {
     return std::make_unique<OrderedSet>(pieces_);
+  }
 
   const MD_NAT min_elem = minElem();
   const MD_NAT max_elem = maxElem();
@@ -449,18 +454,53 @@ SetStratPtr OrderedSet::cup(const SetStrategy& other) const
   if (max_elem < other_min) {
     result.insert(result.end(), pieces_.begin(), pieces_.end());
     result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
-    return std::make_unique<OrderedSet>(result);
+    return std::make_unique<OrderedSet>(std::move(result));
   }
 
   if (other_max < min_elem) {
     result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
     result.insert(result.end(), pieces_.begin(), pieces_.end());
-    return std::make_unique<OrderedSet>(result);
+    return std::make_unique<OrderedSet>(std::move(result));
   }
 
   // General case
   SetStratPtr diff = difference(other);
   
+  return othr.disjointCup(*diff);
+}
+
+SetStratPtr OrderedSet::cup(SetStrategy&& other) &&
+{ 
+  // Special cases
+  OrdSetRef othr = static_cast<OrdSetRef>(other);
+  if (other.isEmpty() || pieces_ == othr.pieces_) {
+    return std::make_unique<OrderedSet>(std::move(othr.pieces_));
+  }
+
+  if (isEmpty()) { 
+    return std::make_unique<OrderedSet>(std::move(pieces_));
+  }
+
+  const MD_NAT min_elem = minElem();
+  const MD_NAT max_elem = maxElem();
+  const MD_NAT other_min = other.minElem();
+  const MD_NAT other_max = other.maxElem();
+  MDIOrdCollection result;
+  result.reserve(pieces_.size() + othr.pieces_.size());
+  if (max_elem < other_min) {
+    result = std::move(pieces_);
+    pieces_.insert(pieces_.end(), othr.pieces_.begin(), othr.pieces_.end());
+    return std::make_unique<OrderedSet>(std::move(result));
+  }
+
+  if (other_max < min_elem) {
+    result = std::move(othr.pieces_);
+    result.insert(result.end(), pieces_.begin(), pieces_.end());
+    return std::make_unique<OrderedSet>(std::move(result));
+  }
+
+  // General case
+  SetStratPtr diff = difference(other);
   return othr.disjointCup(*diff);
 }
 
@@ -522,7 +562,7 @@ SetStratPtr OrderedSet::complementAtom() const
     ++dim;
   }
   
-  return std::make_unique<OrderedSet>(res);
+  return std::make_unique<OrderedSet>(std::move(res));
 }
 
 void OrderedSet::intersectionComp(const SetStrategy& other
@@ -640,24 +680,26 @@ SetStratPtr OrderedSet::disjointCup(const SetStrategy& other) const
   OrdSetCRef othr = static_cast<OrdSetCRef>(other);
   
   // Special cases
-  if (isEmpty())
+  if (isEmpty()) {
     return std::make_unique<OrderedSet>(othr.pieces_);
+  }
 
-  if (othr.isEmpty() || pieces_ == othr.pieces_)
+  if (othr.isEmpty() || pieces_ == othr.pieces_) {
     return std::make_unique<OrderedSet>(pieces_);  
+  }
 
   MDIOrdCollection result;
   result.reserve(pieces_.size() + othr.pieces_.size());
   if (pieces_.back() < othr.pieces_.front()) {
     result.insert(result.end(), pieces_.begin(), pieces_.end());
     result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
-    return std::make_unique<OrderedSet>(result);
+    return std::make_unique<OrderedSet>(std::move(result));
   }
 
   if (othr.pieces_.back() < pieces_.front()) {
     result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
     result.insert(result.end(), pieces_.begin(), pieces_.end());
-    return std::make_unique<OrderedSet>(result);
+    return std::make_unique<OrderedSet>(std::move(result));
   }
 
   // General case
@@ -677,7 +719,7 @@ SetStratPtr OrderedSet::disjointCup(const SetStrategy& other) const
   result.insert(result.end(), it1, end1);
   result.insert(result.end(), it2, end2);
   
-  return std::make_unique<OrderedSet>(result);
+  return std::make_unique<OrderedSet>(std::move(result));
 }
 
 SetStratPtr OrderedSet::filterSet(bool (*f)(const SetPiece& mdi)) const
@@ -685,21 +727,23 @@ SetStratPtr OrderedSet::filterSet(bool (*f)(const SetPiece& mdi)) const
   MDIOrdCollection res;
 
   for (const SetPiece& mdi : pieces_) {
-    if (f(mdi))
+    if (f(mdi)) {
       res.push_back(mdi);
+    }
   }
 
-  return std::make_unique<OrderedSet>(res);
+  return std::make_unique<OrderedSet>(std::move(res));
 }
 
 SetStratPtr OrderedSet::offset(const MD_NAT& off) const
 {
   MDIOrdCollection res;
 
-  for (const SetPiece& mdi : pieces_)
+  for (const SetPiece& mdi : pieces_) {
     res.emplace_back(mdi.offset(off));
+  }
 
-  return std::make_unique<OrderedSet>(res);
+  return std::make_unique<OrderedSet>(std::move(res));
 }
 
 SetStratPtr OrderedSet::compact() const
@@ -738,7 +782,7 @@ SetStratPtr OrderedSet::compact() const
     }
   }
 
-  return std::make_unique<OrderedSet>(result);
+  return std::make_unique<OrderedSet>(std::move(result));
 }
 
 } // namespace LIB

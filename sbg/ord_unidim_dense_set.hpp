@@ -82,7 +82,8 @@ struct OrdUnidimDenseSet : public SetStrategy {
   MD_NAT minElem() const override;
   MD_NAT maxElem() const override;
   SetStratPtr intersection(const SetStrategy& other) const override;
-  SetStratPtr cup(const SetStrategy& other) const override;
+  SetStratPtr cup(const SetStrategy& other) const & override;
+  SetStratPtr cup(SetStrategy&& other) && override;
   SetStratPtr complement() const;
   SetStratPtr difference(const SetStrategy& other) const override;
 
@@ -116,6 +117,7 @@ struct OrdUnidimDenseSet : public SetStrategy {
 };
 
 typedef const OrdUnidimDenseSet& OrdUnidimDenseSetCRef;
+typedef OrdUnidimDenseSet& OrdUnidimDenseSetRef;
 
 } // namespace LIB
 

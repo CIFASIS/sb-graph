@@ -231,15 +231,17 @@ MD_NAT UnorderedSet::maxElem() const
 SetStratPtr UnorderedSet::intersection(const SetStrategy& other) const
 {
   // Special cases to enhance performance
-  if (isEmpty() || other.isEmpty())
+  if (isEmpty() || other.isEmpty()) {
     return std::make_unique<UnorderedSet>();
+  }
 
   const MD_NAT min_elem = minElem();
   const MD_NAT max_elem = maxElem();
   const MD_NAT other_min = other.minElem();
   const MD_NAT other_max = other.maxElem();
-  if (max_elem < other_min || other_max < min_elem)
+  if (max_elem < other_min || other_max < min_elem) {
     return std::make_unique<UnorderedSet>();
+  }
 
   UnorderedSet result;
   if (max_elem == other_min) {
@@ -253,8 +255,9 @@ SetStratPtr UnorderedSet::intersection(const SetStrategy& other) const
   }
 
   UnordSetCRef othr = static_cast<UnordSetCRef>(other);
-  if (pieces_ == othr.pieces_)
+  if (pieces_ == othr.pieces_) {
     return std::make_unique<UnorderedSet>(pieces_);
+  }
 
   // General case
   for (const SetPiece& mdi1 : pieces_) {
@@ -263,28 +266,53 @@ SetStratPtr UnorderedSet::intersection(const SetStrategy& other) const
     }
   }
 
-  return std::make_unique<UnorderedSet>(result);
+  return std::make_unique<UnorderedSet>(std::move(result));
 }
 
-SetStratPtr UnorderedSet::cup(const SetStrategy& other) const
+SetStratPtr UnorderedSet::cup(const SetStrategy& other) const &
 {
   UnordSetCRef othr = static_cast<UnordSetCRef>(other);
 
-  if (isEmpty()) 
+  if (isEmpty()) { 
     return std::make_unique<UnorderedSet>(othr.pieces_);
+  }
 
-  if (other.isEmpty() || pieces_ == othr.pieces_)
+  if (other.isEmpty() || pieces_ == othr.pieces_) {
     return std::make_unique<UnorderedSet>(pieces_);
+  }
 
   if (maxElem() < othr.minElem() || othr.maxElem() < minElem()) {
     MDIUnordCollection result(pieces_.begin(), pieces_.end());
     result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
-    return std::make_unique<UnorderedSet>(result);
+    return std::make_unique<UnorderedSet>(std::move(result));
   }
 
   // General case
   SetStratPtr diff = difference(other);
 
+  return othr.disjointCup(*diff);
+}
+
+SetStratPtr UnorderedSet::cup(SetStrategy&& other) &&
+{
+  UnordSetCRef othr = static_cast<UnordSetCRef>(other);
+
+  if (isEmpty()) { 
+    return std::make_unique<UnorderedSet>(std::move(othr.pieces_));
+  }
+
+  if (other.isEmpty() || pieces_ == othr.pieces_) {
+    return std::make_unique<UnorderedSet>(std::move(pieces_));
+  }
+
+  if (maxElem() < othr.minElem() || othr.maxElem() < minElem()) {
+    MDIUnordCollection result = std::move(pieces_);
+    result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
+    return std::make_unique<UnorderedSet>(std::move(result));
+  }
+
+  // General case
+  SetStratPtr diff = difference(other);
   return othr.disjointCup(*diff);
 }
 
@@ -347,7 +375,7 @@ SetStratPtr UnorderedSet::complementAtom() const
     ++dim;
   }
 
-  return std::make_unique<UnorderedSet>(res);
+  return std::make_unique<UnorderedSet>(std::move(res));
 }
 
 SetStratPtr UnorderedSet::complement() const
@@ -371,11 +399,13 @@ SetStratPtr UnorderedSet::complement() const
 SetStratPtr UnorderedSet::difference(const SetStrategy& other) const
 {
   // Special cases
-  if (isEmpty() || other.isEmpty())
+  if (isEmpty() || other.isEmpty()) {
     return std::make_unique<UnorderedSet>(pieces_);
+  }
 
-  if (maxElem() < other.minElem() || other.maxElem() < minElem())
+  if (maxElem() < other.minElem() || other.maxElem() < minElem()) {
     return std::make_unique<UnorderedSet>(pieces_);
+  }
 
   // General case
   return intersection(*other.complement());
@@ -395,38 +425,44 @@ SetStratPtr UnorderedSet::disjointCup(const SetStrategy& other) const
 {
   UnordSetCRef othr = static_cast<UnordSetCRef>(other);
 
-  if (isEmpty()) 
+  if (isEmpty()) { 
     return std::make_unique<UnorderedSet>(othr.pieces_);
+  }
 
-  if (other.isEmpty() || pieces_ == othr.pieces_)
+  if (other.isEmpty() || pieces_ == othr.pieces_) {
     return std::make_unique<UnorderedSet>(pieces_);
+  }
 
   MDIUnordCollection result(pieces_.begin(), pieces_.end());
-  for (const SetPiece& mdi : othr.pieces_)
+  for (const SetPiece& mdi : othr.pieces_) {
     result.emplace_back(mdi);
+  }
 
-  return std::make_unique<UnorderedSet>(result);
+  return std::make_unique<UnorderedSet>(std::move(result));
 }
 
 SetStratPtr UnorderedSet::filterSet(bool (*f)(const SetPiece& mdi)) const
 {
   MDIUnordCollection res;
 
-  for (const SetPiece& mdi : pieces_)
-    if (f(mdi))
+  for (const SetPiece& mdi : pieces_) {
+    if (f(mdi)) {
       res.emplace_back(mdi);
+    }
+  }
 
-  return std::make_unique<UnorderedSet>(res);
+  return std::make_unique<UnorderedSet>(std::move(res));
 }
 
 SetStratPtr UnorderedSet::offset(const MD_NAT& off) const
 {
   MDIUnordCollection res;
 
-  for (const SetPiece& mdi : pieces_)
+  for (const SetPiece& mdi : pieces_) {
     res.emplace_back(mdi.offset(off));
+  }
 
-  return std::make_unique<UnorderedSet>(res);
+  return std::make_unique<UnorderedSet>(std::move(res));
 }
 
 SetStratPtr UnorderedSet::compact() const
@@ -464,7 +500,7 @@ SetStratPtr UnorderedSet::compact() const
       res.emplace_back(mdi);
   }
 
-  return std::make_unique<UnorderedSet>(res);
+  return std::make_unique<UnorderedSet>(std::move(res));
 }
 
 } // namespace LIB

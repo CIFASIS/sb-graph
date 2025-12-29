@@ -137,7 +137,8 @@ struct SetStrategy {
   /**
    * @brief Calculates the union of two sets.
    */
-  virtual SetStratPtr cup(const SetStrategy& other) const = 0;
+  virtual SetStratPtr cup(const SetStrategy& other) const & = 0;
+  virtual SetStratPtr cup(SetStrategy&& other) && = 0;
 
   /**
    * @brief Calculates the complement of a set.\n 
@@ -224,7 +225,8 @@ struct Set {
   MD_NAT minElem() const;
   MD_NAT maxElem() const;
   Set intersection(const Set& other) const;
-  Set cup(const Set& other) const;
+  Set cup(const Set& other) const &;
+  Set cup(Set&& other) &&;
   Set complement() const;
   Set difference(const Set& other) const;
 

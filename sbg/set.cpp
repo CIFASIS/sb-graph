@@ -136,9 +136,14 @@ Set Set::intersection(const Set& other) const
   return Set(strategy_->intersection(*other.strategy_));
 }
 
-Set Set::cup(const Set& other) const
+Set Set::cup(const Set& other) const &
 {
   return Set(strategy_->cup(*other.strategy_));
+}
+
+Set Set::cup(Set&& other) &&
+{
+  return strategy_->cup(*other.strategy_);
 }
 
 Set Set::complement() const

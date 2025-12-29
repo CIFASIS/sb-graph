@@ -18,7 +18,6 @@
  ******************************************************************************/
 
 #include <forward_list>
-#include <iostream>
 #include <set>
 
 #include "sbg/map_entry.hpp"
@@ -126,7 +125,6 @@ bool DomOrdPWMap::operator==(const PWMapStrategy& other) const
   }
 
   auto short_begin = short_pw.begin();
-  int iters = 0;
   for (const MapEntry& long_mpe : long_pw) {
     const Map& long_map = long_mpe.first;
     const SetPerimeter& long_sp = long_mpe.second; 
@@ -134,7 +132,6 @@ bool DomOrdPWMap::operator==(const PWMapStrategy& other) const
     auto prev_index = indexes.before_begin();
     auto curr_index = indexes.begin();
     while (curr_index != indexes.end()) {
-      ++iters;
       const size_t idx = *curr_index;
       const MapEntry& short_mpe = *(short_begin + idx);
       const Map& short_map = short_mpe.first;
@@ -150,8 +147,9 @@ bool DomOrdPWMap::operator==(const PWMapStrategy& other) const
       // Here short_map is "after" long_map, so no comparison is needed, and
       // the loop of long_pw continues to check if this short_map interacts
       // with the following elements of long_pw. 
-      if (long_sp.second < short_sp.first)
+      if (long_sp.second < short_sp.first) {
         break;
+      }
 
       // Comparison between short_map and long_map needed.
       if (doInt(short_sp, long_sp)) {
@@ -179,8 +177,6 @@ bool DomOrdPWMap::operator==(const PWMapStrategy& other) const
       break;
     }
   }
-
-  std::cout << "iters: " << "\n\n";
   
   return true;
 }
@@ -213,10 +209,8 @@ void DomOrdPWMap::processAdd(const Map& m1, const Map& m2,
   NAT& global_pos) const
 {   
   Map res_add = m1 + m2;
-  if (!res_add.dom().isEmpty()) {
-    advanceHint(ord_pwmap, calculatePerimeter(m2.dom()).first, global_pos);
-    emplaceHint(ord_pwmap, res_add, global_pos);
-  }                                                                                  
+  advanceHint(ord_pwmap, calculatePerimeter(m2.dom()).first, global_pos);
+  emplaceHint(ord_pwmap, res_add, global_pos);
 }
 
 std::ostream& DomOrdPWMap::print(std::ostream& out) const
@@ -314,8 +308,9 @@ PWMapStratPtr DomOrdPWMap::restrict(const Set& subdom) const
       ++curr_index;
     }
 
-    if (indexes.empty())
+    if (indexes.empty()) {
       break;
+    }
   }
 
   return std::make_unique<DomOrdPWMap>(res);
@@ -325,8 +320,9 @@ Set DomOrdPWMap::image() const
 {
   Set res = SET_FACT.createSet();
 
-  for (const MapEntry& mpe : pieces_)
-    res = res.cup(mpe.first.image());
+  for (const MapEntry& mpe : pieces_) {
+    res = std::move(res).cup(std::move(mpe.first.image()));
+  }
 
   return res;
 }
@@ -782,16 +778,20 @@ void DomOrdPWMap::processMapsOrd(
   const PWMapStrategy& other,
   Set& set_in,
   Set& set_out,
-  OrdMapCollection&  ord_map,
+  OrdMapCollection& ord_map,
   ProcessFunc process,
   bool order_mts
   ) const
 {
   DomOrdPWMapCRef othr = static_cast<DomOrdPWMapCRef>(other);
 
+  int sz = pieces_.size();
+  int othr_sz = othr.pieces_.size(); 
+  ord_map.reserve(2*(sz + othr_sz));
+
   const DomOrdPWMap *short_pw = this;
   const DomOrdPWMap *long_pw  = &othr;
-  if (!order_mts && othr.pieces_.size() < pieces_.size()) {
+  if (!order_mts && othr_sz < sz) {
     short_pw = &othr;
     long_pw  = this;
   }
@@ -800,8 +800,9 @@ void DomOrdPWMap::processMapsOrd(
   auto si_it = indexes.before_begin();
 
   const size_t short_size = short_pw->pieces_.size();
-  for (size_t i = 0; i < short_size; ++i)
+  for (size_t i = 0; i < short_size; ++i) {
     si_it = indexes.insert_after(si_it, i);
+  }
 
   auto short_begin = short_pw->pieces_.begin();
   NAT global_pos = 0;
@@ -817,16 +818,21 @@ void DomOrdPWMap::processMapsOrd(
       const Map& short_map = short_mpe.first;
       const SetPerimeter& short_sp = short_mpe.second; 
 
+      // Here short_map is "before" long_map, so it is also "before" all the
+      // remaining maps in long_pw, thus it can be discarded. 
       if (short_sp.second < long_sp.first) {
         curr_index = indexes.erase_after(prev_index);
         continue;
       }
 
+      // Here short_map is "after" long_map, so no comparison is needed, and
+      // the loop of long_pw continues to check if this short_map interacts
+      // with the following elements of long_pw. 
       if (long_sp.second < short_sp.first) {
         break;
       }
 
-      // Process overlapping perimeters
+      // Comparison between short_map and long_map needed.
       if (doInt(short_sp, long_sp)) {
         (this->*process)(short_map, long_map, set_in, set_out, ord_map
           , global_pos);
@@ -834,7 +840,6 @@ void DomOrdPWMap::processMapsOrd(
 
       ++prev_index;
       ++curr_index;
-      //++aux_it;
     }
 
     if (indexes.empty()) {

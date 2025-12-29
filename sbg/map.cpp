@@ -33,8 +33,9 @@ Interval image(Interval i, LExp le) {
   if (m == rat_inf || m > rat_inf)
     return Interval(0, 1, Inf);
 
-  if (le.isId())
+  if (le.isId()) {
     return i;
+  }
 
   if (le.isConstant()) {
     NAT off = le.offset().toNat();
@@ -155,23 +156,27 @@ Set Map::image(const Set& subdom) const
     return res;
 
   Set capdom = dom_.intersection(subdom);
-  if (capdom.isEmpty())
+  if (capdom.isEmpty()) {
     return res;
-  else {
+  } else {
     // Check if all expressions are bijective; in the affirmative case all
     // images can be added without further checks
     bool cond = true;
-    for (const LExp& le : exp_)
-      if (le.isConstant())
+    for (const LExp& le : exp_) {
+      if (le.isConstant()) {
         cond = false;
+      }
+    }
 
     if (cond) {
-      for (const SetPiece& mdi : capdom)
+      for (const SetPiece& mdi : capdom) {
         res.emplaceBack(SBG::LIB::image(mdi, exp_));
+      }
     }
     else {
-      for (const SetPiece& mdi : capdom)
+      for (const SetPiece& mdi : capdom) {
         res = res.cup(SET_FACT.createSet(SBG::LIB::image(mdi, exp_)));
+      }
     }
   }
 

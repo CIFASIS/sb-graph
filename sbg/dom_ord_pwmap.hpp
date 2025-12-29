@@ -124,60 +124,60 @@ struct DomOrdPWMap : public OrdPWMap {
    * of the function.
    */
   void processMinAdjMap(
-  const Map& m1, 
-  const Map& m2, 
-  Set& set_in,
-  Set& set_out, 
-  OrdMapCollection& ord_pwmap,
-  NAT& global_pos) const;
+    const Map& m1, 
+    const Map& m2, 
+    Set& set_in,
+    Set& set_out, 
+    OrdMapCollection& ord_pwmap,
+    NAT& global_pos) const;
   
   /**
    * @brief Calculates the minus core, which contains the entire main process of
    * the function.
    */
   void processMinus(
-  const Map& m1, 
-  const Map& m2, 
-  Set& set_in,
-  Set& set_out, 
-  OrdMapCollection& ord_pwmap,
-  NAT& global_pos) const; 
+    const Map& m1, 
+    const Map& m2, 
+    Set& set_in,
+    Set& set_out, 
+    OrdMapCollection& ord_pwmap,
+    NAT& global_pos) const; 
   
   /**
    * @brief Calculates the add core, which contains the entire main process of
    * the function.
    */
   void processAdd(
-  const Map& m1, 
-  const Map& m2, 
-  Set& set_in,
-  Set& set_out, 
-  OrdMapCollection& ord_pwmap,
-  NAT& global_pos) const; 
+    const Map& m1, 
+    const Map& m2, 
+    Set& set_in,
+    Set& set_out, 
+    OrdMapCollection& ord_pwmap,
+    NAT& global_pos) const; 
 
   /**
    * @brief Calculates the lessImage core, which contains the entire main
    * process of the function.
    */
   void processLessImage(
-  const Map& m1, 
-  const Map& m2, 
-  Set& set_in,
-  Set& set_out,
-  OrdMapCollection& ord_pwmap,
-  NAT& global_pos) const; 
+    const Map& m1, 
+    const Map& m2, 
+    Set& set_in,
+    Set& set_out,
+    OrdMapCollection& ord_pwmap,
+    NAT& global_pos) const; 
   
   /**
    * @brief Calculates the equalImage core, which contains the entire main
    * process of the function.
    */
   void processEqualImage(
-  const Map& m1, 
-  const Map& m2, 
-  Set& set_in,
-  Set& set_out,
-  OrdMapCollection& ord_pwmap,
-  NAT& global_pos) const; 
+    const Map& m1, 
+    const Map& m2, 
+    Set& set_in,
+    Set& set_out,
+    OrdMapCollection& ord_pwmap,
+    NAT& global_pos) const; 
   
   /**
    * @brief Type used in the 'processMapsOrd' declaration to reduce its size.

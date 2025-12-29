@@ -208,7 +208,7 @@ PWMapStratPtr OrdPWMap::operator+(const PWMapStrategy& other) const
   Set set_out = SET_FACT.createSet();
   OrdMapCollection res;
   processMapsOrd(other,set_in, set_out, res, &OrdPWMap::processAdd, false);
-  return std::make_unique<OrdPWMap>(res);
+  return std::make_unique<OrdPWMap>(std::move(res));
 }
 
 void OrdPWMap::processAdd(const Map& m1, const Map& m2, 
@@ -260,8 +260,9 @@ PWMapStratPtr OrdPWMap::restrict(const Set& subdom) const
 {
   OrdMapCollection res;
   
-  if (subdom.isEmpty())
+  if (subdom.isEmpty()) {
     return std::make_unique<OrdPWMap>(res);
+  }
 
   NAT global_pos = 0;
   
@@ -286,7 +287,7 @@ PWMapStratPtr OrdPWMap::restrict(const Set& subdom) const
       break;
   }
 
-  return std::make_unique<OrdPWMap>(res);
+  return std::make_unique<OrdPWMap>(std::move(res));
 }
 
 Set OrdPWMap::image() const
@@ -326,7 +327,7 @@ PWMapStratPtr OrdPWMap::inverse() const
   
   std::sort(res.begin(),res.end(), operator<);
 
-  return std::make_unique<OrdPWMap>(res);
+  return std::make_unique<OrdPWMap>(std::move(res));
 }
 
 PWMapStratPtr OrdPWMap::composition(const PWMapStrategy& other) const 
@@ -362,7 +363,7 @@ PWMapStratPtr OrdPWMap::composition(const PWMapStrategy& other) const
     }
   }
 
-  return std::make_unique<OrdPWMap>(res);
+  return std::make_unique<OrdPWMap>(std::move(res));
 }
 
 PWMapStratPtr OrdPWMap::mapInf(unsigned int n) const
@@ -419,28 +420,29 @@ PWMapStratPtr OrdPWMap::concatenation(const PWMapStrategy& other) const
   OrdPWMapCRef othr = static_cast<OrdPWMapCRef>(other);
   res.reserve(pieces_.size() + othr.pieces_.size());
   
-  if (isEmpty())
+  if (isEmpty()) {
     return std::make_unique<OrdPWMap>(othr);
+  }
 
-  if (other.isEmpty())
+  if (other.isEmpty()) {
     return std::make_unique<OrdPWMap>(*this);
+  }
   
   if (pieces_.back().second.first < othr.pieces_.front().second.first) {
     res.insert(res.end(), pieces_.begin(), pieces_.end());
     res.insert(res.end(), othr.pieces_.begin(), othr.pieces_.end());
-    return std::make_unique<OrdPWMap>(res);
+    return std::make_unique<OrdPWMap>(std::move(res));
   }
   
   if (othr.pieces_.back().second.first < pieces_.front().second.first) {
     res.insert(res.end(), othr.pieces_.begin(), othr.pieces_.end());
     res.insert(res.end(), pieces_.begin(), pieces_.end());
-    return std::make_unique<OrdPWMap>(res);
+    return std::make_unique<OrdPWMap>(std::move(res));
   }
   
   auto it1 = pieces_.begin(), it2 = othr.pieces_.begin();
   auto end1 = pieces_.end(), end2 = othr.pieces_.end();
   
-
   for (; it1 != end1 && it2 != end2;) {
     auto min_per_m1 = it1->second.first;
     auto min_per_m2 = it2->second.first;
@@ -457,21 +459,23 @@ PWMapStratPtr OrdPWMap::concatenation(const PWMapStrategy& other) const
   res.insert(res.end(), it1, end1);
   res.insert(res.end(), it2, end2);
 
-  return std::make_unique<OrdPWMap>(res);
+  return std::make_unique<OrdPWMap>(std::move(res));
 }
-
 
 PWMapStratPtr OrdPWMap::combine(const PWMapStrategy& other) const
 {
   OrdPWMapCRef othr = static_cast<OrdPWMapCRef>(other);
-  if (isEmpty())
+  if (isEmpty()) {
     return std::make_unique<OrdPWMap>(othr.pieces_);
+  }
 
-  if (other.isEmpty())
+  if (other.isEmpty()) {
     return std::make_unique<OrdPWMap>(pieces_);
+  }
 
-  if (pieces_ == othr.pieces_)
+  if (pieces_ == othr.pieces_) {
     return std::make_unique<OrdPWMap>(pieces_);
+  }
 
   Set exclusive_other = other.dom().difference(dom());
 
@@ -527,9 +531,8 @@ PWMapStratPtr OrdPWMap::reduce(const Interval& i, const LExp& le) const
       Internal::emplaceBack(res, Map(i, le));
   }
 
-  return std::make_unique<OrdPWMap>(res);
+  return std::make_unique<OrdPWMap>(std::move(res));
 }
-
 
 PWMapStratPtr OrdPWMap::reduce(const Map& map) const
 {
@@ -566,7 +569,7 @@ PWMapStratPtr OrdPWMap::reduce(const Map& map) const
   if(!not_reduced.isEmpty())
     Internal::emplaceBack(res, Map(not_reduced, e)); // Add unreduced subpieces
 
-  return std::make_unique<OrdPWMap>(res);
+  return std::make_unique<OrdPWMap>(std::move(res));
 }
 
 PWMapStratPtr OrdPWMap::reduce() const
@@ -581,13 +584,14 @@ PWMapStratPtr OrdPWMap::reduce() const
 
   std::sort(res.begin(), res.end(), operator<);
   
-  return std::make_unique<OrdPWMap>(res);
+  return std::make_unique<OrdPWMap>(std::move(res));
 }
 
 PWMapStratPtr OrdPWMap::minMap(const PWMapStrategy& other) const
 {
-  if (isEmpty() || other.isEmpty())
+  if (isEmpty() || other.isEmpty()) {
     return std::make_unique<OrdPWMap>();
+  }
 
   Set min_in_pw1 = lessImage(other);
   return restrict(min_in_pw1)->combine(*other.restrict(dom())); 
@@ -600,7 +604,7 @@ PWMapStratPtr OrdPWMap::minAdjMap(const PWMapStrategy& other) const
   OrdMapCollection res;
   processMapsOrd(other, set_in, set_out, res, &OrdPWMap::processMinAdjMap, true);
   std::sort(res.begin(), res.end(), operator<); 
-  return std::make_unique<OrdPWMap>(res);
+  return std::make_unique<OrdPWMap>(std::move(res));
 }
 
 void OrdPWMap::processMinAdjMap(const Map& m1, const Map& m2, 
@@ -648,8 +652,9 @@ void OrdPWMap::processMinAdjMap(const Map& m1, const Map& m2,
 PWMapStratPtr OrdPWMap::firstInv(const Set& subdom) const
 {
   OrdMapCollection res;
-  if (isEmpty() || subdom.isEmpty() )
+  if (isEmpty() || subdom.isEmpty()) {
     return std::make_unique<OrdPWMap>(res);
+  }
 
   SetPerimeter s_sp = calculatePerimeter(subdom);
   auto s_max_per = s_sp.second;
@@ -689,7 +694,7 @@ PWMapStratPtr OrdPWMap::firstInv(const Set& subdom) const
 
   std::sort(res.begin(), res.end(), operator<);
 
-  return std::make_unique<OrdPWMap>(res);
+  return std::make_unique<OrdPWMap>(std::move(res));
 }
 
 PWMapStratPtr OrdPWMap::firstInv() const { return firstInv(dom()); }
@@ -697,12 +702,13 @@ PWMapStratPtr OrdPWMap::firstInv() const { return firstInv(dom()); }
 PWMapStratPtr OrdPWMap::filterMap(bool (*f)(const Map& )) const
 { 
   OrdMapCollection res;
-  for (const MapEntry& mpe : pieces_){
-    if (f(mpe.first))
+  for (const MapEntry& mpe : pieces_) {
+    if (f(mpe.first)) {
       Internal::emplaceBack(res, mpe);
+    }
   }
   
-  return std::make_unique<OrdPWMap>(res);
+  return std::make_unique<OrdPWMap>(std::move(res));
 }
 
 Set OrdPWMap::equalImage(const PWMapStrategy& other) const
@@ -758,6 +764,10 @@ void OrdPWMap::processMapsOrd(
 {
   OrdPWMapCRef othr = static_cast<OrdPWMapCRef>(other);
 
+  int sz = pieces_.size();
+  int othr_sz = othr.pieces_.size(); 
+  ord_map.reserve(2*(sz + othr_sz));
+
   const OrdPWMap *short_pw = this;
   const OrdPWMap *long_pw  = &othr;
   if (!order_mts && othr.pieces_.size() < pieces_.size()) {
@@ -769,8 +779,9 @@ void OrdPWMap::processMapsOrd(
   auto si_it = indexes.before_begin();
 
   const size_t short_size = short_pw->pieces_.size();
-  for (size_t i = 0; i < short_size; ++i)
+  for (size_t i = 0; i < short_size; ++i) {
     si_it = indexes.insert_after(si_it, i);
+  }
 
   auto short_begin = short_pw->pieces_.begin();
   NAT global_pos = 0;
@@ -828,7 +839,7 @@ PWMapStratPtr OrdPWMap::offsetDom(const MD_NAT& off) const
       Internal::emplaceBack(res, map);
   }
 
-  return std::make_unique<OrdPWMap>(res);
+  return std::make_unique<OrdPWMap>(std::move(res));
 }
 
 PWMapStratPtr OrdPWMap::offsetDom(const PWMapStrategy& off) const
@@ -857,8 +868,7 @@ PWMapStratPtr OrdPWMap::offsetDom(const PWMapStrategy& off) const
 
   std::sort(res.begin(),res.end(), operator<);
   
-  return std::make_unique<OrdPWMap>(res);
-
+  return std::make_unique<OrdPWMap>(std::move(res));
 }
 
 PWMapStratPtr OrdPWMap::offsetImage(const MD_NAT& off) const
@@ -875,7 +885,7 @@ PWMapStratPtr OrdPWMap::offsetImage(const MD_NAT& off) const
     Internal::emplaceBack(res, Map(mpe.first.dom(), res_e));
   }
 
-  return std::make_unique<OrdPWMap>(res);
+  return std::make_unique<OrdPWMap>(std::move(res));
 }
 
 PWMapStratPtr OrdPWMap::offsetImage(const Exp& off) const
@@ -885,14 +895,15 @@ PWMapStratPtr OrdPWMap::offsetImage(const Exp& off) const
   for (const MapEntry& mpe : pieces_) 
     Internal::emplaceBack(res, Map(mpe.first.dom(), off + mpe.first.exp()));
 
-  return std::make_unique<OrdPWMap>(res);
+  return std::make_unique<OrdPWMap>(std::move(res));
 }
 
 PWMapStratPtr OrdPWMap::compact() const
 {
   OrdMapCollection res;
-  if (dom().isEmpty())
+  if (dom().isEmpty()) {
     return std::make_unique<OrdPWMap>(res);
+  }
   
   std::forward_list<size_t> indexes;
   auto li_it = indexes.before_begin();
@@ -934,7 +945,7 @@ PWMapStratPtr OrdPWMap::compact() const
       li_curr = indexes.begin();
   }
 
-  return std::make_unique<OrdPWMap>(res);
+  return std::make_unique<OrdPWMap>(std::move(res));
 }
 
 } // namespace LIB

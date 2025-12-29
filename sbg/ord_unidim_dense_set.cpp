@@ -148,70 +148,6 @@ void OrdUnidimDenseSet::emplaceBack(const SetPiece& mdi)
   return;
 }
 
-void OrdUnidimDenseSet::insert(const SetStrategy& other)
-{
-  if (other.isEmpty())
-    return;
-
-  OrdUnidimDenseSetCRef othr = static_cast<OrdUnidimDenseSetCRef>(other);
-  if (isEmpty() || pieces_.back() < othr.pieces_.front()) {
-    for (const SetPiece& mdi : othr.pieces_) {
-      pieces_.emplace_back(mdi);
-    }
-    return;
-  }
-
-  if (othr.pieces_.back() < pieces_.front()) {
-    MDIOrdCollection temp;
-    for (const SetPiece& mdi : othr.pieces_) {
-      temp.emplace_back(mdi);
-    }
-    for (const SetPiece& mdi : pieces_) {
-      temp.emplace_back(mdi);
-    }
-    pieces_ = std::move(temp);
-    return;
-  }
-
-  for (const SetPiece& mdi : othr.pieces_) {
-    emplace(mdi);
-  }
-
-  return;
-}
-
-void OrdUnidimDenseSet::insertBack(const SetStrategy& other)
-{
-  if (other.isEmpty())
-    return;
-
-  OrdUnidimDenseSetCRef othr = static_cast<OrdUnidimDenseSetCRef>(other);
-  if (isEmpty() || pieces_.back() < othr.pieces_.front()) {
-    for (const SetPiece& mdi : othr.pieces_) {
-      pieces_.emplace_back(mdi);
-    }
-    return;
-  }
-
-  if (othr.pieces_.back() < pieces_.front()) {
-    MDIOrdCollection temp;
-    for (const SetPiece& mdi : othr.pieces_) {
-      temp.emplace_back(mdi);
-    }
-    for (const SetPiece& mdi : pieces_) {
-      temp.emplace_back(mdi);
-    }
-    pieces_ = std::move(temp);
-    return;
-  }
-
-  for (const SetPiece& mdi : othr.pieces_) {
-    emplaceBack(mdi);
-  }
-
-  return;
-}
-
 bool OrdUnidimDenseSet::operator==(const SetStrategy& other) const
 {
   SetStratPtr this_comp = compact();
@@ -324,19 +260,14 @@ SetStratPtr OrdUnidimDenseSet::cup(const SetStrategy& other) const &
     return std::make_unique<OrdUnidimDenseSet>(pieces_);
   }
 
-  const MD_NAT min_elem = minElem();
-  const MD_NAT max_elem = maxElem();
-  const MD_NAT other_min = other.minElem();
-  const MD_NAT other_max = other.maxElem();
   MDIOrdCollection result;
-  result.reserve(pieces_.size() + othr.pieces_.size());
-  if (max_elem < other_min) {
+  if (maxElem() < othr.minElem()) {
     result.insert(result.end(), pieces_.begin(), pieces_.end());
     result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
     return std::make_unique<OrdUnidimDenseSet>(std::move(result));
   }
 
-  if (other_max < min_elem) {
+  if (othr.maxElem() < minElem()) {
     result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
     result.insert(result.end(), pieces_.begin(), pieces_.end());
     return std::make_unique<OrdUnidimDenseSet>(std::move(result));
@@ -353,26 +284,21 @@ SetStratPtr OrdUnidimDenseSet::cup(SetStrategy&& other) &&
   // Special cases
   OrdUnidimDenseSetRef othr = static_cast<OrdUnidimDenseSetRef>(other);
   if (other.isEmpty() || pieces_ == othr.pieces_) {
-    return std::make_unique<OrdUnidimDenseSet>(std::move(othr.pieces_));
-  }
-
-  if (isEmpty()) { 
     return std::make_unique<OrdUnidimDenseSet>(std::move(pieces_));
   }
 
-  const MD_NAT min_elem = minElem();
-  const MD_NAT max_elem = maxElem();
-  const MD_NAT other_min = other.minElem();
-  const MD_NAT other_max = other.maxElem();
+  if (isEmpty()) { 
+    return std::make_unique<OrdUnidimDenseSet>(std::move(othr.pieces_));
+  }
+
   MDIOrdCollection result;
-  result.reserve(pieces_.size() + othr.pieces_.size());
-  if (max_elem < other_min) {
+  if (maxElem() < othr.minElem()) {
     result = std::move(pieces_);
-    pieces_.insert(pieces_.end(), othr.pieces_.begin(), othr.pieces_.end());
+    result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
     return std::make_unique<OrdUnidimDenseSet>(std::move(result));
   }
 
-  if (other_max < min_elem) {
+  if (othr.maxElem() < minElem()) {
     result = std::move(othr.pieces_);
     result.insert(result.end(), pieces_.begin(), pieces_.end());
     return std::make_unique<OrdUnidimDenseSet>(std::move(result));
@@ -381,7 +307,6 @@ SetStratPtr OrdUnidimDenseSet::cup(SetStrategy&& other) &&
   // General case
   SetStratPtr diff = difference(other);
   return othr.disjointCup(*diff);
-  
 }
 
 SetStratPtr OrdUnidimDenseSet::complement() const
@@ -436,7 +361,7 @@ std::size_t OrdUnidimDenseSet::arity() const
   return pieces_.begin()->arity();
 }
 
-SetStratPtr OrdUnidimDenseSet::disjointCup(const SetStrategy& other) const
+SetStratPtr OrdUnidimDenseSet::disjointCup(const SetStrategy& other) const &
 {
   OrdUnidimDenseSetCRef othr = static_cast<OrdUnidimDenseSetCRef>(other);
   
@@ -450,7 +375,6 @@ SetStratPtr OrdUnidimDenseSet::disjointCup(const SetStrategy& other) const
   }
 
   MDIOrdCollection result;
-  result.reserve(pieces_.size() + othr.pieces_.size());
   if (pieces_.back() < othr.pieces_.front()) {
     result.insert(result.end(), pieces_.begin(), pieces_.end());
     result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
@@ -464,7 +388,36 @@ SetStratPtr OrdUnidimDenseSet::disjointCup(const SetStrategy& other) const
   }
   
   MDIOrdCollection cup = traverse(&SetPiece::least, othr.pieces_);
+  return std::make_unique<OrdUnidimDenseSet>(std::move(cup));
+}
 
+SetStratPtr OrdUnidimDenseSet::disjointCup(SetStrategy&& other) &&
+{
+  OrdUnidimDenseSetCRef othr = static_cast<OrdUnidimDenseSetCRef>(other);
+
+  // Special cases
+  if (isEmpty()) {
+    return std::make_unique<OrdUnidimDenseSet>(std::move(othr.pieces_));
+  }
+
+  if (othr.isEmpty() || pieces_ == othr.pieces_) {
+    return std::make_unique<OrdUnidimDenseSet>(std::move(pieces_));
+  }
+
+  MDIOrdCollection result;
+  if (pieces_.back() < othr.pieces_.front()) {
+    result = std::move(pieces_);
+    result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
+    return std::make_unique<OrdUnidimDenseSet>(std::move(result));
+  }
+
+  if (othr.pieces_.back() < pieces_.front()) {
+    result = std::move(othr.pieces_);
+    result.insert(result.end(), pieces_.begin(), pieces_.end());
+    return std::make_unique<OrdUnidimDenseSet>(std::move(result));
+  }
+  
+  MDIOrdCollection cup = traverse(&SetPiece::least, othr.pieces_);
   return std::make_unique<OrdUnidimDenseSet>(std::move(cup));
 }
 

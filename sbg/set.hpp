@@ -98,25 +98,15 @@ struct SetStrategy {
 
   /**
    * @brief Adds a compact piece to the set, traversing in forward order.
+   * Precondition: arguments should be disjoint.
    */
   virtual void emplace(const SetPiece& mdi) = 0;
 
   /**
    * @brief Adds a compact piece to the set, traversing in reverse order.
+   * Precondition: arguments should be disjoint.
    */
   virtual void emplaceBack(const SetPiece& mdi) = 0;
-
-  /**
-   * @brief Adds all pieces from the argument to the current Set from the
-   * beginning.
-   */
-  virtual void insert(const SetStrategy& other) = 0;
-
-  /**
-   * @brief Adds all pieces from the argument to the current Set from the
-   * end.
-   */
-  virtual void insertBack(const SetStrategy& other) = 0;
 
   virtual bool operator==(const SetStrategy& other) const = 0;
   virtual bool operator!=(const SetStrategy& other) const = 0;
@@ -159,7 +149,8 @@ struct SetStrategy {
    * @brief Calculates the union of two disjoint sets. \n 
    * Precondition: this->intersection(other) = {}.
    */
-  virtual SetStratPtr disjointCup(const SetStrategy& other) const = 0;
+  virtual SetStratPtr disjointCup(const SetStrategy& other) const & = 0;
+  virtual SetStratPtr disjointCup(SetStrategy&& other) && = 0;
 
   /**
    * @brief Returns a set that keeps pieces of the original set that satisfy
@@ -209,8 +200,6 @@ struct Set {
   std::size_t size() const;
   void emplace(SetPiece mdi);
   void emplaceBack(SetPiece mdi);
-  void insert(const Set& other);
-  void insertBack(const Set& other);
 
   bool operator==(const Set& other) const;
   bool operator!=(const Set& other) const;
@@ -233,7 +222,8 @@ struct Set {
   // Extra operations ----------------------------------------------------------
 
   std::size_t arity() const;
-  Set disjointCup(const Set& other) const;
+  Set disjointCup(const Set& other) const &;
+  Set disjointCup(Set&& other) &&;
   Set filterSet(bool (*f)(const SetPiece& mdi)) const;
   Set offset(const MD_NAT& off) const;
   Set compact() const;

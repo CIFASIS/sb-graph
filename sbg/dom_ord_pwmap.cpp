@@ -51,7 +51,7 @@ DomOrdPWMap::DomOrdPWMap(const Set& s) : pieces_() {
   }
 }
 DomOrdPWMap::DomOrdPWMap(const Map& m) : pieces_() {
-  if (!m.isEmpty()){
+  if (!m.isEmpty()) {
     pieces_.push_back(createMapEntry(m));
   }
 }
@@ -91,12 +91,14 @@ std::shared_ptr<PWMapStrategy::Iterator> DomOrdPWMap::end() const
 
 void DomOrdPWMap::emplaceBack(const Map& m)
 { 
-  if (!m.isEmpty()){
+  if (!m.isEmpty()) {
     MapEntry mpe = createMapEntry(m);
-    if (pieces_.empty() || pieces_.back().second.first < mpe.second.first) 
+    if (pieces_.empty() || pieces_.back().second.first < mpe.second.first) {
       pieces_.emplace_back(mpe);
-    else
+    }
+    else {
       emplaceHint(pieces_, m, 0);
+    }
   }
 }
 
@@ -104,11 +106,13 @@ bool DomOrdPWMap::operator==(const PWMapStrategy& other) const
 { 
   DomOrdPWMapCRef othr = static_cast<DomOrdPWMapCRef>(other);
 
-  if (dom() != othr.dom()) 
+  if (dom() != othr.dom()) {
     return false;
+  }
 
-  if (pieces_ == othr.pieces_)
+  if (pieces_ == othr.pieces_) {
     return true;
+  }
 
   OrdMapCollection short_pw = pieces_;
   OrdMapCollection long_pw = othr.pieces_;
@@ -188,8 +192,7 @@ bool DomOrdPWMap::operator!=(const PWMapStrategy& other) const
 
 DomOrdPWMap& DomOrdPWMap::operator=(DomOrdPWMap&& other)
 {
-  if (this != &other)
-    pieces_ = std::move(other.pieces_);
+  pieces_ = std::move(other.pieces_);
   
   return *this;
 }
@@ -198,9 +201,10 @@ PWMapStratPtr DomOrdPWMap::operator+(const PWMapStrategy& other) const
 {
   Set set_in = SET_FACT.createSet();
   Set set_out = SET_FACT.createSet();
-  OrdMapCollection res;
-  processMapsOrd(other, set_in, set_out, res, &DomOrdPWMap::processAdd, false);
-  return std::make_unique<DomOrdPWMap>(res);
+  OrdMapCollection result;
+  processMapsOrd(other, set_in, set_out, result, &DomOrdPWMap::processAdd
+    , false);
+  return std::make_unique<DomOrdPWMap>(std::move(result));
 }
 
 void DomOrdPWMap::processAdd(const Map& m1, const Map& m2, 
@@ -239,8 +243,9 @@ PWMapStratPtr DomOrdPWMap::clone() const
 
 std::size_t DomOrdPWMap::arity() const
 {
-  if (isEmpty())
+  if (isEmpty()) {
     return 0;
+  }
 
   return pieces_.begin()->first.dom().arity();
 }
@@ -254,7 +259,8 @@ Set DomOrdPWMap::dom() const
 {
   Set result = SET_FACT.createSet();
   for (const MapEntry& mpe : pieces_) {
-    result.insertBack(mpe.first.dom());
+    Set ith_dom = mpe.first.dom();
+    result = std::move(result).disjointCup(std::move(ith_dom));
   }
 
   return result;
@@ -262,10 +268,11 @@ Set DomOrdPWMap::dom() const
 
 PWMapStratPtr DomOrdPWMap::restrict(const Set& subdom) const
 {
-  OrdMapCollection res;
+  OrdMapCollection result;
   
-  if (subdom.isEmpty() || isEmpty())
-    return std::make_unique<DomOrdPWMap>(res);
+  if (subdom.isEmpty() || isEmpty()) {
+    return std::make_unique<DomOrdPWMap>();
+  }
 
   // Indexes list corresponding to remaining maps in the pw
   std::forward_list<size_t> indexes;
@@ -294,14 +301,15 @@ PWMapStratPtr DomOrdPWMap::restrict(const Set& subdom) const
       // Here map is "after" mdi, so no comparison is needed, and
       // the loop of subdom continues to check if this map interacts
       // with the following elements of subdom. 
-      if (mdi.maxElem() < map_sp.first)
+      if (mdi.maxElem() < map_sp.first) {
         break;
+      }
 
       // Comparison between map and mdi needed.
       Set mdi_set = SET_FACT.createSet(mdi);
       SetPerimeter mdi_sp = calculatePerimeter(mdi_set);
       if (doInt(map_sp, mdi_sp)) {
-        Internal::emplaceBack(res, map.restrict(mdi_set));
+        Internal::emplaceBack(result, map.restrict(mdi_set));
       }
 
       ++prev_index;
@@ -313,18 +321,19 @@ PWMapStratPtr DomOrdPWMap::restrict(const Set& subdom) const
     }
   }
 
-  return std::make_unique<DomOrdPWMap>(res);
+  return std::make_unique<DomOrdPWMap>(std::move(result));
 }
 
 Set DomOrdPWMap::image() const
 {
-  Set res = SET_FACT.createSet();
+  Set result = SET_FACT.createSet();
 
   for (const MapEntry& mpe : pieces_) {
-    res = std::move(res).cup(std::move(mpe.first.image()));
+    Set ith_img = mpe.first.image();
+    result = std::move(result).cup(std::move(ith_img));
   }
 
-  return res;
+  return result;
 }
 
 Set DomOrdPWMap::image(const Set& subdom) const
@@ -336,7 +345,8 @@ Set DomOrdPWMap::preImage(const Set& subcodom) const
 {
   Set result = SET_FACT.createSet();
   for (const MapEntry& mpe : pieces_) {
-    result.insertBack(mpe.first.preImage(subcodom));
+    Set ith_pre = mpe.first.preImage(subcodom);
+    result = std::move(result).disjointCup(std::move(ith_pre));
   }
 
   return result;
@@ -344,22 +354,19 @@ Set DomOrdPWMap::preImage(const Set& subcodom) const
 
 PWMapStratPtr DomOrdPWMap::inverse() const
 { 
-  OrdMapCollection res;
+  OrdMapCollection result;
 
-  for (const MapEntry& mpe : pieces_){
-    const Map& inv = mpe.first.minInv();
-    if (!inv.isEmpty()) {
-      Internal::emplaceBack(res, inv);  
-    }
+  for (const MapEntry& mpe : pieces_) {
+    Internal::emplaceBack(result, mpe.first.minInv());  
   }
-  std::sort(res.begin(),res.end(), operator<);
+  std::sort(result.begin(), result.end(), operator<);
 
-  return std::make_unique<DomOrdPWMap>(res);
+  return std::make_unique<DomOrdPWMap>(result);
 }
 
 PWMapStratPtr DomOrdPWMap::composition(const PWMapStrategy& other) const 
 {
-  OrdMapCollection res; 
+  OrdMapCollection result; 
   DomOrdPWMapCRef othr = static_cast<DomOrdPWMapCRef>(other);
 
   NAT global_pos = 0;
@@ -369,7 +376,7 @@ PWMapStratPtr DomOrdPWMap::composition(const PWMapStrategy& other) const
     
     SetPerimeter image_sp = calculatePerimeter(img);
     MD_NAT image_max = image_sp.second;
-    advanceHint(res, other_mpe.second.first, global_pos);
+    advanceHint(result, other_mpe.second.first, global_pos);
 
     for (const MapEntry& this_mpe : pieces_) {
       const Map& this_map = this_mpe.first;
@@ -379,7 +386,7 @@ PWMapStratPtr DomOrdPWMap::composition(const PWMapStrategy& other) const
       if (doInt(this_sp, image_sp)) {
         Map composition = this_map.composition(other_map);
         if (!composition.isEmpty()) {
-          emplaceHint(res, composition, global_pos);
+          emplaceHint(result, composition, global_pos);
         }
         continue;
       }
@@ -390,38 +397,39 @@ PWMapStratPtr DomOrdPWMap::composition(const PWMapStrategy& other) const
     }
   }
 
-  return std::make_unique<DomOrdPWMap>(res);
+  return std::make_unique<DomOrdPWMap>(std::move(result));
 }
 
 PWMapStratPtr DomOrdPWMap::mapInf(unsigned int n) const
 {
-  PWMapStratPtr res = std::make_unique<DomOrdPWMap>(*this);
+  PWMapStratPtr result = std::make_unique<DomOrdPWMap>(*this);
   PWMapStratPtr old_res = std::make_unique<DomOrdPWMap>();
 
   if (!dom().isEmpty()) {
-    for (unsigned int j = 0; old_res != res && j < n; ++j) {
-      DomOrdPWMap *rs = static_cast<DomOrdPWMap *>(res.get());
+    for (unsigned int j = 0; old_res != result && j < n; ++j) {
+      DomOrdPWMap *rs = static_cast<DomOrdPWMap *>(result.get());
       old_res = std::make_unique<DomOrdPWMap>(*rs);
-      PWMapStratPtr new_res = res->composition(*this);
-      res = std::move(new_res);
+      PWMapStratPtr new_res = result->composition(*this);
+      result = std::move(new_res);
     }
 
-    if (*old_res == *res)
-      return res;
+    if (*old_res == *result) {
+      return result;
+    }
     
-    PWMapStratPtr reduced = res->reduce();
-    res = std::move(reduced);
+    PWMapStratPtr reduced = result->reduce();
+    result = std::move(reduced);
     do {
-      DomOrdPWMap *rs = static_cast<DomOrdPWMap *>(res.get());
+      DomOrdPWMap *rs = static_cast<DomOrdPWMap *>(result.get());
       old_res = std::make_unique<DomOrdPWMap>(*rs);
       
-      PWMapStratPtr new_res = res->composition(*res);
+      PWMapStratPtr new_res = result->composition(*result);
       new_res = new_res->reduce();
-      res = std::move(new_res);
-    } while (*old_res != *res);
+      result = std::move(new_res);
+    } while (*old_res != *result);
   }
   
-  return res;
+  return result;
 }
 
 PWMapStratPtr DomOrdPWMap::mapInf() const { return mapInf(0); }
@@ -430,7 +438,8 @@ Set DomOrdPWMap::fixedPoints() const
 {
   Set result = SET_FACT.createSet();
   for (const MapEntry& mpe : pieces_) {
-    result.insertBack(mpe.first.fixedPoints());
+    Set ith_fixed = mpe.first.fixedPoints();
+    result = std::move(result).disjointCup(std::move(ith_fixed));
   }
 
   return result;
@@ -583,13 +592,15 @@ PWMapStratPtr DomOrdPWMap::reduce(const Map& map) const
       ++j;
     }
 
-    if (!was_reduced)
+    if (!was_reduced) {
       not_reduced.emplaceBack(dom_piece);
+    }
   }
  
   // Add not reduced subpieces 
-  if (!not_reduced.isEmpty())
+  if (!not_reduced.isEmpty()) {
     Internal::emplaceBack(res, Map(not_reduced, e));
+  }
 
   return std::make_unique<DomOrdPWMap>(res);
 }
@@ -659,11 +670,12 @@ void DomOrdPWMap::processMinAdjMap(const Map& m1, const Map& m2,
         PWMapStratPtr new_resPtr = min_map->combine(ith_pw)->combine(ord_pwmap_aux);
         DomOrdPWMapCRef new_res_c = static_cast<DomOrdPWMapCRef>(*new_resPtr);
         ord_pwmap = std::move(new_res_c.pieces_);
-        set_in = set_in.cup(ith_pw.dom());
+        Set ith_dom = ith_pw.dom();
+        set_in = std::move(set_in).cup(std::move(ith_dom));
       }
       else {
         Internal::emplaceBack(ord_pwmap, ith);
-        set_in.insertBack(dom_res);
+        set_in = std::move(set_in).disjointCup(std::move(dom_res));
       }
     }
   }
@@ -702,7 +714,7 @@ PWMapStratPtr DomOrdPWMap::firstInv(const Set& subdom) const
         }
         Map new_map(t_m.preImage(img), t_m.exp());
         Internal::emplaceBack(res, new_map.minInv());
-        visited.insertBack(img);
+        visited = std::move(visited).disjointCup(std::move(img));
         continue;
       }
     }
@@ -722,8 +734,7 @@ PWMapStratPtr DomOrdPWMap::filterMap(bool (*f)(const Map&)) const
 { 
   OrdMapCollection res;
   for (const MapEntry& mpe : pieces_){
-    if (f(mpe.first))
-      Internal::emplaceBack(res, mpe);
+    Internal::emplaceBack(res, mpe);
   }
   
   return std::make_unique<DomOrdPWMap>(res);
@@ -751,8 +762,9 @@ void DomOrdPWMap::processEqualImage(const Map& m1, const Map& m2,
   if (!cap_dom.isEmpty()) {
     Map m1_cap(cap_dom, m1.exp());
     Map m2_cap(cap_dom, m2.exp());
-    if (m1_cap == m2_cap)
-      set_out.insertBack(cap_dom);
+    if (m1_cap == m2_cap) {
+      set_out = std::move(set_out).disjointCup(std::move(cap_dom));
+    }
   }
 }
 
@@ -770,8 +782,9 @@ void DomOrdPWMap::processLessImage(const Map& m1, const Map& m2,
   Set& set_in, Set& set_out, 
   OrdMapCollection& ord_pwmap,
   NAT& global_pos) const 
-{ 
-  set_out.insertBack(m1.lessImage(m2));
+{
+  Set ith_less = m1.lessImage(m2);
+  set_out = std::move(set_out).disjointCup(std::move(ith_less));
 }
 
 void DomOrdPWMap::processMapsOrd(
@@ -862,8 +875,7 @@ PWMapStratPtr DomOrdPWMap::offsetDom(const MD_NAT& off) const
 
   for (const MapEntry& mpe : pieces_){
     Map map(mpe.first.dom().offset(off), mpe.first.exp());
-    if(!map.isEmpty())
-      Internal::emplaceBack(res, map);
+    Internal::emplaceBack(res, map);
   }
 
   return std::make_unique<DomOrdPWMap>(res);
@@ -883,8 +895,8 @@ PWMapStratPtr DomOrdPWMap::offsetDom(const PWMapStrategy& off) const
       Set ith_dom = off.image(t_m.dom());
       
       if (!ith_dom.isEmpty()){
-          Map res_map(ith_dom, t_m.exp());
-          Internal::emplaceBack(res, res_map);
+        Map res_map(ith_dom, t_m.exp());
+        Internal::emplaceBack(res, res_map);
       }
       continue;
     }

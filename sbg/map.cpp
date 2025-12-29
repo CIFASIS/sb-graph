@@ -159,8 +159,8 @@ Set Map::image(const Set& subdom) const
   if (capdom.isEmpty()) {
     return res;
   } else {
-    // Check if all expressions are bijective; in the affirmative case all
-    // images can be added without further checks
+    // Check if all expressions are bijective; if so all partial images can be
+    // added without further checks
     bool cond = true;
     for (const LExp& le : exp_) {
       if (le.isConstant()) {
@@ -175,7 +175,8 @@ Set Map::image(const Set& subdom) const
     }
     else {
       for (const SetPiece& mdi : capdom) {
-        res = res.cup(SET_FACT.createSet(SBG::LIB::image(mdi, exp_)));
+        Set ith_img = SET_FACT.createSet(SBG::LIB::image(mdi, exp_));
+        res = std::move(res).cup(std::move(ith_img));
       }
     }
   }

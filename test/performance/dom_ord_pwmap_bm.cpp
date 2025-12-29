@@ -33,6 +33,31 @@ using SBG::LIB::Exp;
 using SBG::LIB::Map;
 using SBG::LIB::PWMap;
 
+PWMap denseDom(SBG::LIB::NAT map_sz)
+{
+  SBG::LIB::NAT inter_sz = 100;
+  SBG::LIB::NAT set_sz = 10;
+
+  PWMap pw = SBG::LIB::PW_FACT.createPWMap();
+  for (unsigned int j = 0; j < map_sz; ++j) {
+    Set dom1 = SBG::LIB::SET_FACT.createSet();
+    SBG::LIB::NAT off = j*set_sz*inter_sz;
+    for (unsigned int h = 0; h < set_sz; ++h) {
+      Interval i1(off + (h*inter_sz), 1, off + (h + 1)*inter_sz - 1);
+      SetPiece mdi1;
+      mdi1.emplaceBack(i1);
+      dom1.emplaceBack(mdi1); 
+    }
+
+    LExp id;
+    Exp multidim_id(1, id);
+
+    pw.emplaceBack(Map(dom1, multidim_id));
+  }
+
+  return pw;
+}
+
 /*
  * @brief Test suite created to analyze the time growth of the different domain
  * ordered PWs operations.
@@ -40,7 +65,7 @@ using SBG::LIB::PWMap;
 std::pair<PWMap, PWMap> contiguousMaps(SBG::LIB::NAT map_sz)
 {
   SBG::LIB::NAT inter_sz = 100;
-  SBG::LIB::NAT set_sz = 10;
+  SBG::LIB::NAT set_sz = 1;
 
   Interval second_dim(0, 1, inter_sz - 1);
   PWMap pw1 = SBG::LIB::PW_FACT.createPWMap();
@@ -74,6 +99,20 @@ std::pair<PWMap, PWMap> contiguousMaps(SBG::LIB::NAT map_sz)
   return {pw1, pw2};
 }
 
+static void BM_DomOrdPWDenseDom(benchmark::State& state)
+{
+  int map_sz = state.range(0);
+  SBG::Eval::setSetFactory(2);
+  SBG::Eval::setPWFactory(2);
+  auto pw = denseDom(map_sz);
+
+  for (auto _ : state) {
+    benchmark::DoNotOptimize(pw.dom());
+  }
+  state.SetComplexityN(map_sz);
+}
+BENCHMARK(BM_DomOrdPWDenseDom)->RangeMultiplier(10)->Range(100, 1e5)->Complexity();
+
 static void BM_DomOrdPWEq(benchmark::State& state)
 {
   int map_sz = state.range(0);
@@ -105,7 +144,7 @@ BENCHMARK(BM_DomOrdPWSum)->RangeMultiplier(10)->Range(10, 1e5)->Complexity();
 static void BM_DomOrdPWDom(benchmark::State& state)
 {
   int map_sz = state.range(0);
-  SBG::Eval::setSetFactory(1);
+  SBG::Eval::setSetFactory(2);
   SBG::Eval::setPWFactory(2);
   auto [pw1, pw2] = contiguousMaps(map_sz);
 
@@ -145,7 +184,7 @@ static void BM_DomOrdPWImage(benchmark::State& state)
   }
   state.SetComplexityN(map_sz);
 }
-BENCHMARK(BM_DomOrdPWImage)->RangeMultiplier(10)->Range(10, 1e2)->Complexity();
+BENCHMARK(BM_DomOrdPWImage)->RangeMultiplier(10)->Range(10, 1e3)->Complexity();
 
 static void BM_DomOrdPWPreImage(benchmark::State& state)
 {

@@ -76,18 +76,6 @@ void Set::emplaceBack(SetPiece mdi)
   return;
 }
 
-void Set::insert(const Set& other)
-{
-  strategy_->insert(*other.strategy_);
-  return;
-}
-
-void Set::insertBack(const Set& other)
-{
-  strategy_->insertBack(*other.strategy_);
-  return;
-}
-
 bool Set::operator==(const Set& other) const
 {
   return *strategy_ == *other.strategy_;
@@ -143,7 +131,7 @@ Set Set::cup(const Set& other) const &
 
 Set Set::cup(Set&& other) &&
 {
-  return strategy_->cup(*other.strategy_);
+  return Set(std::move(*strategy_).cup(std::move(*other.strategy_)));
 }
 
 Set Set::complement() const
@@ -158,9 +146,14 @@ Set Set::difference(const Set& other) const
 
 std::size_t Set::arity() const  { return strategy_->arity(); }
 
-Set Set::disjointCup(const Set& other) const
+Set Set::disjointCup(const Set& other) const &
 {
   return Set(strategy_->disjointCup(*other.strategy_));
+}
+
+Set Set::disjointCup(Set&& other) &&
+{
+  return Set(std::move(*strategy_).disjointCup(std::move(*other.strategy_)));
 }
 
 Set Set::filterSet(bool (*f)(const SetPiece& mdi)) const

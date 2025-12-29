@@ -195,70 +195,6 @@ void OrderedSet::emplaceHint(NAT hint, const SetPiece& mdi)
   return;
 }
 
-void OrderedSet::insert(const SetStrategy& other)
-{
-  if (other.isEmpty())
-    return;
-
-  OrdSetCRef othr = static_cast<OrdSetCRef>(other);
-  if (isEmpty() || pieces_.back() < othr.pieces_.front()) {
-    for (const SetPiece& mdi : othr.pieces_) {
-      pieces_.emplace_back(mdi);
-    }
-    return;
-  }
-
-  if (othr.pieces_.back() < pieces_.front()) {
-    MDIOrdCollection temp;
-    for (const SetPiece& mdi : othr.pieces_) {
-      temp.emplace_back(mdi);
-    }
-    for (const SetPiece& mdi : pieces_) {
-      temp.emplace_back(mdi);
-    }
-    pieces_ = std::move(temp);
-    return;
-  }
-
-  for (const SetPiece& mdi : othr.pieces_) {
-    emplace(mdi);
-  }
-
-  return;
-}
-
-void OrderedSet::insertBack(const SetStrategy& other)
-{
-  if (other.isEmpty())
-    return;
-
-  OrdSetCRef othr = static_cast<OrdSetCRef>(other);
-  if (isEmpty() || pieces_.back() < othr.pieces_.front()) {
-    for (const SetPiece& mdi : othr.pieces_) {
-      pieces_.emplace_back(mdi);
-    }
-    return;
-  }
-
-  if (othr.pieces_.back() < pieces_.front()) {
-    MDIOrdCollection temp;
-    for (const SetPiece& mdi : othr.pieces_) {
-      temp.emplace_back(mdi);
-    }
-    for (const SetPiece& mdi : pieces_) {
-      temp.emplace_back(mdi);
-    }
-    pieces_ = std::move(temp);
-    return;
-  }
-
-  for (const SetPiece& mdi : othr.pieces_) {
-    emplaceBack(mdi);
-  }
-
-  return;
-}
-
 NAT OrderedSet::advanceHint(NAT hint, const SetPiece& mdi)
 { 
   auto it = pieces_.begin();
@@ -318,8 +254,9 @@ unsigned int OrderedSet::cardinal() const
 {
   unsigned int result = 0;
 
-  for (const SetPiece& mdi : pieces_)
+  for (const SetPiece& mdi : pieces_) {
     result += mdi.cardinal();
+  }
 
   return result;
 }
@@ -336,8 +273,9 @@ MD_NAT OrderedSet::maxElem() const
   MD_NAT res = pieces_.begin()->maxElem();
   for (const SetPiece& mdi : pieces_) {
     MD_NAT ith = mdi.maxElem();
-    if (res < ith)
+    if (res < ith) {
       res = ith;
+    }
   }
   
   return res;
@@ -445,19 +383,14 @@ SetStratPtr OrderedSet::cup(const SetStrategy& other) const &
     return std::make_unique<OrderedSet>(pieces_);
   }
 
-  const MD_NAT min_elem = minElem();
-  const MD_NAT max_elem = maxElem();
-  const MD_NAT other_min = other.minElem();
-  const MD_NAT other_max = other.maxElem();
   MDIOrdCollection result;
-  result.reserve(pieces_.size() + othr.pieces_.size());
-  if (max_elem < other_min) {
+  if (maxElem() < othr.minElem()) {
     result.insert(result.end(), pieces_.begin(), pieces_.end());
     result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
     return std::make_unique<OrderedSet>(std::move(result));
   }
 
-  if (other_max < min_elem) {
+  if (othr.maxElem() < minElem()) {
     result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
     result.insert(result.end(), pieces_.begin(), pieces_.end());
     return std::make_unique<OrderedSet>(std::move(result));
@@ -465,7 +398,6 @@ SetStratPtr OrderedSet::cup(const SetStrategy& other) const &
 
   // General case
   SetStratPtr diff = difference(other);
-  
   return othr.disjointCup(*diff);
 }
 
@@ -474,26 +406,21 @@ SetStratPtr OrderedSet::cup(SetStrategy&& other) &&
   // Special cases
   OrdSetRef othr = static_cast<OrdSetRef>(other);
   if (other.isEmpty() || pieces_ == othr.pieces_) {
-    return std::make_unique<OrderedSet>(std::move(othr.pieces_));
-  }
-
-  if (isEmpty()) { 
     return std::make_unique<OrderedSet>(std::move(pieces_));
   }
 
-  const MD_NAT min_elem = minElem();
-  const MD_NAT max_elem = maxElem();
-  const MD_NAT other_min = other.minElem();
-  const MD_NAT other_max = other.maxElem();
+  if (isEmpty()) { 
+    return std::make_unique<OrderedSet>(std::move(othr.pieces_));
+  }
+
   MDIOrdCollection result;
-  result.reserve(pieces_.size() + othr.pieces_.size());
-  if (max_elem < other_min) {
+  if (maxElem() < othr.minElem()) {
     result = std::move(pieces_);
-    pieces_.insert(pieces_.end(), othr.pieces_.begin(), othr.pieces_.end());
+    result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
     return std::make_unique<OrderedSet>(std::move(result));
   }
 
-  if (other_max < min_elem) {
+  if (othr.maxElem() < minElem()) {
     result = std::move(othr.pieces_);
     result.insert(result.end(), pieces_.begin(), pieces_.end());
     return std::make_unique<OrderedSet>(std::move(result));
@@ -675,7 +602,7 @@ std::size_t OrderedSet::arity() const
   return pieces_.begin()->arity();
 }
 
-SetStratPtr OrderedSet::disjointCup(const SetStrategy& other) const
+SetStratPtr OrderedSet::disjointCup(const SetStrategy& other) const &
 {
   OrdSetCRef othr = static_cast<OrdSetCRef>(other);
   
@@ -689,7 +616,6 @@ SetStratPtr OrderedSet::disjointCup(const SetStrategy& other) const
   }
 
   MDIOrdCollection result;
-  result.reserve(pieces_.size() + othr.pieces_.size());
   if (pieces_.back() < othr.pieces_.front()) {
     result.insert(result.end(), pieces_.begin(), pieces_.end());
     result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
@@ -698,6 +624,51 @@ SetStratPtr OrderedSet::disjointCup(const SetStrategy& other) const
 
   if (othr.pieces_.back() < pieces_.front()) {
     result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
+    result.insert(result.end(), pieces_.begin(), pieces_.end());
+    return std::make_unique<OrderedSet>(std::move(result));
+  }
+
+  // General case
+  auto it1 = pieces_.begin();
+  auto end1 = pieces_.end();
+  auto it2 = othr.pieces_.begin();
+  auto end2 = othr.pieces_.end();
+  while (it1 != end1 && it2 != end2) {
+    if (*it1 < *it2) {
+      result.emplace_back(*it1);
+      ++it1;
+    } else {
+      result.emplace_back(*it2); 
+      ++it2;
+    }
+  }
+  result.insert(result.end(), it1, end1);
+  result.insert(result.end(), it2, end2);
+  
+  return std::make_unique<OrderedSet>(std::move(result));
+}
+
+SetStratPtr OrderedSet::disjointCup(SetStrategy&& other) &&
+{ 
+  // Special cases
+  OrdSetRef othr = static_cast<OrdSetRef>(other);
+  if (other.isEmpty() || pieces_ == othr.pieces_) {
+    return std::make_unique<OrderedSet>(std::move(pieces_));
+  }
+
+  if (isEmpty()) { 
+    return std::make_unique<OrderedSet>(std::move(othr.pieces_));
+  }
+
+  MDIOrdCollection result;
+  if (pieces_.back() < othr.pieces_.front()) {
+    result = std::move(pieces_);
+    result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
+    return std::make_unique<OrderedSet>(std::move(result));
+  }
+
+  if (othr.pieces_.back() < pieces_.front()) {
+    result = std::move(othr.pieces_);
     result.insert(result.end(), pieces_.begin(), pieces_.end());
     return std::make_unique<OrderedSet>(std::move(result));
   }

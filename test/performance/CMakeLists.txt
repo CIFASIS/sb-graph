@@ -7,7 +7,6 @@ target_sources(
     sbg-performance
     PRIVATE
         main.cpp
-        dom_ord_pwmap_perf.cpp
         pw_map_perf.cpp
         set_perf.cpp
 )

@@ -66,8 +66,6 @@ struct OrderedSet : public SetStrategy {
   std::size_t size() const override;
   void emplace(const SetPiece& mdi) override;
   void emplaceBack(const SetPiece& mdi) override;
-  void insert(const SetStrategy& other) override;
-  void insertBack(const SetStrategy& other) override;
 
   bool operator==(const SetStrategy& other) const override;
   bool operator!=(const SetStrategy& other) const override;
@@ -88,7 +86,8 @@ struct OrderedSet : public SetStrategy {
   // Extra operations ----------------------------------------------------------
 
   std::size_t arity() const override;
-  SetStratPtr disjointCup(const SetStrategy& other) const override;
+  SetStratPtr disjointCup(const SetStrategy& other) const & override;
+  SetStratPtr disjointCup(SetStrategy&& other) && override;
   SetStratPtr filterSet(bool (*f)(const SetPiece& mdi)) const override;
   SetStratPtr offset(const MD_NAT& off) const override;
   SetStratPtr compact() const override;

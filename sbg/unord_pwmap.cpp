@@ -187,10 +187,8 @@ Set UnordPWMap::dom() const
 {
   Set result = SET_FACT.createSet();
   for (const Map& m : pieces_) {
-    Set dom = m.dom();
-    for (const SetPiece& mdi : dom) {
-      result.emplaceBack(mdi);
-    }
+    Set ith_dom = m.dom();
+    result = std::move(result).disjointCup(std::move(ith_dom));
   }
 
   return result;
@@ -211,7 +209,8 @@ Set UnordPWMap::image() const
   Set res = SET_FACT.createSet();
 
   for (const Map& m : pieces_) {
-    res = res.cup(m.image());
+    Set ith_img = m.image();
+    res = std::move(res).cup(std::move(ith_img));
   }
 
   return res;
@@ -476,7 +475,7 @@ PWMapStratPtr UnordPWMap::minAdjMap(const PWMapStrategy& other) const
           }
           else {
             res->emplaceBack(ith);
-            visited = visited.disjointCup(dom_res);
+            visited = std::move(visited).disjointCup(std::move(dom_res));
           }
         }
       }

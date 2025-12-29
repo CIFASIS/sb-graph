@@ -97,8 +97,9 @@ std::size_t UnorderedSet::size() const { return pieces_.size(); }
 
 void UnorderedSet::emplace(const SetPiece& mdi)
 {
-  if (mdi.isEmpty())
+  if (mdi.isEmpty()) {
     return;
+  }
 
   pieces_.emplace(pieces_.begin(), mdi);
   return;
@@ -106,50 +107,11 @@ void UnorderedSet::emplace(const SetPiece& mdi)
 
 void UnorderedSet::emplaceBack(const SetPiece& mdi)
 {
-  if (mdi.isEmpty())
+  if (mdi.isEmpty()) {
     return;
+  }
 
   pieces_.emplace_back(mdi);
-  return;
-}
-
-void UnorderedSet::insert(const SetStrategy& other)
-{
-  if (other.isEmpty())
-    return;
-
-  UnordSetCRef othr = static_cast<UnordSetCRef>(other);
-  if (isEmpty()) {
-    for (const SetPiece& mdi : othr.pieces_) {
-      pieces_.emplace_back(mdi);
-    }
-    return;
-  }
-
-  for (const SetPiece& mdi : othr.pieces_) {
-    emplace(mdi);
-  }
-
-  return;
-}
-
-void UnorderedSet::insertBack(const SetStrategy& other)
-{
-  if (other.isEmpty())
-    return;
-
-  UnordSetCRef othr = static_cast<UnordSetCRef>(other);
-  if (isEmpty()) {
-    for (const SetPiece& mdi : othr.pieces_) {
-      pieces_.emplace_back(mdi);
-    }
-    return;
-  }
-
-  for (const SetPiece& mdi : othr.pieces_) {
-    emplaceBack(mdi);
-  }
-
   return;
 }
 
@@ -421,7 +383,7 @@ std::size_t UnorderedSet::arity() const
   return pieces_.begin()->arity();
 }
 
-SetStratPtr UnorderedSet::disjointCup(const SetStrategy& other) const
+SetStratPtr UnorderedSet::disjointCup(const SetStrategy& other) const &
 {
   UnordSetCRef othr = static_cast<UnordSetCRef>(other);
 
@@ -431,6 +393,26 @@ SetStratPtr UnorderedSet::disjointCup(const SetStrategy& other) const
 
   if (other.isEmpty() || pieces_ == othr.pieces_) {
     return std::make_unique<UnorderedSet>(pieces_);
+  }
+
+  MDIUnordCollection result(pieces_.begin(), pieces_.end());
+  for (const SetPiece& mdi : othr.pieces_) {
+    result.emplace_back(mdi);
+  }
+
+  return std::make_unique<UnorderedSet>(std::move(result));
+}
+
+SetStratPtr UnorderedSet::disjointCup(SetStrategy&& other) &&
+{
+  UnordSetCRef othr = static_cast<UnordSetCRef>(other);
+
+  if (isEmpty()) { 
+    return std::make_unique<UnorderedSet>(std::move(othr.pieces_));
+  }
+
+  if (other.isEmpty() || pieces_ == othr.pieces_) {
+    return std::make_unique<UnorderedSet>(std::move(pieces_));
   }
 
   MDIUnordCollection result(pieces_.begin(), pieces_.end());

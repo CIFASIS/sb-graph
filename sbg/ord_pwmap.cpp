@@ -294,8 +294,10 @@ Set OrdPWMap::image() const
 {
   Set res = SET_FACT.createSet();
 
-  for (const MapEntry& mpe : pieces_)
-    res = res.cup(mpe.first.image());
+  for (const MapEntry& mpe : pieces_) {
+    Set ith_img = mpe.first.image();
+    res = std::move(res).cup(std::move(ith_img));
+  }
 
   return res;
 }
@@ -307,12 +309,14 @@ Set OrdPWMap::image(const Set& subdom) const
 
 Set OrdPWMap::preImage(const Set& subcodom) const
 {
-  Set res = SET_FACT.createSet();
+  Set result = SET_FACT.createSet();
 
-  for (const MapEntry& mpe : pieces_)
-    res = res.disjointCup(mpe.first.preImage(subcodom));
+  for (const MapEntry& mpe : pieces_) {
+    Set ith_pre = mpe.first.preImage(subcodom);
+    result = std::move(result).disjointCup(std::move(ith_pre));
+  }
 
-  return res;
+  return result;
 }
 
 PWMapStratPtr OrdPWMap::inverse() const
@@ -404,12 +408,14 @@ PWMapStratPtr OrdPWMap::mapInf() const { return mapInf(0); }
 
 Set OrdPWMap::fixedPoints() const
 {
-  Set res = SET_FACT.createSet();
+  Set result = SET_FACT.createSet();
 
-  for (const MapEntry& entry : pieces_)
-    res = res.disjointCup(entry.first.fixedPoints());
+  for (const MapEntry& entry : pieces_) {
+    Set ith_fixed = entry.first.fixedPoints();
+    result = std::move(result).disjointCup(std::move(ith_fixed));
+  }
 
-  return res;
+  return result;
 }
 
 // Extra operations ------------------------------------------------------------
@@ -639,11 +645,12 @@ void OrdPWMap::processMinAdjMap(const Map& m1, const Map& m2,
         PWMapStratPtr new_resPtr = min_map->combine(ith_pw)->combine(ord_pwmap_aux);
         OrdPWMapCRef new_res_c = static_cast<OrdPWMapCRef>(*new_resPtr);
         ord_pwmap = std::move(new_res_c.pieces_);
-        set_in = set_in.cup(ith_pw.dom());
+        Set ith_dom = ith_pw.dom();
+        set_in = std::move(set_in).cup(std::move(ith_dom));
       }
       else {
         Internal::emplaceBack(ord_pwmap, ith);
-        set_in = set_in.disjointCup(dom_res);
+        set_in = std::move(set_in).disjointCup(std::move(dom_res));
       }
     }
   }
@@ -685,7 +692,7 @@ PWMapStratPtr OrdPWMap::firstInv(const Set& subdom) const
         }
         Map new_map(t_m.preImage(img), t_m.exp());
         Internal::emplaceBack(res, new_map.minInv());
-        visited = visited.disjointCup(img);
+        visited = std::move(visited).disjointCup(std::move(img));
         continue;
       }
     }
@@ -730,8 +737,9 @@ void OrdPWMap::processEqualImage(const Map& m1, const Map& m2,
   if (!cap_dom.isEmpty()) {
     Map m1_cap(cap_dom, m1.exp());
     Map m2_cap(cap_dom, m2.exp());
-    if (m1_cap == m2_cap)
-      set_out = set_out.disjointCup(cap_dom);
+    if (m1_cap == m2_cap) {
+      set_out = std::move(set_out).disjointCup(std::move(cap_dom));
+    }
   }
 }
 
@@ -750,7 +758,8 @@ void OrdPWMap::processLessImage(const Map& m1, const Map& m2,
   OrdMapCollection& ord_pwmap,
   NAT& global_pos) const 
 { 
-  set_out = set_out.disjointCup(m1.lessImage(m2));
+  Set ith_less = m1.lessImage(m2);
+  set_out = std::move(set_out).disjointCup(std::move(ith_less));
 }
 
 void OrdPWMap::processMapsOrd(

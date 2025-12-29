@@ -72,14 +72,16 @@ bool operator<(const MapEntry& mpe1, const MapEntry& mpe2)
 
 void emplaceBack(OrdMapCollection& ord_pw, const MapEntry& entry)
 {
-  if (!entry.first.isEmpty())
+  if (!entry.first.isEmpty()) {
     ord_pw.emplace_back(entry);
+  }
 }
 
 void emplaceBack(OrdMapCollection& ord_pw, const Map& m)
 {
-  if (!m.isEmpty())
+  if (!m.isEmpty()) {
     ord_pw.emplace_back(createMapEntry(m));
+  }
 }
 
 void emplaceHint(OrdMapCollection& ord_pw, const Map& m, NAT hint)

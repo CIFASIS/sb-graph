@@ -49,8 +49,8 @@ struct DomOrdPWMap : public OrdPWMap {
   DomOrdPWMap();
   DomOrdPWMap(const Set& s);
   DomOrdPWMap(const Map& m);
-  DomOrdPWMap(const OrdMapCollection& pieces);
-  DomOrdPWMap(const DomOrdPWMap& pw);
+  DomOrdPWMap(OrdMapCollection pieces);
+  //DomOrdPWMap(DomOrdPWMap&& pw);
 
   struct Iterator : public PWMapStrategy::Iterator {
     member_class(OrdMapCollection::const_iterator, it);

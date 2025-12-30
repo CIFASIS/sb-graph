@@ -35,7 +35,7 @@ namespace LIB {
 // Unordered Set Implementation (concrete strategy) ----------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct UnorderedSet : public SetStrategy {
+class UnorderedSet : public SetStrategy {
   using MDIUnordCollection = std::vector<SetPiece>;
 
   member_class(MDIUnordCollection, pieces);
@@ -49,7 +49,7 @@ struct UnorderedSet : public SetStrategy {
 
   SetStratPtr clone() const override;
 
-  struct Iterator : public SetStrategy::Iterator {
+  class Iterator : public SetStrategy::Iterator {
     member_class(MDIUnordCollection::const_iterator, it);
 
     Iterator(MDIUnordCollection::const_iterator it);

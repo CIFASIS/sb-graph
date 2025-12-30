@@ -33,7 +33,7 @@ namespace SBG {
 
 namespace LIB {
 
-struct LExp {
+class LExp {
   member_class(RATIONAL, slope);
   member_class(RATIONAL, offset);
 

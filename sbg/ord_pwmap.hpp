@@ -35,7 +35,8 @@ namespace LIB {
 // Ordered PWMap Implementation (concrete strategy) ----------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct OrdPWMap : public PWMapStrategy {
+class OrdPWMap : public PWMapStrategy {
+  public:
   using SetPerimeter = Internal::SetPerimeter;
   using MapEntry = Internal::MapEntry;
   using OrdMapCollection = Internal::OrdMapCollection;
@@ -49,7 +50,7 @@ struct OrdPWMap : public PWMapStrategy {
   OrdPWMap(const OrdMapCollection& pieces);
   OrdPWMap(const OrdPWMap& pw);
 
-  struct Iterator : public PWMapStrategy::Iterator {
+  class Iterator : public PWMapStrategy::Iterator {
     member_class(OrdMapCollection::const_iterator, it);
 
     Iterator(OrdMapCollection::const_iterator it);

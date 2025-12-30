@@ -52,7 +52,7 @@ namespace LIB {
 // Undirected SBG --------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct SBG {
+class SBG {
   public:
   // Vertex definitions
   member_class(Set, V);
@@ -106,7 +106,7 @@ std::ostream &operator<<(std::ostream &out, const SBG &g);
 // Directed SBG ----------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct DSBG {
+class DSBG {
   public:
   // Vertex definitions
   member_class(Set, V);

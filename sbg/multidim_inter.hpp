@@ -38,11 +38,11 @@ typedef std::vector<Interval> InterVector;
 typedef InterVector::iterator InterVectorIt;
 typedef InterVector::const_iterator InterVectorConstIt;
 
-struct MultiDimInter;
+class MultiDimInter;
 
 typedef std::optional<MultiDimInter> MaybeMDI;
 
-struct MultiDimInter {
+class MultiDimInter {
   member_class(InterVector, intervals);
 
   /**

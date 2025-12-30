@@ -37,7 +37,7 @@ namespace LIB {
 // Ordered Unidimensional Dense Set Implementation (concrete strategy) ---------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct OrdUnidimDenseSet : public SetStrategy {
+class OrdUnidimDenseSet : public SetStrategy {
   using MDIOrdCollection = std::vector<SetPiece>;
 
   member_class(MDIOrdCollection, pieces);
@@ -51,7 +51,7 @@ struct OrdUnidimDenseSet : public SetStrategy {
 
   SetStratPtr clone() const override;
 
-  struct Iterator : public SetStrategy::Iterator {
+  class Iterator : public SetStrategy::Iterator {
     member_class(MDIOrdCollection::const_iterator, it);
 
     Iterator(MDIOrdCollection::const_iterator it);

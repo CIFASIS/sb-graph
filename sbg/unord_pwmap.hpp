@@ -34,7 +34,8 @@ namespace LIB {
 // Unordered PWMap Implementation (concrete strategy) --------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct UnordPWMap : public PWMapStrategy {
+class UnordPWMap : public PWMapStrategy {
+  public:
   using UnordMapCollection = std::vector<Map>;
 
   member_class(UnordMapCollection, pieces);
@@ -46,7 +47,7 @@ struct UnordPWMap : public PWMapStrategy {
   UnordPWMap(const UnordMapCollection &pieces);
   UnordPWMap(const UnordPWMap &pw);
 
-  struct Iterator : public PWMapStrategy::Iterator {
+  class Iterator : public PWMapStrategy::Iterator {
     member_class(UnordMapCollection::const_iterator, it);
 
     Iterator(UnordMapCollection::const_iterator it);

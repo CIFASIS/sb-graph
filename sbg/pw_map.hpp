@@ -44,11 +44,11 @@ namespace LIB {
 // PWMap Abstract Strategy -----------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct PWMapStrategy;
+class PWMapStrategy;
 
 typedef std::unique_ptr<PWMapStrategy> PWMapStratPtr;
 
-struct PWMapStrategy {
+class PWMapStrategy {
   public:
   virtual ~PWMapStrategy() = default;
 
@@ -62,7 +62,7 @@ struct PWMapStrategy {
    */
   virtual PWMapStratPtr clone() const = 0;
 
-  struct Iterator {
+  class Iterator {
     public:
     virtual ~Iterator() = default;
     virtual void operator++() = 0;
@@ -274,23 +274,20 @@ struct PWMapStrategy {
 // PWMap Interface (context) ---------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct PWMap {
-  private:
-  PWMapStratPtr strategy_;
-
+class PWMap {
   public:
   PWMap(PWMapStratPtr strat);
   PWMap(const PWMap& other);
 
-  struct Iterator {
-    private:
-    std::shared_ptr<PWMapStrategy::Iterator> it_;
-
+  class Iterator {
     public:
     Iterator(std::shared_ptr<PWMapStrategy::Iterator> it);
     void operator++();
     bool operator!=(const PWMap::Iterator& other) const;
     Map operator*() const;
+
+    private:
+    std::shared_ptr<PWMapStrategy::Iterator> it_;
   };
 
   Iterator begin() const;
@@ -346,6 +343,9 @@ struct PWMap {
   PWMap offsetImage(const Exp& off) const;
 
   PWMap compact() const;
+
+  private:
+  PWMapStratPtr strategy_;
 };
 std::ostream& operator<<(std::ostream& out, const PWMap& pw);
 

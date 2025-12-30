@@ -35,7 +35,7 @@ namespace LIB {
 // Ordered Set Implementation (concrete strategy) ------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct OrderedSet : public SetStrategy {
+class OrderedSet : public SetStrategy {
   using MDIOrdCollection = std::vector<SetPiece>;
 
   member_class(MDIOrdCollection, pieces);
@@ -49,7 +49,7 @@ struct OrderedSet : public SetStrategy {
 
   SetStratPtr clone() const override;
 
-  struct Iterator : public SetStrategy::Iterator {
+  class Iterator : public SetStrategy::Iterator {
     member_class(MDIOrdCollection::const_iterator, it);
 
     Iterator(MDIOrdCollection::const_iterator it);

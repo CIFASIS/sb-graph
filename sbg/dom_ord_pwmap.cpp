@@ -17,6 +17,7 @@
 
  ******************************************************************************/
 
+#include <iostream>
 #include <forward_list>
 #include <set>
 
@@ -55,9 +56,12 @@ DomOrdPWMap::DomOrdPWMap(const Map& m) : pieces_() {
     pieces_.push_back(createMapEntry(m));
   }
 }
-DomOrdPWMap::DomOrdPWMap(const OrdMapCollection& pieces)
+//DomOrdPWMap::DomOrdPWMap(const OrdMapCollection& pieces)
+//  : pieces_(pieces) {}
+DomOrdPWMap::DomOrdPWMap(OrdMapCollection pieces)
   : pieces_(std::move(pieces)) {}
-DomOrdPWMap::DomOrdPWMap(const DomOrdPWMap& pw) : pieces_(pw.pieces_) {}
+//DomOrdPWMap::DomOrdPWMap(const DomOrdPWMap& pw) : pieces_(pw.pieces_) {}
+//DomOrdPWMap::DomOrdPWMap(DomOrdPWMap&& pw) : pieces_(std::move(pw.pieces_)) {}
 
 member_imp(DomOrdPWMap::Iterator, DomOrdPWMap::OrdMapCollection::const_iterator
   , it);
@@ -236,7 +240,7 @@ std::ostream& DomOrdPWMap::print(std::ostream& out) const
 
 PWMapStratPtr DomOrdPWMap::clone() const
 {
-  return std::make_unique<DomOrdPWMap>(*this);
+  return std::make_unique<DomOrdPWMap>(pieces_);
 }
 
 // PWMap functions -------------------------------------------------------------
@@ -402,13 +406,13 @@ PWMapStratPtr DomOrdPWMap::composition(const PWMapStrategy& other) const
 
 PWMapStratPtr DomOrdPWMap::mapInf(unsigned int n) const
 {
-  PWMapStratPtr result = std::make_unique<DomOrdPWMap>(*this);
+  PWMapStratPtr result = std::make_unique<DomOrdPWMap>(pieces_);
   PWMapStratPtr old_res = std::make_unique<DomOrdPWMap>();
 
   if (!dom().isEmpty()) {
     for (unsigned int j = 0; old_res != result && j < n; ++j) {
       DomOrdPWMap *rs = static_cast<DomOrdPWMap *>(result.get());
-      old_res = std::make_unique<DomOrdPWMap>(*rs);
+      old_res = std::make_unique<DomOrdPWMap>(rs->pieces_);
       PWMapStratPtr new_res = result->composition(*this);
       result = std::move(new_res);
     }
@@ -421,7 +425,7 @@ PWMapStratPtr DomOrdPWMap::mapInf(unsigned int n) const
     result = std::move(reduced);
     do {
       DomOrdPWMap *rs = static_cast<DomOrdPWMap *>(result.get());
-      old_res = std::make_unique<DomOrdPWMap>(*rs);
+      old_res = std::make_unique<DomOrdPWMap>(rs->pieces_);
       
       PWMapStratPtr new_res = result->composition(*result);
       new_res = new_res->reduce();
@@ -453,22 +457,24 @@ PWMapStratPtr DomOrdPWMap::concatenation(const PWMapStrategy& other) const
   DomOrdPWMapCRef othr = static_cast<DomOrdPWMapCRef>(other);
   res.reserve(pieces_.size() + othr.pieces_.size());
   
-  if (isEmpty())
-    return std::make_unique<DomOrdPWMap>(othr);
+  if (isEmpty()) {
+    return std::make_unique<DomOrdPWMap>(othr.pieces_);
+  }
 
-  if (other.isEmpty())
-    return std::make_unique<DomOrdPWMap>(*this);
+  if (other.isEmpty()) {
+    return std::make_unique<DomOrdPWMap>(pieces_);
+  }
   
   if (pieces_.back().second.second < othr.pieces_.front().second.first) {
     res.insert(res.end(), pieces_.begin(), pieces_.end());
     res.insert(res.end(), othr.pieces_.begin(), othr.pieces_.end());
-    return std::make_unique<DomOrdPWMap>(res);
+    return std::make_unique<DomOrdPWMap>(std::move(res));
   }
   
   if (othr.pieces_.back().second.second < pieces_.front().second.first) {
     res.insert(res.end(), othr.pieces_.begin(), othr.pieces_.end());
     res.insert(res.end(), pieces_.begin(), pieces_.end());
-    return std::make_unique<DomOrdPWMap>(res);
+    return std::make_unique<DomOrdPWMap>(std::move(res));
   }
   
   auto it1 = pieces_.begin(), it2 = othr.pieces_.begin();
@@ -489,10 +495,8 @@ PWMapStratPtr DomOrdPWMap::concatenation(const PWMapStrategy& other) const
 
   res.insert(res.end(), it1, end1);
   res.insert(res.end(), it2, end2);
-
-  return std::make_unique<DomOrdPWMap>(res);
+  return std::make_unique<DomOrdPWMap>(std::move(res));
 }
-
 
 PWMapStratPtr DomOrdPWMap::combine(const PWMapStrategy& other) const
 {

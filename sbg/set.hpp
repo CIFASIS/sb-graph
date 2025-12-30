@@ -45,11 +45,12 @@ namespace LIB {
 // Set Abstract Strategy -------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct SetStrategy;
+class SetStrategy;
 
 typedef std::unique_ptr<SetStrategy> SetStratPtr;
 
-struct SetStrategy {
+class SetStrategy {
+  public:
   virtual ~SetStrategy() = default;
 
   /**
@@ -77,7 +78,7 @@ struct SetStrategy {
    */
   virtual SetStratPtr clone() const = 0;
 
-  struct Iterator {
+  class Iterator {
     public:
     virtual ~Iterator() = default;
     virtual void operator++() = 0;
@@ -173,18 +174,12 @@ struct SetStrategy {
 // Set Interface (context) -----------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct Set {
-  private:
-  SetStratPtr strategy_;
-
+class Set {
   public:
   Set(SetStratPtr strat);
   Set(const Set& other);
 
-  struct Iterator {
-    private:
-    std::shared_ptr<SetStrategy::Iterator> it_;
-
+  class Iterator {
     public:
     Iterator(std::shared_ptr<SetStrategy::Iterator> it);
     void operator++();
@@ -192,6 +187,9 @@ struct Set {
     bool operator==(const Iterator& other) const;
     bool operator<(const Iterator& other) const;
     SetPiece operator*() const;
+
+    private:
+    std::shared_ptr<SetStrategy::Iterator> it_;
   };
 
   Iterator begin() const;
@@ -227,6 +225,9 @@ struct Set {
   Set filterSet(bool (*f)(const SetPiece& mdi)) const;
   Set offset(const MD_NAT& off) const;
   Set compact() const;
+
+  private:
+  SetStratPtr strategy_;
 };
 std::ostream& operator<<(std::ostream& out, const Set& s);
 

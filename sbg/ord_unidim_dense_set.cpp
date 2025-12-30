@@ -47,7 +47,7 @@ OrdUnidimDenseSet::OrdUnidimDenseSet(OrdUnidimDenseSet::MDIOrdCollection pieces)
 
 SetStratPtr OrdUnidimDenseSet::clone() const
 {
-  return std::make_unique<OrdUnidimDenseSet>(*this);
+  return std::make_unique<OrdUnidimDenseSet>(pieces_);
 }
 
 member_imp(OrdUnidimDenseSet::Iterator

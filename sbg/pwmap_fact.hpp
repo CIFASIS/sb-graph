@@ -32,7 +32,7 @@ namespace LIB {
 
 #define PW_FACT PWFactory::instance().pw_fact()
 
-struct PWMapFact {
+class PWMapFact {
   public:
   virtual ~PWMapFact() = default;
   PWMapFact();
@@ -43,7 +43,7 @@ struct PWMapFact {
   virtual std::string prettyPrint() const = 0;
 };
 
-struct UnordPWMapFact : public PWMapFact {
+class UnordPWMapFact : public PWMapFact {
   public:
   UnordPWMapFact();
 
@@ -53,7 +53,7 @@ struct UnordPWMapFact : public PWMapFact {
   std::string prettyPrint() const override;
 };
 
-struct OrdPWMapFact : public PWMapFact {
+class OrdPWMapFact : public PWMapFact {
   public:
   OrdPWMapFact();
 
@@ -63,7 +63,7 @@ struct OrdPWMapFact : public PWMapFact {
   std::string prettyPrint() const override;
 };
 
-struct DomOrdPWMapFact : public PWMapFact {
+class DomOrdPWMapFact : public PWMapFact {
   public:
   DomOrdPWMapFact();
 

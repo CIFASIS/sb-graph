@@ -36,7 +36,7 @@ namespace SBG {
 
 namespace LIB {
 
-struct Map;
+class Map;
 
 typedef std::optional<Map> MaybeMap;
 
@@ -44,7 +44,7 @@ typedef std::optional<Map> MaybeMap;
  * @brief Implementation of maps. Every map has as member a SetFact that keeps
  * track of the chosen implementation for Sets.
  */
-struct Map {
+class Map {
   public:
   member_class(Set, dom);
   member_class(Exp, exp);

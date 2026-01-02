@@ -23,7 +23,11 @@ namespace SBG {
 
 namespace LIB {
 
+////////////////////////////////////////////////////////////////////////////////
 // Auxiliary functions ---------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+// Image -----------------------------------------------------------------------
 
 Interval image(Interval i, LExp le) {
   RATIONAL m = le.slope(), h = le.offset();
@@ -74,6 +78,88 @@ SetPiece image(SetPiece mdi, Exp mdle)
     res.emplaceBack(image(mdi[j], mdle[j]));
 
   return res;
+}
+
+// Reduction -------------------------------------------------------------------
+
+bool reductionIsEfficient(const Map& m)
+{
+  int count = 0;
+  for (const LExp& le : m.exp()) {
+    if (le.slope() != 1 && le.slope() != 0) {
+      return false;
+    }
+
+    if (le.slope() == 1 && le.offset() != 0) {
+      ++count;
+    }
+  }
+
+  return count == 1;
+}
+
+std::vector<Map> reduce(int k, const SetPiece& mdi, const Exp& e)
+{
+  std::vector<Map> result;
+
+  // Special cases
+  if (mdi.cardinal() == 1) {
+    result.emplace_back(Map(mdi, e));
+    return result;
+  }
+
+  // No partition of the piece is needed
+  RATIONAL zero(0, 1);
+  INT h = e[k].offset().toInt();
+  Interval i = mdi[k];
+  NAT st = i.step();
+  Exp e_copy = e;
+  if (h == (INT) st) {
+    NAT hi = i.end();
+    if (st < Inf - hi) {
+      e_copy[k] = LExp(zero, hi + st);
+      result.emplace_back(Map(mdi, e_copy));
+      return result;
+    }
+  } else if (h == (INT) -st) {
+    NAT lo = i.begin();
+    if (lo >= st) {
+      e_copy[k] = LExp(zero, lo - st);
+      result.emplace_back(Map(mdi, e_copy));
+      return result;
+    }
+  }
+
+  // Partition of the piece needed
+  if (h % (INT) st == 0) {
+    SetPiece mdi_copy = mdi;
+    // Is convenient the partition of the piece?
+    if ((INT) i.cardinal() > h*h) {
+      INT absh = std::abs(h);
+      for (int j = 1; j <= absh; ++j) {
+        NAT new_begin = i.begin() + j - 1;
+        Interval  jth_piece(new_begin, (NAT) absh, i.end());
+        mdi_copy[k] = jth_piece;
+
+        RATIONAL jth_off;
+        if (h > 0) {
+          jth_off = jth_piece.end() + h;
+        }
+        else {
+          jth_off = jth_piece.begin() + h;
+        }
+
+        e_copy[k] = LExp(0, jth_off);
+        result.emplace_back(Map(mdi_copy, e_copy));
+      }
+    } else {
+      result.emplace_back(Map(mdi, e));
+    }
+  } else {
+    result.emplace_back(Map(mdi, e));
+  }
+
+  return result; 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -320,11 +406,35 @@ Set Map::lessImage(const Map& other) const
   return result;
 }
 
+std::vector<Map> Map::reduce() const
+{
+  std::vector<Map> result;
+
+  Map m = *this;
+  if (!reductionIsEfficient(m)) {
+    result.emplace_back(m);
+  } else {
+    Exp e = m.exp();
+    for (auto k = 0; k < m.arity(); ++k) {
+      LExp le = e[k];
+      if (le.slope() == 1 && le.offset() != 0) {
+        for (const SetPiece& mdi : m.dom()) {
+          std::vector<Map> reduced = SBG::LIB::reduce(k, mdi, e);
+          result.insert(result.end(), reduced.begin(), reduced.end());
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
 MaybeMap Map::compact(const Map& other) const
 {
   Set res_dom = SET_FACT.createSet();
-  if (exp_ == other.exp())
+  if (exp_ == other.exp()) {
     return Map(dom_.cup(other.dom()).compact(), exp_);
+  }
 
   return {};
 }

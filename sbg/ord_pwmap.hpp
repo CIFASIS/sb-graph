@@ -93,8 +93,6 @@ class OrdPWMap : public PWMapStrategy {
 
   PWMapStratPtr concatenation(const PWMapStrategy& other) const override;
   PWMapStratPtr combine(const PWMapStrategy& other) const override;
-  PWMapStratPtr reduce(const Interval& i, const LExp& e) const override;
-  PWMapStratPtr reduce(const Map& sbgmap) const override;
   PWMapStratPtr reduce() const override;
 
   PWMapStratPtr minMap(const PWMapStrategy& other) const override;

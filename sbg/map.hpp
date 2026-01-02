@@ -153,6 +153,13 @@ class Map {
   Set lessImage(const Map& other) const;
 
   /**
+   * @brief If it is convenient calculates the result of composing the map with
+   * itself until the image is out of the domain. For example,
+   * reduce({[1:1:100]} -> x+1) = {[1:1:100]} -> 101.
+   */
+  std::vector<Map> reduce() const;
+
+  /**
    * @brief Compact the domain of two maps if both share the same expression. If
    * not, the result isn't a map, so no value is returned.
    */

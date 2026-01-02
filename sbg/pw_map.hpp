@@ -182,10 +182,7 @@ class PWMapStrategy {
    * Currently, the only expressions that can be efficiently reduced are:
    *   - x+h
    *   - x-h
-   *   - h
    */
-  virtual PWMapStratPtr reduce(const Interval& i, const LExp& e) const = 0;
-  virtual PWMapStratPtr reduce(const Map& sbgmap) const = 0;
   virtual PWMapStratPtr reduce() const = 0;
 
   /**

@@ -53,7 +53,6 @@ UnordPWMap::UnordPWMap(const Map& m) : pieces_() {
 }
 UnordPWMap::UnordPWMap(const UnordPWMap::UnordMapCollection& pieces)
   : pieces_(std::move(pieces)) {}
-UnordPWMap::UnordPWMap(const UnordPWMap& pw) :pieces_(pw.pieces_) {}
 
 member_imp(UnordPWMap::Iterator, UnordPWMap::UnordMapCollection::const_iterator
   , it);
@@ -168,7 +167,7 @@ PWMapStratPtr UnordPWMap::operator+(const PWMapStrategy& other) const
 
 PWMapStratPtr UnordPWMap::clone() const
 {
-  return std::make_unique<UnordPWMap>(*this);
+  return std::make_unique<UnordPWMap>(pieces_);
 }
 
 // PWMap functions -------------------------------------------------------------
@@ -257,33 +256,27 @@ PWMapStratPtr UnordPWMap::composition(const PWMapStrategy& other) const
 
 PWMapStratPtr UnordPWMap::mapInf(unsigned int n) const
 {
-  PWMapStratPtr res = std::make_unique<UnordPWMap>(*this);
-  PWMapStratPtr old_res = std::make_unique<UnordPWMap>();
+  PWMapStratPtr result = std::make_unique<UnordPWMap>(pieces_);
 
   if (!dom().isEmpty()) {
-    for (unsigned int j = 0; old_res != res && j < n; ++j) {
-      UnordPWMap *rs = static_cast<UnordPWMap *>(res.get());
-      old_res = std::make_unique<UnordPWMap>(*rs);
-      PWMapStratPtr new_res = res->composition(*this);
-      res = std::move(new_res);
+    for (unsigned int j = 0; j < n; ++j) {
+      PWMapStratPtr new_res = result->composition(*this);
+      result = std::move(new_res);
     }
 
-    if (*old_res == *res)
-      return res;
-
-    PWMapStratPtr reduced = res->reduce();
-    res = std::move(reduced);
+    PWMapStratPtr reduced = result->reduce();
+    result = std::move(reduced);
+    PWMapStratPtr old_res = result->clone();
     do {
-      UnordPWMap *rs = static_cast<UnordPWMap *>(res.get());
-      old_res = std::make_unique<UnordPWMap>(*rs);
+      old_res = result->clone();
 
-      PWMapStratPtr new_res = res->composition(*res);
+      PWMapStratPtr new_res = result->composition(*result);
       new_res = new_res->reduce();
-      res = std::move(new_res);
-    } while (*old_res != *res);
+      result = std::move(new_res);
+    } while (*old_res != *result);
   }
 
-  return res;
+  return result;
 }
 
 PWMapStratPtr UnordPWMap::mapInf() const { return mapInf(0); }
@@ -302,133 +295,46 @@ Set UnordPWMap::fixedPoints() const
 
 PWMapStratPtr UnordPWMap::concatenation(const PWMapStrategy& other) const
 {
-  PWMapStratPtr res = std::make_unique<UnordPWMap>(*this);
+  PWMapStratPtr result = std::make_unique<UnordPWMap>(pieces_);
 
   UnordPWMapCRef othr = static_cast<UnordPWMapCRef>(other);
-  for (const Map& m2 : othr.pieces_)
-    res->emplaceBack(m2);
+  for (const Map& m2 : othr.pieces_) {
+    result->emplaceBack(m2);
+  }
 
-  return res;
+  return result;
 }
 
 PWMapStratPtr UnordPWMap::combine(const PWMapStrategy& other) const
 { 
   UnordPWMapCRef othr = static_cast<UnordPWMapCRef>(other);
-  if (isEmpty())
-    return std::make_unique<UnordPWMap>(othr);
+  if (isEmpty()) {
+    return std::make_unique<UnordPWMap>(othr.pieces_);
+  }
 
-  if (other.isEmpty())
+  if (other.isEmpty()) {
     return std::make_unique<UnordPWMap>(pieces_);
+  }
 
-  if (pieces_ == othr.pieces_)
+  if (pieces_ == othr.pieces_) {
     return std::make_unique<UnordPWMap>(pieces_);
+  }
 
   Set exclusive_other = other.dom().difference(dom());
-
   return concatenation(*other.restrict(exclusive_other));
-}
-
-PWMapStratPtr UnordPWMap::reduce(const Interval& i, const LExp& le) const
-{
-  UnordMapCollection res;
-
-  if (!i.isEmpty()) {
-    RATIONAL zero(0, 1);
-    if (le.slope() == 1 && le.offset() != 0) {
-      INT h = le.offset().toInt();
-
-      NAT st = i.step();
-      if (h == (INT) st) {
-        NAT hi = i.end();
-        RATIONAL const_expr(hi + st, 1);
-        if (st < Inf - hi)
-          pushBack(res, Map(i, LExp(zero, const_expr)));
-      }
-
-      else if (h == (INT) -st) {
-        NAT lo = i.begin();
-        RATIONAL const_expr(lo - st, 1);
-        if (lo >= st)
-          pushBack(res, Map(i, LExp(zero, const_expr)));
-      }
-
-      else if (h % (INT) st == 0) {
-        // Is convenient the partition of the piece?
-        if ((INT) i.cardinal() > h*h) {
-          INT absh = std::abs(h);
-
-          for (int k = 1; k <= absh; ++k) {
-            NAT new_begin = i.begin() + k - 1;
-            Interval kth_piece(new_begin, (NAT) absh, i.end());
-
-            RATIONAL kth_off;
-            if (h > 0)
-              kth_off = kth_piece.end() + h;
-            else
-              kth_off = kth_piece.begin() + h;
-
-            pushBack(res, Map(kth_piece, LExp(0, kth_off)));
-          }
-        }
-      }
-    }
-
-    else
-      pushBack(res, Map(i, le));
-  }
-
-  return std::make_unique<UnordPWMap>(res);
-}
-
-PWMapStratPtr UnordPWMap::reduce(const Map& map) const
-{
-  UnordMapCollection res;
-
-  Set not_reduced = SET_FACT.createSet();
-  Exp e = map.exp();
-  for (const SetPiece& dom_piece : map.dom()) {
-    SetPiece aux_piece = dom_piece;
-    Exp aux_exp = e;
-    bool was_reduced = false;
-    for (unsigned int j = 0; j < dom_piece.arity(); ++j) {
-      PWMapStratPtr aux = reduce(dom_piece[j], e[j]); 
-      UnordPWMap *jth_red = static_cast<UnordPWMap *>(aux.get());
-      for (const Map& ith_reduced : jth_red->pieces_) {
-        aux_piece[j] = ith_reduced.dom().begin().operator*().operator[](0);
-        aux_exp[j] = ith_reduced.exp()[0];
-        if (aux_piece != dom_piece || aux_exp != e) {
-          pushBack(res, Map(aux_piece, aux_exp));
-          was_reduced = true;
-        }
-
-        aux_piece = dom_piece;
-        aux_exp = e;
-      }
-
-      ++j;
-    }
-
-    if (!was_reduced)
-      not_reduced.emplaceBack(dom_piece);
-  }
-
-  if (!not_reduced.isEmpty())
-    pushBack(res, Map(not_reduced, e)); // Add unreduced subpieces
-
-  return std::make_unique<UnordPWMap>(res);
 }
 
 PWMapStratPtr UnordPWMap::reduce() const
 {
-  UnordMapCollection res;
+  UnordMapCollection result;
   for (const Map& m : pieces_) {
-    PWMapStratPtr ith = reduce(m);
-    UnordPWMap *ith_c = static_cast<UnordPWMap *>(ith.get());
-    for(const Map& mi : ith_c->pieces_)
-      pushBack(res, mi); 
+    std::vector<Map> reduced = m.reduce();
+    for(const Map& reduced_map : reduced) {
+      result.emplace_back(reduced_map);
+    }
   }
-      
-  return std::make_unique<UnordPWMap>(res);
+
+  return std::make_unique<UnordPWMap>(std::move(result));
 }
 
 PWMapStratPtr UnordPWMap::minMap(const PWMapStrategy& other) const
@@ -442,7 +348,7 @@ PWMapStratPtr UnordPWMap::minMap(const PWMapStrategy& other) const
 
 PWMapStratPtr UnordPWMap::minAdjMap(const PWMapStrategy& other) const
 {
-  PWMapStratPtr res = std::make_unique<UnordPWMap>();
+  PWMapStratPtr result = std::make_unique<UnordPWMap>();
 
   UnordPWMapCRef othr = static_cast<UnordPWMapCRef>(other);
   Set visited = SET_FACT.createSet();
@@ -457,31 +363,32 @@ PWMapStratPtr UnordPWMap::minAdjMap(const PWMapStrategy& other) const
         e1 = m1.exp();
 
         Set im2 = m2.image(ith_dom);
-        if (!e1.isConstant())
+        if (!e1.isConstant()) {
           e_res = m2.exp().composition(e1.inverse());
-        else
+        } else {
           e_res = MDLExp(im2.minElem());
+        }
 
         if (!dom_res.isEmpty()) {
           Map ith(dom_res, e_res);
           UnordPWMap ith_pw(ith);
           Set again = dom_res.intersection(visited);
           if (!again.isEmpty()) {
-            PWMapStratPtr aux_res = res->restrict(dom_res);
+            PWMapStratPtr aux_res = result->restrict(dom_res);
             PWMapStratPtr min_map = aux_res->minMap(ith_pw);
-            PWMapStratPtr new_res = min_map->combine(ith_pw)->combine(*res);
-            res = std::move(new_res);
+            PWMapStratPtr new_res = min_map->combine(ith_pw)->combine(*result);
+            result = std::move(new_res);
             visited = visited.cup(ith_pw.dom());
-          }
-          else {
-            res->emplaceBack(ith);
+          } else {
+            result->emplaceBack(ith);
             visited = std::move(visited).disjointCup(std::move(dom_res));
           }
         }
       }
     }
   }
-  return res;
+
+  return result;
 }
 
 PWMapStratPtr UnordPWMap::firstInv(const Set& subdom) const

@@ -29,29 +29,35 @@ namespace OG {
 
 // Set-vertex ------------------------------------------------------------------
 
-struct Vertex {
-  member_class(SBG::LIB::MD_NAT, id);            // Unique identifier
-
+class Vertex {
+  public:
   Vertex();
   Vertex(SBG::LIB::MD_NAT id);
 
-  bool operator==(const Vertex &v) const;
+  const SBG::LIB::MD_NAT& id() const;
+  bool operator==(const Vertex& v) const;
+
+  private:
+  SBG::LIB::MD_NAT id_; ///< Unique identifier
 };
 
-std::ostream &operator<<(std::ostream &out, const Vertex &v);
+std::ostream& operator<<(std::ostream& out, const Vertex& v);
 
 // Ordinary Graph Edge ---------------------------------------------------------
 
-struct Edge {
-  member_class(SBG::LIB::MD_NAT, id);            // Unique identifier
-
+class Edge {
+  public:
   Edge();
   Edge(SBG::LIB::MD_NAT id);
 
-  bool operator==(const Edge &e) const;
+  const SBG::LIB::MD_NAT& id() const;
+  bool operator==(const Edge& e) const;
+
+  private:
+  SBG::LIB::MD_NAT id_; ///< Unique identifier
 };
 
-std::ostream &operator<<(std::ostream &out, const Edge &e);
+std::ostream& operator<<(std::ostream& out, const Edge& e);
 
 // Ordinary Graph definition ---------------------------------------------------
 

@@ -50,7 +50,6 @@ struct DomOrdPWMap : public OrdPWMap {
   DomOrdPWMap(const Set& s);
   DomOrdPWMap(const Map& m);
   DomOrdPWMap(OrdMapCollection pieces);
-  //DomOrdPWMap(DomOrdPWMap&& pw);
 
   struct Iterator : public PWMapStrategy::Iterator {
     member_class(OrdMapCollection::const_iterator, it);
@@ -95,8 +94,6 @@ struct DomOrdPWMap : public OrdPWMap {
 
   PWMapStratPtr concatenation(const PWMapStrategy& other) const override;
   PWMapStratPtr combine(const PWMapStrategy& other) const override;
-  PWMapStratPtr reduce(const Interval& i, const LExp& e) const override;
-  PWMapStratPtr reduce(const Map& sbgmap) const override;
   PWMapStratPtr reduce() const override;
 
   PWMapStratPtr minMap(const PWMapStrategy& other) const override;

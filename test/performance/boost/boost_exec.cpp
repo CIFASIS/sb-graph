@@ -181,8 +181,9 @@ void BoostExecutor::execute(int arg_count, char* args[])
     if (stage_) {
       for (const SBG::Eval::ExprResult &ev : eval_result.exprs()) {
         SBG::Eval::ExprBaseType e = std::get<1>(ev);
-        if (std::holds_alternative<SBG::LIB::SBG>(e))
+        if (std::holds_alternative<SBG::LIB::SBG>(e)) {
           Internal::algorithmEvaluator(*stage_, std::get<SBG::LIB::SBG>(e));
+        }
       }
     }
   }

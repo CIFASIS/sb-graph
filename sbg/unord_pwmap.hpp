@@ -44,8 +44,7 @@ class UnordPWMap : public PWMapStrategy {
   UnordPWMap();
   UnordPWMap(const Set &s);
   UnordPWMap(const Map &m);
-  UnordPWMap(const UnordMapCollection &pieces);
-  UnordPWMap(const UnordPWMap &pw);
+  UnordPWMap(const UnordMapCollection& pieces);
 
   class Iterator : public PWMapStrategy::Iterator {
     member_class(UnordMapCollection::const_iterator, it);
@@ -90,8 +89,6 @@ class UnordPWMap : public PWMapStrategy {
 
   PWMapStratPtr concatenation(const PWMapStrategy &other) const override;
   PWMapStratPtr combine(const PWMapStrategy &other) const override;
-  PWMapStratPtr reduce(const Interval &i, const LExp &e) const override;
-  PWMapStratPtr reduce(const Map &sbgmap) const override;
   PWMapStratPtr reduce() const override;
 
   PWMapStratPtr minMap(const PWMapStrategy &other) const override;

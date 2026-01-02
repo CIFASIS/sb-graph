@@ -29,7 +29,10 @@ Vertex::Vertex() : id_(0) {}
 
 Vertex::Vertex(SBG::LIB::MD_NAT id) : id_(id) {}
 
-member_imp(Vertex, SBG::LIB::MD_NAT, id);
+const SBG::LIB::MD_NAT& Vertex::id() const
+{
+  return id_;
+}
 
 bool Vertex::operator==(const Vertex &other) const
 {
@@ -48,7 +51,10 @@ Edge::Edge() : id_(0) {}
 
 Edge::Edge(SBG::LIB::MD_NAT id) : id_(id) {}
 
-member_imp(Edge, SBG::LIB::MD_NAT, id);
+const SBG::LIB::MD_NAT& Edge::id() const
+{
+  return id_;
+}
 
 bool Edge::operator==(const Edge &other) const { return id() == other.id(); }
 

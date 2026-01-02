@@ -372,36 +372,27 @@ PWMapStratPtr OrdPWMap::composition(const PWMapStrategy& other) const
 
 PWMapStratPtr OrdPWMap::mapInf(unsigned int n) const
 {
-  PWMapStratPtr res = std::make_unique<OrdPWMap>(*this);
-  PWMapStratPtr old_res = std::make_unique<OrdPWMap>();
+  PWMapStratPtr result = std::make_unique<OrdPWMap>(pieces_);
 
   if (!dom().isEmpty()) {
-    for (unsigned int j = 0; old_res != res && j < n; ++j) {
-      OrdPWMap *rs = static_cast<OrdPWMap *>(res.get());
-      old_res = std::make_unique<OrdPWMap>(*rs);
-      PWMapStratPtr new_res = res->composition(*this);
-      res = std::move(new_res);
+    for (unsigned int j = 0; j < n; ++j) {
+      PWMapStratPtr new_res = result->composition(*this);
+      result = std::move(new_res);
     }
-
-    if (*old_res == *res)
-      return res;
     
-    PWMapStratPtr reduced = res->reduce();
-    res = std::move(reduced);
+    PWMapStratPtr reduced = result->reduce();
+    result = std::move(reduced);
+    PWMapStratPtr old_res = result->clone();
     do {
-      OrdPWMap *rs = static_cast<OrdPWMap *>(res.get());
-      old_res = std::make_unique<OrdPWMap>(*rs);
+      old_res = result->clone();
       
-      
-      PWMapStratPtr new_res = res->composition(*res);
-      
+      PWMapStratPtr new_res = result->composition(*result);
       new_res = new_res->reduce();
-      
-      res = std::move(new_res);
-    } while (*old_res != *res);
+      result = std::move(new_res);
+    } while (*old_res != *result);
   }
   
-  return res;
+  return result;
 }
 
 PWMapStratPtr OrdPWMap::mapInf() const { return mapInf(0); }
@@ -488,109 +479,18 @@ PWMapStratPtr OrdPWMap::combine(const PWMapStrategy& other) const
   return concatenation(*other.restrict(exclusive_other));
 }
 
-PWMapStratPtr OrdPWMap::reduce(const Interval& i, const LExp& le) const
-{
-  OrdMapCollection res;
-
-  if (!i.isEmpty()) {
-    RATIONAL zero(0, 1);
-    if (le.slope() == 1 && le.offset() != 0) {
-      INT h = le.offset().toInt();
-
-      NAT st = i.step();
-      if (h == (INT) st) {
-        NAT hi = i.end();
-        RATIONAL const_expr(hi + st, 1);
-        if (st < Inf - hi)
-          Internal::emplaceBack(res, Map(i, LExp(zero, const_expr)));
-      }
-
-      else if (h == (INT) -st) {
-        NAT lo = i.begin();
-        RATIONAL const_expr(lo - st, 1);
-        if (lo >= st)
-          Internal::emplaceBack(res, Map(i, LExp(zero, const_expr)));
-      }
-
-      else if (h % (INT) st == 0) {
-        // Is convenient the partition of the piece?
-        if ((INT) i.cardinal() > h*h) {
-          INT absh = std::abs(h);
-
-          for (int k = 1; k <= absh; ++k) {
-            NAT new_begin = i.begin() + k - 1;
-            Interval kth_piece(new_begin, (NAT) absh, i.end());
-
-            RATIONAL kth_off;
-            if (h > 0)
-              kth_off = kth_piece.end() + h;
-            else
-              kth_off = kth_piece.begin() + h;
-              
-            Internal::emplaceBack(res, Map(kth_piece, LExp(0, kth_off)));
-          }
-        }
-      }
-    }
-
-    else
-      Internal::emplaceBack(res, Map(i, le));
-  }
-
-  return std::make_unique<OrdPWMap>(std::move(res));
-}
-
-PWMapStratPtr OrdPWMap::reduce(const Map& map) const
-{
-  OrdMapCollection res;
-  Set not_reduced = SET_FACT.createSet();
-  Exp e = map.exp();
-  for (const SetPiece& dom_piece : map.dom()) {
-    SetPiece aux_piece = dom_piece;
-    Exp aux_exp = e;
-    bool was_reduced = false;
-    for (unsigned int j = 0; j < dom_piece.arity(); ++j) {
-      PWMapStratPtr aux = reduce(dom_piece[j], e[j]); 
-      OrdPWMap *jth_red = static_cast<OrdPWMap *>(aux.get());
-      for (const MapEntry& mpe_ith_reduced : jth_red->pieces_) {
-        const Map& ith_reduced = mpe_ith_reduced.first;
-        aux_piece[j] = ith_reduced.dom().begin().operator*().operator[](0);
-        aux_exp[j] = ith_reduced.exp()[0];
-        if (aux_piece != dom_piece || aux_exp != e) {
-          Internal::emplaceBack(res, Map(aux_piece, aux_exp));
-          was_reduced = true;
-        }
-
-        aux_piece = dom_piece;
-        aux_exp = e;
-      }
-
-      ++j;
-    }
-
-    if (!was_reduced)
-      not_reduced.emplaceBack(dom_piece);
-  }
-  
-  if(!not_reduced.isEmpty())
-    Internal::emplaceBack(res, Map(not_reduced, e)); // Add unreduced subpieces
-
-  return std::make_unique<OrdPWMap>(std::move(res));
-}
-
 PWMapStratPtr OrdPWMap::reduce() const
 { 
-  OrdMapCollection res;
+  OrdMapCollection result;
   for (const MapEntry& mpe : pieces_) {
-    PWMapStratPtr ith = reduce(mpe.first);
-    OrdPWMap *ith_c = static_cast<OrdPWMap *>(ith.get());
-    for (const MapEntry& mpe_ith_elem : ith_c->pieces_) 
-      Internal::emplaceBack(res, mpe_ith_elem);
+    std::vector<Map> reduced = mpe.first.reduce();
+    for (const Map& reduced_map : reduced) {
+      Internal::emplaceBack(result, reduced_map);
+    }
   } 
 
-  std::sort(res.begin(), res.end(), operator<);
-  
-  return std::make_unique<OrdPWMap>(std::move(res));
+  std::sort(result.begin(), result.end(), operator<);
+  return std::make_unique<OrdPWMap>(std::move(result));
 }
 
 PWMapStratPtr OrdPWMap::minMap(const PWMapStrategy& other) const

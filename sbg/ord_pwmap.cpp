@@ -56,7 +56,6 @@ OrdPWMap::OrdPWMap(const Map& m) : pieces_() {
 }
 OrdPWMap::OrdPWMap(const OrdMapCollection& pieces)
   : pieces_(std::move(pieces)) {}
-OrdPWMap::OrdPWMap(const OrdPWMap& pw) : pieces_(pw.pieces_) {}
 
 member_imp(OrdPWMap::Iterator, OrdPWMap::OrdMapCollection::const_iterator, it);
 
@@ -102,11 +101,13 @@ bool OrdPWMap::operator==(const PWMapStrategy& other) const
 { 
   OrdPWMapCRef othr = static_cast<OrdPWMapCRef>(other);
 
-  if (dom() != othr.dom()) 
+  if (dom() != othr.dom()) {
     return false;
+  }
 
-  if (pieces_ == othr.pieces_)
+  if (pieces_ == othr.pieces_) {
     return true;
+  }
   
   OrdMapCollection short_pw = pieces_;
   OrdMapCollection long_pw = othr.pieces_;
@@ -225,7 +226,7 @@ void OrdPWMap::processAdd(const Map& m1, const Map& m2,
 
 PWMapStratPtr OrdPWMap::clone() const
 {
-  return std::make_unique<OrdPWMap>(*this);
+  return std::make_unique<OrdPWMap>(pieces_);
 }
 
 // PWMap functions -------------------------------------------------------------
@@ -418,11 +419,11 @@ PWMapStratPtr OrdPWMap::concatenation(const PWMapStrategy& other) const
   res.reserve(pieces_.size() + othr.pieces_.size());
   
   if (isEmpty()) {
-    return std::make_unique<OrdPWMap>(othr);
+    return std::make_unique<OrdPWMap>(othr.pieces_);
   }
 
   if (other.isEmpty()) {
-    return std::make_unique<OrdPWMap>(*this);
+    return std::make_unique<OrdPWMap>(pieces_);
   }
   
   if (pieces_.back().second.first < othr.pieces_.front().second.first) {
@@ -600,7 +601,6 @@ PWMapStratPtr OrdPWMap::firstInv(const Set& subdom) const
   }
 
   std::sort(res.begin(), res.end(), operator<);
-
   return std::make_unique<OrdPWMap>(std::move(res));
 }
 
@@ -724,8 +724,10 @@ void OrdPWMap::processMapsOrd(
       ++si_prev;
       ++si_curr;
     }
-    if (indexes.empty())
+
+    if (indexes.empty()) {
       break;
+    }
   }
 }
 
@@ -765,8 +767,8 @@ PWMapStratPtr OrdPWMap::offsetDom(const PWMapStrategy& off) const
       Set ith_dom = off.image(t_m.dom());
       
       if (!ith_dom.isEmpty()){
-          Map res_map(ith_dom, t_m.exp());
-          Internal::emplaceBack(res, res_map);
+        Map res_map(ith_dom, t_m.exp());
+        Internal::emplaceBack(res, res_map);
       }
       continue;
     }

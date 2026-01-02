@@ -224,8 +224,9 @@ Set UnordPWMap::preImage(const Set& subcodom) const
 {
   Set res = SET_FACT.createSet();
 
-  for (const Map& m : pieces_)
+  for (const Map& m : pieces_) {
     res = res.disjointCup(m.preImage(subcodom));
+  }
 
   return res;
 }
@@ -234,8 +235,9 @@ PWMapStratPtr UnordPWMap::inverse() const
 {
   PWMapStratPtr res = std::make_unique<UnordPWMap>();
 
-  for (const Map& m : pieces_)
+  for (const Map& m : pieces_) {
     res->emplaceBack(m.minInv());
+  }
 
   return res;
 }
@@ -285,8 +287,9 @@ Set UnordPWMap::fixedPoints() const
 {
   Set res = SET_FACT.createSet();
 
-  for (const Map& m : pieces_)
+  for (const Map& m : pieces_) {
     res = res.disjointCup(m.fixedPoints());
+  }
 
   return res;
 }
@@ -471,8 +474,9 @@ PWMapStratPtr UnordPWMap::offsetDom(const MD_NAT& off) const
 {
   UnordMapCollection res;
 
-  for (const Map& m : pieces_)
+  for (const Map& m : pieces_) {
     pushBack(res, Map(m.dom().offset(off), m.exp()));
+  }
 
   return std::make_unique<UnordPWMap>(res);
 }
@@ -510,8 +514,9 @@ PWMapStratPtr UnordPWMap::offsetImage(const Exp& off) const
 {
   UnordMapCollection res;
 
-  for (const Map& m : pieces_) 
+  for (const Map& m : pieces_) {
     pushBack(res, Map(m.dom(), off + m.exp()));
+  }
 
   return std::make_unique<UnordPWMap>(res);
 }

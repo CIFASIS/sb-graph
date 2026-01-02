@@ -98,7 +98,6 @@ bool MultiDimInter::operator>(const MultiDimInter& other) const
   return !(*this == other && *this < other);
 }
 
-
 std::ostream &operator<<(std::ostream &out, const MultiDimInter &mdi)
 {
   std::size_t sz = mdi.arity();

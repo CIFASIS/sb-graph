@@ -355,7 +355,7 @@ SetStratPtr OrderedSet::intersection(const SetStrategy& other) const
       if (long_max < short_min)
         break;
 
-      if (doInt(short_elem,long_elem)) {
+      if (doInt(short_elem, long_elem)) {
         const SetPiece inter = long_elem.intersection(short_elem);
         result.emplaceHint(global_pos, inter);
       }

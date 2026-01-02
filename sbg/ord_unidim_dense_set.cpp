@@ -191,8 +191,9 @@ unsigned int OrdUnidimDenseSet::cardinal() const
 {
   unsigned int result = 0;
 
-  for (const SetPiece& mdi : pieces_)
+  for (const SetPiece& mdi : pieces_) {
     result += mdi.cardinal();
+  }
 
   return result;
 }

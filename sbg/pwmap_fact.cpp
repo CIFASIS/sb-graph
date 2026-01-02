@@ -17,8 +17,8 @@
 
  ******************************************************************************/
 
-#include "sbg/pwmap_fact.hpp"
 #include "sbg/dom_ord_pwmap.hpp"
+#include "sbg/pwmap_fact.hpp"
 #include "sbg/ord_pwmap.hpp"
 #include "sbg/unord_pwmap.hpp"
 

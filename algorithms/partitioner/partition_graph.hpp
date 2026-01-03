@@ -25,6 +25,7 @@
 #include <sbg/interval.hpp>
 #include <sbg/sbg.hpp>
 
+#include "partitioner_params.hpp"
 #include "sbg_partitioner_types.hpp"
 #include "weighted_sb_graph.hpp"
 
@@ -32,15 +33,6 @@
 namespace sbg_partitioner {
 
 constexpr bool sanity_check_enabled = false;
-
-
-enum InitialPartitionStrategy {
-    ALL = 0,
-    DFS_DISTRIBUTIVE_PREORDER = 1,
-    DFS_DISTRIBUTIVE_POSTORDER = 2,
-    DFS_GREEDY_PREORDER = 3,
-    DFS_GREEDY_POSTORDER =4
-};
 
 
 /// @brief Converts a Partition element into a Set.
@@ -60,7 +52,8 @@ best_initial_partition(
     SBG::LIB::WeightedSBGraph& graph,
     unsigned number_of_partitions,
     const InitialPartitionStrategy strategy,
-    bool multithreading_enabled);
+    bool multithreading_enabled,
+    bool create_comm_cost = true);
 
 
 /// Returns the connectivity set of a set of edges contained in map1 and map2 of
@@ -90,6 +83,6 @@ std::string get_output(const PartitionMap& partition_map);
 /// @param graph The graph that have been partitioned.
 /// @param partitions_set The obtained partition.
 /// @param number_of_partitions The number of partitions
-void sanity_check(const SBG::LIB::WeightedSBGraph& graph, PartitionMap& partitions_set, unsigned number_of_partitions);
+void sanity_check(const SBG::LIB::WeightedSBGraph& graph, const PartitionMap& partitions_set, unsigned number_of_partitions);
 
 }

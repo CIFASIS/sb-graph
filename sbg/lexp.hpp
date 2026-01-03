@@ -33,7 +33,7 @@ namespace SBG {
 
 namespace LIB {
 
-struct LExp {
+class LExp {
   member_class(RATIONAL, slope);
   member_class(RATIONAL, offset);
 
@@ -71,6 +71,8 @@ struct LExp {
 
   bool isId() const;
   bool isConstant() const;
+  bool isIncreasing() const;
+  RATIONAL intersectionPoint(const LExp& other) const;
 };
 std::ostream &operator<<(std::ostream &out, const LExp &le);
 

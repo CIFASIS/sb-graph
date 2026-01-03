@@ -1,0 +1,150 @@
+/* Causalization test for the following model:
+model Test2D
+ //Implicit 2D advection equation
+ //contains NxM small algebraic loops
+  constant Integer N=10,M=10;
+  Real a[N,M],b[N,M],x[N,M];
+equation
+  a[1,1]+b[1,1]=1;
+  b[1,1]-a[1,1]=2*x[1,1]-1;
+  
+  for i in 2:N loop
+    a[i,1]+b[i,1]=b[i-1,1];
+    b[i,1]-a[i,1]= 2*x[i,1]-x[i-1,1];
+  end for;    
+  
+  for i in 2:M loop
+    a[1,i]+b[1,i]=b[1,i-1];
+    b[1,i]-a[1,i]= 2*x[1,i]-x[1,i-1];
+  end for;    
+  
+  for i in 2:N loop
+    for j in 2:M loop
+      a[i,j]+2*b[i,j]=b[i,j-1]+b[i-1,j];
+      b[i,j]-a[i,j]=3*x[i,j]-x[i-1,j]-x[i,j-1];
+    end for;    
+  end for;    
+  
+  for i in 1:N loop
+    for j in 1:N loop
+      der(x[i,j])=a[i,j];
+    end for;
+  end for;
+end Test2D;
+*/
+
+dims = 2;
+
+M = 100;
+N = 100;
+
+V1x = N; // a_x
+V1y = M; // a_y
+V2x = V1x+N; // b_x
+V2y = V1y+M; // b_y
+V3x = V2x+N; // der(x)_x
+V3y = V2y+M; // der(x)_y
+
+V4x = V3x+1; // a[1, 1]+b[1, 1] = 1;_x Eq1
+V4y = V3y+1; // a[1, 1]+b[1, 1] = 1;_y
+V5x = V4x+1; //b[1,1]-a[1,1]=2*x[1,1]-1;_x Eq2
+V5y = V4y+1; //b[1,1]-a[1,1]=2*x[1,1]-1;_y
+
+V6x = V5x+N-1; // a[i,1]+b[i,1]=b[i-1,1];_x Eq3
+V6y = V5y+1; // a[i,1]+b[i,1]=b[i-1,1];_y
+V7x = V6x+N-1; // b[i,1]-a[i,1]= 2*x[i,1]-x[i-1,1];_x Eq4
+V7y = V6y+1; // b[i,1]-a[i,1]= 2*x[i,1]-x[i-1,1];_y
+
+V8x = V7x+1; // a[1,i]+b[1,i]=b[1,i-1];_x Eq5
+V8y = V7y+M-1; // a[1,i]+b[1,i]=b[1,i-1];_y
+V9x = V8x+1; // b[1,i]-a[1,i]= 2*x[1,i]-x[1,i-1];_x Eq6
+V9y = V8y+M-1; // b[1,i]-a[1,i]= 2*x[1,i]-x[1,i-1];_y
+
+V10x = V9x+N-1; // a[i,j]+2*b[i,j]=b[i,j-1]+b[i-1,j];_x Eq7
+V10y = V9y+M-1; // a[i,j]+2*b[i,j]=b[i,j-1]+b[i-1,j];_y
+V11x = V10x+N-1; // b[i,j]-a[i,j]=3*x[i,j]-x[i-1,j]-x[i,j-1];_x Eq8
+V11y = V10y+M-1; //  b[i,j]-a[i,j]=3*x[i,j]-x[i-1,j]-x[i,j-1];_y
+
+V12x = V11x+N-1; // der(x[i,j])=a[i,j];_x Eq9
+V12y = V11y+M-1; // der(x[i,j])=a[i,j];_y
+
+E1x = 1; // Eq1 - a_x
+E1y = 1; // Eq1 - a_y
+E2x = E1x+1; // Eq1 - b_x
+E2y = E1y+1; // Eq1 - b_y
+
+off1dx = V4x - E1x;
+off1dy = V4y - E1y;
+off2dx = V4x - E2x;
+off2dy = V4y - E2y;
+
+m1d = {[1:1:E1x]x[1:1:E1y]} -> |1*x+off1dx|1*x+off1dy|;
+m2d = {[E1x+1:1:E2x]x[E1y+1:1:E2y]} -> |1*x+off2dx|1*x+off2dy|;
+
+off1bx = V1x - E1x - N+1;
+off1by = V1y - E1y - M+1;
+off2bx = V2x - E2x - N+1;
+off2by = V2y - E2y - M+1;
+
+m1b = {[1:1:E1x]x[1:1:E1y]} -> |1*x+off1bx|1*x+off1by|;
+m2b = {[E1x+1:1:E2x]x[E1y+1:1:E2y]} -> |1*x+off2bx|1*x+off2by|;
+
+E3x = E2x+1; // Eq2 - a_x
+E3y = E2y+1; // Eq2 - a_y
+E4x = E3x+1; // Eq2 - b_x
+E4y = E3y+1; // Eq2 - b_y
+
+E5x = E4x+N-1; // Eq3 - a_x
+E5y = E4y+1; // Eq3 - a_y
+E6x = E5x+N-1; // Eq3 - b_x[i-1, 1]
+E6y = E5y+1; // Eq3 - b_y[i-1, 1]
+E7x = E6x+N-1; // Eq3 - b_y[i, 1]
+E7y = E6y+1; // Eq3 - b_y[i, 1]
+
+E8x = E7x+N-1; // Eq4 - a_x
+E8y = E7y+1; // Eq4 - a_y
+E9x = E8x+N-1; // Eq4 - b_x
+E9y = E8y+1; // Eq4 - b_y
+
+E10x = E9x+1; // Eq5 - a_x
+E10y = E9y+M-1; // Eq5 - a_y
+E11x = E10x+1; // Eq5 - b_x[1, i-1]
+E11y = E10y+M-1; // Eq5 - b_y[1, i-1]
+E12x = E11x+1; // Eq5 - b_x[1, i]
+E12y = E11y+M-1; // Eq5 - b_y[1, i]
+
+E13x = E12x+1; // Eq6 - a_x
+E13y = E12y+M-1; // Eq6 - a_y
+E14x = E13x+1; // Eq6 - b_x
+E14y = E13y+M-1; // Eq6 - b_y
+
+E15x = E14x+N-1; // Eq7 - a_x
+E15y = E14y+M-1; // Eq7 - a_y
+E16x = E15x+N-1; // Eq7 - b_x[i-1, j]
+E16y = E15y+M-1; // Eq7 - b_y[i-1, j]
+E17x = E16x+N-1; // Eq7 - b_x[i, j-1]
+E17y = E16y+M-1; // Eq7 - b_y[i, j-1]
+E18x = E17x+N-1; // Eq7 - b_x[i, j]
+E18y = E17y+M-1; // Eq7 - b_y[i, j]
+
+E19x = E18x+N-1; // Eq8 - a_x
+E19y = E18y+M-1; // Eq8 - a_y
+E20x = E19x+N-1; // Eq8 - b_x
+E20y = E19y+M-1; // Eq8 - b_y
+
+E21x = E20x+N; // Eq9 - a_x
+E21y = E20y+M; // Eq9 - a_y
+E22x = E21x+N; // Eq10 - der(x)_x
+E22y = E21y+M; // Eq10 - der(x)_y
+
+{[1:1:V1x]x[1:1:V1y], [V1x+1:V2x]x[V1y+1:1:V2y], [V2x+1:1:V3x]x[V2y+1:1:V3y]
+, [V3x+1:1:V4x]x[V3y+1:1:V4y], [V4x+1:1:V5x]x[V4y+1:1:V5y], [V5x+1:1:V6x]x[V5y+1:1:V6y]
+, [V6x+1:1:V7x]x[V6y+1:1:V7y], [V7x+1:1:V8x]x[V7y+1:1:V8y], [V8x+1:1:V9x]x[V8y+1:1:V9y]
+, [V9x+1:1:V10x]x[V9y+1:1:V10y], [V10x+1:1:V11x]x[V10y:1:V11y], [V11x+1:1:V12x]x[V11y+1:1:V12y]};
+
+<<{[1:1:V1x]x[1:1:V1y]} -> |0*x+1|0*x+1|, {[V1x+1:V2x]x[V1y+1:1:V2y]} -> |0*x+2|0*x+2|
+, {[V2x+1:1:V3x]x[V2y+1:1:V3y]} -> |0*x+3|0*x+3|, {[V3x+1:1:V4x]x[V3y+1:1:V4y]} -> |0*x+4|0*x+4|
+, {[V4x+1:1:V5x]x[V4y+1:1:V5y]} -> |0*x+5|0*x+5|, {[V5x+1:1:V6x]x[V5y+1:1:V6y]} -> |0*x+6|0*x+6|
+, {[V6x+1:1:V7x]x[V6y+1:1:V7y]} -> |0*x+7|0*x+7|, {[V7x+1:1:V8x]x[V7y+1:1:V8y]} -> |0*x+8|0*x+8|
+, {[V8x+1:1:V9x]x[V8y+1:1:V9y]} -> |0*x+9|0*x+9|, {[V9x+1:1:V10x]x[V9y+1:1:V10y]} -> |0*x+10|0*x+10|
+, {[V10x+1:1:V11x]x[V10y:1:V11y]} -> |0*x+11|0*x+11|, {[V11x+1:1:V12x]x[V11y+1:1:V12y]} -> |0*x+12|0*x+12|>>;

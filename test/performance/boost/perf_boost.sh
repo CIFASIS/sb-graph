@@ -18,7 +18,7 @@
 #                will be the average of all runs.
 #                [SIZE] Sets the size of variable N in the test to SIZE.
 #       OPTIONS: ---
-#  REQUIREMENTS: [1] ../../../bin/sbg-eval binary. 
+#  REQUIREMENTS: ../../../build/bin/boost-perf binary.
 #         NOTES: --- 
 #        AUTHOR: Denise Marzorati, denise.marzorati@gmail.com
 #       PROJECT: Set Based Graph Library

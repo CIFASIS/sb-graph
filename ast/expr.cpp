@@ -437,7 +437,7 @@ std::ostream &operator<<(std::ostream &out, const Call &c)
   out << c.name() << "(";
   if (sz > 0) {
     unsigned int i = 0;
-    for (; i < sz - 1; i++)
+    for (; i < sz - 1; ++i)
       out << c.args()[i] << ", ";
     out << c.args()[i];
   }

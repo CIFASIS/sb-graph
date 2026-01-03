@@ -53,7 +53,7 @@ StmRule<Iterator>::StmRule(Iterator &it) : StmRule::base_type(stms)
   cfg_dims = (NMBR_DIMS >> qi::uint_)
     [qi::_val = phx::construct<AST::ConfigDims>(qi::_1)];
 
-  assign = (expr.ident >> ASSIGN >> expr.expr)
+  assign = (expr.identifier >> ASSIGN >> expr.expr)
     [qi::_val = phx::construct<AST::Assign>(qi::_1, qi::_2)];
 
   stm = assign >> expr.SEMI;

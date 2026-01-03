@@ -12,7 +12,7 @@
 #                will be the average of all runs.
 #                [SIZE] Sets the size of variable N in the test to SIZE.
 #       OPTIONS: ---
-#  REQUIREMENTS: [1] ../../../bin/sbg-eval binary. 
+#  REQUIREMENTS: [1] ../../../build/eval/sbg-eval binary.
 #         NOTES: --- 
 #        AUTHOR: Denise Marzorati, denise.marzorati@gmail.com
 #       PROJECT: Set Based Graph Library
@@ -31,7 +31,7 @@ echo > test_file
 
 while read line; do
     if  echo "$line" | grep -q "N = "; then 
-        echo $line > eval; awk -v s=$size '{print "N = " s}' eval >> test_file;
+        echo $line > eval; awk -v s=$size '{print "N = " s ";"}' eval >> test_file;
     else
         echo $line >> test_file
     fi
@@ -40,11 +40,11 @@ done < aux_file
 
 for i in $(seq "$iterations"); do
 	echo $i
-	../../../bin/sbg-eval -f test_file
+	../../../build/eval/sbg-eval test_file -p 1
 	mv SBG.log SBG_${i}.log
 	echo
     while read line; do
-        if  echo "$line" | grep -q "Total match"; then echo $line > eval; awk '{print $5}' eval >> test_values; fi        
+        if  echo "$line" | grep -q "Total matching"; then echo $line > eval; awk '{print $5}' eval >> test_values; fi        
     done < "SBG_${i}.log"
 done
 

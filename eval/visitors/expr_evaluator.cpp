@@ -56,6 +56,7 @@ ExprEvaluator::ExprEvaluator(EvalContext& eval_ctx) : eval_ctx_(eval_ctx)
   eval_ctx.insertFunction("isEmpty", BuiltInFunctions::emptyEvaluator);
   eval_ctx.insertFunction("minElem", BuiltInFunctions::minEvaluator);
   eval_ctx.insertFunction("maxElem", BuiltInFunctions::maxEvaluator);
+  eval_ctx.insertFunction("restrict", BuiltInFunctions::restrictEvaluator);
   eval_ctx.insertFunction("compose", BuiltInFunctions::composeEvaluator);
   eval_ctx.insertFunction("inv", BuiltInFunctions::inverseEvaluator);
   eval_ctx.insertFunction("image", BuiltInFunctions::imageEvaluator);

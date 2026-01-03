@@ -67,6 +67,7 @@ UserImplMap::StructImplMap pwMap()
   UserImplMap::StructImplMap pw_mapping;
   pw_mapping[0] = []() { return std::make_unique<LIB::UnordPWMapFact>(); };
   pw_mapping[1] = []() { return std::make_unique<LIB::OrdPWMapFact>(); };
+  pw_mapping[2] = []() { return std::make_unique<LIB::DomOrdPWMapFact>(); };
   pw_mapping.freeze();
   return pw_mapping;
 }

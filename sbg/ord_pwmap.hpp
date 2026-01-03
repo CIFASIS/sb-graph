@@ -24,66 +24,65 @@
 #ifndef SBG_ORD_PWMAP_HPP
 #define SBG_ORD_PWMAP_HPP
 
+#include "sbg/map_entry.hpp"
 #include "sbg/pw_map.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // Ordered PWMap Implementation (concrete strategy) ----------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct OrdPWMap : public PWMapStrategy {
-  using SetPerimeter = std::pair<MD_NAT, MD_NAT>;
-  using MapEntry = std::pair<Map, SetPerimeter>;
-  using OrdMapCollection = std::vector<MapEntry>;
+class OrdPWMap : public PWMapStrategy {
+  public:
+  using SetPerimeter = Internal::SetPerimeter;
+  using MapEntry = Internal::MapEntry;
+  using OrdMapCollection = Internal::OrdMapCollection;
 
   member_class(OrdMapCollection, pieces);
 
   ~OrdPWMap() = default;
   OrdPWMap();
-  OrdPWMap(const Set &s);
-  OrdPWMap(const Map &m);
-  OrdPWMap(const OrdMapCollection &pieces);
-  OrdPWMap(const OrdPWMap &pw);
+  OrdPWMap(const Set& s);
+  OrdPWMap(const Map& m);
+  OrdPWMap(const OrdMapCollection& pieces);
 
-  PWMapStratPtr clone() const override;
-
-  struct Iterator : public PWMapStrategy::Iterator {
+  class Iterator : public PWMapStrategy::Iterator {
     member_class(OrdMapCollection::const_iterator, it);
 
     Iterator(OrdMapCollection::const_iterator it);
     void operator++() override;
-    bool operator!=(const PWMapStrategy::Iterator &other) const override;
-    const Map &operator*() const override;
+    bool operator!=(const PWMapStrategy::Iterator& other) const override;
+    const Map& operator*() const override;
   };
 
   std::shared_ptr<PWMapStrategy::Iterator> begin() const override;
   std::shared_ptr<PWMapStrategy::Iterator> end() const override;
 
-  void emplaceBack(const Map &m) override;
+  void emplaceBack(const Map& m) override;
 
-  bool operator==(const PWMapStrategy &other) const override;
-  bool operator!=(const PWMapStrategy &other) const override;
-  OrdPWMap &operator=(OrdPWMap &&other);
-  std::ostream &print(std::ostream &out) const override;
+  bool operator==(const PWMapStrategy& other) const override;
+  bool operator!=(const PWMapStrategy& other) const override;
+  OrdPWMap& operator=(OrdPWMap&& other);
+  std::ostream& print(std::ostream& out) const override;
 
-  PWMapStratPtr operator+(const PWMapStrategy &other) const override;
-  PWMapStratPtr operator-(const PWMapStrategy &other) const override;
+  PWMapStratPtr operator+(const PWMapStrategy& other) const override;
+
+  PWMapStratPtr clone() const override;
 
   // Traditional map operations ------------------------------------------------
 
   std::size_t arity() const override;
   bool isEmpty() const override;
   Set dom() const override;
-  PWMapStratPtr restrict(const Set &subdom) const override;
+  PWMapStratPtr restrict(const Set& subdom) const override;
   Set image() const override;
-  Set image(const Set &subdom) const override;
-  Set preImage(const Set &subcodom) const override;
+  Set image(const Set& subdom) const override;
+  Set preImage(const Set& subcodom) const override;
   PWMapStratPtr inverse() const override;
-  PWMapStratPtr composition(const PWMapStrategy &pw2) const override;
+  PWMapStratPtr composition(const PWMapStrategy& pw2) const override;
 
   PWMapStratPtr mapInf(unsigned int n) const override;
   PWMapStratPtr mapInf() const override;
@@ -91,27 +90,26 @@ struct OrdPWMap : public PWMapStrategy {
 
   // Extra operations ----------------------------------------------------------
 
-  PWMapStratPtr concatenation(const PWMapStrategy &other) const override;
-  PWMapStratPtr combine(const PWMapStrategy &other) const override;
-  PWMapStratPtr reduce(const Interval &i, const LExp &e) const override;
-  PWMapStratPtr reduce(const Map &sbgmap) const override;
+  PWMapStratPtr concatenation(const PWMapStrategy& other) const override;
+  PWMapStratPtr combine(const PWMapStrategy& other) const override;
   PWMapStratPtr reduce() const override;
 
-  PWMapStratPtr minMap(const PWMapStrategy &other) const override;
-  PWMapStratPtr minAdjMap(const PWMapStrategy &other) const override;
+  PWMapStratPtr minMap(const PWMapStrategy& other) const override;
+  PWMapStratPtr minAdjMap(const PWMapStrategy& other) const override;
 
-  PWMapStratPtr firstInv(const Set &subdom) const override;
+  PWMapStratPtr firstInv(const Set& subdom) const override;
   PWMapStratPtr firstInv() const override;
 
-  PWMapStratPtr filterMap(bool (*f)(const Map &)) const override;
+  PWMapStratPtr filterMap(bool (*f)(const Map&)) const override;
 
-  Set equalImage(const PWMapStrategy &other) const override;
+  Set equalImage(const PWMapStrategy& other) const override;
+  Set lessImage(const PWMapStrategy& other) const override;
   Set sharedImage() const override;
 
-  PWMapStratPtr offsetDom(const MD_NAT &off) const override;
-  PWMapStratPtr offsetDom(const PWMapStrategy &off) const override;
-  PWMapStratPtr offsetImage(const MD_NAT &off) const override;
-  PWMapStratPtr offsetImage(const Exp &off) const override;
+  PWMapStratPtr offsetDom(const MD_NAT& off) const override;
+  PWMapStratPtr offsetDom(const PWMapStrategy& off) const override;
+  PWMapStratPtr offsetImage(const MD_NAT& off) const override;
+  PWMapStratPtr offsetImage(const Exp& off) const override;
 
   PWMapStratPtr compact() const override;
   
@@ -120,75 +118,86 @@ struct OrdPWMap : public PWMapStrategy {
    * @brief Calculates the minAdjMap core, which contains the entire main process of the function.
    */
   void processMinAdjMap(
-  const Map &m1, 
-  const Map &m2, 
-  Set &set_in,
-  Set &set_out, 
-  OrdMapCollection  &ord_pwmap,
-  NAT &global_pos) const;
+    const Map& m1, 
+    const Map& m2, 
+    Set& set_in,
+    Set& set_out, 
+    OrdMapCollection& ord_pwmap,
+    NAT& global_pos) const;
   
   /**
    * @brief Calculates the minus core, which contains the entire main process of the function.
    */
   void processMinus(
-  const Map &m1, 
-  const Map &m2, 
-  Set &set_in,
-  Set &set_out, 
-  OrdMapCollection  &ord_pwmap,
-  NAT &global_pos) const; 
+    const Map& m1, 
+    const Map& m2, 
+    Set& set_in,
+    Set& set_out, 
+    OrdMapCollection& ord_pwmap,
+    NAT& global_pos) const; 
   
   /**
    * @brief Calculates the add core, which contains the entire main process of the function.
    */
   void processAdd(
-  const Map &m1, 
-  const Map &m2, 
-  Set &set_in,
-  Set &set_out, 
-  OrdMapCollection  &ord_pwmap,
-  NAT &global_pos) const; 
+    const Map& m1, 
+    const Map& m2, 
+    Set& set_in,
+    Set& set_out, 
+    OrdMapCollection& ord_pwmap,
+    NAT& global_pos) const; 
   
   /**
    * @brief Calculates the equalImage core, which contains the entire main process of the function.
    */
   void processEqualImage(
-  const Map &m1, 
-  const Map &m2, 
-  Set &set_in,
-  Set &set_out,
-  OrdMapCollection  &ord_pwmap,
-  NAT &global_pos) const; 
+    const Map& m1, 
+    const Map& m2, 
+    Set& set_in,
+    Set& set_out,
+    OrdMapCollection& ord_pwmap,
+    NAT& global_pos) const; 
+
+  /**
+   * @brief Calculates the lessImage core, which contains the entire main process of the function.
+   */
+  void processLessImage(
+    const Map& m1, 
+    const Map& m2, 
+    Set& set_in,
+    Set& set_out,
+    OrdMapCollection& ord_pwmap,
+    NAT& global_pos) const; 
   
   /**
    * @brief Type used in the 'processMapsOrd' declaration to reduce its size.
    * This type is the same as the process functions above.
    */
   using ProcessFunc = void (OrdPWMap::*)(
-  const Map &, const Map &, 
-  Set &, Set &, OrdMapCollection &, 
-  NAT&
+    const Map& , const Map& , 
+    Set& , Set& , OrdMapCollection& , 
+    NAT&
   ) const;
   
   /**
    * @brief Provides an efficient method for processing two ordered piecewise maps.
    */
   void processMapsOrd(
-    const PWMapStrategy &other,
-    Set &set_in,
-    Set &set_out,
-    OrdMapCollection  &ord_pwmap,
+    const PWMapStrategy& other,
+    Set& set_in,
+    Set& set_out,
+    OrdMapCollection& ord_pwmap,
     ProcessFunc process,
     bool order_mts
   ) const;
 };
 
-typedef const OrdPWMap &OrdPWMapCRef;
-typedef OrdPWMap &OrdPWMapRef;
+typedef const OrdPWMap& OrdPWMapCRef;
+typedef OrdPWMap& OrdPWMapRef;
 typedef std::unique_ptr<OrdPWMap> OrdPWMapPtr;
 
 } // namespace LIB
 
-}  // namespace SBG
+} // namespace SBG
 
 #endif

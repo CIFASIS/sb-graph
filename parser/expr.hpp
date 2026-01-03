@@ -41,7 +41,7 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
 
   // Rules with no skip
   qi::rule<Iterator> comment;
-  qi::rule<Iterator, AST::Name()> ident;
+  qi::rule<Iterator, AST::Name()> identifier;
   qi::rule<Iterator, AST::Name()> func_name;
 
   // Operators tokens
@@ -51,10 +51,12 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
 
   // Other rules
   qi::rule<Iterator, Skipper<Iterator>, LIB::NAT()> nat;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> int_expr;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Rational> rat_legacy;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> rat_primary;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> rat_term;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> int_value;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Rational> rational_legacy;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Rational> rational;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> primary;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> factor;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> term;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> arithmetic_expr;
 
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> nat_primary;
@@ -88,6 +90,7 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg_term;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg_expr;
 
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> relation;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> expr;
   qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> expr_list;
 

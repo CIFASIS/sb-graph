@@ -39,11 +39,11 @@ namespace SBG {
 
 namespace LIB {
 
-struct Interval;
+class Interval;
 
 typedef std::optional<Interval> MaybeInterval;
 
-struct Interval {
+class Interval {
   member_class(NAT, begin);
   member_class(NAT, step);
   member_class(NAT, end);

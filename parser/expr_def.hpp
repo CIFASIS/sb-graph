@@ -23,6 +23,7 @@
 #include <boost/phoenix/core.hpp>
 #include <boost/phoenix/operator.hpp>
 #include <boost/phoenix/object.hpp>
+#include <boost/spirit/include/qi.hpp>
 
 #include "ast/expr.hpp"
 #include "sbg/rational.hpp"
@@ -100,34 +101,17 @@ struct add_symbols_struct : qi::symbols<char, AST::Op> {
 } add_symbols;
 
 struct mult_symbol_struct : qi::symbols<char, AST::Op> {
-  mult_symbol_struct(){
+  mult_symbol_struct() {
     add("*", AST::Op::mult);
   }
 } mult_symbol;
 
-struct expo_symbol_struct : qi::symbols<char, AST::Op> {
-  expo_symbol_struct() {
-    add("^", AST::Op::expo);
-  }
-} expo_symbol;
-
 struct unary_symbol_struct : qi::symbols<char, AST::UnOp> {
   unary_symbol_struct() {
-    add("-", AST::UnOp::oppo);
+    add("-", AST::UnOp::oppo)
+       ("#", AST::UnOp::card);
   }
 } unary_symbol;
-
-struct mixed_unary_symbol_struct : qi::symbols<char, AST::UnOp> {
-  mixed_unary_symbol_struct() {
-    add("#", AST::UnOp::card);
-  }
-} mixed_unary_symbol;
-
-struct sbg_unary_symbol_struct : qi::symbols<char, AST::UnOp> {
-  sbg_unary_symbol_struct() {
-    add("\'", AST::UnOp::comp);
-  }
-} sbg_unary_symbol;
 
 struct binary_symbol_struct : qi::symbols<char, AST::Op> {
   binary_symbol_struct() {
@@ -166,8 +150,6 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   , OANGLE("<<")
   , CANGLE(">>")
   , CARTPROD("x")
-  , SLO("*")
-  , VAR("x")
   , ADD("+")
   , SUB("-")
   , PIPE("|")
@@ -181,58 +163,44 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   , MAPB("mapB:")
   , MAPD("mapD:")
 {
-  ident = qi::lexeme[qi::char_("a-xy-zA-XY-Z")
-    >> *(qi::alnum | qi::char_('_'))]
-    | qi::lexeme[qi::char_("x") >> +(qi::alnum | qi::char_('_'))];
+  identifier = qi::lexeme[qi::char_("a-zA-Z")
+    >> *(qi::alnum | qi::char_('_'))];
 
   nat = qi::lexeme[qi::ulong_long][qi::_val = phx::construct<LIB::NAT>(qi::_1)];
 
-  int_expr = nat[qi::_val = qi::_1]
-    | ident[qi::_val = qi::_1]; 
-
-  rat_legacy = (RAT 
+  rational_legacy = (RAT 
     >> OPAREN 
-    >> int_expr
-    >> COMA 
-    >> int_expr
+    >> qi::lexeme[qi::int_]
+    >> COMA
+    >> qi::lexeme[qi::int_]
     >> CPAREN)[qi::_val = phx::construct<AST::Rational>(qi::_1, qi::_2)];
 
-  rat_primary = rat_legacy[qi::_val = qi::_1]
-    | (int_expr >> DIV >> int_expr)
-      [qi::_val = phx::construct<AST::Rational>(qi::_1, qi::_2)]
-    | int_expr[qi::_val = qi::_1]
-    | (OPAREN >> arithmetic_expr>> CPAREN)
+  rational = rational_legacy[qi::_val = qi::_1]
+    | (qi::lexeme[qi::int_] >> DIV >> qi::lexeme[qi::int_])
+      [qi::_val = phx::construct<AST::Rational>(qi::_1, qi::_2)];
+
+  primary = rational[qi::_val = qi::_1]
+    | nat[qi::_val = qi::_1]
+    | identifier[qi::_val = qi::_1]
+    | (OPAREN >> arithmetic_expr >> CPAREN)
       [qi::_val = phx::construct<AST::ParenExpr>(qi::_1)];
 
-  rat_term = rat_primary[qi::_val = qi::_1] >> *(mult_symbol >> rat_primary)
+  factor = (unary_symbol >> primary)
+    [qi::_val = phx::construct<AST::UnaryOp>(qi::_1, qi::_2)]
+    | primary[qi::_val = qi::_1];
+
+  term = factor[qi::_val = qi::_1] >> *(mult_symbol >> factor)
     [qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
 
-  arithmetic_expr = (rat_term[qi::_val = qi::_1] >> *(add_symbols >> rat_term)
-      [qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)])
-    | (unary_symbol >> rat_term)
-      [qi::_val = phx::construct<AST::UnaryOp>(qi::_1, qi::_2)]
-    | (mixed_unary_symbol >> sbg_expr)
-      [qi::_val = phx::construct<AST::UnaryOp>(qi::_1, qi::_2)];
+  arithmetic_expr = term[qi::_val = qi::_1] >> *(add_symbols >> term)
+    [qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
 
   // ------------ //
 
-  nat_primary = nat[qi::_val = qi::_1]
-    | ident[qi::_val = qi::_1];
-
-  nat_factor = nat_primary[qi::_val = qi::_1]
-    >> -(expo_symbol >> nat_primary)
-       [qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
-
-  nat_term = nat_factor[qi::_val = qi::_1] >> *(mult_symbol >> nat_factor)
-       [qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
-
-  nat_expr = nat_term[qi::_val = qi::_1] >> *(add_symbols >> nat_term)
-      [qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
-
   interval = (OBRACKET 
-    >> nat_expr >> COLON 
-    >> ((nat_expr >> COLON) | qi::attr(phx::construct<AST::Expr>(1))) 
-    >> nat_expr >> CBRACKET)
+    >> arithmetic_expr >> COLON 
+    >> ((arithmetic_expr >> COLON) | qi::attr(phx::construct<AST::Expr>(1))) 
+    >> arithmetic_expr >> CBRACKET)
     [qi::_val = phx::construct<AST::Interval>(qi::_1, qi::_2, qi::_3)];
 
   // ------------ //
@@ -320,22 +288,22 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
     | mdlexp
     | set
     | md_inter
-    | arithmetic_expr;
+    | arithmetic_expr
+    | (OPAREN >> sbg_expr >> CPAREN);
 
-  sbg_factor = (sbg_primary
-      | (OPAREN >> sbg_expr >> CPAREN)
-        [qi::_val = phx::construct<AST::ParenExpr>(qi::_1)])[qi::_val = qi::_1]
-    >> -(sbg_unary_symbol
-        [qi::_val = phx::construct<AST::UnaryOp>(qi::_1, qi::_val)]);
+  sbg_factor = (unary_symbol >> sbg_primary)
+    [qi::_val = phx::construct<AST::UnaryOp>(qi::_1, qi::_2)]
+    | sbg_primary[qi::_val = qi::_1];
 
-  sbg_expr = (sbg_factor >> binary_symbol >> sbg_factor)
-      [qi::_val = phx::construct<AST::BinOp>(qi::_1, qi::_2, qi::_3)]
-    | sbg_factor[qi::_val = qi::_1];
+  sbg_expr = sbg_factor[qi::_val = qi::_1] >> *(binary_symbol >> sbg_factor)
+    [qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
 
   // ------------ //
 
-  expr = sbg_expr[qi::_val = qi::_1] >> -(rel_symbol >> sbg_expr)
+  relation = sbg_expr[qi::_val = qi::_1] >> -(rel_symbol >> sbg_expr)
     [qi::_val = phx::construct<AST::BinOp>(qi::_val, qi::_1, qi::_2)];
+
+  expr = relation;
 
   expr_list = expr % COMA;
 };

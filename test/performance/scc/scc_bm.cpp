@@ -17,104 +17,14 @@
 
  ******************************************************************************/
 
-#include <fstream>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <regex>
-
 #include <benchmark/benchmark.h>
 
-#include "algorithms/misc/causalization_builders.hpp"
-#include "eval/file_evaluator.cpp"
 #include "eval/user_impl_map.hpp"
+#include "test/performance/utils.hpp"
 
 namespace Test {
 
 namespace Internal {
-
-using SBG::LIB::RATIONAL;
-using SBG::LIB::Interval;
-using SBG::LIB::SetPiece;
-using SBG::LIB::Set;
-using SBG::LIB::LExp;
-using SBG::LIB::Exp;
-using SBG::LIB::Map;
-using SBG::LIB::PWMap;
-
-////////////////////////////////////////////////////////////////////////////////
-// Auxiliary functions ---------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-/**
- * @brief Replaces the value of N with the desired value in the designated
- * .test file.
- */
-bool updateN(const std::string& filename, int N)
-{
-    std::ifstream input_file(filename);
-    if (!input_file.is_open()) {
-      std::cerr << "Error>> Unable to open file " << filename << "\n";
-      return false;
-    }
-
-    std::string new_content = "";
-    std::string line;
-    std::regex pattern("^(\\s*N\\s*=\\s*).*");
-    bool found = false;
-    while (std::getline(input_file, line)) {
-      std::smatch common;
-      if (std::regex_search(line, common, pattern)) {
-        line = common[1].str() + std::to_string(N) + ";";
-        found = true;
-      }
-      new_content += line + "\n";
-    }
-    input_file.close();
-
-    if (!found) {
-      std::cout << "\n";
-      return false;
-    }
-
-    std::ofstream output_file(filename);
-    output_file << new_content;
-    output_file.close();
-
-    return true;
-}
-
-/**
- * @brief Reads a .test file to search for an SBG that will be the input for
- * the causalization workflow.
- */
-SBG::LIB::MatchData calculateMatching(std::string filename, int N)
-{
-  std::streambuf* original_buf = std::cout.rdbuf();
-  std::ofstream nullStream("/dev/null");
-  std::cout.rdbuf(nullStream.rdbuf());
-
-  // Set value of N in file
-  updateN(filename, N);
-
-  // Get graph from file
-  SBG::LIB::SBG g;
-  SBG::Eval::ProgramIO eval_result = SBG::Eval::parseEvalFile(filename); 
-  for (const SBG::Eval::ExprResult &ev : eval_result.exprs()) {
-    SBG::Eval::ExprBaseType e = std::get<1>(ev);
-    if (std::holds_alternative<SBG::LIB::SBG>(e)) {
-      g = std::get<SBG::LIB::SBG>(e);
-    }
-  }
-
-  // Calculate matching
-  SBG::LIB::Matching match_algorithm
-    = SBG::LIB::MATCH_FACT.createMatchAlgorithm();
-  SBG::LIB::MatchData match_result = match_algorithm.calculate(g);
-
-  std::cout.rdbuf(original_buf);
-
-  return match_result;  
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Benchmarks ------------------------------------------------------------------
@@ -128,7 +38,8 @@ static void BM_TestRL1(benchmark::State& state)
 
   // Calculate SCC
   SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
-  SBG::LIB::MatchData match_result = calculateMatching("../../TestRL1.test", N);
+  SBG::LIB::MatchData match_result
+    = calculateMatching("../../TestRL1.test", N, 1);
   SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
 
   for (auto _ : state) {
@@ -147,7 +58,8 @@ static void BM_TestRL1WithBuilder(benchmark::State& state)
 
   // Calculate SCC
   SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
-  SBG::LIB::MatchData match_result = calculateMatching("../../TestRL1.test", N);
+  SBG::LIB::MatchData match_result
+    = calculateMatching("../../TestRL1.test", N, 1);
 
   for (auto _ : state) {
     SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
@@ -166,7 +78,8 @@ static void BM_TestRL2(benchmark::State& state)
 
   // Calculate SCC
   SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
-  SBG::LIB::MatchData match_result = calculateMatching("../../TestRL2.test", N);
+  SBG::LIB::MatchData match_result
+    = calculateMatching("../../TestRL2.test", N, 1);
   SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
 
   for (auto _ : state) {
@@ -185,7 +98,8 @@ static void BM_TestRL2WithBuilder(benchmark::State& state)
 
   // Calculate SCC
   SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
-  SBG::LIB::MatchData match_result = calculateMatching("../../TestRL2.test", N);
+  SBG::LIB::MatchData match_result
+    = calculateMatching("../../TestRL2.test", N, 1);
 
   for (auto _ : state) {
     SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
@@ -204,7 +118,8 @@ static void BM_TestRL3(benchmark::State& state)
 
   // Calculate SCC
   SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
-  SBG::LIB::MatchData match_result = calculateMatching("../../TestRL3.test", N);
+  SBG::LIB::MatchData match_result
+    = calculateMatching("../../TestRL3.test", N, 1);
   SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
 
   for (auto _ : state) {
@@ -223,7 +138,8 @@ static void BM_TestRL3WithBuilder(benchmark::State& state)
 
   // Calculate SCC
   SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
-  SBG::LIB::MatchData match_result = calculateMatching("../../TestRL3.test", N);
+  SBG::LIB::MatchData match_result
+    = calculateMatching("../../TestRL3.test", N, 1);
 
   for (auto _ : state) {
     SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
@@ -232,6 +148,66 @@ static void BM_TestRL3WithBuilder(benchmark::State& state)
   state.SetComplexityN(N);
 }
 BENCHMARK(BM_TestRL3WithBuilder)->RangeMultiplier(10)->Range(100, 1e6)
+  ->Complexity()->Unit(benchmark::kMillisecond);
+
+static void BM_TestRL1Copies(benchmark::State& state)
+{
+  int N = state.range(0);
+  SBG::Eval::setSetFactory(2);
+  SBG::Eval::setPWFactory(2);
+
+  // Calculate SCC
+  SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
+  SBG::LIB::MatchData match_result
+    = calculateMatching("../../TestRL1.test", 100, N);
+
+  for (auto _ : state) {
+    SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
+    scc_algorithm.calculate(scc_dsbg);
+  }
+  state.SetComplexityN(N);
+}
+BENCHMARK(BM_TestRL1Copies)->RangeMultiplier(2)->Range(1, 128)
+  ->Complexity()->Unit(benchmark::kMillisecond);
+
+static void BM_TestRL2Copies(benchmark::State& state)
+{
+  int N = state.range(0);
+  SBG::Eval::setSetFactory(2);
+  SBG::Eval::setPWFactory(2);
+
+  // Calculate SCC
+  SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
+  SBG::LIB::MatchData match_result
+    = calculateMatching("../../TestRL2.test", 100, N);
+
+  for (auto _ : state) {
+    SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
+    scc_algorithm.calculate(scc_dsbg);
+  }
+  state.SetComplexityN(N);
+}
+BENCHMARK(BM_TestRL2Copies)->RangeMultiplier(2)->Range(1, 128)
+  ->Complexity()->Unit(benchmark::kMillisecond);
+
+static void BM_TestRL3Copies(benchmark::State& state)
+{
+  int N = state.range(0);
+  SBG::Eval::setSetFactory(2);
+  SBG::Eval::setPWFactory(2);
+
+  // Calculate SCC
+  SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
+  SBG::LIB::MatchData match_result
+    = calculateMatching("../../TestRL3.test", 100, N);
+
+  for (auto _ : state) {
+    SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
+    scc_algorithm.calculate(scc_dsbg);
+  }
+  state.SetComplexityN(N);
+}
+BENCHMARK(BM_TestRL3Copies)->RangeMultiplier(2)->Range(1, 128)
   ->Complexity()->Unit(benchmark::kMillisecond);
 
 } // namespace Internal

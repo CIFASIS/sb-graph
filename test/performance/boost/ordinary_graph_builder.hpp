@@ -24,41 +24,65 @@
 #include <chrono>
 #include <map>
 
-#include <test/performance/boost/ordinary_graph.hpp>
-#include <sbg/sbg.hpp>
-#include <util/logger.hpp>
+#include "test/performance/boost/ordinary_graph.hpp"
+#include "sbg/sbg.hpp"
+#include "util/logger.hpp"
 
 namespace OG {
 
+using VertexVector = std::vector<Vertex>;
+
+struct EdgeInfo {
+  EdgeInfo(Edge e, Vertex v1, Vertex v2);
+
+  Edge _e;
+  Vertex _v1;
+  Vertex _v2;
+};
+using EdgeInfoVector = std::vector<EdgeInfo>;
+
 class OrdinaryGraphBuilder {
   public:
-  OrdinaryGraphBuilder(SBG::LIB::SBG graph);
-  ~OrdinaryGraphBuilder() = default;
+  OrdinaryGraphBuilder(SBG::LIB::SBG sbg);
 
-  virtual OG::Graph build();
+  const Graph& graph() const;
 
-  protected:
-  OG::VertexDesc addVertex(SBG::LIB::MD_NAT id, OG::Graph &g);
-  OG::EdgeDesc addEdge(SBG::LIB::MD_NAT id, OG::Graph &g);
+  void build();
+  void build(const VertexVector& V, const EdgeInfoVector& E);
+  void clear();
+  VertexVector getVertexList() const;
+  EdgeInfoVector getEdgeList();
 
-  SBG::LIB::SBG _sb_graph;
-  std::map<SBG::LIB::MD_NAT, OG::VertexDesc> _vertex_map;
+  private:
+  void addVertex(const Vertex& v);
+  void addEdge(const EdgeInfo& info);
+
+  const SBG::LIB::SBG _sbg; ///< Input SBG to convert
+  Graph _graph; ///< Resulting ordinary graph
+  std::map<SBG::LIB::MD_NAT, VertexDesc> _vertex_map;
+    ///< Auxiliar map for addEdge 
 };
 
 class OrdinaryDGraphBuilder {
   public:
-  OrdinaryDGraphBuilder(SBG::LIB::DSBG graph);
-  ~OrdinaryDGraphBuilder() = default;
+  OrdinaryDGraphBuilder(SBG::LIB::DSBG dsbg);
 
-  virtual OG::DGraph build();
+  const DGraph& dgraph() const;
 
-  protected:
-  OG::DVertexDesc addVertex(SBG::LIB::MD_NAT id, OG::DGraph &g);
-  OG::DEdgeDesc addEdge(SBG::LIB::MD_NAT id, SBG::LIB::MD_NAT v1
-    , SBG::LIB::MD_NAT v2, OG::DGraph &g);
+  void build();
+  void build(const VertexVector& V, const EdgeInfoVector& E);
+  void clear();
+  VertexVector getVertexList() const;
+  EdgeInfoVector getEdgeList();
 
-  SBG::LIB::DSBG _sb_graph;
-  std::map<SBG::LIB::MD_NAT, OG::DVertexDesc> _vertex_map;
+  private:
+  void addVertex(const Vertex& v);
+  void addEdge(const EdgeInfo& info);
+
+  const SBG::LIB::DSBG _dsbg; ///< Input SBG to convert
+  DGraph _dgraph; ///< Resulting ordinary graph
+  std::map<SBG::LIB::MD_NAT, VertexDesc> _vertex_map;
+    ///< Auxiliar map for addEdge 
 };
 
 }  // namespace OG

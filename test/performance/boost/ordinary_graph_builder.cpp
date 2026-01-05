@@ -17,11 +17,15 @@
 
  ******************************************************************************/
 
-#include <test/performance/boost/ordinary_graph_builder.hpp>
+#include "test/performance/boost/ordinary_graph_builder.hpp"
 
 namespace OG {
 
-SBG::LIB::MD_NAT nextElem(SBG::LIB::MD_NAT curr, SBG::LIB::SetPiece mdi)
+////////////////////////////////////////////////////////////////////////////////
+// Auxiliary functions ---------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+static SBG::LIB::MD_NAT nextElem(SBG::LIB::MD_NAT curr, SBG::LIB::SetPiece mdi)
 {
   assert(!mdi.isEmpty());
   SBG::LIB::MD_NAT min = mdi.minElem(), max = mdi.maxElem(), res;
@@ -40,133 +44,198 @@ SBG::LIB::MD_NAT nextElem(SBG::LIB::MD_NAT curr, SBG::LIB::SetPiece mdi)
   return res;
 }
 
-OrdinaryGraphBuilder::OrdinaryGraphBuilder(SBG::LIB::SBG sb_graph)
-  : _sb_graph(sb_graph), _vertex_map() {}
+////////////////////////////////////////////////////////////////////////////////
+// Ordinary undirected graph builder -------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
-OG::Graph OrdinaryGraphBuilder::build()
+OrdinaryGraphBuilder::OrdinaryGraphBuilder(SBG::LIB::SBG sbg)
+  : _sbg(sbg), _graph(), _vertex_map() {}
+
+const Graph& OrdinaryGraphBuilder::graph() const
 {
-  OG::Graph graph;
+  return _graph;
+}
 
-  for (const SBG::LIB::SetPiece &v : _sb_graph.V()) { 
-    assert(!v.isEmpty());
-    SBG::LIB::MD_NAT beg = v.minElem(), end = v.maxElem();
-    for (auto it = beg; it != end; it = nextElem(it, v))
-      addVertex(it, graph);
-    addVertex(end, graph);
+void OrdinaryGraphBuilder::build()
+{
+  VertexVector vertices = getVertexList();
+  EdgeInfoVector edges = getEdgeList();
+  build(vertices, edges);
+}
+
+void OrdinaryGraphBuilder::clear()
+{
+  _graph.clear();
+}
+
+void OrdinaryGraphBuilder::build(const VertexVector& V, const EdgeInfoVector& E)
+{
+  for (const Vertex& v : V) {
+    addVertex(v);
   }
-
-  for (const SBG::LIB::SetPiece &e : _sb_graph.E()) {
-    assert(!e.isEmpty());
-    SBG::LIB::MD_NAT beg = e.minElem(), end = e.maxElem();
-    for (auto it = beg; it != end; it = nextElem(it, e)) 
-      addEdge(it, graph);
-    addEdge(end, graph);
+  for (const EdgeInfo& info : E) {
+    addEdge(info);
   }
-
-  return graph;
 }
 
-OG::VertexDesc OrdinaryGraphBuilder::addVertex(
-  SBG::LIB::MD_NAT id, OG::Graph &g
-)
+VertexVector OrdinaryGraphBuilder::getVertexList() const
 {
-  Vertex V(id);
-  OG::VertexDesc v = boost::add_vertex(g);
-  _vertex_map[id] = v;
-  g[v] = V;
-  return v;
-}
+  VertexVector result;
+  SBG::LIB::Set V = _sbg.V();
+  result.reserve(V.cardinal());
 
-OG::EdgeDesc OrdinaryGraphBuilder::addEdge(
-  SBG::LIB::MD_NAT id, OG::Graph &g
-)
-{
-  SBG::LIB::SetPiece mdi(id);
-  SBG::LIB::PWMap map1 = _sb_graph.map1(), map2 = _sb_graph.map2();
-  SBG::LIB::UnordSetFact fact;
-  SBG::LIB::MD_NAT v1 = map1.image(fact.createSet(mdi)).minElem();
-  SBG::LIB::MD_NAT v2 = map2.image(fact.createSet(mdi)).minElem();
-
-  Edge E(id);
-  OG::EdgeDesc e;
-  bool b;
-  boost::tie(e, b) = boost::add_edge(_vertex_map[v1], _vertex_map[v2], g);
-  g[e] = E;
-  return e;
-}
-
-// Directed graph builder ------------------------------------------------------
-
-OrdinaryDGraphBuilder::OrdinaryDGraphBuilder(SBG::LIB::DSBG sb_graph)
-  : _sb_graph(sb_graph), _vertex_map() {}
-
-OG::DGraph OrdinaryDGraphBuilder::build()
-{
-  OG::DGraph graph;
-
-  std::chrono::microseconds total(0);
-  for (const SBG::LIB::SetPiece &v : _sb_graph.V()) { 
-    assert(!v.isEmpty());
-    SBG::LIB::MD_NAT beg = v.minElem(), end = v.maxElem();
-    for (auto it = beg; it != end; it = nextElem(it, v)) { 
-      auto tbegin = std::chrono::high_resolution_clock::now();
-      addVertex(it, graph);
-      auto tend = std::chrono::high_resolution_clock::now();
-      total += std::chrono::duration_cast<std::chrono::microseconds>(
-        tend - tbegin
-      );
+  for (const SBG::LIB::SetPiece& mdi : V) { 
+    SBG::LIB::MD_NAT begin = mdi.minElem(), end = mdi.maxElem();
+    for (auto it = begin; it != end; it = nextElem(it, mdi)) {
+      result.emplace_back(Vertex(it));
     }
-    addVertex(end, graph);
+    result.emplace_back(Vertex(end));
   }
 
-  SBG::LIB::UnordSetFact fact;
-  SBG::LIB::PWMap mapb = _sb_graph.mapB(), mapd = _sb_graph.mapD();
-  for (const SBG::LIB::SetPiece &e : _sb_graph.E()) {
-    assert(!e.isEmpty());
-    SBG::LIB::MD_NAT beg = e.minElem(), end = e.maxElem();
-    for (auto it = beg; it != end; it = nextElem(it, e)) {
-      SBG::LIB::SetPiece mdi(it);
-      SBG::LIB::MD_NAT v1 = mapb.image(fact.createSet(mdi)).minElem();
-      SBG::LIB::MD_NAT v2 = mapd.image(fact.createSet(mdi)).minElem();
-      auto tbegin = std::chrono::high_resolution_clock::now();
-      addEdge(it, v1, v2, graph);
-      auto tend = std::chrono::high_resolution_clock::now();
-      total += std::chrono::duration_cast<std::chrono::microseconds>(
-        tend - tbegin
-      );
+  return result;
+}
+
+EdgeInfoVector OrdinaryGraphBuilder::getEdgeList()
+{
+  EdgeInfoVector result;
+  SBG::LIB::Set E = _sbg.E();
+  result.reserve(E.cardinal());
+
+  SBG::LIB::PWMap map1 = _sbg.map1();
+  SBG::LIB::PWMap map2 = _sbg.map2();
+
+  for (const SBG::LIB::SetPiece& mdi : E) { 
+    SBG::LIB::MD_NAT begin = mdi.minElem(), end = mdi.maxElem();
+    for (auto it = begin; it != end; it = nextElem(it, mdi)) {
+      // Get endings of edge
+      SBG::LIB::SetPiece it_mdi(it);
+      SBG::LIB::Set dom = SBG::LIB::SET_FACT.createSet(it_mdi);
+      Vertex v1(map1.image(dom).minElem());
+      Vertex v2(map2.image(dom).minElem());
+      result.emplace_back(EdgeInfo(it, v1, v2));
     }
-    SBG::LIB::SetPiece mdi(end);
-    SBG::LIB::MD_NAT v1 = mapb.image(fact.createSet(mdi)).minElem();
-    SBG::LIB::MD_NAT v2 = mapd.image(fact.createSet(mdi)).minElem();
-    addEdge(end, v1, v2, graph);
+    SBG::LIB::SetPiece end_mdi(end);
+    SBG::LIB::Set end_dom = SBG::LIB::SET_FACT.createSet(end_mdi);
+    Vertex end_v1(map1.image(end_dom).minElem());
+    Vertex end_v2(map2.image(end_dom).minElem());
+    result.emplace_back(EdgeInfo(end, end_v1, end_v2));
   }
-  SBG::Util::SBG_LOG << "Scalar directed graph builder time: " 
-    << total.count() << " [μs]\n";
 
-  return graph;
+  return result;
 }
 
-OG::DVertexDesc OrdinaryDGraphBuilder::addVertex(
-  SBG::LIB::MD_NAT id, OG::DGraph &g
-)
+void OrdinaryGraphBuilder::addVertex(const Vertex& v)
 {
-  Vertex V(id);
-  OG::DVertexDesc v = boost::add_vertex(g);
-  _vertex_map[id] = v;
-  g[v] = V;
-  return v;
+  VertexDesc v_desc = boost::add_vertex(_graph);
+  _vertex_map[v.id()] = v_desc;
+  _graph[v_desc] = v;
 }
 
-OG::DEdgeDesc OrdinaryDGraphBuilder::addEdge(
-  SBG::LIB::MD_NAT id, SBG::LIB::MD_NAT v1, SBG::LIB::MD_NAT v2, OG::DGraph &g
-)
+void OrdinaryGraphBuilder::addEdge(const EdgeInfo& info)
 {
-  Edge E(id);
-  OG::DEdgeDesc e;
+  EdgeDesc e_desc;
   bool b;
-  boost::tie(e, b) = boost::add_edge(_vertex_map[v1], _vertex_map[v2], g);
-  g[e] = E;
-  return e;
+  boost::tie(e_desc, b) = boost::add_edge(_vertex_map[info._v1.id()]
+    , _vertex_map[info._v2.id()], _graph);
+  _graph[e_desc] = info._e;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Ordinary directed graph builder ---------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+EdgeInfo::EdgeInfo(Edge e, Vertex v1, Vertex v2) : _e(e), _v1(v1), _v2(v2) {}
+
+OrdinaryDGraphBuilder::OrdinaryDGraphBuilder(SBG::LIB::DSBG dsbg)
+  : _dsbg(dsbg), _dgraph(), _vertex_map() {}
+
+const DGraph& OrdinaryDGraphBuilder::dgraph() const
+{
+  return _dgraph;
+}
+
+void OrdinaryDGraphBuilder::build()
+{
+  VertexVector vertices = getVertexList();
+  EdgeInfoVector edges = getEdgeList();
+  build(vertices, edges);
+}
+
+void OrdinaryDGraphBuilder::build(const VertexVector& V, const EdgeInfoVector& E)
+{
+  for (const Vertex& v : V) {
+    addVertex(v);
+  }
+  for (const EdgeInfo& info : E) {
+    addEdge(info);
+  }
+}
+
+void OrdinaryDGraphBuilder::clear()
+{
+  _dgraph.clear();
+}
+
+VertexVector OrdinaryDGraphBuilder::getVertexList() const
+{
+  VertexVector result;
+  SBG::LIB::Set V = _dsbg.V();
+  result.reserve(V.cardinal());
+
+  for (const SBG::LIB::SetPiece& mdi : V) { 
+    SBG::LIB::MD_NAT begin = mdi.minElem(), end = mdi.maxElem();
+    for (auto it = begin; it != end; it = nextElem(it, mdi)) {
+      result.emplace_back(Vertex(it));
+    }
+    result.emplace_back(Vertex(end));
+  }
+
+  return result;
+}
+
+EdgeInfoVector OrdinaryDGraphBuilder::getEdgeList()
+{
+  EdgeInfoVector result;
+  SBG::LIB::Set E = _dsbg.E();
+  result.reserve(E.cardinal());
+
+  SBG::LIB::PWMap mapB = _dsbg.mapB();
+  SBG::LIB::PWMap mapD = _dsbg.mapD();
+
+  for (const SBG::LIB::SetPiece& mdi : E) { 
+    SBG::LIB::MD_NAT begin = mdi.minElem(), end = mdi.maxElem();
+    for (auto it = begin; it != end; it = nextElem(it, mdi)) {
+      // Get endings of edge
+      SBG::LIB::SetPiece it_mdi(it);
+      SBG::LIB::Set dom = SBG::LIB::SET_FACT.createSet(it_mdi);
+      Vertex v1(mapB.image(dom).minElem());
+      Vertex v2(mapD.image(dom).minElem());
+      result.emplace_back(EdgeInfo(it, v1, v2));
+    }
+    SBG::LIB::SetPiece end_mdi(end);
+    SBG::LIB::Set end_dom = SBG::LIB::SET_FACT.createSet(end_mdi);
+    Vertex end_v1(mapB.image(end_dom).minElem());
+    Vertex end_v2(mapD.image(end_dom).minElem());
+    result.emplace_back(EdgeInfo(end, end_v1, end_v2));
+  }
+
+  return result;
+}
+
+void OrdinaryDGraphBuilder::addVertex(const Vertex& v)
+{
+  DVertexDesc v_desc = boost::add_vertex(_dgraph);
+  _vertex_map[v.id()] = v_desc;
+  _dgraph[v_desc] = v;
+}
+
+void OrdinaryDGraphBuilder::addEdge(const EdgeInfo& info)
+{
+  DEdgeDesc e_desc;
+  bool b;
+  boost::tie(e_desc, b) = boost::add_edge(_vertex_map[info._v2.id()]
+    , _vertex_map[info._v1.id()], _dgraph);
+  _dgraph[e_desc] = Edge(info._e);
 }
 
 }  // namespace OG

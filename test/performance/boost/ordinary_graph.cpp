@@ -41,7 +41,7 @@ bool Vertex::operator==(const Vertex &other) const
 
 std::ostream &operator<<(std::ostream &out, const Vertex &v)
 {
-  out << v.id() << "\n";
+  out << v.id();
   return out;
 }
 
@@ -60,7 +60,7 @@ bool Edge::operator==(const Edge &other) const { return id() == other.id(); }
 
 std::ostream &operator<<(std::ostream &out, const Edge &e)
 {
-  out << e.id() << "\n";
+  out << e.id();
   return out;
 }
 

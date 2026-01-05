@@ -30,11 +30,10 @@ namespace Internal {
 // Benchmarks ------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-static void BM_CustomSCCTest(benchmark::State& state)
+static void BM_CustomMatchTest(benchmark::State& state)
 {
   int N = state.range(0);
 
-  // Calculate SCC
   const char* filename = std::getenv("TEST_FILE");
   if (filename) {
     const char* set_impl = std::getenv("SET_IMPL");
@@ -42,24 +41,23 @@ static void BM_CustomSCCTest(benchmark::State& state)
     SBG::Eval::setSetFactory(set_impl ? std::stoi(set_impl) : 1);
     SBG::Eval::setPWFactory(pw_impl ? std::stoi(pw_impl) : 1);
 
-    SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
-    SBG::LIB::MatchData match_result = calculateMatching(filename, N, 1);
-    SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
+    SBG::LIB::Matching match_algorithm
+      = SBG::LIB::MATCH_FACT.createMatchAlgorithm();
+    SBG::LIB::SBG match_sbg = generateSBG(filename, N, 1); 
 
     for (auto _ : state) {
-      scc_algorithm.calculate(scc_dsbg);
+      match_algorithm.calculate(match_sbg);
     }
     state.SetComplexityN(N);
   }
 }
-BENCHMARK(BM_CustomSCCTest)->RangeMultiplier(10)->Range(100, 1e6)->Complexity()
+BENCHMARK(BM_CustomMatchTest)->RangeMultiplier(10)->Range(100, 1e6)->Complexity()
   ->Unit(benchmark::kMillisecond);
 
-static void BM_CustomSCCTestWithBuilder(benchmark::State& state)
+static void BM_CustomMatchCopies(benchmark::State& state)
 {
   int N = state.range(0);
 
-  // Calculate SCC
   const char* filename = std::getenv("TEST_FILE");
   if (filename) {
     const char* set_impl = std::getenv("SET_IMPL");
@@ -67,42 +65,17 @@ static void BM_CustomSCCTestWithBuilder(benchmark::State& state)
     SBG::Eval::setSetFactory(set_impl ? std::stoi(set_impl) : 1);
     SBG::Eval::setPWFactory(pw_impl ? std::stoi(pw_impl) : 1);
 
-    SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
-    SBG::LIB::MatchData match_result = calculateMatching(filename, N, 1);
+    SBG::LIB::Matching match_algorithm
+      = SBG::LIB::MATCH_FACT.createMatchAlgorithm();
+    SBG::LIB::SBG match_sbg = generateSBG(filename, 100, N);
 
     for (auto _ : state) {
-      SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
-      scc_algorithm.calculate(scc_dsbg);
+      match_algorithm.calculate(match_sbg);
     }
     state.SetComplexityN(N);
   }
 }
-BENCHMARK(BM_CustomSCCTestWithBuilder)->RangeMultiplier(10)->Range(100, 1e6)
-  ->Complexity()->Unit(benchmark::kMillisecond);
-
-static void BM_CustomSCCTestCopies(benchmark::State& state)
-{
-  int N = state.range(0);
-
-  // Calculate SCC
-  const char* filename = std::getenv("TEST_FILE");
-  if (filename) {
-    const char* set_impl = std::getenv("SET_IMPL");
-    const char* pw_impl = std::getenv("PW_IMPL");
-    SBG::Eval::setSetFactory(set_impl ? std::stoi(set_impl) : 1);
-    SBG::Eval::setPWFactory(pw_impl ? std::stoi(pw_impl) : 1);
-
-    SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
-    SBG::LIB::MatchData match_result = calculateMatching(filename, 100, N);
-
-    for (auto _ : state) {
-      SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
-      scc_algorithm.calculate(scc_dsbg);
-    }
-    state.SetComplexityN(N);
-  }
-}
-BENCHMARK(BM_CustomSCCTestCopies)->RangeMultiplier(2)->Range(1, 128)
+BENCHMARK(BM_CustomMatchCopies)->RangeMultiplier(2)->Range(1, 128)
   ->Complexity()->Unit(benchmark::kMillisecond);
 
 } // namespace Internal

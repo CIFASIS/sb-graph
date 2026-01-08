@@ -43,7 +43,7 @@ static void BM_CustomBoostMatchTest(benchmark::State& state)
     SBG::LIB::SBG match_sbg = generateSBG(filename, N, 1);
     OG::OrdinaryGraphBuilder graph_builder(match_sbg);
     OG::Graph graph = graph_builder.build();
-    std::vector<OG::Vertex> mate(num_vertices(graph));
+    VertexVector mate(num_vertices(graph));
 
     for (auto _ : state) {
       edmonds_maximum_cardinality_matching(graph, &mate[0]);

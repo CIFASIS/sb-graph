@@ -1,4 +1,12 @@
-/*****************************************************************************
+/** @file ordinary_graph_builder.hpp
+
+ @brief <b>Ordinary Graph Builder</b>
+
+ Module in charge of constructing the scalar graph used as input of the scalar
+ causalization from a SBG. The generated result will be used as input of the
+ Edmonds-Karp maximum matching algorithm.
+
+ <hr>
 
  This file is part of Set--Based Graph Library.
 
@@ -17,11 +25,9 @@
 
  ******************************************************************************/
 
-#ifndef PERF_ORD_BUILDER_HPP
-#define PERF_ORD_BUILDER_HPP
+#ifndef PERF_ORDINARY_BUILDER_HPP
+#define PERF_ORDINARY_BUILDER_HPP
 
-#include <cassert>
-#include <chrono>
 #include <map>
 
 #include "test/performance/boost/ordinary_graph.hpp"
@@ -37,7 +43,7 @@ class OrdinaryGraphBuilder {
   OrdinaryGraphBuilder(SBG::LIB::SBG sbg);
 
   Graph build();
-  Graph build(unsigned int number_vertices, EdgeVector& edges);
+  Graph build(SBG::LIB::NAT number_vertices, EdgeVector& edges);
   void translateVertices();
   EdgeVector getEdgeList();
 

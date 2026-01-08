@@ -1,4 +1,10 @@
-/*****************************************************************************
+/** @file ordinary_graph.hpp
+
+ @brief <b>Ordinary Graph</b>
+
+ Module that defines the structure for scalar graphs.
+
+ <hr>
 
  This file is part of Set--Based Graph Library.
 
@@ -27,6 +33,7 @@
 namespace OG {
 
 using Vertex = SBG::LIB::NAT;
+using VertexVector = std::vector<Vertex>;
 using Edge = std::pair<SBG::LIB::NAT, SBG::LIB::NAT>;
 using Graph = boost::adjacency_list<boost::vecS, boost::vecS
   , boost::undirectedS>;

@@ -58,7 +58,7 @@ Graph OrdinaryGraphBuilder::build()
   return build(_sbg.V().cardinal(), edges);
 }
 
-Graph OrdinaryGraphBuilder::build(unsigned int number_vertices, EdgeVector& E)
+Graph OrdinaryGraphBuilder::build(SBG::LIB::NAT number_vertices, EdgeVector& E)
 {
   return Graph(E.begin(), E.end(), number_vertices);
 }

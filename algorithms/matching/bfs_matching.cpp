@@ -169,7 +169,7 @@ bool BFSMatching::ExitCondition::isSatisfied()
 
 void BFSMatching::init(const SBG& sbg)
 {
-  dsbg_ = DSBG(sbg.V().compact(), sbg.Vmap().compact(), sbg.map2()
+  dsbg_ = DSBG(sbg.V().compact(), sbg.Vmap().compact(), sbg.map2().compact()
     , sbg.map1().compact(), sbg.Emap().compact(), sbg.subEmap().compact());
 
   return;

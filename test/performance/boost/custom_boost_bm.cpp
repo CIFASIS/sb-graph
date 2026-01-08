@@ -42,9 +42,8 @@ static void BM_CustomBoostMatchTest(benchmark::State& state)
   if (filename) {
     SBG::LIB::SBG match_sbg = generateSBG(filename, N, 1);
     OG::OrdinaryGraphBuilder graph_builder(match_sbg);
-    graph_builder.build();
-    OG::Graph graph = graph_builder.graph();
-    std::vector<OG::VertexDesc> mate(num_vertices(graph));
+    OG::Graph graph = graph_builder.build();
+    std::vector<OG::Vertex> mate(num_vertices(graph));
 
     for (auto _ : state) {
       edmonds_maximum_cardinality_matching(graph, &mate[0]);
@@ -52,66 +51,8 @@ static void BM_CustomBoostMatchTest(benchmark::State& state)
     state.SetComplexityN(N);
   }
 }
-BENCHMARK(BM_CustomBoostMatchTest)->RangeMultiplier(10)->Range(100, 1e5)
-  ->Complexity()->Unit(benchmark::kMillisecond);
-
-static void BM_CustomBoostSCCTest(benchmark::State& state)
-{
-  int N = state.range(0);
-
-  const char* filename = std::getenv("TEST_FILE");
-  if (filename) {
-    SBG::LIB::SBG match_sbg = generateSBG(filename, N, 1);
-    SBG::LIB::Matching match_algorithm
-      = SBG::LIB::MATCH_FACT.createMatchAlgorithm();
-    SBG::LIB::MatchData match_result = match_algorithm.calculate(match_sbg);
-    SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result);
-
-    OG::OrdinaryDGraphBuilder graph_builder(scc_dsbg);
-    graph_builder.build();
-    OG::DGraph dgraph = graph_builder.dgraph();
-    std::vector<int> components(num_vertices(dgraph));
-
-    for (auto _ : state) {
-      strong_components(dgraph, &components[0]);
-    }
-    state.SetComplexityN(N);
-  }
-}
-BENCHMARK(BM_CustomBoostSCCTest)->RangeMultiplier(10)->Range(100, 1e6)
-  ->Complexity()->Unit(benchmark::kMillisecond);
-
-static void BM_CustomBoostSCCWithBuilderTest(benchmark::State& state)
-{
-  int N = state.range(0);
-
-  const char* filename = std::getenv("TEST_FILE");
-  if (filename) {
-    SBG::LIB::SBG match_sbg = generateSBG(filename, N, 1);
-    SBG::LIB::Matching match_algorithm
-      = SBG::LIB::MATCH_FACT.createMatchAlgorithm();
-    SBG::LIB::MatchData match_result = match_algorithm.calculate(match_sbg);
-    SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result);
-
-    OG::OrdinaryDGraphBuilder graph_builder(scc_dsbg);
-    OG::VertexVector vertices = graph_builder.getVertexList();
-    OG::EdgeInfoVector edges = graph_builder.getEdgeList();
-    for (auto _ : state) {
-      graph_builder.build(vertices, edges);
-      state.PauseTiming();
-      OG::DGraph dgraph = graph_builder.dgraph();
-      std::vector<int> components(num_vertices(dgraph));
-      state.ResumeTiming();
-      strong_components(dgraph, &components[0]);
-      state.PauseTiming();
-      graph_builder.clear();
-      state.ResumeTiming();
-    }
-    state.SetComplexityN(N);
-  }
-}
-BENCHMARK(BM_CustomBoostSCCWithBuilderTest)->RangeMultiplier(10)
-  ->Range(100, 1e6)->Complexity()->Unit(benchmark::kMillisecond);
+BENCHMARK(BM_CustomBoostMatchTest)->RangeMultiplier(10)->Range(10, 10)
+  ->Complexity()->Unit(benchmark::kMillisecond)->Iterations(1);
 
 } // namespace Internal
 

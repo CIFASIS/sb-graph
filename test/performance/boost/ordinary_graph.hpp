@@ -17,69 +17,22 @@
 
  ******************************************************************************/
 
-#ifndef PERF_ORD_HPP
-#define PERF_ORD_HPP
+#ifndef PERF_ORDINARY_GRAPH_HPP
+#define PERF_ORDINARY_GRAPH_HPP
 
 #include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/subgraph.hpp>
 
-#include <sbg/natural.hpp>
+#include "sbg/natural.hpp"
 
 namespace OG {
 
-// Set-vertex ------------------------------------------------------------------
+using Vertex = SBG::LIB::NAT;
+using Edge = std::pair<SBG::LIB::NAT, SBG::LIB::NAT>;
+using Graph = boost::adjacency_list<boost::vecS, boost::vecS
+  , boost::undirectedS>;
 
-class Vertex {
-  public:
-  Vertex();
-  Vertex(SBG::LIB::MD_NAT id);
-
-  const SBG::LIB::MD_NAT& id() const;
-  bool operator==(const Vertex& v) const;
-
-  private:
-  SBG::LIB::MD_NAT id_; ///< Unique identifier
-};
-
-std::ostream& operator<<(std::ostream& out, const Vertex& v);
-
-// Ordinary Graph Edge ---------------------------------------------------------
-
-class Edge {
-  public:
-  Edge();
-  Edge(SBG::LIB::MD_NAT id);
-
-  const SBG::LIB::MD_NAT& id() const;
-  bool operator==(const Edge& e) const;
-
-  private:
-  SBG::LIB::MD_NAT id_; ///< Unique identifier
-};
-
-std::ostream& operator<<(std::ostream& out, const Edge& e);
-
-// Ordinary Graph definition ---------------------------------------------------
-
-typedef boost::adjacency_list<
-  boost::vecS, boost::vecS, boost::undirectedS, Vertex, Edge
-> Graph;
-typedef Graph::vertex_descriptor VertexDesc;
-typedef boost::graph_traits<Graph>::vertex_iterator VertexIt;
-typedef Graph::edge_descriptor EdgeDesc;
-typedef boost::graph_traits<Graph>::edge_iterator EdgeIt;
-typedef boost::graph_traits<Graph>::out_edge_iterator OutEdgeIt;
-
-// Ordinary directed Graph definition ------------------------------------------
-
-typedef boost::adjacency_list<
-  boost::vecS, boost::vecS, boost::bidirectionalS, Vertex, Edge
-> DGraph;
-typedef DGraph::vertex_descriptor DVertexDesc;
-typedef boost::graph_traits<DGraph>::vertex_iterator DVertexIt;
-typedef DGraph::edge_descriptor DEdgeDesc;
-typedef boost::graph_traits<DGraph>::edge_iterator DEdgeIt;
-typedef boost::graph_traits<DGraph>::out_edge_iterator OutDEdgeIt;
+using DGraph = boost::adjacency_list<boost::vecS, boost::vecS
+  , boost::bidirectionalS>;
 
 }  // namespace OG
 

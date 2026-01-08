@@ -26,6 +26,7 @@
 
 #include "algorithms/matching/bfs_paths.hpp"
 #include "algorithms/matching/matching.hpp"
+#include "sbg/directed_sbg.hpp"
 
 namespace SBG {
 

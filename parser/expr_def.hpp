@@ -74,8 +74,15 @@ BOOST_FUSION_ADAPT_STRUCT(SBG::AST::PWLMap, (SBG::AST::ExprList, maps_))
 
 BOOST_FUSION_ADAPT_STRUCT(
   SBG::AST::SBG
-  , (SBG::AST::Expr, V_)(SBG::AST::Expr, Vmap_)
-    (SBG::AST::Expr, map1_)(SBG::AST::Expr, map2_)(SBG::AST::Expr, Emap_)
+  , (SBG::AST::Expr, _V)(SBG::AST::Expr, _Vmap)
+    (SBG::AST::Expr, _map1)(SBG::AST::Expr, _map2)(SBG::AST::Expr, _Emap)
+)
+
+BOOST_FUSION_ADAPT_STRUCT(
+  SBG::AST::BipartiteSBG
+  , (SBG::AST::Expr, _V)(SBG::AST::Expr, _Vmap)
+    (SBG::AST::Expr, _map1)(SBG::AST::Expr, _map2)(SBG::AST::Expr, _Emap)
+    (SBG::AST::Expr, _X)(SBG::AST::Expr, _Y)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -162,6 +169,8 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   , SUBE("subE:")
   , MAPB("mapB:")
   , MAPD("mapD:")
+  , X("X:")
+  , Y("Y:")
 {
   identifier = qi::lexeme[qi::char_("a-zA-Z")
     >> *(qi::alnum | qi::char_('_'))];
@@ -253,6 +262,23 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
 
   // ------------ //
 
+  bipartite_sbg = (V >> set 
+    >> VMAP >> pwl 
+    >> MAP1 >> pwl 
+    >> MAP2 >> pwl 
+    >> EMAP >> pwl
+    >> -(SUBE >> pwl)
+    >> X >> set
+    >> Y >> set)[qi::_val = phx::if_else(qi::_6
+          , phx::construct<AST::BipartiteSBG>(qi::_1, qi::_2, qi::_3, qi::_4
+            , qi::_5, *qi::_6, qi::_7, qi::_8)
+          , phx::construct<AST::BipartiteSBG>(qi::_1, qi::_2, qi::_3, qi::_4
+            , qi::_5, phx::construct<AST::PWLMap>(), qi::_7, qi::_8)
+        )
+      ];
+
+  // ------------ //
+
   dsbg = (V >> set 
     >> VMAP >> pwl 
     >> MAPB >> pwl 
@@ -281,6 +307,7 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
     [qi::_val = phx::construct<AST::Call>(qi::_1, qi::_2)]; 
 
   sbg_primary = call_expr
+    | bipartite_sbg
     | sbg
     | dsbg
     | pwl

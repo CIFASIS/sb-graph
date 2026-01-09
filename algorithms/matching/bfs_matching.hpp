@@ -51,7 +51,7 @@ class BFSMatching : public MatchStrategy {
   public:
   BFSMatching();
 
-  MatchData calculate(const SBG& sbg) override;
+  MatchData calculate(const BipartiteSBG& bsbg) override;
 
   private:
   /**
@@ -73,9 +73,9 @@ class BFSMatching : public MatchStrategy {
   };
 
   /**
-   * @brief Initializes data members determined by the input SBG.
+   * @brief Initializes data members determined by the input bipartite SBG.
    */
-  void init(const SBG& sbg);
+  void init(const BipartiteSBG& bsbg);
 
   /**
    * @brief Performs an iteration of the algorithm. It looks up alternating
@@ -118,7 +118,7 @@ class BFSMatching : public MatchStrategy {
    */
   Set edgesInPaths(const PWMap& smap, const Set& E) const;
 
-  DSBG dsbg_; ///< Input DSBG
+  DSBG dsbg_; ///< Directed graph according to matching
   Set M_;     ///< Matched edges
   Direction direction_;
 };

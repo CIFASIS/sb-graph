@@ -78,62 +78,43 @@ std::ostream& operator<<(std::ostream& out, const SBG& g)
   return out;
 }
 
-SBG SBG::addSV(const Set& vertices) const
+void SBG::addSV(const Set& vertices)
 {
-  if (!vertices.isEmpty() && vertices.intersection(_V).isEmpty()) {
-    PWMap new_Vmap(std::move(_Vmap));
-    PWMap new_map1(std::move(_map1)), new_map2(std::move(_map2));
-    PWMap new_Emap(std::move(_Emap)), new_subE(std::move(_subEmap));
-
-    Set new_V = new_V.cup(vertices);
-
-    Set SV = new_Vmap.image(); // Identifiers of SV
+  if (!vertices.intersection(_V).isEmpty()) {
+    Util::ERROR("Trying to add existing vertices: ", vertices, " to SBG\n");
+  } else if (!vertices.isEmpty() && vertices.intersection(_V).isEmpty()) {
+    _V = _V.cup(vertices);
+    Set SV = _Vmap.image();
     std::size_t dims = vertices.arity();
     MD_NAT max = SV.isEmpty() ? MD_NAT(dims, 0) : SV.maxElem();
-    for (unsigned int j = 0; j < dims; ++j)
+    for (unsigned int j = 0; j < dims; ++j) {
       max[j] = max[j] + 1;
-    Map m(vertices, Exp(max));
-    new_Vmap.emplaceBack(m);
+    }
+    _Vmap.emplaceBack(Map(vertices, Exp(max)));
 
-    return SBG(new_V, new_Vmap, new_map1, new_map2, new_Emap, new_subE);
   }
-
-  else if (!vertices.intersection(_V).isEmpty())
-    Util::ERROR("Trying to add existing vertices: ", vertices, " to SBG\n");
-
-  return SBG();
 }
 
-SBG SBG::addSE(const PWMap& pw1, const PWMap& pw2) const
+void SBG::addSE(const PWMap& pw1, const PWMap& pw2)
 {
   Set edges = SET_FACT.createSet(), edges1 = pw1.dom(), edges2 = pw2.dom();
-  if (edges1 == edges2) {
+  if (!edges.intersection(_E).isEmpty()) {
+    Util::ERROR("Trying to add existing edges: ", edges, " to SBG\n");
+  }
+  else if (edges1 == edges2) {
     edges = edges1;
     if (!edges.isEmpty() && edges.intersection(_E).isEmpty()) {
-      Set new_V(std::move(_V));
-      PWMap new_Vmap(std::move(_Vmap));
-      PWMap new_map1(std::move(_map1)), new_map2(std::move(_map2));
-      PWMap new_Emap(std::move(_Emap)), new_subE(std::move(_subEmap));
-
-      Set SE = _Emap.image(); // Identifiers of SV
+      Set SE = _Emap.image();
       std::size_t dims = edges.arity();
       MD_NAT max = SE.isEmpty() ? MD_NAT(dims, 0) : SE.maxElem();
-      for (unsigned int j = 0; j < dims; ++j)
+      for (unsigned int j = 0; j < dims; ++j) {
         max[j] = max[j] + 1;
-      Map m(edges, max);  
-      new_Emap.emplaceBack(m);
-
-      new_map1 = new_map1.concatenation(pw1);
-      new_map2 = new_map2.concatenation(pw2);
-
-      return SBG(new_V, new_Vmap, new_map1, new_map2, new_Emap, new_subE);
+      }
+      _map1 = _map1.concatenation(pw1);
+      _map2 = _map2.concatenation(pw2);
+      _Emap.emplaceBack(Map(edges, max));
     }
-
-    else if (!edges.intersection(_E).isEmpty())
-      Util::ERROR("Trying to add existing edges: ", edges, " to SBG\n");
   }
-
-  return SBG();
 }
 
 SBG SBG::copy(unsigned int times) const
@@ -185,8 +166,7 @@ SBG SBG::copy(unsigned int times) const
     }
   }
 
-  SBG res(new_V, new_Vmap, new_map1, new_map2, new_Emap, new_subE);
-  return res;
+  return SBG(new_V, new_Vmap, new_map1, new_map2, new_Emap, new_subE);
 }
 
 } // namespace LIB

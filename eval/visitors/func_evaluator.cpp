@@ -616,10 +616,10 @@ ExprBaseType BuiltInFunctions::matchingEvaluator(const EBTList& args)
 
   LIB::Matching match_impl = LIB::MATCH_FACT.createMatchAlgorithm();
   const auto matching_evaluator = Overload {
-    [&match_impl](LIB::SBG a, LIB::NAT b) { 
+    [&match_impl](LIB::BipartiteSBG a, LIB::NAT b) { 
       return ExprBaseType(match_impl.calculate(a.copy(b)));
     },
-    [&match_impl](LIB::SBG a, LIB::MD_NAT b) { 
+    [&match_impl](LIB::BipartiteSBG a, LIB::MD_NAT b) { 
       return ExprBaseType(match_impl.calculate(a.copy(b[0])));
     },
     [](auto a, auto b) {
@@ -693,12 +693,12 @@ ExprBaseType BuiltInFunctions::matchSCCEvaluator(const EBTList& args)
   LIB::Matching match_impl = LIB::MATCH_FACT.createMatchAlgorithm();
   LIB::SCC scc_impl = LIB::SCC_FACT.createSCCAlgorithm();
   const auto match_scc_evaluator = Overload {
-    [&match_impl, &scc_impl](LIB::SBG a, LIB::NAT b) { 
+    [&match_impl, &scc_impl](LIB::BipartiteSBG a, LIB::NAT b) { 
       LIB::MatchData match_result = match_impl.calculate(a.copy(b));
       LIB::DSBG dsbg = MISC::buildSCCFromMatching(match_result);
       return ExprBaseType(scc_impl.calculate(dsbg).rmap());
     },
-    [&match_impl, &scc_impl](LIB::SBG a, LIB::MD_NAT b) { 
+    [&match_impl, &scc_impl](LIB::BipartiteSBG a, LIB::MD_NAT b) { 
       LIB::MatchData match_result = match_impl.calculate(a.copy(b[0]));
       LIB::DSBG dsbg = MISC::buildSCCFromMatching(match_result);
       return ExprBaseType(scc_impl.calculate(dsbg).rmap());

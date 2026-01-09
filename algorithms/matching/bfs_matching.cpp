@@ -167,21 +167,21 @@ bool BFSMatching::ExitCondition::isSatisfied()
   return full_match_ || !found_paths_;
 }
 
-void BFSMatching::init(const SBG& sbg)
+void BFSMatching::init(const BipartiteSBG& bsbg)
 {
-  dsbg_ = DSBG(sbg.V().compact(), sbg.Vmap().compact(), sbg.map2().compact()
-    , sbg.map1().compact(), sbg.Emap().compact(), sbg.subEmap().compact());
+  dsbg_ = DSBG(bsbg.V().compact(), bsbg.Vmap().compact(), bsbg.map2().compact()
+    , bsbg.map1().compact(), bsbg.Emap().compact(), bsbg.subEmap().compact());
 
   return;
 }
 
-MatchData BFSMatching::calculate(const SBG& sbg)
+MatchData BFSMatching::calculate(const BipartiteSBG& bsbg)
 {
-  Util::DEBUG_LOG << "Matching sbg: \n" << sbg << "\n\n";
+  Util::DEBUG_LOG << "Matching bsbg: \n" << bsbg << "\n\n";
 
   auto begin = std::chrono::high_resolution_clock::now();
-  init(sbg);
-  Set right_vertices = dsbg_.mapB().image();
+  init(bsbg);
+  Set right_vertices = bsbg.Y();
 
   ExitCondition exit_cond(false, false);
   do {
@@ -192,7 +192,7 @@ MatchData BFSMatching::calculate(const SBG& sbg)
     end - begin);
   Util::SBG_LOG << "Total matching exec time: " << total.count() << " [μs]\n";
 
-  MatchData result(sbg, M_.compact(), exit_cond.full_match());
+  MatchData result(bsbg, M_.compact(), exit_cond.full_match());
   Util::SBG_LOG << result << "\n\n";
 
   return result;

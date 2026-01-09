@@ -63,6 +63,10 @@ class SBG {
    * @brief SBG constructor that copies arguments to construct member variables.
    * A set of edges E is not needed, as it will be obtained from the domain of
    * map1_ and map2_.
+   * Preconditions:
+   *   - \p V = dom(\p Vmap)
+   *   - dom(\p map1) = dom(\p map2) = dom(\p Emap) = dom(\p subEmap)
+   *   - \p map1.image() ⊆ \p V and \p map2.image() ⊆ \p V
    */
   SBG(const Set& V, const PWMap& Vmap
     , const PWMap& map1, const PWMap& map2
@@ -82,14 +86,14 @@ class SBG {
    * @brief Adds a new set-vertex composed by \p vertices. \n
    * Precondition: V_.intersection(vertices) = {}
    */
-  SBG addSV(const Set& vertices) const;
+  void addSV(const Set& vertices);
 
   /**
    * @brief Adds a new set-edge described by \p pw1 and \p pw2. \n 
    * Precondition: dom(pw1) = dom(pw2) and
    * E_.intersection(pw1.dom()) = {} and E_.intersection(pw2.dom()) = {} 
    */
-  SBG addSE(const PWMap& pw1, const PWMap& pw2) const;
+  void addSE(const PWMap& pw1, const PWMap& pw2);
 
   /**
    * @brief Returns a new SBG composed by \p times copies of the original SBG,
@@ -97,7 +101,7 @@ class SBG {
    */
   SBG copy(unsigned int times) const;
 
-  protected:
+  private:
   Set _V; ///< Vertex definitions
   PWMap _Vmap;
   Set _E; ///< Edge definitions

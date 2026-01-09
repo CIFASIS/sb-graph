@@ -51,9 +51,7 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
 
   // Other rules
   qi::rule<Iterator, Skipper<Iterator>, LIB::NAT()> nat;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> int_value;
   qi::rule<Iterator, Skipper<Iterator>, AST::Rational> rational_legacy;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Rational> rational;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> primary;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> factor;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> term;
@@ -78,6 +76,12 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> map_list;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> pwl;
 
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg_primary;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg_factor;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg_term;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg_expr;
+  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg_relation;
+
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> bipartite_sbg;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> dsbg;
@@ -86,12 +90,6 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> function_call_arg;
   qi::rule<Iterator, Skipper<Iterator>, AST::Call()> call_expr;
 
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg_primary;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg_factor;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg_term;
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> sbg_expr;
-
-  qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> relation;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> expr;
   qi::rule<Iterator, Skipper<Iterator>, AST::ExprList()> expr_list;
 

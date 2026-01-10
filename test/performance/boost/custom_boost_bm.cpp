@@ -34,7 +34,6 @@ namespace Internal {
 // Benchmarks ------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-/*
 static void BM_CustomBoostMatchTest(benchmark::State& state)
 {
   int N = state.range(0);
@@ -43,18 +42,19 @@ static void BM_CustomBoostMatchTest(benchmark::State& state)
   if (filename) {
     SBG::LIB::BipartiteSBG match_sbg = generateSBG(filename, N, 1);
     OG::OrdinaryGraphBuilder graph_builder(match_sbg);
-    OG::Graph graph = graph_builder.build();
-    OG::VertexVector mate(num_vertices(graph));
+    OG::BipartiteGraph bgraph = graph_builder.build();
+    std::cout << bgraph << "\n";
+    OG::Graph match_graph = bgraph.graph();
+    OG::VertexVector mate(num_vertices(match_graph));
 
     for (auto _ : state) {
-      edmonds_maximum_cardinality_matching(graph, &mate[0]);
+      edmonds_maximum_cardinality_matching(match_graph, &mate[0]);
     }
     state.SetComplexityN(N);
   }
 }
 BENCHMARK(BM_CustomBoostMatchTest)->RangeMultiplier(10)->Range(10, 10)
   ->Complexity()->Unit(benchmark::kMillisecond)->Iterations(1);
-*/
 
 } // namespace Internal
 

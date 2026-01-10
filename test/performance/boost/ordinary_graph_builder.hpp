@@ -31,7 +31,7 @@
 #include <map>
 
 #include "test/performance/boost/ordinary_graph.hpp"
-#include "sbg/sbg.hpp"
+#include "sbg/bipartite_sbg.hpp"
 #include "util/logger.hpp"
 
 namespace OG {
@@ -40,17 +40,19 @@ using EdgeVector = std::vector<Edge>;
 
 class OrdinaryGraphBuilder {
   public:
-  OrdinaryGraphBuilder(SBG::LIB::SBG sbg);
+  OrdinaryGraphBuilder(SBG::LIB::BipartiteSBG bsbg);
 
-  Graph build();
-  Graph build(SBG::LIB::NAT number_vertices, EdgeVector& edges);
+  BipartiteGraph build();
+  BipartiteGraph build(SBG::LIB::NAT number_vertices, EdgeVector& edges
+    , std::vector<int>&& partition);
   void translateVertices();
   EdgeVector getEdgeList();
 
   private:
-  const SBG::LIB::SBG _sbg; ///< Input SBG to convert
+  const SBG::LIB::BipartiteSBG _bsbg; ///< Input bipartite SBG to convert
   std::map<SBG::LIB::MD_NAT, Vertex> _vertex_map;
-    ///< Auxiliar map for addEdge 
+    ///< Map from SBG vertex identifier to Graph element
+  std::vector<int> _partition;
 };
 
 }  // namespace OG

@@ -48,32 +48,41 @@ static SBG::LIB::MD_NAT nextElem(SBG::LIB::MD_NAT curr, SBG::LIB::SetPiece mdi)
 // Ordinary undirected graph builder -------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-OrdinaryGraphBuilder::OrdinaryGraphBuilder(SBG::LIB::SBG sbg)
-  : _sbg(sbg), _vertex_map() {}
+OrdinaryGraphBuilder::OrdinaryGraphBuilder(SBG::LIB::BipartiteSBG bsbg)
+  : _bsbg(bsbg), _vertex_map(), _partition() {}
 
-Graph OrdinaryGraphBuilder::build()
+BipartiteGraph OrdinaryGraphBuilder::build()
 {
   translateVertices();
   EdgeVector edges = getEdgeList();
-  return build(_sbg.V().cardinal(), edges);
+  Graph graph(edges.begin(), edges.end(), _bsbg.V().cardinal());
+  return BipartiteGraph(std::move(graph), std::move(_partition));
 }
 
-Graph OrdinaryGraphBuilder::build(SBG::LIB::NAT number_vertices, EdgeVector& E)
+BipartiteGraph OrdinaryGraphBuilder::build(SBG::LIB::NAT number_vertices
+  , EdgeVector& E, std::vector<int>&& partition)
 {
-  return Graph(E.begin(), E.end(), number_vertices);
+  Graph graph(E.begin(), E.end(), number_vertices);
+  return BipartiteGraph(std::move(graph), std::move(_partition));
 }
 
 void OrdinaryGraphBuilder::translateVertices()
 {
-  SBG::LIB::Set V = _sbg.V();
+  SBG::LIB::Set V = _bsbg.V();
+  _partition.reserve(V.cardinal());
+  SBG::LIB::Set X = _bsbg.X();
   SBG::LIB::NAT count = 0;
   for (const SBG::LIB::SetPiece& mdi : V) { 
     SBG::LIB::MD_NAT begin = mdi.minElem(), end = mdi.maxElem();
     for (auto it = begin; it != end; it = nextElem(it, mdi)) {
       _vertex_map[it] = count;
+      _partition.emplace_back(
+        SBG::LIB::SET_FACT.createSet(it).intersection(X).isEmpty());
       ++count;
     }
     _vertex_map[end] = count;
+    _partition.emplace_back(
+      SBG::LIB::SET_FACT.createSet(end).intersection(X).isEmpty());
     ++count;
   }
 }
@@ -81,11 +90,11 @@ void OrdinaryGraphBuilder::translateVertices()
 EdgeVector OrdinaryGraphBuilder::getEdgeList()
 {
   EdgeVector result;
-  SBG::LIB::Set E = _sbg.E();
+  SBG::LIB::Set E = _bsbg.E();
   result.reserve(E.cardinal());
 
-  SBG::LIB::PWMap map1 = _sbg.map1();
-  SBG::LIB::PWMap map2 = _sbg.map2();
+  SBG::LIB::PWMap map1 = _bsbg.map1();
+  SBG::LIB::PWMap map2 = _bsbg.map2();
   for (const SBG::LIB::SetPiece& mdi : E) { 
     SBG::LIB::MD_NAT begin = mdi.minElem(), end = mdi.maxElem();
     for (auto it = begin; it != end; it = nextElem(it, mdi)) {

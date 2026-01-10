@@ -35,8 +35,30 @@ namespace OG {
 using Vertex = SBG::LIB::NAT;
 using VertexVector = std::vector<Vertex>;
 using Edge = std::pair<SBG::LIB::NAT, SBG::LIB::NAT>;
+
 using Graph = boost::adjacency_list<boost::vecS, boost::vecS
   , boost::undirectedS>;
+std::ostream& operator<<(std::ostream& out, const Graph& bgraph);
+
+class BipartiteGraph {
+  public:
+  BipartiteGraph();
+  BipartiteGraph(Graph&& graph, std::vector<int>&& partition);
+
+  const Graph& graph() const;
+  const std::vector<int>& partition() const;
+
+  private:
+  Graph _graph;
+
+  /**
+   * @brief Vector of the size of the set of vertices of _graph.
+   * _partition[i] = 0 if vertex i belongs to X, and _partition[i] = 1 if
+   * it belongs to Y. 
+   */
+  std::vector<int> _partition;
+};
+std::ostream& operator<<(std::ostream& out, const BipartiteGraph& bgraph);
 
 using DGraph = boost::adjacency_list<boost::vecS, boost::vecS
   , boost::bidirectionalS>;

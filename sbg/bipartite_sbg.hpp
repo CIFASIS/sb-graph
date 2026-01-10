@@ -50,9 +50,8 @@ class BipartiteSBG {
    * variables. A set of edges E is not needed, as it will be obtained from the
    * domain of map1_ and map2_.
    * Preconditions:
-   *   - \p V = dom(\p Vmap)
-   *   - dom(\p map1) = dom(\p map2) = dom(\p Emap) = dom(\p subEmap)
-   *   - \p map1.image() ⊆ \p V and \p map2.image() ⊆ \p V
+   *   - \p V = dom(\p Vmap).
+   *   - dom(\p map1) = dom(\p map2) = dom(\p Emap) = dom(\p subEmap).
    *   - \p X, \p Y is a bipartition of \p V.
    */
   BipartiteSBG(const Set& V, const PWMap& Vmap
@@ -80,7 +79,7 @@ class BipartiteSBG {
 
   /**
    * @brief Adds a set-edge to the bipartite SBG.
-   * Precondition: dom(\p pw1) = dom(\p pw2). 
+   * Preconditions: dom(\p pw1) = dom(\p pw2).
    */
   void addSE(const PWMap& pw1, const PWMap& pw2);
 

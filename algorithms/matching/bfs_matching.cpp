@@ -37,6 +37,13 @@ bool BFSMatching::ExitCondition::full_match() { return full_match_; }
 
 bool BFSMatching::ExitCondition::found_paths() { return found_paths_; }
 
+bool BFSMatching::ExitCondition::isSatisfied()
+{
+  return full_match_ || !found_paths_;
+}
+
+// Algorithm -------------------------------------------------------------------
+
 BFSMatching::BFSMatching() : M_(SET_FACT.createSet()), dsbg_()
   , direction_(Direction::kForward) {}
 
@@ -157,22 +164,28 @@ BFSMatching::ExitCondition BFSMatching::step(const Set& right_vertices)
   // Calculate exit conditions
   Set matchedU = dsbg_.mapD().image(M_);
   bool full_match = right_vertices.difference(matchedU).isEmpty();
-  bool found_paths = !M_.isEmpty();
+  bool found_paths = !augmenting_edges.isEmpty();
 
   return ExitCondition(full_match, found_paths);
 }
 
-bool BFSMatching::ExitCondition::isSatisfied()
-{
-  return full_match_ || !found_paths_;
-}
-
 void BFSMatching::init(const BipartiteSBG& bsbg)
 {
-  dsbg_ = DSBG(bsbg.V().compact(), bsbg.Vmap().compact(), bsbg.map2().compact()
-    , bsbg.map1().compact(), bsbg.Emap().compact(), bsbg.subEmap().compact());
+  PWMap map1 = bsbg.map1().compact();
+  PWMap map2 = bsbg.map2().compact();
 
-  return;
+  Set Y = bsbg.Y();
+  PWMap map1_toY = map1.restrict(map1.preImage(Y));
+  PWMap map2_toY = map2.restrict(map2.preImage(Y));
+  PWMap mapB = map1_toY.concatenation(map2_toY);
+
+  Set X = bsbg.X();
+  PWMap map1_toX = map1.restrict(map1.preImage(X));
+  PWMap map2_toX = map2.restrict(map2.preImage(X));
+  PWMap mapD = map1_toX.concatenation(map2_toX);
+
+  dsbg_ = DSBG(bsbg.V().compact(), bsbg.Vmap().compact(), mapB, mapD
+    , bsbg.Emap().compact(), bsbg.subEmap().compact());
 }
 
 MatchData BFSMatching::calculate(const BipartiteSBG& bsbg)

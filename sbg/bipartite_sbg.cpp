@@ -154,8 +154,8 @@ BipartiteSBG BipartiteSBG::copy(unsigned int times) const
     MD_NAT maxe = _E.isEmpty() ? MD_NAT(dims, 0) : _E.maxElem();
     MD_NAT maxE
       = ith_Emap.isEmpty() ? MD_NAT(dims, 0) : ith_Emap.image().maxElem();
-    MD_NAT maxx = ith_X.maxElem();
-    MD_NAT maxy = ith_Y.maxElem();
+    MD_NAT maxx = ith_X.isEmpty() ? MD_NAT(dims, 0) : ith_X.maxElem();
+    MD_NAT maxy = ith_Y.isEmpty() ? MD_NAT(dims, 0) : ith_Y.maxElem();
 
     Exp off;
     for (unsigned int j = 0; j < dims; ++j) {

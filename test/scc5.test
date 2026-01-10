@@ -1,44 +1,34 @@
-// SCC test with a long path in forward and backward
-// directions
+// SCC test that is solved in constant time, but
+// doesn't satisfies the constraints of the lemmas
 
 N = 100000;
 
-V1 = 1;
-V2 = N-1+V1;
+V1 = N;
+V2 = N+V1;
 V3 = N+V2;
 
-E1 = 1;
-E2 = N-1+E1;
+E1 = N;
+E2 = N+E1;
 E3 = N-1+E2;
-E4 = N-1+E3;
-E5 = N-2+E4;
 
 off1b = V1-E1; 
-off2b = V3-E2-1;
-off3b = V2-E3;
-off4b = V2-E4;
-off5b = V3-E5-1;
+off2b = V3-E2;
+off3b = V2-E3-1;
 
-off1d = V3-E1-N+1;
+off1d = V3-E1;
 off2d = V2-E2;
-off3d = V3-E3;
-off4d = V3-E4-1;
-off5d = V2-E5-1;
+off3d = V1-E3;
 
 V: {[1:1:V1], [V1+1:1:V2], [V2+1:1:V3]}
 Vmap: <<{[1:1:V1]} -> |0*x+1|, {[V1+1:1:V2]} -> |0*x+2|, {[V2+1:1:V3]} -> |0*x+3|>>
-mapB: <<{[1:1:E1]} -> |1*x+off1b|, {[E1+1:1:E2]} -> |1*x+off2b|, {[E2+1:1:E3]} -> |1*x+off3b
-          |, {[E3+1:1:E4]} -> |1*x+off4b|, {[E4+1:1:E5]} -> |1*x+off5b|>>
-mapD: <<{[1:1:E1]} -> |1*x+off1d|, {[E1+1:1:E2]} -> |1*x+off2d|, {[E2+1:1:E3]} -> |1*x+off3d
-          |, {[E3+1:1:E4]} -> |1*x+off4d|, {[E4+1:1:E5]} -> |1*x+off5d|>>
-Emap: <<{[1:1:E1]} -> |0*x+1|, {[E1+1:1:E2], [E2+1:1:E3], [E3+1:1:E4], [E4+1:1:E5]} -> |0*x+2|>>;
+mapB: <<{[1:1:E1]} -> |1*x+off1b|, {[E1+1:1:E2]} -> |1*x+off2b|, {[E2+1:1:E3]} -> |1*x+off3b|>>
+mapD: <<{[1:1:E1]} -> |1*x+off1d|, {[E1+1:1:E2]} -> |1*x+off2d|, {[E2+1:1:E3]} -> |1*x+off3d|>>
+Emap: <<{[1:1:E1]} -> |0*x+1|, {[E1+1:1:E2]} -> |0*x+2|, {[E2+1:1:E3]} -> |0*x+3|>>;
 
 scc(
   V: {[1:1:V1], [V1+1:1:V2], [V2+1:1:V3]}
   Vmap: <<{[1:1:V1]} -> |0*x+1|, {[V1+1:1:V2]} -> |0*x+2|, {[V2+1:1:V3]} -> |0*x+3|>>
-  mapB: <<{[1:1:E1]} -> |1*x+off1b|, {[E1+1:1:E2]} -> |1*x+off2b|, {[E2+1:1:E3]} -> |1*x+off3b
-            |, {[E3+1:1:E4]} -> |1*x+off4b|, {[E4+1:1:E5]} -> |1*x+off5b|>>
-  mapD: <<{[1:1:E1]} -> |1*x+off1d|, {[E1+1:1:E2]} -> |1*x+off2d|, {[E2+1:1:E3]} -> |1*x+off3d
-            |, {[E3+1:1:E4]} -> |1*x+off4d|, {[E4+1:1:E5]} -> |1*x+off5d|>>
-  Emap: <<{[1:1:E1]} -> |0*x+1|, {[E1+1:1:E2], [E2+1:1:E3], [E3+1:1:E4], [E4+1:1:E5]} -> |0*x+2|>>
+  mapB: <<{[1:1:E1]} -> |1*x+off1b|, {[E1+1:1:E2]} -> |1*x+off2b|, {[E2+1:1:E3]} -> |1*x+off3b|>>
+  mapD: <<{[1:1:E1]} -> |1*x+off1d|, {[E1+1:1:E2]} -> |1*x+off2d|, {[E2+1:1:E3]} -> |1*x+off3d|>>
+  Emap: <<{[1:1:E1]} -> |0*x+1|, {[E1+1:1:E2]} -> |0*x+2|, {[E2+1:1:E3]} -> |0*x+3|>>
 );

@@ -43,7 +43,7 @@ static void BM_CustomMatchTest(benchmark::State& state)
 
     SBG::LIB::Matching match_algorithm
       = SBG::LIB::MATCH_FACT.createMatchAlgorithm();
-    SBG::LIB::SBG match_sbg = generateSBG(filename, N, 1); 
+    SBG::LIB::BipartiteSBG match_sbg = generateSBG(filename, N, 1); 
 
     for (auto _ : state) {
       match_algorithm.calculate(match_sbg);
@@ -67,7 +67,7 @@ static void BM_CustomMatchCopies(benchmark::State& state)
 
     SBG::LIB::Matching match_algorithm
       = SBG::LIB::MATCH_FACT.createMatchAlgorithm();
-    SBG::LIB::SBG match_sbg = generateSBG(filename, 100, N);
+    SBG::LIB::BipartiteSBG match_sbg = generateSBG(filename, 100, N);
 
     for (auto _ : state) {
       match_algorithm.calculate(match_sbg);

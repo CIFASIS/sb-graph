@@ -227,59 +227,12 @@ off21by = V1y - E21y;
 off22bx = V3x - E22x;
 off22by = V3y - E22y;
 
-V: {[1:1:V1x]x[1:1:V1y], [V1x+1:1:V2x]x[V1y+1:1:V2y], [V2x+1:1:V3x]x[V2y+1:1:V3y]
-, [V3x+1:1:V4x]x[V3y+1:1:V4y], [V4x+1:1:V5x]x[V4y+1:1:V5y], [V5x+1:1:V6x]x[V5y+1:1:V6y]
+F = {[V3x+1:1:V4x]x[V3y+1:1:V4y], [V4x+1:1:V5x]x[V4y+1:1:V5y], [V5x+1:1:V6x]x[V5y+1:1:V6y]
 , [V6x+1:1:V7x]x[V6y+1:1:V7y], [V7x+1:1:V8x]x[V7y+1:1:V8y], [V8x+1:1:V9x]x[V8y+1:1:V9y]
-, [V9x+1:1:V10x]x[V9y+1:1:V10y], [V10x+1:1:V11x]x[V10y:1:V11y], [V11x+1:1:V12x]x[V11y+1:1:V12y]}
+, [V9x+1:1:V10x]x[V9y+1:1:V10y], [V10x+1:1:V11x]x[V10y:1:V11y], [V11x+1:1:V12x]x[V11y+1:1:V12y]};
+U = {[1:1:V1x]x[1:1:V1y], [V1x+1:1:V2x]x[V1y+1:1:V2y], [V2x+1:1:V3x]x[V2y+1:1:V3y]};
 
-Vmap: <<{[1:1:V1x]x[1:1:V1y]} -> |0*x+1|0*x+1|, {[V1x+1:1:V2x]x[V1y+1:1:V2y]} -> |0*x+2|0*x+2|
-, {[V2x+1:1:V3x]x[V2y+1:1:V3y]} -> |0*x+3|0*x+3|, {[V3x+1:1:V4x]x[V3y+1:1:V4y]} -> |0*x+4|0*x+4|
-, {[V4x+1:1:V5x]x[V4y+1:1:V5y]} -> |0*x+5|0*x+5|, {[V5x+1:1:V6x]x[V5y+1:1:V6y]} -> |0*x+6|0*x+6|
-, {[V6x+1:1:V7x]x[V6y+1:1:V7y]} -> |0*x+7|0*x+7|, {[V7x+1:1:V8x]x[V7y+1:1:V8y]} -> |0*x+8|0*x+8|
-, {[V8x+1:1:V9x]x[V8y+1:1:V9y]} -> |0*x+9|0*x+9|, {[V9x+1:1:V10x]x[V9y+1:1:V10y]} -> |0*x+10|0*x+10|
-, {[V10x+1:1:V11x]x[V10y+1:1:V11y]} -> |0*x+11|0*x+11|, {[V11x+1:1:V12x]x[V11y+1:1:V12y]} -> |0*x+12|0*x+12|>>
-
-map1: <<{[1:1:E1x]x[1:1:E1y]} -> |1*x+off1bx|1*x+off1by|, {[E1x+1:1:E2x]x[E1y+1:1:E2y]} -> |1*x+off2bx|1*x+off2by|
-, {[E2x+1:1:E3x]x[E2y+1:1:E3y]} -> |1*x+off3bx|1*x+off3by|, {[E3x+1:1:E4x]x[E3y+1:1:E4y]} -> |1*x+off4bx|1*x+off4by|
-, {[E4x+1:1:E5x]x[E4y+1:1:E5y]} -> |1*x+off5bx|1*x+off5by|, {[E5x+1:1:E6x]x[E5y+1:1:E6y]} -> |1*x+off6bx|1*x+off6by|
-, {[E6x+1:1:E7x]x[E6y+1:1:E7y]} -> |1*x+off7bx|1*x+off7by|, {[E7x+1:1:E8x]x[E7y+1:1:E8y]} -> |1*x+off8bx|1*x+off8by|
-, {[E8x+1:1:E9x]x[E8y+1:1:E9y]} -> |1*x+off9bx|1*x+off9by|, {[E9x+1:1:E10x]x[E9y+1:1:E10y]} -> |1*x+off10bx|1*x+off10by|
-, {[E10x+1:1:E11x]x[E10y+1:1:E11y]} -> |1*x+off11bx|1*x+off11by|, {[E11x+1:1:E12x]x[E11y+1:1:E12y]} -> |1*x+off12bx|1*x+off12by|
-, {[E12x+1:1:E13x]x[E12y+1:1:E13y]} -> |1*x+off13bx|1*x+off13by|, {[E13x+1:1:E14x]x[E13y+1:1:E14y]} -> |1*x+off14bx|1*x+off14by|
-, {[E14x+1:1:E15x]x[E14y+1:1:E15y]} -> |1*x+off15bx|1*x+off15by|, {[E15x+1:1:E16x]x[E15y+1:1:E16y]} -> |1*x+off16bx|1*x+off16by|
-, {[E16x+1:1:E17x]x[E16y+1:1:E17y]} -> |1*x+off17bx|1*x+off17by|, {[E17x+1:1:E18x]x[E17y+1:1:E18y]} -> |1*x+off18bx|1*x+off18by|
-, {[E18x+1:1:E19x]x[E18y+1:1:E19y]} -> |1*x+off19bx|1*x+off19by|, {[E19x+1:1:E20x]x[E19y+1:1:E20y]} -> |1*x+off20bx|1*x+off20by|
-, {[E20x+1:1:E21x]x[E20y+1:1:E21y]} -> |1*x+off21bx|1*x+off21by|, {[E21x+1:1:E22x]x[E21y+1:1:E22y]} -> |1*x+off22bx|1*x+off22by|>>
-
-map2: <<{[1:1:E1x]x[1:1:E1y]} -> |1*x+off1dx|1*x+off1dy|, {[E1x+1:1:E2x]x[E1y+1:1:E2y]} -> |1*x+off2dx|1*x+off2dy|
-, {[E2x+1:1:E3x]x[E2y+1:1:E3y]} -> |1*x+off3dx|1*x+off3dy|, {[E3x+1:1:E4x]x[E3y+1:1:E4y]} -> |1*x+off4dx|1*x+off4dy|
-, {[E4x+1:1:E5x]x[E4y+1:1:E5y]} -> |1*x+off5dx|1*x+off5dy|, {[E5x+1:1:E6x]x[E5y+1:1:E6y]} -> |1*x+off6dx|1*x+off6dy|
-, {[E6x+1:1:E7x]x[E6y+1:1:E7y]} -> |1*x+off7dx|1*x+off7dy|, {[E7x+1:1:E8x]x[E7y+1:1:E8y]} -> |1*x+off8dx|1*x+off8dy|
-, {[E8x+1:1:E9x]x[E8y+1:1:E9y]} -> |1*x+off9dx|1*x+off9dy|, {[E9x+1:1:E10x]x[E9y+1:1:E10y]} -> |1*x+off10dx|1*x+off10dy|
-, {[E10x+1:1:E11x]x[E10y+1:1:E11y]} -> |1*x+off11dx|1*x+off11dy|, {[E11x+1:1:E12x]x[E11y+1:1:E12y]} -> |1*x+off12dx|1*x+off12dy|
-, {[E12x+1:1:E13x]x[E12y+1:1:E13y]} -> |1*x+off13dx|1*x+off13dy|, {[E13x+1:1:E14x]x[E13y+1:1:E14y]} -> |1*x+off14dx|1*x+off14dy|
-, {[E14x+1:1:E15x]x[E14y+1:1:E15y]} -> |1*x+off15dx|1*x+off15dy|, {[E15x+1:1:E16x]x[E15y+1:1:E16y]} -> |1*x+off16dx|1*x+off16dy|
-, {[E16x+1:1:E17x]x[E16y+1:1:E17y]} -> |1*x+off17dx|1*x+off17dy|, {[E17x+1:1:E18x]x[E17y+1:1:E18y]} -> |1*x+off18dx|1*x+off18dy|
-, {[E18x+1:1:E19x]x[E18y+1:1:E19y]} -> |1*x+off19dx|1*x+off19dy|, {[E19x+1:1:E20x]x[E19y+1:1:E20y]} -> |1*x+off20dx|1*x+off20dy|
-, {[E20x+1:1:E21x]x[E20y+1:1:E21y]} -> |1*x+off21dx|1*x+off21dy|, {[E21x+1:1:E22x]x[E21y+1:1:E22y]} -> |1*x+off22dx|1*x+off22dy|>>
-
-Emap: <<{[1:1:E1x]x[1:1:E1y]} -> |0*x+1|0*x+1|, {[E1x+1:1:E2x]x[E1y+1:1:E2y]} -> |0*x+2|0*x+2|
-, {[E2x+1:1:E3x]x[E2y+1:1:E3y]} -> |0*x+3|0*x+3|, {[E3x+1:1:E4x]x[E3y+1:1:E4y]} -> |0*x+4|0*x+4|
-, {[E4x+1:1:E5x]x[E4y+1:1:E5y]} -> |0*x+5|0*x+5|, {[E5x+1:1:E6x]x[E5y+1:1:E6y]} -> |0*x+6|0*x+6|
-, {[E6x+1:1:E7x]x[E6y+1:1:E7y]} -> |0*x+6|0*x+6|, {[E7x+1:1:E8x]x[E7y+1:1:E8y]} -> |0*x+7|0*x+7|
-, {[E8x+1:1:E9x]x[E8y+1:1:E9y]} -> |0*x+8|0*x+8|, {[E9x+1:1:E10x]x[E9y+1:1:E10y]} -> |0*x+9|0*x+9|
-, {[E10x+1:1:E11x]x[E10y+1:1:E11y]} -> |0*x+10|0*x+10|, {[E11x+1:1:E12x]x[E11y+1:1:E12y]} -> |0*x+10|0*x+10|
-, {[E12x+1:1:E13x]x[E12y+1:1:E13y]} -> |0*x+11|0*x+11|, {[E13x+1:1:E14x]x[E13y+1:1:E14y]} -> |0*x+12|0*x+12|
-, {[E14x+1:1:E15x]x[E14y+1:1:E15y]} -> |0*x+13|0*x+13|, {[E15x+1:1:E16x]x[E15y+1:1:E16y]} -> |0*x+14|0*x+14|
-, {[E16x+1:1:E17x]x[E16y+1:1:E17y]} -> |0*x+14|0*x+14|, {[E17x+1:1:E18x]x[E17y+1:1:E18y]} -> |0*x+14|0*x+14|
-, {[E18x+1:1:E19x]x[E18y+1:1:E19y]} -> |0*x+15|0*x+15|, {[E19x+1:1:E20x]x[E19y+1:1:E20y]} -> |0*x+16|0*x+16|
-, {[E20x+1:1:E21x]x[E20y+1:1:E21y]} -> |0*x+17|0*x+17|, {[E21x+1:1:E22x]x[E21y+1:1:E22y]} -> |0*x+18|0*x+18|>>;
-
-matchSCC(
-V: {[1:1:V1x]x[1:1:V1y], [V1x+1:1:V2x]x[V1y+1:1:V2y], [V2x+1:1:V3x]x[V2y+1:1:V3y]
-, [V3x+1:1:V4x]x[V3y+1:1:V4y], [V4x+1:1:V5x]x[V4y+1:1:V5y], [V5x+1:1:V6x]x[V5y+1:1:V6y]
-, [V6x+1:1:V7x]x[V6y+1:1:V7y], [V7x+1:1:V8x]x[V7y+1:1:V8y], [V8x+1:1:V9x]x[V8y+1:1:V9y]
-, [V9x+1:1:V10x]x[V9y+1:1:V10y], [V10x+1:1:V11x]x[V10y:1:V11y], [V11x+1:1:V12x]x[V11y+1:1:V12y]}
+V: F \/ U
 
 Vmap: <<{[1:1:V1x]x[1:1:V1y]} -> |0*x+1|0*x+1|, {[V1x+1:1:V2x]x[V1y+1:1:V2y]} -> |0*x+2|0*x+2|
 , {[V2x+1:1:V3x]x[V2y+1:1:V3y]} -> |0*x+3|0*x+3|, {[V3x+1:1:V4x]x[V3y+1:1:V4y]} -> |0*x+4|0*x+4|
@@ -323,4 +276,59 @@ Emap: <<{[1:1:E1x]x[1:1:E1y]} -> |0*x+1|0*x+1|, {[E1x+1:1:E2x]x[E1y+1:1:E2y]} ->
 , {[E16x+1:1:E17x]x[E16y+1:1:E17y]} -> |0*x+14|0*x+14|, {[E17x+1:1:E18x]x[E17y+1:1:E18y]} -> |0*x+14|0*x+14|
 , {[E18x+1:1:E19x]x[E18y+1:1:E19y]} -> |0*x+15|0*x+15|, {[E19x+1:1:E20x]x[E19y+1:1:E20y]} -> |0*x+16|0*x+16|
 , {[E20x+1:1:E21x]x[E20y+1:1:E21y]} -> |0*x+17|0*x+17|, {[E21x+1:1:E22x]x[E21y+1:1:E22y]} -> |0*x+18|0*x+18|>>
-, 1);
+
+X: F
+
+Y: U;
+
+matchSCC(
+  V: F \/ U
+
+  Vmap: <<{[1:1:V1x]x[1:1:V1y]} -> |0*x+1|0*x+1|, {[V1x+1:1:V2x]x[V1y+1:1:V2y]} -> |0*x+2|0*x+2|
+  , {[V2x+1:1:V3x]x[V2y+1:1:V3y]} -> |0*x+3|0*x+3|, {[V3x+1:1:V4x]x[V3y+1:1:V4y]} -> |0*x+4|0*x+4|
+  , {[V4x+1:1:V5x]x[V4y+1:1:V5y]} -> |0*x+5|0*x+5|, {[V5x+1:1:V6x]x[V5y+1:1:V6y]} -> |0*x+6|0*x+6|
+  , {[V6x+1:1:V7x]x[V6y+1:1:V7y]} -> |0*x+7|0*x+7|, {[V7x+1:1:V8x]x[V7y+1:1:V8y]} -> |0*x+8|0*x+8|
+  , {[V8x+1:1:V9x]x[V8y+1:1:V9y]} -> |0*x+9|0*x+9|, {[V9x+1:1:V10x]x[V9y+1:1:V10y]} -> |0*x+10|0*x+10|
+  , {[V10x+1:1:V11x]x[V10y+1:1:V11y]} -> |0*x+11|0*x+11|, {[V11x+1:1:V12x]x[V11y+1:1:V12y]} -> |0*x+12|0*x+12|>>
+  
+  map1: <<{[1:1:E1x]x[1:1:E1y]} -> |1*x+off1bx|1*x+off1by|, {[E1x+1:1:E2x]x[E1y+1:1:E2y]} -> |1*x+off2bx|1*x+off2by|
+  , {[E2x+1:1:E3x]x[E2y+1:1:E3y]} -> |1*x+off3bx|1*x+off3by|, {[E3x+1:1:E4x]x[E3y+1:1:E4y]} -> |1*x+off4bx|1*x+off4by|
+  , {[E4x+1:1:E5x]x[E4y+1:1:E5y]} -> |1*x+off5bx|1*x+off5by|, {[E5x+1:1:E6x]x[E5y+1:1:E6y]} -> |1*x+off6bx|1*x+off6by|
+  , {[E6x+1:1:E7x]x[E6y+1:1:E7y]} -> |1*x+off7bx|1*x+off7by|, {[E7x+1:1:E8x]x[E7y+1:1:E8y]} -> |1*x+off8bx|1*x+off8by|
+  , {[E8x+1:1:E9x]x[E8y+1:1:E9y]} -> |1*x+off9bx|1*x+off9by|, {[E9x+1:1:E10x]x[E9y+1:1:E10y]} -> |1*x+off10bx|1*x+off10by|
+  , {[E10x+1:1:E11x]x[E10y+1:1:E11y]} -> |1*x+off11bx|1*x+off11by|, {[E11x+1:1:E12x]x[E11y+1:1:E12y]} -> |1*x+off12bx|1*x+off12by|
+  , {[E12x+1:1:E13x]x[E12y+1:1:E13y]} -> |1*x+off13bx|1*x+off13by|, {[E13x+1:1:E14x]x[E13y+1:1:E14y]} -> |1*x+off14bx|1*x+off14by|
+  , {[E14x+1:1:E15x]x[E14y+1:1:E15y]} -> |1*x+off15bx|1*x+off15by|, {[E15x+1:1:E16x]x[E15y+1:1:E16y]} -> |1*x+off16bx|1*x+off16by|
+  , {[E16x+1:1:E17x]x[E16y+1:1:E17y]} -> |1*x+off17bx|1*x+off17by|, {[E17x+1:1:E18x]x[E17y+1:1:E18y]} -> |1*x+off18bx|1*x+off18by|
+  , {[E18x+1:1:E19x]x[E18y+1:1:E19y]} -> |1*x+off19bx|1*x+off19by|, {[E19x+1:1:E20x]x[E19y+1:1:E20y]} -> |1*x+off20bx|1*x+off20by|
+  , {[E20x+1:1:E21x]x[E20y+1:1:E21y]} -> |1*x+off21bx|1*x+off21by|, {[E21x+1:1:E22x]x[E21y+1:1:E22y]} -> |1*x+off22bx|1*x+off22by|>>
+  
+  map2: <<{[1:1:E1x]x[1:1:E1y]} -> |1*x+off1dx|1*x+off1dy|, {[E1x+1:1:E2x]x[E1y+1:1:E2y]} -> |1*x+off2dx|1*x+off2dy|
+  , {[E2x+1:1:E3x]x[E2y+1:1:E3y]} -> |1*x+off3dx|1*x+off3dy|, {[E3x+1:1:E4x]x[E3y+1:1:E4y]} -> |1*x+off4dx|1*x+off4dy|
+  , {[E4x+1:1:E5x]x[E4y+1:1:E5y]} -> |1*x+off5dx|1*x+off5dy|, {[E5x+1:1:E6x]x[E5y+1:1:E6y]} -> |1*x+off6dx|1*x+off6dy|
+  , {[E6x+1:1:E7x]x[E6y+1:1:E7y]} -> |1*x+off7dx|1*x+off7dy|, {[E7x+1:1:E8x]x[E7y+1:1:E8y]} -> |1*x+off8dx|1*x+off8dy|
+  , {[E8x+1:1:E9x]x[E8y+1:1:E9y]} -> |1*x+off9dx|1*x+off9dy|, {[E9x+1:1:E10x]x[E9y+1:1:E10y]} -> |1*x+off10dx|1*x+off10dy|
+  , {[E10x+1:1:E11x]x[E10y+1:1:E11y]} -> |1*x+off11dx|1*x+off11dy|, {[E11x+1:1:E12x]x[E11y+1:1:E12y]} -> |1*x+off12dx|1*x+off12dy|
+  , {[E12x+1:1:E13x]x[E12y+1:1:E13y]} -> |1*x+off13dx|1*x+off13dy|, {[E13x+1:1:E14x]x[E13y+1:1:E14y]} -> |1*x+off14dx|1*x+off14dy|
+  , {[E14x+1:1:E15x]x[E14y+1:1:E15y]} -> |1*x+off15dx|1*x+off15dy|, {[E15x+1:1:E16x]x[E15y+1:1:E16y]} -> |1*x+off16dx|1*x+off16dy|
+  , {[E16x+1:1:E17x]x[E16y+1:1:E17y]} -> |1*x+off17dx|1*x+off17dy|, {[E17x+1:1:E18x]x[E17y+1:1:E18y]} -> |1*x+off18dx|1*x+off18dy|
+  , {[E18x+1:1:E19x]x[E18y+1:1:E19y]} -> |1*x+off19dx|1*x+off19dy|, {[E19x+1:1:E20x]x[E19y+1:1:E20y]} -> |1*x+off20dx|1*x+off20dy|
+  , {[E20x+1:1:E21x]x[E20y+1:1:E21y]} -> |1*x+off21dx|1*x+off21dy|, {[E21x+1:1:E22x]x[E21y+1:1:E22y]} -> |1*x+off22dx|1*x+off22dy|>>
+  
+  Emap: <<{[1:1:E1x]x[1:1:E1y]} -> |0*x+1|0*x+1|, {[E1x+1:1:E2x]x[E1y+1:1:E2y]} -> |0*x+2|0*x+2|
+  , {[E2x+1:1:E3x]x[E2y+1:1:E3y]} -> |0*x+3|0*x+3|, {[E3x+1:1:E4x]x[E3y+1:1:E4y]} -> |0*x+4|0*x+4|
+  , {[E4x+1:1:E5x]x[E4y+1:1:E5y]} -> |0*x+5|0*x+5|, {[E5x+1:1:E6x]x[E5y+1:1:E6y]} -> |0*x+6|0*x+6|
+  , {[E6x+1:1:E7x]x[E6y+1:1:E7y]} -> |0*x+6|0*x+6|, {[E7x+1:1:E8x]x[E7y+1:1:E8y]} -> |0*x+7|0*x+7|
+  , {[E8x+1:1:E9x]x[E8y+1:1:E9y]} -> |0*x+8|0*x+8|, {[E9x+1:1:E10x]x[E9y+1:1:E10y]} -> |0*x+9|0*x+9|
+  , {[E10x+1:1:E11x]x[E10y+1:1:E11y]} -> |0*x+10|0*x+10|, {[E11x+1:1:E12x]x[E11y+1:1:E12y]} -> |0*x+10|0*x+10|
+  , {[E12x+1:1:E13x]x[E12y+1:1:E13y]} -> |0*x+11|0*x+11|, {[E13x+1:1:E14x]x[E13y+1:1:E14y]} -> |0*x+12|0*x+12|
+  , {[E14x+1:1:E15x]x[E14y+1:1:E15y]} -> |0*x+13|0*x+13|, {[E15x+1:1:E16x]x[E15y+1:1:E16y]} -> |0*x+14|0*x+14|
+  , {[E16x+1:1:E17x]x[E16y+1:1:E17y]} -> |0*x+14|0*x+14|, {[E17x+1:1:E18x]x[E17y+1:1:E18y]} -> |0*x+14|0*x+14|
+  , {[E18x+1:1:E19x]x[E18y+1:1:E19y]} -> |0*x+15|0*x+15|, {[E19x+1:1:E20x]x[E19y+1:1:E20y]} -> |0*x+16|0*x+16|
+  , {[E20x+1:1:E21x]x[E20y+1:1:E21y]} -> |0*x+17|0*x+17|, {[E21x+1:1:E22x]x[E21y+1:1:E22y]} -> |0*x+18|0*x+18|>>
+
+  X: F
+
+  Y: U
+  , 1
+);

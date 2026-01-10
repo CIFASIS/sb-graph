@@ -34,13 +34,14 @@ namespace Internal {
 // Benchmarks ------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
+/*
 static void BM_CustomBoostMatchTest(benchmark::State& state)
 {
   int N = state.range(0);
 
   const char* filename = std::getenv("TEST_FILE");
   if (filename) {
-    SBG::LIB::SBG match_sbg = generateSBG(filename, N, 1);
+    SBG::LIB::BipartiteSBG match_sbg = generateSBG(filename, N, 1);
     OG::OrdinaryGraphBuilder graph_builder(match_sbg);
     OG::Graph graph = graph_builder.build();
     OG::VertexVector mate(num_vertices(graph));
@@ -53,6 +54,7 @@ static void BM_CustomBoostMatchTest(benchmark::State& state)
 }
 BENCHMARK(BM_CustomBoostMatchTest)->RangeMultiplier(10)->Range(10, 10)
   ->Complexity()->Unit(benchmark::kMillisecond)->Iterations(1);
+*/
 
 } // namespace Internal
 

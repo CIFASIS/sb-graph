@@ -160,6 +160,12 @@ LIB::LExp LinearExprEvaluator::operator()(AST::SBG v) const
   return LIB::LExp(); 
 }
 
+LIB::LExp LinearExprEvaluator::operator()(AST::BipartiteSBG v) const 
+{
+  Util::ERROR("LinearExprEvaluator: trying to evaluate BipartiteSBG ", v, "\n");
+  return LIB::LExp(); 
+}
+
 LIB::LExp LinearExprEvaluator::operator()(AST::DSBG v) const 
 {
   Util::ERROR("LinearExprEvaluator: trying to evaluate DSBG ", v, "\n");

@@ -30,6 +30,8 @@
 
 #include "ast/expr.hpp"
 #include "algorithms/matching/matching.hpp"
+#include "sbg/directed_sbg.hpp"
+#include "sbg/bipartite_sbg.hpp"
 
 namespace SBG {
 
@@ -46,6 +48,7 @@ using ExprBaseType = std::variant<bool
   , LIB::Map
   , LIB::PWMap
   , LIB::SBG
+  , LIB::BipartiteSBG
   , LIB::DSBG
   , LIB::MatchData>;
 using MaybeEBT = std::optional<ExprBaseType>;

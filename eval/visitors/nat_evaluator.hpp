@@ -49,6 +49,7 @@ class NatEvaluator : public boost::static_visitor<LIB::NAT> {
   LIB::NAT operator()(AST::LinearMap v) const;
   LIB::NAT operator()(AST::PWLMap v) const;
   LIB::NAT operator()(AST::SBG v) const;
+  LIB::NAT operator()(AST::BipartiteSBG v) const;
   LIB::NAT operator()(AST::DSBG v) const;
   LIB::NAT operator()(AST::ParenExpr) const;
 

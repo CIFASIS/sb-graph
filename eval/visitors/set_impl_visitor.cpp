@@ -136,6 +136,21 @@ int SetImplExprVisitor::operator()(AST::SBG v) const
   return impl;
 }
 
+int SetImplExprVisitor::operator()(AST::BipartiteSBG v) const
+{
+  int impl = 2;
+
+  impl = std::min(impl, boost::apply_visitor(*this, v.V()));
+  impl = std::min(impl, boost::apply_visitor(*this, v.Vmap()));
+  impl = std::min(impl, boost::apply_visitor(*this, v.map1()));
+  impl = std::min(impl, boost::apply_visitor(*this, v.map2()));
+  impl = std::min(impl, boost::apply_visitor(*this, v.Emap()));
+  impl = std::min(impl, boost::apply_visitor(*this, v.X()));
+  impl = std::min(impl, boost::apply_visitor(*this, v.Y()));
+
+  return impl;
+}
+
 int SetImplExprVisitor::operator()(AST::DSBG v) const
 {
   int impl = 2;

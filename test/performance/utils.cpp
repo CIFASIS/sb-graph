@@ -69,7 +69,7 @@ bool updateN(const std::string& filename, int N)
     return true;
 }
 
-SBG::LIB::SBG generateSBG(std::string filename, int N, int copies)
+SBG::LIB::BipartiteSBG generateSBG(std::string filename, int N, int copies)
 {
   std::streambuf* original_buf = std::cout.rdbuf();
   std::ofstream nullStream("/dev/null");
@@ -79,12 +79,12 @@ SBG::LIB::SBG generateSBG(std::string filename, int N, int copies)
   updateN(filename, N);
 
   // Get graph from file
-  SBG::LIB::SBG g;
+  SBG::LIB::BipartiteSBG g;
   SBG::Eval::ProgramIO eval_result = SBG::Eval::parseEvalFile(filename); 
   for (const SBG::Eval::ExprResult &ev : eval_result.exprs()) {
     SBG::Eval::ExprBaseType e = std::get<1>(ev);
-    if (std::holds_alternative<SBG::LIB::SBG>(e)) {
-      g = std::get<SBG::LIB::SBG>(e);
+    if (std::holds_alternative<SBG::LIB::BipartiteSBG>(e)) {
+      g = std::get<SBG::LIB::BipartiteSBG>(e);
     }
   }
 
@@ -96,7 +96,7 @@ SBG::LIB::SBG generateSBG(std::string filename, int N, int copies)
 SBG::LIB::MatchData calculateMatching(std::string filename, int N, int copies)
 {
   // Calculate matching
-  SBG::LIB::SBG match_sbg = generateSBG(filename, N, copies);
+  SBG::LIB::BipartiteSBG match_sbg = generateSBG(filename, N, copies);
   SBG::LIB::Matching match_algorithm
     = SBG::LIB::MATCH_FACT.createMatchAlgorithm();
   SBG::LIB::MatchData match_result = match_algorithm.calculate(match_sbg);

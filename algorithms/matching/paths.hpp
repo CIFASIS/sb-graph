@@ -26,7 +26,7 @@
 #ifndef SBG_PATH_HPP
 #define SBG_PATH_HPP
 
-#include "sbg/sbg.hpp"
+#include "sbg/directed_sbg.hpp"
 
 namespace SBG {
 

@@ -235,22 +235,27 @@ std::ostream &operator<<(std::ostream &out, const PWLMap &pwl)
 
 // SBG -------------------------------------------------------------------------
 
-SBG::SBG() : V_(), Vmap_(), map1_(), map2_(), Emap_(), subE_map_() {}
-SBG::SBG(Expr V, Expr Vmap, Expr map1, Expr map2, Expr Emap, Expr subE) : V_(V)
-  , Vmap_(Vmap), map1_(map1), map2_(map2), Emap_(Emap), subE_map_(subE) {}
+SBG::SBG() : _V(), _Vmap(), _map1(), _map2(), _Emap(), _subE_map() {}
+SBG::SBG(Expr V, Expr Vmap, Expr map1, Expr map2, Expr Emap, Expr subE) : _V(V)
+  , _Vmap(Vmap), _map1(map1), _map2(map2), _Emap(Emap), _subE_map(subE) {}
 
-member_imp(SBG, Expr, V);
-member_imp(SBG, Expr, Vmap);
-member_imp(SBG, Expr, map1);
-member_imp(SBG, Expr, map2);
-member_imp(SBG, Expr, Emap);
-member_imp(SBG, Expr, subE_map);
+const Expr& SBG::V() const { return _V; }
+
+const Expr& SBG::Vmap() const { return _Vmap; }
+
+const Expr& SBG::map1() const { return _map1; }
+
+const Expr& SBG::map2() const { return _map2; }
+
+const Expr& SBG::Emap() const { return _Emap; }
+
+const Expr& SBG::subE_map() const { return _subE_map; }
 
 bool SBG::operator==(const SBG &other) const 
 { 
-  return V() == other.V() && Vmap() == other.Vmap() && map1() == other.map1()
-    && map2() == other.map2() && Emap() == other.Emap()
-    && subE_map() == other.subE_map();
+  return _V == other._V && _Vmap == other._Vmap && _map1 == other._map1
+    && _map2 == other._map2 && _Emap == other._Emap
+    && _subE_map == other._subE_map;
 }
 
 std::ostream &operator<<(std::ostream &out, const SBG &g)
@@ -260,7 +265,40 @@ std::ostream &operator<<(std::ostream &out, const SBG &g)
   out << "map1: " << g.map1() << "\n";
   out << "map2: " << g.map2() << "\n";
   out << "Emap: " << g.Emap() << "\n";
-  out << "subE_map: " << g.subE_map() << "\n";
+  out << "subE_map: " << g.subE_map();
+
+  return out;
+}
+
+// Bipartite SBG ---------------------------------------------------------------
+
+BipartiteSBG::BipartiteSBG() : _X(), _Y() {}
+BipartiteSBG::BipartiteSBG(Expr V, Expr Vmap, Expr map1, Expr map2, Expr Emap
+  , Expr subE, Expr X, Expr Y)
+  : SBG(V, Vmap, map1, map2, Emap, subE), _X(X), _Y(Y) {}
+
+const Expr& BipartiteSBG::X() const { return _X; }
+
+const Expr& BipartiteSBG::Y() const { return _Y; }
+
+bool BipartiteSBG::operator==(const BipartiteSBG &other) const 
+{ 
+  return _V == other._V && _Vmap == other._Vmap && _map1 == other._map1
+    && _map2 == other._map2 && _Emap == other._Emap
+    && _subE_map == other._subE_map
+    && _X == other._X && _Y == other._Y;
+}
+
+std::ostream &operator<<(std::ostream &out, const BipartiteSBG &g)
+{
+  out << "V: " << g.V() << "\n";
+  out << "Vmap: " << g.Vmap() << "\n\n";
+  out << "map1: " << g.map1() << "\n";
+  out << "map2: " << g.map2() << "\n";
+  out << "Emap: " << g.Emap() << "\n";
+  out << "subE_map: " << g.subE_map() << "\n\n";
+  out << "X: " << g.X() << "\n";
+  out << "Y: " << g.Y();
 
   return out;
 }

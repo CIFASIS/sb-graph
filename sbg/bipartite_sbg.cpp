@@ -17,42 +17,46 @@
 
  ******************************************************************************/
 
-#include "sbg/sbg.hpp"
+#include "sbg/bipartite_sbg.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
-////////////////////////////////////////////////////////////////////////////////
-// SBG -------------------------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-SBG::SBG() 
+BipartiteSBG::BipartiteSBG()
   : _V(SET_FACT.createSet()), _Vmap(PW_FACT.createPWMap())
   , _E(SET_FACT.createSet()), _map1(PW_FACT.createPWMap())
   , _map2(PW_FACT.createPWMap()), _Emap(PW_FACT.createPWMap())
-  , _subEmap(PW_FACT.createPWMap()) {}
-SBG::SBG(const Set& V, const PWMap& Vmap
+  , _subEmap(PW_FACT.createPWMap())
+  , _X(SET_FACT.createSet()), _Y(SET_FACT.createSet()) {}
+
+BipartiteSBG::BipartiteSBG(const Set& V, const PWMap& Vmap
   , const PWMap& map1, const PWMap& map2
-  , const PWMap& Emap, const PWMap& subEmap)
+  , const PWMap& Emap, const PWMap& subEmap
+  , const Set& X, const Set& Y)
   : _V(V), _Vmap(Vmap), _E(map1.dom().intersection(map2.dom()))
-    , _map1(map1), _map2(map2), _Emap(Emap), _subEmap(subEmap) {}
+    , _map1(map1), _map2(map2), _Emap(Emap), _subEmap(subEmap)
+    , _X(X), _Y(Y) {}
 
-const Set& SBG::V() const { return _V; }
+const Set& BipartiteSBG::V() const { return _V; }
 
-const PWMap& SBG::Vmap() const { return _Vmap; }
+const PWMap& BipartiteSBG::Vmap() const { return _Vmap; }
 
-const Set& SBG::E() const { return _E; }
+const Set& BipartiteSBG::E() const { return _E; }
 
-const PWMap& SBG::map1() const { return _map1; }
+const PWMap& BipartiteSBG::map1() const { return _map1; }
 
-const PWMap& SBG::map2() const { return _map2; }
+const PWMap& BipartiteSBG::map2() const { return _map2; }
 
-const PWMap& SBG::Emap() const { return _Emap; }
+const PWMap& BipartiteSBG::Emap() const { return _Emap; }
 
-const PWMap& SBG::subEmap() const { return _subEmap; }
+const PWMap& BipartiteSBG::subEmap() const { return _subEmap; }
 
-SBG& SBG::operator=(const SBG& other)
+const Set& BipartiteSBG::X() const { return _X; }
+
+const Set& BipartiteSBG::Y() const { return _Y; }
+
+BipartiteSBG& BipartiteSBG::operator=(const BipartiteSBG& other)
 {
   _V = other._V;
   _Vmap = other._Vmap;
@@ -61,11 +65,13 @@ SBG& SBG::operator=(const SBG& other)
   _map2 = other._map2;
   _Emap = other._Emap;
   _subEmap = other._subEmap;
+  _X = other._X;
+  _Y = other._Y;
 
   return *this;
 }
 
-std::ostream& operator<<(std::ostream& out, const SBG& g)
+std::ostream& operator<<(std::ostream& out, const BipartiteSBG& g)
 {
   out << "V: " << g.V() << "\n";
   out << "Vmap: " << g.Vmap() << "\n\n";
@@ -74,12 +80,15 @@ std::ostream& operator<<(std::ostream& out, const SBG& g)
   out << "map2: " << g.map2() << "\n";
   out << "Emap: " << g.Emap() << "\n";
   out << "subEmap: " << g.subEmap() << "\n";
+  out << "X: " << g.X() << "\n";
+  out << "Y: " << g.Y() << "\n";
 
   return out;
 }
 
-void SBG::addSV(const Set& vertices)
+void BipartiteSBG::addSV(const Set& X, const Set& Y)
 {
+  Set vertices = X.cup(Y);
   if (!vertices.intersection(_V).isEmpty()) {
     Util::ERROR("Trying to add existing vertices: ", vertices, " to SBG\n");
   } else if (!vertices.isEmpty() && vertices.intersection(_V).isEmpty()) {
@@ -91,11 +100,12 @@ void SBG::addSV(const Set& vertices)
       max[j] = max[j] + 1;
     }
     _Vmap.emplaceBack(Map(vertices, Exp(max)));
-
+    _X = _X.cup(X);
+    _Y = _Y.cup(Y);
   }
 }
 
-void SBG::addSE(const PWMap& pw1, const PWMap& pw2)
+void BipartiteSBG::addSE(const PWMap& pw1, const PWMap& pw2)
 {
   Set edges = SET_FACT.createSet(), edges1 = pw1.dom(), edges2 = pw2.dom();
   if (!edges.intersection(_E).isEmpty()) {
@@ -117,14 +127,24 @@ void SBG::addSE(const PWMap& pw1, const PWMap& pw2)
   }
 }
 
-SBG SBG::copy(unsigned int times) const
+BipartiteSBG BipartiteSBG::copy(unsigned int times) const
 {
-  Set ith_V = _V, new_V = ith_V;
-  PWMap ith_Vmap = _Vmap, new_Vmap = ith_Vmap;
-  PWMap ith_map1 = _map1, new_map1 = ith_map1;
-  PWMap ith_map2 = _map2, new_map2 = ith_map2;
-  PWMap ith_Emap = _Emap, new_Emap = ith_Emap;
-  PWMap ith_subE = _subEmap, new_subE = ith_subE;
+  Set ith_V = _V;
+  Set new_V = ith_V;
+  PWMap ith_Vmap = _Vmap;
+  PWMap new_Vmap = ith_Vmap;
+  PWMap ith_map1 = _map1;
+  PWMap new_map1 = ith_map1;
+  PWMap ith_map2 = _map2;
+  PWMap new_map2 = ith_map2;
+  PWMap ith_Emap = _Emap;
+  PWMap new_Emap = ith_Emap;
+  PWMap ith_subE = _subEmap;
+  PWMap new_subE = ith_subE;
+  Set ith_X = _X;
+  Set new_X = ith_X;
+  Set ith_Y = _Y;
+  Set new_Y = ith_Y;
 
   if (!ith_V.isEmpty()) {
     MD_NAT maxv = ith_V.maxElem();
@@ -134,6 +154,8 @@ SBG SBG::copy(unsigned int times) const
     MD_NAT maxe = _E.isEmpty() ? MD_NAT(dims, 0) : _E.maxElem();
     MD_NAT maxE
       = ith_Emap.isEmpty() ? MD_NAT(dims, 0) : ith_Emap.image().maxElem();
+    MD_NAT maxx = ith_X.isEmpty() ? MD_NAT(dims, 0) : ith_X.maxElem();
+    MD_NAT maxy = ith_Y.isEmpty() ? MD_NAT(dims, 0) : ith_Y.maxElem();
 
     Exp off;
     for (unsigned int j = 0; j < dims; ++j) {
@@ -149,6 +171,8 @@ SBG SBG::copy(unsigned int times) const
         new_map2 = new_map2.concatenation(ith_map2);
         new_Emap = new_Emap.concatenation(ith_Emap);
         new_subE = new_subE.concatenation(ith_subE);
+        new_X = new_X.disjointCup(ith_X);
+        new_Y = new_Y.disjointCup(ith_Y);
       }
 
       ith_V = ith_V.offset(maxv);
@@ -163,10 +187,14 @@ SBG SBG::copy(unsigned int times) const
       ith_Emap = ith_Emap.offsetImage(maxE);
       ith_subE = ith_subE.offsetDom(maxe);
       ith_subE = ith_subE.offsetImage(maxE);
+
+      ith_X = ith_X.offset(maxx);
+      ith_Y = ith_Y.offset(maxy);
     }
   }
 
-  return SBG(new_V, new_Vmap, new_map1, new_map2, new_Emap, new_subE);
+  return BipartiteSBG(new_V, new_Vmap, new_map1, new_map2, new_Emap, new_subE
+    , new_X, new_Y);
 }
 
 } // namespace LIB

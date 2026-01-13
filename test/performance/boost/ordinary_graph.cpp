@@ -73,4 +73,23 @@ std::ostream& operator<<(std::ostream& out, const BipartiteGraph& bgraph)
   return out;
 }
 
+// Directed Graph --------------------------------------------------------------
+
+std::ostream& operator<<(std::ostream& out, const DirectedGraph& dgraph)
+{
+  out << "Vertices: {0, ..., " << boost::num_vertices(dgraph) - 1 << "}\n";
+
+  out << "Edges:\n";
+  boost::graph_traits<DirectedGraph>::edge_iterator edge_it;
+  boost::graph_traits<DirectedGraph>::edge_iterator edges_end;
+  boost::tie(edge_it, edges_end) = boost::edges(dgraph);
+  for (; edge_it != edges_end; ++edge_it) {
+    auto u = source(*edge_it, dgraph);
+    auto v = target(*edge_it, dgraph);
+    out << u << " -> " << v << "\n";
+  }
+
+  return out;
+}
+
 }  // namespace OG

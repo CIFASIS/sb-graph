@@ -36,8 +36,6 @@
 
 namespace OG {
 
-using EdgeVector = std::vector<Edge>;
-
 class OrdinaryGraphBuilder {
   public:
   OrdinaryGraphBuilder(SBG::LIB::BipartiteSBG bsbg);

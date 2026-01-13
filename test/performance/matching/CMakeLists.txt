@@ -3,7 +3,7 @@ add_executable(match-benchmark)
 target_sources(match-benchmark
   PRIVATE
   ../benchmark_main.cpp
-  custom_match_bm.cpp
+  match_bm.cpp
   ../utils.cpp)
 target_link_libraries(match-benchmark
   PRIVATE 
@@ -21,7 +21,6 @@ add_dependencies(run-match match-benchmark)
 add_executable(custom-match-benchmark)
 target_sources(custom-match-benchmark
   PRIVATE
-  ../benchmark_main.cpp
   custom_match_bm.cpp
   ../utils.cpp)
 target_link_libraries(custom-match-benchmark

@@ -51,4 +51,8 @@ In the ./test/build/bin there are also some helpful binaries:
   - custom-boost-benchmark: benchmark for the C++ Boost Graph Library
     traditional scalar algorithms. This benchmark is introduced to compare
     the SBG approach with existing techniques. Environmental variable TEST_FILE
-    is supported.
+    is supported. The benchmark will start calculating some data, without
+    printing results for some seconds. 
+    If the process terminates with a Segmentation Fault, increase
+    stack size with the following command: `ulimit -s stack_size` (128000 is
+    recommended for stack_size).

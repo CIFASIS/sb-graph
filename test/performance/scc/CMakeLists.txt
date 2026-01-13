@@ -21,7 +21,6 @@ add_dependencies(run-scc scc-benchmark)
 add_executable(custom-scc-benchmark)
 target_sources(custom-scc-benchmark
   PRIVATE
-  ../benchmark_main.cpp
   custom_scc_bm.cpp
   ../utils.cpp)
 target_link_libraries(custom-scc-benchmark

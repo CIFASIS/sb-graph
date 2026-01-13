@@ -18,6 +18,7 @@
  ******************************************************************************/
 
 #include "test/performance/boost/ordinary_graph_builder.hpp"
+#include "util/time_profiler.hpp"
 
 namespace OG {
 
@@ -27,16 +28,17 @@ namespace OG {
 
 static SBG::LIB::MD_NAT nextElem(SBG::LIB::MD_NAT curr, SBG::LIB::SetPiece mdi)
 {
-  assert(!mdi.isEmpty());
-  SBG::LIB::MD_NAT min = mdi.minElem(), max = mdi.maxElem(), res;
+  SBG::LIB::MD_NAT min = mdi.minElem();
+  SBG::LIB::MD_NAT max = mdi.maxElem();
+  SBG::LIB::MD_NAT res;
   for (unsigned int j = 0; j < mdi.arity(); ++j) {
-    if (curr[j] == max[j]) 
+    if (curr[j] == max[j]) {
       res.emplaceBack(min[j]);
-
-    else {
+    } else {
       res.emplaceBack(curr[j] + 1);
-      for (unsigned int k = 1; k < mdi.arity() - j; ++k)
+      for (unsigned int k = 1; k < mdi.arity() - j; ++k) {
         res.emplaceBack(curr[j + k]);
+      }
       break;
     } 
   }
@@ -90,11 +92,11 @@ void OrdinaryGraphBuilder::translateVertices()
 EdgeVector OrdinaryGraphBuilder::getEdgeList()
 {
   EdgeVector result;
-  SBG::LIB::Set E = _bsbg.E();
+  const SBG::LIB::Set& E = _bsbg.E();
   result.reserve(E.cardinal());
 
-  SBG::LIB::PWMap map1 = _bsbg.map1();
-  SBG::LIB::PWMap map2 = _bsbg.map2();
+  const SBG::LIB::PWMap& map1 = _bsbg.map1();
+  const SBG::LIB::PWMap& map2 = _bsbg.map2();
   for (const SBG::LIB::SetPiece& mdi : E) { 
     SBG::LIB::MD_NAT begin = mdi.minElem(), end = mdi.maxElem();
     for (auto it = begin; it != end; it = nextElem(it, mdi)) {

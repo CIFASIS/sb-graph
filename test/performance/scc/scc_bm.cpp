@@ -17,6 +17,13 @@
 
  ******************************************************************************/
 
+/**
+ * @file scc_bm.cpp
+ * @brief Executes the SBG version of the SCC algorithm for TestRL1.test
+ * , TestRL2.test and TestRL3.test. It is used to showcase the constant
+ * execution time when the repetitive patterns increase its size.
+ */
+
 #include <benchmark/benchmark.h>
 
 #include "eval/user_impl_map.hpp"
@@ -148,66 +155,6 @@ static void BM_TestRL3WithBuilder(benchmark::State& state)
   state.SetComplexityN(N);
 }
 BENCHMARK(BM_TestRL3WithBuilder)->RangeMultiplier(10)->Range(100, 1e6)
-  ->Complexity()->Unit(benchmark::kMillisecond);
-
-static void BM_TestRL1Copies(benchmark::State& state)
-{
-  int N = state.range(0);
-  SBG::Eval::setSetFactory(2);
-  SBG::Eval::setPWFactory(2);
-
-  // Calculate SCC
-  SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
-  SBG::LIB::MatchData match_result
-    = calculateMatching("../../TestRL1.test", 100, N);
-
-  for (auto _ : state) {
-    SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
-    scc_algorithm.calculate(scc_dsbg);
-  }
-  state.SetComplexityN(N);
-}
-BENCHMARK(BM_TestRL1Copies)->RangeMultiplier(2)->Range(1, 128)
-  ->Complexity()->Unit(benchmark::kMillisecond);
-
-static void BM_TestRL2Copies(benchmark::State& state)
-{
-  int N = state.range(0);
-  SBG::Eval::setSetFactory(2);
-  SBG::Eval::setPWFactory(2);
-
-  // Calculate SCC
-  SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
-  SBG::LIB::MatchData match_result
-    = calculateMatching("../../TestRL2.test", 100, N);
-
-  for (auto _ : state) {
-    SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
-    scc_algorithm.calculate(scc_dsbg);
-  }
-  state.SetComplexityN(N);
-}
-BENCHMARK(BM_TestRL2Copies)->RangeMultiplier(2)->Range(1, 128)
-  ->Complexity()->Unit(benchmark::kMillisecond);
-
-static void BM_TestRL3Copies(benchmark::State& state)
-{
-  int N = state.range(0);
-  SBG::Eval::setSetFactory(2);
-  SBG::Eval::setPWFactory(2);
-
-  // Calculate SCC
-  SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
-  SBG::LIB::MatchData match_result
-    = calculateMatching("../../TestRL3.test", 100, N);
-
-  for (auto _ : state) {
-    SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
-    scc_algorithm.calculate(scc_dsbg);
-  }
-  state.SetComplexityN(N);
-}
-BENCHMARK(BM_TestRL3Copies)->RangeMultiplier(2)->Range(1, 128)
   ->Complexity()->Unit(benchmark::kMillisecond);
 
 } // namespace Internal

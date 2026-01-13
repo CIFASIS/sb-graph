@@ -35,6 +35,7 @@ namespace OG {
 using Vertex = SBG::LIB::NAT;
 using VertexVector = std::vector<Vertex>;
 using Edge = std::pair<SBG::LIB::NAT, SBG::LIB::NAT>;
+using EdgeVector = std::vector<Edge>;
 
 using Graph = boost::adjacency_list<boost::vecS, boost::vecS
   , boost::undirectedS>;
@@ -60,8 +61,9 @@ class BipartiteGraph {
 };
 std::ostream& operator<<(std::ostream& out, const BipartiteGraph& bgraph);
 
-using DGraph = boost::adjacency_list<boost::vecS, boost::vecS
+using DirectedGraph = boost::adjacency_list<boost::vecS, boost::vecS
   , boost::bidirectionalS>;
+std::ostream& operator<<(std::ostream& out, const DirectedGraph& dgraph);
 
 }  // namespace OG
 

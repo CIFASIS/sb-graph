@@ -37,36 +37,36 @@ namespace Internal {
 
 bool updateN(const std::string& filename, int N)
 {
-    std::ifstream input_file(filename);
-    if (!input_file.is_open()) {
-      std::cerr << "Error>> Unable to open file " << filename << "\n";
-      return false;
+  std::ifstream input_file(filename);
+  if (!input_file.is_open()) {
+    std::cerr << "Error>> Unable to open file " << filename << "\n";
+    return false;
+  }
+
+  std::string new_content = "";
+  std::string line;
+  std::regex pattern("^(\\s*N\\s*=\\s*).*");
+  bool found = false;
+  while (std::getline(input_file, line)) {
+    std::smatch common;
+    if (std::regex_search(line, common, pattern)) {
+      line = common[1].str() + std::to_string(N) + ";";
+      found = true;
     }
+    new_content += line + "\n";
+  }
+  input_file.close();
 
-    std::string new_content = "";
-    std::string line;
-    std::regex pattern("^(\\s*N\\s*=\\s*).*");
-    bool found = false;
-    while (std::getline(input_file, line)) {
-      std::smatch common;
-      if (std::regex_search(line, common, pattern)) {
-        line = common[1].str() + std::to_string(N) + ";";
-        found = true;
-      }
-      new_content += line + "\n";
-    }
-    input_file.close();
+  if (!found) {
+    std::cout << "\n";
+    return false;
+  }
 
-    if (!found) {
-      std::cout << "\n";
-      return false;
-    }
+  std::ofstream output_file(filename);
+  output_file << new_content;
+  output_file.close();
 
-    std::ofstream output_file(filename);
-    output_file << new_content;
-    output_file.close();
-
-    return true;
+  return true;
 }
 
 SBG::LIB::BipartiteSBG generateSBG(std::string filename, int N, int copies)

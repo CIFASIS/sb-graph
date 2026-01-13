@@ -17,6 +17,13 @@
 
  ******************************************************************************/
 
+/**
+ * @file match_bm.cpp
+ * @brief Executes the SBG version of the matching algorithm for TestRL1.test
+ * , TestRL2.test and TestRL3.test. It is used to showcase the constant
+ * execution time when the repetitive patterns increase its size.
+ */
+
 #include <benchmark/benchmark.h>
 
 #include "eval/user_impl_map.hpp"

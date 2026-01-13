@@ -154,8 +154,6 @@ BipartiteSBG BipartiteSBG::copy(unsigned int times) const
     MD_NAT maxe = _E.isEmpty() ? MD_NAT(dims, 0) : _E.maxElem();
     MD_NAT maxE
       = ith_Emap.isEmpty() ? MD_NAT(dims, 0) : ith_Emap.image().maxElem();
-    MD_NAT maxx = ith_X.isEmpty() ? MD_NAT(dims, 0) : ith_X.maxElem();
-    MD_NAT maxy = ith_Y.isEmpty() ? MD_NAT(dims, 0) : ith_Y.maxElem();
 
     Exp off;
     for (unsigned int j = 0; j < dims; ++j) {
@@ -188,13 +186,14 @@ BipartiteSBG BipartiteSBG::copy(unsigned int times) const
       ith_subE = ith_subE.offsetDom(maxe);
       ith_subE = ith_subE.offsetImage(maxE);
 
-      ith_X = ith_X.offset(maxx);
-      ith_Y = ith_Y.offset(maxy);
+      ith_X = ith_X.offset(maxv);
+      ith_Y = ith_Y.offset(maxv);
     }
   }
 
-  return BipartiteSBG(new_V, new_Vmap, new_map1, new_map2, new_Emap, new_subE
+  BipartiteSBG result(new_V, new_Vmap, new_map1, new_map2, new_Emap, new_subE
     , new_X, new_Y);
+  return result;
 }
 
 } // namespace LIB

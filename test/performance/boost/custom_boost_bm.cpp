@@ -17,45 +17,128 @@
 
  ******************************************************************************/
 
+/**
+ * @file custom_boost_bm.cpp
+ * @brief Executes the scalar causalization workflow for the desired file.
+ * @note The input .test file should define a variable N that describes the
+ * "size" of the repetitive patterns of the graph. 
+ */
+
+#include <unordered_map>
+
 #include <benchmark/benchmark.h>
 #include <boost/graph/max_cardinality_matching.hpp>
 #include <boost/graph/strong_components.hpp>
 
 #include "eval/user_impl_map.hpp"
-#include "test/performance/utils.hpp"
 #include "test/performance/boost/ordinary_graph_builder.hpp"
+#include "test/performance/boost/scc_graph_builder.hpp"
 #include "test/performance/utils.hpp"
+#include "util/defs.hpp"
+#include "util/time_profiler.hpp"
 
 namespace Test {
 
 namespace Internal {
 
+int lower = 100;
+int mult = 10;
+int upper = 1e6;
+std::unordered_map<int, OG::BipartiteGraph> input_graphs;
+
+/**
+ * @brief Creates single instances of the input bipartite graph of size N,
+ * varying N accordingly.
+ */
+void initialize(const char *filename)
+{
+  input_graphs.reserve(upper/lower);
+  for (int N = lower; N <= upper; N *= mult) {
+    SBG::LIB::BipartiteSBG match_sbg = generateSBG(filename, N, 1);
+    OG::OrdinaryGraphBuilder graph_builder(match_sbg);
+    OG::BipartiteGraph bgraph = graph_builder.build();
+    input_graphs[N] = bgraph;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Benchmarks ------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-static void BM_CustomBoostMatchTest(benchmark::State& state)
+static void BM_CustomBoostMatch(benchmark::State& state)
 {
   int N = state.range(0);
 
-  const char* filename = std::getenv("TEST_FILE");
-  if (filename) {
-    SBG::LIB::BipartiteSBG match_sbg = generateSBG(filename, N, 1);
-    OG::OrdinaryGraphBuilder graph_builder(match_sbg);
-    OG::BipartiteGraph bgraph = graph_builder.build();
-    std::cout << bgraph << "\n";
-    OG::Graph match_graph = bgraph.graph();
-    OG::VertexVector mate(num_vertices(match_graph));
+  OG::BipartiteGraph& bgraph = input_graphs[N];
+  const OG::Graph& match_graph = bgraph.graph();
+  int number_vertices = num_vertices(match_graph);
 
-    for (auto _ : state) {
-      edmonds_maximum_cardinality_matching(match_graph, &mate[0]);
-    }
-    state.SetComplexityN(N);
+  for (auto _ : state) {
+    OG::VertexVector matching(number_vertices);
+    edmonds_maximum_cardinality_matching(match_graph, &matching[0]);
   }
+  state.SetComplexityN(N);
 }
-BENCHMARK(BM_CustomBoostMatchTest)->RangeMultiplier(10)->Range(10, 10)
-  ->Complexity()->Unit(benchmark::kMillisecond)->Iterations(1);
+BENCHMARK(BM_CustomBoostMatch)->RangeMultiplier(mult)
+  ->Range(lower, upper)->Complexity()->Unit(benchmark::kMillisecond);
+
+static void BM_CustomBoostSCC(benchmark::State& state)
+{
+  int N = state.range(0);
+
+  OG::BipartiteGraph& bgraph = input_graphs[N];
+  const OG::Graph& match_graph = bgraph.graph();
+  OG::VertexVector matching(num_vertices(match_graph));
+  edmonds_maximum_cardinality_matching(match_graph, &matching[0]);
+  OG::SCCGraphBuilder scc_builder(std::move(bgraph), std::move(matching));
+  OG::DirectedGraph scc_graph = scc_builder.build();
+
+  for (auto _ : state) {
+    std::vector<int> components(num_vertices(scc_graph));
+    strong_components(scc_graph, &components[0]);
+  }
+  state.SetComplexityN(N);
+}
+BENCHMARK(BM_CustomBoostSCC)->RangeMultiplier(mult)
+  ->Range(lower, upper)->Complexity()->Unit(benchmark::kMillisecond);
+
+static void BM_CustomBoostSCCWithBuilder(benchmark::State& state)
+{
+  int N = state.range(0);
+
+  OG::BipartiteGraph& bgraph = input_graphs[N];
+  const OG::Graph& match_graph = bgraph.graph();
+  OG::VertexVector matching(num_vertices(match_graph));
+  edmonds_maximum_cardinality_matching(match_graph, &matching[0]);
+  OG::SCCGraphBuilder scc_builder(std::move(bgraph), std::move(matching));
+
+  for (auto _ : state) {
+    OG::DirectedGraph scc_graph = scc_builder.build();
+    std::vector<int> components(num_vertices(scc_graph));
+    strong_components(scc_graph, &components[0]);
+  }
+  state.SetComplexityN(N);
+}
+BENCHMARK(BM_CustomBoostSCCWithBuilder)->RangeMultiplier(mult)
+  ->Range(lower, upper)->Complexity()->Unit(benchmark::kMillisecond);
 
 } // namespace Internal
 
 } // namespace Test
+
+////////////////////////////////////////////////////////////////////////////////
+// Main ------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+int main(int argc, char *argv[])
+{
+  const char *filename = std::getenv("TEST_FILE");
+  if (filename) {
+    Test::Internal::initialize(filename);
+
+    ::benchmark::Initialize(&argc, argv);
+    ::benchmark::RunSpecifiedBenchmarks();
+  }
+
+  return 0;
+}

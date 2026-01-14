@@ -1,13 +1,13 @@
-/** @file sbg.hpp
+/** @file directed_sbg.hpp
 
- @brief <b>Set-based graph implementation</b>
+ @brief <b>Directed Set-based graph implementation</b>
 
  Given a graph G, if there is a biunivocal assignment of naturals for elements
- in V(G) and E(G), an associated SBG is a tuple composed by:
+ in V(G) and E(G), an associated directed SBG is a tuple composed by:
  - A Set V_ describing V(G).
  - A Set E_ listing elements of E(G).
- - A PWMap map1_ mapping elements of E_ to V_ (one of the endings of each edge).
- - A PWMap map2_ mapping elements of E_ to V_ (the other ending of each edge). \n 
+ - A PWMap mapB_ mapping elements of E_ to V_ (start of each edge).
+ - A PWMap mapD_ mapping elements of E_ to V_ (ending of each edge). \n 
  where map1_ and map_2 share the same domain. These elements all together keep
  the same information as G. Additionally, the SBG keeps:
  - A PWMap Vmap_ mapping elements in V_ to some constant value. Vertices that
@@ -38,8 +38,8 @@
 
  ******************************************************************************/
 
-#ifndef SBG_SBG_HPP
-#define SBG_SBG_HPP
+#ifndef SBG_DIRECTED_SBG_HPP
+#define SBG_DIRECTED_SBG_HPP
 
 #include "sbg/pwmap_fact.hpp"
 #include "util/debug.hpp"
@@ -49,68 +49,58 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Undirected SBG --------------------------------------------------------------
+// Directed SBG ----------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-class SBG {
+class DSBG {
   public:
+  // Vertex definitions
+  member_class(Set, V);
+  member_class(PWMap, Vmap);
+
+  // Edge definitions
+  member_class(Set, E);
+  member_class(PWMap, mapB);
+  member_class(PWMap, mapD);
+  member_class(PWMap, Emap);
+  member_class(PWMap, subEmap);
+
   /**
    * @brief Empty SBG constructor.
    */
-  SBG();
+  DSBG();
 
   /**
    * @brief SBG constructor that copies arguments to construct member variables.
    * A set of edges E is not needed, as it will be obtained from the domain of
    * map1_ and map2_.
-   * Preconditions:
-   *   - \p V = dom(\p Vmap)
-   *   - dom(\p map1) = dom(\p map2) = dom(\p Emap) = dom(\p subEmap)
-   *   - \p map1.image() ⊆ \p V and \p map2.image() ⊆ \p V
    */
-  SBG(const Set& V, const PWMap& Vmap
-    , const PWMap& map1, const PWMap& map2
-    , const PWMap& Emap, const PWMap& subEmap);
+  DSBG(const Set &V, const PWMap &Vmap
+   , const PWMap &mapB, const PWMap &mapD
+   , const PWMap &Emap, const PWMap &subEmap);
 
-  const Set& V() const;
-  const PWMap& Vmap() const;
-  const Set& E() const;
-  const PWMap& map1() const;
-  const PWMap& map2() const;
-  const PWMap& Emap() const;
-  const PWMap& subEmap() const;
-
-  SBG& operator=(const SBG& other);
+  DSBG &operator=(const DSBG &other);
 
   /**
-   * @brief Adds a new set-vertex composed by \p vertices. \n
+   * @brief Adds a new set-vertex composed by \p vertices.
    * Precondition: V_.intersection(vertices) = {}
    */
-  void addSV(const Set& vertices);
+  DSBG addSV(const Set &vertices) const;
 
   /**
-   * @brief Adds a new set-edge described by \p pw1 and \p pw2. \n 
+   * @brief Adds a new set-edge described by \p pw1 and \p pw2.
    * Precondition: dom(pw1) = dom(pw2) and
    * E_.intersection(pw1.dom()) = {} and E_.intersection(pw2.dom()) = {} 
    */
-  void addSE(const PWMap& pw1, const PWMap& pw2);
+  DSBG addSE(const PWMap &pw1, const PWMap &pw2) const;
 
   /**
-   * @brief Returns a new SBG composed by \p times copies of the original SBG,
-   * where each copy is isomorphic to the argument.
+   * @brief Erase vertices \p vs from the DSBG, together with associated edges
+   * with \p vs.
    */
-  SBG copy(unsigned int times) const;
-
-  private:
-  Set _V; ///< Vertex definitions
-  PWMap _Vmap;
-  Set _E; ///< Edge definitions
-  PWMap _map1;
-  PWMap _map2;
-  PWMap _Emap;
-  PWMap _subEmap;
+  DSBG eraseVertices(const Set &vs) const;
 };
-std::ostream& operator<<(std::ostream& out, const SBG& g);
+std::ostream &operator<<(std::ostream &out, const DSBG &dg);
 
 } // namespace LIB
 

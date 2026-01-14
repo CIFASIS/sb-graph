@@ -17,6 +17,13 @@
 
  ******************************************************************************/
 
+/**
+ * @file match_bm.cpp
+ * @brief Executes the SBG version of the matching algorithm for TestRL1.test
+ * , TestRL2.test and TestRL3.test. It is used to showcase the constant
+ * execution time when the repetitive patterns increase its size.
+ */
+
 #include <benchmark/benchmark.h>
 
 #include "eval/user_impl_map.hpp"
@@ -39,7 +46,7 @@ static void BM_TestRL1(benchmark::State& state)
   // Calculate Matching
   SBG::LIB::Matching match_algorithm
     = SBG::LIB::MATCH_FACT.createMatchAlgorithm();
-  SBG::LIB::SBG match_sbg = generateSBG("../../TestRL1.test", N, 1);
+  SBG::LIB::BipartiteSBG match_sbg = generateSBG("../../TestRL1.test", N, 1);
 
   for (auto _ : state) {
     match_algorithm.calculate(match_sbg);
@@ -58,7 +65,7 @@ static void BM_TestRL2(benchmark::State& state)
   // Calculate Matching
   SBG::LIB::Matching match_algorithm
     = SBG::LIB::MATCH_FACT.createMatchAlgorithm();
-  SBG::LIB::SBG match_sbg = generateSBG("../../TestRL2.test", N, 1);
+  SBG::LIB::BipartiteSBG match_sbg = generateSBG("../../TestRL2.test", N, 1);
 
   for (auto _ : state) {
     match_algorithm.calculate(match_sbg);
@@ -78,7 +85,7 @@ static void BM_TestRL3(benchmark::State& state)
   // Calculate Matching
   SBG::LIB::Matching match_algorithm
     = SBG::LIB::MATCH_FACT.createMatchAlgorithm();
-  SBG::LIB::SBG match_sbg = generateSBG("../../TestRL3.test", N, 1);
+  SBG::LIB::BipartiteSBG match_sbg = generateSBG("../../TestRL3.test", N, 1);
 
   for (auto _ : state) {
     match_algorithm.calculate(match_sbg);
@@ -97,7 +104,7 @@ static void BM_TestRL1Copies(benchmark::State& state)
   // Calculate Matching
   SBG::LIB::Matching match_algorithm
     = SBG::LIB::MATCH_FACT.createMatchAlgorithm();
-  SBG::LIB::SBG match_sbg = generateSBG("../../TestRL1.test", 100, N);
+  SBG::LIB::BipartiteSBG match_sbg = generateSBG("../../TestRL1.test", 100, N);
 
   for (auto _ : state) {
     match_algorithm.calculate(match_sbg);
@@ -116,7 +123,7 @@ static void BM_TestRL2Copies(benchmark::State& state)
   // Calculate Matching
   SBG::LIB::Matching match_algorithm
     = SBG::LIB::MATCH_FACT.createMatchAlgorithm();
-  SBG::LIB::SBG match_sbg = generateSBG("../../TestRL2.test", 100, N);
+  SBG::LIB::BipartiteSBG match_sbg = generateSBG("../../TestRL2.test", 100, N);
 
   for (auto _ : state) {
     match_algorithm.calculate(match_sbg);
@@ -135,7 +142,7 @@ static void BM_TestRL3Copies(benchmark::State& state)
   // Calculate Matching
   SBG::LIB::Matching match_algorithm
     = SBG::LIB::MATCH_FACT.createMatchAlgorithm();
-  SBG::LIB::SBG match_sbg = generateSBG("../../TestRL3.test", 100, N);
+  SBG::LIB::BipartiteSBG match_sbg = generateSBG("../../TestRL3.test", 100, N);
 
   for (auto _ : state) {
     match_algorithm.calculate(match_sbg);

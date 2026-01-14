@@ -46,10 +46,16 @@ bool updateN(const std::string& filename, int N);
  * @param N Size of set-vertices and set-edges. 
  * @param copies Copies of the SBG, i.e. number of set-vertices and set-edges.
  */
-SBG::LIB::SBG generateSBG(std::string filename, int N, int copies);
+SBG::LIB::BipartiteSBG generateSBG(std::string filename, int N, int copies);
 
 /**
- * @brief
+ * @brief Reads a .test file to search for an SBG that will be the input for
+ * the causalization process, modifying the size of set-vertices and set-edges
+ * or the number of copies of the SBG, that is, the number of set-vertices
+ * and set-edges. It then applies the matching SBG algorithm for the modified
+ * SBG.
+ * @param N Size of set-vertices and set-edges. 
+ * @param copies Copies of the SBG, i.e. number of set-vertices and set-edges.
  */
 SBG::LIB::MatchData calculateMatching(std::string filename, int N, int copies);
 

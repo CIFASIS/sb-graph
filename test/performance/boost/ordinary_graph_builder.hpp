@@ -1,4 +1,12 @@
-/*****************************************************************************
+/** @file ordinary_graph_builder.hpp
+
+ @brief <b>Ordinary Graph Builder</b>
+
+ Module in charge of constructing the scalar graph used as input of the scalar
+ causalization from a SBG. The generated result will be used as input of the
+ Edmonds-Karp maximum matching algorithm.
+
+ <hr>
 
  This file is part of Set--Based Graph Library.
 
@@ -17,72 +25,32 @@
 
  ******************************************************************************/
 
-#ifndef PERF_ORD_BUILDER_HPP
-#define PERF_ORD_BUILDER_HPP
+#ifndef PERF_ORDINARY_BUILDER_HPP
+#define PERF_ORDINARY_BUILDER_HPP
 
-#include <cassert>
-#include <chrono>
 #include <map>
 
 #include "test/performance/boost/ordinary_graph.hpp"
-#include "sbg/sbg.hpp"
+#include "sbg/bipartite_sbg.hpp"
 #include "util/logger.hpp"
 
 namespace OG {
 
-using VertexVector = std::vector<Vertex>;
-
-struct EdgeInfo {
-  EdgeInfo(Edge e, Vertex v1, Vertex v2);
-
-  Edge _e;
-  Vertex _v1;
-  Vertex _v2;
-};
-using EdgeInfoVector = std::vector<EdgeInfo>;
-
 class OrdinaryGraphBuilder {
   public:
-  OrdinaryGraphBuilder(SBG::LIB::SBG sbg);
+  OrdinaryGraphBuilder(SBG::LIB::BipartiteSBG bsbg);
 
-  const Graph& graph() const;
-
-  void build();
-  void build(const VertexVector& V, const EdgeInfoVector& E);
-  void clear();
-  VertexVector getVertexList() const;
-  EdgeInfoVector getEdgeList();
+  BipartiteGraph build();
+  BipartiteGraph build(SBG::LIB::NAT number_vertices, EdgeVector& edges
+    , std::vector<int>&& partition);
+  void translateVertices();
+  EdgeVector getEdgeList();
 
   private:
-  void addVertex(const Vertex& v);
-  void addEdge(const EdgeInfo& info);
-
-  const SBG::LIB::SBG _sbg; ///< Input SBG to convert
-  Graph _graph; ///< Resulting ordinary graph
-  std::map<SBG::LIB::MD_NAT, VertexDesc> _vertex_map;
-    ///< Auxiliar map for addEdge 
-};
-
-class OrdinaryDGraphBuilder {
-  public:
-  OrdinaryDGraphBuilder(SBG::LIB::DSBG dsbg);
-
-  const DGraph& dgraph() const;
-
-  void build();
-  void build(const VertexVector& V, const EdgeInfoVector& E);
-  void clear();
-  VertexVector getVertexList() const;
-  EdgeInfoVector getEdgeList();
-
-  private:
-  void addVertex(const Vertex& v);
-  void addEdge(const EdgeInfo& info);
-
-  const SBG::LIB::DSBG _dsbg; ///< Input SBG to convert
-  DGraph _dgraph; ///< Resulting ordinary graph
-  std::map<SBG::LIB::MD_NAT, VertexDesc> _vertex_map;
-    ///< Auxiliar map for addEdge 
+  const SBG::LIB::BipartiteSBG _bsbg; ///< Input bipartite SBG to convert
+  std::map<SBG::LIB::MD_NAT, Vertex> _vertex_map;
+    ///< Map from SBG vertex identifier to Graph element
+  std::vector<int> _partition;
 };
 
 }  // namespace OG

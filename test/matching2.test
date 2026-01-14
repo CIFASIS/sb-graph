@@ -1,6 +1,5 @@
 /* Matching test of a single large path + path starting
-at the middle of the first one, 
-originated from the following model:
+ at the middle of the first one, originated from the following model:
 
 model matching2
   constant Integer N = 100000;
@@ -29,17 +28,24 @@ off3b = N-1;
 off2d = N-1;
 off3d = 1;
 
-V: {[1:1:V1], [V1+1:1:V2], [V2+1:1:V3]}
+F = {[1:1:V1], [V1+1:1:V2]};
+U = {[V2+1:1:V3]};
+
+V: F \/ U
 Vmap: <<{[1:1:V1]} -> |0*x+1|, {[V1+1:1:V2]} -> |0*x+2|, {[V2+1:1:V3]} -> |0*x+3|>> 
 map1: <<{[1:1:E1]} -> |1*x+0|, {[E1+1:1:E2]} -> |1*x+0|, {[E2+1:1:E3]} -> |1*x-off3b|>>
 map2: <<{[1:1:E1]} -> |1*x+off1d|, {[E1+1:1:E2]} -> |1*x+off2d|, {[E2+1:1:E3]} -> |1*x+off3d|>>
-Emap: <<{[1:1:E1]} -> |0*x+1|, {[E1+1:1:E2], [E2+1:1:E3]} -> |0*x+2|>>;
+Emap: <<{[1:1:E1]} -> |0*x+1|, {[E1+1:1:E2], [E2+1:1:E3]} -> |0*x+2|>>
+X: F
+Y: U;
 
 match(
-  V: {[1:1:V1], [V1+1:1:V2], [V2+1:1:V3]}
+  V: F \/ U 
   Vmap: <<{[1:1:V1]} -> |0*x+1|, {[V1+1:1:V2]} -> |0*x+2|, {[V2+1:1:V3]} -> |0*x+3|>> 
   map1: <<{[1:1:E1]} -> |1*x+0|, {[E1+1:1:E2]} -> |1*x+0|, {[E2+1:1:E3]} -> |1*x-off3b|>>
   map2: <<{[1:1:E1]} -> |1*x+off1d|, {[E1+1:1:E2]} -> |1*x+off2d|, {[E2+1:1:E3]} -> |1*x+off3d|>>
   Emap: <<{[1:1:E1]} -> |0*x+1|, {[E1+1:1:E2], [E2+1:1:E3]} -> |0*x+2|>>
+  X: F
+  Y: U
   , 1
 );

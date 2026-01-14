@@ -26,7 +26,7 @@
 #ifndef SBG_MRV_HPP
 #define SBG_MRV_HPP
 
-#include "sbg/sbg.hpp"
+#include "sbg/directed_sbg.hpp"
 
 namespace SBG {
 

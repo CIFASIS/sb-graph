@@ -58,7 +58,7 @@ namespace Util {
 /**
  * @brief Execution time of selected functions will be printed if it's true.
  */
-constexpr bool time_profiler_enabled = false;
+constexpr bool time_profiler_enabled = true;
 
 /**
  * @brief Calling this before the program returns.

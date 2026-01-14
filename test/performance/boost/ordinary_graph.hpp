@@ -1,4 +1,10 @@
-/*****************************************************************************
+/** @file ordinary_graph.hpp
+
+ @brief <b>Ordinary Graph</b>
+
+ Module that defines the structure for scalar graphs.
+
+ <hr>
 
  This file is part of Set--Based Graph Library.
 
@@ -17,69 +23,47 @@
 
  ******************************************************************************/
 
-#ifndef PERF_ORD_HPP
-#define PERF_ORD_HPP
+#ifndef PERF_ORDINARY_GRAPH_HPP
+#define PERF_ORDINARY_GRAPH_HPP
 
 #include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/subgraph.hpp>
 
-#include <sbg/natural.hpp>
+#include "sbg/natural.hpp"
 
 namespace OG {
 
-// Set-vertex ------------------------------------------------------------------
+using Vertex = SBG::LIB::NAT;
+using VertexVector = std::vector<Vertex>;
+using Edge = std::pair<SBG::LIB::NAT, SBG::LIB::NAT>;
+using EdgeVector = std::vector<Edge>;
 
-class Vertex {
+using Graph = boost::adjacency_list<boost::vecS, boost::vecS
+  , boost::undirectedS>;
+std::ostream& operator<<(std::ostream& out, const Graph& bgraph);
+
+class BipartiteGraph {
   public:
-  Vertex();
-  Vertex(SBG::LIB::MD_NAT id);
+  BipartiteGraph();
+  BipartiteGraph(Graph&& graph, std::vector<int>&& partition);
 
-  const SBG::LIB::MD_NAT& id() const;
-  bool operator==(const Vertex& v) const;
+  const Graph& graph() const;
+  const std::vector<int>& partition() const;
 
   private:
-  SBG::LIB::MD_NAT id_; ///< Unique identifier
+  Graph _graph;
+
+  /**
+   * @brief Vector of the size of the set of vertices of _graph.
+   * _partition[i] = 0 if vertex i belongs to X, and _partition[i] = 1 if
+   * it belongs to Y. 
+   */
+  std::vector<int> _partition;
 };
+std::ostream& operator<<(std::ostream& out, const BipartiteGraph& bgraph);
 
-std::ostream& operator<<(std::ostream& out, const Vertex& v);
-
-// Ordinary Graph Edge ---------------------------------------------------------
-
-class Edge {
-  public:
-  Edge();
-  Edge(SBG::LIB::MD_NAT id);
-
-  const SBG::LIB::MD_NAT& id() const;
-  bool operator==(const Edge& e) const;
-
-  private:
-  SBG::LIB::MD_NAT id_; ///< Unique identifier
-};
-
-std::ostream& operator<<(std::ostream& out, const Edge& e);
-
-// Ordinary Graph definition ---------------------------------------------------
-
-typedef boost::adjacency_list<
-  boost::vecS, boost::vecS, boost::undirectedS, Vertex, Edge
-> Graph;
-typedef Graph::vertex_descriptor VertexDesc;
-typedef boost::graph_traits<Graph>::vertex_iterator VertexIt;
-typedef Graph::edge_descriptor EdgeDesc;
-typedef boost::graph_traits<Graph>::edge_iterator EdgeIt;
-typedef boost::graph_traits<Graph>::out_edge_iterator OutEdgeIt;
-
-// Ordinary directed Graph definition ------------------------------------------
-
-typedef boost::adjacency_list<
-  boost::vecS, boost::vecS, boost::bidirectionalS, Vertex, Edge
-> DGraph;
-typedef DGraph::vertex_descriptor DVertexDesc;
-typedef boost::graph_traits<DGraph>::vertex_iterator DVertexIt;
-typedef DGraph::edge_descriptor DEdgeDesc;
-typedef boost::graph_traits<DGraph>::edge_iterator DEdgeIt;
-typedef boost::graph_traits<DGraph>::out_edge_iterator OutDEdgeIt;
+using DirectedGraph = boost::adjacency_list<boost::vecS, boost::vecS
+  , boost::bidirectionalS>;
+std::ostream& operator<<(std::ostream& out, const DirectedGraph& dgraph);
 
 }  // namespace OG
 

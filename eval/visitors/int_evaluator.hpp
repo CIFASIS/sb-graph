@@ -49,6 +49,7 @@ class IntEvaluator : public boost::static_visitor<LIB::INT> {
   LIB::INT operator()(AST::LinearMap v) const;
   LIB::INT operator()(AST::PWLMap v) const;
   LIB::INT operator()(AST::SBG v) const;
+  LIB::INT operator()(AST::BipartiteSBG v) const;
   LIB::INT operator()(AST::DSBG v) const;
   LIB::INT operator()(AST::ParenExpr v) const;
 

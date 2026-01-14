@@ -17,3 +17,8 @@
 
 // Examples to test Set::emplace
 //{[200:300], [1:100], [400:500], [301:350]};
+
+// Examples for parsing rationals
+//V0 = 0;
+//E0 = 0;
+//offM11 = r(V0,1) - r(E0,1);

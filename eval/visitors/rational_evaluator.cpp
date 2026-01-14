@@ -158,6 +158,12 @@ LIB::RATIONAL RationalEvaluator::operator()(AST::SBG v) const
   return LIB::RATIONAL(0, 1);
 }
 
+LIB::RATIONAL RationalEvaluator::operator()(AST::BipartiteSBG v) const
+{
+  Util::ERROR("RationalEvaluator: trying to evaluate BipartiteSBG ", v, "\n");
+  return LIB::RATIONAL(0, 1);
+}
+
 LIB::RATIONAL RationalEvaluator::operator()(AST::DSBG v) const
 {
   Util::ERROR("RationalEvaluator: trying to evaluate DSBG ", v, "\n");

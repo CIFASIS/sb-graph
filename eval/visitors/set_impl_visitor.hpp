@@ -66,6 +66,7 @@ class SetImplExprVisitor : public boost::static_visitor<int> {
   int operator()(AST::LinearMap v) const;
   int operator()(AST::PWLMap v) const;
   int operator()(AST::SBG v) const;
+  int operator()(AST::BipartiteSBG v) const;
   int operator()(AST::DSBG v) const;
   int operator()(AST::ParenExpr) const;
 

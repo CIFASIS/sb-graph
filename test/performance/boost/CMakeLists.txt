@@ -2,10 +2,10 @@
 add_executable(custom-boost-benchmark)
 target_sources(custom-boost-benchmark
   PRIVATE
-  ../benchmark_main.cpp
   custom_boost_bm.cpp
   ordinary_graph.cpp
   ordinary_graph_builder.cpp
+  scc_graph_builder.cpp
   ../utils.cpp)
 target_link_libraries(custom-boost-benchmark
   PUBLIC

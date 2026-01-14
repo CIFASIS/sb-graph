@@ -73,6 +73,7 @@ ExprEvaluator::ExprEvaluator(EvalContext& eval_ctx) : eval_ctx_(eval_ctx)
   eval_ctx.insertFunction("sort", BuiltInFunctions::topoSortEvaluator);
   eval_ctx.insertFunction("cut", BuiltInFunctions::cutVertexEvaluator);
   eval_ctx.insertFunction("matchSCC", BuiltInFunctions::matchSCCEvaluator);
+  // agregar funciones
 }
 
 ExprBaseType ExprEvaluator::operator()(AST::Natural v) const

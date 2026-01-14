@@ -22,6 +22,7 @@
 #include "algorithms/matching/matching_fact.hpp"
 #include "algorithms/misc/causalization_builders.hpp"
 #include "algorithms/scc/scc_fact.hpp"
+#include "algorithms/tearing/tearing_fact.hpp"
 #include "algorithms/toposort/ts_fact.hpp"
 #include "eval/visitors/func_evaluator.hpp"
 #include "util/debug.hpp"
@@ -621,9 +622,10 @@ ExprBaseType BuiltInFunctions::sccEvaluator(const EBTList& args)
     , "sccEvaluator: wrong number of arguments\n");
 
   LIB::SCC scc_impl = LIB::SCC_FACT.createSCCAlgorithm();
+  LIB::Tearing tearing_impl = LIB::TEARING_FACT.createTearingAlgorithm();
   const auto scc_evaluator = Overload {
-    [&scc_impl](LIB::DSBG a) { 
-      return ExprBaseType(scc_impl.calculate(a).rmap());
+    [&tearing_impl](LIB::DSBG a) { 
+      return ExprBaseType(tearing_impl.calculate(a).rmap());
     },
     [](auto a) {
       Util::ERROR("sccEvaluator: wrong argument ", a, " for scc\n"); 

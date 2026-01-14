@@ -56,7 +56,7 @@ LIB::LExp LinearExprEvaluator::operator()(AST::UnaryOp v) const
 
   switch (v.op()) {
     case AST::UnOp::oppo:
-      LIB::LExp(-le.slope(), -le.offset()); 
+      return LIB::LExp(-le.slope(), -le.offset()); 
       break;
 
     default:
@@ -95,7 +95,7 @@ LIB::LExp LinearExprEvaluator::operator()(AST::BinOp v) const
       break;
 
     default:
-      Util::ERROR("LinearExprEvaluator: UnaryOp ", v.op(), " is not arithmetic\n");
+      Util::ERROR("LinearExprEvaluator: BinOp ", v.op(), " is not arithmetic\n");
       break;
   };
 
@@ -157,6 +157,12 @@ LIB::LExp LinearExprEvaluator::operator()(AST::PWLMap v) const
 LIB::LExp LinearExprEvaluator::operator()(AST::SBG v) const 
 {
   Util::ERROR("LinearExprEvaluator: trying to evaluate SBG ", v, "\n");
+  return LIB::LExp(); 
+}
+
+LIB::LExp LinearExprEvaluator::operator()(AST::BipartiteSBG v) const 
+{
+  Util::ERROR("LinearExprEvaluator: trying to evaluate BipartiteSBG ", v, "\n");
   return LIB::LExp(); 
 }
 

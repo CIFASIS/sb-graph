@@ -27,23 +27,6 @@ namespace SBG {
 
 namespace LIB {
 
-WeightedSBGraph addSEW(PWMap pw1, PWMap pw2, EdgeCost costs, WeightedSBGraph g)
-{
-    //save node weights
-    g.addSE(pw1, pw2);
-
-    return g;
-}
-
-
-WeightedSBGraph addSVW(Set nodes, NodeWeight weights, WeightedSBGraph g)
-{
-    g.addSV(nodes);
-
-    return g;
-}
-
-
 ostream& operator<<(ostream& os, const WeightedSBGraph& graph)
 {
     os << SBG(graph);

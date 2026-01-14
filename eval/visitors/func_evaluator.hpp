@@ -96,6 +96,7 @@ class BuiltInFunctions {
   static ExprBaseType emptyEvaluator(const EBTList& args);
   static ExprBaseType minEvaluator(const EBTList& args);
   static ExprBaseType maxEvaluator(const EBTList& args);
+  static ExprBaseType restrictEvaluator(const EBTList& args);
   static ExprBaseType composeEvaluator(const EBTList& args);
   static ExprBaseType inverseEvaluator(const EBTList& args);
   static ExprBaseType imageEvaluator(const EBTList& args);

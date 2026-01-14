@@ -56,6 +56,7 @@ ExprEvaluator::ExprEvaluator(EvalContext& eval_ctx) : eval_ctx_(eval_ctx)
   eval_ctx.insertFunction("isEmpty", BuiltInFunctions::emptyEvaluator);
   eval_ctx.insertFunction("minElem", BuiltInFunctions::minEvaluator);
   eval_ctx.insertFunction("maxElem", BuiltInFunctions::maxEvaluator);
+  eval_ctx.insertFunction("restrict", BuiltInFunctions::restrictEvaluator);
   eval_ctx.insertFunction("compose", BuiltInFunctions::composeEvaluator);
   eval_ctx.insertFunction("inv", BuiltInFunctions::inverseEvaluator);
   eval_ctx.insertFunction("image", BuiltInFunctions::imageEvaluator);
@@ -248,6 +249,31 @@ ExprBaseType ExprEvaluator::operator()(AST::SBG v) const
   } 
 
   return LIB::SBG(V, Vmap, map1, map2, Emap, subE);
+}
+
+ExprBaseType ExprEvaluator::operator()(AST::BipartiteSBG v) const
+{
+  LIB::Set V = eval<LIB::Set>(*this, v.V(), "Set");
+  LIB::PWMap Vmap = eval<LIB::PWMap>(*this, v.Vmap(), "PWMap");
+  LIB::PWMap map1 = eval<LIB::PWMap>(*this, v.map1(), "PWMap");
+  LIB::PWMap map2 = eval<LIB::PWMap>(*this, v.map2(), "PWMap");
+  LIB::PWMap Emap = eval<LIB::PWMap>(*this, v.Emap(), "PWMap");
+  LIB::PWMap subE = eval<LIB::PWMap>(*this, v.subE_map(), "PWMap");
+  LIB::Set X = eval<LIB::Set>(*this, v.X(), "Set");
+  LIB::Set Y = eval<LIB::Set>(*this, v.Y(), "Set");
+
+  if (subE.dom().isEmpty() && !Emap.dom().isEmpty()) {
+    unsigned int j = 1;
+    for (const LIB::Map &m : Emap) {
+      for (const LIB::SetPiece &mdi : m.dom()) {
+        LIB::Exp off(LIB::MD_NAT(mdi.arity(), j));
+        subE.emplaceBack(LIB::Map(LIB::SET_FACT.createSet(mdi), off)); 
+        ++j;
+      }
+    }
+  } 
+
+  return LIB::BipartiteSBG(V, Vmap, map1, map2, Emap, subE, X, Y);
 }
 
 ExprBaseType ExprEvaluator::operator()(AST::DSBG v) const

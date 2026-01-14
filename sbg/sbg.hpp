@@ -52,19 +52,8 @@ namespace LIB {
 // Undirected SBG --------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct SBG {
+class SBG {
   public:
-  // Vertex definitions
-  member_class(Set, V);
-  member_class(PWMap, Vmap);
-
-  // Edge definitions
-  member_class(Set, E);
-  member_class(PWMap, map1);
-  member_class(PWMap, map2);
-  member_class(PWMap, Emap);
-  member_class(PWMap, subEmap);
-
   /**
    * @brief Empty SBG constructor.
    */
@@ -74,87 +63,54 @@ struct SBG {
    * @brief SBG constructor that copies arguments to construct member variables.
    * A set of edges E is not needed, as it will be obtained from the domain of
    * map1_ and map2_.
+   * Preconditions:
+   *   - \p V = dom(\p Vmap)
+   *   - dom(\p map1) = dom(\p map2) = dom(\p Emap) = dom(\p subEmap)
+   *   - \p map1.image() ⊆ \p V and \p map2.image() ⊆ \p V
    */
-  SBG(const Set &V, const PWMap &Vmap
-    , const PWMap &map1, const PWMap &map2
-    , const PWMap &Emap, const PWMap &subEmap);
+  SBG(const Set& V, const PWMap& Vmap
+    , const PWMap& map1, const PWMap& map2
+    , const PWMap& Emap, const PWMap& subEmap);
 
-  SBG &operator=(const SBG &other);
+  const Set& V() const;
+  const PWMap& Vmap() const;
+  const Set& E() const;
+  const PWMap& map1() const;
+  const PWMap& map2() const;
+  const PWMap& Emap() const;
+  const PWMap& subEmap() const;
+
+  SBG& operator=(const SBG& other);
 
   /**
    * @brief Adds a new set-vertex composed by \p vertices. \n
    * Precondition: V_.intersection(vertices) = {}
    */
-  SBG addSV(const Set &vertices) const;
+  void addSV(const Set& vertices);
 
   /**
    * @brief Adds a new set-edge described by \p pw1 and \p pw2. \n 
    * Precondition: dom(pw1) = dom(pw2) and
    * E_.intersection(pw1.dom()) = {} and E_.intersection(pw2.dom()) = {} 
    */
-  SBG addSE(const PWMap &pw1, const PWMap &pw2) const;
+  void addSE(const PWMap& pw1, const PWMap& pw2);
 
   /**
    * @brief Returns a new SBG composed by \p times copies of the original SBG,
    * where each copy is isomorphic to the argument.
    */
   SBG copy(unsigned int times) const;
+
+  private:
+  Set _V; ///< Vertex definitions
+  PWMap _Vmap;
+  Set _E; ///< Edge definitions
+  PWMap _map1;
+  PWMap _map2;
+  PWMap _Emap;
+  PWMap _subEmap;
 };
-std::ostream &operator<<(std::ostream &out, const SBG &g);
-
-////////////////////////////////////////////////////////////////////////////////
-// Directed SBG ----------------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-struct DSBG {
-  public:
-  // Vertex definitions
-  member_class(Set, V);
-  member_class(PWMap, Vmap);
-
-  // Edge definitions
-  member_class(Set, E);
-  member_class(PWMap, mapB);
-  member_class(PWMap, mapD);
-  member_class(PWMap, Emap);
-  member_class(PWMap, subEmap);
-
-  /**
-   * @brief Empty SBG constructor.
-   */
-  DSBG();
-
-  /**
-   * @brief SBG constructor that copies arguments to construct member variables.
-   * A set of edges E is not needed, as it will be obtained from the domain of
-   * map1_ and map2_.
-   */
-  DSBG(const Set &V, const PWMap &Vmap
-   , const PWMap &mapB, const PWMap &mapD
-   , const PWMap &Emap, const PWMap &subEmap);
-
-  DSBG &operator=(const DSBG &other);
-
-  /**
-   * @brief Adds a new set-vertex composed by \p vertices.
-   * Precondition: V_.intersection(vertices) = {}
-   */
-  DSBG addSV(const Set &vertices) const;
-
-  /**
-   * @brief Adds a new set-edge described by \p pw1 and \p pw2.
-   * Precondition: dom(pw1) = dom(pw2) and
-   * E_.intersection(pw1.dom()) = {} and E_.intersection(pw2.dom()) = {} 
-   */
-  DSBG addSE(const PWMap &pw1, const PWMap &pw2) const;
-
-  /**
-   * @brief Erase vertices \p vs from the DSBG, together with associated edges
-   * with \p vs.
-   */
-  DSBG eraseVertices(const Set &vs) const;
-};
-std::ostream &operator<<(std::ostream &out, const DSBG &dg);
+std::ostream& operator<<(std::ostream& out, const SBG& g);
 
 } // namespace LIB
 

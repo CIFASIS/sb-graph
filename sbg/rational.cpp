@@ -53,6 +53,11 @@ bool RATIONAL::operator>(const RATIONAL &r) const
   return value_ > r.value_;
 }
 
+bool RATIONAL::operator>=(const RATIONAL &r) const
+{
+  return value_ >= r.value_;
+}
+
 bool RATIONAL::operator==(const INT &other) const
 {
   RATIONAL aux = *this;
@@ -138,6 +143,17 @@ INT RATIONAL::toInt() const
     return numerator();
 
   return 0;
+}
+
+INT RATIONAL::floor() const
+{
+  return boost::rational_cast<INT>(value_);
+}
+
+INT RATIONAL::ceiling() const
+{
+  INT trunc = boost::rational_cast<INT>(value_);
+  return value_ == trunc ? trunc : trunc + 1;
 }
 
 std::ostream &operator<<(std::ostream &out, const RATIONAL &r)

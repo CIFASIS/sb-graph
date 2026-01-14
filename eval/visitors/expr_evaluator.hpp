@@ -48,6 +48,7 @@ class ExprEvaluator : public boost::static_visitor<ExprBaseType> {
   ExprBaseType operator()(AST::LinearMap v) const;
   ExprBaseType operator()(AST::PWLMap v) const;
   ExprBaseType operator()(AST::SBG v) const;
+  ExprBaseType operator()(AST::BipartiteSBG v) const;
   ExprBaseType operator()(AST::DSBG v) const;
   ExprBaseType operator()(AST::ParenExpr v) const;
 

@@ -24,7 +24,7 @@
 #ifndef SBG_MATCH_HPP
 #define SBG_MATCH_HPP
 
-#include "sbg/sbg.hpp"
+#include "sbg/bipartite_sbg.hpp"
 
 namespace SBG {
 
@@ -42,15 +42,15 @@ std::ostream& operator<<(std::ostream& out, const Direction& direction);
  */
 struct MatchData {
   public:
-  MatchData(SBG sbg, Set M, bool full_match);
+  MatchData(BipartiteSBG bsbg, Set M, bool full_match);
 
-  const SBG& sbg() const;
+  const BipartiteSBG& bsbg() const;
   const Set& M() const;
   const bool& full_match() const;
 
   private:
-  SBG sbg_;         ///< Original input for the algorithm
-  Set M_;           ///< Matched edges
+  BipartiteSBG bsbg_; ///< Original input for the algorithm
+  Set M_; ///< Matched edges
   bool full_match_; ///< Returns true if all right vertices are saturated
 };
 std::ostream& operator<<(std::ostream& out, const MatchData& data);
@@ -69,7 +69,7 @@ class MatchStrategy {
 
   MatchStrategy();
 
-  virtual MatchData calculate(const SBG& sbg) = 0;
+  virtual MatchData calculate(const BipartiteSBG& bsbg) = 0;
 };
 
 
@@ -81,7 +81,7 @@ class Matching {
   public:
   Matching(MatchStratPtr strat);
 
-  MatchData calculate(const SBG& sbg);
+  MatchData calculate(const BipartiteSBG& bsbg);
 
   private:
   MatchStratPtr strategy_;

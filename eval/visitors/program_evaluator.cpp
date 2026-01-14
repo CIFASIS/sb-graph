@@ -35,7 +35,6 @@ ProgramIO ProgramEvaluator::evaluate(AST::SBGProgram p) const
   AST::IsConfig cfg_visit;
   if (!p.stms().empty()) {
     AST::Statement first = p.stms()[0];
-
     if (boost::apply_visitor(cfg_visit, first))
       eval_ctx.setArity(boost::get<AST::ConfigDims>(first).nmbr_dims());
   }

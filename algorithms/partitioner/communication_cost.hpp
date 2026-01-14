@@ -32,8 +32,13 @@
 namespace sbg_partitioner {
 
 struct SetPieceHash {
-  static std::size_t set_piece_hash(const SBG::LIB::SetPiece& set_piece);  
-  std::size_t operator()(const SBG::LIB::SetPiece& set_piece) const;
+    SetPieceHash() = default;
+    static std::size_t set_piece_hash(const SBG::LIB::SetPiece& set_piece);
+    std::size_t operator()(const SBG::LIB::SetPiece& set_piece) const;
+};
+
+struct SetHash {
+    std::size_t operator()(const SBG::LIB::Set& set_piece) const;
 };
 
 class ICommunicationCost {
@@ -83,6 +88,11 @@ public:
      * @note the member function is non-const since _ec_cost_by_interval and _ic_cost_by_interval may be updated to prevent to be recomputed.
      */
     virtual SBG::LIB::Set get_ic_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes) = 0;
+
+
+    virtual SBG::LIB::Set get_set_piece_edges(const SBG::LIB::SetPiece& nodes) = 0;
+
+    virtual void clear_communication_cache() = 0;
 };
 
 
@@ -105,6 +115,10 @@ public:
     SBG::LIB::Set get_ec_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes)  override;
 
     SBG::LIB::Set get_ic_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes) override;
+
+    SBG::LIB::Set get_set_piece_edges(const SBG::LIB::SetPiece& nodes) override;
+
+    void clear_communication_cache() override;
 
 private:
     const SBG::LIB::WeightedSBGraph& _graph; // read-only members
@@ -138,9 +152,47 @@ public:
 
     SBG::LIB::Set get_ic_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes) override;
 
+    SBG::LIB::Set get_set_piece_edges(const SBG::LIB::SetPiece& nodes) override;
+
+    void clear_communication_cache() override;
+
 private:
     CommunicationCost _comm_cost;
     std::mutex _mutex;
+};
+
+
+class CommunicationCostCC {
+public:
+    CommunicationCostCC(const SBG::LIB::WeightedSBGraph& graph, const using_cc::SetPointers& nodes);
+
+    ~CommunicationCostCC() = default;
+
+    unsigned get_communication(const SBG::LIB::SetPiece& a, const SBG::LIB::SetPiece& b) const;
+    unsigned get_communication(unsigned a_idx, unsigned b_idx) const;
+    unsigned get_communication(unsigned idx) const;
+    unsigned get_communication(const SBG::LIB::SetPiece& a) const;
+
+    SBG::LIB::Set get_set_piece_edges(const SBG::LIB::SetPiece& nodes);
+
+    unsigned get_index(const SBG::LIB::SetPiece& nodes) const;
+
+private:
+    void initialize();
+
+    using AdjacencyMatrix = std::vector<std::vector<unsigned>>;
+
+    const SBG::LIB::WeightedSBGraph& _graph; // read-only members
+
+    using_cc::SetPointers _sorted_nodes;
+    SBG::LIB::PWMap _set_piece_indices;
+    AdjacencyMatrix _adjacency_matrix;
+    std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SetPieceHash> _communication_by_set_piece;
+
+    std::vector<std::pair<SBG::LIB::Set, SBG::LIB::Set>> _cost_by_partition;
+    std::vector<std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SetPieceHash>> _ec_cost_by_interval;
+    std::vector<std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SetPieceHash>> _ic_cost_by_interval;
+
 };
 
 

@@ -7,9 +7,13 @@ target_include_directories(sbg-dev PUBLIC ${PROJECT_SOURCE_DIR})
 target_sources(
     sbg-dev
     PRIVATE
+    bipartite_sbg.cpp
+    directed_sbg.cpp
+    dom_ord_pwmap.cpp
     interval.cpp
     lexp.cpp
     map.cpp
+    map_entry.cpp
     multidim_inter.cpp
     multidim_lexp.cpp
     natural.cpp

@@ -38,9 +38,10 @@ class EvalExecutor : public Util::UserInputHandler {
   void execute(int arg_count, char* args[]) override;
 
   private:
-  EvalUserInput gatherUserInput();
+  EvalUserInput chooseImplementation();
 
   boost::optional<int> set_impl_;
+  boost::optional<int> pw_impl_;
   boost::optional<int> scc_impl_;
 };
 

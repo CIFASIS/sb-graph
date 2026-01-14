@@ -1,4 +1,12 @@
-/*****************************************************************************
+/** @file ordinary_graph_builder.hpp
+
+ @brief <b>Ordinary Graph Builder</b>
+
+ Module in charge of constructing the scalar graph used as input of the scalar
+ causalization from a SBG. The generated result will be used as input of the
+ Edmonds-Karp maximum matching algorithm.
+
+ <hr>
 
  This file is part of Set--Based Graph Library.
 
@@ -17,48 +25,32 @@
 
  ******************************************************************************/
 
-#ifndef PERF_ORD_BUILDER_HPP
-#define PERF_ORD_BUILDER_HPP
+#ifndef PERF_ORDINARY_BUILDER_HPP
+#define PERF_ORDINARY_BUILDER_HPP
 
-#include <cassert>
-#include <chrono>
 #include <map>
 
-#include <test/performance/boost/ordinary_graph.hpp>
-#include <sbg/sbg.hpp>
-#include <util/logger.hpp>
+#include "test/performance/boost/ordinary_graph.hpp"
+#include "sbg/bipartite_sbg.hpp"
+#include "util/logger.hpp"
 
 namespace OG {
 
 class OrdinaryGraphBuilder {
   public:
-  OrdinaryGraphBuilder(SBG::LIB::SBG graph);
-  ~OrdinaryGraphBuilder() = default;
+  OrdinaryGraphBuilder(SBG::LIB::BipartiteSBG bsbg);
 
-  virtual OG::Graph build();
+  BipartiteGraph build();
+  BipartiteGraph build(SBG::LIB::NAT number_vertices, EdgeVector& edges
+    , std::vector<int>&& partition);
+  void translateVertices();
+  EdgeVector getEdgeList();
 
-  protected:
-  OG::VertexDesc addVertex(SBG::LIB::MD_NAT id, OG::Graph &g);
-  OG::EdgeDesc addEdge(SBG::LIB::MD_NAT id, OG::Graph &g);
-
-  SBG::LIB::SBG _sb_graph;
-  std::map<SBG::LIB::MD_NAT, OG::VertexDesc> _vertex_map;
-};
-
-class OrdinaryDGraphBuilder {
-  public:
-  OrdinaryDGraphBuilder(SBG::LIB::DSBG graph);
-  ~OrdinaryDGraphBuilder() = default;
-
-  virtual OG::DGraph build();
-
-  protected:
-  OG::DVertexDesc addVertex(SBG::LIB::MD_NAT id, OG::DGraph &g);
-  OG::DEdgeDesc addEdge(SBG::LIB::MD_NAT id, SBG::LIB::MD_NAT v1
-    , SBG::LIB::MD_NAT v2, OG::DGraph &g);
-
-  SBG::LIB::DSBG _sb_graph;
-  std::map<SBG::LIB::MD_NAT, OG::DVertexDesc> _vertex_map;
+  private:
+  const SBG::LIB::BipartiteSBG _bsbg; ///< Input bipartite SBG to convert
+  std::map<SBG::LIB::MD_NAT, Vertex> _vertex_map;
+    ///< Map from SBG vertex identifier to Graph element
+  std::vector<int> _partition;
 };
 
 }  // namespace OG

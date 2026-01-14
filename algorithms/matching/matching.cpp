@@ -44,10 +44,10 @@ std::ostream& operator<<(std::ostream& out, const Direction& direction)
   return out;
 }
 
-MatchData::MatchData(SBG sbg, Set M, bool full_match)
-  : sbg_(sbg), M_(M), full_match_(full_match) {}
+MatchData::MatchData(BipartiteSBG bsbg, Set M, bool full_match)
+  : bsbg_(bsbg), M_(M), full_match_(full_match) {}
 
-const SBG& MatchData::sbg() const { return sbg_; }
+const BipartiteSBG& MatchData::bsbg() const { return bsbg_; }
 const Set& MatchData::M() const { return M_; }
 const bool& MatchData::full_match() const { return full_match_; }
 
@@ -74,9 +74,9 @@ MatchStrategy::MatchStrategy() {}
 
 Matching::Matching(MatchStratPtr strat) : strategy_(std::move(strat)) {}
 
-MatchData Matching::calculate(const SBG& sbg)
+MatchData Matching::calculate(const BipartiteSBG& bsbg)
 {
-  return strategy_->calculate(sbg);
+  return strategy_->calculate(bsbg);
 }
 
 } // namespace LIB

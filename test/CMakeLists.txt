@@ -23,4 +23,4 @@ add_custom_target(test
       COMMAND echo "Running Tests."
 )
 
-add_dependencies(test run-eval-test run-parser-test run-partitioner-test run-performance-test)
+add_dependencies(test run-eval-test run-parser-test run-partitioner-test)

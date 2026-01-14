@@ -23,7 +23,11 @@ namespace SBG {
 
 namespace LIB {
 
+////////////////////////////////////////////////////////////////////////////////
 // Auxiliary functions ---------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+// Image -----------------------------------------------------------------------
 
 Interval image(Interval i, LExp le) {
   RATIONAL m = le.slope(), h = le.offset();
@@ -33,8 +37,9 @@ Interval image(Interval i, LExp le) {
   if (m == rat_inf || m > rat_inf)
     return Interval(0, 1, Inf);
 
-  if (le.isId())
+  if (le.isId()) {
     return i;
+  }
 
   if (le.isConstant()) {
     NAT off = le.offset().toNat();
@@ -75,7 +80,87 @@ SetPiece image(SetPiece mdi, Exp mdle)
   return res;
 }
 
+// Reduction -------------------------------------------------------------------
 
+bool reductionIsEfficient(const Map& m)
+{
+  int count = 0;
+  for (const LExp& le : m.exp()) {
+    if (le.slope() != 1 && le.slope() != 0) {
+      return false;
+    }
+
+    if (le.slope() == 1 && le.offset() != 0) {
+      ++count;
+    }
+  }
+
+  return count == 1;
+}
+
+std::vector<Map> reduce(int k, const SetPiece& mdi, const Exp& e)
+{
+  std::vector<Map> result;
+
+  // Special cases
+  if (mdi.cardinal() == 1) {
+    result.emplace_back(Map(mdi, e));
+    return result;
+  }
+
+  // No partition of the piece is needed
+  RATIONAL zero(0, 1);
+  INT h = e[k].offset().toInt();
+  Interval i = mdi[k];
+  NAT st = i.step();
+  Exp e_copy = e;
+  if (h == (INT) st) {
+    NAT hi = i.end();
+    if (st < Inf - hi) {
+      e_copy[k] = LExp(zero, hi + st);
+      result.emplace_back(Map(mdi, e_copy));
+      return result;
+    }
+  } else if (h == (INT) -st) {
+    NAT lo = i.begin();
+    if (lo >= st) {
+      e_copy[k] = LExp(zero, lo - st);
+      result.emplace_back(Map(mdi, e_copy));
+      return result;
+    }
+  }
+
+  // Partition of the piece needed
+  if (h % (INT) st == 0) {
+    SetPiece mdi_copy = mdi;
+    // Is convenient the partition of the piece?
+    if ((INT) i.cardinal() > h*h) {
+      INT absh = std::abs(h);
+      for (int j = 1; j <= absh; ++j) {
+        NAT new_begin = i.begin() + j - 1;
+        Interval  jth_piece(new_begin, (NAT) absh, i.end());
+        mdi_copy[k] = jth_piece;
+
+        RATIONAL jth_off;
+        if (h > 0) {
+          jth_off = jth_piece.end() + h;
+        }
+        else {
+          jth_off = jth_piece.begin() + h;
+        }
+
+        e_copy[k] = LExp(0, jth_off);
+        result.emplace_back(Map(mdi_copy, e_copy));
+      }
+    } else {
+      result.emplace_back(Map(mdi, e));
+    }
+  } else {
+    result.emplace_back(Map(mdi, e));
+  }
+
+  return result; 
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Map Implementation ----------------------------------------------------------
@@ -95,7 +180,7 @@ Map::Map(SetPiece mdi, Exp exp)
 Map::Map(Set s, Exp exp)
   : dom_(std::move(s)), exp_(exp) {}
 
-bool Map::operator==(const Map &other) const
+bool Map::operator==(const Map& other) const
 {
   if (dom_ == other.dom()) {
     if (dom_.cardinal() == 1) {
@@ -108,12 +193,12 @@ bool Map::operator==(const Map &other) const
   return false;
 }
 
-bool Map::operator!=(const Map &other) const
+bool Map::operator!=(const Map& other) const
 {
   return !(*this == other);
 }
 
-Map &Map::operator=(const Map &other)
+Map& Map::operator=(const Map& other)
 {
   dom_ = other.dom_;
   exp_ = other.exp_;
@@ -121,8 +206,7 @@ Map &Map::operator=(const Map &other)
   return *this;
 }
 
-
-Map Map::operator+(const Map &other) const
+Map Map::operator+(const Map& other) const
 {
   Set res_dom = dom_.intersection(other.dom());
   Exp res_exp = exp_ + other.exp();
@@ -130,7 +214,7 @@ Map Map::operator+(const Map &other) const
   return Map(res_dom, res_exp);
 }
 
-std::ostream &operator<<(std::ostream &out, const Map &m)
+std::ostream& operator<<(std::ostream& out, const Map& m)
 {
   out << m.dom() << " -> " << m.exp();
 
@@ -143,14 +227,14 @@ std::size_t Map::arity() const { return exp_.arity(); }
 
 bool Map::isEmpty() const { return dom_.isEmpty(); }
 
-Map Map::restrict(const Set &subdom) const
+Map Map::restrict(const Set& subdom) const
 {
   return Map(dom_.intersection(subdom), exp_);
 }
 
 Set Map::image() const { return image(dom_); }
 
-Set Map::image(const Set &subdom) const
+Set Map::image(const Set& subdom) const
 {
   Set res = SET_FACT.createSet();
 
@@ -158,30 +242,35 @@ Set Map::image(const Set &subdom) const
     return res;
 
   Set capdom = dom_.intersection(subdom);
-  if (capdom.isEmpty())
+  if (capdom.isEmpty()) {
     return res;
-  else {
-    // Check if all expressions are bijective; in the affirmative case all
-    // images can be added without further checks
+  } else {
+    // Check if all expressions are bijective; if so all partial images can be
+    // added without further checks
     bool cond = true;
-    for (const LExp &le : exp_)
-      if (le.isConstant())
+    for (const LExp& le : exp_) {
+      if (le.isConstant()) {
         cond = false;
+      }
+    }
 
     if (cond) {
-      for (const SetPiece &mdi : capdom)
+      for (const SetPiece& mdi : capdom) {
         res.emplaceBack(SBG::LIB::image(mdi, exp_));
+      }
     }
     else {
-      for (const SetPiece &mdi : capdom)
-        res = res.cup(SET_FACT.createSet(SBG::LIB::image(mdi, exp_)));
+      for (const SetPiece& mdi : capdom) {
+        Set ith_img = SET_FACT.createSet(SBG::LIB::image(mdi, exp_));
+        res = std::move(res).cup(std::move(ith_img));
+      }
     }
   }
 
   return res;
 }
 
-Set Map::preImage(const Set &subcodom) const
+Set Map::preImage(const Set& subcodom) const
 {
   Set im = image();
   Set cap_subcodom = im.intersection(subcodom);
@@ -205,10 +294,12 @@ Set Map::preImage(const Set &subcodom) const
   return dom_.intersection(inv_im);
 }
 
-Map Map::composition(const Map &other) const
+Map Map::composition(const Map& other) const
 {
   Set res_dom = dom_.intersection(other.image());
-  res_dom = other.preImage(res_dom);
+  if (!res_dom.isEmpty()) {
+    res_dom = other.preImage(res_dom);
+  }
   Exp res_exp = exp_.composition(other.exp_);
 
   return Map(res_dom, res_exp);
@@ -257,11 +348,93 @@ bool Map::isId() const
   return exp_.isId();
 }
 
-MaybeMap Map::compact(const Map &other) const
+Set Map::lessImage(const Map& other) const
+{
+  Set result = SET_FACT.createSet();
+
+  int ar = arity();
+  SetPiece min_in_m1(ar, Interval(0, 1, Inf));
+  Exp exp1 = exp_;
+  Exp exp2 = other.exp_;
+
+  Set cap_dom = dom_.intersection(other.dom_);
+  if (cap_dom.isEmpty())
+    return cap_dom; 
+
+  for (int k = 0; k < ar; ++k) {
+    LExp linear_exp1 = exp1[k];
+    LExp linear_exp2 = exp2[k];
+
+    RATIONAL m1 = linear_exp1.slope();
+    RATIONAL m2 = linear_exp2.slope();
+    if (m1 == m2) {
+      RATIONAL h1 = linear_exp1.offset();
+      RATIONAL h2 = linear_exp2.offset();
+      if (h1 < h2) {
+        result.emplaceBack(min_in_m1);
+      }
+      break;
+    }
+    else {
+      RATIONAL point = linear_exp1.intersectionPoint(linear_exp2);
+      if (point >= 0) {
+        NAT floor = point.floor();
+        NAT ceil = point.ceiling();
+        if (ceil == floor) {
+          NAT floor_minus = floor == 0 ? 0 : floor - 1;
+          NAT ceil_plus = ceil == Inf ? Inf : ceil + 1;
+          Interval kth = m1 < m2 ? Interval(ceil_plus, 1, Inf)
+            : Interval (0, 1, floor_minus);
+          min_in_m1[k] = kth;
+          result.emplaceBack(min_in_m1);
+          min_in_m1[k] = Interval(ceil, 1, floor);
+        }
+        else {
+          break;
+        }
+      }
+      else {
+        if (m1 < m2) {
+          result.emplaceBack(min_in_m1);
+        }
+        break;
+      }
+    }
+  }
+
+  result = result.intersection(cap_dom);
+  return result;
+}
+
+std::vector<Map> Map::reduce() const
+{
+  std::vector<Map> result;
+
+  Map m = *this;
+  if (!reductionIsEfficient(m)) {
+    result.emplace_back(m);
+  } else {
+    Exp e = m.exp();
+    for (auto k = 0; k < m.arity(); ++k) {
+      LExp le = e[k];
+      if (le.slope() == 1 && le.offset() != 0) {
+        for (const SetPiece& mdi : m.dom()) {
+          std::vector<Map> reduced = SBG::LIB::reduce(k, mdi, e);
+          result.insert(result.end(), reduced.begin(), reduced.end());
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
+MaybeMap Map::compact(const Map& other) const
 {
   Set res_dom = SET_FACT.createSet();
-  if (exp_ == other.exp())
+  if (exp_ == other.exp()) {
     return Map(dom_.cup(other.dom()).compact(), exp_);
+  }
 
   return {};
 }

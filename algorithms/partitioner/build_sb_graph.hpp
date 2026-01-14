@@ -30,7 +30,7 @@ namespace sbg_partitioner {
 /// a node for each access to a variable and an edge for each connection
 /// between variables.
 /// If a variable appears on the left and on the right side, an edge is created.
-SBG::LIB::WeightedSBGraph build_sb_graph(const std::string& filename);
+SBG::LIB::WeightedSBGraph build_sb_graph(const std::string& filename, bool compact_maps = true);
 
 
 /// Ad hoc function to get pre image of an expression from its image.

@@ -21,40 +21,74 @@
 
 namespace OG {
 
-using namespace std;
+// Graph -----------------------------------------------------------------------
 
-// Vertex ----------------------------------------------------------------------
-
-Vertex::Vertex() : id_(0) {}
-
-Vertex::Vertex(SBG::LIB::MD_NAT id) : id_(id) {}
-
-member_imp(Vertex, SBG::LIB::MD_NAT, id);
-
-bool Vertex::operator==(const Vertex &other) const
+std::ostream& operator<<(std::ostream& out, const Graph& g)
 {
-  return id() == other.id();
-}
+  out << "Vertices: {0, ..., " << boost::num_vertices(g) - 1 << "}\n";
 
-std::ostream &operator<<(std::ostream &out, const Vertex &v)
-{
-  out << v.id() << "\n";
+  out << "Edges:\n";
+  boost::graph_traits<Graph>::vertex_iterator vi;
+  boost::graph_traits<Graph>::vertex_iterator vi_end;
+  for (boost::tie(vi, vi_end) = boost::vertices(g); vi != vi_end; ++vi) {
+    out << *vi << ": { ";
+    boost::graph_traits<Graph>::adjacency_iterator ai;
+    boost::graph_traits<Graph>::adjacency_iterator ai_end;
+    boost::tie(ai, ai_end) = boost::adjacent_vertices(*vi, g);
+    for (; ai != ai_end; ++ai) {
+      out << *ai << " ";
+    }
+    out << "}" << std::endl;
+  }
+
   return out;
 }
 
-// Edge ------------------------------------------------------------------------
+// Bipartite Graph -------------------------------------------------------------
 
-Edge::Edge() : id_(0) {}
+BipartiteGraph::BipartiteGraph() : _graph(), _partition() {}
 
-Edge::Edge(SBG::LIB::MD_NAT id) : id_(id) {}
+BipartiteGraph::BipartiteGraph(Graph&& graph, std::vector<int>&& partition)
+  : _graph(graph), _partition(partition) {}
 
-member_imp(Edge, SBG::LIB::MD_NAT, id);
-
-bool Edge::operator==(const Edge &other) const { return id() == other.id(); }
-
-std::ostream &operator<<(std::ostream &out, const Edge &e)
+const Graph& BipartiteGraph::graph() const
 {
-  out << e.id() << "\n";
+  return _graph;
+}
+
+const std::vector<int>& BipartiteGraph::partition() const
+{
+  return _partition;
+}
+
+std::ostream& operator<<(std::ostream& out, const BipartiteGraph& bgraph)
+{
+  out << bgraph.graph();
+  out << "Partition:\n";
+  std::vector<int> partition = bgraph.partition();
+  for (int j = 0; j < partition.size(); ++j) {
+    out << j << ": " << partition[j] << "\n";
+  }
+
+  return out;
+}
+
+// Directed Graph --------------------------------------------------------------
+
+std::ostream& operator<<(std::ostream& out, const DirectedGraph& dgraph)
+{
+  out << "Vertices: {0, ..., " << boost::num_vertices(dgraph) - 1 << "}\n";
+
+  out << "Edges:\n";
+  boost::graph_traits<DirectedGraph>::edge_iterator edge_it;
+  boost::graph_traits<DirectedGraph>::edge_iterator edges_end;
+  boost::tie(edge_it, edges_end) = boost::edges(dgraph);
+  for (; edge_it != edges_end; ++edge_it) {
+    auto u = source(*edge_it, dgraph);
+    auto v = target(*edge_it, dgraph);
+    out << u << " -> " << v << "\n";
+  }
+
   return out;
 }
 

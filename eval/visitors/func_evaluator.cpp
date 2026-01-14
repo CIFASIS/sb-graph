@@ -41,12 +41,13 @@ ExprBaseType BuiltInOperators::oppositeEvaluator(const EBTList& args)
     , "oppositeEvaluator: wrong number of arguments\n");
 
   auto opposite_evaluator = Overload {
-    [](LIB::NAT a) { return LIB::RATIONAL(a, -1); },
-    [](LIB::RATIONAL a) { return LIB::RATIONAL(-1)*a; },
+    [](LIB::NAT a) { return ExprBaseType(LIB::RATIONAL(a, -1)); },
+    [](LIB::RATIONAL a) { return ExprBaseType(LIB::RATIONAL(-1)*a); },
+    [](LIB::Set a) { return ExprBaseType(a.complement()); },
     [](auto a) { 
       Util::ERROR("oppositeEvaluator: wrong type argument ", a
         , " for - (opposite)\n");
-      return LIB::RATIONAL(0);
+      return ExprBaseType(LIB::RATIONAL(0));
     }
   };
   return std::visit(opposite_evaluator, args[0]);
@@ -132,7 +133,6 @@ ExprBaseType BuiltInOperators::subEvaluator(const EBTList& args)
       return ExprBaseType(a - LIB::RATIONAL(b));
     },
     [](LIB::Exp a, LIB::Exp b) { return ExprBaseType(a - b); },
-    [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType(a - b); },
     [](auto a, auto b) { 
       Util::ERROR("subEvaluator: wrong arguments ", a, ", ", b
         , " for operator-\n"); 
@@ -383,6 +383,22 @@ ExprBaseType BuiltInFunctions::maxEvaluator(const EBTList& args)
   };
   return std::visit(max_evaluator, args[0]);
 }
+
+ExprBaseType BuiltInFunctions::restrictEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 2
+    , "restrictEvaluator: wrong number of arguments\n");
+
+  const auto restrict_evaluator = Overload {
+    [](LIB::PWMap a, LIB::Set b) { return ExprBaseType(a.restrict(b)); },
+    [](auto a, auto b) {
+      Util::ERROR("restrictEvaluator: wrong arguments ", a, ", ", b
+        , " for restrict\n"); 
+      return ExprBaseType(); 
+     }
+  };
+  return std::visit(restrict_evaluator, args[0], args[1]);
+}
  
 ExprBaseType BuiltInFunctions::composeEvaluator(const EBTList& args)
 {
@@ -601,10 +617,10 @@ ExprBaseType BuiltInFunctions::matchingEvaluator(const EBTList& args)
 
   LIB::Matching match_impl = LIB::MATCH_FACT.createMatchAlgorithm();
   const auto matching_evaluator = Overload {
-    [&match_impl](LIB::SBG a, LIB::NAT b) { 
+    [&match_impl](LIB::BipartiteSBG a, LIB::NAT b) { 
       return ExprBaseType(match_impl.calculate(a.copy(b)));
     },
-    [&match_impl](LIB::SBG a, LIB::MD_NAT b) { 
+    [&match_impl](LIB::BipartiteSBG a, LIB::MD_NAT b) { 
       return ExprBaseType(match_impl.calculate(a.copy(b[0])));
     },
     [](auto a, auto b) {
@@ -679,12 +695,12 @@ ExprBaseType BuiltInFunctions::matchSCCEvaluator(const EBTList& args)
   LIB::Matching match_impl = LIB::MATCH_FACT.createMatchAlgorithm();
   LIB::SCC scc_impl = LIB::SCC_FACT.createSCCAlgorithm();
   const auto match_scc_evaluator = Overload {
-    [&match_impl, &scc_impl](LIB::SBG a, LIB::NAT b) { 
+    [&match_impl, &scc_impl](LIB::BipartiteSBG a, LIB::NAT b) { 
       LIB::MatchData match_result = match_impl.calculate(a.copy(b));
       LIB::DSBG dsbg = MISC::buildSCCFromMatching(match_result);
       return ExprBaseType(scc_impl.calculate(dsbg).rmap());
     },
-    [&match_impl, &scc_impl](LIB::SBG a, LIB::MD_NAT b) { 
+    [&match_impl, &scc_impl](LIB::BipartiteSBG a, LIB::MD_NAT b) { 
       LIB::MatchData match_result = match_impl.calculate(a.copy(b[0]));
       LIB::DSBG dsbg = MISC::buildSCCFromMatching(match_result);
       return ExprBaseType(scc_impl.calculate(dsbg).rmap());

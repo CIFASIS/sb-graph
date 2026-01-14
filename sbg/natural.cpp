@@ -28,7 +28,7 @@ member_imp(MD_NAT, VNAT, value);
 MD_NAT::MD_NAT() : value_() {}
 MD_NAT::MD_NAT(NAT x) : value_() { value_.push_back(x); }
 MD_NAT::MD_NAT(unsigned int nmbr_copies, NAT x) : value_() { 
-  for (unsigned int j = 0; j < nmbr_copies; j++)
+  for (unsigned int j = 0; j < nmbr_copies; ++j)
     value_.push_back(x); 
 }
 MD_NAT::MD_NAT(MD_NAT::iterator b, MD_NAT::iterator e) : value_(b, e) {}
@@ -95,7 +95,7 @@ std::ostream &operator<<(std::ostream &out, const MD_NAT &md)
 
   if (sz > 1) {
     out << "(";
-    for (unsigned int j = 0; j < sz - 1; j++)
+    for (unsigned int j = 0; j < sz - 1; ++j)
       out << aux[j] << ", ";
     out << aux[sz-1];
     out << ")";

@@ -16,10 +16,14 @@
 
 ******************************************************************************/
 
+#include <algorithms/cc/cc.hpp>
+#include <sbg/sbg.hpp>
 #include <unordered_map>
 
- #include "communication_cost.hpp"
- #include "partition_graph.hpp"
+#include "communication_cost.hpp"
+#include "partition_graph.hpp"
+#include "partition_graph_cc.hpp"
+#include "sbg_partitioner_log.hpp"
 
 
 using namespace std;
@@ -45,6 +49,17 @@ std::size_t SetPieceHash::operator()(const SetPiece& set_piece) const {
   return seed;
 }
 
+
+std::size_t SetHash::operator()(const SBG::LIB::Set& set) const
+{
+    std::size_t seed = set.size();
+    for (const auto& set_piece : set) {
+        seed ^= SetPieceHash::set_piece_hash(set_piece) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+    return seed;
+}
+
+
 unordered_map<SetPiece, Set, SetPieceHash> CommunicationCost::_communication_by_set_piece = {};
 
 namespace internal {
@@ -67,7 +82,8 @@ Set set_piece_communication(const SetPiece& nodes, const WeightedSBGraph& graph)
     auto edges_map2 = graph.map2().preImage(node_set);
 
     // Now compute the disjoint union to remove loop edges
-    auto communication = edges_map1.cup(edges_map2).difference(edges_map1.intersection(edges_map2));
+    auto common_edges = edges_map1.intersection(edges_map2);
+    auto communication = edges_map1.cup(edges_map2).difference(common_edges);
 
     return communication;
 }
@@ -205,6 +221,19 @@ Set CommunicationCost::get_ic_by_interval(unsigned partition_id, const SetPiece&
 }
 
 
+Set CommunicationCost::get_set_piece_edges(const SBG::LIB::SetPiece& nodes)
+{
+    if (_communication_by_set_piece.find(nodes) == _communication_by_set_piece.end()) {
+        _communication_by_set_piece.insert({nodes, internal::set_piece_communication(nodes, _graph)});
+    }
+
+    return _communication_by_set_piece.at(nodes);
+}
+
+
+void CommunicationCost::clear_communication_cache() { _communication_by_set_piece.clear(); }
+
+
 
 CommunicationCostSync::CommunicationCostSync(const WeightedSBGraph& graph, PartitionMap partitions)
     :ICommunicationCost(),
@@ -237,6 +266,116 @@ Set CommunicationCostSync::get_ic_by_interval(unsigned partition_id, const SetPi
 {
     const lock_guard<mutex> lock(_mutex);
     return _comm_cost.get_ic_by_interval(partition_id, nodes);
+}
+
+
+Set CommunicationCostSync::get_set_piece_edges(const SetPiece& nodes)
+{
+    const lock_guard<mutex> lock(_mutex);
+    return _comm_cost.get_set_piece_edges(nodes);
+}
+
+
+void CommunicationCostSync::clear_communication_cache()
+{
+    const lock_guard<mutex> lock(_mutex);
+    return _comm_cost.clear_communication_cache();
+}
+
+
+
+CommunicationCostCC::CommunicationCostCC(const WeightedSBGraph& graph, const using_cc::SetPointers& nodes)
+    : _graph(graph),
+    _sorted_nodes(nodes),
+    _set_piece_indices(PW_FACT.createPWMap())
+{
+    initialize();
+}
+
+
+void CommunicationCostCC::initialize()
+{
+    _adjacency_matrix = vector<vector<unsigned> >(_sorted_nodes.size(), vector<unsigned>(_sorted_nodes.size(), 0));
+
+    for (size_t i = 0; i <  _sorted_nodes.size(); i++) {
+        const auto& set_piece_pointer = _sorted_nodes.at(i);
+        auto edges = get_set_piece_edges(set_piece_pointer.set_piece);
+
+        for (size_t j = i + 1; j < _sorted_nodes.size(); j++) {
+            const auto& set_piece_pointer_j = _sorted_nodes.at(j);
+            auto edges2 = get_set_piece_edges(set_piece_pointer_j.set_piece);
+            auto shared_edges_cardinal = edges.intersection(edges2).cardinal();
+            if (not edges.intersection(edges2).isEmpty()) {
+                logging::sbg_log << set_piece_pointer.set_piece << ", " << set_piece_pointer_j.set_piece << ": " << shared_edges_cardinal << endl;
+                _adjacency_matrix[set_piece_pointer.index][set_piece_pointer_j.index] = shared_edges_cardinal;
+                _adjacency_matrix[set_piece_pointer_j.index][set_piece_pointer.index] = shared_edges_cardinal;
+            }
+        }
+    }
+
+#ifdef SBG_PARTITIONER_LOGGING
+    for (size_t i = 0; i <  _sorted_nodes.size(); i++) {
+        for (size_t j = 0; j < _sorted_nodes.size(); j++) {
+            cout << unsigned(_adjacency_matrix[_sorted_nodes.at(i).index][_sorted_nodes.at(j).index]) << " ";
+        }
+        cout << endl;
+    }
+#endif
+}
+
+
+unsigned CommunicationCostCC::get_communication(const SBG::LIB::SetPiece& a, const SBG::LIB::SetPiece& b) const
+{
+    auto a_set = SET_FACT.createSet(a);
+    auto b_set = SET_FACT.createSet(b);
+
+    unsigned a_idx = (*_set_piece_indices.image(a_set).begin())[0].begin();
+    unsigned b_idx = (*_set_piece_indices.image(b_set).begin())[0].begin();
+
+    unsigned cost = _adjacency_matrix[a_idx][b_idx];
+
+    return cost;
+}
+
+
+unsigned CommunicationCostCC::get_communication(const SBG::LIB::SetPiece& a) const
+{
+    auto a_set = SET_FACT.createSet(a);
+    unsigned a_idx = (*_set_piece_indices.image(a_set).begin())[0].begin();
+    unsigned cost = 0;
+    for_each(_adjacency_matrix[a_idx].cbegin(), _adjacency_matrix[a_idx].cend(), [&cost](unsigned c) { cost += c; });
+
+    return cost;
+}
+
+
+unsigned CommunicationCostCC::get_communication(unsigned a_idx, unsigned b_idx) const
+{
+    return _adjacency_matrix[a_idx][b_idx];
+}
+
+
+unsigned CommunicationCostCC::get_communication(unsigned idx) const
+{
+    const auto& row = _adjacency_matrix[idx];
+
+    return std::accumulate(row.begin(), row.end(), 0U); // 0U ensures sum starts as an unsigned
+}
+
+
+Set CommunicationCostCC::get_set_piece_edges(const SBG::LIB::SetPiece& nodes)
+{
+    if (_communication_by_set_piece.find(nodes) == _communication_by_set_piece.end()) {
+        _communication_by_set_piece.insert({nodes, internal::set_piece_communication(nodes, _graph)});
+    }
+
+    return _communication_by_set_piece.at(nodes);
+}
+
+
+unsigned CommunicationCostCC::get_index(const SBG::LIB::SetPiece& nodes) const
+{
+    return (*_set_piece_indices.image(SET_FACT.createSet(nodes)).begin())[0].begin();
 }
 
 

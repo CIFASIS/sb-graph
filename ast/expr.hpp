@@ -48,7 +48,8 @@ struct LinearExp;
 struct MDLExp;
 struct LinearMap;
 struct PWLMap;
-struct SBG;
+class SBG;
+class BipartiteSBG;
 struct DSBG;
 struct ParenExpr;
 
@@ -65,6 +66,7 @@ using Expr = boost::variant<Natural, Name,
   boost::recursive_wrapper<LinearMap>,
   boost::recursive_wrapper<PWLMap>,
   boost::recursive_wrapper<SBG>,
+  boost::recursive_wrapper<BipartiteSBG>,
   boost::recursive_wrapper<DSBG>,
   boost::recursive_wrapper<ParenExpr>>;
 using ExprList = std::vector<Expr>;
@@ -182,18 +184,46 @@ std::ostream &operator<<(std::ostream &out, const PWLMap &pwl);
 
 // SBG -------------------------------------------------------------------------
 
-struct SBG {
-  member_class(Expr, V);
-  member_class(Expr, Vmap);
-  member_class(Expr, map1);
-  member_class(Expr, map2);
-  member_class(Expr, Emap);
-  member_class(Expr, subE_map);
-
+class SBG {
+  public:
   SBG();
   SBG(Expr V, Expr Vmap, Expr map1, Expr map2, Expr Emap, Expr subE);
 
+  const Expr& V() const;
+  const Expr& Vmap() const;
+  const Expr& map1() const;
+  const Expr& map2() const;
+  const Expr& Emap() const;
+  const Expr& subE_map() const;
+
   bool operator==(const SBG &sbg) const;
+
+  protected:
+  Expr _V;
+  Expr _Vmap;
+  Expr _map1;
+  Expr _map2;
+  Expr _Emap;
+  Expr _subE_map;
+};
+std::ostream &operator<<(std::ostream &out, const SBG &g);
+
+// Bipartite SBG ---------------------------------------------------------------
+
+class BipartiteSBG : public SBG {
+  public:
+  BipartiteSBG();
+  BipartiteSBG(Expr V, Expr Vmap, Expr map1, Expr map2, Expr Emap, Expr subE
+    , Expr X, Expr Y);
+
+  const Expr& X() const;
+  const Expr& Y() const;
+
+  bool operator==(const BipartiteSBG& sbg) const;
+
+  private:
+  Expr _X;
+  Expr _Y;
 };
 std::ostream &operator<<(std::ostream &out, const SBG &g);
 

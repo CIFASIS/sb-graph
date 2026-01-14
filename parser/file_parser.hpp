@@ -32,7 +32,7 @@ namespace SBG {
 
 namespace Parser  {
 
-AST::SBGProgram parseFile(std::string fname);
+AST::SBGProgram parseFile(std::string fname, bool print_output = true);
 
 } // namespace Parser
 

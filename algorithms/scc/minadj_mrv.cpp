@@ -51,7 +51,6 @@ PWMap MinAdjMRV::calculate(const DSBG& dsbg)
       rmap = rmap.minMap(new_rmap).combine(rmap);
       Util::DEBUG_LOG << "rmap before rec: " << rmap << "\n\n";
 
-      Set positive = SET_FACT.createSet(SetPiece(copies, Interval(1, 1, Inf)));
       PWMap rec_rmap = PW_FACT.createPWMap();
       Vc = V.difference(old_rmap.equalImage(rmap));
       if (!Vc.isEmpty()) {
@@ -92,7 +91,7 @@ PWMap MinAdjMRV::calculate(const DSBG& dsbg)
                 }
                 PWMap dmapB = dmap.composition(mapB), dmapD = dmap.composition(mapD);
                 // Get edges where the end is closer to the rep than the beginning
-                Set not_cycle_edges = (dmapB - dmapD).preImage(positive);
+                Set not_cycle_edges = dmapD.lessImage(dmapB);
                 ER = ER.intersection(not_cycle_edges);
 
                 // Extend to subset-edge

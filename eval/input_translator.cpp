@@ -30,8 +30,22 @@ InputTranslator::InputTranslator() {}
 void InputTranslator::translate(EvalUserInput& input)
 {
   EvalUserInput::MaybeInt s = input.set_impl();
-  if (s) {
+  EvalUserInput::MaybeInt pw = input.pw_impl();
+  if (pw && s) {
+    if (*pw == 2 && *s == 0) {
+      Util::ERROR("Domain ordered PWMap should be used with an ordered set"
+        " implementation\n");
+    }
+    else {
+      setSetFactory(*s);
+      setPWFactory(*pw);
+    }
+  }
+  else if (s) {
     setSetFactory(*s);
+  }
+  else if (pw) {
+    setPWFactory(*pw);
   }
 
   EvalUserInput::MaybeInt scc = input.scc_impl();

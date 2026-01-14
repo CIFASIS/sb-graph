@@ -24,7 +24,7 @@
 #ifndef SBG_TOPOSORT_HPP
 #define SBG_TOPOSORT_HPP
 
-#include "sbg/sbg.hpp"
+#include "sbg/directed_sbg.hpp"
 
 namespace SBG {
 

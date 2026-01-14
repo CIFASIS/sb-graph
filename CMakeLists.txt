@@ -81,10 +81,25 @@ install(
   COMPONENT sbgraph
 )
 
+# Documentation
+set(DOC_PATHS "${CMAKE_CURRENT_SOURCE_DIR}")
+string(REPLACE ";" " " DOXYGEN_INPUT_DIR "${DOC_PATHS}")
+
+set(DOXYGEN_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/doc")
+
+set(DOXYGEN_EXCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
+set(DOXYGEN_MAINPAGE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
+               ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
+
 add_custom_target(doc
   COMMAND echo "Generating Project documentation."
+  COMMAND doxygen "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
+  #COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/doc
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  COMMENT "Generating API documentation with Doxygen"
 )
-
-add_dependencies(doc eval-doc sbg-doc util-doc)
 
 set_target_properties(doc PROPERTIES EXCLUDE_FROM_ALL ON)

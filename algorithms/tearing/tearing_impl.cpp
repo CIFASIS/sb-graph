@@ -59,13 +59,14 @@ TearingData TearingV1::calculate(const DSBG& dsbg)
   Set e_scc = dsbg_.E().difference(e_notscc);
   while (!e_notscc.isEmpty())  {
     PWMap rmap = result.rmap();
+    Set v_tear = rmap.image().difference(rmap.fixedPoints());
     Set v_tear = rmap.image(rmap.sharedImage());
 
     PWMap tearIOMap = PW_FACT.createPWMap(v_tear).offsetImage(maxOffset);
     finalDSBG = finalDSBG.addSV(tearIOMap.image());
     maxOffset = finalDSBG.V().maxElem();
     tearIOMap_ = tearIOMap.combine(tearIOMap_);
-    rmap = rmap.combine(tearIOMap.firstInv());
+    rmap = rmap.combine(tearIOMap.firstInv()); // Separar 
 
     Set e_tear_scc = dsbg_.mapD().restrict(e_scc).preImage(v_tear);
     Set e_tear_notscc = dsbg_.mapB().restrict(e_notscc).preImage(v_tear);
@@ -73,7 +74,7 @@ TearingData TearingV1::calculate(const DSBG& dsbg)
     PWMap mapD_scc = dsbg_.mapD().restrict(e_tear_scc).composition(tearIOMap);
     PWMap mapB_notscc = dsbg_.mapB().restrict(e_tear_notscc).composition(tearIOMap);
     PWMap mapD_notscc = dsbg_.mapD().restrict(e_notscc).composition(rmap); // Necessary?
-    
+
     finalMapB = mapB_notscc.combine(finalMapB);
     finalMapD = mapD_scc.combine(mapD_notscc).combine(finalMapD);
     dsbg_ = DSBG(finalDSBG.V().compact(), finalDSBG.Vmap().compact()

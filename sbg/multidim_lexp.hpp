@@ -37,7 +37,7 @@ typedef std::vector<LExp> LExpVector;
 typedef LExpVector::iterator LExpVectorIt;
 typedef LExpVector::const_iterator LExpVectorConstIt;
 
-struct MDLExp {
+class MDLExp {
   member_class(LExpVector, exps);
 
   /**

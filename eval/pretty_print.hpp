@@ -33,14 +33,14 @@ namespace Eval {
 template<typename T, typename... Ts>
 std::ostream &operator<<(std::ostream &out, const std::variant<T, Ts...> &v);
 
-using StmResult = std::tuple<AST::Name, ExprBaseType>;
-std::ostream &operator<<(std::ostream &out, const StmResult &e);
-using StmResultList = std::vector<StmResult>;
-std::ostream &operator<<(std::ostream &out, const StmResultList &e);
 using ExprResult = std::tuple<AST::Expr, ExprBaseType>;
 std::ostream &operator<<(std::ostream &out, const ExprResult &e);
 using ExprResultList = std::vector<ExprResult>;
 std::ostream &operator<<(std::ostream &out, const ExprResultList &ee);
+using StmResult = std::tuple<AST::Name, ExprBaseType>;
+std::ostream &operator<<(std::ostream &out, const StmResult &s);
+using StmResultList = std::vector<StmResult>;
+std::ostream &operator<<(std::ostream &out, const StmResultList &ss);
 
 /** 
  * @brief Class to pretty print a program and its correspondent evaluation.

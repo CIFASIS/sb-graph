@@ -50,6 +50,7 @@ class RationalEvaluator : public boost::static_visitor<LIB::RATIONAL> {
   LIB::RATIONAL operator()(AST::LinearMap v) const;
   LIB::RATIONAL operator()(AST::PWLMap v) const;
   LIB::RATIONAL operator()(AST::SBG v) const;
+  LIB::RATIONAL operator()(AST::BipartiteSBG v) const;
   LIB::RATIONAL operator()(AST::DSBG v) const;
   LIB::RATIONAL operator()(AST::ParenExpr) const;
 

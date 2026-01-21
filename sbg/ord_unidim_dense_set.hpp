@@ -37,7 +37,7 @@ namespace LIB {
 // Ordered Unidimensional Dense Set Implementation (concrete strategy) ---------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct OrdUnidimDenseSet : public SetStrategy {
+class OrdUnidimDenseSet : public SetStrategy {
   using MDIOrdCollection = std::vector<SetPiece>;
 
   member_class(MDIOrdCollection, pieces);
@@ -51,27 +51,27 @@ struct OrdUnidimDenseSet : public SetStrategy {
 
   SetStratPtr clone() const override;
 
-  struct Iterator : public SetStrategy::Iterator {
+  class Iterator : public SetStrategy::Iterator {
     member_class(MDIOrdCollection::const_iterator, it);
 
     Iterator(MDIOrdCollection::const_iterator it);
     void operator++() override;
-    bool operator!=(const SetStrategy::Iterator &other) const override;
-    bool operator==(const SetStrategy::Iterator &other) const override;
-    bool operator<(const SetStrategy::Iterator &other) const override;
-    const SetPiece &operator*() const override;
+    bool operator!=(const SetStrategy::Iterator& other) const override;
+    bool operator==(const SetStrategy::Iterator& other) const override;
+    bool operator<(const SetStrategy::Iterator& other) const override;
+    const SetPiece& operator*() const override;
   };
 
   std::shared_ptr<SetStrategy::Iterator> begin() const override;
   std::shared_ptr<SetStrategy::Iterator> end() const override;
 
   std::size_t size() const override;
-  void emplace(const SetPiece &mdi) override;
-  void emplaceBack(const SetPiece &mdi) override;
+  void emplace(const SetPiece& mdi) override;
+  void emplaceBack(const SetPiece& mdi) override;
 
-  bool operator==(const SetStrategy &other) const override;
-  bool operator!=(const SetStrategy &other) const override;
-  std::ostream &print(std::ostream &out) const override;
+  bool operator==(const SetStrategy& other) const override;
+  bool operator!=(const SetStrategy& other) const override;
+  std::ostream& print(std::ostream& out) const override;
 
   // Traditional set operations ------------------------------------------------
 
@@ -79,17 +79,19 @@ struct OrdUnidimDenseSet : public SetStrategy {
   bool isEmpty() const override;
   MD_NAT minElem() const override;
   MD_NAT maxElem() const override;
-  SetStratPtr intersection(const SetStrategy &other) const override;
-  SetStratPtr cup(const SetStrategy &other) const override;
+  SetStratPtr intersection(const SetStrategy& other) const override;
+  SetStratPtr cup(const SetStrategy& other) const & override;
+  SetStratPtr cup(SetStrategy&& other) && override;
   SetStratPtr complement() const;
-  SetStratPtr difference(const SetStrategy &other) const override;
+  SetStratPtr difference(const SetStrategy& other) const override;
 
   // Extra operations ----------------------------------------------------------
 
   std::size_t arity() const override;
-  SetStratPtr disjointCup(const SetStrategy &other) const override;
-  SetStratPtr filterSet(bool (*f)(const SetPiece &mdi)) const override;
-  SetStratPtr offset(const MD_NAT &off) const override;
+  SetStratPtr disjointCup(const SetStrategy& other) const & override;
+  SetStratPtr disjointCup(SetStrategy&& other) && override;
+  SetStratPtr filterSet(bool (*f)(const SetPiece& mdi)) const override;
+  SetStratPtr offset(const MD_NAT& off) const override;
   SetStratPtr compact() const override;
 
   private:
@@ -99,8 +101,8 @@ struct OrdUnidimDenseSet : public SetStrategy {
    * set with the piece that has the minimum end. This is repeated until one of
    * the two collections is consumed.
    */
-  MDIOrdCollection boundedTraverse(SetPiece (SetPiece::*f)(const SetPiece &) const
-    , const MDIOrdCollection &other) const;
+  MDIOrdCollection boundedTraverse(SetPiece (SetPiece::*f)(const SetPiece&) const
+    , const MDIOrdCollection& other) const;
 
   /**
    * @brief Performs operation f between a piece of s1 and a piece of s2. At the
@@ -109,11 +111,12 @@ struct OrdUnidimDenseSet : public SetStrategy {
    * the two collections is consumed. Then, all the remaining pieces of the
    * other set are also inserted.
    */
-  MDIOrdCollection traverse(SetPiece (SetPiece::*f)(const SetPiece &) const
-    , const MDIOrdCollection &other) const;
+  MDIOrdCollection traverse(SetPiece (SetPiece::*f)(const SetPiece&) const
+    , const MDIOrdCollection& other) const;
 };
 
-typedef const OrdUnidimDenseSet &OrdUnidimDenseSetCRef;
+typedef const OrdUnidimDenseSet& OrdUnidimDenseSetCRef;
+typedef OrdUnidimDenseSet& OrdUnidimDenseSetRef;
 
 } // namespace LIB
 

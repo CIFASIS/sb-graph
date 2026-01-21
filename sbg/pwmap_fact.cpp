@@ -17,6 +17,7 @@
 
  ******************************************************************************/
 
+#include "sbg/dom_ord_pwmap.hpp"
 #include "sbg/pwmap_fact.hpp"
 #include "sbg/ord_pwmap.hpp"
 #include "sbg/unord_pwmap.hpp"
@@ -81,6 +82,32 @@ PWMap OrdPWMapFact::createPWMap(const Map &m) const
 std::string OrdPWMapFact::prettyPrint() const
 {
   return "ordered";
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DomOrdPWMap Factory ------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+DomOrdPWMapFact::DomOrdPWMapFact() {}
+
+PWMap DomOrdPWMapFact::createPWMap() const
+{
+  return PWMap(std::make_unique<DomOrdPWMap>());
+}
+
+PWMap DomOrdPWMapFact::createPWMap(const Set &s) const
+{
+  return PWMap(std::make_unique<DomOrdPWMap>(s));
+}
+
+PWMap DomOrdPWMapFact::createPWMap(const Map &m) const
+{
+  return PWMap(std::make_unique<DomOrdPWMap>(m));
+}
+
+std::string DomOrdPWMapFact::prettyPrint() const
+{
+  return "domain ordered";
 }
 
 ////////////////////////////////////////////////////////////////////////////////

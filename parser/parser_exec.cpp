@@ -84,7 +84,7 @@ void ParserExecutor::execute(int arg_count, char* args[])
   }
   else {
     std::cout << "Usage: filename [options]";
-    Util::ERROR("ParserExecutor: must provide a SBG program filename");
+    Util::ERROR("ParserExecutor: must provide a SBG program filename\n");
   }
 }
 

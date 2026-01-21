@@ -70,6 +70,10 @@ int SetImplExprVisitor::operator()(AST::Interval v) const
 int SetImplExprVisitor::operator()(AST::MultiDimInter v) const
 {
   int impl = 2;
+
+  if (v.intervals().size() > 1)
+    return 1;
+
   for (const AST::Expr &e : v.intervals())
     impl = std::min(impl, boost::apply_visitor(*this, e));
 
@@ -128,6 +132,21 @@ int SetImplExprVisitor::operator()(AST::SBG v) const
   impl = std::min(impl, boost::apply_visitor(*this, v.map1()));
   impl = std::min(impl, boost::apply_visitor(*this, v.map2()));
   impl = std::min(impl, boost::apply_visitor(*this, v.Emap()));
+
+  return impl;
+}
+
+int SetImplExprVisitor::operator()(AST::BipartiteSBG v) const
+{
+  int impl = 2;
+
+  impl = std::min(impl, boost::apply_visitor(*this, v.V()));
+  impl = std::min(impl, boost::apply_visitor(*this, v.Vmap()));
+  impl = std::min(impl, boost::apply_visitor(*this, v.map1()));
+  impl = std::min(impl, boost::apply_visitor(*this, v.map2()));
+  impl = std::min(impl, boost::apply_visitor(*this, v.Emap()));
+  impl = std::min(impl, boost::apply_visitor(*this, v.X()));
+  impl = std::min(impl, boost::apply_visitor(*this, v.Y()));
 
   return impl;
 }

@@ -143,6 +143,12 @@ LIB::NAT NatEvaluator::operator()(AST::SBG v) const
   return 0;
 }
 
+LIB::NAT NatEvaluator::operator()(AST::BipartiteSBG v) const
+{
+  Util::ERROR("NatEvaluator: trying to evaluate BipartiteSBG ", v, "\n");
+  return 0;
+}
+
 LIB::NAT NatEvaluator::operator()(AST::DSBG v) const
 {
   Util::ERROR("NatEvaluator: trying to evaluate DSBG ", v, "\n");

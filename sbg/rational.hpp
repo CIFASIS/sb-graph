@@ -48,7 +48,7 @@ typedef boost::rational<INT> RatType;
 /**
  * @brief Used as coefficients and slopes in linear expressions.
  */
-struct RATIONAL {
+class RATIONAL {
   member_class(RatType, value);
 
   /**
@@ -75,6 +75,7 @@ struct RATIONAL {
   bool operator!=(const RATIONAL &other) const;
   bool operator<(const RATIONAL &other) const;
   bool operator>(const RATIONAL &other) const;
+  bool operator>=(const RATIONAL& other) const;
   bool operator==(const INT &other) const;
 
   RATIONAL operator-() const;
@@ -91,6 +92,8 @@ struct RATIONAL {
   INT denominator() const;
   NAT toNat() const;
   INT toInt() const;
+  INT floor() const;
+  INT ceiling() const;
 };
 std::ostream &operator<<(std::ostream &out, const RATIONAL &r);
 

@@ -24,7 +24,7 @@
 #ifndef SBG_SCC_HPP
 #define SBG_SCC_HPP
 
-#include "sbg/sbg.hpp"
+#include "sbg/directed_sbg.hpp"
 
 namespace SBG {
 

@@ -42,7 +42,7 @@ StmResult StmEvaluator::operator()(AST::Assign assgn) const
 
 StmResult StmEvaluator::operator()(AST::ConfigDims cfg) const
 {
-  return StmResult("", ExprBaseType());
+  return StmResult("", cfg.nmbr_dims());
 }
 
 } // namespace Eval

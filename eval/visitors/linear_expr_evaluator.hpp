@@ -49,6 +49,7 @@ class LinearExprEvaluator : public boost::static_visitor<LIB::LExp> {
   LIB::LExp operator()(AST::LinearMap v) const;
   LIB::LExp operator()(AST::PWLMap v) const;
   LIB::LExp operator()(AST::SBG v) const;
+  LIB::LExp operator()(AST::BipartiteSBG v) const;
   LIB::LExp operator()(AST::DSBG v) const;
   LIB::LExp operator()(AST::ParenExpr v) const;
 

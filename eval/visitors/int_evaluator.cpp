@@ -148,6 +148,12 @@ LIB::INT IntEvaluator::operator()(AST::SBG v) const
   return 0;
 }
 
+LIB::INT IntEvaluator::operator()(AST::BipartiteSBG v) const
+{
+  Util::ERROR("IntEvaluator: trying to evaluate BipartiteSBG ", v, "\n");
+  return 0;
+}
+
 LIB::INT IntEvaluator::operator()(AST::DSBG v) const
 {
   Util::ERROR("IntEvaluator: trying to evaluate DSBG ", v, "\n");

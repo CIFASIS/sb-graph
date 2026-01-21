@@ -34,7 +34,8 @@ namespace LIB {
 // Unordered PWMap Implementation (concrete strategy) --------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct UnordPWMap : public PWMapStrategy {
+class UnordPWMap : public PWMapStrategy {
+  public:
   using UnordMapCollection = std::vector<Map>;
 
   member_class(UnordMapCollection, pieces);
@@ -43,12 +44,9 @@ struct UnordPWMap : public PWMapStrategy {
   UnordPWMap();
   UnordPWMap(const Set &s);
   UnordPWMap(const Map &m);
-  UnordPWMap(const UnordMapCollection &pieces);
-  UnordPWMap(const UnordPWMap &pw);
+  UnordPWMap(const UnordMapCollection& pieces);
 
-  PWMapStratPtr clone() const override;
-
-  struct Iterator : public PWMapStrategy::Iterator {
+  class Iterator : public PWMapStrategy::Iterator {
     member_class(UnordMapCollection::const_iterator, it);
 
     Iterator(UnordMapCollection::const_iterator it);
@@ -68,7 +66,8 @@ struct UnordPWMap : public PWMapStrategy {
   std::ostream &print(std::ostream &out) const override;
 
   PWMapStratPtr operator+(const PWMapStrategy &other) const override;
-  PWMapStratPtr operator-(const PWMapStrategy &other) const override;
+
+  PWMapStratPtr clone() const override;
 
   // Traditional map operations ------------------------------------------------
 
@@ -90,8 +89,6 @@ struct UnordPWMap : public PWMapStrategy {
 
   PWMapStratPtr concatenation(const PWMapStrategy &other) const override;
   PWMapStratPtr combine(const PWMapStrategy &other) const override;
-  PWMapStratPtr reduce(const Interval &i, const LExp &e) const override;
-  PWMapStratPtr reduce(const Map &sbgmap) const override;
   PWMapStratPtr reduce() const override;
 
   PWMapStratPtr minMap(const PWMapStrategy &other) const override;
@@ -103,6 +100,7 @@ struct UnordPWMap : public PWMapStrategy {
   PWMapStratPtr filterMap(bool (*f)(const Map &)) const override;
 
   Set equalImage(const PWMapStrategy &other) const override;
+  Set lessImage(const PWMapStrategy& other) const override;
   Set sharedImage() const override;
 
   PWMapStratPtr offsetDom(const MD_NAT &off) const override;
@@ -118,6 +116,6 @@ typedef std::unique_ptr<UnordPWMap> UnordPWMapPtr;
 
 } // namespace LIB
 
-}  // namespace SBG
+} // namespace SBG
 
 #endif

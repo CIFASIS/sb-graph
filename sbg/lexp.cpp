@@ -112,6 +112,13 @@ bool LExp::isId() const { return slope_ == 1 && offset_ == 0; }
 
 bool LExp::isConstant() const { return slope_ == 0; }
 
+bool LExp::isIncreasing() const { return slope_ > 0; }
+
+RATIONAL LExp::intersectionPoint(const LExp& other) const
+{
+  return (other.offset_ - offset_)/(slope_ - other.slope_);
+}
+
 } // namespace LIB
 
 } // namespace SBG

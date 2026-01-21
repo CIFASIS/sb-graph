@@ -44,7 +44,7 @@ typedef long long unsigned int NAT;
 const NAT Inf = std::numeric_limits<NAT>::max();
 
 typedef std::vector<NAT> VNAT;
-struct MD_NAT {
+class MD_NAT {
   member_class(VNAT, value);
 
   /**

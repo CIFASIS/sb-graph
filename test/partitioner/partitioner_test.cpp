@@ -62,33 +62,33 @@ static void test_create_sb_graph(const std::string& filename, const std::vector<
                                  const std::vector<Interval>& lhs_map_domain, const std::vector<Exp>& lhs_map_exps,
                                  const std::vector<Interval>& rhs_map_domain, const std::vector<Exp>& rhs_map_exps)
 {
-    auto sb_graph = sbg_partitioner::build_sb_graph(filename);
+  auto sb_graph = sbg_partitioner::build_sb_graph(filename);
 
-    // create nodes of the expected graph
-    auto expected_nodes = SET_FACT.createSet();
-    for (const auto& n : node_intervals) {
-        expected_nodes.emplaceBack(n);
-    }
-    EXPECT_EQ(expected_nodes, sb_graph.V());
+  // create nodes of the expected graph
+  auto expected_nodes = SET_FACT.createSet();
+  for (const auto& n : node_intervals) {
+    expected_nodes.emplaceBack(n);
+  }
+  EXPECT_EQ(expected_nodes, sb_graph.V());
 
-    // create edges of the expected graph through its maps
-    PWMap lhs_maps = PW_FACT.createPWMap();
-    for (size_t i = 0; i < lhs_map_domain.size(); i++) {
-        lhs_maps.emplaceBack(Map(lhs_map_domain[i], lhs_map_exps[i]));
-    }
+  // create edges of the expected graph through its maps
+  PWMap lhs_maps = PW_FACT.createPWMap();
+  for (size_t i = 0; i < lhs_map_domain.size(); i++) {
+    lhs_maps.emplaceBack(Map(lhs_map_domain[i], lhs_map_exps[i]));
+  }
 
-    PWMap rhs_maps = PW_FACT.createPWMap();
-    for (size_t i = 0; i < rhs_map_domain.size(); i++) {
-        rhs_maps.emplaceBack(Map(rhs_map_domain[i], rhs_map_exps[i]));
-    }
+  PWMap rhs_maps = PW_FACT.createPWMap();
+  for (size_t i = 0; i < rhs_map_domain.size(); i++) {
+    rhs_maps.emplaceBack(Map(rhs_map_domain[i], rhs_map_exps[i]));
+  }
 
-    // test edges are correct
-    EXPECT_EQ(lhs_maps.dom(), sb_graph.E());
-    EXPECT_EQ(rhs_maps.dom(), sb_graph.E());
+  // test edges are correct
+  EXPECT_EQ(true, lhs_maps.dom() == sb_graph.E());
+  EXPECT_EQ(true, rhs_maps.dom() == sb_graph.E());
 
-    // test that maps are as expected
-    EXPECT_EQ(lhs_maps, sb_graph.map1());
-    EXPECT_EQ(rhs_maps, sb_graph.map2());
+  //// test that maps are as expected
+  EXPECT_EQ(true, lhs_maps == sb_graph.map1());
+  EXPECT_EQ(true, rhs_maps == sb_graph.map2());
 }
 
 TEST(create_sb_graph, PartitionerTests)

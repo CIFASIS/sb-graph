@@ -37,6 +37,13 @@ bool BFSMatching::ExitCondition::full_match() { return full_match_; }
 
 bool BFSMatching::ExitCondition::found_paths() { return found_paths_; }
 
+bool BFSMatching::ExitCondition::isSatisfied()
+{
+  return full_match_ || !found_paths_;
+}
+
+// Algorithm -------------------------------------------------------------------
+
 BFSMatching::BFSMatching() : M_(SET_FACT.createSet()), dsbg_()
   , direction_(Direction::kForward) {}
 
@@ -157,31 +164,37 @@ BFSMatching::ExitCondition BFSMatching::step(const Set& right_vertices)
   // Calculate exit conditions
   Set matchedU = dsbg_.mapD().image(M_);
   bool full_match = right_vertices.difference(matchedU).isEmpty();
-  bool found_paths = !M_.isEmpty();
+  bool found_paths = !augmenting_edges.isEmpty();
 
   return ExitCondition(full_match, found_paths);
 }
 
-bool BFSMatching::ExitCondition::isSatisfied()
+void BFSMatching::init(const BipartiteSBG& bsbg)
 {
-  return full_match_ || !found_paths_;
+  PWMap map1 = bsbg.map1().compact();
+  PWMap map2 = bsbg.map2().compact();
+
+  Set Y = bsbg.Y();
+  PWMap map1_toY = map1.restrict(map1.preImage(Y));
+  PWMap map2_toY = map2.restrict(map2.preImage(Y));
+  PWMap mapB = map1_toY.concatenation(map2_toY);
+
+  Set X = bsbg.X();
+  PWMap map1_toX = map1.restrict(map1.preImage(X));
+  PWMap map2_toX = map2.restrict(map2.preImage(X));
+  PWMap mapD = map1_toX.concatenation(map2_toX);
+
+  dsbg_ = DSBG(bsbg.V().compact(), bsbg.Vmap().compact(), mapB, mapD
+    , bsbg.Emap().compact(), bsbg.subEmap().compact());
 }
 
-void BFSMatching::init(const SBG& sbg)
+MatchData BFSMatching::calculate(const BipartiteSBG& bsbg)
 {
-  dsbg_ = DSBG(sbg.V().compact(), sbg.Vmap().compact(), sbg.map2()
-    , sbg.map1().compact(), sbg.Emap().compact(), sbg.subEmap().compact());
-
-  return;
-}
-
-MatchData BFSMatching::calculate(const SBG& sbg)
-{
-  Util::DEBUG_LOG << "Matching sbg: \n" << sbg << "\n\n";
+  Util::DEBUG_LOG << "Matching bsbg: \n" << bsbg << "\n\n";
 
   auto begin = std::chrono::high_resolution_clock::now();
-  init(sbg);
-  Set right_vertices = dsbg_.mapB().image();
+  init(bsbg);
+  Set right_vertices = bsbg.Y();
 
   ExitCondition exit_cond(false, false);
   do {
@@ -192,7 +205,7 @@ MatchData BFSMatching::calculate(const SBG& sbg)
     end - begin);
   Util::SBG_LOG << "Total matching exec time: " << total.count() << " [μs]\n";
 
-  MatchData result(sbg, M_.compact(), exit_cond.full_match());
+  MatchData result(bsbg, M_.compact(), exit_cond.full_match());
   Util::SBG_LOG << result << "\n\n";
 
   return result;

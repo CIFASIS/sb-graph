@@ -93,6 +93,10 @@ bool MultiDimInter::operator<(const MultiDimInter &other) const
   return minElem() < other.minElem();
 }
 
+bool MultiDimInter::operator>(const MultiDimInter& other) const
+{
+  return !(*this == other && *this < other);
+}
 
 std::ostream &operator<<(std::ostream &out, const MultiDimInter &mdi)
 {

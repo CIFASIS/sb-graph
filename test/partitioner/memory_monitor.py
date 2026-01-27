@@ -1,0 +1,71 @@
+import subprocess
+import psutil
+import time
+import matplotlib.pyplot as plt
+
+def monitor(command):
+    # Start the C++ process
+    proc = subprocess.Popen(command, shell=True)
+    mem_usage = []
+    mem_usage2 = []
+    timestamps = []
+    start_time = time.time()
+
+    while proc.poll() is None: # While process is running
+        try:
+            # Get RSS memory in MB
+            mem_info = psutil.Process(proc.pid).memory_full_info()
+            print(mem_info)
+            mem = mem_info.uss / (1024 * 1024)
+            mem_usage.append(mem)
+        
+            rss = mem_info.rss / (1024 * 1024)
+            mem_usage2.append(rss)
+            # rss = mem_info.rss / (1024 * 1024)   # Physical RAM
+            # vms = mem_info.vms / (1024 * 1024)   # Virtual Memory
+            timestamps.append(time.time() - start_time)
+        except psutil.NoSuchProcess:
+            break
+        time.sleep(0.05) # Sample every 50ms
+
+    return timestamps, mem_usage, mem_usage2
+
+# Run and Plot
+inputs = [
+    "/sb-graph/test/partitioner/data/air_conditioners_cont_4_1000.json",
+    "/sb-graph/test/partitioner/data/air_conditioners_cont_4_10000.json",
+    "/sb-graph/test/partitioner/data/air_conditioners_cont_4_100000.json"
+]
+
+colors = {
+    inputs[0]: 'red',
+    inputs[1]: 'blue',
+    inputs[2]: 'green'
+}
+
+colors2 = {
+    inputs[0]: 'brown',
+    inputs[1]: 'skyblue',
+    inputs[2]: 'black'
+}
+
+
+# Generate the plot
+plt.figure(figsize=(10, 6))
+plt.title("Memory Consumption Timeline")
+plt.xlabel("Time (seconds)")
+plt.ylabel("Memory Usage (MB)")
+plt.grid(True)
+
+for f in inputs:
+    for _ in range(1):
+        times, mem, mem2 = monitor(f"/sb-graph/install/bin/sbg-partitioner -f {f} -p 4")
+
+        plt.plot(times, mem, color=colors[f])
+        plt.plot(times, mem2, color=colors2[f])
+plt.legend()
+
+# Save the plot instead of showing it
+output_file = "memory_benchmark.png"
+plt.savefig(output_file)
+print(f"Benchmark finished. Results saved to {output_file}")

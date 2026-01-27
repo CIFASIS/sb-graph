@@ -18,7 +18,7 @@
  *****************************************************************************/
 
 #include <algorithm>
-#include <filesystem>
+// #include <filesystem>
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
@@ -80,12 +80,12 @@ int main(int argc, char* argv[])
   Partition partition = partitioner.createPartition(partition_method, partitions);
 
   // write results to a file
-  std::filesystem::path json_filesystem_path(json_file_name);
-  json_filesystem_path = json_filesystem_path.replace_extension();
-  std::ofstream output_file(json_filesystem_path.filename().string() + "_" + partition_method + "_" + std::to_string(partitions) +
-                            "_output.txt");
-  std::for_each(partition.values.cbegin(), partition.values.cend(),
-                [&output_file](const auto& val) { output_file << std::to_string(val) << "\n"; });
+  // std::filesystem::path json_filesystem_path(json_file_name);
+  // json_filesystem_path = json_filesystem_path.replace_extension();
+  // std::ofstream output_file(json_filesystem_path.filename().string() + "_" + partition_method + "_" + std::to_string(partitions) +
+  //                           "_output.txt");
+  // std::for_each(partition.values.cbegin(), partition.values.cend(),
+  //               [&output_file](const auto& val) { output_file << std::to_string(val) << "\n"; });
 
   return 0;
 }

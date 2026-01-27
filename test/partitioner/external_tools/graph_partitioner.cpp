@@ -37,15 +37,20 @@
 
 #include "graph_partitioner.hpp"
 #include <algorithms/partitioner/build_sb_graph.hpp>
+#include <algorithms/partitioner/kernighan_lin_partitioner.hpp>
+#include <algorithms/partitioner/partition_graph.hpp>
 #include <algorithms/partitioner/weighted_sb_graph.hpp>
 
-constexpr const char *VALID_PARTITION_METHODS = "{ Scotch, Metis, HMetis, Kahip}";
+constexpr const char *VALID_PARTITION_METHODS = "{ Scotch, Metis, HMetis, Kahip, SBG }";
 
 // Initialize the map outside the function
 static const std::unordered_map<std::string, PartitionMethod> PARTITION_METHOD_MAP = {{"Metis", PartitionMethod::Metis},
                                                                                       {"HMetis", PartitionMethod::HMetis},
                                                                                       {"Scotch", PartitionMethod::Scotch},
-                                                                                      {"Kahip", PartitionMethod::Kahip}};
+                                                                                      {"Kahip", PartitionMethod::Kahip},
+                                                                                      {"SBG", PartitionMethod::SBG}};
+
+static std::unique_ptr<SBG::LIB::WeightedSBGraph> sbg_graph;
 
 GraphPartitioner::GraphPartitioner(const std::string &name) : _name(name) { generateInputGraph(); }
 
@@ -95,6 +100,9 @@ Partition GraphPartitioner::createPartition(const std::string &partition_method_
     case PartitionMethod::Kahip:
       partitionUsingKaHip(partition);
       break;
+    case PartitionMethod::SBG:
+      partitionUsingSBG();
+      break;
     default:
       break;
     }
@@ -122,8 +130,9 @@ void GraphPartitioner::generateInputGraph()
 
 void GraphPartitioner::readGraphFromJson()
 {
-  auto sb_graph = sbg_partitioner::build_sb_graph(_name);
-  readGraphFromSBG(sb_graph);
+  auto temp_sbg_graph = sbg_partitioner::build_sb_graph(_name);
+  sbg_graph.reset(new SBG::LIB::WeightedSBGraph(temp_sbg_graph));
+  readGraphFromSBG();
 }
 
 void GraphPartitioner::readGraph()
@@ -314,13 +323,23 @@ void GraphPartitioner::partitionUsingKaHip(Partition &partition)
          partition.values.data());
 }
 
-void GraphPartitioner::readGraphFromSBG(const SBG::LIB::WeightedSBGraph &sbg_graph)
+void GraphPartitioner::partitionUsingSBG()
 {
-  _nbr_vtxs = sbg_graph.V().cardinal();
-  _edges = sbg_graph.E().cardinal();
+  std::cout << "partitionUsingSBG" << std::endl;
+
+  auto partitions = sbg_partitioner::best_initial_partition(*sbg_graph, _nbr_parts, sbg_partitioner::InitialPartitionStrategy::ALL, false);
+  // std::cout << "chosen partition " << partitions << std::endl;
+
+  sbg_partitioner::kl_sbg_imbalance_partitioner(*sbg_graph, partitions, _imbalance, false);
+}
+
+void GraphPartitioner::readGraphFromSBG()
+{
+  _nbr_vtxs = sbg_graph->V().cardinal();
+  _edges = sbg_graph->E().cardinal();
   // asumming all setpiece are unidimensional and have step 1
   int max_node = -1;
-  for (const auto &v : sbg_graph.V()) {
+  for (const auto &v : sbg_graph->V()) {
     if (int(v.begin()[0].end()) > max_node) {
       max_node = int(v.begin()[0].end());
     }
@@ -330,11 +349,11 @@ void GraphPartitioner::readGraphFromSBG(const SBG::LIB::WeightedSBGraph &sbg_gra
 
   for (int i = 0; i <= max_node; i++) {
     auto s = SBG::LIB::SET_FACT.createSet(SBG::LIB::Interval(i, 1, i));
-    auto edges1 = sbg_graph.map1().preImage(s);
-    auto nodes1 = sbg_graph.map2().image(edges1);
+    auto edges1 = sbg_graph->map1().preImage(s);
+    auto nodes1 = sbg_graph->map2().image(edges1);
 
-    auto edges2 = sbg_graph.map2().preImage(s);
-    auto nodes2 = sbg_graph.map1().image(edges2);
+    auto edges2 = sbg_graph->map2().preImage(s);
+    auto nodes2 = sbg_graph->map1().image(edges2);
 
     auto nodes = nodes1.cup(nodes2);
     auto nodes_vector = std::vector<int>();

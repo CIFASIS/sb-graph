@@ -21,8 +21,8 @@
 #include <map>
 #include <iostream>
 
-#include "sbg/sbg.hpp"
-#include "sbg/set.hpp"
+#include <sbg/sbg.hpp>
+#include <sbg/set.hpp>
 
 namespace SBG {
 
@@ -41,39 +41,36 @@ using NodeWeight = std::map<Set, int, setCompare>;
 class WeightedSBGraph : public SBG
 {
 public:
-    WeightedSBGraph(WeightedSBGraph& graph)
-        : SBG(graph),
-        _node_weights(graph.get_node_weights()),
-        _edge_costs(graph.get_edge_costs())
-    {}
-    WeightedSBGraph(WeightedSBGraph&& graph)
-        : SBG(graph),
-        _node_weights(graph.get_node_weights()),
-        _edge_costs(graph.get_edge_costs())
-    {}
+    WeightedSBGraph(WeightedSBGraph& graph);
+
+    WeightedSBGraph(WeightedSBGraph&& graph);
 
     WeightedSBGraph(const Set &V, const PWMap &Vmap
         , const PWMap &map1, const PWMap &map2
-        , const PWMap &Emap, const PWMap &subEmap)
-        : SBG(V, Vmap, map1, map2, Emap, subEmap)
-    {}
-
-    void set_node_weights(NodeWeight& node_weights) { _node_weights = std::move(node_weights); }
-
-    NodeWeight get_node_weights() const { return _node_weights; }
-
-    void set_node_weight(const Set& node_set, int weight) { _node_weights[node_set] = weight; }
-
-    int get_node_weight(const Set& node_set) const { return _node_weights.at(node_set); }
+        , const PWMap &Emap, const PWMap &subEmap);
 
 
-    void set_edge_costs(EdgeCost& edge_costs) { _edge_costs = std::move(edge_costs); }
+    WeightedSBGraph(const WeightedSBGraph&) = delete;
+    WeightedSBGraph operator=(WeightedSBGraph&& other) = delete;
 
-    EdgeCost get_edge_costs() const { return _edge_costs; }
+    ~WeightedSBGraph();
 
-    void set_edge_cost(const Set& edge_set, unsigned cost) { _edge_costs[edge_set] = cost; }
+    void set_node_weights(NodeWeight& node_weights);
 
-    unsigned get_edge_cost(const Set& edge_set) const { return _edge_costs.at(edge_set); }
+    NodeWeight get_node_weights() const;
+
+    void set_node_weight(const Set& node_set, int weight);
+
+    int get_node_weight(const Set& node_set) const;
+
+
+    void set_edge_costs(EdgeCost& edge_costs);
+
+    EdgeCost get_edge_costs() const;
+
+    void set_edge_cost(const Set& edge_set, unsigned cost);
+
+    unsigned get_edge_cost(const Set& edge_set) const;
 
 private:
     NodeWeight _node_weights;

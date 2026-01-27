@@ -17,11 +17,13 @@
 
  *****************************************************************************/
 
+#pragma once
+
 #include <vector>
 #include <string>
+#include <memory>
 #include <metis.h>
 #include <scotch/scotch.h>
-
 
 namespace SBG {
   namespace LIB {
@@ -37,6 +39,7 @@ enum class PartitionMethod {
     HMetis,
     Scotch,
     Kahip,
+    SBG,
     Unknown
 };
 
@@ -70,6 +73,7 @@ class GraphPartitioner {
 
   void partitionUsingMetis(Partition &partition);
   void partitionUsingHMetis(Partition &partition);
+  void partitionUsingSBG();
   void createHMetisGraphFile(const std::string &file_name);
   void executeKhmetis(const std::string &h_graph_name) const;
 
@@ -77,7 +81,7 @@ class GraphPartitioner {
 
   void partitionUsingKaHip(Partition &partition);
 
-  void readGraphFromSBG(const SBG::LIB::WeightedSBGraph& sbg_graph);
+  void readGraphFromSBG();
 
   std::string _name;
   grp_t _edges;

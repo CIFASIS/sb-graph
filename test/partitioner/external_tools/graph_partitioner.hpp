@@ -19,18 +19,20 @@
 
 #pragma once
 
+#include <chrono>
 #include <vector>
 #include <string>
 #include <memory>
 #include <metis.h>
 #include <scotch/scotch.h>
 
+#include <algorithms/partitioner/sbg_partitioner_types.hpp>
+
 namespace SBG {
   namespace LIB {
     class WeightedSBGraph;
   }
 }
-
 
 using grp_t = int;
 
@@ -54,7 +56,7 @@ class GraphPartitioner {
   public:
   explicit GraphPartitioner(const std::string &name);
 
-  Partition createPartition(const std::string& partition_method, unsigned int partitions);
+  std::tuple<Partition, std::chrono::duration<double>> createPartition(const std::string& partition_method, unsigned int partitions, bool save_to_file);
 
   static std::string validPartitionMethodsStr();
 
@@ -73,7 +75,7 @@ class GraphPartitioner {
 
   void partitionUsingMetis(Partition &partition);
   void partitionUsingHMetis(Partition &partition);
-  void partitionUsingSBG();
+  void partitionUsingSBG(sbg_partitioner::PartitionMap& partitions);
   void createHMetisGraphFile(const std::string &file_name);
   void executeKhmetis(const std::string &h_graph_name) const;
 

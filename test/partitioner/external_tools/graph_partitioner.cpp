@@ -20,7 +20,6 @@
 #include <array>
 #include <algorithm>
 #include <cassert>
-#include <chrono>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -39,6 +38,7 @@
 #include <algorithms/partitioner/build_sb_graph.hpp>
 #include <algorithms/partitioner/kernighan_lin_partitioner.hpp>
 #include <algorithms/partitioner/partition_graph.hpp>
+#include <algorithms/partitioner/sbg_partitioner_types.hpp>
 #include <algorithms/partitioner/weighted_sb_graph.hpp>
 
 constexpr const char *VALID_PARTITION_METHODS = "{ Scotch, Metis, HMetis, Kahip, SBG }";
@@ -68,14 +68,15 @@ std::string GraphPartitioner::validPartitionMethodsStr()
   return valid_methods.str();
 }
 
-Partition GraphPartitioner::createPartition(const std::string &partition_method_name, unsigned int partitions)
+std::tuple<Partition, std::chrono::duration<double>> GraphPartitioner::createPartition(const std::string &partition_method_name,
+                                                                                       unsigned int partitions, bool save_to_file)
 {
   Partition partition;
   PartitionMethod partition_method = partitionMethod(partition_method_name);
 
   if (partition_method == PartitionMethod::Unknown) {
     std::cerr << "Unknown partition method, valid values are: " << validPartitionMethodsStr() << std::endl;
-    return partition;
+    return {partition, std::chrono::duration<double>()};
   }
 
   partition.resize(_nbr_vtxs);
@@ -83,6 +84,10 @@ Partition GraphPartitioner::createPartition(const std::string &partition_method_
   _nbr_parts = partitions;
 
   partition.resize(_nbr_vtxs);
+
+  // just in case we are using sbg
+  sbg_partitioner::PartitionMap sbg_partitions = {};
+  sbg_partitions.resize(_nbr_parts);
 
   auto start = std::chrono::high_resolution_clock::now();
 
@@ -101,7 +106,7 @@ Partition GraphPartitioner::createPartition(const std::string &partition_method_
       partitionUsingKaHip(partition);
       break;
     case PartitionMethod::SBG:
-      partitionUsingSBG();
+      partitionUsingSBG(sbg_partitions);
       break;
     default:
       break;
@@ -113,8 +118,15 @@ Partition GraphPartitioner::createPartition(const std::string &partition_method_
 
   std::cout << "Partition Time: " << duration.count() << " seconds." << std::endl;
 
-  savePartitionToFile(partition, partition_method_name);
-  return partition;
+  if (save_to_file) {
+    if (partition_method == PartitionMethod::SBG) {
+      // do something
+    } else {
+      savePartitionToFile(partition, partition_method_name);
+    }
+  }
+
+  return {partition, duration};
 }
 
 bool GraphPartitioner::endsWithJson() { return _name.size() >= 5 && _name.compare(_name.size() - 5, 5, ".json") == 0; }
@@ -323,11 +335,9 @@ void GraphPartitioner::partitionUsingKaHip(Partition &partition)
          partition.values.data());
 }
 
-void GraphPartitioner::partitionUsingSBG()
+void GraphPartitioner::partitionUsingSBG(sbg_partitioner::PartitionMap &partitions)
 {
-  std::cout << "partitionUsingSBG" << std::endl;
-
-  auto partitions = sbg_partitioner::best_initial_partition(*sbg_graph, _nbr_parts, sbg_partitioner::InitialPartitionStrategy::ALL, false);
+  partitions = sbg_partitioner::best_initial_partition(*sbg_graph, _nbr_parts, sbg_partitioner::InitialPartitionStrategy::ALL, false);
   // std::cout << "chosen partition " << partitions << std::endl;
 
   sbg_partitioner::kl_sbg_imbalance_partitioner(*sbg_graph, partitions, _imbalance, false);

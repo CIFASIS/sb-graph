@@ -32,9 +32,9 @@ def monitor(command):
 
 # Run and Plot
 inputs = [
-    "/sb-graph/test/partitioner/data/air_conditioners_cont_4_1000.json",
-    "/sb-graph/test/partitioner/data/air_conditioners_cont_4_10000.json",
-    "/sb-graph/test/partitioner/data/air_conditioners_cont_4_100000.json"
+    "/workspaces/sb-graph/test/partitioner/data/air_conditioners_cont_4_1000.json",
+    "/workspaces/sb-graph/test/partitioner/data/air_conditioners_cont_4_10000.json",
+    "/workspaces/sb-graph/test/partitioner/data/air_conditioners_cont_4_100000.json"
 ]
 
 colors = {
@@ -59,7 +59,7 @@ plt.grid(True)
 
 for f in inputs:
     for _ in range(1):
-        times, mem, mem2 = monitor(f"/sb-graph/install/bin/sbg-partitioner -f {f} -p 4")
+        times, mem, mem2 = monitor(f"/workspaces/sb-graph/install/bin/sbg-partitioner -f {f} -p 4 -m Kahip")
 
         plt.plot(times, mem, color=colors[f])
         plt.plot(times, mem2, color=colors2[f])

@@ -4,6 +4,11 @@ add_library(sbg-part-lib STATIC)
 set_target_properties(sbg-part-lib PROPERTIES DEBUG_POSTFIX "d")
 target_include_directories(sbg-part-lib PUBLIC ${PROJECT_SOURCE_DIR})
 
+set(ENABLE_MEMORY_BENCHMARKING OFF)
+if(ENABLE_MEMORY_BENCHMARKING)
+    add_compile_definitions(USE_MEMORY_TRACKER)
+endif()
+
 target_sources(
     sbg-part-lib
     PRIVATE

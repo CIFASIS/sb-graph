@@ -15,7 +15,6 @@ def monitor(command):
         try:
             # Get RSS memory in MB
             mem_info = psutil.Process(proc.pid).memory_full_info()
-            print(mem_info)
             mem = mem_info.uss / (1024 * 1024)
             mem_usage.append(mem)
         

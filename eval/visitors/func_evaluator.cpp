@@ -638,10 +638,9 @@ ExprBaseType BuiltInFunctions::sccEvaluator(const EBTList& args)
     , "sccEvaluator: wrong number of arguments\n");
 
   LIB::SCC scc_impl = LIB::SCC_FACT.createSCCAlgorithm();
-  LIB::Tearing tearing_impl = LIB::TEARING_FACT.createTearingAlgorithm();
   const auto scc_evaluator = Overload {
-    [&tearing_impl](LIB::DSBG a) { 
-      return ExprBaseType(tearing_impl.calculate(a).rmap());
+    [&scc_impl](LIB::DSBG a) { 
+      return ExprBaseType(scc_impl.calculate(a).rmap());
     },
     [](auto a) {
       Util::ERROR("sccEvaluator: wrong argument ", a, " for scc\n"); 
@@ -713,6 +712,52 @@ ExprBaseType BuiltInFunctions::matchSCCEvaluator(const EBTList& args)
   };
 
   return std::visit(match_scc_evaluator, args[0], args[1]);
+}
+
+ExprBaseType BuiltInFunctions::tearingEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 1
+    , "tearingEvaluator: wrong number of arguments\n");
+
+  LIB::Tearing tearing_impl = LIB::TEARING_FACT.createTearingAlgorithm();
+  const auto tearing_evaluator = Overload {
+    [&tearing_impl](LIB::DSBG a) { 
+      return ExprBaseType(tearing_impl.calculate(a).rmap());
+    },
+    [](auto a) {
+      Util::ERROR("tearingEvaluator: wrong argument ", a, " for tearing\n"); 
+      return ExprBaseType();
+    }
+  };
+  return std::visit(tearing_evaluator, args[0]);
+}
+
+ExprBaseType BuiltInFunctions::matchTearingEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 2
+    , "tearingEvaluator: wrong number of arguments");
+
+  LIB::Matching match_impl = LIB::MATCH_FACT.createMatchAlgorithm();
+  LIB::Tearing tearing_impl = LIB::TEARING_FACT.createTearingAlgorithm();
+  const auto match_tearing_evaluator = Overload {
+    [&match_impl, &tearing_impl](LIB::BipartiteSBG a, LIB::NAT b) { 
+      LIB::MatchData match_result = match_impl.calculate(a.copy(b));
+      LIB::DSBG dsbg = MISC::buildSCCFromMatching(match_result);
+      return ExprBaseType(tearing_impl.calculate(dsbg).rmap());
+    },
+    [&match_impl, &tearing_impl](LIB::BipartiteSBG a, LIB::MD_NAT b) { 
+      LIB::MatchData match_result = match_impl.calculate(a.copy(b[0]));
+      LIB::DSBG dsbg = MISC::buildSCCFromMatching(match_result);
+      return ExprBaseType(tearing_impl.calculate(dsbg).rmap());
+    },
+    [](auto a, auto b) {
+      Util::ERROR("match_tearing_evaluator: wrong arguments ", a, ", ", b
+        , " for matchTearing\n"); 
+      return ExprBaseType();
+    }
+  };
+
+  return std::visit(match_tearing_evaluator, args[0], args[1]);
 }
 
 /*

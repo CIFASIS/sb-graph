@@ -66,7 +66,7 @@ TearingData TearingV1::calculate(const DSBG& dsbg)
     finalDSBG = finalDSBG.addSV(tearIOMap.image());
     maxOffset = finalDSBG.V().maxElem();
     tearIOMap_ = tearIOMap.combine(tearIOMap_);
-    rmap = rmap.combine(tearIOMap.firstInv()); // Separar 
+    rmap = rmap.combine(tearIOMap.inverse()); // Separar 
 
     Set e_tear_scc = dsbg_.mapD().restrict(e_scc).preImage(v_tear);
     Set e_tear_notscc = dsbg_.mapB().restrict(e_notscc).preImage(v_tear);

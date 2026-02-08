@@ -66,6 +66,8 @@ ExprEvaluator::ExprEvaluator(EvalContext& eval_ctx) : _eval_context(eval_ctx)
   eval_ctx.insertFunction("match", BuiltInFunctions::matchingEvaluator);
   eval_ctx.insertFunction("scc", BuiltInFunctions::sccEvaluator);
   eval_ctx.insertFunction("matchSCC", BuiltInFunctions::matchSCCEvaluator);
+  eval_ctx.insertFunction("tearing", BuiltInFunctions::tearingEvaluator);
+  eval_ctx.insertFunction("matchTearing", BuiltInFunctions::matchTearingEvaluator);
   eval_ctx.insertFunction("mfvs", BuiltInFunctions::mfvsEvaluator);
   eval_ctx.insertFunction("matchSCCMFVS"
     , BuiltInFunctions::matchSCCMFVSEvaluator);

@@ -98,6 +98,10 @@ public:
   static ExprBaseType mfvsEvaluator(const EBTList& args);
   static ExprBaseType matchSCCMFVSEvaluator(const EBTList& args);
   static ExprBaseType topoSortEvaluator(const EBTList& args);
+  static ExprBaseType cutVertexEvaluator(const EBTList& args);
+  static ExprBaseType matchSCCEvaluator(const EBTList& args);
+  static ExprBaseType tearingEvaluator(const EBTList& args);
+  static ExprBaseType matchTearingEvaluator(const EBTList& args);
   static ExprBaseType causalizationEvaluator(const EBTList& args);
 };
 

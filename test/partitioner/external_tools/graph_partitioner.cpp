@@ -228,7 +228,7 @@ void GraphPartitioner::partitionUsingMetis(Partition &partition)
   std::array<idx_t, METIS_NOPTIONS> options;
 
   METIS_SetDefaultOptions(options.data());
-  options[METIS_OPTION_CONTIG] = 1;
+  options[METIS_OPTION_CONTIG] = 0;
   options[METIS_OPTION_PTYPE] = METIS_PTYPE_KWAY;
   options[METIS_OPTION_OBJTYPE] = METIS_OBJTYPE_VOL;
   options[METIS_OPTION_SEED] = 1;

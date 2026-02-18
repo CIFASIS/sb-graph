@@ -295,34 +295,30 @@ void GraphPartitioner::readPartitionFile(const std::string &file_name, Partition
 
 void GraphPartitioner::partitionUsingScotch(Partition &partition)
 {
-  SCOTCH_Graph *graph_sc = SCOTCH_graphAlloc();
-  if (graph_sc == nullptr) {
-    std::cerr << "Error allocating graph" << std::endl;
+  SCOTCH_Graph    graph_sc;
+  SCOTCH_Strat    strat;
+  
+  SCOTCH_graphInit(&graph_sc);
+  SCOTCH_stratInit(&strat);
+
+  if (SCOTCH_stratGraphMapBuild(&strat, SCOTCH_STRATQUALITY, _nbr_parts, 0.05)) {
+    std::cerr << "Error building graph partition strategy" << std::endl;
     return;
   }
 
-  SCOTCH_Strat *strat = SCOTCH_stratAlloc();
-  if (SCOTCH_stratInit(strat)) {
-    std::cerr << "Error allocating graph" << std::endl;
-    return;
+  if (SCOTCH_graphBuild(&graph_sc, 0, _nbr_vtxs, _xadj.data(), NULL, NULL, NULL, _edges, _adjncy.data(), NULL) != 0) {
+      std::cerr << "Error: Scotch Graph Build" << std::endl;
+      return;
   }
 
-  if (SCOTCH_stratGraphMapBuild(strat, SCOTCH_STRATDEFAULT, 4, 0.05)) {
-    std::cerr << "Error allocating graph" << std::endl;
-    return;
+  if (SCOTCH_graphPart(&graph_sc, _nbr_parts, &strat, partition.values.data()) != 0) {
+      std::cerr << "Error: Scotch Graph Partition" << std::endl;
+      return;
   }
 
-  if (SCOTCH_graphBuild(graph_sc, 0, _nbr_vtxs, _xadj.data(), nullptr, _vwgt.data(), nullptr, _edges, _adjncy.data(), _ewgt.data()) != 0) {
-    std::cerr << "Error: Scotch Graph Build" << std::endl;
-    return;
-  }
-  if (SCOTCH_graphPart(graph_sc, _nbr_parts, strat, partition.values.data()) != 0) {
-    std::cerr << "Error: Scotch Graph Partition" << std::endl;
-    return;
-  }
+  SCOTCH_stratExit(&strat);
+  SCOTCH_graphExit(&graph_sc);
 
-  SCOTCH_stratExit(strat);
-  SCOTCH_graphFree(graph_sc);
 }
 
 void GraphPartitioner::partitionUsingKaHip(Partition &partition)

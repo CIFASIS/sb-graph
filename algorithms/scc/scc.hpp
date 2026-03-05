@@ -21,69 +21,52 @@
 
  ******************************************************************************/
 
-#ifndef SBG_SCC_HPP
-#define SBG_SCC_HPP
+#ifndef SBGRAPH_ALGORITHMS_SCC_SCC_HPP_
+#define SBGRAPH_ALGORITHMS_SCC_SCC_HPP_
 
+#include "algorithms/scc/minreach_scc.hpp"
+#include "algorithms/scc/scc_data.hpp"
 #include "sbg/directed_sbg.hpp"
+#include "sbg/pw_map.hpp"
+#include "sbg/set.hpp"
+
+#include <variant>
 
 namespace SBG {
 
 namespace LIB {
 
-////////////////////////////////////////////////////////////////////////////////
-// Auxiliary classures --------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-/**
- * @brief Saves input and output data from a SCC algorithm run.
- */
-struct SCCData {
-  public:
-  SCCData(DSBG dsbg, PWMap rmap, Set Ediff);
-
-  const DSBG& dsbg() const;
-  const PWMap& rmap() const;
-  const Set& Ediff() const;
-
-  private:
-  DSBG dsbg_;  ///< Original input directed SBG
-  PWMap rmap_; ///< Resulting SCCs
-  Set Ediff_;  ///< Edges connecting vertices in different SCC
-};
+namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
-// SCC Algorithm Abstract Strategy ---------------------------------------------
+// SCC Algorithm implementations -----------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-class SCCStrategy;
+using SCCImpl = std::variant<MinReachSCCV1, MinReachSCCV2>;
 
-typedef std::unique_ptr<SCCStrategy> SCCStratPtr;
+} // namespace detail
 
-class SCCStrategy {
-  public:
-  virtual ~SCCStrategy() = default;
+enum class SCCKind { MinReachV1, MinReachV2 };
 
-  SCCStrategy();
-
-  virtual SCCData calculate(const DSBG& dsbg) = 0;
-};
+std::ostream& operator<<(std::ostream& out, const SCCKind kind);
 
 ////////////////////////////////////////////////////////////////////////////////
-// SCC Algorithm Interface (context) -------------------------------------------
+// SCC Algorithm ---------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 class SCC {
-  public:
-  SCC(SCCStratPtr strat);
+public:
+  SCC(SCCKind kind);
 
-  SCCData calculate(const DSBG& dsbg);
+  SCCData calculate(const DirectedSBG& dsbg);
 
-  private:
-  SCCStratPtr strategy_;
+private:
+  SCCKind _kind;
+  detail::SCCImpl _impl;
 };
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_SCC_SCC_HPP_

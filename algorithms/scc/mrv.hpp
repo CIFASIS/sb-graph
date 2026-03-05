@@ -23,10 +23,11 @@
 
  ******************************************************************************/
 
-#ifndef SBG_MRV_HPP
-#define SBG_MRV_HPP
+#ifndef SBGRAPH_ALGORITHMS_SCC_MRV_HPP_
+#define SBGRAPH_ALGORITHMS_SCC_MRV_HPP_
 
 #include "sbg/directed_sbg.hpp"
+#include "sbg/pw_map.hpp"
 
 namespace SBG {
 
@@ -44,17 +45,17 @@ namespace LIB {
  */
 template<class MRVImpl>
 class MRVContext {
-  public:
+public:
   /**
    * @brief For every vertex of `dsbg` calculates its minimum reachable vertex.
    * @return The resulting pw is such that if pw(x) = y then MRV(x) = y.
    */
-  inline PWMap calculate(const DSBG& dsbg)
+  inline PWMap calculate(const DirectedSBG& dsbg)
   {
     return static_cast<MRVImpl*>(this)->calculate(dsbg);
   }
 
-  protected:
+protected:
   MRVContext() = default;
 };
 
@@ -62,4 +63,4 @@ class MRVContext {
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_SCC_MRV_HPP_

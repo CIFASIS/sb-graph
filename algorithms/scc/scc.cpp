@@ -17,10 +17,9 @@
 
  ******************************************************************************/
 
-#include <chrono>
-
 #include "algorithms/scc/mrv.hpp"
 #include "algorithms/scc/scc.hpp"
+#include "util/debug.hpp"
 #include "util/logger.hpp"
 
 namespace SBG {
@@ -28,31 +27,58 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Auxiliary structures --------------------------------------------------------
+// SCC Algorithm implementations -----------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-SCCData::SCCData(DSBG dsbg, PWMap rmap, Set Ediff)
-  : dsbg_(dsbg), rmap_(rmap), Ediff_(Ediff) {}
-
-const DSBG& SCCData::dsbg() const { return dsbg_; }
-const PWMap& SCCData::rmap() const { return rmap_; }
-const Set& SCCData::Ediff() const { return Ediff_; }
-
-////////////////////////////////////////////////////////////////////////////////
-// SCC Algorithm Abstract Strategy Constructors --------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-SCCStrategy::SCCStrategy() {}
-
-////////////////////////////////////////////////////////////////////////////////
-// SCC Algorithm Interface -----------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-SCC::SCC(SCCStratPtr strat) : strategy_(std::move(strat)) {}
-
-SCCData SCC::calculate(const DSBG& dsbg)
+std::ostream& operator<<(std::ostream& out, const SCCKind kind)
 {
-  return strategy_->calculate(dsbg);
+  switch (kind) {
+    case SCCKind::MinReachV1: {
+      out << "minimum reachable V1";
+      break;
+    }
+
+    case SCCKind::MinReachV2: {
+      out << "minimum reachable V2";
+      break;
+    }
+
+    default: {
+      Util::ERROR("Unsupported SCC implementation");
+      break;
+    }
+  }
+
+  return out;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// SCC Algorithm ---------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+SCC::SCC(SCCKind kind) : _kind(kind), _impl()
+{
+  switch (kind) {
+    case SCCKind::MinReachV1: {
+      _impl = detail::MinReachSCCV1{};
+      break;
+    }
+
+    case SCCKind::MinReachV2: {
+      _impl = detail::MinReachSCCV2{};
+      break;
+    }
+
+    default: {
+      Util::ERROR("Unsupported SCC implementation");
+      break;
+    }
+  }
+}
+
+SCCData SCC::calculate(const DirectedSBG& dsbg)
+{
+  return std::visit([&](auto& a) { return a.calculate(dsbg); }, _impl);
 }
 
 } // namespace LIB

@@ -18,6 +18,8 @@
  ******************************************************************************/
 
 #include "algorithms/scc/decreasing_edges_mrv.hpp"
+#include "sbg/pwmap_fact.hpp"
+#include "sbg/set_fact.hpp"
 #include "util/logger.hpp"
 
 namespace SBG {
@@ -28,16 +30,17 @@ namespace LIB {
 // Minimum Adjacent MRV Implementation -----------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-LtEdgesMRV::LtEdgesMRV() : dsbg_(), smap_(PW_FACT.createPWMap())
-  , visitedSE_(SET_FACT.createSet()) {}
+LtEdgesMRV::LtEdgesMRV() : _dsbg(), _smap(PWMAP_FACT.createPWMap())
+  , _visitedSE(SET_FACT.createSet()) {}
 
 Set LtEdgesMRV::decreasingRepresentative(const PWMap& rmap) const
 {
-  PWMap mapB = dsbg_.mapB();
-  PWMap mapD = dsbg_.mapD();
+  PWMap mapB = _dsbg.mapB();
+  PWMap mapD = _dsbg.mapD();
 
-  if (mapB.isEmpty() || mapD.isEmpty())
+  if (mapB.isEmpty() || mapD.isEmpty()) {
     return SET_FACT.createSet();
+  }
 
   PWMap rmapB = rmap.composition(mapB);
   PWMap rmapD = rmap.composition(mapD);
@@ -48,11 +51,11 @@ Set LtEdgesMRV::decreasingRepresentative(const PWMap& rmap) const
 
 Set LtEdgesMRV::edgesInPaths(const PWMap& smap) const
 {
-  PWMap mapB = dsbg_.mapB();
-  PWMap mapD = dsbg_.mapD();
+  PWMap mapB = _dsbg.mapB();
+  PWMap mapD = _dsbg.mapD();
 
   // Vertices that are successors of other vertices in a path
-  Set not_fixed = smap.dom().difference(smap.fixedPoints());
+  Set not_fixed = smap.domain().difference(smap.fixedPoints());
   Set succs = smap.restrict(not_fixed).image();
   // Edges whose endings are successors 
   Set ending_edges = mapD.preImage(succs);
@@ -66,60 +69,58 @@ Set LtEdgesMRV::edgesInPaths(const PWMap& smap) const
 
 PWMap LtEdgesMRV::recursivePaths(const Set& ith_paths_edges, const Set& outgoing)
 {
-  PWMap result = PW_FACT.createPWMap();
+  PWMap result = PWMAP_FACT.createPWMap();
 
-  PWMap subEmap = dsbg_.subEmap();
-  Set ithSE = subEmap.image(ith_paths_edges);
-  visitedSE_ = visitedSE_.cup(ithSE);
-  Set repeatedSE = visitedSE_.intersection(ithSE);
+  PWMap Emap = _dsbg.Emap();
+  Set ithSE = Emap.image(ith_paths_edges);
+  _visitedSE = std::move(_visitedSE).cup(ithSE);
+  Set repeatedSE = _visitedSE.intersection(ithSE);
   if (!repeatedSE.isEmpty()) {
-    PWMap mapB = dsbg_.mapB();
-    PWMap mapD = dsbg_.mapD();
+    PWMap mapB = _dsbg.mapB();
+    PWMap mapD = _dsbg.mapD();
 
-    Set ith_start = smap_.dom().difference(smap_.image());
+    Set ith_start = _smap.domain().difference(_smap.image());
     Set E = SET_FACT.createSet(); 
-    PWMap subEmap = dsbg_.subEmap();
     Set ithE = mapB.preImage(ith_start).intersection(ith_paths_edges);
     if (!ithE.isEmpty()) {
       bool exit_condition = true;
       do {
         ithE = mapB.preImage(ith_start).intersection(ith_paths_edges);
-        E = E.disjointCup(ithE);
+        E = std::move(E).disjointCup(std::move(ithE));
         ith_start = mapD.image(ithE);
-        exit_condition = !repeatedSE.intersection(subEmap.image(E)).isEmpty();
+        exit_condition = !repeatedSE.intersection(Emap.image(E)).isEmpty();
       } while (!exit_condition);
     }
 
-    Set smap_edges = edgesInPaths(smap_);
+    Set smap_edges = edgesInPaths(_smap);
     Set adj = mapB.preImage(mapB.image(smap_edges));
 
-    Set E_plus = subEmap.preImage(subEmap.image(E));
+    Set E_plus = Emap.preImage(Emap.image(E));
     E_plus = E_plus.difference(mapB.preImage(outgoing));
     E_plus = E_plus.difference(adj);
-    PWMap mapB_plus = dsbg_.mapB().restrict(E_plus);
-    PWMap mapD_plus = dsbg_.mapD().restrict(E_plus);
-    result = mapB_plus.minAdjMap(mapD_plus);
+    PWMap mapB_plus = _dsbg.mapB().restrict(E_plus);
+    PWMap mapD_plus = _dsbg.mapD().restrict(E_plus);
+    result = mapB_plus.minAdj(mapD_plus);
   }
 
   return result;
 }
 
 
-PWMap LtEdgesMRV::calculate(const DSBG& dsbg)
+PWMap LtEdgesMRV::calculate(const DirectedSBG& dsbg)
 {
   Util::DEBUG_LOG << "LtEdgesMRV dsbg:\n" << dsbg << "\n\n";
 
-  dsbg_ = dsbg;
-  PWMap mapB = dsbg_.mapB();
-  PWMap mapD = dsbg_.mapD();
-  PWMap subEmap = dsbg_.subEmap();
-  visitedSE_ = SET_FACT.createSet();
+  _dsbg = dsbg;
+  PWMap mapB = _dsbg.mapB();
+  PWMap mapD = _dsbg.mapD();
+  _visitedSE = SET_FACT.createSet();
 
-  smap_ = PW_FACT.createPWMap(dsbg.V());
-  PWMap rmap = smap_;
+  _smap = PWMAP_FACT.createPWMap(dsbg.V());
+  PWMap rmap = _smap;
 
-  if (!dsbg_.V().isEmpty() && !dsbg_.E().isEmpty()) {
-    PWMap old_rmap = PW_FACT.createPWMap();
+  if (!_dsbg.V().isEmpty() && !_dsbg.E().isEmpty()) {
+    PWMap old_rmap = PWMAP_FACT.createPWMap();
     Set E = SET_FACT.createSet();
     Set paths_edges = SET_FACT.createSet();
     do {
@@ -129,18 +130,18 @@ PWMap LtEdgesMRV::calculate(const DSBG& dsbg)
       E = decreasingRepresentative(rmap);
       PWMap decreasingB = mapB.restrict(E);
       PWMap decreasingD = mapD.restrict(E);
-      PWMap decreasing_smap = decreasingB.minAdjMap(decreasingD); 
-      smap_ = decreasing_smap.combine(smap_);
+      PWMap decreasing_smap = decreasingB.minAdj(decreasingD); 
+      _smap = decreasing_smap.combine(std::move(_smap));
 
       // Recursive paths
       Set ith_paths_edges = edgesInPaths(decreasing_smap);
       Set outgoing = rmap.image(mapD.image(ith_paths_edges));
       PWMap smap_plus = recursivePaths(ith_paths_edges, outgoing);
-      smap_ = smap_plus.combine(smap_);
+      _smap = std::move(smap_plus).combine(std::move(_smap));
 
       // Calculate representatives map
-      rmap = smap_.mapInf();
-      rmap = rmap.minMap(old_rmap).combine(rmap);
+      rmap = _smap.mapInf();
+      rmap = rmap.min(old_rmap).combine(std::move(rmap));
     } while (!E.isEmpty());
   }
 

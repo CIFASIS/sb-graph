@@ -21,43 +21,32 @@
 
  ******************************************************************************/
 
-#ifndef SBG_SCC_FACT_HPP
-#define SBG_SCC_FACT_HPP
+#ifndef SBGRAPH_ALGORITHMS_SCC_SCC_FACT_HPP_
+#define SBGRAPH_ALGORITHMS_SBG_SCC_FACT_HPP_
 
-#include "scc.hpp"
+#include "algorithms/scc/scc.hpp"
+
+#include <string>
 
 namespace SBG {
 
 namespace LIB {
 
-#define SCC_FACT SCCFactory::instance().scc_fact()
+#define SCC_FACT SCCFactory::instance()
 
-class SCCFact {
-  public:
-  virtual ~SCCFact() = default;
-  SCCFact() = default;
-
-  virtual SCC createSCCAlgorithm() const = 0;
-  virtual std::string prettyPrint() const = 0;
-};
-
-class MinReachSCCV1Fact : public SCCFact {
-  public:
+class MinReachSCCV1Fact {
+public:
   MinReachSCCV1Fact() = default;
 
-  SCC createSCCAlgorithm() const override;
-  std::string prettyPrint() const override;
+  SCC createSCCAlgorithm() const;
 };
 
-class MinReachSCCV2Fact : public SCCFact {
-  public:
+class MinReachSCCV2Fact {
+public:
   MinReachSCCV2Fact() = default;
 
-  SCC createSCCAlgorithm() const override;
-  std::string prettyPrint() const override;
+  SCC createSCCAlgorithm() const;
 };
-
-using SCCFactPtr = std::unique_ptr<SCCFact>;
 
 /**
  * @brief Single instance of scc factory to be used by clients in need of
@@ -65,24 +54,27 @@ using SCCFactPtr = std::unique_ptr<SCCFact>;
  * calls SCC_FACT.createSCCAlgorithm(args).
  */
 class SCCFactory {
-  public:
+public:
   ~SCCFactory() = default;
 
-  static SCCFactory& instance() {
-    static SCCFactory instance_;
-    return instance_;
-  }
-  SCCFact& scc_fact();
-  void set_scc_fact(SCCFactPtr scc_fact);
+  static SCCFactory& instance();
+  const SCCKind& kind() const;
 
-  private:
+  void set_scc_fact(SCCKind kind);
+
+  SCC createSCCAlgorithm() const;
+
+private:
+  using SCCFactImpl = std::variant<MinReachSCCV1Fact, MinReachSCCV2Fact>;
+
   SCCFactory();
 
-  SCCFactPtr scc_fact_;
+  SCCKind _kind;
+  SCCFactImpl _impl;
 };
 
 } // namespace LIB
 
 }  // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_SCC_SCC_FACT_HPP_

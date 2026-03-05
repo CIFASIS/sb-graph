@@ -23,10 +23,13 @@
 
  ******************************************************************************/
 
-#ifndef SBG_DECREASING_EDGES_MRV_HPP
-#define SBG_DECREASING_EDGES_MRV_HPP
+#ifndef SBGRAPH_ALGORITHMS_SCC_DECREASING_EDGES_MRV_HPP_
+#define SBGRAPH_ALGORITHMS_SCC_DECREASING_EDGES_MRV_HPP_
 
 #include "algorithms/scc/mrv.hpp"
+#include "sbg/directed_sbg.hpp"
+#include "sbg/pw_map.hpp"
+#include "sbg/set.hpp"
 
 namespace SBG {
 
@@ -40,7 +43,7 @@ namespace LIB {
  * @brief Decreasing Edges implementation to calculate MRV.
  */
 class LtEdgesMRV : public MRVContext<LtEdgesMRV> {
-  public:
+public:
   LtEdgesMRV();
  
   /**
@@ -51,9 +54,9 @@ class LtEdgesMRV : public MRVContext<LtEdgesMRV> {
    * It also handles recursive paths (i.e. paths that have a length depending
    * on the size of the intervals that define the DSBG).
    */
-  PWMap calculate(const DSBG& dsbg);
+  PWMap calculate(const DirectedSBG& dsbg);
 
-  private:
+private:
   /**
    * @brief Given the current state of rmap_, returns the set of edges (u, v)
    * such that rmap_(u) > rmap_(v), which are edges leading to a new
@@ -68,13 +71,13 @@ class LtEdgesMRV : public MRVContext<LtEdgesMRV> {
    */
   PWMap recursivePaths(const Set& paths_edges, const Set& outgoing);
 
-  DSBG dsbg_;
-  PWMap smap_;
-  Set visitedSE_;
+  DirectedSBG _dsbg;
+  PWMap _smap;
+  Set _visitedSE;
 };
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_SCC_DECREASING_EDGES_MRV_HPP_

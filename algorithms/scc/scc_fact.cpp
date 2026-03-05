@@ -19,6 +19,7 @@
 
 #include "algorithms/scc/minreach_scc.hpp"
 #include "algorithms/scc/scc_fact.hpp"
+#include "util/debug.hpp"
 
 namespace SBG {
 
@@ -30,12 +31,7 @@ namespace LIB {
 
 SCC MinReachSCCV1Fact::createSCCAlgorithm() const
 {
-  return SCC(std::make_unique<MinReachSCCV1>());
-}
-
-std::string MinReachSCCV1Fact::prettyPrint() const
-{
-  return "MRV V1";
+  return SCC{SCCKind::MinReachV1};
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -44,28 +40,49 @@ std::string MinReachSCCV1Fact::prettyPrint() const
 
 SCC MinReachSCCV2Fact::createSCCAlgorithm() const
 {
-  return SCC(std::make_unique<MinReachSCCV2>());
-}
-
-std::string MinReachSCCV2Fact::prettyPrint() const
-{
-  return "MRV V2";
+  return SCC{SCCKind::MinReachV2};
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Factory for clients --------------------------------------------------------- 
 ////////////////////////////////////////////////////////////////////////////////
 
-SCCFactory::SCCFactory() : scc_fact_(std::make_unique<MinReachSCCV2Fact>()) {}
+SCCFactory::SCCFactory()
+  : _kind(SCCKind::MinReachV2), _impl(MinReachSCCV2Fact{}) {}
 
-SCCFact& SCCFactory::scc_fact()
+SCCFactory& SCCFactory::instance()
 {
-  return *scc_fact_;
+  static SCCFactory _instance;
+  return _instance;
 }
 
-void SCCFactory::set_scc_fact(SCCFactPtr scc_fact)
+const SCCKind& SCCFactory::kind() const { return _kind; }
+
+void SCCFactory::set_scc_fact(SCCKind kind)
 {
-  scc_fact_ = std::move(scc_fact);
+  _kind = kind;
+  switch (kind) {
+    case SCCKind::MinReachV1: {
+      _impl = MinReachSCCV1Fact{};
+      break;
+    }
+
+    case SCCKind::MinReachV2: {
+      _impl = MinReachSCCV2Fact{};
+      break;
+    }
+
+    default: {
+      Util::ERROR("Unsupported SCC algorithm implementation");
+      break;
+    }
+  }
+}
+
+SCC SCCFactory::createSCCAlgorithm() const
+{
+  return std::visit([](const auto& a) { return a.createSCCAlgorithm(); }
+    , _impl);
 }
 
 } // namespace LIB

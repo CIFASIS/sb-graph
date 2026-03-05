@@ -1,8 +1,6 @@
-/** @file minadj_mrv.hpp
+/** @file scc_data.hpp
 
- @brief <b>Concrete SBG MRV Algorithm</b>
-
- @see scc.hpp and scc.cpp files to comprehend its purpose.
+ @brief <b>SCC Input and Ouput data structure</b>
 
  <hr>
 
@@ -23,40 +21,40 @@
 
  ******************************************************************************/
 
-#ifndef SBGRAPH_ALGORITHMS_SCC_MINADJ_MRV_HPP_
-#define SBGRAPH_ALGORITHMS_SCC_MINADJ_MRV_HPP_
+#ifndef SBGRAPH_ALGORITHMS_SCC_SCC_DATA_HPP_
+#define SBGRAPH_ALGORITHMS_SCC_SCC_DATA_HPP_
 
-#include "algorithms/scc/mrv.hpp"
 #include "sbg/directed_sbg.hpp"
 #include "sbg/pw_map.hpp"
+#include "sbg/set.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// MRV Algorithm ---------------------------------------------------------------
+// SCC Factory implementations -------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * @brief Minimum Adjacent implementation to calculate MRV.
+ * @brief Saves input and output data from a SCC algorithm run.
  */
-class MinAdjMRV : public MRVContext<MinAdjMRV> {
+class SCCData {
 public:
-  MinAdjMRV();
- 
-  /**
-   * @brief Concrete implementation that starts with the identity pw for every
-   * vertex. Then, for every vertex it compares the current MRV with the MRVs
-   * of their adjacent reachable vertices.
-   * It also handles recursive paths (i.e. paths that have a length depending
-   * on the size of the intervals that define the DSBG).
-   */
-  PWMap calculate(const DirectedSBG& dsbg);
+  SCCData(DirectedSBG dsbg, PWMap rmap, Set Ediff);
+
+  const DirectedSBG& dsbg() const;
+  const PWMap& rmap() const;
+  const Set& Ediff() const;
+
+private:
+  DirectedSBG _dsbg;  ///< Original input directed SBG
+  PWMap _rmap; ///< Resulting SCCs
+  Set _Ediff;  ///< Edges connecting vertices in different SCC
 };
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif // SBGRAPH_ALGORITHMS_SCC_MINADJ_MRV_HPP_
+#endif // SBGRAPH_ALGORITHMS_SCC_SCC_DATA_HPP_

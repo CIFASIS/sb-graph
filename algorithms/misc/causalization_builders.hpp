@@ -25,18 +25,19 @@
 
  ******************************************************************************/
 
-#ifndef MISC_CAUSALIZATION_BUILDERS_HPP
-#define MISC_CAUSALIZATION_BUILDERS_HPP
+#ifndef SBGRAPH_ALGORITHMS_MISC_CAUSALIZATION_BUILDERS_HPP_
+#define SBGRAPH_ALGORITHMS_MISC_CAUSALIZATION_BUILDERS_HPP_
 
-#include "algorithms/matching/matching.hpp"
-#include "algorithms/scc/scc.hpp"
+#include "algorithms/matching/match_data.hpp"
+#include "algorithms/scc/scc_data.hpp"
+#include "sbg/directed_sbg.hpp"
 
-namespace MISC {
+namespace misc {
 
-SBG::LIB::DSBG buildSCCFromMatching(const SBG::LIB::MatchData& data);
+SBG::LIB::DirectedSBG buildSCCFromMatching(const SBG::LIB::MatchData& data);
 
-SBG::LIB::DSBG buildSortFromSCC(const SBG::LIB::SCCData& data);
+SBG::LIB::DirectedSBG buildSortFromSCC(const SBG::LIB::SCCData& data);
 
-}  // namespace MISC
+}  // namespace misc
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_MISC_CAUSALIZATION_BUILDERS_HPP_

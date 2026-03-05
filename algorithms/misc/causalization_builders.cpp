@@ -17,28 +17,32 @@
 
  ******************************************************************************/
 
-#include <chrono>
-
 #include "algorithms/misc/causalization_builders.hpp"
+#include "sbg/bipartite_sbg.hpp"
+#include "sbg/set.hpp"
+#include "sbg/pw_map.hpp"
 #include "sbg/pwmap_fact.hpp"
-#include "util/logger.hpp"
+#include "sbg/map.hpp"
+#include "util/time_profiler.hpp"
 
-namespace MISC {
+namespace misc {
 
-SBG::LIB::DSBG buildSCCFromMatching(const SBG::LIB::MatchData& data)
+SBG::LIB::DirectedSBG buildSCCFromMatching(const SBG::LIB::MatchData& data)
 {
-  auto start = std::chrono::high_resolution_clock::now();
+  SBG::Util::Internal::TimeProfiler profiler{"SBG SCC builder: "};
 
   const SBG::LIB::BipartiteSBG& bsbg = data.bsbg();
   SBG::LIB::Set M = data.M();
   SBG::LIB::Set free_edges = bsbg.E().difference(M);
 
-  SBG::LIB::Set V = M.compact();
-  SBG::LIB::PWMap auxVmap = data.bsbg().subEmap().restrict(M);
-  SBG::LIB::PWMap Vmap = SBG::LIB::PW_FACT.createPWMap();
-  for (const SBG::LIB::Map& map : auxVmap) { 
-    Vmap.emplaceBack(SBG::LIB::Map(map.dom().compact()
-      , map.exp()));
+  M.compact();
+  SBG::LIB::Set V = M;
+  SBG::LIB::PWMap auxVmap = data.bsbg().Emap().restrict(M);
+  SBG::LIB::PWMap Vmap = SBG::LIB::PWMAP_FACT.createPWMap();
+  for (const SBG::LIB::Map& m : auxVmap) { 
+    SBG::LIB::Set domain = m.domain();
+    domain.compact();
+    Vmap.pushBack(SBG::LIB::Map(domain, m.law()));
   }
 
   SBG::LIB::PWMap map1 = bsbg.map1();
@@ -57,56 +61,40 @@ SBG::LIB::DSBG buildSCCFromMatching(const SBG::LIB::MatchData& data)
   SBG::LIB::PWMap matchedF_inv = mapF.restrict(M).inverse();
   SBG::LIB::PWMap unmatchedF = mapF.restrict(free_edges);
   SBG::LIB::PWMap mapB = matchedF_inv.composition(unmatchedF);
-  mapB = mapB.compact();
+  mapB.compact();
   SBG::LIB::PWMap matchedU_inv = mapU.restrict(M).inverse();
   SBG::LIB::PWMap unmatchedU = mapU.restrict(free_edges);
   SBG::LIB::PWMap mapD = matchedU_inv.composition(unmatchedU);
-  mapD = mapD.compact();
+  mapD.compact();
 
   SBG::LIB::PWMap Emap = bsbg.Emap().restrict(free_edges);
-  SBG::LIB::PWMap subEmap = bsbg.subEmap().restrict(free_edges);
 
-  SBG::LIB::DSBG res(V, Vmap, mapB, mapD, Emap, subEmap);
-  auto end = std::chrono::high_resolution_clock::now();
-  auto total = std::chrono::duration_cast<std::chrono::microseconds>(
-    end - start 
-  );
-  SBG::Util::SBG_LOG << "SBG SCC builder: " << total.count() << " [μs]\n\n"; 
-
-  return res;
+  return SBG::LIB::DirectedSBG{V, Vmap, mapB, mapD, Emap};
 }
 
-SBG::LIB::DSBG buildSortFromSCC(const SBG::LIB::SCCData& data)
+SBG::LIB::DirectedSBG buildSortFromSCC(const SBG::LIB::SCCData& data)
 {
-  auto start = std::chrono::high_resolution_clock::now();
+  SBG::Util::Internal::TimeProfiler profiler{"SBG Topological Sort builder: "}; 
 
-  const SBG::LIB::DSBG& dsbg = data.dsbg();
+  const SBG::LIB::DirectedSBG& dsbg = data.dsbg();
   SBG::LIB::PWMap rmap = data.rmap();
   SBG::LIB::Set Ediff = data.Ediff();
 
   SBG::LIB::PWMap mapB = rmap.composition(dsbg.mapB().restrict(Ediff));
-  mapB = mapB.compact();
+  mapB.compact();
   SBG::LIB::PWMap mapD = rmap.composition(dsbg.mapD().restrict(Ediff));
-  mapD = mapD.compact();
+  mapD.compact();
 
-  SBG::LIB::PWMap aux_rmap = rmap.compact();
+  rmap.compact();
+  SBG::LIB::PWMap aux_rmap = rmap;
   SBG::LIB::PWMap reps_rmap = aux_rmap.restrict(aux_rmap.fixedPoints());
-  SBG::LIB::Set V = reps_rmap.dom();
+  SBG::LIB::Set V = reps_rmap.domain();
 
   SBG::LIB::PWMap Vmap = dsbg.Vmap().restrict(V);
 
   SBG::LIB::PWMap Emap = dsbg.Emap().restrict(Ediff);
-  SBG::LIB::PWMap subEmap = dsbg.subEmap().restrict(Ediff);
 
-  SBG::LIB::DSBG res(V, Vmap, mapB, mapD, Emap, subEmap);
-  auto end = std::chrono::high_resolution_clock::now();
-  auto total = std::chrono::duration_cast<std::chrono::microseconds>(
-    end - start 
-  );
-  SBG::Util::SBG_LOG << "SBG Topological Sort builder: " << total.count()
-    << " [μs]\n\n"; 
-
-  return res;
+  return SBG::LIB::DirectedSBG {V, Vmap, mapB, mapD, Emap};
 }
 
-} // namespace MISC
+} // namespace misc

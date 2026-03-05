@@ -21,9 +21,10 @@
 
  ******************************************************************************/
 
-#ifndef SBG_CC_HPP
-#define SBG_CC_HPP
+#ifndef SBGRAPH_ALGORITHMS_CC_CC_HPP_
+#define SBGRAPH_ALGORITHMS_CC_CC_HPP_
 
+#include "sbg/pw_map.hpp"
 #include "sbg/sbg.hpp"
 
 namespace SBG {
@@ -34,10 +35,10 @@ namespace LIB {
 // Connected components --------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-PWMap connectedComponents(SBG g);
+PWMap connectedComponents(const SBG& g);
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_CC_CC_HPP_

@@ -23,8 +23,8 @@
 
  ******************************************************************************/
 
-#ifndef EXPR_PARSER_HPP
-#define EXPR_PARSER_HPP
+#ifndef SBGRAPH_PARSER_EXPR_HPP_
+#define SBGRAPH_PARSER_EXPR_HPP_
 
 #include "ast/expr.hpp"
 #include "parser/skipper.hpp"
@@ -36,7 +36,8 @@ namespace Parser {
 namespace qi = boost::spirit::qi;
 
 template <typename Iterator>
-struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
+class ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
+public:
   ExprRule(Iterator &it);
 
   // Rules with no skip
@@ -47,7 +48,7 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   // Operators tokens
   qi::rule<Iterator> OPAREN, CPAREN, OBRACKET, CBRACKET, OBRACE, CBRACE, COLON
     , RAT, COMA, DIV, ARROW, OANGLE, CANGLE, CARTPROD, SLO, VAR, ADD, SUB, PIPE
-    , SEMI, V, VMAP, MAP1, MAP2, EMAP, SUBE, MAPB, MAPD, X, Y;
+    , SEMI, V, VMAP, MAP1, MAP2, EMAP, MAPB, MAPD, X, Y;
 
   // Other rules
   qi::rule<Iterator, Skipper<Iterator>, LIB::NAT()> nat;
@@ -100,4 +101,4 @@ struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_PARSER_EXPR_HPP_

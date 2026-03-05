@@ -28,26 +28,26 @@
 
  ******************************************************************************/
 
-#ifndef SBG_INTERVAL_HPP
-#define SBG_INTERVAL_HPP
-
-#include <optional>
+#ifndef SBGRAPH_SBG_INTERVAL_HPP_
+#define SBGRAPH_SBG_INTERVAL_HPP_
 
 #include "sbg/natural.hpp"
+
+#include <iosfwd>
+#include <optional>
 
 namespace SBG {
 
 namespace LIB {
 
+namespace detail {
+
 class Interval;
 
-typedef std::optional<Interval> MaybeInterval;
+using MaybeInterval = std::optional<Interval>;
 
 class Interval {
-  member_class(NAT, begin);
-  member_class(NAT, step);
-  member_class(NAT, end);
-
+public:
   /**
    * @brief Construct an empty interval.
    */
@@ -56,24 +56,18 @@ class Interval {
   /**
    * @brief Construct an interval only containing \p x.
    */
-  Interval(NAT x);
+  Interval(const NAT x);
 
   /**
    * @brief Construct an interval with \p begin, \p step and \p end.
    */
-  Interval(NAT begin, NAT step, NAT end);
+  Interval(const NAT begin, const NAT step, const NAT end);
 
-  bool operator==(const Interval &i) const;
-  bool operator!=(const Interval &i) const;
+  const NAT& begin() const;
+  const NAT& step() const;
+  const NAT& end() const;
 
-  /**
-   * @brief An interval i1 is less than another interval i2 iff
-   * min(i1) < min(i2). This operation is later needed to implement ordered
-   * sets.
-   */ 
-  bool operator<(const Interval &i) const;
-
-  // Traditional set operations ------------------------------------------------
+  bool operator<(const Interval& other) const;
 
   /**
    * @brief Number of elements contained in the interval, i.e.
@@ -81,32 +75,37 @@ class Interval {
    */
   unsigned int cardinal() const;
   bool isEmpty() const;
-  bool isMember(NAT x) const;
-  Interval intersection(const Interval &i2) const;
-
-  // Extra operations ----------------------------------------------------------
+  NAT minElem() const;
+  NAT maxElem() const;
+  Interval intersection(const Interval& other) const;
 
   /**
    * @brief Sum a constant value to every element of the interval.
    */
-  Interval offset(NAT off) const;
-
-  /**
-   * @brief Operation that given two disjoint intervals returns the lesser one.
-   * It will be used by ordered sets operations.
-   */
-  Interval least(const Interval &i2) const;
+  Interval offset(const NAT off) const;
 
   /**
    * @brief Merge two contiguous intervals if possible. If not, then the result
    * is not an interval, so no value is returned.
    */
-  MaybeInterval compact(const Interval &i2) const;
+  MaybeInterval compact(const Interval& other) const;
+
+private:
+  NAT _begin;
+  NAT _step;
+  NAT _end;
 };
-std::ostream &operator<<(std::ostream &out, const Interval &i);
+
+bool operator==(const Interval& lhs, const Interval& rhs);
+
+bool operator!=(const Interval& lhs, const Interval& rhs);
+
+std::ostream& operator<<(std::ostream& out, const Interval& i);
+
+} // namespace detail
 
 } // namespace LIB
 
 }  // namespace SBG
 
-#endif
+#endif // SBGRAPH_SBG_INTERVAL_HPP_

@@ -21,12 +21,15 @@
 
  ******************************************************************************/
 
-#ifndef SBG_RAT_HPP
-#define SBG_RAT_HPP
+#ifndef SBGRAPH_SBG_RATIONAL_HPP_
+#define SBGRAPH_SBG_RATIONAL_HPP_
+
+#include "sbg/natural.hpp"
 
 #include <boost/rational.hpp>
 
-#include "sbg/natural.hpp"
+#include <iosfwd>
+#include <limits>
 
 namespace SBG {
 
@@ -40,17 +43,16 @@ namespace LIB {
  *
  * @brief Integers implementation, used in rationals definition. 
  */
-typedef long long int INT;
-const INT INT_Inf = std::numeric_limits<INT>::max();
+using INT = long long int;
+constexpr INT INT_Inf = std::numeric_limits<INT>::max();
 
-typedef boost::rational<INT> RatType;
+using RatType = boost::rational<INT>;
 
 /**
  * @brief Used as coefficients and slopes in linear expressions.
  */
 class RATIONAL {
-  member_class(RatType, value);
-
+public:
   /**
    * @brief Zero constructor.
    */
@@ -59,46 +61,52 @@ class RATIONAL {
   /**
    * @brief Construct rational r = n/1.
    */
-  RATIONAL(NAT n);
+  RATIONAL(INT n);
 
   /**
    * @brief Copy constructor.
    */
-  RATIONAL(const RatType &value);
+  RATIONAL(const RatType& value);
 
   /**
    * @brief Construct rational r = n/d.
    */
   RATIONAL(INT n, INT d);
 
-  bool operator==(const RATIONAL &other) const;
-  bool operator!=(const RATIONAL &other) const;
-  bool operator<(const RATIONAL &other) const;
-  bool operator>(const RATIONAL &other) const;
-  bool operator>=(const RATIONAL& other) const;
-  bool operator==(const INT &other) const;
+  RATIONAL(const RATIONAL& r) = default;
+  RATIONAL(RATIONAL&& r) = default;
 
-  RATIONAL operator-() const;
-  RATIONAL operator+=(const RATIONAL &other) const;
-  RATIONAL operator+(const RATIONAL &other) const;
-  RATIONAL operator-=(const RATIONAL &other) const;
-  RATIONAL operator-(const RATIONAL &other) const;
-  RATIONAL operator*=(const RATIONAL &other) const;
-  RATIONAL operator*(const RATIONAL &other) const;
-  RATIONAL operator/=(const RATIONAL &other) const;
-  RATIONAL operator/(const RATIONAL &other) const;
-
+  const RatType& value() const;
   INT numerator() const;
   INT denominator() const;
+
+  RATIONAL& operator=(const RATIONAL& other) = default;
+  RATIONAL& operator=(RATIONAL&& other) = default;
+  bool operator==(const RATIONAL& other) const;
+  bool operator!=(const RATIONAL& other) const;
+  bool operator<(const RATIONAL& other) const;
+  bool operator>(const RATIONAL& other) const;
+  bool operator>=(const RATIONAL& other) const;
+  bool operator==(const INT& other) const;
+
+  RATIONAL operator-() const;
+  RATIONAL operator+(const RATIONAL& other) const;
+  RATIONAL operator-(const RATIONAL& other) const;
+  RATIONAL operator*(const RATIONAL& other) const;
+  RATIONAL operator/(const RATIONAL& other) const;
+
   NAT toNat() const;
   INT toInt() const;
   INT floor() const;
   INT ceiling() const;
+
+private:
+  RatType _value;
 };
-std::ostream &operator<<(std::ostream &out, const RATIONAL &r);
+std::ostream& operator<<(std::ostream& out, const RATIONAL& r);
 
 } // namespace LIB
 
 }  // namespace SBG
 
-#endif
+#endif // SBGRAPH_SBG_RATIONAL_HPP_

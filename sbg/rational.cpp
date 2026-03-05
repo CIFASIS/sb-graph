@@ -19,46 +19,62 @@
 
 #include "sbg/rational.hpp"
 
+#include <iostream>
+
 namespace SBG {
 
 namespace LIB {
 
-RATIONAL::RATIONAL() : value_() {}
-RATIONAL::RATIONAL(NAT n) : value_(RatType(n, 1)) {}
-RATIONAL::RATIONAL(const RatType &value) : value_(value) {}
-RATIONAL::RATIONAL(INT n, INT d) : value_() {
-  boost::rational<long long int> v(n, d);
-  value_ = v;
-}
+// Constructors/Destructors ----------------------------------------------------
 
-member_imp(RATIONAL, RatType, value);
+RATIONAL::RATIONAL() : _value() {}
 
-bool RATIONAL::operator==(const RATIONAL &r) const
+RATIONAL::RATIONAL(INT n) : _value(RatType{n, 1}) {}
+
+RATIONAL::RATIONAL(const RatType& value) : _value(value) {}
+
+RATIONAL::RATIONAL(INT n, INT d) : _value()
 {
-  return value_ == r.value_;
+  boost::rational<long long int> v{n, d};
+  _value = v;
 }
 
-bool RATIONAL::operator!=(const RATIONAL &r) const
+// Getters ---------------------------------------------------------------------
+
+const RatType& RATIONAL::value() const  { return _value; }
+
+INT RATIONAL::numerator() const { return _value.numerator(); }
+
+INT RATIONAL::denominator() const { return _value.denominator(); }
+
+// Operators -------------------------------------------------------------------
+
+bool RATIONAL::operator==(const RATIONAL& r) const
 {
-  return value_ != r.value_;
+  return _value == r._value;
 }
 
-bool RATIONAL::operator<(const RATIONAL &r) const
+bool RATIONAL::operator!=(const RATIONAL& r) const
 {
-  return value_ < r.value_;
+  return _value != r._value;
 }
 
-bool RATIONAL::operator>(const RATIONAL &r) const
+bool RATIONAL::operator<(const RATIONAL& r) const
 {
-  return value_ > r.value_;
+  return _value < r._value;
 }
 
-bool RATIONAL::operator>=(const RATIONAL &r) const
+bool RATIONAL::operator>(const RATIONAL& r) const
 {
-  return value_ >= r.value_;
+  return _value > r._value;
 }
 
-bool RATIONAL::operator==(const INT &other) const
+bool RATIONAL::operator>=(const RATIONAL& r) const
+{
+  return _value >= r._value;
+}
+
+bool RATIONAL::operator==(const INT& other) const
 {
   RATIONAL aux = *this;
   return aux.numerator() == other && aux.denominator() == 1;
@@ -66,97 +82,59 @@ bool RATIONAL::operator==(const INT &other) const
 
 RATIONAL RATIONAL::operator-() const
 {
-  return RATIONAL(-numerator(), denominator());
+  return RATIONAL{-_value};
 }
 
-RATIONAL RATIONAL::operator+=(const RATIONAL &other) const
+RATIONAL RATIONAL::operator+(const RATIONAL& other) const
 {
-  RatType value_res = value_;
-
-  value_res += other.value_;
-
-  return RATIONAL(value_res);
+  return RATIONAL{_value + other._value};
 }
 
-RATIONAL RATIONAL::operator+(const RATIONAL &other) const
+RATIONAL RATIONAL::operator-(const RATIONAL& other) const
 {
-  return *this += other;
+  return RATIONAL{_value - other._value};
 }
 
-RATIONAL RATIONAL::operator-=(const RATIONAL &other) const
+RATIONAL RATIONAL::operator*(const RATIONAL& other) const
 {
-  RatType value_res = value_;
-
-  value_res -= other.value_;
-
-  return RATIONAL(value_res);
+  return RATIONAL{_value*other._value};
 }
 
-RATIONAL RATIONAL::operator-(const RATIONAL &other) const
+RATIONAL RATIONAL::operator/(const RATIONAL& other) const
 {
-  return *this -= other;
+  return RATIONAL{_value/other._value};
 }
 
-RATIONAL RATIONAL::operator*=(const RATIONAL &other) const
-{
-  RatType value_res = value_;
-
-  value_res *= other.value_;
-
-  return RATIONAL(value_res);
-}
-
-RATIONAL RATIONAL::operator*(const RATIONAL &other) const
-{
-  return *this *= other;
-}
-
-RATIONAL RATIONAL::operator/=(const RATIONAL &other) const
-{
-  RatType value_res = value_;
-
-  value_res /= other.value_;
-
-  return RATIONAL(value_res);
-}
-
-RATIONAL RATIONAL::operator/(const RATIONAL &other) const
-{
-  return *this /= other;
-}
-
-INT RATIONAL::numerator() const { return value_.numerator(); }
-
-INT RATIONAL::denominator() const { return value_.denominator(); }
+// Extra operations ------------------------------------------------------------
 
 NAT RATIONAL::toNat() const
 {
-  if (denominator() == 1 && 0 <= value_)
+  if (denominator() == 1 && 0 <= _value) {
     return numerator();
-
+  }
   return 0;
 }
 
 INT RATIONAL::toInt() const
 {
-  if (denominator() == 1)
+  if (denominator() == 1) {
     return numerator();
-
+  }
   return 0;
 }
 
 INT RATIONAL::floor() const
 {
-  return boost::rational_cast<INT>(value_);
+  return boost::rational_cast<INT>(_value);
 }
 
 INT RATIONAL::ceiling() const
 {
-  INT trunc = boost::rational_cast<INT>(value_);
-  return value_ == trunc ? trunc : trunc + 1;
+  INT trunc = boost::rational_cast<INT>(_value);
+  return _value == trunc ? trunc : trunc + 1;
 }
 
-std::ostream &operator<<(std::ostream &out, const RATIONAL &r)
+std::ostream& operator<<(std::ostream& out, const RATIONAL& r)
 {
   RatType rv = r.value();
   INT num = rv.numerator(), den = rv.denominator();
@@ -165,10 +143,10 @@ std::ostream &operator<<(std::ostream &out, const RATIONAL &r)
     out << "0";
     return out;
   }
-
   out << num;
-  if (den != 1)
+  if (den != 1) {
     out << "/" << den;
+  }
 
   return out;
 }

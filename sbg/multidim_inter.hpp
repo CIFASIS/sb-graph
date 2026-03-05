@@ -3,8 +3,8 @@
  @brief <b>Multi-dimensional interval implementation</b>
 
  A Multi-dimensional interval (mdi) i1 x ... x ik is the resulting set of the
- cartesian product of intervals. As such the implementations an ordered
- collection of intervals. 
+ cartesian product of intervals. Thus, the implementation consists of an
+ ordered collection of intervals.
 
  <hr>
 
@@ -25,25 +25,29 @@
 
  ******************************************************************************/
 
-#ifndef SBG_MULTIDIM_INTERVAL_HPP
-#define SBG_MULTIDIM_INTERVAL_HPP
+#ifndef SBGRAPH_SBG_MULTIDIM_INTER_HPP_
+#define SBGRAPH_SBG_MULTIDIM_INTER_HPP_
 
 #include "sbg/interval.hpp"
+#include "sbg/natural.hpp"
+
+#include <iosfwd>
+#include <optional>
 
 namespace SBG {
 
 namespace LIB {
 
-typedef std::vector<Interval> InterVector;
-typedef InterVector::iterator InterVectorIt;
-typedef InterVector::const_iterator InterVectorConstIt;
+namespace detail {
 
 class MultiDimInter;
 
-typedef std::optional<MultiDimInter> MaybeMDI;
+using MaybeMDI = std::optional<MultiDimInter>;
 
 class MultiDimInter {
-  member_class(InterVector, intervals);
+public:
+  using InterVector = std::vector<Interval>;
+  using ConstIt = InterVector::const_iterator;
 
   /**
    * @brief Construct zero-dimensional mdi.
@@ -53,42 +57,38 @@ class MultiDimInter {
   /**
    * @brief Construct a mdi with a single element \p x. 
    */
-  MultiDimInter(const MD_NAT &x);
+  MultiDimInter(const MD_NAT& x);
 
   /**
    * @brief Construct a one-dimensional mdi with the same elements as \p i.
    */
-  MultiDimInter(const Interval &i);
+  MultiDimInter(const Interval& i);
 
   /**
-   * @brief Construct a mdi that is the result of \p i ^ \p nmbr_copies.
+   * @brief Construct a mdi that is the result of \p i ^ \p n.
    */
-  MultiDimInter(const unsigned int &nmbr_copies, const Interval &i);
+  MultiDimInter(const std::size_t k, const Interval& i);
 
-  /**
-   * @brief Collection move constructor.
-   */
-  MultiDimInter(const InterVector &iv);
+  MultiDimInter(InterVector iv);
 
-  typedef InterVectorIt iterator;
-  typedef InterVectorConstIt const_iterator;
-  iterator begin();
-  iterator end();
-  const_iterator begin() const;
-  const_iterator end() const;
-  void emplaceBack(Interval i);
-  Interval &operator[](std::size_t n);
-  const Interval &operator[](std::size_t n) const;
+  ConstIt begin() const;
+  ConstIt end() const;
 
-  bool operator==(const MultiDimInter &other) const;
-  bool operator!=(const MultiDimInter &other) const;
+  template<typename... Args>
+  void emplaceBack(Args&&... args);
+  void pushBack(const Interval& i);
+
+  Interval& operator[](std::size_t n);
+  const Interval& operator[](std::size_t n) const;
+  bool operator==(const MultiDimInter& other) const;
+  bool operator!=(const MultiDimInter& other) const;
 
   /**
    * @brief A mdi mdi1 is less than another mdi2 iff min(mdi1) < min(mdi2).
    * This operation is later needed to implement ordered sets.
    */ 
-  bool operator<(const MultiDimInter &other) const;
-  bool operator>(const MultiDimInter &other) const;
+  bool operator<(const MultiDimInter& other) const;
+  bool operator>(const MultiDimInter& other) const;
 
   // Traditional set operations ------------------------------------------------
 
@@ -100,7 +100,8 @@ class MultiDimInter {
   bool isEmpty() const;
   MD_NAT minElem() const;
   MD_NAT maxElem() const;
-  MultiDimInter intersection(const MultiDimInter &other) const;
+  MultiDimInter intersection(const MultiDimInter& other) const;
+  MultiDimInter cartesianProduct(const MultiDimInter& other) const;
 
   // Extra operations ----------------------------------------------------------
 
@@ -113,27 +114,35 @@ class MultiDimInter {
   /**
    * @brief Sum a constant value to every element of the mdi.
    */
-  MultiDimInter offset(const MD_NAT &off) const;
+  MultiDimInter offset(const MD_NAT& off) const;
 
   /**
    * @brief Operation that given two disjoint mdis returns the lesser one.
    * It will be used by ordered sets operations.
    */
-  MultiDimInter least(const MultiDimInter &other) const;
+  MultiDimInter least(const MultiDimInter& other) const;
 
   /**
    * @brief Merge two contiguous mdis if possible. If not, then the result is
    * not an mdi, so no value is returned.
    */
-  MaybeMDI compact(const MultiDimInter &other) const;
-  
-};
-std::ostream &operator<<(std::ostream &out, const MultiDimInter &mi);
+  MaybeMDI compact(const MultiDimInter& other) const;
 
-typedef MultiDimInter SetPiece;
+private: 
+  InterVector _intervals;
+};
+std::ostream& operator<<(std::ostream& out, const MultiDimInter& mdi);
+
+template<typename... Args>
+inline void MultiDimInter::emplaceBack(Args&&... args)
+{
+  _intervals.emplace_back(std::forward<Args>(args)...);
+}
+
+} // namespace detail
 
 } // namespace LIB
 
 }  // namespace SBG
 
-#endif
+#endif // SBGRAPH_SBG_MULTIDIM_INTER_HPP_

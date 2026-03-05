@@ -21,85 +21,75 @@
 
  ******************************************************************************/
 
-#ifndef SBG_PWMAP_FACT_HPP
-#define SBG_PWMAP_FACT_HPP
+#ifndef SBGRAPH_SBG_PWMAP_FACT_HPP_
+#define SBGRAPH_SBG_PWMAP_FACT_HPP_
 
-#include "pw_map.hpp"
+#include "sbg/map.hpp"
+#include "sbg/pw_map.hpp"
+#include "sbg/set.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
-#define PW_FACT PWFactory::instance().pw_fact()
+#define PWMAP_FACT PWMapFactory::instance()
 
-class PWMapFact {
-  public:
-  virtual ~PWMapFact() = default;
-  PWMapFact();
-
-  virtual PWMap createPWMap() const = 0;
-  virtual PWMap createPWMap(const Set &s) const = 0;
-  virtual PWMap createPWMap(const Map &m) const = 0;
-  virtual std::string prettyPrint() const = 0;
-};
-
-class UnordPWMapFact : public PWMapFact {
-  public:
+class UnordPWMapFact {
+public:
   UnordPWMapFact();
 
-  PWMap createPWMap() const override;
-  PWMap createPWMap(const Set &s) const override;
-  PWMap createPWMap(const Map &m) const override;
-  std::string prettyPrint() const override;
+  PWMap createPWMap() const;
+  PWMap createPWMap(const Set &s) const;
+  PWMap createPWMap(const Map &m) const;
 };
 
-class OrdPWMapFact : public PWMapFact {
-  public:
-  OrdPWMapFact();
-
-  PWMap createPWMap() const override;
-  PWMap createPWMap(const Set &s) const override;
-  PWMap createPWMap(const Map &m) const override;
-  std::string prettyPrint() const override;
-};
-
-class DomOrdPWMapFact : public PWMapFact {
-  public:
-  DomOrdPWMapFact();
-
-  PWMap createPWMap() const override;
-  PWMap createPWMap(const Set &s) const override;
-  PWMap createPWMap(const Map &m) const override;
-  std::string prettyPrint() const override;
-};
-
-using PWMapFactPtr = std::unique_ptr<PWMapFact>;
+//class OrdPWMapFact {
+//  public:
+//  OrdPWMapFact();
+//
+//  PWMap createPWMap() const override;
+//  PWMap createPWMap(const Set &s) const override;
+//  PWMap createPWMap(const Map &m) const override;
+//};
+//
+//class DomOrdPWMapFact {
+//  public:
+//  DomOrdPWMapFact();
+//
+//  PWMap createPWMap() const override;
+//  PWMap createPWMap(const Set &s) const override;
+//  PWMap createPWMap(const Map &m) const override;
+//};
 
 /**
  * @brief Single instance of pw factory to be used by clients in need of
  * creating pws. A client includes this file and calls
  * PW_FACT.createPWMap(args).
  */
-class PWFactory {
-  public:
-  ~PWFactory() = default;
-  static PWFactory& instance() {
-    static PWFactory instance_;
-    return instance_;
-  }
+class PWMapFactory {
+public:
+  ~PWMapFactory() = default;
 
-  PWMapFact& pw_fact();
-  void set_pw_fact(PWMapFactPtr pw_fact);
+  static PWMapFactory& instance();
+  const PWMapKind& kind() const;  
 
-  private:
-  PWFactory();
-  PWMapFactPtr pw_fact_;
+  void set_pwmap_fact(PWMapKind kind);
+
+  PWMap createPWMap() const;
+  PWMap createPWMap(Set s) const;
+  PWMap createPWMap(Map m) const;
+
+private:
+  using FactImpl = std::variant<UnordPWMapFact>;
+
+  PWMapFactory();
+
+  PWMapKind _kind;
+  FactImpl _impl;
 };
-
-
 
 } // namespace LIB
 
 }  // namespace SBG
 
-#endif
+#endif // SBGRAPH_SBG_PWMAP_FACT_HPP_

@@ -17,20 +17,12 @@
 
  ******************************************************************************/
 
-#include "sbg/dom_ord_pwmap.hpp"
 #include "sbg/pwmap_fact.hpp"
-#include "sbg/ord_pwmap.hpp"
-#include "sbg/unord_pwmap.hpp"
+#include "util/debug.hpp"
 
 namespace SBG {
 
 namespace LIB {
-
-////////////////////////////////////////////////////////////////////////////////
-// PWMap Factory ---------------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-PWMapFact::PWMapFact() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // UnordPWMap Factory ----------------------------------------------------------
@@ -40,90 +32,115 @@ UnordPWMapFact::UnordPWMapFact() {}
 
 PWMap UnordPWMapFact::createPWMap() const
 {
-  return PWMap(std::make_unique<UnordPWMap>());
+  return PWMap{PWMapKind::kUnordered};
 }
 
-PWMap UnordPWMapFact::createPWMap(const Set &s) const
+PWMap UnordPWMapFact::createPWMap(const Set& s) const
 {
-  return PWMap(std::make_unique<UnordPWMap>(s));
+  return PWMap{PWMapKind::kUnordered, s};
 }
 
-PWMap UnordPWMapFact::createPWMap(const Map &m) const
+PWMap UnordPWMapFact::createPWMap(const Map& m) const
 {
-  return PWMap(std::make_unique<UnordPWMap>(m));
-}
-
-std::string UnordPWMapFact::prettyPrint() const
-{
-  return "unordered";
+  return PWMap{PWMapKind::kUnordered, m};
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // OrdPWMap Factory ------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-OrdPWMapFact::OrdPWMapFact() {}
-
-PWMap OrdPWMapFact::createPWMap() const
-{
-  return PWMap(std::make_unique<OrdPWMap>());
-}
-
-PWMap OrdPWMapFact::createPWMap(const Set &s) const
-{
-  return PWMap(std::make_unique<OrdPWMap>(s));
-}
-
-PWMap OrdPWMapFact::createPWMap(const Map &m) const
-{
-  return PWMap(std::make_unique<OrdPWMap>(m));
-}
-
-std::string OrdPWMapFact::prettyPrint() const
-{
-  return "ordered";
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// DomOrdPWMap Factory ------------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-DomOrdPWMapFact::DomOrdPWMapFact() {}
-
-PWMap DomOrdPWMapFact::createPWMap() const
-{
-  return PWMap(std::make_unique<DomOrdPWMap>());
-}
-
-PWMap DomOrdPWMapFact::createPWMap(const Set &s) const
-{
-  return PWMap(std::make_unique<DomOrdPWMap>(s));
-}
-
-PWMap DomOrdPWMapFact::createPWMap(const Map &m) const
-{
-  return PWMap(std::make_unique<DomOrdPWMap>(m));
-}
-
-std::string DomOrdPWMapFact::prettyPrint() const
-{
-  return "domain ordered";
-}
-
+//OrdPWMapFact::OrdPWMapFact() {}
+//
+//PWMap OrdPWMapFact::createPWMap() const
+//{
+//  return PWMap(std::make_unique<OrdPWMap>());
+//}
+//
+//PWMap OrdPWMapFact::createPWMap(const Set &s) const
+//{
+//  return PWMap(std::make_unique<OrdPWMap>(s));
+//}
+//
+//PWMap OrdPWMapFact::createPWMap(const Map &m) const
+//{
+//  return PWMap(std::make_unique<OrdPWMap>(m));
+//}
+//
+//////////////////////////////////////////////////////////////////////////////////
+//// DomOrdPWMap Factory ------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////////
+//
+//DomOrdPWMapFact::DomOrdPWMapFact() {}
+//
+//PWMap DomOrdPWMapFact::createPWMap() const
+//{
+//  return PWMap(std::make_unique<DomOrdPWMap>());
+//}
+//
+//PWMap DomOrdPWMapFact::createPWMap(const Set &s) const
+//{
+//  return PWMap(std::make_unique<DomOrdPWMap>(s));
+//}
+//
+//PWMap DomOrdPWMapFact::createPWMap(const Map &m) const
+//{
+//  return PWMap(std::make_unique<DomOrdPWMap>(m));
+//}
+//
 ////////////////////////////////////////////////////////////////////////////////
 // Factory for clients --------------------------------------------------------- 
 ////////////////////////////////////////////////////////////////////////////////
 
-PWFactory::PWFactory() : pw_fact_(std::make_unique<UnordPWMapFact>()) {}
+PWMapFactory::PWMapFactory() : _kind(PWMapKind::kUnordered)
+  , _impl(UnordPWMapFact{}) {}
 
-PWMapFact& PWFactory::pw_fact()
+PWMapFactory& PWMapFactory::instance()
 {
-  return *pw_fact_;
+  static PWMapFactory _instance;
+  return _instance;
 }
 
-void PWFactory::set_pw_fact(PWMapFactPtr pw_fact)
+const PWMapKind& PWMapFactory::kind() const { return _kind; }
+
+void PWMapFactory::set_pwmap_fact(PWMapKind kind)
 {
-  pw_fact_ = std::move(pw_fact);
+  switch (kind) {
+    case PWMapKind::kUnordered: {
+      _kind = kind;
+      _impl = UnordPWMapFact{};
+      break;
+    }
+
+    //case SetKind::kOrdered: {
+    //  _impl = OrdPWMapFact{};
+    //}
+
+    //case SetKind::OrdUnidimDense: {
+    //  _impl = DomOrdPWMapFact{};
+    //}
+
+    default: {
+      Util::ERROR("Unsupported ", kind, " PWMap implementation\n");
+      break;
+    }
+  }
+}
+
+PWMap PWMapFactory::createPWMap() const
+{
+  return std::visit([](const auto& a) { return a.createPWMap(); }, _impl);
+}
+
+PWMap PWMapFactory::createPWMap(Set s) const
+{
+  return std::visit([&s](const auto& a) { return a.createPWMap(std::move(s)); }
+    , _impl);
+}
+
+PWMap PWMapFactory::createPWMap(Map m) const
+{
+  return std::visit([&m](const auto& a) { return a.createPWMap(std::move(m)); }
+    , _impl);
 }
 
 } // namespace LIB

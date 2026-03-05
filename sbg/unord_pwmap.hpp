@@ -21,101 +21,115 @@
 
  ******************************************************************************/
 
-#ifndef SBG_UNORD_PWMAP_HPP
-#define SBG_UNORD_PWMAP_HPP
+#ifndef SBGRAPH_SBG_UNORD_PWMAP_HPP_
+#define SBGRAPH_SBG_UNORD_PWMAP_HPP_
 
-#include "sbg/pw_map.hpp"
+#include "sbg/map.hpp"
+#include "sbg/set.hpp"
+
+#include <vector>
+#include <iosfwd>
 
 namespace SBG {
 
 namespace LIB {
 
+namespace detail {
+
 ////////////////////////////////////////////////////////////////////////////////
-// Unordered PWMap Implementation (concrete strategy) --------------------------
+// Unordered PWMap Implementation ----------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-class UnordPWMap : public PWMapStrategy {
-  public:
+class UnordPWMap {
+public:
   using UnordMapCollection = std::vector<Map>;
+  using ConstIt = UnordMapCollection::const_iterator;
 
-  member_class(UnordMapCollection, pieces);
-
-  ~UnordPWMap() = default;
   UnordPWMap();
-  UnordPWMap(const Set &s);
-  UnordPWMap(const Map &m);
-  UnordPWMap(const UnordMapCollection& pieces);
+  UnordPWMap(const Set& s);
+  UnordPWMap(const Map& m);
+  UnordPWMap(UnordMapCollection pieces);
 
-  class Iterator : public PWMapStrategy::Iterator {
-    member_class(UnordMapCollection::const_iterator, it);
+  ConstIt begin() const;
+  ConstIt end() const;
 
-    Iterator(UnordMapCollection::const_iterator it);
-    void operator++() override;
-    bool operator!=(const PWMapStrategy::Iterator &other) const override;
-    const Map &operator*() const override;
-  };
+  template<typename... Args>
+  void emplaceBack(Args&&... args);
+  void pushBack(const Map& m);
+  void pushBack(Map&& m);
 
-  std::shared_ptr<PWMapStrategy::Iterator> begin() const override;
-  std::shared_ptr<PWMapStrategy::Iterator> end() const override;
-
-  void emplaceBack(const Map &m) override;
-
-  bool operator==(const PWMapStrategy &other) const override;
-  bool operator!=(const PWMapStrategy &other) const override;
-  UnordPWMap &operator=(UnordPWMap &&other);
-  std::ostream &print(std::ostream &out) const override;
-
-  PWMapStratPtr operator+(const PWMapStrategy &other) const override;
-
-  PWMapStratPtr clone() const override;
+  bool operator==(const UnordPWMap& other) const;
+  bool operator!=(const UnordPWMap& other) const;
+  UnordPWMap operator+(const UnordPWMap& other) const;
+  std::ostream& print(std::ostream& out) const;
 
   // Traditional map operations ------------------------------------------------
 
-  std::size_t arity() const override;
-  bool isEmpty() const override;
-  Set dom() const override;
-  PWMapStratPtr restrict(const Set &subdom) const override;
-  Set image() const override;
-  Set image(const Set &subdom) const override;
-  Set preImage(const Set &subcodom) const override;
-  PWMapStratPtr inverse() const override;
-  PWMapStratPtr composition(const PWMapStrategy &pw2) const override;
+  std::size_t arity() const;
+  bool isEmpty() const;
+  Set domain() const &;
+  Set domain() &&;
+  UnordPWMap restrict(const Set& subdom) const;
+  Set image() const;
+  Set image(const Set& subdom) const;
+  Set preImage(const Set& subcodom) const;
+  UnordPWMap inverse() const;
+  UnordPWMap composition(const UnordPWMap& other) const;
 
-  PWMapStratPtr mapInf(unsigned int n) const override;
-  PWMapStratPtr mapInf() const override;
-  Set fixedPoints() const override;
+  UnordPWMap mapInf() const;
+  Set fixedPoints() const;
 
   // Extra operations ----------------------------------------------------------
 
-  PWMapStratPtr concatenation(const PWMapStrategy &other) const override;
-  PWMapStratPtr combine(const PWMapStrategy &other) const override;
-  PWMapStratPtr reduce() const override;
+  UnordPWMap concatenation(const UnordPWMap& other) const &;
+  UnordPWMap concatenation(const UnordPWMap& other) &&;
+  UnordPWMap concatenation(UnordPWMap&& other) const &;
+  UnordPWMap concatenation(UnordPWMap&& other) &&;
+  UnordPWMap combine(const UnordPWMap& other) const &;
+  UnordPWMap combine(const UnordPWMap& other) &&;
+  UnordPWMap combine(UnordPWMap&& other) const &;
+  UnordPWMap combine(UnordPWMap&& other) &&;
 
-  PWMapStratPtr minMap(const PWMapStrategy &other) const override;
-  PWMapStratPtr minAdjMap(const PWMapStrategy &other) const override;
+  UnordPWMap min(const UnordPWMap& other) const;
+  UnordPWMap minAdj(const UnordPWMap& other) const;
 
-  PWMapStratPtr firstInv(const Set &subdom) const override;
-  PWMapStratPtr firstInv() const override;
+  Set sharedImage() const;
+  Set equalImage(const UnordPWMap& other) const;
+  Set lessImage(const UnordPWMap& other) const;
 
-  PWMapStratPtr filterMap(bool (*f)(const Map &)) const override;
+  UnordPWMap offsetDom(const MD_NAT& offset) const;
 
-  Set equalImage(const PWMapStrategy &other) const override;
-  Set lessImage(const PWMapStrategy& other) const override;
-  Set sharedImage() const override;
+  void compact();
 
-  PWMapStratPtr offsetDom(const MD_NAT &off) const override;
-  PWMapStratPtr offsetDom(const PWMapStrategy &off) const override;
-  PWMapStratPtr offsetImage(const MD_NAT &off) const override;
-  PWMapStratPtr offsetImage(const Exp &off) const override;
+private:
+  UnordMapCollection _pieces;
 
-  PWMapStratPtr compact() const override;
+  /**
+   * @brief Calculates (if possible) compactly the result of mapInf.\n
+   *
+   * Currently, the only expressions that can be efficiently reduced are:
+   *   - x+h
+   *   - x-h
+   */
+  UnordPWMap reduce() const;
+
+  /*
+   * @brief First compose the pw with itself \p n times, obtaining pw'. Then,
+   * compose pw' with itself up to convergence.
+   */
+  UnordPWMap mapInf(unsigned int n) const;
 };
 
-typedef const UnordPWMap &UnordPWMapCRef;
-typedef std::unique_ptr<UnordPWMap> UnordPWMapPtr;
+template<typename... Args>
+inline void UnordPWMap::emplaceBack(Args&&... args)
+{
+  _pieces.emplace_back(std::forward<Args>(args)...);
+}
+
+} // namespace detail
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_SBG_UNORD_PWMAP_HPP_

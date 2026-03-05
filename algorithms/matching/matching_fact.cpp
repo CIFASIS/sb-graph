@@ -17,42 +17,55 @@
 
  ******************************************************************************/
 
-#include "algorithms/matching/bfs_matching.hpp"
 #include "algorithms/matching/matching_fact.hpp"
+#include "util/debug.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Minimum Reachable SCC Factory -----------------------------------------------
+// BFS Paths Matching Factory --------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 Matching BFSMatchingFact::createMatchAlgorithm() const
 {
-  return Matching(std::make_unique<BFSMatching>());
-}
-
-std::string BFSMatchingFact::prettyPrint() const
-{
-  return "BFS paths";
+  return Matching(MatchKind::kBFSPaths);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Factory for clients --------------------------------------------------------- 
 ////////////////////////////////////////////////////////////////////////////////
 
-MatchFactory::MatchFactory()
-  : match_fact_(std::make_unique<BFSMatchingFact>()) {}
+MatchFactory::MatchFactory() : _kind(MatchKind::kBFSPaths), _impl() {}
 
-MatchingFact& MatchFactory::match_fact()
+MatchFactory& MatchFactory::instance()
 {
-  return *match_fact_;
+  static MatchFactory _instance;
+  return _instance;
 }
 
-void MatchFactory::set_match_fact(MatchFactPtr match_fact)
+const MatchKind& MatchFactory::kind() const { return _kind; }
+
+void MatchFactory::set_match_fact(MatchKind kind)
 {
-  match_fact_ = std::move(match_fact);
+  _kind = kind;
+  switch (kind) {
+    case MatchKind::kBFSPaths: {
+      _impl = BFSMatchingFact{};
+      break;
+    }
+
+    default: {
+      Util::ERROR("Unsupported matching implementation");
+    }
+  }
+}
+
+Matching MatchFactory::createMatchAlgorithm() const
+{
+  return std::visit([](const auto& a) { return a.createMatchAlgorithm(); }
+    , _impl);
 }
 
 } // namespace LIB

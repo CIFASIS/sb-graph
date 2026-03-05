@@ -18,11 +18,15 @@
  ******************************************************************************/
 
 #include "algorithms/matching/bfs_paths.hpp"
+#include "sbg/pwmap_fact.hpp"
+#include "sbg/set_fact.hpp"
 #include "util/logger.hpp"
 
 namespace SBG {
 
 namespace LIB {
+
+namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Path Finder BFS Implementation ----------------------------------------------
@@ -30,60 +34,63 @@ namespace LIB {
 
 BFSPaths::BFSPaths() {}
 
-PWMap BFSPaths::calculate(const DSBG& dsbg, const Set& endings)
+PWMap BFSPaths::calculate(const DirectedSBG& dsbg, const Set& endings)
 {
   Set dsbgV = dsbg.V();
   PWMap dsbgB = dsbg.mapB();
   PWMap dsbgD = dsbg.mapD();
-  PWMap subEmap = dsbg.subEmap();
+  PWMap Emap = dsbg.Emap();
 
-  // Unmatched vertices in forward direction
-  PWMap res = PW_FACT.createPWMap(endings);
+  // Successor map to unmatched vertices
+  PWMap result = PWMAP_FACT.createPWMap(endings);
 
   // A record of allowed edges to keep out cycle edges
   Set allowed_edges = dsbg.E();
-  // Ingoing edges to vertices that reach unmatched_D
+  // Ingoing edges to vertices that reach endings
   Set ingoing = dsbgD.preImage(endings); 
   // A record of visited set-edges
   Set visitedE = SET_FACT.createSet();
   do {
     // Calculate successor for ith vertices
-    PWMap ingB = dsbgB.restrict(ingoing), ingD = dsbgD.restrict(ingoing);
-    PWMap ith_smap = ingB.minAdjMap(ingD);
+    PWMap ingoingB = dsbgB.restrict(ingoing);
+    PWMap ingoingD = dsbgD.restrict(ingoing);
+    PWMap ith_smap = ingoingB.minAdj(ingoingD);
 
     Util::DEBUG_LOG << "ith_smap: " << ith_smap << "\n";
 
     // Edges that lead to a successor
     Set Eith = dsbgD.equalImage(ith_smap.composition(dsbgB));
     // Visited set-edges
-    Set Erec = visitedE.intersection(subEmap.image(Eith)); 
+    Set Erec = visitedE.intersection(Emap.image(Eith)); 
     // Handle recursion
     if (!Erec.isEmpty()) {
-      Set Eplus = subEmap.preImage(Erec);
-      PWMap rec_smap = dsbgB.restrict(Eplus).minAdjMap(dsbgD.restrict(Eplus)); 
+      Set Eplus = Emap.preImage(Erec);
+      PWMap rec_smap = dsbgB.restrict(Eplus).minAdj(dsbgD.restrict(Eplus)); 
       Util::DEBUG_LOG << "rec_smap: " << rec_smap << "\n";
       ith_smap = ith_smap.combine(rec_smap);
     }
-    res = ith_smap.combine(res);
+    result = ith_smap.combine(result);
  
     // Take out other outgoing edges to avoid cycles
-    allowed_edges = allowed_edges.difference(dsbgB.preImage(res.dom()));
+    allowed_edges = allowed_edges.difference(dsbgB.preImage(result.domain()));
     dsbgD = dsbgD.restrict(allowed_edges);
     dsbgB = dsbgB.restrict(allowed_edges);
 
     // Edges that reach vertices with a successor
-    ingoing = dsbgD.preImage(res.dom()).intersection(allowed_edges);
+    ingoing = dsbgD.preImage(result.domain()).intersection(allowed_edges);
 
-    visitedE = visitedE.cup(subEmap.image(Eith));
+    visitedE = visitedE.cup(Emap.image(Eith));
 
     Util::DEBUG_LOG << "Eith: " << Eith << "\n";
     Util::DEBUG_LOG << "Erec: " << Erec << "\n";
     Util::DEBUG_LOG << "visitedE: " << visitedE << "\n";
-    Util::DEBUG_LOG << "res: " << res << "\n\n";
+    Util::DEBUG_LOG << "res: " << result << "\n\n";
   } while (!ingoing.isEmpty());
 
-  return res;
+  return result;
 }
+
+} // namespace detail
 
 } // namespace LIB
 

@@ -23,14 +23,19 @@
 
  ******************************************************************************/
 
-#ifndef SBG_BFS_PATH_HPP
-#define SBG_BFS_PATH_HPP
+#ifndef SBGRAPH_ALGORITHMS_MATCHING_BFS_PATHS_HPP_
+#define SBGRAPH_ALGORITHMS_MATCHING_BFS_PATHS_HPP_
 
 #include "algorithms/matching/paths.hpp"
+#include "sbg/directed_sbg.hpp"
+#include "sbg/pw_map.hpp"
+#include "sbg/set.hpp"
 
 namespace SBG {
 
 namespace LIB {
+
+namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Paths Discoverer Algorithm --------------------------------------------------
@@ -40,7 +45,7 @@ namespace LIB {
  * @brief Backward BFS implementation to calculate paths.
  */
 class BFSPaths : public PathsContext<BFSPaths> {
-  public:
+public:
   BFSPaths();
 
   /**
@@ -50,11 +55,13 @@ class BFSPaths : public PathsContext<BFSPaths> {
    * than once, replicating the same path for every element of the same
    * Set-Vertex.
    */
-  PWMap calculate(const DSBG& dsbg, const Set& endings);
+  PWMap calculate(const DirectedSBG& dsbg, const Set& endings);
 };
+
+} // namespace detail
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_MATCHING_BFS_PATHS_HPP_

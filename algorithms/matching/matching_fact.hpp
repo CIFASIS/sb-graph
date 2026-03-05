@@ -21,8 +21,8 @@
 
  ******************************************************************************/
 
-#ifndef SBG_MATCHING_FACT_HPP
-#define SBG_MATCHING_FACT_HPP
+#ifndef SBGRAPH_ALGORITHMS_MATCHING_MATCHING_FACT_HPP_
+#define SBGRAPH_ALGORITHMS_MATCHING_MATCHING_FACT_HPP_
 
 #include "algorithms/matching/matching.hpp"
 
@@ -30,26 +30,14 @@ namespace SBG {
 
 namespace LIB {
 
-#define MATCH_FACT MatchFactory::instance().match_fact()
+#define MATCH_FACT MatchFactory::instance()
 
-class MatchingFact {
-  public:
-  virtual ~MatchingFact() = default;
-  MatchingFact() = default;
-
-  virtual Matching createMatchAlgorithm() const = 0;
-  virtual std::string prettyPrint() const = 0;
-};
-
-class BFSMatchingFact : public MatchingFact {
-  public:
+class BFSMatchingFact {
+public:
   BFSMatchingFact() = default;
 
-  Matching createMatchAlgorithm() const override;
-  std::string prettyPrint() const override;
+  Matching createMatchAlgorithm() const;
 };
-
-using MatchFactPtr = std::unique_ptr<MatchingFact>;
 
 /**
  * @brief Single instance of match factory to be used by clients in need of
@@ -57,24 +45,27 @@ using MatchFactPtr = std::unique_ptr<MatchingFact>;
  * calls MATCH_FACT.createMatchAlgorithm(args).
  */
 class MatchFactory {
-  public:
+public:
   ~MatchFactory() = default;
 
-  static MatchFactory& instance() {
-    static MatchFactory instance_;
-    return instance_;
-  }
-  MatchingFact& match_fact();
-  void set_match_fact(MatchFactPtr match_fact);
+  static MatchFactory& instance();
+  const MatchKind& kind() const;
 
-  private:
+  void set_match_fact(MatchKind kind);
+
+  Matching createMatchAlgorithm() const;
+
+private:
+  using MatchFactImpl = std::variant<BFSMatchingFact>;
+
   MatchFactory();
 
-  MatchFactPtr match_fact_;
+  MatchKind _kind;
+  MatchFactImpl _impl;
 };
 
 } // namespace LIB
 
 }  // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_MATCHING_MATCHING_FACT_HPP_

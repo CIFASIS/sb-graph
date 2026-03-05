@@ -17,66 +17,54 @@
 
  ******************************************************************************/
 
-#include <chrono>
-
 #include "algorithms/matching/matching.hpp"
-#include "util/logger.hpp"
+#include "util/debug.hpp"
+#include "util/time_profiler.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Auxiliary structures --------------------------------------------------------
+// Matching Algorithm implementations ------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-std::ostream& operator<<(std::ostream& out, const Direction& direction)
+std::ostream& operator<<(std::ostream& out, const MatchKind kind)
 {
-  switch (direction) {
-    case Direction::kForward:
-      out << "forward";
-      break;
-    case Direction::kBackward:
-      out << "backward";
-      break;
+  switch (kind) {
+    case MatchKind::kBFSPaths: {
+      out << "BFS paths";
+    }
+
+    default: {
+      Util::ERROR("Unsupported matching algorithm implementation");
+    }
   }
 
   return out;
 }
 
-MatchData::MatchData(BipartiteSBG bsbg, Set M, bool full_match)
-  : bsbg_(bsbg), M_(M), full_match_(full_match) {}
-
-const BipartiteSBG& MatchData::bsbg() const { return bsbg_; }
-const Set& MatchData::M() const { return M_; }
-const bool& MatchData::full_match() const { return full_match_; }
-
-std::ostream& operator<<(std::ostream& out, const MatchData& data)
-{
-  out << data.M();
-  if (data.full_match())
-    out << " [FULLY MATCHED]";
-  else
-    out << " [UNMATCHED]";
-
-  return out;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Matching Algorithm Abstract Strategy Constructors ---------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-MatchStrategy::MatchStrategy() {}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Matching Algorithm Interface ------------------------------------------------ 
 ////////////////////////////////////////////////////////////////////////////////
 
-Matching::Matching(MatchStratPtr strat) : strategy_(std::move(strat)) {}
+Matching::Matching(MatchKind kind) : _kind(kind), _impl()
+{
+  switch (kind) {
+    case MatchKind::kBFSPaths: {
+      _impl = detail::BFSMatching{};
+      break;
+    }
+
+    default: {
+      Util::ERROR("Unsupported matching algorithm implementation");
+    }
+  }  
+}
 
 MatchData Matching::calculate(const BipartiteSBG& bsbg)
 {
-  return strategy_->calculate(bsbg);
+  return std::visit([&](auto& a) { return a.calculate(bsbg); }, _impl);
 }
 
 } // namespace LIB

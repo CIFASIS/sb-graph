@@ -21,19 +21,24 @@
 
  ******************************************************************************/
 
-#ifndef SBG_BFS_MATCH_HPP
-#define SBG_BFS_MATCH_HPP
+#ifndef SBGRAPH_ALGORITHMS_MATCHING_BFS_MATCHING_HPP_
+#define SBGRAPH_ALGORITHMS_MATCHING_BFS_MATCHING_HPP_
 
 #include "algorithms/matching/bfs_paths.hpp"
-#include "algorithms/matching/matching.hpp"
+#include "algorithms/matching/match_data.hpp"
+#include "sbg/bipartite_sbg.hpp"
 #include "sbg/directed_sbg.hpp"
+#include "sbg/pw_map.hpp"
+#include "sbg/set.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
+namespace detail {
+
 ////////////////////////////////////////////////////////////////////////////////
-// BFS Matching Algorithm Implementation (concrete strategy) -------------------
+// BFS Matching Algorithm Implementation ---------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -47,19 +52,19 @@ namespace LIB {
  * The algorithms stops once a full match is calculated (i.e. one that saturates
  * all right vertices), or when no more augmenting paths are found.
  */
-class BFSMatching : public MatchStrategy {
-  public:
+class BFSMatching {
+public:
   BFSMatching();
 
-  MatchData calculate(const BipartiteSBG& bsbg) override;
+  MatchData calculate(const BipartiteSBG& bsbg);
 
-  private:
+private:
   /**
    * @brief Auxiliary struct to represent the exit condition of the algorithm
    * loop.
    */
   class ExitCondition {
-    public:
+  public:
     ExitCondition(bool full_match, bool found_paths_);
 
     bool full_match();
@@ -67,7 +72,7 @@ class BFSMatching : public MatchStrategy {
 
     bool isSatisfied();
   
-    private:
+  private:
     bool full_match_;
     bool found_paths_; 
   };
@@ -118,13 +123,15 @@ class BFSMatching : public MatchStrategy {
    */
   Set edgesInPaths(const PWMap& smap, const Set& E) const;
 
-  DSBG dsbg_; ///< Directed graph according to matching
-  Set M_;     ///< Matched edges
-  Direction direction_;
+  DirectedSBG _dsbg; ///< Directed graph according to matching
+  Set _M; ///< Matched edges
+  Direction _direction;
 };
+
+} // namespace detail
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_MATCHING_BFS_MATCHING_HPP_

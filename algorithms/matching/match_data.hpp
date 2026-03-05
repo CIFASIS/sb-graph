@@ -1,6 +1,6 @@
-/** @file matching.hpp
+/** @file match_data.hpp
 
- @brief <b>SBG Matching Algorithm</b>
+ @brief <b>Input and Output Matching data structure</b>
 
  <hr>
 
@@ -21,50 +21,44 @@
 
  ******************************************************************************/
 
-#ifndef SBGRAPH_ALGORITHMS_MATCHING_MATCHING_HPP_
-#define SBGRAPH_ALGORITHMS_MATCHING_MATCHING_HPP_
+#ifndef SBGRAPH_ALGORITHMS_MATCHING_MATCH_DATA_HPP_
+#define SBGRAPH_ALGORITHMS_MATCHING_MATCH_DATA_HPP_
 
-#include "algorithms/matching/bfs_matching.hpp"
-#include "algorithms/matching/match_data.hpp"
 #include "sbg/bipartite_sbg.hpp"
-
-#include <variant>
 
 namespace SBG {
 
 namespace LIB {
 
-namespace detail {
-
 ////////////////////////////////////////////////////////////////////////////////
-// Matching Algorithm Implementations ------------------------------------------
+// Auxiliary structures --------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-using MatchImpl = std::variant<BFSMatching>;
+enum class Direction { kForward, kBackward };
 
-} // namespace detail
+std::ostream& operator<<(std::ostream& out, const Direction& direction);
 
-enum class MatchKind { kBFSPaths };
-
-std::ostream& operator<<(std::ostream& out, const MatchKind kind);
-
-////////////////////////////////////////////////////////////////////////////////
-// Matching Algorithm ----------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-class Matching {
+/**
+ * @brief Saves input and output data from a matching algorithm run.
+ */
+class MatchData {
 public:
-  Matching(MatchKind kind);
+  MatchData(BipartiteSBG bsbg, Set M, bool full_match);
 
-  MatchData calculate(const BipartiteSBG& bsbg);
+  const BipartiteSBG& bsbg() const;
+  const Set& M() const;
+  const bool& full_match() const;
 
 private:
-  MatchKind _kind;
-  detail::MatchImpl _impl;
+  BipartiteSBG _bsbg; ///< Original input for the algorithm
+  Set _M; ///< Matched edges
+  bool _full_match; ///< Returns true if all right vertices are saturated
 };
+
+std::ostream& operator<<(std::ostream& out, const MatchData& data);
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif // SBGRAPH_ALGORITHMS_MATCHING_MATCHING_HPP_
+#endif // SBGRAPH_ALGORITHMS_MATCHING_MATCH_DATA_HPP_

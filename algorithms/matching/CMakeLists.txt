@@ -4,5 +4,6 @@ target_sources(
         bfs_matching.cpp
         bfs_paths.cpp
         matching.cpp
+        match_data.cpp
         matching_fact.cpp
 )

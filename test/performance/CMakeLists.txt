@@ -4,8 +4,9 @@ add_executable(sbg-benchmark benchmark_main.cpp)
 target_sources(sbg-benchmark
                PRIVATE
                benchmark_main.cpp
-               dom_ord_pwmap_bm.cpp
-               ord_set_bm.cpp)
+               #dom_ord_pwmap_bm.cpp
+               #unord_set_bm.cpp
+               unord_pwmap_bm.cpp)
 
 set_target_properties(sbg-benchmark PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY
@@ -24,6 +25,6 @@ target_link_libraries(sbg-benchmark
                       sbg-dev
                       sbg-eval-lib)
 
-add_subdirectory(boost)
+#add_subdirectory(boost)
 add_subdirectory(matching)
 add_subdirectory(scc)

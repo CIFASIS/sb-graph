@@ -25,19 +25,21 @@
 
  ******************************************************************************/
 
-#ifndef PERF_ORDINARY_BUILDER_HPP
-#define PERF_ORDINARY_BUILDER_HPP
+#ifndef SBGRAPH_TEST_PERFORMANCE_BOOST_ORDINARY_GRAPH_BUILDER_HPP_
+#define SBGRAPH_TEST_PERFORMANCE_BOOST_ORDINARY_GRAPH_BUILDER_HPP_
+
+#include "sbg/bipartite_sbg.hpp"
+#include "sbg/natural.hpp"
+#include "test/performance/boost/ordinary_graph.hpp"
+#include "util/logger.hpp"
 
 #include <map>
-
-#include "test/performance/boost/ordinary_graph.hpp"
-#include "sbg/bipartite_sbg.hpp"
-#include "util/logger.hpp"
+#include <vector>
 
 namespace OG {
 
 class OrdinaryGraphBuilder {
-  public:
+public:
   OrdinaryGraphBuilder(SBG::LIB::BipartiteSBG bsbg);
 
   BipartiteGraph build();
@@ -46,7 +48,7 @@ class OrdinaryGraphBuilder {
   void translateVertices();
   EdgeVector getEdgeList();
 
-  private:
+private:
   const SBG::LIB::BipartiteSBG _bsbg; ///< Input bipartite SBG to convert
   std::map<SBG::LIB::MD_NAT, Vertex> _vertex_map;
     ///< Map from SBG vertex identifier to Graph element
@@ -55,4 +57,4 @@ class OrdinaryGraphBuilder {
 
 }  // namespace OG
 
-#endif
+#endif // SBGRAPH_TEST_PERFORMANCE_BOOST_ORRDINARY_GRAPH_BUILDER_HPP_

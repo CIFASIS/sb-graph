@@ -17,6 +17,7 @@
 
  ******************************************************************************/
 
+#include "sbg/multidim_inter.hpp"
 #include "test/performance/boost/ordinary_graph_builder.hpp"
 #include "util/time_profiler.hpp"
 
@@ -26,24 +27,25 @@ namespace OG {
 // Auxiliary functions ---------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-static SBG::LIB::MD_NAT nextElem(SBG::LIB::MD_NAT curr, SBG::LIB::SetPiece mdi)
+static SBG::LIB::MD_NAT nextElem(SBG::LIB::MD_NAT curr
+  , SBG::LIB::detail::MultiDimInter mdi)
 {
   SBG::LIB::MD_NAT min = mdi.minElem();
   SBG::LIB::MD_NAT max = mdi.maxElem();
-  SBG::LIB::MD_NAT res;
+  SBG::LIB::MD_NAT result;
   for (unsigned int j = 0; j < mdi.arity(); ++j) {
     if (curr[j] == max[j]) {
-      res.emplaceBack(min[j]);
+      result.pushBack(min[j]);
     } else {
-      res.emplaceBack(curr[j] + 1);
+      result.pushBack(curr[j] + 1);
       for (unsigned int k = 1; k < mdi.arity() - j; ++k) {
-        res.emplaceBack(curr[j + k]);
+        result.pushBack(curr[j + k]);
       }
       break;
     } 
   }
 
-  return res;
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -75,7 +77,8 @@ void OrdinaryGraphBuilder::translateVertices()
   SBG::LIB::Set X = _bsbg.X();
   SBG::LIB::NAT count = 0;
   for (const SBG::LIB::SetPiece& mdi : V) { 
-    SBG::LIB::MD_NAT begin = mdi.minElem(), end = mdi.maxElem();
+    SBG::LIB::MD_NAT begin = mdi.minElem();
+    SBG::LIB::MD_NAT end = mdi.maxElem();
     for (auto it = begin; it != end; it = nextElem(it, mdi)) {
       _vertex_map[it] = count;
       _partition.emplace_back(
@@ -98,7 +101,8 @@ EdgeVector OrdinaryGraphBuilder::getEdgeList()
   const SBG::LIB::PWMap& map1 = _bsbg.map1();
   const SBG::LIB::PWMap& map2 = _bsbg.map2();
   for (const SBG::LIB::SetPiece& mdi : E) { 
-    SBG::LIB::MD_NAT begin = mdi.minElem(), end = mdi.maxElem();
+    SBG::LIB::MD_NAT begin = mdi.minElem();
+    SBG::LIB::MD_NAT end = mdi.maxElem();
     for (auto it = begin; it != end; it = nextElem(it, mdi)) {
       // Get endings of edge
       SBG::LIB::SetPiece it_mdi(it);

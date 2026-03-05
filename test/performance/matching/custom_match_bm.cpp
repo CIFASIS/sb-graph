@@ -29,7 +29,10 @@
 
 #include <benchmark/benchmark.h>
 
+#include "algorithms/matching/matching.hpp"
+#include "algorithms/matching/matching_fact.hpp"
 #include "eval/user_impl_map.hpp"
+#include "sbg/directed_sbg.hpp"
 #include "test/performance/utils.hpp"
 
 namespace Test {

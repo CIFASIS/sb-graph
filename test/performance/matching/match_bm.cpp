@@ -24,10 +24,12 @@
  * execution time when the repetitive patterns increase its size.
  */
 
-#include <benchmark/benchmark.h>
-
+#include "algorithms/matching/matching.hpp"
+#include "algorithms/matching/matching_fact.hpp"
 #include "eval/user_impl_map.hpp"
 #include "test/performance/utils.hpp"
+
+#include <benchmark/benchmark.h>
 
 namespace Test {
 

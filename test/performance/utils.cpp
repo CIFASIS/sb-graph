@@ -22,9 +22,12 @@
 #include <sys/wait.h>
 #include <regex>
 
+#include "algorithms/matching/matching.hpp"
+#include "algorithms/matching/matching_fact.hpp"
 #include "algorithms/misc/causalization_builders.hpp"
 #include "eval/file_evaluator.cpp"
 #include "eval/user_impl_map.hpp"
+#include "sbg/bipartite_sbg.hpp"
 
 namespace Test {
 
@@ -90,7 +93,8 @@ SBG::LIB::BipartiteSBG generateSBG(std::string filename, int N, int copies)
 
   std::cout.rdbuf(original_buf);
 
-  return g.copy(copies);
+  return g;
+  //TODO return g.copy(copies);
 }
 
 SBG::LIB::MatchData calculateMatching(std::string filename, int N, int copies)

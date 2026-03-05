@@ -27,10 +27,13 @@
  * "size" of the repetitive patterns of the graph. 
  */
 
-#include <benchmark/benchmark.h>
-
+#include "algorithms/scc/scc.hpp"
+#include "algorithms/scc/scc_fact.hpp"
 #include "eval/user_impl_map.hpp"
+#include "sbg/directed_sbg.hpp"
 #include "test/performance/utils.hpp"
+
+#include <benchmark/benchmark.h>
 
 namespace Test {
 
@@ -54,7 +57,7 @@ static void BM_CustomSCCTest(benchmark::State& state)
 {
   int N = state.range(0);
   SBG::LIB::MatchData match_result = calculateMatching(filename, N, 1);
-  SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
+  SBG::LIB::DirectedSBG scc_dsbg = misc::buildSCCFromMatching(match_result); 
   SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
 
   for (auto _ : state) {
@@ -72,7 +75,7 @@ static void BM_CustomSCCTestWithBuilder(benchmark::State& state)
   SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
 
   for (auto _ : state) {
-    SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
+    SBG::LIB::DirectedSBG scc_dsbg = misc::buildSCCFromMatching(match_result); 
     scc_algorithm.calculate(scc_dsbg);
   }
   state.SetComplexityN(N);
@@ -87,7 +90,7 @@ static void BM_CustomSCCTestCopies(benchmark::State& state)
   SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
 
   for (auto _ : state) {
-    SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
+    SBG::LIB::DirectedSBG scc_dsbg = misc::buildSCCFromMatching(match_result); 
     scc_algorithm.calculate(scc_dsbg);
   }
   state.SetComplexityN(N);

@@ -24,10 +24,13 @@
  * execution time when the repetitive patterns increase its size.
  */
 
-#include <benchmark/benchmark.h>
-
+#include "algorithms/scc/scc.hpp"
+#include "algorithms/scc/scc_fact.hpp"
 #include "eval/user_impl_map.hpp"
+#include "sbg/directed_sbg.hpp"
 #include "test/performance/utils.hpp"
+
+#include <benchmark/benchmark.h>
 
 namespace Test {
 
@@ -47,7 +50,7 @@ static void BM_TestRL1(benchmark::State& state)
   SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
   SBG::LIB::MatchData match_result
     = calculateMatching("../../TestRL1.test", N, 1);
-  SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
+  SBG::LIB::DirectedSBG scc_dsbg = misc::buildSCCFromMatching(match_result); 
 
   for (auto _ : state) {
     scc_algorithm.calculate(scc_dsbg);
@@ -69,7 +72,7 @@ static void BM_TestRL1WithBuilder(benchmark::State& state)
     = calculateMatching("../../TestRL1.test", N, 1);
 
   for (auto _ : state) {
-    SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
+    SBG::LIB::DirectedSBG scc_dsbg = misc::buildSCCFromMatching(match_result); 
     scc_algorithm.calculate(scc_dsbg);
   }
   state.SetComplexityN(N);
@@ -87,7 +90,7 @@ static void BM_TestRL2(benchmark::State& state)
   SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
   SBG::LIB::MatchData match_result
     = calculateMatching("../../TestRL2.test", N, 1);
-  SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
+  SBG::LIB::DirectedSBG scc_dsbg = misc::buildSCCFromMatching(match_result); 
 
   for (auto _ : state) {
     scc_algorithm.calculate(scc_dsbg);
@@ -109,7 +112,7 @@ static void BM_TestRL2WithBuilder(benchmark::State& state)
     = calculateMatching("../../TestRL2.test", N, 1);
 
   for (auto _ : state) {
-    SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
+    SBG::LIB::DirectedSBG scc_dsbg = misc::buildSCCFromMatching(match_result); 
     scc_algorithm.calculate(scc_dsbg);
   }
   state.SetComplexityN(N);
@@ -127,7 +130,7 @@ static void BM_TestRL3(benchmark::State& state)
   SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
   SBG::LIB::MatchData match_result
     = calculateMatching("../../TestRL3.test", N, 1);
-  SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
+  SBG::LIB::DirectedSBG scc_dsbg = misc::buildSCCFromMatching(match_result); 
 
   for (auto _ : state) {
     scc_algorithm.calculate(scc_dsbg);
@@ -149,7 +152,7 @@ static void BM_TestRL3WithBuilder(benchmark::State& state)
     = calculateMatching("../../TestRL3.test", N, 1);
 
   for (auto _ : state) {
-    SBG::LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result); 
+    SBG::LIB::DirectedSBG scc_dsbg = misc::buildSCCFromMatching(match_result); 
     scc_algorithm.calculate(scc_dsbg);
   }
   state.SetComplexityN(N);

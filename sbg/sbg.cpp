@@ -17,7 +17,13 @@
 
  ******************************************************************************/
 
+#include "sbg/natural.hpp"
+#include "sbg/pwmap_fact.hpp"
 #include "sbg/sbg.hpp"
+#include "sbg/set_fact.hpp"
+#include "util/debug.hpp"
+
+#include <iostream>
 
 namespace SBG {
 
@@ -27,16 +33,20 @@ namespace LIB {
 // SBG -------------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
+// Constructors/Destructors ----------------------------------------------------
+
 SBG::SBG() 
-  : _V(SET_FACT.createSet()), _Vmap(PW_FACT.createPWMap())
-  , _E(SET_FACT.createSet()), _map1(PW_FACT.createPWMap())
-  , _map2(PW_FACT.createPWMap()), _Emap(PW_FACT.createPWMap())
-  , _subEmap(PW_FACT.createPWMap()) {}
+  : _V(SET_FACT.createSet()), _Vmap(PWMAP_FACT.createPWMap())
+  , _E(SET_FACT.createSet()), _map1(PWMAP_FACT.createPWMap())
+  , _map2(PWMAP_FACT.createPWMap()), _Emap(PWMAP_FACT.createPWMap()) {}
+
 SBG::SBG(const Set& V, const PWMap& Vmap
   , const PWMap& map1, const PWMap& map2
-  , const PWMap& Emap, const PWMap& subEmap)
-  : _V(V), _Vmap(Vmap), _E(map1.dom().intersection(map2.dom()))
-    , _map1(map1), _map2(map2), _Emap(Emap), _subEmap(subEmap) {}
+  , const PWMap& Emap)
+  : _V(V), _Vmap(Vmap), _E(map1.domain().intersection(map2.domain()))
+    , _map1(map1), _map2(map2), _Emap(Emap) {}
+
+// Getters ---------------------------------------------------------------------
 
 const Set& SBG::V() const { return _V; }
 
@@ -50,20 +60,48 @@ const PWMap& SBG::map2() const { return _map2; }
 
 const PWMap& SBG::Emap() const { return _Emap; }
 
-const PWMap& SBG::subEmap() const { return _subEmap; }
+// Setters ---------------------------------------------------------------------
 
-SBG& SBG::operator=(const SBG& other)
+void SBG::addSetVertex(const Set& vertices)
 {
-  _V = other._V;
-  _Vmap = other._Vmap;
-  _E = other._E;
-  _map1 = other._map1;
-  _map2 = other._map2;
-  _Emap = other._Emap;
-  _subEmap = other._subEmap;
-
-  return *this;
+  if (!vertices.intersection(_V).isEmpty()) {
+    Util::ERROR("Trying to add existing vertices: ", vertices, " to SBG\n");
+  } else if (!vertices.isEmpty()) {
+    _V = std::move(_V).cup(vertices);
+    Set set_vertices = _Vmap.image();
+    std::size_t arity = vertices.arity();
+    MD_NAT max = set_vertices.isEmpty() ? MD_NAT{arity, 0}
+      : set_vertices.maxElem();
+    MD_NAT one_all_dims{arity, 1};
+    _Vmap.emplaceBack(vertices, max + one_all_dims);
+  }
 }
+
+void SBG::addSetEdge(const PWMap& pw1, const PWMap& pw2)
+{
+  Set edges1 = pw1.domain();
+  Set edges2 = pw2.domain();
+  if (edges1 != edges2) {
+    // TODO
+    Util::ERROR("The domain of ", edges1, " is different from ", edges2, "\n");
+  } else if (edges1.intersection(_E).isEmpty()) {
+    Set edges = edges1;
+    if (!edges.isEmpty()) {
+      _E = std::move(_E).cup(std::move(edges));
+      Set set_edges = _Emap.image();
+      std::size_t arity = edges.arity();
+      MD_NAT max = set_edges.isEmpty() ? MD_NAT(arity, 0) : set_edges.maxElem();
+      MD_NAT one_all_dims{arity, 1};
+      _map1 = std::move(_map1).concatenation(pw1);
+      _map2 = std::move(_map2).concatenation(pw2);
+      _Emap.emplaceBack(edges, max + one_all_dims);
+    }
+  } else {
+    Util::ERROR("Trying to add existing edges: ", edges1, " to SBG\n");
+  }
+}
+
+// Operators -------------------------------------------------------------------
 
 std::ostream& operator<<(std::ostream& out, const SBG& g)
 {
@@ -73,100 +111,8 @@ std::ostream& operator<<(std::ostream& out, const SBG& g)
   out << "map1: " << g.map1() << "\n";
   out << "map2: " << g.map2() << "\n";
   out << "Emap: " << g.Emap() << "\n";
-  out << "subEmap: " << g.subEmap() << "\n";
 
   return out;
-}
-
-void SBG::addSV(const Set& vertices)
-{
-  if (!vertices.intersection(_V).isEmpty()) {
-    Util::ERROR("Trying to add existing vertices: ", vertices, " to SBG\n");
-  } else if (!vertices.isEmpty() && vertices.intersection(_V).isEmpty()) {
-    _V = _V.cup(vertices);
-    Set SV = _Vmap.image();
-    std::size_t dims = vertices.arity();
-    MD_NAT max = SV.isEmpty() ? MD_NAT(dims, 0) : SV.maxElem();
-    for (unsigned int j = 0; j < dims; ++j) {
-      max[j] = max[j] + 1;
-    }
-    _Vmap.emplaceBack(Map(vertices, Exp(max)));
-
-  }
-}
-
-void SBG::addSE(const PWMap& pw1, const PWMap& pw2)
-{
-  Set edges = SET_FACT.createSet(), edges1 = pw1.dom(), edges2 = pw2.dom();
-  if (!edges.intersection(_E).isEmpty()) {
-    Util::ERROR("Trying to add existing edges: ", edges, " to SBG\n");
-  }
-  else if (edges1 == edges2) {
-    edges = edges1;
-    if (!edges.isEmpty() && edges.intersection(_E).isEmpty()) {
-      Set SE = _Emap.image();
-      std::size_t dims = edges.arity();
-      MD_NAT max = SE.isEmpty() ? MD_NAT(dims, 0) : SE.maxElem();
-      for (unsigned int j = 0; j < dims; ++j) {
-        max[j] = max[j] + 1;
-      }
-      _map1 = _map1.concatenation(pw1);
-      _map2 = _map2.concatenation(pw2);
-      _Emap.emplaceBack(Map(edges, max));
-    }
-  }
-}
-
-SBG SBG::copy(unsigned int times) const
-{
-  Set ith_V = _V, new_V = ith_V;
-  PWMap ith_Vmap = _Vmap, new_Vmap = ith_Vmap;
-  PWMap ith_map1 = _map1, new_map1 = ith_map1;
-  PWMap ith_map2 = _map2, new_map2 = ith_map2;
-  PWMap ith_Emap = _Emap, new_Emap = ith_Emap;
-  PWMap ith_subE = _subEmap, new_subE = ith_subE;
-
-  if (!ith_V.isEmpty()) {
-    MD_NAT maxv = ith_V.maxElem();
-    auto dims = maxv.arity();
-    MD_NAT maxV
-      = ith_Vmap.isEmpty() ? MD_NAT(dims, 0) : ith_Vmap.image().maxElem();
-    MD_NAT maxe = _E.isEmpty() ? MD_NAT(dims, 0) : _E.maxElem();
-    MD_NAT maxE
-      = ith_Emap.isEmpty() ? MD_NAT(dims, 0) : ith_Emap.image().maxElem();
-
-    Exp off;
-    for (unsigned int j = 0; j < dims; ++j) {
-      RATIONAL o = RATIONAL(maxv[j]) - RATIONAL(maxe[j]);
-      off.emplaceBack(LExp(0, o));
-    }
-
-    for (unsigned int j = 0; j < times; ++j) {
-      if (j > 0) {
-        new_V = new_V.disjointCup(ith_V);
-        new_Vmap = new_Vmap.concatenation(ith_Vmap);
-        new_map1 = new_map1.concatenation(ith_map1);
-        new_map2 = new_map2.concatenation(ith_map2);
-        new_Emap = new_Emap.concatenation(ith_Emap);
-        new_subE = new_subE.concatenation(ith_subE);
-      }
-
-      ith_V = ith_V.offset(maxv);
-      ith_Vmap = ith_Vmap.offsetDom(maxv);
-      ith_Vmap = ith_Vmap.offsetImage(maxV);
-
-      ith_map1 = ith_map1.offsetDom(maxe);
-      ith_map1 = ith_map1.offsetImage(off);
-      ith_map2 = ith_map2.offsetDom(maxe);
-      ith_map2 = ith_map2.offsetImage(off);
-      ith_Emap = ith_Emap.offsetDom(maxe);
-      ith_Emap = ith_Emap.offsetImage(maxE);
-      ith_subE = ith_subE.offsetDom(maxe);
-      ith_subE = ith_subE.offsetImage(maxE);
-    }
-  }
-
-  return SBG(new_V, new_Vmap, new_map1, new_map2, new_Emap, new_subE);
 }
 
 } // namespace LIB

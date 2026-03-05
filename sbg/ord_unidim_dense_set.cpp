@@ -18,163 +18,211 @@
  ******************************************************************************/
 
 #include "sbg/ord_unidim_dense_set.hpp"
+#include "util/debug.hpp"
+
+#include <iostream>
 
 namespace SBG {
 
 namespace LIB {
 
+namespace detail {
+
+////////////////////////////////////////////////////////////////////////////////
+// Auxiliary functions ---------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+Interval least(const Interval& lhs, const Interval& rhs)
+{
+  return lhs < rhs ? lhs : rhs;
+}
+
+bool overlap(const OrdUnidimDenseSet::IntervalOrdCollection& lhs,
+  const OrdUnidimDenseSet::IntervalOrdCollection& rhs)
+{
+  return lhs.back().end() >= rhs.front().begin()
+    || rhs.back().end() >= lhs.front().begin();
+}
+
+Interval intersection(const Interval& lhs, const Interval& rhs)
+{
+  return lhs.intersection(rhs);
+}
+
+OrdUnidimDenseSet::IntervalOrdCollection
+  compact(const OrdUnidimDenseSet::IntervalOrdCollection& c)
+{
+  OrdUnidimDenseSet::IntervalOrdCollection result;
+
+  if (c.empty()) {
+    return result;
+  }
+
+  auto next_it = c.begin();
+  ++next_it;
+  Interval compacted = c.front();
+  for (auto it = c.begin(); next_it != c.end(); ++it) {
+    MaybeInterval ith = compacted.compact(*next_it);
+    if (!ith) {
+      result.push_back(compacted);
+      compacted = *next_it;
+    } else {
+      compacted = ith.value();
+    }
+
+    ++next_it;
+  }
+  result.push_back(compacted);
+
+  return result;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Ordered Unidimensional Dense Set Implementation -----------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-member_imp(OrdUnidimDenseSet, OrdUnidimDenseSet::MDIOrdCollection, pieces);
+// Constructors/Destructors ----------------------------------------------------
 
-OrdUnidimDenseSet::~OrdUnidimDenseSet() {}
-OrdUnidimDenseSet::OrdUnidimDenseSet() : pieces_() {}
-OrdUnidimDenseSet::OrdUnidimDenseSet(MD_NAT x) : pieces_() {
-  pieces_.emplace_back(SetPiece(x));
-}
-OrdUnidimDenseSet::OrdUnidimDenseSet(Interval i) : pieces_() {
-  if (!i.isEmpty())
-    pieces_.emplace_back(SetPiece(i));
-}
-OrdUnidimDenseSet::OrdUnidimDenseSet(SetPiece mdi) : pieces_() {
-  if (!mdi.isEmpty())
-    pieces_.emplace_back(mdi);
-}
-OrdUnidimDenseSet::OrdUnidimDenseSet(OrdUnidimDenseSet::MDIOrdCollection pieces)
-  : pieces_(std::move(pieces)) {}
+OrdUnidimDenseSet::OrdUnidimDenseSet() : _pieces() {}
 
-SetStratPtr OrdUnidimDenseSet::clone() const
+OrdUnidimDenseSet::OrdUnidimDenseSet(const NAT x) : _pieces()
 {
-  return std::make_unique<OrdUnidimDenseSet>(pieces_);
+  _pieces.emplace_back(x);
 }
 
-member_imp(OrdUnidimDenseSet::Iterator
-  , OrdUnidimDenseSet::MDIOrdCollection::const_iterator, it);
-
-OrdUnidimDenseSet::Iterator::Iterator(
-  OrdUnidimDenseSet::MDIOrdCollection::const_iterator it) : it_(it) {}
-
-void OrdUnidimDenseSet::Iterator::operator++()
+OrdUnidimDenseSet::OrdUnidimDenseSet(const Interval& i) : _pieces()
 {
-  ++it_;
-  return;
+  if (!i.isEmpty()) {
+    _pieces.push_back(i);
+  }
 }
 
-bool OrdUnidimDenseSet::Iterator::operator!=(const SetStrategy::Iterator& other)
-  const
+OrdUnidimDenseSet::OrdUnidimDenseSet(
+  const OrdUnidimDenseSet::IntervalOrdCollection& pieces)
+  : _pieces(pieces) {}
+
+OrdUnidimDenseSet::OrdUnidimDenseSet(
+  OrdUnidimDenseSet::IntervalOrdCollection&& pieces)
+  : _pieces(std::move(pieces)) {}
+
+OrdUnidimDenseSet::OrdUnidimDenseSet(const FixedPointsInfo& info)
 {
-  return it_ != static_cast<const OrdUnidimDenseSet::Iterator *>(&other)->it_;
+  if (info) {
+    std::vector<Solution> solutions = info.value();
+    for (const Solution& jth_solution : solutions) {
+      if (jth_solution.kind() == SolutionKind::kFixed) {
+        _pieces.emplace_back(jth_solution.value().value());
+      } else {
+        _pieces.emplace_back(0, 1, Inf);
+      }
+    }
+  }
 }
 
-bool OrdUnidimDenseSet::Iterator::operator==(const SetStrategy::Iterator& other)
-  const
+// Getters ---------------------------------------------------------------------
+
+OrdUnidimDenseSet::ConstIt OrdUnidimDenseSet::begin() const
 {
-  return it_ == static_cast<const OrdUnidimDenseSet::Iterator *>(&other)->it_;
+  return _pieces.begin();
 }
 
-bool OrdUnidimDenseSet::Iterator::operator<(const SetStrategy::Iterator& other)
-  const
+OrdUnidimDenseSet::ConstIt OrdUnidimDenseSet::end() const
 {
-  return it_ < static_cast<const OrdUnidimDenseSet::Iterator *>(&other)->it_;
+  return _pieces.end();
 }
 
-const SetPiece& OrdUnidimDenseSet::Iterator::operator*() const { return *it_; }
+// Setters ---------------------------------------------------------------------
 
-std::shared_ptr<SetStrategy::Iterator> OrdUnidimDenseSet::begin() const
-{
-  return std::make_shared<OrdUnidimDenseSet::Iterator>(pieces_.begin());
-}
-
-std::shared_ptr<SetStrategy::Iterator> OrdUnidimDenseSet::end() const
-{
-  return std::make_shared<OrdUnidimDenseSet::Iterator>(pieces_.end());
-}
-
-std::size_t OrdUnidimDenseSet::size() const { return pieces_.size(); }
-
+/*
 void OrdUnidimDenseSet::emplace(const SetPiece& mdi)
-{
-  if (mdi.isEmpty())
-    return;
-
-  if (pieces_.empty() || pieces_.back() < mdi) {
-    pieces_.emplace_back(mdi);
-    return;
-  }
-
-  if (mdi < pieces_.front()) {
-    pieces_.emplace(pieces_.begin(), mdi);
-    return;
-  }
-
-  auto it = pieces_.begin();
-  auto end = pieces_.end();
-  for (; it != end; ++it) {
-    if (mdi < *it)
-      break;
-  }
-  pieces_.emplace(it, mdi);
-
-  return;
-}
-
-void OrdUnidimDenseSet::emplaceBack(const SetPiece& mdi)
 {
   if (mdi.isEmpty()) {
     return;
   }
 
-  if (pieces_.empty() || pieces_.back() < mdi) {
-    pieces_.emplace_back(mdi);
+  if (_pieces.empty() || _pieces.back() < mdi) {
+    _pieces.emplace_back(mdi);
     return;
   }
 
-  if (mdi < pieces_.front()) {
-    pieces_.emplace(pieces_.begin(), mdi);
+  if (mdi < _pieces.front()) {
+    _pieces.emplace(_pieces.begin(), mdi);
     return;
   }
 
-  auto it = pieces_.rbegin();
-  auto rend = pieces_.rend();
-  for (; it != rend; ++it) {
-    if (*it < mdi) {
+  auto it = _pieces.begin();
+  auto end = _pieces.end();
+  for (; it != end; ++it) {
+    if (mdi < *it) {
       break;
     }
   }
-  pieces_.emplace(it.base(), mdi);
-
-  return;
+  _pieces.emplace(it, mdi);
 }
+*/
 
-bool OrdUnidimDenseSet::operator==(const SetStrategy& other) const
+void OrdUnidimDenseSet::pushBack(const Interval& i)
 {
-  SetStratPtr this_comp = compact();
-  OrdUnidimDenseSetCRef ths = static_cast<OrdUnidimDenseSetCRef>(*this_comp);
-  SetStratPtr other_comp = other.compact();
-  OrdUnidimDenseSetCRef othr = static_cast<OrdUnidimDenseSetCRef>(*other_comp);
+  if (i.isEmpty()) {
+    return;
+  }
 
-  return ths.pieces_ == othr.pieces_;
+  if (_pieces.empty() || _pieces.back() < i) {
+    _pieces.push_back(i);
+    return;
+  }
+
+  if (i < _pieces.front()) {
+    _pieces.insert(_pieces.begin(), i);
+    return;
+  }
+
+  auto it = _pieces.rbegin();
+  auto rend = _pieces.rend();
+  for (; it != rend; ++it) {
+    if (*it < i) {
+      break;
+    }
+  }
+  _pieces.insert(it.base(), i);
 }
 
-bool OrdUnidimDenseSet::operator!=(const SetStrategy& other) const
+// Operators -------------------------------------------------------------------
+
+bool OrdUnidimDenseSet::operator==(const OrdUnidimDenseSet& other) const
+{
+  if (isEmpty() && other.isEmpty()) {
+    return true;
+  }
+
+  if (isEmpty() != other.isEmpty()) {
+    return false;
+  }
+
+  if (_pieces == other._pieces) {
+    return true;
+  }
+
+  return detail::compact(_pieces) == detail::compact(other._pieces);
+}
+
+bool OrdUnidimDenseSet::operator!=(const OrdUnidimDenseSet& other) const
 {
   return !(*this == other);
 }
 
 std::ostream& OrdUnidimDenseSet::print(std::ostream& out) const
 {
-  std::size_t sz = size();
+  std::size_t sz = _pieces.size();
 
   out << "{";
   if (sz > 0) {
     unsigned int j = 0;
-    for (const SetPiece& mdi : pieces_) { 
+    for (const Interval& i : _pieces) { 
       if (j < sz - 1) {
-        out << mdi << ", ";
+        out << i << ", ";
       } else {
-        out << mdi;
+        out << i;
       }
 
       ++j;
@@ -191,272 +239,210 @@ unsigned int OrdUnidimDenseSet::cardinal() const
 {
   unsigned int result = 0;
 
-  for (const SetPiece& mdi : pieces_) {
-    result += mdi.cardinal();
+  for (const Interval& i : _pieces) {
+    result += i.cardinal();
   }
 
   return result;
 }
 
-bool OrdUnidimDenseSet::isEmpty() const { return pieces_.empty(); }
+bool OrdUnidimDenseSet::isEmpty() const { return _pieces.empty(); }
 
 MD_NAT OrdUnidimDenseSet::minElem() const
 {
-  return pieces_.begin()->minElem();
+  return MD_NAT(_pieces.front().begin());
 }
 
 MD_NAT OrdUnidimDenseSet::maxElem() const
 {
-  auto it = pieces_.end();
-  --it;
-  return it->maxElem();
+  return MD_NAT(_pieces.back().end());
 }
 
-SetStratPtr OrdUnidimDenseSet::intersection(const SetStrategy& other) const
+OrdUnidimDenseSet OrdUnidimDenseSet::intersection(const OrdUnidimDenseSet&
+  other) const
 {
   // Special cases to enhance performance
   if (isEmpty() || other.isEmpty()) {
-    return std::make_unique<OrdUnidimDenseSet>();
+    return OrdUnidimDenseSet{};
   }
 
-  const MD_NAT min_elem = minElem();
-  const MD_NAT max_elem = maxElem();
-  const MD_NAT other_min = other.minElem();
-  const MD_NAT other_max = other.maxElem();
-  if (max_elem < other_min || other_max < min_elem) {
-    return std::make_unique<OrdUnidimDenseSet>();
+  if (!overlap(_pieces, other._pieces)) {
+    return OrdUnidimDenseSet{};
   }
 
-  OrdUnidimDenseSet result;
-  if (max_elem == other_min) {
-    result.emplaceBack(SetPiece(max_elem));
-    return std::make_unique<OrdUnidimDenseSet>(result);
+  if (_pieces == other._pieces) {
+    return OrdUnidimDenseSet{_pieces};
   }
 
-  if (min_elem == other_max) {
-    result.emplaceBack(SetPiece(min_elem));
-    return std::make_unique<OrdUnidimDenseSet>(result);
-  }
-
-  const OrdUnidimDenseSetCRef othr = static_cast<OrdUnidimDenseSetCRef>(other);
-  if (pieces_ == othr.pieces_) {
-    return std::make_unique<OrdUnidimDenseSet>(pieces_);
-  }
-
-  // General case
-  MDIOrdCollection cap = boundedTraverse(&SetPiece::intersection, othr.pieces_);
-
-  return std::make_unique<OrdUnidimDenseSet>(std::move(cap));
+  return boundedTraverse(detail::intersection, other);
 }
 
-SetStratPtr OrdUnidimDenseSet::cup(const SetStrategy& other) const &
+OrdUnidimDenseSet OrdUnidimDenseSet::cup(const OrdUnidimDenseSet& other) const &
 {
-  // Special cases
-  OrdUnidimDenseSetCRef othr = static_cast<OrdUnidimDenseSetCRef>(other);
-  if (isEmpty()) { 
-    return std::make_unique<OrdUnidimDenseSet>(othr.pieces_);
-  }
-
-  if (other.isEmpty() || pieces_ == othr.pieces_) {
-    return std::make_unique<OrdUnidimDenseSet>(pieces_);
-  }
-
-  MDIOrdCollection result;
-  if (maxElem() < othr.minElem()) {
-    result.insert(result.end(), pieces_.begin(), pieces_.end());
-    result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
-    return std::make_unique<OrdUnidimDenseSet>(std::move(result));
-  }
-
-  if (othr.maxElem() < minElem()) {
-    result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
-    result.insert(result.end(), pieces_.begin(), pieces_.end());
-    return std::make_unique<OrdUnidimDenseSet>(std::move(result));
-  }
-
-  // General case
-  SetStratPtr diff = difference(other);
-
-  return othr.disjointCup(*diff);
+  return OrdUnidimDenseSet{*this}.cup(other);
 }
 
-SetStratPtr OrdUnidimDenseSet::cup(SetStrategy&& other) && 
+OrdUnidimDenseSet OrdUnidimDenseSet::cup(const OrdUnidimDenseSet& other) &&
+{
+  return std::move(*this).cup(OrdUnidimDenseSet{other});
+}
+
+OrdUnidimDenseSet OrdUnidimDenseSet::cup(OrdUnidimDenseSet&& other) const &
+{
+  return OrdUnidimDenseSet{*this}.cup(std::move(other));
+}
+
+OrdUnidimDenseSet OrdUnidimDenseSet::cup(OrdUnidimDenseSet&& other) && 
 { 
   // Special cases
-  OrdUnidimDenseSetRef othr = static_cast<OrdUnidimDenseSetRef>(other);
-  if (other.isEmpty() || pieces_ == othr.pieces_) {
-    return std::make_unique<OrdUnidimDenseSet>(std::move(pieces_));
+  if (other.isEmpty() || _pieces == other._pieces) {
+    return OrdUnidimDenseSet{std::move(_pieces)};
   }
 
   if (isEmpty()) { 
-    return std::make_unique<OrdUnidimDenseSet>(std::move(othr.pieces_));
+    return OrdUnidimDenseSet{std::move(other._pieces)};
   }
 
-  MDIOrdCollection result;
-  if (maxElem() < othr.minElem()) {
-    result = std::move(pieces_);
-    result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
-    return std::make_unique<OrdUnidimDenseSet>(std::move(result));
-  }
-
-  if (othr.maxElem() < minElem()) {
-    result = std::move(othr.pieces_);
-    result.insert(result.end(), pieces_.begin(), pieces_.end());
-    return std::make_unique<OrdUnidimDenseSet>(std::move(result));
+  IntervalOrdCollection result;
+  if (!overlap(_pieces, other._pieces)) {
+    return std::move(*this).disjointCup(std::move(other));
   }
 
   // General case
-  SetStratPtr diff = difference(other);
-  return othr.disjointCup(*diff);
+  OrdUnidimDenseSet exclusive_this = difference(other);
+  return std::move(other).disjointCup(std::move(exclusive_this));
 }
 
-SetStratPtr OrdUnidimDenseSet::complement() const
+OrdUnidimDenseSet OrdUnidimDenseSet::complement() const
 {
-  OrdUnidimDenseSet res;
+  OrdUnidimDenseSet result;
 
   if (isEmpty()) {
-    res.emplaceBack(SetPiece(Interval(0, 1, Inf))); 
-    return std::make_unique<OrdUnidimDenseSet>(res);
+    result._pieces.emplace_back(0, 1, Inf); 
+    return result;
   }
 
-  auto first_it = pieces_.begin();
-  Interval first(0, 1, first_it->operator[](0).begin() - 1);
-  if (!first.isEmpty())
-    res.emplaceBack(SetPiece(first));
-  NAT last = first_it->maxElem()[0];
+  // Complement before minimum element of the set
+  result._pieces.emplace_back(0, 1, _pieces.front().minElem() - 1);
 
-  ++first_it;
-  MDIOrdCollection second(first_it, pieces_.end());
-  for (const SetPiece& mdi : second) {
-    Interval ith(last + 1, 1, mdi[0].begin() - 1);
-    if (!ith.isEmpty())
-      res.emplaceBack(SetPiece(ith));
-    last = mdi.maxElem()[0];
+  // Complement between pieces of the set
+  NAT last_interval_end = _pieces.front().maxElem();
+  unsigned int j = 0;
+  for (const Interval& i : _pieces) {
+    if (j != 0) {
+      if (i.begin() - 1 >= last_interval_end + 1) {
+        result._pieces.emplace_back(last_interval_end + 1, 1, i.begin() - 1);
+      }
+      last_interval_end = i.maxElem();
+    }
+    ++j;
   }
-  Interval end(last + 1, 1, Inf);
-  res.emplaceBack(SetPiece(end));
 
-  return std::make_unique<OrdUnidimDenseSet>(std::move(res));
+  // Complement after maximum element of the set
+  result._pieces.emplace_back(last_interval_end + 1, 1, Inf);
+
+  return result;
 }
 
-SetStratPtr OrdUnidimDenseSet::difference(const SetStrategy& other) const
+OrdUnidimDenseSet OrdUnidimDenseSet::difference(const OrdUnidimDenseSet& other)
+  const
 {
   if (isEmpty() || other.isEmpty()) {
-    return std::make_unique<OrdUnidimDenseSet>(pieces_);
+    return OrdUnidimDenseSet{_pieces};
   }
 
-  if (maxElem() < other.minElem() || other.maxElem() < minElem()) {
-    return std::make_unique<OrdUnidimDenseSet>(pieces_);
+  if (!overlap(_pieces, other._pieces)) {
+    return OrdUnidimDenseSet{_pieces};
   }
 
-  return intersection(*other.complement());
+  return intersection(other.complement());
+}
+
+OrdUnidimDenseSet OrdUnidimDenseSet::cartesianProduct(const OrdUnidimDenseSet&
+  other) const
+{
+  Util::ERROR("OrdUnidimDenseSet::cartesianProduct: operation not supported");
+
+  return OrdUnidimDenseSet{};
 }
 
 // Extra operations ------------------------------------------------------------
 
 std::size_t OrdUnidimDenseSet::arity() const
 {
-  if (isEmpty())
+  if (isEmpty()) {
     return 0;
+  }
 
-  return pieces_.begin()->arity();
+  return 1;
 }
 
-SetStratPtr OrdUnidimDenseSet::disjointCup(const SetStrategy& other) const &
+OrdUnidimDenseSet OrdUnidimDenseSet::disjointCup(const OrdUnidimDenseSet& other)
+  const &
 {
-  OrdUnidimDenseSetCRef othr = static_cast<OrdUnidimDenseSetCRef>(other);
-  
+  return OrdUnidimDenseSet{*this}.disjointCup(other);
+}
+
+OrdUnidimDenseSet OrdUnidimDenseSet::disjointCup(const OrdUnidimDenseSet& other)
+ &&
+{
+  return std::move(*this).disjointCup(OrdUnidimDenseSet{other});
+}
+
+OrdUnidimDenseSet OrdUnidimDenseSet::disjointCup(OrdUnidimDenseSet&& other)
+  const &
+{
+  return OrdUnidimDenseSet{*this}.disjointCup(std::move(other));
+}
+
+OrdUnidimDenseSet OrdUnidimDenseSet::disjointCup(OrdUnidimDenseSet&& other) &&
+{
   // Special cases
   if (isEmpty()) {
-    return std::make_unique<OrdUnidimDenseSet>(othr.pieces_);
+    return OrdUnidimDenseSet{std::move(other._pieces)};
   }
 
-  if (othr.isEmpty() || pieces_ == othr.pieces_) {
-    return std::make_unique<OrdUnidimDenseSet>(pieces_);
+  if (other.isEmpty() || _pieces == other._pieces) {
+    return OrdUnidimDenseSet{std::move(_pieces)};
   }
 
-  MDIOrdCollection result;
-  if (pieces_.back() < othr.pieces_.front()) {
-    result.insert(result.end(), pieces_.begin(), pieces_.end());
-    result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
-    return std::make_unique<OrdUnidimDenseSet>(std::move(result));
-  }
-
-  if (othr.pieces_.back() < pieces_.front()) {
-    result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
-    result.insert(result.end(), pieces_.begin(), pieces_.end());
-    return std::make_unique<OrdUnidimDenseSet>(std::move(result));
+  if (!overlap(_pieces, other._pieces)) {
+    IntervalOrdCollection result;
+    result.insert(result.end(), std::make_move_iterator(_pieces.begin())
+      , std::make_move_iterator(_pieces.end()));
+    result.insert(result.end(), std::make_move_iterator(other._pieces.begin())
+      , std::make_move_iterator(other._pieces.end()));
+    return result;
   }
   
-  MDIOrdCollection cup = traverse(&SetPiece::least, othr.pieces_);
-  return std::make_unique<OrdUnidimDenseSet>(std::move(cup));
+  return traverse(least, other);
 }
 
-SetStratPtr OrdUnidimDenseSet::disjointCup(SetStrategy&& other) &&
+OrdUnidimDenseSet OrdUnidimDenseSet::offset(const MD_NAT& offset) const
 {
-  OrdUnidimDenseSetCRef othr = static_cast<OrdUnidimDenseSetCRef>(other);
+  OrdUnidimDenseSet result;
 
-  // Special cases
+  for (const Interval& i : _pieces) {
+    result.pushBack(i.offset(offset[0]));
+  }
+
+  return result;
+}
+
+void OrdUnidimDenseSet::compact()
+{
   if (isEmpty()) {
-    return std::make_unique<OrdUnidimDenseSet>(std::move(othr.pieces_));
+    return;
   }
 
-  if (othr.isEmpty() || pieces_ == othr.pieces_) {
-    return std::make_unique<OrdUnidimDenseSet>(std::move(pieces_));
-  }
-
-  MDIOrdCollection result;
-  if (pieces_.back() < othr.pieces_.front()) {
-    result = std::move(pieces_);
-    result.insert(result.end(), othr.pieces_.begin(), othr.pieces_.end());
-    return std::make_unique<OrdUnidimDenseSet>(std::move(result));
-  }
-
-  if (othr.pieces_.back() < pieces_.front()) {
-    result = std::move(othr.pieces_);
-    result.insert(result.end(), pieces_.begin(), pieces_.end());
-    return std::make_unique<OrdUnidimDenseSet>(std::move(result));
-  }
-  
-  MDIOrdCollection cup = traverse(&SetPiece::least, othr.pieces_);
-  return std::make_unique<OrdUnidimDenseSet>(std::move(cup));
-}
-
-SetStratPtr OrdUnidimDenseSet::filterSet(bool (*f)(const SetPiece& mdi)) const
-{
-  MDIOrdCollection res;
-
-  for (const SetPiece& mdi : pieces_)
-    if (f(mdi))
-      res.emplace_back(mdi);
-
-  return std::make_unique<OrdUnidimDenseSet>(std::move(res));
-}
-
-SetStratPtr OrdUnidimDenseSet::offset(const MD_NAT& off) const
-{
-  MDIOrdCollection res;
-
-  for (const SetPiece& mdi : pieces_)
-    res.emplace_back(mdi.offset(off));
-
-  return std::make_unique<OrdUnidimDenseSet>(std::move(res));
-}
-
-SetStratPtr OrdUnidimDenseSet::compact() const
-{
-  MDIOrdCollection res;
-
-  if (isEmpty())
-    return std::make_unique<OrdUnidimDenseSet>(std::move(res));
-
-  auto next_it = pieces_.begin();
+  IntervalOrdCollection result;
+  auto next_it = _pieces.begin();
   ++next_it;
-  SetPiece compacted = *pieces_.begin();
-  for (auto it = pieces_.begin(); next_it != pieces_.end(); ++it) {
-    MaybeMDI ith = compacted.compact(*next_it);
+  Interval compacted = _pieces.front();
+  for (auto it = _pieces.begin(); next_it != _pieces.end(); ++it) {
+    MaybeInterval ith = compacted.compact(*next_it);
     if (!ith) {
-      res.emplace_back(compacted);
+      result.push_back(compacted);
       compacted = *next_it;
     } else {
       compacted = ith.value();
@@ -464,89 +450,63 @@ SetStratPtr OrdUnidimDenseSet::compact() const
 
     ++next_it;
   }
-  res.emplace_back(compacted);
+  result.push_back(compacted);
 
-  return std::make_unique<OrdUnidimDenseSet>(std::move(res));
+  _pieces = std::move(result);
 }
 
-OrdUnidimDenseSet::MDIOrdCollection OrdUnidimDenseSet::boundedTraverse(
-    SetPiece (SetPiece::*f)(const SetPiece&) const, const MDIOrdCollection& other
+OrdUnidimDenseSet OrdUnidimDenseSet::boundedTraverse(
+  Interval f(const Interval&, const Interval&), const OrdUnidimDenseSet& other
 ) const
 {
-  MDIOrdCollection res;
-
-  if (isEmpty() || other.empty())
-    return res;
-
-  auto it1 = pieces_.begin();
-  auto end1 = pieces_.end();
-  auto it2 = other.begin();
-  auto end2 = other.end();
-  SetPiece mdi1;
-  SetPiece mdi2;
+  OrdUnidimDenseSet result;
+  auto it1 = _pieces.begin();
+  auto end1 = _pieces.end();
+  auto it2 = other._pieces.begin();
+  auto end2 = other._pieces.end();
   for (int j = 0; it1 != end1 && it2 != end2; ++j) {
-    mdi1 = *it1;
-    mdi2 = *it2;
+    const Interval i1 = *it1;
+    const Interval i2 = *it2;
+    result.pushBack(f(i1, i2));
 
-    SetPiece funci = (mdi1.*f)(mdi2);
-    if (!funci.isEmpty())
-      res.emplace_back(funci);
-
-    if (mdi1.maxElem() < mdi2.maxElem()) {
+    if (i1.maxElem() < i2.maxElem()) {
       ++it1;
     } else { 
       ++it2;
     }
   }
 
-  return res;
+  return result;
 }
 
-OrdUnidimDenseSet::MDIOrdCollection OrdUnidimDenseSet::traverse(
-    SetPiece (SetPiece::*f)(const SetPiece&) const, const MDIOrdCollection& other
-) const
+OrdUnidimDenseSet OrdUnidimDenseSet::traverse(
+  Interval f(const Interval&, const Interval&) , const OrdUnidimDenseSet& other)
+  const
 {
-  MDIOrdCollection res;
+  OrdUnidimDenseSet result;
 
-  if (isEmpty())
-    return other;
-
-  if (other.empty())
-    return pieces_;
-  
-  auto it1 = pieces_.begin();
-  auto end1 = pieces_.end();
-  auto it2 = other.begin();
-  auto end2 = other.end();
-  SetPiece mdi1;
-  SetPiece mdi2;
+  auto it1 = _pieces.begin();
+  auto end1 = _pieces.end();
+  auto it2 = other._pieces.begin();
+  auto end2 = other._pieces.end();
   for (; it1 != end1 && it2 != end2;) {
-    mdi1 = *it1;
-    mdi2 = *it2;
+    const Interval i1 = *it1;
+    const Interval i2 = *it2;
+    result.pushBack(f(i1, i2));
 
-    SetPiece funci = (mdi1.*f)(mdi2);
-    if (!funci.isEmpty())
-      res.emplace_back(funci);
-
-    if (mdi1.maxElem() < mdi2.maxElem()) {
+    if (i1.maxElem() < i2.maxElem()) {
       ++it1;
     } else {
       ++it2;
     }
   }
+  result._pieces.insert(result.end(), it1, end1);
+  result._pieces.insert(result.end(), it2, end2);
 
-  for (; it1 != end1; ++it1) {
-    mdi1 = *it1;
-    res.emplace_back(mdi1);
-  }
-
-  for (; it2 != end2; ++it2) {
-    mdi2 = *it2;
-    res.emplace_back(mdi2);
-  }
-
-  return res;
+  return result;
 }
+
+} // namespace detail
 
 } // namespace LIB
 

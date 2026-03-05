@@ -9,25 +9,27 @@ target_sources(
     PRIVATE
     bipartite_sbg.cpp
     directed_sbg.cpp
-    dom_ord_pwmap.cpp
+    expression.cpp
+    fixed_points.cpp
     interval.cpp
-    lexp.cpp
+    linear_expr.cpp
     map.cpp
-    map_entry.cpp
+    map_detail.cpp
     multidim_inter.cpp
-    multidim_lexp.cpp
     natural.cpp
-    ord_set.cpp
     ord_unidim_dense_set.cpp
-    ord_pwmap.cpp
     pw_map.cpp
     pwmap_fact.cpp
     rational.cpp
     sbg.cpp
     set.cpp
     set_fact.cpp
-    unord_set.cpp
     unord_pwmap.cpp
+    unord_set.cpp
+    #ord_set.cpp
+    #dom_ord_pwmap.cpp
+    #map_entry.cpp
+    #ord_pwmap.cpp
 )
 
 add_custom_target(sbg-doc

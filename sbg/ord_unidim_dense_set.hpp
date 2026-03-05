@@ -24,102 +24,103 @@
 
  ******************************************************************************/
 
-#ifndef SBG_ORD_UNIDIM_DENSE_SET_HPP
-#define SBG_ORD_UNIDIM_DENSE_SET_HPP
+#ifndef SBGRAPH_SBG_ORD_UNIDIM_DENSE_SET_HPP_
+#define SBGRAPH_SBG_ORD_UNIDIM_DENSE_SET_HPP_
 
-#include "sbg/set.hpp"
+#include "sbg/expression.hpp"
+#include "sbg/fixed_points.hpp"
+#include "sbg/interval.hpp"
+#include "sbg/multidim_inter.hpp"
+#include "sbg/natural.hpp"
+
+#include <iosfwd>
+#include <memory>
+#include <vector>
 
 namespace SBG {
 
 namespace LIB {
 
+namespace detail {
+
 ////////////////////////////////////////////////////////////////////////////////
-// Ordered Unidimensional Dense Set Implementation (concrete strategy) ---------
+// Ordered Unidimensional Dense Set Implementation -----------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-class OrdUnidimDenseSet : public SetStrategy {
-  using MDIOrdCollection = std::vector<SetPiece>;
+class OrdUnidimDenseSet {
+public:
+  using IntervalOrdCollection = std::vector<Interval>;
+  using ConstIt = IntervalOrdCollection::const_iterator;
 
-  member_class(MDIOrdCollection, pieces);
-
-  ~OrdUnidimDenseSet();
   OrdUnidimDenseSet();
-  OrdUnidimDenseSet(MD_NAT x);
-  OrdUnidimDenseSet(Interval i);
-  OrdUnidimDenseSet(SetPiece mdi);
-  OrdUnidimDenseSet(MDIOrdCollection pieces);
+  OrdUnidimDenseSet(const NAT x);
+  OrdUnidimDenseSet(const detail::Interval& i);
+  OrdUnidimDenseSet(const IntervalOrdCollection& pieces);
+  OrdUnidimDenseSet(IntervalOrdCollection&& pieces);
+  OrdUnidimDenseSet(const FixedPointsInfo& info);
 
-  SetStratPtr clone() const override;
+  ConstIt begin() const;
+  ConstIt end() const;
 
-  class Iterator : public SetStrategy::Iterator {
-    member_class(MDIOrdCollection::const_iterator, it);
+  void pushBack(const Interval& mdi);
 
-    Iterator(MDIOrdCollection::const_iterator it);
-    void operator++() override;
-    bool operator!=(const SetStrategy::Iterator& other) const override;
-    bool operator==(const SetStrategy::Iterator& other) const override;
-    bool operator<(const SetStrategy::Iterator& other) const override;
-    const SetPiece& operator*() const override;
-  };
-
-  std::shared_ptr<SetStrategy::Iterator> begin() const override;
-  std::shared_ptr<SetStrategy::Iterator> end() const override;
-
-  std::size_t size() const override;
-  void emplace(const SetPiece& mdi) override;
-  void emplaceBack(const SetPiece& mdi) override;
-
-  bool operator==(const SetStrategy& other) const override;
-  bool operator!=(const SetStrategy& other) const override;
-  std::ostream& print(std::ostream& out) const override;
+  bool operator==(const OrdUnidimDenseSet& other) const;
+  bool operator!=(const OrdUnidimDenseSet& other) const;
+  std::ostream& print(std::ostream& out) const;
 
   // Traditional set operations ------------------------------------------------
 
-  unsigned int cardinal() const override;
-  bool isEmpty() const override;
-  MD_NAT minElem() const override;
-  MD_NAT maxElem() const override;
-  SetStratPtr intersection(const SetStrategy& other) const override;
-  SetStratPtr cup(const SetStrategy& other) const & override;
-  SetStratPtr cup(SetStrategy&& other) && override;
-  SetStratPtr complement() const;
-  SetStratPtr difference(const SetStrategy& other) const override;
+  unsigned int cardinal() const;
+  bool isEmpty() const;
+  MD_NAT minElem() const;
+  MD_NAT maxElem() const;
+  OrdUnidimDenseSet intersection(const OrdUnidimDenseSet& other) const;
+  OrdUnidimDenseSet cup(const OrdUnidimDenseSet& other) const &;
+  OrdUnidimDenseSet cup(const OrdUnidimDenseSet& other) &&;
+  OrdUnidimDenseSet cup(OrdUnidimDenseSet&& other) const &;
+  OrdUnidimDenseSet cup(OrdUnidimDenseSet&& other) &&;
+  OrdUnidimDenseSet complement() const;
+  OrdUnidimDenseSet difference(const OrdUnidimDenseSet& other) const;
+  OrdUnidimDenseSet cartesianProduct(const OrdUnidimDenseSet& other) const;
 
   // Extra operations ----------------------------------------------------------
 
-  std::size_t arity() const override;
-  SetStratPtr disjointCup(const SetStrategy& other) const & override;
-  SetStratPtr disjointCup(SetStrategy&& other) && override;
-  SetStratPtr filterSet(bool (*f)(const SetPiece& mdi)) const override;
-  SetStratPtr offset(const MD_NAT& off) const override;
-  SetStratPtr compact() const override;
+  std::size_t arity() const;
+  OrdUnidimDenseSet disjointCup(const OrdUnidimDenseSet& other) const &;
+  OrdUnidimDenseSet disjointCup(const OrdUnidimDenseSet& other) &&;
+  OrdUnidimDenseSet disjointCup(OrdUnidimDenseSet&& other) const &;
+  OrdUnidimDenseSet disjointCup(OrdUnidimDenseSet&& other) &&;
+  OrdUnidimDenseSet offset(const MD_NAT& offset) const;
+  void compact();
 
-  private:
+private:
   /**
    * @brief Performs operation f between a piece of s1 and a piece of s2. At the
-   * start begins with both minimum elements, and advances the iterator of the
-   * set with the piece that has the minimum end. This is repeated until one of
-   * the two collections is consumed.
+   * start it begins with both minimum elements, and advances the iterator of
+   * the set with the piece that has the minimum end. This is repeated until one
+   * of the two collections is consumed.
    */
-  MDIOrdCollection boundedTraverse(SetPiece (SetPiece::*f)(const SetPiece&) const
-    , const MDIOrdCollection& other) const;
+   OrdUnidimDenseSet boundedTraverse(Interval f(const Interval&, const Interval&)
+     , const OrdUnidimDenseSet& other) const;
 
   /**
    * @brief Performs operation f between a piece of s1 and a piece of s2. At the
-   * start begins with both minimum elements, and advances the iterator of the
-   * set with the piece that has the minimum end. This is repeated until one of
-   * the two collections is consumed. Then, all the remaining pieces of the
+   * start it begins with both minimum elements, and advances the iterator of
+   * the set with the piece that has the minimum end. This is repeated until one
+   * of the two collections is consumed. Then, all the remaining pieces of the
    * other set are also inserted.
    */
-  MDIOrdCollection traverse(SetPiece (SetPiece::*f)(const SetPiece&) const
-    , const MDIOrdCollection& other) const;
+  OrdUnidimDenseSet traverse(Interval f(const Interval&, const Interval&)
+    , const OrdUnidimDenseSet& other) const;
+
+private:
+  IntervalOrdCollection _pieces;
 };
 
-typedef const OrdUnidimDenseSet& OrdUnidimDenseSetCRef;
-typedef OrdUnidimDenseSet& OrdUnidimDenseSetRef;
+} // namespace detail
 
 } // namespace LIB
 
 }  // namespace SBG
 
-#endif
+#endif // SBGRAPH_SBG_ORD_UNIDIM_DENSE_SET_HPP_

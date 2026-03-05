@@ -25,56 +25,48 @@
 
  ******************************************************************************/
 
-#ifndef SBG_SET_FACT_HPP
-#define SBG_SET_FACT_HPP
+#ifndef SBGRAPH_SBG_SET_FACT_HPP_
+#define SBGRAPH_SBG_SET_FACT_HPP_
 
-#include "set.hpp"
+#include "sbg/interval.hpp"
+#include "sbg/multidim_inter.hpp"
+#include "sbg/natural.hpp"
+#include "sbg/set.hpp"
+
+#include <string>
+#include <variant>
 
 namespace SBG {
 
 namespace LIB {
 
-#define SET_FACT SetFactory::instance().set_fact()
+#define SET_FACT SetFactory::instance()
 
-class SetFact {
-  public:
-  virtual ~SetFact() = default;
+class UnordSetFact {
+public:
+  UnordSetFact();
 
-  virtual Set createSet() const = 0;
-  virtual Set createSet(const MD_NAT &x) const = 0;
-  virtual Set createSet(const Interval &i) const = 0;
-  virtual Set createSet(const SetPiece &mdi) const = 0;
-  virtual std::string prettyPrint() const = 0;
+  static Set createSet();
+  static Set createSet(const MD_NAT& x);
+  static Set createSet(const NAT lo, const NAT step, const NAT hi);
+  static Set createSet(const FixedPointsInfo& info);
 };
 
-class UnordSetFact : public SetFact {
-  public:
-  Set createSet() const override;
-  Set createSet(const MD_NAT &x) const override;
-  Set createSet(const Interval &i) const override;
-  Set createSet(const SetPiece &mdi) const override;
-  std::string prettyPrint() const override;
-};
+//class OrdSetFact {
+//public:
+//  Set createSet() const;
+//  Set createSet(const MD_NAT& x) const;
+//  Set createSet(const NAT lo, const NAT step, const NAT hi) const;
+//  Set createSet(const FixedPointsInfo& mdi) const;
+//};
 
-class OrdUnidimDenseSetFact : public SetFact {
-  public:
-  Set createSet()  const override;
-  Set createSet(const MD_NAT &x) const override;
-  Set createSet(const Interval &i) const override;
-  Set createSet(const SetPiece &mdi) const override;
-  std::string prettyPrint() const override;
+class OrdUnidimDenseSetFact {
+public:
+  Set createSet() const;
+  Set createSet(const MD_NAT& x) const;
+  Set createSet(const NAT lo, const NAT step, const NAT hi) const;
+  Set createSet(const FixedPointsInfo& info) const;
 };
-
-class OrdSetFact : public SetFact {
-  public:
-  Set createSet()  const override;
-  Set createSet(const MD_NAT &x) const override;
-  Set createSet(const Interval &i) const override;
-  Set createSet(const SetPiece &mdi) const override;
-  std::string prettyPrint() const override;
-};
-
-using SetFactPtr = std::unique_ptr<SetFact>;
 
 /**
  * @brief Single instance of set factory to be used by clients in need of
@@ -82,23 +74,30 @@ using SetFactPtr = std::unique_ptr<SetFact>;
  * SET_FACT.createSet(args).
  */
 class SetFactory {
-  public:
+public:
   ~SetFactory() = default;
-  static SetFactory& instance() {
-    static SetFactory instance_;
-    return instance_;
-  }
 
-  SetFact& set_fact();
-  void set_set_fact(SetFactPtr set_fact);
+  static SetFactory& instance();
 
-  private:
+  void set_set_fact(SetKind kind);
+  const SetKind& kind() const;
+
+  Set createSet() const;
+  Set createSet(const MD_NAT& x) const;
+  Set createSet(const NAT lo, const NAT step, const NAT hi) const;
+  Set createSet(const FixedPointsInfo& mdi) const;
+
+private:
+  using FactImpl = std::variant<UnordSetFact, OrdUnidimDenseSetFact>;
+
   SetFactory();
-  SetFactPtr set_fact_;
+
+  SetKind _kind;
+  FactImpl _impl;
 };
 
 } // namespace LIB
 
 }  // namespace SBG
 
-#endif
+#endif // SBGRAPH_SBG_SET_FACT_HPP_ 

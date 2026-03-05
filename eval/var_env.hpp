@@ -21,24 +21,26 @@
 
  ******************************************************************************/
 
-#ifndef EVAL_VAR_ENV_HPP
-#define EVAL_VAR_ENV_HPP
-
-#include <unordered_map>
+#ifndef SBGRAPH_EVAL_VAR_ENV_HPP_
+#define SBGRAPH_EVAL_VAR_ENV_HPP_
 
 #include "ast/expr.hpp"
 #include "eval/base_type.hpp"
 
+#include <unordered_map>
+
 namespace SBG {
 
 namespace Eval {
+
+namespace detail {
 
 /** 
  * @brief Variable environment (with expressions already evaluated). This env
  * will be populated by StmEvaluator, and used by ExprEvaluator.
  */
 class VarEnv {
-  public:
+public:
   using VKey = AST::Name;
   using VValue = ExprBaseType;
   using VType = std::unordered_map<VKey, VValue>;
@@ -51,12 +53,14 @@ class VarEnv {
   VIt find(const VKey& key) const;
   void insert(VKey key, VValue value);
 
-  private:
-  mutable VType variables_;
+private:
+  mutable VType _variables;
 };
+
+} // namespace detail
 
 } // namespace Eval
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_EVAL_VAR_ENV_HPP_

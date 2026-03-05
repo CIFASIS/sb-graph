@@ -21,18 +21,23 @@
 
  ******************************************************************************/
 
-#ifndef RATIONAL_EVALUATOR 
-#define RATIONAL_EVALUATOR 
+#ifndef SBGRAPH_EVAL_VISITORS_RATIONAL_EVALUATOR_HPP_ 
+#define SBGRAPH_EVAL_VISITORS_RATIONAL_EVALUATOR_HPP_
 
+#include "ast/expr.hpp"
 #include "eval/var_env.hpp"
 #include "sbg/rational.hpp"
+
+#include "boost/variant.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
+namespace detail {
+
 class RationalEvaluator : public boost::static_visitor<LIB::RATIONAL> {
-  public:
+public:
   RationalEvaluator();
   RationalEvaluator(VarEnv &venv);
 
@@ -54,12 +59,14 @@ class RationalEvaluator : public boost::static_visitor<LIB::RATIONAL> {
   LIB::RATIONAL operator()(AST::DSBG v) const;
   LIB::RATIONAL operator()(AST::ParenExpr) const;
 
-  private:
-  mutable VarEnv venv_;
+private:
+  mutable VarEnv _venv;
 };
+
+} // namespace detail
 
 } // namespace Eval
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_EVAL_VISITORS_RATIONAL_EVALUATOR_HPP_

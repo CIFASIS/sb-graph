@@ -24,27 +24,31 @@
 
  ******************************************************************************/
 
-#ifndef PROGRAM_EVALUATOR 
-#define PROGRAM_EVALUATOR
-
-#include <boost/variant.hpp>
+#ifndef SBGRAPH_EVAL_VISITORS_PROGRAM_EVALUATOR_HPP_ 
+#define SBGRAPH_EVAL_VISITORS_PROGRAM_EVALUATOR_HPP_
 
 #include "ast/sbg_program.hpp"
-#include "eval/visitors/stm_evaluator.hpp"
+#include "eval/pretty_print.hpp"
+
+#include <boost/variant.hpp>
 
 namespace SBG {
 
 namespace Eval {
 
+namespace detail {
+
 class ProgramEvaluator {
-  public:
+public:
   ProgramEvaluator();
  
   ProgramIO evaluate(AST::SBGProgram p) const; 
 };
 
+} // namespace detail
+
 } // namespace Eval
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_EVAL_VISITORS_PROGRAM_EVALUATOR_HPP_

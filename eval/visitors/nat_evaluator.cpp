@@ -18,20 +18,27 @@
  ******************************************************************************/
 
 #include "eval/visitors/nat_evaluator.hpp"
+#include "util/debug.hpp"
+
+#include <cmath>
 
 namespace SBG {
 
 namespace Eval {
 
-NatEvaluator::NatEvaluator() : venv_() {}
-NatEvaluator::NatEvaluator(VarEnv &venv) : venv_(venv) {}
+namespace detail {
+
+NatEvaluator::NatEvaluator() : _venv() {}
+
+NatEvaluator::NatEvaluator(VarEnv &venv) : _venv(venv) {}
 
 LIB::NAT NatEvaluator::operator()(AST::Natural v) const { return v; }
 
 LIB::NAT NatEvaluator::operator()(AST::Rational v) const 
 { 
-  if (boost::apply_visitor(*this, v.den()) == 1)
+  if (boost::apply_visitor(*this, v.den()) == 1) {
     return boost::apply_visitor(*this, v.num());
+  }
 
   Util::ERROR("NatEvaluator: trying to evaluate Rational ", v, "\n");
   return 0; 
@@ -39,21 +46,21 @@ LIB::NAT NatEvaluator::operator()(AST::Rational v) const
 
 LIB::NAT NatEvaluator::operator()(AST::Name v) const 
 { 
-  auto var_definition = venv_.find(v);
-  if (var_definition != venv_.end()) { 
+  auto var_definition = _venv.find(v);
+  if (var_definition != _venv.end()) { 
     ExprBaseType value = var_definition->second;
-    if (std::holds_alternative<LIB::NAT>(value)) 
+    if (std::holds_alternative<LIB::NAT>(value)) {
       return std::get<LIB::NAT>(value);
-
-    else if (std::holds_alternative<LIB::MD_NAT>(value)) {
+    } else if (std::holds_alternative<LIB::MD_NAT>(value)) {
       LIB::MD_NAT x = std::get<LIB::MD_NAT>(value);
-      if (x.arity() == 1)
+      if (x.arity() == 1) {
         return x[0];
-    }
-
-    else 
-      if (std::holds_alternative<LIB::RATIONAL>(value))
+      }
+    } else { 
+      if (std::holds_alternative<LIB::RATIONAL>(value)) {
         return std::get<LIB::RATIONAL>(value).toNat();
+      }
+    }
   }
 
   Util::ERROR("NatEvaluator: variable ", v, " undefined\n");
@@ -71,21 +78,26 @@ LIB::NAT NatEvaluator::operator()(AST::BinOp v) const
   LIB::NAT l = boost::apply_visitor(*this, v.left());
   LIB::NAT r = boost::apply_visitor(*this, v.right());
   switch (v.op()) {
-    case AST::Op::add:
+    case AST::Op::add: {
       return l + r;
+    }
 
-    case AST::Op::sub:
+    case AST::Op::sub: {
       return l - r;
+    }
 
-    case AST::Op::mult:
+    case AST::Op::mult: {
       return l * r;
+    }
 
-    case AST::Op::expo:
+    case AST::Op::expo: {
       return pow(l, r);
+    }
 
-    default:
+    default: {
       Util::ERROR("NatEvaluator: BinOp ", v.op(), " unsupported\n");
       return 0;
+    }
   }
 }
 
@@ -151,7 +163,7 @@ LIB::NAT NatEvaluator::operator()(AST::BipartiteSBG v) const
 
 LIB::NAT NatEvaluator::operator()(AST::DSBG v) const
 {
-  Util::ERROR("NatEvaluator: trying to evaluate DSBG ", v, "\n");
+  Util::ERROR("NatEvaluator: trying to evaluate DirectedSBG ", v, "\n");
   return 0;
 }
 
@@ -159,6 +171,8 @@ LIB::NAT NatEvaluator::operator()(AST::ParenExpr v) const
 {
   return boost::apply_visitor(*this, v.e());
 }
+
+} // namespace detail
 
 } // namespace Eval
 

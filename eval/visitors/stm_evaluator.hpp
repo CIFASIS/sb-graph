@@ -25,8 +25,8 @@
 
  ******************************************************************************/
 
-#ifndef STM_EVALUATOR 
-#define STM_EVALUATOR 
+#ifndef SBGRAPH_EVAL_STM_EVALUATOR_HPP_ 
+#define SBGRAPH_EVAL_STM_EVALUATOR_HPP_ 
 
 #include "ast/statement.hpp"
 #include "eval/eval_context.hpp"
@@ -36,20 +36,24 @@ namespace SBG {
 
 namespace Eval {
 
+namespace detail {
+
 class StmEvaluator : public boost::static_visitor<StmResult> {
-  public:
+public:
   StmEvaluator(EvalContext& eval_ctx);
 
-  EvalContext& eval_ctx() const;
+  EvalContext& eval_context() const;
   StmResult operator()(AST::Assign assgn) const;
   StmResult operator()(AST::ConfigDims cfg) const; 
 
-  private:
-  EvalContext& eval_ctx_;
+private:
+  EvalContext& _eval_context;
 };
+
+} // namespace detail
 
 } // namespace Eval
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_EVAL_STM_EVALUATOR_HPP_

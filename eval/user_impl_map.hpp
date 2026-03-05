@@ -26,23 +26,25 @@
 
  ******************************************************************************/
 
-#ifndef EVAL_USER_IMPL_MAP_HPP
-#define EVAL_USER_IMPL_MAP_HPP
+#ifndef SBGRAPH_EVAL_USER_IMPL_MAP_HPP_
+#define SBGRAPH_EVAL_USER_IMPL_MAP_HPP_
+
+//#include "algorithms/cutvertex/cv_fact.hpp"
+#include "algorithms/matching/matching.hpp"
+#include "algorithms/scc/scc.hpp"
+//#include "algorithms/toposort/ts_fact.hpp"
+#include "sbg/pw_map.hpp"
+#include "sbg/set.hpp"
 
 #include <functional>
 #include <unordered_map>
 #include <variant>
 
-#include "algorithms/cutvertex/cv_fact.hpp"
-#include "algorithms/matching/matching_fact.hpp"
-#include "algorithms/scc/scc_fact.hpp"
-#include "algorithms/toposort/ts_fact.hpp"
-#include "sbg/pwmap_fact.hpp"
-#include "sbg/set_fact.hpp"
-
 namespace SBG {
 
 namespace Eval {
+
+namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
 // User input to implementation map --------------------------------------------
@@ -51,24 +53,26 @@ namespace Eval {
 #define IMPL_MAP UserImplMap::instance()
 
 /**
- * @brief Type defined to be used in ImplEnv.
+ * @brief Type defined to be used in UserImplMap.
  */
-using ImplFactory = std::variant<LIB::SetFactPtr, LIB::PWMapFactPtr
-  , LIB::MatchFactPtr, LIB::SCCFactPtr, LIB::TSFactPtr, LIB::CVFactPtr>;
+using Kind = std::variant<LIB::SetKind
+  , LIB::PWMapKind
+  , LIB::MatchKind
+  , LIB::SCCKind>;
 
 /**
  * @brief Mapping for all structures such as Set, PW and algorithms.
  */
 class UserImplMap {
-  public:
+public:
   /**
    * @brief Mapping of a single structure. For example, it maps numbers to the
    * different Set implementations.
    */
   class StructImplMap {
-    public:
+  public:
     using SKey = int;
-    using SValue = std::function<ImplFactory()>;
+    using SValue = Kind;
     using SType = std::unordered_map<SKey, SValue>;
   
     StructImplMap();
@@ -77,9 +81,9 @@ class UserImplMap {
     const SValue& operator[](const SKey& key) const;
     void freeze();
   
-    private:
-    bool is_frozen_;
-    SType struct_impls_;
+  private:
+    bool _is_frozen;
+    SType _struct_impls;
   };
 
   using IKey = std::string;
@@ -90,13 +94,15 @@ class UserImplMap {
     static UserImplMap instance_;
     return instance_;
   }
-  ImplFactory getFactory(std::string strct, int impl);
+  Kind getFactory(std::string strct, int impl);
 
-  private: 
+private: 
   UserImplMap();
 
   IType implementations_;
 };
+
+} // namespace detail
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extra operations ------------------------------------------------------------
@@ -110,4 +116,4 @@ void setSCCFactory(int scc_impl);
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_EVAL_USER_IMPL_MAP_HPP

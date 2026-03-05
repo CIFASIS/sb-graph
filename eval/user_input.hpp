@@ -24,8 +24,8 @@
 
  ******************************************************************************/
 
-#ifndef EVAL_USER_INPUT_HPP
-#define EVAL_USER_INPUT_HPP
+#ifndef SBGRAPH_EVAL_USER_INPUT_HPP_
+#define SBGRAPH_EVAL_USER_INPUT_HPP_
 
 #include "boost/optional.hpp"
 
@@ -33,8 +33,10 @@ namespace SBG {
 
 namespace Eval {
 
+namespace detail {
+
 class EvalUserInput {
-  public:
+public:
   using MaybeInt = boost::optional<int>;
 
   EvalUserInput();
@@ -54,7 +56,7 @@ class EvalUserInput {
   void set_ts_impl(MaybeInt ts_impl);
   void set_cv_impl(MaybeInt cv_impl);
 
-  private:
+private:
   MaybeInt set_impl_;
   MaybeInt pw_impl_;
   MaybeInt match_impl_;
@@ -62,6 +64,8 @@ class EvalUserInput {
   MaybeInt ts_impl_;
   MaybeInt cv_impl_;
 };
+
+} // detail
 
 } // namespace Eval
 

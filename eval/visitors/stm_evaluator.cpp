@@ -24,18 +24,20 @@ namespace SBG {
 
 namespace Eval {
 
-StmEvaluator::StmEvaluator(EvalContext& eval_ctx) : eval_ctx_(eval_ctx) {}
+namespace detail {
 
-EvalContext& StmEvaluator::eval_ctx() const
+StmEvaluator::StmEvaluator(EvalContext& eval_ctx) : _eval_context(eval_ctx) {}
+
+EvalContext& StmEvaluator::eval_context() const
 {
-  return eval_ctx_;
+  return _eval_context;
 }
 
 StmResult StmEvaluator::operator()(AST::Assign assgn) const 
 {
-  ExprEvaluator eval_expr(eval_ctx_);
+  ExprEvaluator eval_expr(_eval_context);
   ExprBaseType e = boost::apply_visitor(eval_expr, assgn.r());
-  eval_ctx_.insertVariable(assgn.l(), e);
+  _eval_context.insertVariable(assgn.l(), e);
 
   return StmResult(assgn.l(), e);
 }
@@ -44,6 +46,8 @@ StmResult StmEvaluator::operator()(AST::ConfigDims cfg) const
 {
   return StmResult("", cfg.nmbr_dims());
 }
+
+} // namespace detail
 
 } // namespace Eval
 

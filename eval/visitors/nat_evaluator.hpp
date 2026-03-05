@@ -21,17 +21,23 @@
 
  ******************************************************************************/
 
-#ifndef NAT_EVALUATOR 
-#define NAT_EVALUATOR 
+#ifndef SBGRAPH_EVAL_VISITORS_NAT_EVALUATOR_HPP_ 
+#define SBGRAPH_EVAL_VISITORS_NAT_EVALUATOR_HPP_
 
+#include "ast/expr.hpp"
 #include "eval/var_env.hpp"
+#include "sbg/natural.hpp"
+
+#include "boost/variant.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
+namespace detail {
+
 class NatEvaluator : public boost::static_visitor<LIB::NAT> {
-  public:
+public:
   NatEvaluator();
   NatEvaluator(VarEnv &venv);
 
@@ -53,12 +59,14 @@ class NatEvaluator : public boost::static_visitor<LIB::NAT> {
   LIB::NAT operator()(AST::DSBG v) const;
   LIB::NAT operator()(AST::ParenExpr) const;
 
-  private:
-  mutable VarEnv venv_;
+private:
+  mutable VarEnv _venv;
 };
+
+} // namespace detail
 
 } // namespace Eval
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_EVAL_VISITORS_NAT_EVALUTOR_HPP_

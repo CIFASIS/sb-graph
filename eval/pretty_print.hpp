@@ -21,26 +21,31 @@
 
  ******************************************************************************/
 
-#ifndef EVAL_PRETTY_PRINT_HPP
-#define EVAL_PRETTY_PRINT_HPP
+#ifndef SBGRAPH_EVAL_PRETTY_PRINT_HPP_
+#define SBGRAPH_EVAL_PRETTY_PRINT_HPP_
 
+#include "ast/expr.hpp"
 #include "eval/base_type.hpp"
+
+#include <iosfwd>
+#include <tuple>
+#include <variant>
 
 namespace SBG {
 
 namespace Eval {
 
 template<typename T, typename... Ts>
-std::ostream &operator<<(std::ostream &out, const std::variant<T, Ts...> &v);
+std::ostream& operator<<(std::ostream& out, const std::variant<T, Ts...>& v);
 
 using ExprResult = std::tuple<AST::Expr, ExprBaseType>;
-std::ostream &operator<<(std::ostream &out, const ExprResult &e);
+std::ostream& operator<<(std::ostream& out, const ExprResult& e);
 using ExprResultList = std::vector<ExprResult>;
-std::ostream &operator<<(std::ostream &out, const ExprResultList &ee);
+std::ostream& operator<<(std::ostream& out, const ExprResultList& ee);
 using StmResult = std::tuple<AST::Name, ExprBaseType>;
-std::ostream &operator<<(std::ostream &out, const StmResult &s);
+std::ostream& operator<<(std::ostream& out, const StmResult& s);
 using StmResultList = std::vector<StmResult>;
-std::ostream &operator<<(std::ostream &out, const StmResultList &ss);
+std::ostream& operator<<(std::ostream& out, const StmResultList& ss);
 
 /** 
  * @brief Class to pretty print a program and its correspondent evaluation.
@@ -48,15 +53,22 @@ std::ostream &operator<<(std::ostream &out, const StmResultList &ss);
  *   - There will be a tuple for each expression with its original form and
  *     the result of evaluating it.
  */
-struct ProgramIO {
-  member_class(unsigned int, nmbr_dims);
-  member_class(StmResultList, stms);
-  member_class(ExprResultList, exprs);
- 
+class ProgramIO {
+public:
   ProgramIO(StmResultList stms, ExprResultList exprs);
-  ProgramIO(unsigned int nmbr_dims, StmResultList stms, ExprResultList exprs);
+  ProgramIO(std::size_t n, StmResultList stms, ExprResultList exprs);
+
+  const std::size_t& arity() const;
+  const StmResultList& stms() const;
+  const ExprResultList& exprs() const;
+
+private:
+  std::size_t _arity;
+  StmResultList _stms;
+  ExprResultList _exprs;
 };
-std::ostream &operator<<(std::ostream &out, const ProgramIO &p);
+
+std::ostream& operator<<(std::ostream& out, const ProgramIO& p);
 
 } // namespace Eval
 

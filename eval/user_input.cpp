@@ -23,6 +23,8 @@ namespace SBG {
 
 namespace Eval {
 
+namespace detail {
+
 // Constructors ----------------------------------------------------------------
 
 EvalUserInput::EvalUserInput() {}
@@ -90,6 +92,8 @@ void EvalUserInput::set_cv_impl(MaybeInt cv_impl)
 {
   cv_impl_ = cv_impl;
 }
+
+} // namespace detail
 
 } // namespace Eval
 

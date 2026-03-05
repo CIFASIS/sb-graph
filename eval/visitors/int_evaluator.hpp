@@ -21,19 +21,25 @@
 
  ******************************************************************************/
 
-#ifndef INT_EVALUATOR 
-#define INT_EVALUATOR 
+#ifndef SBGRAPH_EVAL_VISITORS_INT_EVALUATOR_HPP_
+#define SBGRAPH_EVAL_VISITORS_INT_EVALUATOR_HPP_
 
+#include "ast/expr.hpp"
 #include "eval/var_env.hpp"
+#include "sbg/rational.hpp"
+
+#include "boost/variant.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
+namespace detail {
+
 class IntEvaluator : public boost::static_visitor<LIB::INT> {
-  public:
+public:
   IntEvaluator();
-  IntEvaluator(VarEnv &venv);
+  IntEvaluator(VarEnv& venv);
 
   LIB::INT operator()(AST::Natural v) const;
   LIB::INT operator()(AST::Rational v) const;
@@ -53,12 +59,14 @@ class IntEvaluator : public boost::static_visitor<LIB::INT> {
   LIB::INT operator()(AST::DSBG v) const;
   LIB::INT operator()(AST::ParenExpr v) const;
 
-  private:
-  mutable VarEnv venv_;
+private:
+  mutable VarEnv _venv;
 };
+
+} // namespace detail
 
 } // namespace Eval
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_EVAL_VISITORS_INT_EVALUTOR_HPP_

@@ -17,22 +17,28 @@
 
  ******************************************************************************/
 
-#include <iostream>
-#include <fstream>
-#include <streambuf>
-
-#include "algorithms/cutvertex/cv_fact.hpp"
-#include "algorithms/matching/matching_fact.hpp"
-#include "algorithms/scc/scc_fact.hpp"
-#include "algorithms/toposort/ts_fact.hpp"
+//#include "algorithms/cutvertex/cv_fact.hpp"
+//#include "algorithms/cc/cc.hpp"
+//#include "algorithms/matching/matching_fact.hpp"
+//#include "algorithms/scc/scc_fact.hpp"
+//#include "algorithms/toposort/ts_fact.hpp"
 #include "eval/eval_exec.hpp"
 #include "eval/file_evaluator.hpp"
 #include "eval/input_translator.hpp"
 #include "eval/file_evaluator.hpp"
 #include "eval/visitors/autom_impl_visitor.hpp"
 #include "parser/file_parser.hpp"
+#include "sbg/set_fact.hpp"
+#include "sbg/pwmap_fact.hpp"
 #include "util/debug.hpp"
 #include "util/logger.hpp"
+#include "util/time_profiler.hpp"
+
+#include "boost/program_options.hpp"
+
+#include <iostream>
+#include <fstream>
+#include <streambuf>
 
 namespace SBG {
 
@@ -46,15 +52,14 @@ void printHeader(Util::prog_opts::variables_map vm)
 {
   if (vm.count("debug")) {
     std::cout << "-----------------------------------\n";
-    std::cout << "Set implementation: " << LIB::SET_FACT.prettyPrint() << "\n";
-    std::cout << "PWMap implementation: " << LIB::PW_FACT.prettyPrint() << "\n";
+    std::cout << "Set implementation: " << LIB::SET_FACT.kind() << "\n";
+    std::cout << "PWMap implementation: " << LIB::PWMAP_FACT.kind() << "\n";
     std::cout << "-----------------------------------\n";
-    std::cout << "Matching algorithm: " << LIB::MATCH_FACT.prettyPrint()
-      << "\n";
-    std::cout << "SCC algorithm: " << LIB::SCC_FACT.prettyPrint() << "\n";
-    std::cout << "Cut vertex algorithm: " << LIB::CV_FACT.prettyPrint() << "\n";
-    std::cout << "Topological sort algorithm: " << LIB::TS_FACT.prettyPrint()
-      << "\n";
+    //std::cout << "Matching algorithm: " << LIB::MATCH_FACT.kind() << "\n";
+    //std::cout << "SCC algorithm: " << LIB::SCC_FACT.kind() << "\n";
+    //std::cout << "Cut vertex algorithm: " << LIB::CV_FACT.kind() << "\n";
+    //std::cout << "Topological sort algorithm: " << LIB::TS_FACT.kind()
+    //  << "\n";
   }
   std::cout << "-----------------------------------\n";
   std::cout << ">>>>>>>>>>> Eval result <<<<<<<<<<<\n";
@@ -67,7 +72,7 @@ void printHeader(Util::prog_opts::variables_map vm)
 
 EvalExecutor::EvalExecutor() : scc_impl_(1)
 {
-  config_.add_options()
+  _config.add_options()
     ("set_impl,s", Util::prog_opts::value(&set_impl_),
      " Desired set implementation:"
      "\n  - 0 for unordered sets (default option)"
@@ -83,31 +88,33 @@ EvalExecutor::EvalExecutor() : scc_impl_(1)
      "\n  - 0 for V1 of minimum reachable SCC"
      "\n  - 1 for V2 of minimum reachable SCC (default option)");
 
-  cmd_line_opts_.add(generic_).add(config_).add(hidden_);
-  cfg_file_opts_.add(config_).add(hidden_);
-  visible_.add(generic_).add(config_);
+  _cmd_line_opts.add(_generic).add(_config).add(_hidden);
+  _cfg_file_opts.add(_config).add(_hidden);
+  _visible.add(_generic).add(_config);
 }
 
-EvalUserInput EvalExecutor::chooseImplementation()
+detail::EvalUserInput EvalExecutor::chooseImplementation()
 {
-  EvalUserInput result;
+  detail::EvalUserInput result;
 
-  AutomImplVisitor autom_impl_visitor;
-  EvalUserInput autom_impl = autom_impl_visitor.visit(Parser::parseFile(
-    *input_file_, false));
+  detail::AutomImplVisitor autom_impl_visitor;
+  detail::EvalUserInput autom_impl = autom_impl_visitor.visit(Parser::parseFile(
+    *_input_file, false));
 
   result.set_set_impl(autom_impl.set_impl());
   result.set_pw_impl(autom_impl.pw_impl());
 
   if (set_impl_) {
-    if (set_impl_ > autom_impl.set_impl())
+    if (set_impl_ > autom_impl.set_impl()) {
       Util::ERROR("Incompatible set implementation for the SBG input\n");
+    }
 
     result.set_set_impl(set_impl_);
   }
   if (pw_impl_) {
-    if (pw_impl_ > autom_impl.pw_impl())
-      Util::ERROR("Incompatible PW implementation for the SBG input\n");
+    if (pw_impl_ > autom_impl.pw_impl()) {
+      Util::ERROR("Incompatible PWMap implementation for the SBG input\n");
+    }
 
     result.set_pw_impl(pw_impl_);
   }
@@ -122,7 +129,7 @@ void EvalExecutor::execute(int arg_count, char* args[])
 
   Util::prog_opts::variables_map vm;
   store(Util::prog_opts::command_line_parser(arg_count, args)
-    .options(cmd_line_opts_).positional(positional_).run(), vm);
+    .options(_cmd_line_opts).positional(_positional).run(), vm);
   notify(vm);
 
   // Help handling -------------------------------------------------------------
@@ -131,7 +138,7 @@ void EvalExecutor::execute(int arg_count, char* args[])
     std::cout << "Usage: filename [options]\n";
     std::cout << "Command line options are prioritized over configuration file"
       " options.";
-    std::cout << visible_ << "\n";
+    std::cout << _visible << "\n";
     return;
   }
 
@@ -144,10 +151,10 @@ void EvalExecutor::execute(int arg_count, char* args[])
 
   // Optional configuration file handling --------------------------------------
  
-  if (config_file_) { 
-    std::ifstream config_fs((*config_file_).c_str());
+  if (_config_file) { 
+    std::ifstream config_fs{(*_config_file).c_str()};
     if (config_fs) {
-      store(parse_config_file(config_fs, cfg_file_opts_), vm);
+      store(parse_config_file(config_fs, _cfg_file_opts), vm);
       notify(vm);
     }
   }
@@ -158,13 +165,14 @@ void EvalExecutor::execute(int arg_count, char* args[])
     Util::SBGLogger::instance().setLevel(Util::LogLevel::Debug);
   }
 
-  if (input_file_) {
-    EvalUserInput input = chooseImplementation();
-    InputTranslator input_translator;
+  if (_input_file) {
+    detail::EvalUserInput input = chooseImplementation();
+    detail::InputTranslator input_translator;
     input_translator.translate(input);
-    ProgramIO eval_result = parseEvalFile(*input_file_); 
+    ProgramIO eval_result = parseEvalFile(*_input_file); 
     printHeader(vm);
     std::cout << eval_result;
+    Util::Internal::TimeProfiler::print_execution_time();
   }
   else {
     std::cout << "Usage: filename [options]\n";

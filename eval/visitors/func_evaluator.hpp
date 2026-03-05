@@ -24,18 +24,17 @@
 
  ******************************************************************************/
 
-#ifndef FUNC_EVALUATOR 
-#define FUNC_EVALUATOR 
+#ifndef SBGRAPH_EVAL_VISITORS_FUNC_EVALUATOR_HPP_ 
+#define SBGRAPH_EVAL_VISITORS_FUNC_EVALUATOR_HPP_
 
-#include "algorithms/cutvertex/cut_vertex.hpp"
-#include "algorithms/matching/matching.hpp"
-#include "algorithms/scc/scc.hpp"
-#include "algorithms/toposort/topo_sort.hpp"
+#include "ast/expr.hpp"
 #include "eval/base_type.hpp"
 
 namespace SBG {
 
 namespace Eval {
+
+namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Overload pattern ------------------------------------------------------------
@@ -47,19 +46,22 @@ namespace Eval {
  * functions (for example, isEmpty can be applied to intervals, sets, etc.).
  */
 
-template<class... Ts> class Overload : Ts... {
-  public:
+template<class... Ts>
+class Overload : Ts... {
+public:
   using Ts::operator()...;
   Overload(Ts... ts) : Ts(ts)... {};
 };
-template<class... Ts> Overload(Ts...) -> Overload<Ts...>;
+
+template<class... Ts>
+Overload(Ts...) -> Overload<Ts...>;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Built-in Operators ----------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 class BuiltInOperators {
-  public:
+public:
   static ExprBaseType oppositeEvaluator(const EBTList& args);
   static ExprBaseType cardinalEvaluator(const EBTList& args);
   static ExprBaseType complementEvaluator(const EBTList& args);
@@ -74,14 +76,14 @@ class BuiltInOperators {
 };
 
 class UnaryOpEvaluator {
-  public:
+public:
   UnaryOpEvaluator();
 
   ExprBaseType evaluate(EBTList& evaluated_args, AST::UnOp op);
 };
 
 class BinOpEvaluator {
-  public:
+public:
   BinOpEvaluator();
 
   ExprBaseType evaluate(EBTList& evaluated_args, AST::Op op);
@@ -92,7 +94,7 @@ class BinOpEvaluator {
 ////////////////////////////////////////////////////////////////////////////////
 
 class BuiltInFunctions {
-  public:
+public:
   static ExprBaseType emptyEvaluator(const EBTList& args);
   static ExprBaseType minEvaluator(const EBTList& args);
   static ExprBaseType maxEvaluator(const EBTList& args);
@@ -116,8 +118,10 @@ class BuiltInFunctions {
   static ExprBaseType matchSCCEvaluator(const EBTList& args);
 };
 
+} // namespace detail
+
 } // namespace Eval
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_EVAL_VISITORS_FUNC_EVALUTOR_HPP_

@@ -17,65 +17,69 @@
 
  ******************************************************************************/
 
+#include "algorithms/scc/scc_fact.hpp"
 #include "eval/user_impl_map.hpp"
+#include "sbg/pwmap_fact.hpp"
+#include "sbg/set_fact.hpp"
+#include "util/debug.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
+namespace detail {
+
 ////////////////////////////////////////////////////////////////////////////////
 // Single Structure Implementation Map -----------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-UserImplMap::StructImplMap::StructImplMap() : is_frozen_(false) {}
+UserImplMap::StructImplMap::StructImplMap() : _is_frozen(false) {}
 
 UserImplMap::StructImplMap::SValue& UserImplMap::StructImplMap::operator[]
   (const SKey& key)
 {
-  Util::ERROR_UNLESS(!is_frozen_, "StructImplMap: map is frozen, insertion is"
+  Util::ERROR_UNLESS(!_is_frozen, "StructImplMap: map is frozen, insertion is"
     " prohibited.\n");
-  return struct_impls_[key];
+  return _struct_impls[key];
 }
 
 const UserImplMap::StructImplMap::SValue& UserImplMap::StructImplMap::operator[]
   (const SKey& key) const
 {
-  Util::ERROR_UNLESS(struct_impls_.find(key) != struct_impls_.end()
+  Util::ERROR_UNLESS(_struct_impls.find(key) != _struct_impls.end()
     , "StructImplMap: undefined implementation.\n");
-  return struct_impls_.at(key); 
+  return _struct_impls.at(key); 
 }
 
 void UserImplMap::StructImplMap::freeze()
 {
-  is_frozen_ = true;
+  _is_frozen = true;
 }
 
 UserImplMap::StructImplMap setMap()
 {
   UserImplMap::StructImplMap set_mapping;
-  set_mapping[0] = []() { return std::make_unique<LIB::UnordSetFact>(); };
-  set_mapping[1] = []() { return std::make_unique<LIB::OrdSetFact>(); };
-  set_mapping[2] = []() {
-    return std::make_unique<LIB::OrdUnidimDenseSetFact>();
-  };
+  set_mapping[0] = LIB::SetKind::kUnordered;
+  set_mapping[1] = LIB::SetKind::kOrdered;
+  set_mapping[2] = LIB::SetKind::kOrdUnidimDense;
   set_mapping.freeze();
   return set_mapping;
 }
 
 UserImplMap::StructImplMap pwMap()
 {
-  UserImplMap::StructImplMap pw_mapping;
-  pw_mapping[0] = []() { return std::make_unique<LIB::UnordPWMapFact>(); };
-  pw_mapping[1] = []() { return std::make_unique<LIB::OrdPWMapFact>(); };
-  pw_mapping[2] = []() { return std::make_unique<LIB::DomOrdPWMapFact>(); };
-  pw_mapping.freeze();
-  return pw_mapping;
+  UserImplMap::StructImplMap pwmap_mapping;
+  pwmap_mapping[0] = LIB::PWMapKind::kUnordered;
+  pwmap_mapping[1] = LIB::PWMapKind::kOrdered;
+  pwmap_mapping[2] = LIB::PWMapKind::kDomOrdered;
+  pwmap_mapping.freeze();
+  return pwmap_mapping;
 }
 
 UserImplMap::StructImplMap matchMap()
 {
   UserImplMap::StructImplMap match_mapping;
-  match_mapping[0] = []() { return std::make_unique<LIB::BFSMatchingFact>(); };
+  match_mapping[0] = LIB::MatchKind::kBFSPaths;
   match_mapping.freeze();
   return match_mapping;
 }
@@ -83,27 +87,28 @@ UserImplMap::StructImplMap matchMap()
 UserImplMap::StructImplMap sccMap()
 {
   UserImplMap::StructImplMap scc_mapping;
-  scc_mapping[0] = []() { return std::make_unique<LIB::MinReachSCCV1Fact>(); };
-  scc_mapping[1] = []() { return std::make_unique<LIB::MinReachSCCV2Fact>(); };
+  scc_mapping[0] = LIB::SCCKind::MinReachV1;
+  scc_mapping[1] = LIB::SCCKind::MinReachV2;
   scc_mapping.freeze();
   return scc_mapping;
 }
 
-UserImplMap::StructImplMap tsMap()
-{
-  UserImplMap::StructImplMap ts_mapping;
-  ts_mapping[0] = []() { return std::make_unique<LIB::MinVertexTSFact>(); };
-  ts_mapping.freeze();
-  return ts_mapping;
-}
-
-UserImplMap::StructImplMap cvMap()
-{
-  UserImplMap::StructImplMap cv_mapping;
-  cv_mapping[0] = []() { return std::make_unique<LIB::MaxDegCVFact>(); };
-  cv_mapping.freeze();
-  return cv_mapping;
-}
+// TODO
+//UserImplMap::StructImplMap tsMap()
+//{
+//  UserImplMap::StructImplMap ts_mapping;
+//  ts_mapping[0] = []() { return std::make_unique<LIB::MinVertexTSFact>(); };
+//  ts_mapping.freeze();
+//  return ts_mapping;
+//}
+//
+//UserImplMap::StructImplMap cvMap()
+//{
+//  UserImplMap::StructImplMap cv_mapping;
+//  cv_mapping[0] = []() { return std::make_unique<LIB::MaxDegCVFact>(); };
+//  cv_mapping.freeze();
+//  return cv_mapping;
+//}
 
 ////////////////////////////////////////////////////////////////////////////////
 // User Implementation Map -----------------------------------------------------
@@ -112,18 +117,20 @@ UserImplMap::StructImplMap cvMap()
 UserImplMap::UserImplMap()
 {
   implementations_["set"] = setMap();
-  implementations_["pw"] = pwMap();
+  implementations_["pwmap"] = pwMap();
   implementations_["match"] = matchMap();
   implementations_["scc"] = sccMap();
-  implementations_["ts"] = tsMap();
-  implementations_["cv"] = cvMap();
+  //implementations_["ts"] = tsMap();
+  //implementations_["cv"] = cvMap();
 }
 
-ImplFactory UserImplMap::getFactory(std::string strct, int impl)
+Kind UserImplMap::getFactory(std::string strct, int impl)
 {
   const StructImplMap& struct_map = implementations_[strct];
-  return struct_map[impl]();
+  return struct_map[impl];
 }
+
+} // namespace detail
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extra operations ------------------------------------------------------------
@@ -131,27 +138,23 @@ ImplFactory UserImplMap::getFactory(std::string strct, int impl)
 
 void setSetFactory(int set_impl)
 {
-  LIB::SetFactPtr set_fact = std::get<LIB::SetFactPtr>(IMPL_MAP.getFactory("set"
-    , set_impl));
-  LIB::SetFactory::instance().set_set_fact(std::move(set_fact));
-
-  return;
+  LIB::SetKind set_fact = std::get<LIB::SetKind>(detail::IMPL_MAP.getFactory(
+    "set", set_impl));
+  LIB::SET_FACT.set_set_fact(set_fact);
 }
 
 void setPWFactory(int pw_impl)
 {
-  LIB::PWMapFactPtr pw_fact = std::get<LIB::PWMapFactPtr>(
-    IMPL_MAP.getFactory("pw", pw_impl));
-  LIB::PWFactory::instance().set_pw_fact(std::move(pw_fact));
-
-  return;
+  LIB::PWMapKind pwmap_fact = std::get<LIB::PWMapKind>(
+    detail::IMPL_MAP.getFactory("pwmap", pw_impl));
+  LIB::PWMAP_FACT.set_pwmap_fact(pwmap_fact);
 }
 
 void setSCCFactory(int scc_impl)
 {
-  LIB::SCCFactPtr scc_fact = std::get<LIB::SCCFactPtr>(IMPL_MAP.getFactory("scc"
-    , scc_impl));
-  LIB::SCCFactory::instance().set_scc_fact(std::move(scc_fact));
+  LIB::SCCKind scc_fact = std::get<LIB::SCCKind>(
+    detail::IMPL_MAP.getFactory("scc", scc_impl));
+  LIB::SCC_FACT.set_scc_fact(scc_fact);
 
   return;
 }

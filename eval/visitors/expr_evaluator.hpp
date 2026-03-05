@@ -21,17 +21,23 @@
 
  ******************************************************************************/
 
-#ifndef EXPR_EVALUATOR 
-#define EXPR_EVALUATOR 
+#ifndef SBGRAPH_EVAL_VISITORS_EXPR_EVALUATOR_HPP_ 
+#define SBGRAPH_EVAL_VISITORS_EXPR_EVALUATOR_HPP_
 
+#include "ast/expr.hpp"
+#include "eval/base_type.hpp"
 #include "eval/eval_context.hpp"
+
+#include <boost/variant.hpp>
 
 namespace SBG {
 
 namespace Eval {
 
+namespace detail {
+
 class ExprEvaluator : public boost::static_visitor<ExprBaseType> {
-  public:
+public:
   ExprEvaluator(EvalContext& eval_ctx);
 
   ExprBaseType operator()(AST::Natural v) const;
@@ -52,12 +58,14 @@ class ExprEvaluator : public boost::static_visitor<ExprBaseType> {
   ExprBaseType operator()(AST::DSBG v) const;
   ExprBaseType operator()(AST::ParenExpr v) const;
 
-  private:
-  EvalContext& eval_ctx_;
+private:
+  EvalContext& _eval_context;
 };
+
+} // namespace detail
 
 } // namespace Eval
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_EVAL_VISITORS_EXPR_EVALUATOR_HPP_

@@ -23,15 +23,22 @@
 
  ******************************************************************************/
 
-#ifndef EVAL_BASE_TYPE_HPP
-#define EVAL_BASE_TYPE_HPP
+#ifndef SBGRAPH_EVAL_BASE_TYPE_HPP_
+#define SBGRAPH_EVAL_BASE_TYPE_HPP_
 
-#include <variant>
-
-#include "ast/expr.hpp"
-#include "algorithms/matching/matching.hpp"
-#include "sbg/directed_sbg.hpp"
+#include "algorithms/matching/match_data.hpp"
 #include "sbg/bipartite_sbg.hpp"
+#include "sbg/directed_sbg.hpp"
+#include "sbg/expression.hpp"
+#include "sbg/map.hpp"
+#include "sbg/natural.hpp"
+#include "sbg/pw_map.hpp"
+#include "sbg/rational.hpp"
+#include "sbg/sbg.hpp"
+#include "sbg/set.hpp"
+
+#include <optional>
+#include <variant>
 
 namespace SBG {
 
@@ -41,21 +48,21 @@ using ExprBaseType = std::variant<bool
   , LIB::NAT
   , LIB::MD_NAT
   , LIB::RATIONAL
-  , LIB::Interval
-  , LIB::SetPiece
   , LIB::Set
-  , LIB::Exp
+  , LIB::Expression
   , LIB::Map
   , LIB::PWMap
   , LIB::SBG
   , LIB::BipartiteSBG
-  , LIB::DSBG
+  , LIB::DirectedSBG
   , LIB::MatchData>;
+
 using MaybeEBT = std::optional<ExprBaseType>;
+
 using EBTList = std::vector<ExprBaseType>;
 
 } // namespace Eval
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_EVAL_BASE_TYPE_HPP_

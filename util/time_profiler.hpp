@@ -37,16 +37,17 @@ namespace Internal {
  * defining TimeProfiler objects.
  */
 struct TimeProfiler {
-    TimeProfiler(std::string&& function_name);
+public:
+  TimeProfiler(std::string&& function_name);
 
-    ~TimeProfiler();
+  ~TimeProfiler();
 
-    static void print_execution_time();
+  static void print_execution_time();
 
 private:
-    std::string _function_name;
-    std::chrono::_V2::system_clock::time_point _start;
-    static std::unordered_map<std::string, double> _execution_time;
+  std::string _function_name;
+  std::chrono::_V2::system_clock::time_point _start;
+  static std::unordered_map<std::string, double> _execution_time;
 };
 
 } // namespace Internal

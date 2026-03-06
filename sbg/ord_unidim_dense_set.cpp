@@ -355,6 +355,10 @@ OrdUnidimDenseSet OrdUnidimDenseSet::difference(const OrdUnidimDenseSet& other)
     return OrdUnidimDenseSet{_pieces};
   }
 
+  if (_pieces == other._pieces) {
+    return OrdUnidimDenseSet{};
+  }
+
   return intersection(other.complement());
 }
 

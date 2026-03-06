@@ -89,30 +89,23 @@ CompactSetImpl compactImage(const CompactSetImpl& s, const Expr& expr
   return result;
 }
 
-UnorderedSet image(const UnorderedSet& s, const ExpressionImpl& expr
-  , bool is_injective)
-{
-  return compactImage<UnorderedSet, MultiDimInter, ExpressionImpl>(
-    s, expr, is_injective);
-}
-
-OrdUnidimDenseSet image(const OrdUnidimDenseSet& s
-  , const LinearExpr& linear_expr, bool is_injective)
-{
-  return compactImage<OrdUnidimDenseSet, Interval, LinearExpr>(
-    s, linear_expr, is_injective);
-}
-
 Set MapDetail::image(const Set& s, const Expression& expr)
 {
   auto image_evaluator = Overload {
     [&](const UnorderedSet& a)
     {
-      return Set{detail::image(a, expr._impl, expr.isInjective())};
+      return Set{detail::compactImage<UnorderedSet, MultiDimInter
+        , ExpressionImpl>(a, expr._impl, expr.isInjective())};
     },
     [&](const OrdUnidimDenseSet& a)
     {
-      return Set{detail::image(a, expr._impl[0], expr.isInjective())};
+      return Set{detail::compactImage<OrdUnidimDenseSet, Interval, LinearExpr>(
+        a, expr._impl[0], expr.isInjective())};
+    },
+    [&](const OrderedSet& a)
+    {
+      return Set{detail::compactImage<OrderedSet, MultiDimInter
+        , ExpressionImpl>(a, expr._impl, expr.isInjective())};
     },
     [&](const auto& a) { return Set{SetKind::kUnordered}; }
   };
@@ -159,29 +152,23 @@ CompactSetImpl compactPreImage(const CompactSetImpl& s, const Expr& expr)
   return result;
 }
 
-UnorderedSet preImage(const UnorderedSet& s, const ExpressionImpl& linear_expr)
-{
-  return compactPreImage<UnorderedSet, MultiDimInter, ExpressionImpl>(
-    s, linear_expr);
-}
-
-OrdUnidimDenseSet preImage(const OrdUnidimDenseSet& s
-  , const LinearExpr& linear_expr)
-{
-  return compactPreImage<OrdUnidimDenseSet, Interval, LinearExpr>(
-    s, linear_expr);
-}
-
 Set MapDetail::preImage(const Set& s, const Expression& expr)
 {
   auto pre_image_evaluator = Overload {
     [&](const UnorderedSet& a)
     {
-      return Set{detail::preImage(a, expr._impl)};
+      return Set{detail::compactPreImage<UnorderedSet, MultiDimInter
+        , ExpressionImpl>(a, expr._impl)};
     },
     [&](const OrdUnidimDenseSet& a)
     {
-      return Set{detail::preImage(a, expr._impl[0])};
+      return Set{detail::compactPreImage<OrdUnidimDenseSet, Interval
+        , LinearExpr>(a, expr._impl[0])};
+    },
+    [&](const OrderedSet& a)
+    {
+      return Set{detail::compactPreImage<OrderedSet, MultiDimInter
+        , ExpressionImpl>(a, expr._impl)};
     },
     [&](const auto& a) { return Set{SetKind::kUnordered}; }
   };
@@ -289,6 +276,12 @@ Set MapDetail::lessImage(const Expression& expr1, const Expression& expr2)
       a.pushBack(detail::lessImage(expr1._impl[0], expr2._impl[0]));
       return Set{a};
     },
+    [&](OrderedSet& a)
+    {
+      detail::lessImage<OrderedSet, MultiDimInter, ExpressionImpl>(
+        expr1._impl, expr2._impl, a);
+      return Set{a};
+    },
     [&](auto& a) { return Set{SetKind::kUnordered}; }
   };
   return std::visit(less_image_evaluator, result._impl);
@@ -392,7 +385,9 @@ AtomicMapVector reduce(const MultiDimInter& mdi, const ExpressionImpl& expr
   return reduce(reducible_interval, reducible_expr);
 }
 
-MapVector MapDetail::reduce(const UnorderedSet& s, const ExpressionImpl& expr)
+template<typename SetMDIImpl>
+MapVector MapDetail::MDICollectionReduce(const SetMDIImpl& s
+  , const ExpressionImpl& expr)
 {
   MapVector result;
 
@@ -443,13 +438,22 @@ MapVector MapDetail::reduce(const Map& m)
     return result;
   }
 
-  result = std::visit([&](const auto& a)
+  auto reduce_evaluator = Overload {
+    [&](const UnorderedSet& a)
+    {
+      return MDICollectionReduce<UnorderedSet>(a, law._impl);
+    },
+    [&](const OrdUnidimDenseSet& a)
     {
       return reduce(a, law._impl);
-    }
-    , domain._impl);
-
-  return result;
+    },
+    [&](const OrderedSet& a)
+    {
+      return MDICollectionReduce<OrderedSet>(a, law._impl);
+    },
+    [&](const auto& a) { return Set{SetKind::kUnordered}; }
+  };
+  return std::visit(reduce_evaluator, m.domain()._impl);
 }
 
 } // namespace detail

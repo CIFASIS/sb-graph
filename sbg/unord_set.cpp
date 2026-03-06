@@ -30,6 +30,15 @@ namespace LIB {
 namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
+// Auxiliary functions ---------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+bool overlap(const UnorderedSet& lhs, const UnorderedSet& rhs)
+{
+  return rhs.minElem() < lhs.maxElem() || lhs.minElem() < rhs.maxElem();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Unordered Set Implementation ------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -256,29 +265,25 @@ UnorderedSet UnorderedSet::complementAtom() const
   Interval universe_one_dim{0, 1, Inf};
   MultiDimInter univ{mdi.arity(), universe_one_dim};
 
-  unsigned int dim = 0;
+  std::size_t dim = 0;
   for (const Interval& i : mdi) {
-    MDIUnordCollection c;
-
     // Before interval
     if (i.begin() != 0) {
       Interval i_res{0, 1, i.begin() - 1};
       if (!i_res.isEmpty()) {
         univ[dim] = i_res;
-        c.push_back(univ);
+        result.push_back(univ);
         univ[dim] = universe_one_dim;
       }
     }
 
     // "During" interval
-    if (i.begin() < Inf) {
-      if (i.step() > 1) {
-        for (unsigned int j = 0; j < i.step() - 1; ++j) {
-          Interval i_res{i.begin() + j + 1, i.step(), i.end()};
-          if (!i_res.isEmpty()) {
-            during_mdi[dim] = i_res;
-            c.push_back(during_mdi);
-          }
+    if (i.begin() < Inf && i.step() > 1) {
+      for (unsigned int j = 0; j < i.step() - 1; ++j) {
+        Interval i_res{i.begin() + j + 1, i.step(), i.end()};
+        if (!i_res.isEmpty()) {
+          during_mdi[dim] = i_res;
+          result.push_back(during_mdi);
         }
       }
     }
@@ -288,18 +293,12 @@ UnorderedSet UnorderedSet::complementAtom() const
       Interval i_res{i.end() + 1, 1, Inf};
       if (!i_res.isEmpty()) {
         univ[dim] = i_res;
-        c.push_back(univ);
+        result.push_back(univ);
         univ[dim] = universe_one_dim;
       }
     }
     univ[dim] = dense_mdi[dim];
     during_mdi[dim] = i;
-
-    // Insert results of current dim
-    for (const MultiDimInter& mdi : c) {
-      result.push_back(mdi);
-    }
-
     ++dim;
   }
 
@@ -308,21 +307,18 @@ UnorderedSet UnorderedSet::complementAtom() const
 
 UnorderedSet UnorderedSet::complement() const
 {
-  UnorderedSet result;
-
   if (isEmpty()) {
-    return result;
+    return UnorderedSet{};
   }
 
-  auto first_it = _pieces.begin();
-  MultiDimInter first = *first_it;
-  result = UnorderedSet{first}.complementAtom();
-
-  ++first_it;
-  MDIUnordCollection second{first_it, _pieces.end()};
-  for (const MultiDimInter& mdi : second) {
-    UnorderedSet c = UnorderedSet{mdi}.complementAtom();
-    result = result.intersection(c);
+  UnorderedSet result = UnorderedSet{_pieces.front()}.complementAtom();
+  std::size_t j = 0;
+  for (const MultiDimInter& mdi : _pieces) {
+    if (j > 0) {
+      UnorderedSet c = UnorderedSet{mdi}.complementAtom();
+      result = result.intersection(c);
+    }
+    ++j;
   }
 
   return result;
@@ -365,8 +361,9 @@ UnorderedSet UnorderedSet::cartesianProduct(const UnorderedSet& other) const
 
 std::size_t UnorderedSet::arity() const
 {
-  if (isEmpty())
+  if (isEmpty()) {
     return 0;
+  }
 
   return _pieces.begin()->arity();
 }
@@ -407,13 +404,13 @@ UnorderedSet UnorderedSet::disjointCup(UnorderedSet&& other) &&
 
 UnorderedSet UnorderedSet::offset(const MD_NAT& off) const
 {
-  MDIUnordCollection result;
+  UnorderedSet result;
 
   for (const MultiDimInter& mdi : _pieces) {
-    result.push_back(mdi.offset(off));
+    result.pushBack(mdi.offset(off));
   }
 
-  return UnorderedSet{std::move(result)};
+  return result;
 }
 
 void UnorderedSet::compact()

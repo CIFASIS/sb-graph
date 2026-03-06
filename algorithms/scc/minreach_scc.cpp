@@ -72,7 +72,7 @@ SCCData MinReachSCC::calculate(const DirectedSBG& dsbg)
     oldE = _dsbg.E();
     rmap = sccStep();
     Ediff = oldE.difference(_dsbg.E());
-    deleted_edges = std::move(deleted_edges).disjointCup(std::move(Ediff));
+    deleted_edges = std::move(deleted_edges).disjointCup(Ediff);
   } while (Ediff != SET_FACT.createSet());
   rmap.compact();
 

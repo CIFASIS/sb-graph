@@ -17,6 +17,8 @@
 
  ******************************************************************************/
 
+#include "sbg/ord_set.hpp"
+#include "sbg/ord_unidim_dense_set.hpp"
 #include "sbg/set_fact.hpp"
 #include "sbg/unord_set.hpp"
 #include "util/debug.hpp"
@@ -28,8 +30,6 @@ namespace LIB {
 ////////////////////////////////////////////////////////////////////////////////
 // Unordered Set Factory -------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
-
-UnordSetFact::UnordSetFact() {}
 
 Set UnordSetFact::createSet()
 {
@@ -51,56 +51,52 @@ Set UnordSetFact::createSet(const FixedPointsInfo& info)
   return Set{SetKind::kUnordered, info};
 }
 
-//////////////////////////////////////////////////////////////////////////////////
-//// Ordered Set Factory ---------------------------------------------------------
-//////////////////////////////////////////////////////////////////////////////////
-//
-//Set OrdSetFact::createSet() const
-//{
-//  return Set(std::make_unique<OrderedSet>());
-//}
-//
-//Set OrdSetFact::createSet(const MD_NAT& x) const
-//{
-//  return Set(std::make_unique<OrderedSet>(x));
-//}
-//
-//Set OrdSetFact::createSet(const Interval& i) const
-//{
-//  return Set(std::make_unique<OrderedSet>(i));
-//}
-//
-//Set OrdSetFact::createSet(const SetPiece& mdi) const
-//{
-//  return Set(std::make_unique<OrderedSet>(mdi));
-//}
-//
-//Set OrdSetFact::createSet(const FixedPointsInfo& info) const
-//{
-//  return Set(std::make_unique<OrderedSet>(info));
-//}
+////////////////////////////////////////////////////////////////////////////////
+// Ordered Set Factory ---------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+Set OrdSetFact::createSet()
+{
+  return Set{SetKind::kOrdered};
+}
+
+Set OrdSetFact::createSet(const MD_NAT& x)
+{
+  return Set{SetKind::kOrdered, x};
+}
+
+Set OrdSetFact::createSet(const NAT lo, const NAT step, const NAT hi)
+{
+  return Set{SetKind::kOrdered, lo, step, hi};
+}
+
+Set OrdSetFact::createSet(const FixedPointsInfo& info)
+{
+  return Set{SetKind::kOrdered, info};
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 // Ordered Unidimensional Dense Set Factory ------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-Set OrdUnidimDenseSetFact::createSet() const
+Set OrdUnidimDenseSetFact::createSet()
 {
   return Set{SetKind::kOrdUnidimDense};
 }
 
-Set OrdUnidimDenseSetFact::createSet(const MD_NAT& x) const
+Set OrdUnidimDenseSetFact::createSet(const MD_NAT& x)
 {
   return Set{SetKind::kOrdUnidimDense, x};
 }
 
 Set OrdUnidimDenseSetFact::createSet(const NAT lo, const NAT step, const NAT hi)
-  const
 {
   return Set{SetKind::kOrdUnidimDense, lo, step, hi};
 }
 
-Set OrdUnidimDenseSetFact::createSet(const FixedPointsInfo& info) const
+Set OrdUnidimDenseSetFact::createSet(const FixedPointsInfo& info)
 {
   return Set{SetKind::kOrdUnidimDense, info};
 }
@@ -128,10 +124,10 @@ void SetFactory::set_set_fact(SetKind kind)
       break;
     }
 
-    //case SetKind::kOrdered: {
-    //  _impl = OrdSetFact{};
-    //  break;
-    //}
+    case SetKind::kOrdered: {
+      _impl = OrdSetFact{};
+      break;
+    }
 
     case SetKind::kOrdUnidimDense: {
       _impl = OrdUnidimDenseSetFact{};

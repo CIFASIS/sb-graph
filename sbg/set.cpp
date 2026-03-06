@@ -72,6 +72,7 @@ Set::Set(const SetKind kind) : _impl()
     }
 
     case SetKind::kOrdered: {
+      _impl = detail::OrderedSet{};
       break;
     }
 
@@ -96,6 +97,7 @@ Set::Set(const SetKind kind, const MD_NAT& x) : _impl()
     }
 
     case SetKind::kOrdered: {
+      _impl = detail::OrderedSet{x};
       break;
     }
 
@@ -121,6 +123,7 @@ Set::Set(const SetKind kind, const NAT lo, const NAT step, const NAT hi)
     }
 
     case SetKind::kOrdered: {
+      _impl = detail::OrderedSet{detail::Interval(lo, step, hi)};
       break;
     }
 
@@ -145,6 +148,8 @@ Set::Set(const SetKind kind, const FixedPointsInfo& info) : _impl()
     }
 
     case SetKind::kOrdered: {
+      _impl = detail::OrderedSet{info};
+      break;
     }
 
     case SetKind::kOrdUnidimDense: {

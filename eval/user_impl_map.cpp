@@ -19,7 +19,9 @@
 
 #include "algorithms/scc/scc_fact.hpp"
 #include "eval/user_impl_map.hpp"
+#include "sbg/pw_map.hpp"
 #include "sbg/pwmap_fact.hpp"
+#include "sbg/set.hpp"
 #include "sbg/set_fact.hpp"
 #include "util/debug.hpp"
 

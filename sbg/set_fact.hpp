@@ -44,28 +44,26 @@ namespace LIB {
 
 class UnordSetFact {
 public:
-  UnordSetFact();
-
   static Set createSet();
   static Set createSet(const MD_NAT& x);
   static Set createSet(const NAT lo, const NAT step, const NAT hi);
   static Set createSet(const FixedPointsInfo& info);
 };
 
-//class OrdSetFact {
-//public:
-//  Set createSet() const;
-//  Set createSet(const MD_NAT& x) const;
-//  Set createSet(const NAT lo, const NAT step, const NAT hi) const;
-//  Set createSet(const FixedPointsInfo& mdi) const;
-//};
-
 class OrdUnidimDenseSetFact {
 public:
-  Set createSet() const;
-  Set createSet(const MD_NAT& x) const;
-  Set createSet(const NAT lo, const NAT step, const NAT hi) const;
-  Set createSet(const FixedPointsInfo& info) const;
+  static Set createSet();
+  static Set createSet(const MD_NAT& x);
+  static Set createSet(const NAT lo, const NAT step, const NAT hi);
+  static Set createSet(const FixedPointsInfo& info);
+};
+
+class OrdSetFact {
+public:
+  static Set createSet();
+  static Set createSet(const MD_NAT& x);
+  static Set createSet(const NAT lo, const NAT step, const NAT hi);
+  static Set createSet(const FixedPointsInfo& info);
 };
 
 /**
@@ -88,7 +86,9 @@ public:
   Set createSet(const FixedPointsInfo& mdi) const;
 
 private:
-  using FactImpl = std::variant<UnordSetFact, OrdUnidimDenseSetFact>;
+  using FactImpl = std::variant<UnordSetFact
+    , OrdUnidimDenseSetFact
+    , OrdSetFact>;
 
   SetFactory();
 

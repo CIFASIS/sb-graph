@@ -53,7 +53,9 @@ public:
   static MapVector reduce(const Map& m);
 
 private:
-  static MapVector reduce(const UnorderedSet& s, const ExpressionImpl& expr);
+  template<typename SetMDIImpl>
+  static MapVector MDICollectionReduce(const SetMDIImpl& s
+    , const ExpressionImpl& expr);
   static MapVector reduce(const OrdUnidimDenseSet& s
     , const ExpressionImpl& expr);
 };

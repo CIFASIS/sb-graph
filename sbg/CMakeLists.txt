@@ -17,6 +17,7 @@ target_sources(
     map_detail.cpp
     multidim_inter.cpp
     natural.cpp
+    ord_set.cpp
     ord_unidim_dense_set.cpp
     pw_map.cpp
     pwmap_fact.cpp
@@ -26,7 +27,6 @@ target_sources(
     set_fact.cpp
     unord_pwmap.cpp
     unord_set.cpp
-    #ord_set.cpp
     #dom_ord_pwmap.cpp
     #map_entry.cpp
     #ord_pwmap.cpp

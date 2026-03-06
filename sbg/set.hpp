@@ -38,6 +38,7 @@
 #include "sbg/interval.hpp"
 #include "sbg/multidim_inter.hpp"
 #include "sbg/natural.hpp"
+#include "sbg/ord_set.hpp"
 #include "sbg/ord_unidim_dense_set.hpp"
 #include "sbg/set.hpp"
 #include "sbg/unord_set.hpp"
@@ -57,10 +58,8 @@ namespace detail {
 ////////////////////////////////////////////////////////////////////////////////
 
 using SetImpl = std::variant<detail::UnorderedSet
-  , detail::OrdUnidimDenseSet>;
-
-using SetConstIt = std::variant<detail::UnorderedSet::ConstIt
-  , detail::OrdUnidimDenseSet::ConstIt>;
+  , detail::OrdUnidimDenseSet
+  , detail::OrderedSet>;
 
 class MapDetail;
 

@@ -24,7 +24,7 @@
 #ifndef SBG_TEARING_HPP
 #define SBG_TEARING_HPP
 
-#include "sbg/sbg.hpp"
+#include "sbg/directed_sbg.hpp"
 
 namespace SBG {
 

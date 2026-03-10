@@ -80,7 +80,7 @@ DSBG DSBG::addSV(const Set &vertices) const
     PWMap new_mapB(std::move(mapB_)), new_mapD(std::move(mapD_));
     PWMap new_Emap(std::move(Emap_)), new_subE(std::move(subEmap_));
 
-    Set new_V = new_V.cup(vertices);
+    Set new_V = V_.cup(vertices);
 
     Set SV = new_Vmap.image(); // Identifiers of SV
     std::size_t dims = vertices.arity();

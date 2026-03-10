@@ -57,35 +57,34 @@ TearingData TearingV1::calculate(const DSBG& dsbg)
   PWMap finalMapD = dsbg_.mapD();
   Set e_notscc = result.Ediff();
   Set e_scc = dsbg_.E().difference(e_notscc);
-  while (!e_notscc.isEmpty())  {
+  Set v_tear = rmap_.image(rmap_.dom().difference(rmap_.fixedPoints()));
+  while (!v_tear.isEmpty())  {
     PWMap rmap = result.rmap();
-    Set v_tear = rmap.image().difference(rmap.fixedPoints());
-    Set v_tear = rmap.image(rmap.sharedImage());
-
     PWMap tearIOMap = PW_FACT.createPWMap(v_tear).offsetImage(maxOffset);
     finalDSBG = finalDSBG.addSV(tearIOMap.image());
     maxOffset = finalDSBG.V().maxElem();
     tearIOMap_ = tearIOMap.combine(tearIOMap_);
     rmap = rmap.combine(tearIOMap.inverse()); // Separar 
-
+    rmap_ = rmap_.combine(rmap);
     Set e_tear_scc = dsbg_.mapD().restrict(e_scc).preImage(v_tear);
     Set e_tear_notscc = dsbg_.mapB().restrict(e_notscc).preImage(v_tear);
     // PWMap mapB_scc = dsbg_.mapB().restrict(e_scc).composition(rmap); // Necessary?
-    PWMap mapD_scc = dsbg_.mapD().restrict(e_tear_scc).composition(tearIOMap);
-    PWMap mapB_notscc = dsbg_.mapB().restrict(e_tear_notscc).composition(tearIOMap);
-    PWMap mapD_notscc = dsbg_.mapD().restrict(e_notscc).composition(rmap); // Necessary?
-
+    PWMap mapD_scc = tearIOMap.composition(dsbg_.mapD().restrict(e_tear_scc));
+    PWMap mapB_notscc = tearIOMap.composition(dsbg_.mapB().restrict(e_tear_notscc));
+    // PWMap mapD_notscc = dsbg_.mapD().restrict(e_notscc).composition(rmap); // Necessary?
     finalMapB = mapB_notscc.combine(finalMapB);
-    finalMapD = mapD_scc.combine(mapD_notscc).combine(finalMapD);
+    finalMapD = mapD_scc.combine(finalMapD);
     dsbg_ = DSBG(finalDSBG.V().compact(), finalDSBG.Vmap().compact()
-    , finalMapB.compact(), finalMapD.compact(), finalDSBG.Emap().compact(), finalDSBG.subEmap().compact());
+      , finalMapB.compact(), finalMapD.compact(), finalDSBG.Emap().compact(), finalDSBG.subEmap().compact());
     result = sccAlgorithm_->calculate(dsbg_);
     e_notscc = result.Ediff();
     e_scc = e_scc.difference(e_notscc);
+    rmap = result.rmap();
+    v_tear = rmap.image().difference(rmap.fixedPoints());
   }
 
   finalDSBG = dsbg_;
-
+  
   auto end = std::chrono::high_resolution_clock::now();
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(
     end - begin
@@ -94,7 +93,7 @@ TearingData TearingV1::calculate(const DSBG& dsbg)
 
   Util::DEBUG_LOG << "MinReachTearing result: " << rmap_ << "\n\n";
 
-  return TearingData(finalDSBG, rmap_, tearIOMap_);
+  return TearingData(finalDSBG, rmap_.compact(), tearIOMap_.compact());
 }
 
 } // namespace LIB

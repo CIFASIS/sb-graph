@@ -311,6 +311,11 @@ void GraphPartitioner::partitionUsingScotch(Partition &partition)
       return;
   }
 
+  if (SCOTCH_graphCheck(&graph_sc) != 0) {
+      std::cerr << "Error: Scotch Graph Check failed" << std::endl;
+      return;
+  }
+
   if (SCOTCH_graphPart(&graph_sc, _nbr_parts, &strat, partition.values.data()) != 0) {
       std::cerr << "Error: Scotch Graph Partition" << std::endl;
       return;
@@ -342,7 +347,6 @@ void GraphPartitioner::partitionUsingSBG(sbg_partitioner::PartitionMap &partitio
 void GraphPartitioner::readGraphFromSBG()
 {
   _nbr_vtxs = sbg_graph->V().cardinal();
-  _edges = sbg_graph->E().cardinal();
   // asumming all setpiece are unidimensional and have step 1
   int max_node = -1;
   for (const auto &v : sbg_graph->V()) {
@@ -376,6 +380,8 @@ void GraphPartitioner::readGraphFromSBG()
     for_each(nodes_vector.cbegin(), nodes_vector.cend(), [this](const auto &val) { _adjncy.push_back(int(val)); });
     _xadj.push_back(_xadj.back() + nodes_vector.size());
   }
+
+  _edges = grp_t(_adjncy.size());
 
   /*// @todo: Add logging, for the moment just comment the code.
   for (int i = 0; i < _nbr_vtxs; ++i) {

@@ -41,7 +41,7 @@ std::pair<int, int> communication_volume(
 
 float maximum_imbalance(const PartitionMap& partitions, const SBG::LIB::WeightedSBGraph& sb_graph);
 
-PartitionMap read_partition_from_file(const std::string& name, const SBG::LIB::WeightedSBGraph& sb_graph);
+PartitionMap read_partition_from_file(const std::string& name, const SBG::LIB::WeightedSBGraph& sb_graph, int number_of_partitions);
 
 std::ostream& operator<<(std::ostream& os, const communication_metrics& comm_metrics);
 }

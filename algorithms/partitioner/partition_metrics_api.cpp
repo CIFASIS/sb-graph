@@ -128,16 +128,19 @@ void write_node_by_partition(const PartitionMap& partitions, const WeightedSBGra
 
 int edge_cut(const PartitionMap& partitions, const WeightedSBGraph& sb_graph)
 {
+    cout << "computing edge cut " << endl;
     Set ec = SET_FACT.createSet();
     const auto& maps_1 = sb_graph.map1();
     const auto& maps_2 = sb_graph.map2();
     for (size_t i = 0; i < partitions.size(); i++) {
+        cout << "partition " << i << endl;
         Set partition = from_vector(partitions.at(i));
         ec = ec.cup(get_edge_cut(partition, maps_1, maps_2));
         ec = ec.cup(get_edge_cut(partition, maps_2, maps_1));
     }
 
     int weight = get_edge_set_cost(ec, sb_graph.get_edge_costs());
+    cout << "ec is " << weight << endl;
 
     return weight;
 }
@@ -181,26 +184,20 @@ float maximum_imbalance(const PartitionMap& partitions, const WeightedSBGraph& s
 }
 
 
-PartitionMap read_partition_from_file(const string& name, const WeightedSBGraph& sb_graph)
+PartitionMap read_partition_from_file(const string& name, const WeightedSBGraph& sb_graph, int number_of_partitions)
 {
 
     ifstream file(name);
     string line; // String to store each line of the file.
 
-    PartitionMap partitions;
+    PartitionMap partitions(number_of_partitions, Partition());
     if (file.is_open()) {
         // Read each line from the file and store it in the
         // 'line' variable.
         int node_counter = 0;
         while (getline(file, line)) {
-            partitions.push_back({Interval(node_counter, 1, node_counter)});
+            partitions[stoi(line)].push_back({Interval(node_counter, 1, node_counter)});
             node_counter++;
-        }
-
-        for (auto& s: partitions) {
-            auto s_set = from_vector(s);
-            flatten_set(s_set, sb_graph);
-            s = to_vector(s_set);
         }
 
         // Close the file stream once all lines have been

@@ -201,7 +201,7 @@ tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> parti
       best_initial_partition(sb_graph, *params.number_of_partitions, params.initial_partition_strategy, params.enable_multithreading);
   cout << "chosen partition " << partitions << endl;
 
-  kl_sbg_imbalance_partitioner(sb_graph, partitions, params.epsilon, params.enable_multithreading);
+  // kl_sbg_imbalance_partitioner(sb_graph, partitions, params.epsilon, params.enable_multithreading);
   auto end_partitionate = chrono::high_resolution_clock::now();
   auto time_to_partitionate = chrono::duration<double, std::milli>(end_partitionate - start_partitionate).count();
 
@@ -436,35 +436,41 @@ int main(int argc, char** argv)
   if (params.compute_metrics) {
     map<string, metrics::communication_metrics> metrics;
 
-    int edge_cut = metrics::edge_cut(partitions, *sb_graph);
+    // int edge_cut = metrics::edge_cut(partitions, *sb_graph);
 
-    auto [comm_volume, max_comm_volume] = metrics::communication_volume(partitions, *sb_graph);
+    // auto [comm_volume, max_comm_volume] = metrics::communication_volume(partitions, *sb_graph);
 
-    auto max_imb = metrics::maximum_imbalance(partitions, *sb_graph);
+    // auto max_imb = metrics::maximum_imbalance(partitions, *sb_graph);
 
-    metrics::communication_metrics comm_metrics = metrics::communication_metrics{edge_cut, comm_volume, max_comm_volume, max_imb};
-    metrics["sbg-partitioner"] = comm_metrics;
-
-    for (const auto& [f, m] : metrics) {
-      cout << f << ": " << m << endl;
-    }
+    // metrics::communication_metrics comm_metrics = metrics::communication_metrics{edge_cut, comm_volume, max_comm_volume, max_imb};
+    // metrics["sbg-partitioner"] = comm_metrics;
 
     if (params.compute_metrics and params.directory) {
       std::vector<std::string> dir_files;
       read_directory(*params.directory, dir_files);
 
       for (const auto& f : dir_files) {
-        auto partition_from_file = metrics::read_partition_from_file(f, *sb_graph);
+        if(f.substr(f.find_last_of(".") + 1) == "csv") {
+          cout << "Ignoring " << f << endl;
+          continue;
+        }
+        cout << f << endl;
+
+        auto partition_from_file = metrics::read_partition_from_file(f, *sb_graph, *params.number_of_partitions);
 
         int edge_cut = metrics::edge_cut(partition_from_file, *sb_graph);
 
-        auto [comm_volume, max_comm_volume] = metrics::communication_volume(partition_from_file, *sb_graph);
+        // auto [comm_volume, max_comm_volume] = metrics::communication_volume(partition_from_file, *sb_graph);
 
-        auto max_imb = metrics::maximum_imbalance(partition_from_file, *sb_graph);
+        // auto max_imb = metrics::maximum_imbalance(partition_from_file, *sb_graph);
 
-        metrics::communication_metrics comm_metrics = metrics::communication_metrics{edge_cut, comm_volume, max_comm_volume, max_imb};
+        metrics::communication_metrics comm_metrics = metrics::communication_metrics{edge_cut, 0, 0, 0};
         metrics[std::filesystem::path(f).filename().string()] = comm_metrics;
       }
+    }
+
+    for (const auto& [f, m] : metrics) {
+      cout << f << ": " << m << endl;
     }
   }
 

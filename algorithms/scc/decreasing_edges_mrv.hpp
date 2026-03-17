@@ -64,12 +64,10 @@ private:
    */
   Set decreasingRepresentative(const PWMap& rmap) const;
 
-  Set edgesInPaths(const PWMap& smap) const;
-
   /*
    * @brief Calculates the MRV for recursive paths.
    */
-  PWMap recursivePaths(const Set& paths_edges, const Set& outgoing);
+  PWMap recursivePaths(const PWMap& rmap, const PWMap& decreasing_smap);
 
   DirectedSBG _dsbg;
   PWMap _smap;

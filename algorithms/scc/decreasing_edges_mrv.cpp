@@ -49,58 +49,55 @@ Set LtEdgesMRV::decreasingRepresentative(const PWMap& rmap) const
   return result;
 }
 
-Set LtEdgesMRV::edgesInPaths(const PWMap& smap) const
-{
-  PWMap mapB = _dsbg.mapB();
-  PWMap mapD = _dsbg.mapD();
-
-  // Vertices that are successors of other vertices in a path
-  Set not_fixed = smap.domain().difference(smap.fixedPoints());
-  Set succs = smap.restrict(not_fixed).image();
-  // Edges whose endings are successors 
-  Set ending_edges = mapD.preImage(succs);
-  // Map from a 'successor' edge to its start
-  PWMap auxB = mapB.restrict(ending_edges);
-  // Map from edge to the successor of its start
-  PWMap map_succs = smap.composition(auxB);
- 
-  return map_succs.equalImage(mapD);
-}
-
-PWMap LtEdgesMRV::recursivePaths(const Set& ith_paths_edges, const Set& outgoing)
+PWMap LtEdgesMRV::recursivePaths(const PWMap& rmap
+  , const PWMap& decreasing_smap)
 {
   PWMap result = PWMAP_FACT.createPWMap();
 
+  // Calculate edges in paths described by _smap
+  const PWMap& mapB = _dsbg.mapB();
+  const PWMap& mapD = _dsbg.mapD();
+  Set ithP = decreasing_smap.composition(mapB).equalImage(mapD);
+
+  // Check if there is a recursion
   PWMap Emap = _dsbg.Emap();
-  Set ithSE = Emap.image(ith_paths_edges);
-  _visitedSE = std::move(_visitedSE).cup(ithSE);
+  Set ithSE = Emap.image(ithP);
   Set repeatedSE = _visitedSE.intersection(ithSE);
   if (!repeatedSE.isEmpty()) {
-    PWMap mapB = _dsbg.mapB();
-    PWMap mapD = _dsbg.mapD();
-
+    Set P = _smap.composition(mapB).equalImage(mapD); 
     Set ith_start = _smap.domain().difference(_smap.image());
-    Set E = SET_FACT.createSet(); 
-    Set ithE = mapB.preImage(ith_start).intersection(ith_paths_edges);
+    Set ithE = mapB.preImage(ith_start).intersection(P);
     if (!ithE.isEmpty()) {
+      Set E = SET_FACT.createSet(); 
       bool exit_condition = true;
       do {
-        ithE = mapB.preImage(ith_start).intersection(ith_paths_edges);
-        E = std::move(E).disjointCup(std::move(ithE));
-        ith_start = mapD.image(ithE);
         exit_condition = !repeatedSE.intersection(Emap.image(E)).isEmpty();
+        ithE = mapB.preImage(ith_start).intersection(P);
+        ith_start = mapD.image(ithE);
+        E = std::move(E).disjointCup(std::move(ithE));
       } while (!exit_condition);
+      // Take out edges that reach a MRV different from that of the recursion
+      PWMap ithP_rmap = rmap.composition(mapD.restrict(ithP));
+      Set ithP_mrvs = ithP_rmap.image();
+      E = E.intersection(ithP_rmap.preImage(ithP_mrvs));
+
+      Set E_plus = Emap.preImage(Emap.image(E));
+      // In the presence of a cycle, if the minimum vertex belongs to the
+      // recursion, it will be assigned a successor. This results in a cycling
+      // smap, which is an error. For example, if there's a cycle
+      // 1 -> 2 -> ... -> 10 -> 1, this function calculates smap(1) = 2,
+      // when it should be smap(1) = 1. To avoid this, we erase outgoing edges
+      // from vertices that already reach the desired MRV. 
+      Set outgoing = mapB.preImage(rmap.preImage(ithP_mrvs));
+      E_plus = E_plus.difference(outgoing);
+
+      PWMap mapB_plus = _dsbg.mapB().restrict(E_plus);
+      PWMap mapD_plus = _dsbg.mapD().restrict(E_plus);
+      result = mapB_plus.minAdj(mapD_plus);
     }
-
-    Set smap_edges = edgesInPaths(_smap);
-    Set adj = mapB.preImage(mapB.image(smap_edges));
-
-    Set E_plus = Emap.preImage(Emap.image(E));
-    E_plus = E_plus.difference(mapB.preImage(outgoing));
-    E_plus = E_plus.difference(adj);
-    PWMap mapB_plus = _dsbg.mapB().restrict(E_plus);
-    PWMap mapD_plus = _dsbg.mapD().restrict(E_plus);
-    result = mapB_plus.minAdj(mapD_plus);
+    _visitedSE = _visitedSE.difference(Emap.image(P));
+  } else {
+    _visitedSE = std::move(_visitedSE).disjointCup(std::move(ithSE));
   }
 
   return result;
@@ -122,7 +119,6 @@ PWMap LtEdgesMRV::calculate(const DirectedSBG& dsbg)
   if (!_dsbg.V().isEmpty() && !_dsbg.E().isEmpty()) {
     PWMap old_rmap = PWMAP_FACT.createPWMap();
     Set E = SET_FACT.createSet();
-    Set paths_edges = SET_FACT.createSet();
     do {
       old_rmap = rmap;
 
@@ -134,10 +130,7 @@ PWMap LtEdgesMRV::calculate(const DirectedSBG& dsbg)
       _smap = decreasing_smap.combine(std::move(_smap));
 
       // Recursive paths
-      Set ith_paths_edges = edgesInPaths(decreasing_smap);
-      Set outgoing = rmap.image(mapD.image(ith_paths_edges));
-      PWMap smap_plus = recursivePaths(ith_paths_edges, outgoing);
-      _smap = std::move(smap_plus).combine(std::move(_smap));
+      _smap = recursivePaths(rmap, decreasing_smap).combine(std::move(_smap));
 
       // Calculate representatives map
       rmap = _smap.mapInf();

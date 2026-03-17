@@ -195,11 +195,18 @@ tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> parti
   auto time_to_build_graph = chrono::duration<double, std::milli>(end_build_graph - start_build_graph).count();
 
   cout << "sb_graph: " << sb_graph << endl;
+  cout << "connections:\n";
+  for (auto it1 = sb_graph.map1().begin(), it2 = sb_graph.map2().begin(); it1 != sb_graph.map1().end() and it2 != sb_graph.map2().end(); ++it1, ++it2) {
+    auto n1 = (*it1).image();
+    auto n2 = (*it2).image();
+    cout << n1 << ", " << n2 << "\n";
+  }
+  cout << endl;
 
   auto start_partitionate = chrono::high_resolution_clock::now();
-  auto partitions =
-      best_initial_partition(sb_graph, *params.number_of_partitions, params.initial_partition_strategy, params.enable_multithreading);
-  cout << "chosen partition " << partitions << endl;
+  auto partitions = PartitionMap();
+      // best_initial_partition(sb_graph, *params.number_of_partitions, params.initial_partition_strategy, params.enable_multithreading);
+  // cout << "chosen partition " << partitions << endl;
 
   // kl_sbg_imbalance_partitioner(sb_graph, partitions, params.epsilon, params.enable_multithreading);
   auto end_partitionate = chrono::high_resolution_clock::now();

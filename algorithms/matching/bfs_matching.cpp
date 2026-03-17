@@ -57,9 +57,7 @@ void BFSMatching::swapEdgesDirection(const Set& E)
 
   PWMap temp_mapB = mapB.restrict(E);
   mapB = mapD.restrict(E).combine(std::move(mapB));
-  mapB.compact();
   mapD = temp_mapB.restrict(E).combine(std::move(mapD));
-  mapD.compact();
 
   _dsbg = DirectedSBG{_dsbg.V(), _dsbg.Vmap(), mapB, mapD, _dsbg.Emap()};
 }

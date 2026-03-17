@@ -224,10 +224,10 @@ MaybeMDI MultiDimInter::compact(const MultiDimInter& other) const
   for (; j < arity(); ++j) {
     Interval jth_this = operator[](j);
     Interval jth_other = other[j];
-    MaybeInterval jth_compact = jth_this.compact(jth_other);
     if (jth_this == jth_other) {
       result.pushBack(jth_this);
     } else {
+      MaybeInterval jth_compact = jth_this.compact(jth_other);
       if (jth_compact) {
         result.pushBack(jth_compact.value());
         ++j;

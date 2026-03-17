@@ -166,8 +166,7 @@ Set Map::lessImage(const Map& other) const
   }
 
   Set result = detail::MapDetail::lessImage(_law, other._law);
-  result = std::move(result).intersection(cap_dom);
-  return result;
+  return result.intersection(cap_dom);
 }
 
 Map Map::minAdj(const Map& other) const

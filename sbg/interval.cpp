@@ -93,18 +93,18 @@ bool operator==(const Interval& lhs, const Interval& rhs)
 bool operator!=(const Interval& lhs, const Interval& rhs)
 {
   if (lhs.begin() != rhs.begin()) {
-    return false;
+    return true;
   }
 
   if (lhs.step() != rhs.step()) {
-    return false;
+    return true;
   }
 
   if (lhs.end() != rhs.end()) {
-    return false;
+    return true;
   }
 
-  return true;
+  return false;
 }
 
 bool Interval::operator<(const Interval& other) const

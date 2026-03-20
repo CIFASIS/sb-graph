@@ -67,11 +67,12 @@ private:
   /*
    * @brief Calculates the MRV for recursive paths.
    */
-  PWMap recursivePaths(const PWMap& rmap, const PWMap& decreasing_smap);
+  PWMap repetitivePaths(const PWMap& rmap, const PWMap& decreasing_smap);
 
   DirectedSBG _dsbg;
   PWMap _smap;
   Set _visitedSE;
+  unsigned int _n;
 };
 
 } // namespace LIB

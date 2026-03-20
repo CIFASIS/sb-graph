@@ -22,6 +22,8 @@
 #include "sbg/set_fact.hpp"
 #include "util/logger.hpp"
 
+#include <iostream>
+
 namespace SBG {
 
 namespace LIB {
@@ -31,7 +33,7 @@ namespace LIB {
 ////////////////////////////////////////////////////////////////////////////////
 
 LtEdgesMRV::LtEdgesMRV() : _dsbg(), _smap(PWMAP_FACT.createPWMap())
-  , _visitedSE(SET_FACT.createSet()) {}
+  , _visitedSE(SET_FACT.createSet()), _n(0) {}
 
 Set LtEdgesMRV::decreasingRepresentative(const PWMap& rmap) const
 {
@@ -49,55 +51,48 @@ Set LtEdgesMRV::decreasingRepresentative(const PWMap& rmap) const
   return result;
 }
 
-PWMap LtEdgesMRV::recursivePaths(const PWMap& rmap
+PWMap LtEdgesMRV::repetitivePaths(const PWMap& rmap
   , const PWMap& decreasing_smap)
 {
   PWMap result = PWMAP_FACT.createPWMap();
 
-  // Calculate edges in paths described by _smap
+  // Calculate edges in paths described by decreasing_smap
   const PWMap& mapB = _dsbg.mapB();
   const PWMap& mapD = _dsbg.mapD();
-  Set ithP = decreasing_smap.composition(mapB).equalImage(mapD);
+  Set Pj = decreasing_smap.composition(mapB).equalImage(mapD);
 
-  // Check if there is a recursion
+  // Check if there is a repetition
   PWMap Emap = _dsbg.Emap();
-  Set ithSE = Emap.image(ithP);
-  Set repeatedSE = _visitedSE.intersection(ithSE);
+  Set repeatedSE = _visitedSE.intersection(Emap.image(Pj));
   if (!repeatedSE.isEmpty()) {
-    Set P = _smap.composition(mapB).equalImage(mapD); 
-    Set ith_start = _smap.domain().difference(_smap.image());
-    Set ithE = mapB.preImage(ith_start).intersection(P);
-    if (!ithE.isEmpty()) {
-      Set E = SET_FACT.createSet(); 
-      bool exit_condition = true;
-      do {
-        exit_condition = !repeatedSE.intersection(Emap.image(E)).isEmpty();
-        ithE = mapB.preImage(ith_start).intersection(P);
-        ith_start = mapD.image(ithE);
-        E = std::move(E).disjointCup(std::move(ithE));
-      } while (!exit_condition);
-      // Take out edges that reach a MRV different from that of the recursion
-      PWMap ithP_rmap = rmap.composition(mapD.restrict(ithP));
-      Set ithP_mrvs = ithP_rmap.image();
-      E = E.intersection(ithP_rmap.preImage(ithP_mrvs));
-
-      Set E_plus = Emap.preImage(Emap.image(E));
-      // In the presence of a cycle, if the minimum vertex belongs to the
-      // recursion, it will be assigned a successor. This results in a cycling
-      // smap, which is an error. For example, if there's a cycle
-      // 1 -> 2 -> ... -> 10 -> 1, this function calculates smap(1) = 2,
-      // when it should be smap(1) = 1. To avoid this, we erase outgoing edges
-      // from vertices that already reach the desired MRV. 
-      Set outgoing = mapB.preImage(rmap.preImage(ithP_mrvs));
-      E_plus = E_plus.difference(outgoing);
-
-      PWMap mapB_plus = _dsbg.mapB().restrict(E_plus);
-      PWMap mapD_plus = _dsbg.mapD().restrict(E_plus);
-      result = mapB_plus.minAdj(mapD_plus);
+    Set Vi = decreasing_smap.domain().difference(decreasing_smap.image());
+    Set V = Vi;
+    for (unsigned int j = 0; j < _n; ++j) {
+      Vi = _smap.image(Vi);
+      V = V.disjointCup(Vi);
     }
-    _visitedSE = _visitedSE.difference(Emap.image(P));
+    PWMap rec_smap = _smap.restrict(V);
+    Set E_repetition = rec_smap.composition(mapB).equalImage(mapD);
+    
+    Set E_plus = Emap.preImage(Emap.image(E_repetition));
+    // In the presence of a cycle, if the minimum vertex belongs to the
+    // repetition, it will be assigned a successor. This results in a cycling
+    // smap, which is an error. For example, if there's a cycle
+    // 1 -> 2 -> ... -> 10 -> 1, this function calculates smap(1) = 2,
+    // when it should be smap(1) = 1. To avoid this, we erase outgoing edges
+    // from the MRVs of the repetition.
+    Set outgoing = mapB.preImage(rmap.image(V));
+    E_plus = E_plus.difference(outgoing);
+
+    PWMap mapB_plus = _dsbg.mapB().restrict(E_plus);
+    PWMap mapD_plus = _dsbg.mapD().restrict(E_plus);
+    result = mapB_plus.minAdj(mapD_plus);
+
+    _visitedSE = _visitedSE.difference(Emap.image(E_repetition));
+    _n = 0;
   } else {
-    _visitedSE = std::move(_visitedSE).disjointCup(std::move(ithSE));
+    _visitedSE = std::move(_visitedSE).disjointCup(std::move(Emap.image(Pj)));
+    ++_n;
   }
 
   return result;
@@ -117,6 +112,7 @@ PWMap LtEdgesMRV::calculate(const DirectedSBG& dsbg)
   PWMap rmap = _smap;
 
   if (!_dsbg.V().isEmpty() && !_dsbg.E().isEmpty()) {
+    _n = 0;
     PWMap old_rmap = PWMAP_FACT.createPWMap();
     Set E = SET_FACT.createSet();
     do {
@@ -129,8 +125,8 @@ PWMap LtEdgesMRV::calculate(const DirectedSBG& dsbg)
       PWMap decreasing_smap = decreasingB.minAdj(decreasingD); 
       _smap = decreasing_smap.combine(std::move(_smap));
 
-      // Recursive paths
-      _smap = recursivePaths(rmap, decreasing_smap).combine(std::move(_smap));
+      // Repetitive paths
+      _smap = repetitivePaths(rmap, decreasing_smap).combine(std::move(_smap));
 
       // Calculate representatives map
       rmap = _smap.mapInf();

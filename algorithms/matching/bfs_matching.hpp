@@ -94,7 +94,7 @@ private:
    * saturated and b) New paths weren't found. This is calculated here instead
    * of the main loop to avoid recalculation of certain values. 
    */
-  ExitCondition step(const Set& right_vertices);
+  ExitCondition step();
 
   /**
    * @brief Computes alternating paths in a certain direction.
@@ -103,7 +103,7 @@ private:
    * @return Edges belonging to alternating paths that reach unmatched vertices
    * in the aforementioned direction. 
    */
-  Set directedStep(const Set& E, const Set& right_vertices);
+  Set directedStep(const Set& E);
 
   /**
    * @brief Modifies the `dsbg_` member, swapping mapB and mapD for elements of
@@ -111,21 +111,19 @@ private:
    */
   void swapEdgesDirection(const Set& E);
 
+  void swapDirection(const Set& E);
+
   /**
    * @brief Separates in different subset-edges matched and unmatched edges
    * belonging to the same subset-edge in `dsbg_`.
    */
   PWMap partitionSubsetEdges() const;
 
-  /**
-   * @brief Returns edges in `E` that belong to the paths described by the
-   * successor map `smap`. 
-   */
-  Set edgesInPaths(const PWMap& smap, const Set& E) const;
-
   DirectedSBG _dsbg; ///< Directed graph according to matching
   Set _M; ///< Matched edges
   Direction _direction;
+  Set _X;
+  Set _Y;
 };
 
 } // namespace detail

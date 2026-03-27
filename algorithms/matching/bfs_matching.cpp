@@ -48,7 +48,8 @@ bool BFSMatching::ExitCondition::isSatisfied()
 // Algorithm -------------------------------------------------------------------
 
 BFSMatching::BFSMatching() : _M(SET_FACT.createSet()), _dsbg()
-  , _direction(Direction::kForward) {}
+  , _direction(Direction::kForward), _X(SET_FACT.createSet())
+  , _Y(SET_FACT.createSet()) {}
 
 void BFSMatching::swapEdgesDirection(const Set& E)
 {
@@ -60,6 +61,14 @@ void BFSMatching::swapEdgesDirection(const Set& E)
   mapD = temp_mapB.restrict(E).combine(std::move(mapD));
 
   _dsbg = DirectedSBG{_dsbg.V(), _dsbg.Vmap(), mapB, mapD, _dsbg.Emap()};
+}
+
+void BFSMatching::swapDirection(const Set& E)
+{
+  swapEdgesDirection(E);
+  Set temp_X = _X;
+  _X = _Y;
+  _Y = temp_X;
 }
 
 PWMap BFSMatching::partitionSubsetEdges() const
@@ -90,25 +99,7 @@ PWMap BFSMatching::partitionSubsetEdges() const
   return result;
 }
 
-Set BFSMatching::edgesInPaths(const PWMap& smap, const Set& E) const
-{
-  PWMap mapB = _dsbg.mapB().restrict(E);
-  PWMap mapD = _dsbg.mapD().restrict(E);
-
-  // Vertices that are successors of other vertices in a path
-  Set not_fixed = smap.domain().difference(smap.fixedPoints());
-  Set succs = smap.restrict(not_fixed).image();
-  // Edges whose endings are successors 
-  Set ending_edges = mapD.preImage(succs);
-  // Map from a 'successor' edge to its start
-  PWMap auxB = mapB.restrict(ending_edges);
-  // Map from edge to the successor of its start
-  PWMap map_succs = smap.composition(auxB);
- 
-  return map_succs.equalImage(mapD);
-}
-
-Set BFSMatching::directedStep(const Set& E, const Set& right_vertices)
+Set BFSMatching::directedStep(const Set& E)
 {
   PWMap mapB = _dsbg.mapB().restrict(E);
   PWMap mapD = _dsbg.mapD().restrict(E);
@@ -116,58 +107,43 @@ Set BFSMatching::directedStep(const Set& E, const Set& right_vertices)
 
   // Calculate unmatched vertices in the side determined by the current
   // direction of edges
-  Set forward_vertices = _dsbg.V().difference(right_vertices);
   Set matched_forward_vertices = mapB.image(_M);
-  if (_direction == Direction::kBackward) {
-    forward_vertices = right_vertices;
-  }
   Set unmatched_forward_vertices
-    = forward_vertices.difference(matched_forward_vertices);
+    = _X.difference(matched_forward_vertices);
 
   // Detect paths leading to unmatched_forward_vertices
   DirectedSBG restricted_dsbg{_dsbg.V(), _dsbg.Vmap(), mapB, mapD, Emap};
   BFSPaths paths;
-  PWMap smap = paths.calculate(restricted_dsbg, unmatched_forward_vertices);
 
-  // Keep edges
-  Set paths_edges = edgesInPaths(smap, E);
-  PWMap rmap = smap.mapInf();
-  Set reach_unmatched = rmap.preImage(unmatched_forward_vertices);
-  paths_edges = paths_edges.intersection(mapD.preImage(reach_unmatched));
-
-  Util::DEBUG_LOG << "paths_edges in " << _direction << " direction: "
-    << paths_edges << "\n";
-
-  return paths_edges;
+  return paths.calculate(restricted_dsbg, unmatched_forward_vertices);
 }
 
-BFSMatching::ExitCondition BFSMatching::step(const Set& right_vertices)
+BFSMatching::ExitCondition BFSMatching::step()
 {
   Set E = _dsbg.E();
 
   // Forward direction
-  Set paths_edgesD = directedStep(E, right_vertices);
+  Set P = directedStep(E);
 
   // Backward direction
-  swapEdgesDirection(E);
+  swapDirection(E);
   _direction = Direction::kBackward;
-  Set paths_edgesB = directedStep(paths_edgesD, right_vertices);
+  Set augmenting_edges = directedStep(P);
 
-  // Calculate augmenting paths and swap edges in these paths
-  Set augmenting_edges = paths_edgesB.intersection(paths_edgesD);
+  // Swap direction for edges in augmenting paths
   Util::DEBUG_LOG << "augmenting paths: " << augmenting_edges << "\n";
-  swapEdgesDirection(augmenting_edges);
+  swapDirection(augmenting_edges);
 
   // Swap directions in all graph
   swapEdgesDirection(E);
   _direction = Direction::kForward;
 
   // Calculate new matched edges
-  _M = _dsbg.mapD().preImage(right_vertices);
+  _M = _dsbg.mapD().preImage(_Y);
 
   // Calculate exit conditions
   Set matchedU = _dsbg.mapD().image(_M);
-  bool full_match = right_vertices.difference(matchedU).isEmpty();
+  bool full_match = _Y.difference(matchedU).isEmpty();
   bool found_paths = !augmenting_edges.isEmpty();
 
   return ExitCondition{full_match, found_paths};
@@ -204,11 +180,12 @@ MatchData BFSMatching::calculate(const BipartiteSBG& bsbg)
   Util::Internal::TimeProfiler profiler{"Total matching exec time: "};
 
   init(bsbg);
-  Set right_vertices = bsbg.Y();
+  _X = bsbg.X();
+  _Y = bsbg.Y();
 
   ExitCondition exit_cond{false, false};
   do {
-    exit_cond = step(right_vertices);
+    exit_cond = step();
   } while (!exit_cond.isSatisfied());
 
   _M.compact();

@@ -71,8 +71,8 @@ PWMap LtEdgesMRV::repetitivePaths(const PWMap& rmap
       Vi = _smap.image(Vi);
       V = V.disjointCup(Vi);
     }
-    PWMap rec_smap = _smap.restrict(V);
-    Set E_repetition = rec_smap.composition(mapB).equalImage(mapD);
+    PWMap smap_rep = _smap.restrict(V);
+    Set E_repetition = smap_rep.composition(mapB).equalImage(mapD);
     
     Set E_plus = Emap.preImage(Emap.image(E_repetition));
     // In the presence of a cycle, if the minimum vertex belongs to the

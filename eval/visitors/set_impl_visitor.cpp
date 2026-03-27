@@ -57,7 +57,7 @@ int SetImplExprVisitor::operator()(AST::BinOp v) const
 int SetImplExprVisitor::operator()(AST::Call v) const
 {
   int impl = 2;
-  for (const AST::Expr &e : v.args()) {
+  for (const AST::Expr& e : v.args()) {
     impl = std::min(impl, boost::apply_visitor(*this, e));
   }
 
@@ -78,7 +78,7 @@ int SetImplExprVisitor::operator()(AST::MultiDimInter v) const
     return 1;
   }
 
-  for (const AST::Expr &e : v.intervals()) {
+  for (const AST::Expr& e : v.intervals()) {
     impl = std::min(impl, boost::apply_visitor(*this, e));
   }
 
@@ -88,7 +88,7 @@ int SetImplExprVisitor::operator()(AST::MultiDimInter v) const
 int SetImplExprVisitor::operator()(AST::Set v) const
 {
   int impl = 2;
-  for (const AST::Expr &e : v.pieces()) {
+  for (const AST::Expr& e : v.pieces()) {
     impl = std::min(impl, boost::apply_visitor(*this, e));
   }
 
@@ -106,7 +106,7 @@ int SetImplExprVisitor::operator()(AST::LinearExp v) const
 int SetImplExprVisitor::operator()(AST::MDLExp v) const
 {
   int impl = 2;
-  for (const AST::Expr &e : v.exps()) {
+  for (const AST::Expr& e : v.exps()) {
     impl = std::min(impl, boost::apply_visitor(*this, e));
   }
 
@@ -124,7 +124,7 @@ int SetImplExprVisitor::operator()(AST::LinearMap v) const
 int SetImplExprVisitor::operator()(AST::PWLMap v) const
 {
   int impl = 2;
-  for (const AST::Expr &e : v.maps()) {
+  for (const AST::Expr& e : v.maps()) {
     impl = std::min(impl, boost::apply_visitor(*this, e));
   }
 

@@ -55,7 +55,7 @@ public:
    * than once, replicating the same path for every element of the same
    * Set-Vertex.
    */
-  PWMap calculate(const DirectedSBG& dsbg, const Set& endings);
+  Set calculate(const DirectedSBG& dsbg, const Set& endings);
 };
 
 } // namespace detail

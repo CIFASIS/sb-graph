@@ -103,7 +103,7 @@ private:
    * which represents the complement of an ordered set, and an ordered set
    * (other), which represents the complement of an atomic ordered set.
    */
-  std::size_t intersectionComplement(const OrderedSet& other
+  void intersectionComplement(const OrderedSet& other
     , const MultiDimInter& mdi);
 
   /**

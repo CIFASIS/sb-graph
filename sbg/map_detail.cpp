@@ -385,8 +385,8 @@ AtomicMapVector reduce(const MultiDimInter& mdi, const ExpressionImpl& expr
   return reduce(reducible_interval, reducible_expr);
 }
 
-template<typename SetMDIImpl>
-MapVector MapDetail::MDICollectionReduce(const SetMDIImpl& s
+template<typename CompactSetImpl>
+MapVector MapDetail::MDICollectionReduce(const CompactSetImpl& s
   , const ExpressionImpl& expr)
 {
   MapVector result;
@@ -397,7 +397,7 @@ MapVector MapDetail::MDICollectionReduce(const SetMDIImpl& s
     MultiDimInter mdi_copy = mdi;
     ExpressionImpl expr_copy = expr;
     for (const AtomicMap& r : reduced) {
-      UnorderedSet domain;
+      CompactSetImpl domain;
       mdi_copy[k_reduce] = r.first;
       domain.pushBack(mdi_copy);
       expr_copy[k_reduce] = r.second;

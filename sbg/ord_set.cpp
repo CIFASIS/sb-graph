@@ -31,14 +31,13 @@ namespace LIB {
 namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Auxiliary functions
+// Auxiliary functions ---------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
  * @brief Checks if the both set pieces overlap.
  */
-bool overlap(const MultiDimInter& mdi1
-  , const MultiDimInter& mdi2)
+bool overlap(const MultiDimInter& mdi1, const MultiDimInter& mdi2)
 {
   const auto max1 = mdi1.maxElem();
   const auto min1 = mdi1.minElem();
@@ -430,29 +429,32 @@ OrderedSet OrderedSet::complementAtom() const
   return OrderedSet{std::move(result)};
 }
 
-std::size_t OrderedSet::intersectionComplement(const OrderedSet& local_complement
-  , const MultiDimInter& mdi) 
+void OrderedSet::intersectionComplement(const OrderedSet&
+  local_complement, const MultiDimInter& mdi) 
 {
   // Special cases
   if (isEmpty()) {
-    return 0;
+    return;
   }
 
   // General case
-  std::size_t i = 0;
+
   // Values in the partial result "before" the current MDI all belong to the
   // complement of the processed MDIs, the current MDI and also to the remaining
   // MDIs, so there's no need to keep calculating with them.
+  OrderedSet result;
+  auto it = _pieces.begin();
   for (const MultiDimInter& elem : _pieces) {
     if (!(elem.maxElem() < mdi.minElem())) {
       break;
     }
-    ++i;
+    ++it;
   } 
+  result._pieces.insert(result.end(), std::make_move_iterator(_pieces.begin())
+    , std::make_move_iterator(it));
 
   NAT global_position = 0;
-  OrderedSet result;
-  for (auto it = _pieces.begin() + i; it != _pieces.end(); ++it) {
+  for (; it != _pieces.end(); ++it) {
     const MultiDimInter& elem = *it;
     global_position = result.advanceHint(global_position, elem);
     // Discard elements in the complement of processed MDIs that belong to the
@@ -472,8 +474,6 @@ std::size_t OrderedSet::intersectionComplement(const OrderedSet& local_complemen
     }
   }
   _pieces = std::move(result._pieces);
-
-  return i;
 }
 
 OrderedSet OrderedSet::complement() const
@@ -483,23 +483,16 @@ OrderedSet OrderedSet::complement() const
   }
 
   OrderedSet result = OrderedSet{_pieces.front()}.complementAtom();
-  std::size_t i = 0;
   std::size_t j = 0;
   for (const MultiDimInter& mdi : _pieces) {
     if (j > 0) {
       OrderedSet c = OrderedSet{mdi}.complementAtom();
-      i = result.intersectionComplement(c, mdi);
+      result.intersectionComplement(c, mdi);
     }
     ++j;
   }
 
-  // Calculate remnant
-  OrderedSet remnant;
-  for (j = 0; j < i; ++j) {
-    remnant.pushBack(result._pieces[j]);
-  }
-
-  return std::move(remnant).disjointCup(std::move(result));
+  return result;
 }
 
 OrderedSet OrderedSet::difference(const OrderedSet& other) const
@@ -583,26 +576,26 @@ OrderedSet OrderedSet::disjointCup(OrderedSet&& other) &&
       , std::make_move_iterator(other._pieces.end()));
     result.insert(result.end(), std::make_move_iterator(_pieces.begin())
       , std::make_move_iterator(_pieces.end()));
-  }
-
-  // General case
-  auto it1 = _pieces.begin();
-  auto end1 = _pieces.end();
-  auto it2 = other._pieces.begin();
-  auto end2 = other._pieces.end();
-  while (it1 != end1 && it2 != end2) {
-    if (*it1 < *it2) {
-      result.push_back(*it1);
-      ++it1;
-    } else {
-      result.push_back(*it2);
-      ++it2;
+  } else{ 
+    // General case
+    auto it1 = _pieces.begin();
+    auto end1 = _pieces.end();
+    auto it2 = other._pieces.begin();
+    auto end2 = other._pieces.end();
+    while (it1 != end1 && it2 != end2) {
+      if (*it1 < *it2) {
+        result.push_back(*it1);
+        ++it1;
+      } else {
+        result.push_back(*it2);
+        ++it2;
+      }
     }
+    result.insert(result.end(), std::make_move_iterator(it1)
+      , std::make_move_iterator(end1));
+    result.insert(result.end(), std::make_move_iterator(it2)
+      , std::make_move_iterator(end2));
   }
-  result.insert(result.end(), std::make_move_iterator(it1)
-    , std::make_move_iterator(end1));
-  result.insert(result.end(), std::make_move_iterator(it2)
-    , std::make_move_iterator(end2));
 
   return OrderedSet{std::move(result)};
 }

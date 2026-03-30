@@ -912,4 +912,158 @@ SBG::LIB::WeightedSBGraph create_air_conditioners_graph()
   return graph;
 }
 
+
+WeightedSBGraph create_air_conditioners_with_controller_graph(int size)
+{
+  int quarter = size / 4;
+  int start_q = (2 * size) + 13;
+  int q = size / 4;
+
+  Set nodes = SET_FACT.createSet();
+
+  // th [label="N1=th {0:999}"]
+  auto th = Interval(0, 1, size - 1);
+  nodes.emplaceBack(th);
+  // ierr [label="N2=ierr{1000:1000}"]
+  auto ierr   = Interval(size, 1, size);
+  nodes.emplaceBack(ierr);
+  // ptotal [label="N3=ptotal {1001:1001}"]
+  auto ptotal = Interval(size + 1, 1, size + 1);
+  nodes.emplaceBack(ptotal);
+  // ev_1 [label="N4=ev_1 {1002:1005}"
+  auto ev_1 = Interval(size + 2, 1, size + 5);
+  nodes.emplaceBack(ev_1);
+  // ev_2 [label="N5=ev_2 {1006:1009}"]
+  auto ev_2 = Interval(size + 6, 1, size + 9);
+  nodes.emplaceBack(ev_2);
+  // ev_3 [label="N6=ev_3 {1010:1010}"]
+  auto ev_3 = Interval(size + 10, 1, size + 10);
+  nodes.emplaceBack(ev_3);
+  // ev_4 [label="N7=ev_4 {1011:1011}"]
+  auto ev_4 = Interval(size + 11, 1, size + 11);
+  nodes.emplaceBack(ev_4);
+  // ev_5 [label="N8=ev_5 {1012:1012}"]
+  auto ev_5 = Interval(size + 12, 1, size + 12);
+  nodes.emplaceBack(ev_5);
+  // ev_6 [label="N9=ev_6 {1013:2012}"]
+  auto ev_6 = Interval(size + 13, 1, (2 * size) + 12);
+  nodes.emplaceBack(ev_6);
+  // ev_7 [label="N10=ev_7 {2013:2262}"]
+  auto ev_7  = Interval(start_q, 1, start_q + quarter - 1);
+  nodes.emplaceBack(ev_7);
+  // ev_8 [label="N11=ev_8 {2263:2512}"]
+  auto ev_8  = Interval(start_q + quarter, 1, start_q + (2 * quarter) - 1);
+  nodes.emplaceBack(ev_8);
+  // ev_9 [label="N12=ev_9 {2513:2762}"]
+  auto ev_9  = Interval(start_q + (2 * quarter), 1, start_q + (3 * quarter) - 1);
+  nodes.emplaceBack(ev_9);
+  // ev_10 [label="N13=ev_10 {2763:3012}"]
+  auto ev_10 = Interval(start_q + (3 * quarter), 1, start_q + (4 * quarter) - 1);
+  nodes.emplaceBack(ev_10);
+
+  // maps
+  PWMap rhs_maps = PW_FACT.createPWMap();
+  PWMap lhs_maps = PW_FACT.createPWMap();
+
+  // th -> ev_6 [label="<- {3013:4012} -> ", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(3 * size + 13, 1, 4 * size + 12), Exp(LExp(1, RATIONAL(-(3 * size + 13), 1)))));
+  lhs_maps.emplaceBack(Map(Interval(3 * size + 13, 1, 4 * size + 12), Exp(LExp(1, RATIONAL(-(2 * size), 1)))));
+
+  // th -> ev_7 [label="<- {4013:4262} -> ", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(4 * size + 13, 1, 4 * size + 12 + q), Exp(LExp(1, RATIONAL(-(4 * size + 13), 1)))));
+  lhs_maps.emplaceBack(Map(Interval(4 * size + 13, 1, 4 * size + 12 + q), Exp(LExp(1, RATIONAL(-(2 * size), 1)))));
+
+  // th -> ev_8 [label="<- {4263:4512} -> ", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(4 * size + 13 + q, 1, 4 * size + 12 + 2 * q), Exp(LExp(1, RATIONAL(-(4 * size + 13), 1)))));
+  lhs_maps.emplaceBack(Map(Interval(4 * size + 13 + q, 1, 4 * size + 12 + 2 * q), Exp(LExp(1, RATIONAL(-(2 * size), 1)))));
+
+  // th -> ev_9 [label="<- {4513:4762} -> ", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(4 * size + 13 + 2 * q, 1, 4 * size + 12 + 3 * q), Exp(LExp(1, RATIONAL(-(4 * size + 13), 1)))));
+  lhs_maps.emplaceBack(Map(Interval(4 * size + 13 + 2 * q, 1, 4 * size + 12 + 3 * q), Exp(LExp(1, RATIONAL(-(2 * size), 1)))));
+
+  // th -> ev_10 [label="<- {4763:5012} -> ", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(4 * size + 13 + 3 * q, 1, 5 * size + 12), Exp(LExp(1, RATIONAL(-(4 * size + 13), 1)))));
+  lhs_maps.emplaceBack(Map(Interval(4 * size + 13 + 3 * q, 1, 5 * size + 12), Exp(LExp(1, RATIONAL(-(2 * size), 1)))));
+
+  // ierr -> ev_3 [label="<- {5013:5013} -> ", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(5 * size + 13, 1, 5 * size + 13), Exp(LExp(0, size))));
+  lhs_maps.emplaceBack(Map(Interval(5 * size + 13, 1, 5 * size + 13), Exp(LExp(0, size + 10))));
+
+  // ierr -> ev_4 [label="<- {5014:5014} -> ", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(5 * size + 14, 1, 5 * size + 14), Exp(LExp(0, size))));
+  lhs_maps.emplaceBack(Map(Interval(5 * size + 14, 1, 5 * size + 14), Exp(LExp(0, size + 11))));
+
+  // ierr -> ev_5 [label="<- {5015:5015} -> ", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(5 * size + 15, 1, 5 * size + 15), Exp(LExp(0, size))));
+  lhs_maps.emplaceBack(Map(Interval(5 * size + 15, 1, 5 * size + 15), Exp(LExp(0, size + 12))));
+
+  // ptotal -> ev_1 [label="1001 <- {5016:5019} -> ", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(5 * size + 16, 1, 5 * size + 19), Exp(LExp(0, size + 1))));
+  lhs_maps.emplaceBack(Map(Interval(5 * size + 16, 1, 5 * size + 19), Exp(LExp(1, RATIONAL(-(4 * size + 14), 1)))));
+
+  // ptotal -> ev_2 [label="1001 <- {5020:5023} -> ", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(5 * size + 20, 1, 5 * size + 23), Exp(LExp(0, size + 1))));
+  lhs_maps.emplaceBack(Map(Interval(5 * size + 20, 1, 5 * size + 23), Exp(LExp(1, RATIONAL(-(4 * size + 14), 1)))));
+  
+  // ptotal -> ev_5 [label="1001 <- {5024:5024} -> 1012", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(5 * size + 24, 1, 5 * size + 24), Exp(LExp(0, size + 1))));
+  lhs_maps.emplaceBack(Map(Interval(5 * size + 24, 1, 5 * size + 24), Exp(LExp(1, RATIONAL(-(4 * size + 12), 1)))));
+
+  // ev_1 -> ev_2 [label=" <- {5025:5028} -> ", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(5 * size + 25, 1, 5 * size + 28), Exp(LExp(1, RATIONAL(-(4 * size + 23), 1)))));
+  lhs_maps.emplaceBack(Map(Interval(5 * size + 25, 1, 5 * size + 28), Exp(LExp(1, RATIONAL(-(4 * size + 19), 1)))));
+
+  // ev_1 -> ev_7 [label="1002 <- {5029:5278} -> ", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(5 * size + 29, 1, 5 * size + 28 + q), Exp(LExp(0, size + 2))));
+  lhs_maps.emplaceBack(Map(Interval(5 * size + 29, 1, 5 * size + 28 + q), Exp(LExp(1, RATIONAL(-(3 * size + 16), 1)))));
+
+  // ev_1 -> ev_8 [label="1003 <- {5279:5528} -> ", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(5 * size + 29 + q, 1, 5 * size + 28 + 2 * q), Exp(LExp(0, size + 3))));
+  lhs_maps.emplaceBack(Map(Interval(5 * size + 29 + q, 1, 5 * size + 28 + 2 * q), Exp(LExp(1, RATIONAL(-(3 * size + 16), 1)))));
+
+  // ev_1 -> ev_9 [label="1004 <- {5529:5778} -> ", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(5 * size + 29 + 2 * q, 1, 5 * size + 28 + 3 * q), Exp(LExp(0, size + 4))));
+  lhs_maps.emplaceBack(Map(Interval(5 * size + 29 + 2 * q, 1, 5 * size + 28 + 3 * q), Exp(LExp(1, RATIONAL(-(3 * size + 16), 1)))));
+
+  // ev_1 -> ev_10 [label="1005 <- {5779:6028} -> ", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(5 * size + 29 + 3 * q, 1, 6 * size + 28), Exp(LExp(0, size + 5))));
+  lhs_maps.emplaceBack(Map(Interval(5 * size + 29 + 3 * q, 1, 6 * size + 28), Exp(LExp(1, RATIONAL(-(3 * size + 16), 1)))));
+
+  // ev_3 -> ev_5 [label="1010 <- {6029:6029} -> 1012", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(6 * size + 29, 1, 6 * size + 29), Exp(LExp(0, size + 10))));
+  lhs_maps.emplaceBack(Map(Interval(6 * size + 29, 1, 6 * size + 29), Exp(LExp(0, size + 12))));
+
+  // ev_4 -> ev_5 [label="1011 <- {6030:6030} -> 1012", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(6 * size + 30, 1, 6 * size + 30), Exp(LExp(0, size + 11))));
+  lhs_maps.emplaceBack(Map(Interval(6 * size + 30, 1, 6 * size + 30), Exp(LExp(0, size + 12))));
+
+  // ev_5 -> ev_7 [label="1012 <- {6031:6280} -> ", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(6 * size + 31, 1, 6 * size + 30 + q), Exp(LExp(0, size + 12))));
+  lhs_maps.emplaceBack(Map(Interval(6 * size + 31, 1, 6 * size + 30 + q), Exp(LExp(1, RATIONAL(-(4 * size + 18), 1)))));
+
+  // ev_5 -> ev_8 [label="1012 <- {6281:6530} -> ", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(6 * size + 31 + q, 1, 6 * size + 30 + 2 * q), Exp(LExp(0, size + 12))));
+  lhs_maps.emplaceBack(Map(Interval(6 * size + 31 + q, 1, 6 * size + 30 + 2 * q), Exp(LExp(1, RATIONAL(-(4 * size + 18), 1)))));
+
+  // ev_5 -> ev_9 [label="1012 <- {6531:6780} -> ", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(6 * size + 31 + 2 * q, 1, 6 * size + 30 + 3 * q), Exp(LExp(0, size + 12))));
+  lhs_maps.emplaceBack(Map(Interval(6 * size + 31 + 2 * q, 1, 6 * size + 30 + 3 * q), Exp(LExp(1, RATIONAL(-(4 * size + 18), 1)))));
+
+  // ev_5 -> ev_10 [label="1012 <- {6781:7030} -> ", arrowhead="none"]
+  rhs_maps.emplaceBack(Map(Interval(6 * size + 31 + 3 * q, 1, 7 * size + 30), Exp(LExp(0, size + 12))));
+  lhs_maps.emplaceBack(Map(Interval(6 * size + 31 + 3 * q, 1, 7 * size + 30), Exp(LExp(1, RATIONAL(-(4 * size + 18), 1)))));
+
+  auto vmap = PW_FACT.createPWMap();
+  auto vsap = PW_FACT.createPWMap();
+  auto emap = PW_FACT.createPWMap();
+
+  // Now, let's build a graph!
+  SBG::LIB::WeightedSBGraph graph(nodes, vmap, lhs_maps, rhs_maps, emap, vsap);  // This will be our graph
+
+  cout << graph << endl;
+
+  return graph;
+
+}
+
 }  // namespace sbg_partitioner

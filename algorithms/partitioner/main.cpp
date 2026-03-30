@@ -187,16 +187,42 @@ void read_directory(const std::string& name, std::vector<std::string>& v)
   std::transform(start, end, std::back_inserter(v), path_leaf_string);
 }
 
+int get_air_conditioners_controller_size(const string& name)
+{
+  size_t last_underscore = name.find_last_of('_');
+  size_t last_dot = name.find_last_of('.');
+
+  if (last_underscore != std::string::npos && last_dot != std::string::npos) {
+      // Extract the string between '_' and '.'
+      std::string size_str = name.substr(last_underscore + 1, last_dot - last_underscore - 1);
+      int size = std::stoi(size_str);
+      return size;
+  }
+
+    cerr << "the file does not have the expected format" << std::endl;
+    throw 1;
+}
+
 tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> partitionate_traditional(const PartitionerParams& params)
 {
   auto start_build_graph = chrono::high_resolution_clock::now();
-  auto sb_graph = build_sb_graph(params.filename->c_str());
-  auto end_build_graph = chrono::high_resolution_clock::now();
-  auto time_to_build_graph = chrono::duration<double, std::milli>(end_build_graph - start_build_graph).count();
+  unique_ptr<SBG::LIB::WeightedSBGraph> sb_graph_ptr;
+  auto filename = *params.filename;
+  double time_to_build_graph = 0.;
+  if (filename.find("air_conditioners_cont") != std::string::npos) {
+    auto size = get_air_conditioners_controller_size(filename);
+    auto sb_graph = create_air_conditioners_with_controller_graph(size);
+    auto end_build_graph = chrono::high_resolution_clock::now();
+    auto time_to_build_graph = chrono::duration<double, std::milli>(end_build_graph - start_build_graph).count();
+    sb_graph_ptr = make_unique<SBG::LIB::WeightedSBGraph>(move(sb_graph));
+  } else {
+    auto sb_graph = build_sb_graph(filename, false);
+    sb_graph_ptr = make_unique<SBG::LIB::WeightedSBGraph>(move(sb_graph));
+  }
 
-  cout << "sb_graph: " << sb_graph << endl;
+  cout << "sb_graph: " << *sb_graph_ptr << endl;
   cout << "connections:\n";
-  for (auto it1 = sb_graph.map1().begin(), it2 = sb_graph.map2().begin(); it1 != sb_graph.map1().end() and it2 != sb_graph.map2().end(); ++it1, ++it2) {
+  for (auto it1 = sb_graph_ptr->map1().begin(), it2 = sb_graph_ptr->map2().begin(); it1 != sb_graph_ptr->map1().end() and it2 != sb_graph_ptr->map2().end(); ++it1, ++it2) {
     auto n1 = (*it1).image();
     auto n2 = (*it2).image();
     cout << n1 << ", " << n2 << "\n";
@@ -204,15 +230,15 @@ tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> parti
   cout << endl;
 
   auto start_partitionate = chrono::high_resolution_clock::now();
-  auto partitions = PartitionMap();
-      // best_initial_partition(sb_graph, *params.number_of_partitions, params.initial_partition_strategy, params.enable_multithreading);
-  // cout << "chosen partition " << partitions << endl;
+  auto partitions = 
+      best_initial_partition(*sb_graph_ptr, *params.number_of_partitions, params.initial_partition_strategy, params.enable_multithreading);
+  cout << "chosen partition " << partitions << endl;
 
-  // kl_sbg_imbalance_partitioner(sb_graph, partitions, params.epsilon, params.enable_multithreading);
+  kl_sbg_imbalance_partitioner(*sb_graph_ptr, partitions, params.epsilon, params.enable_multithreading);
   auto end_partitionate = chrono::high_resolution_clock::now();
   auto time_to_partitionate = chrono::duration<double, std::milli>(end_partitionate - start_partitionate).count();
 
-  return {make_unique<SBG::LIB::WeightedSBGraph>(move(sb_graph)), partitions, time_to_build_graph, time_to_partitionate};
+  return {move(sb_graph_ptr), partitions, time_to_build_graph, time_to_partitionate};
 }
 
 tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> partitionate_using_adjacency_matrix(
@@ -329,7 +355,7 @@ int main(int argc, char** argv)
   optind = 0;
   while (true) {
     int option_index = 0;
-    opt = getopt_long(argc, argv, "c:f:p:e:o:g:d:i:tmvh:", long_options, &option_index);
+    opt = getopt_long(argc, argv, "c:f:p:e:o:g:d:i:ktmvh:", long_options, &option_index);
     if (opt == EOF) break;
 
     switch (opt) {
@@ -443,14 +469,14 @@ int main(int argc, char** argv)
   if (params.compute_metrics) {
     map<string, metrics::communication_metrics> metrics;
 
-    // int edge_cut = metrics::edge_cut(partitions, *sb_graph);
+    int edge_cut = metrics::edge_cut(partitions, *sb_graph);
 
-    // auto [comm_volume, max_comm_volume] = metrics::communication_volume(partitions, *sb_graph);
+    auto [comm_volume, max_comm_volume] = metrics::communication_volume(partitions, *sb_graph);
 
-    // auto max_imb = metrics::maximum_imbalance(partitions, *sb_graph);
+    auto max_imb = metrics::maximum_imbalance(partitions, *sb_graph);
 
-    // metrics::communication_metrics comm_metrics = metrics::communication_metrics{edge_cut, comm_volume, max_comm_volume, max_imb};
-    // metrics["sbg-partitioner"] = comm_metrics;
+    metrics::communication_metrics comm_metrics = metrics::communication_metrics{edge_cut, comm_volume, max_comm_volume, max_imb};
+    metrics["sbg-partitioner"] = comm_metrics;
 
     if (params.compute_metrics and params.directory) {
       std::vector<std::string> dir_files;
@@ -467,17 +493,19 @@ int main(int argc, char** argv)
 
         int edge_cut = metrics::edge_cut(partition_from_file, *sb_graph);
 
-        // auto [comm_volume, max_comm_volume] = metrics::communication_volume(partition_from_file, *sb_graph);
+        auto [comm_volume, max_comm_volume] = metrics::communication_volume(partition_from_file, *sb_graph);
 
-        // auto max_imb = metrics::maximum_imbalance(partition_from_file, *sb_graph);
+        auto max_imb = metrics::maximum_imbalance(partition_from_file, *sb_graph);
 
-        metrics::communication_metrics comm_metrics = metrics::communication_metrics{edge_cut, 0, 0, 0};
+        metrics::communication_metrics comm_metrics = metrics::communication_metrics{edge_cut, comm_volume, max_comm_volume, };
         metrics[std::filesystem::path(f).filename().string()] = comm_metrics;
       }
     }
 
+    ofstream metrics_file(*params.directory + "/metrics.csv");
     for (const auto& [f, m] : metrics) {
       cout << f << ": " << m << endl;
+      metrics_file << f << ", " << m << endl;
     }
   }
 

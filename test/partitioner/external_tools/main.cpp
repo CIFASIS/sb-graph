@@ -113,9 +113,12 @@ int main(int argc, char* argv[])
 
   parseArgs(argc, argv, json_file_name, partitions, partition_method, imbalance);
 
+  std::cout << "Partitioning " << json_file_name << " into " << partitions << " parts using " << partition_method << std::endl;
+
   std::vector<std::chrono::duration<double>> durations;
 
   for (size_t i = 0; i < number_of_executions; i++) {
+    std::cout << "running " << i << " of " << number_of_executions << std::endl;
     GraphPartitioner partitioner(json_file_name);
     auto [partition, duration] = partitioner.createPartition(partition_method, partitions, i == number_of_executions - 1);
 

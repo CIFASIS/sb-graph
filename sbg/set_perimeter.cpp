@@ -1,0 +1,51 @@
+/*******************************************************************************
+
+ This file is part of Set--Based Graph Library.
+
+ SBG Library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ SBG Library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
+
+#include "sbg/set_perimeter.hpp"
+
+namespace SBG {
+
+namespace LIB {
+
+////////////////////////////////////////////////////////////////////////////////
+// Set perimeter ---------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+SetPerimeter::SetPerimeter(const MD_NAT& min, const MD_NAT& max)
+  : _min(min), _max(max) {}
+
+const MD_NAT& SetPerimeter::min() const { return _min; }
+
+const MD_NAT& SetPerimeter::max() const { return _max; }
+
+bool SetPerimeter::overlap(const SetPerimeter& other) const
+{
+  std::size_t arity = _min.arity();
+  for (std::size_t j = 0; j < arity; ++j) {
+    if (_max[j] < other._min[j] || other._max[j] < _min[j]) {
+      return false;
+    }
+  }
+  
+  return true;
+}
+
+} // namespace LIB
+
+} // namespace SBG

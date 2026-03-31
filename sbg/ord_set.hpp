@@ -29,6 +29,7 @@
 #include "sbg/interval.hpp"
 #include "sbg/multidim_inter.hpp"
 #include "sbg/natural.hpp"
+#include "sbg/set_perimeter.hpp"
 
 #include <iosfwd>
 #include <memory>
@@ -46,15 +47,15 @@ namespace detail {
 
 class OrderedSet {
 public:
-  using MDIOrdCollection = std::vector<detail::MultiDimInter>;
-  using ConstIt = MDIOrdCollection::const_iterator;
+  using OrdMDICollection = std::vector<detail::MultiDimInter>;
+  using ConstIt = OrdMDICollection::const_iterator;
 
   OrderedSet();
   OrderedSet(const MD_NAT& x);
   OrderedSet(const detail::Interval& i);
   OrderedSet(const detail::MultiDimInter& mdi);
-  OrderedSet(const MDIOrdCollection& pieces);
-  OrderedSet(MDIOrdCollection&& pieces);
+  OrderedSet(const OrdMDICollection& pieces);
+  OrderedSet(OrdMDICollection&& pieces);
   OrderedSet(const FixedPointsInfo& info);
 
   ConstIt begin() const;
@@ -89,6 +90,7 @@ public:
   OrderedSet disjointCup(OrderedSet&& other) const &;
   OrderedSet disjointCup(OrderedSet&& other) &&;
   OrderedSet offset(const MD_NAT& off) const;
+  SetPerimeter perimeter() const;
   void compact();
 
 private:
@@ -111,7 +113,7 @@ private:
    */
   OrderedSet complementAtom() const;
 
-  MDIOrdCollection _pieces;
+  OrdMDICollection _pieces;
 };
 
 } // namespace detail

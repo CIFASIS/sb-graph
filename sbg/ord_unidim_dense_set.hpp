@@ -32,6 +32,7 @@
 #include "sbg/interval.hpp"
 #include "sbg/multidim_inter.hpp"
 #include "sbg/natural.hpp"
+#include "sbg/set_perimeter.hpp"
 
 #include <iosfwd>
 #include <memory>
@@ -49,14 +50,14 @@ namespace detail {
 
 class OrdUnidimDenseSet {
 public:
-  using IntervalOrdCollection = std::vector<Interval>;
-  using ConstIt = IntervalOrdCollection::const_iterator;
+  using OrdIntervalCollection = std::vector<Interval>;
+  using ConstIt = OrdIntervalCollection::const_iterator;
 
   OrdUnidimDenseSet();
   OrdUnidimDenseSet(const NAT x);
   OrdUnidimDenseSet(const detail::Interval& i);
-  OrdUnidimDenseSet(const IntervalOrdCollection& pieces);
-  OrdUnidimDenseSet(IntervalOrdCollection&& pieces);
+  OrdUnidimDenseSet(const OrdIntervalCollection& pieces);
+  OrdUnidimDenseSet(OrdIntervalCollection&& pieces);
   OrdUnidimDenseSet(const FixedPointsInfo& info);
 
   ConstIt begin() const;
@@ -91,6 +92,7 @@ public:
   OrdUnidimDenseSet disjointCup(OrdUnidimDenseSet&& other) const &;
   OrdUnidimDenseSet disjointCup(OrdUnidimDenseSet&& other) &&;
   OrdUnidimDenseSet offset(const MD_NAT& offset) const;
+  SetPerimeter perimeter() const;
   void compact();
 
 private:
@@ -114,7 +116,7 @@ private:
     , const OrdUnidimDenseSet& other) const;
 
 private:
-  IntervalOrdCollection _pieces;
+  OrdIntervalCollection _pieces;
 };
 
 } // namespace detail

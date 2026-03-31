@@ -37,8 +37,8 @@ Interval least(const Interval& lhs, const Interval& rhs)
   return lhs < rhs ? lhs : rhs;
 }
 
-bool overlap(const OrdUnidimDenseSet::IntervalOrdCollection& lhs,
-  const OrdUnidimDenseSet::IntervalOrdCollection& rhs)
+bool overlap(const OrdUnidimDenseSet::OrdIntervalCollection& lhs,
+  const OrdUnidimDenseSet::OrdIntervalCollection& rhs)
 {
   return lhs.back().end() >= rhs.front().begin()
     || rhs.back().end() >= lhs.front().begin();
@@ -49,10 +49,10 @@ Interval intersection(const Interval& lhs, const Interval& rhs)
   return lhs.intersection(rhs);
 }
 
-OrdUnidimDenseSet::IntervalOrdCollection
-  compact(const OrdUnidimDenseSet::IntervalOrdCollection& c)
+OrdUnidimDenseSet::OrdIntervalCollection
+  compact(const OrdUnidimDenseSet::OrdIntervalCollection& c)
 {
-  OrdUnidimDenseSet::IntervalOrdCollection result;
+  OrdUnidimDenseSet::OrdIntervalCollection result;
 
   if (c.empty()) {
     return result;
@@ -98,11 +98,11 @@ OrdUnidimDenseSet::OrdUnidimDenseSet(const Interval& i) : _pieces()
 }
 
 OrdUnidimDenseSet::OrdUnidimDenseSet(
-  const OrdUnidimDenseSet::IntervalOrdCollection& pieces)
+  const OrdUnidimDenseSet::OrdIntervalCollection& pieces)
   : _pieces(pieces) {}
 
 OrdUnidimDenseSet::OrdUnidimDenseSet(
-  OrdUnidimDenseSet::IntervalOrdCollection&& pieces)
+  OrdUnidimDenseSet::OrdIntervalCollection&& pieces)
   : _pieces(std::move(pieces)) {}
 
 OrdUnidimDenseSet::OrdUnidimDenseSet(const FixedPointsInfo& info)
@@ -303,7 +303,7 @@ OrdUnidimDenseSet OrdUnidimDenseSet::cup(OrdUnidimDenseSet&& other) &&
     return OrdUnidimDenseSet{std::move(other._pieces)};
   }
 
-  IntervalOrdCollection result;
+  OrdIntervalCollection result;
   if (!overlap(_pieces, other._pieces)) {
     return std::move(*this).disjointCup(std::move(other));
   }
@@ -411,7 +411,7 @@ OrdUnidimDenseSet OrdUnidimDenseSet::disjointCup(OrdUnidimDenseSet&& other) &&
   }
 
   if (!overlap(_pieces, other._pieces)) {
-    IntervalOrdCollection result;
+    OrdIntervalCollection result;
     result.insert(result.end(), std::make_move_iterator(_pieces.begin())
       , std::make_move_iterator(_pieces.end()));
     result.insert(result.end(), std::make_move_iterator(other._pieces.begin())
@@ -433,13 +433,18 @@ OrdUnidimDenseSet OrdUnidimDenseSet::offset(const MD_NAT& offset) const
   return result;
 }
 
+SetPerimeter OrdUnidimDenseSet::perimeter() const
+{
+  return SetPerimeter{minElem(), maxElem()};
+}
+
 void OrdUnidimDenseSet::compact()
 {
   if (isEmpty()) {
     return;
   }
 
-  IntervalOrdCollection result;
+  OrdIntervalCollection result;
   auto next_it = _pieces.begin();
   ++next_it;
   Interval compacted = _pieces.front();

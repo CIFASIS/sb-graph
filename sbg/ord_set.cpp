@@ -82,10 +82,10 @@ OrderedSet::OrderedSet(const MultiDimInter& mdi) : _pieces()
   }
 }
 
-OrderedSet::OrderedSet(const OrderedSet::MDIOrdCollection& pieces)
+OrderedSet::OrderedSet(const OrderedSet::OrdMDICollection& pieces)
   : _pieces(pieces) {}
 
-OrderedSet::OrderedSet(OrderedSet::MDIOrdCollection&& pieces)
+OrderedSet::OrderedSet(OrderedSet::OrdMDICollection&& pieces)
   : _pieces(std::move(pieces)) {}
 
 OrderedSet::OrderedSet(const FixedPointsInfo& info) : _pieces()
@@ -253,8 +253,8 @@ OrderedSet OrderedSet::intersectionEpilogue(const OrderedSet& lhs
   OrderedSet result;
 
   // General case
-  OrderedSet::MDIOrdCollection short_set = lhs._pieces;
-  OrderedSet::MDIOrdCollection long_set = rhs._pieces;
+  OrderedSet::OrdMDICollection short_set = lhs._pieces;
+  OrderedSet::OrdMDICollection long_set = rhs._pieces;
   if (rhs._pieces.size() < lhs._pieces.size()) {
     short_set = rhs._pieces;
     long_set  = lhs._pieces;
@@ -352,14 +352,14 @@ OrderedSet OrderedSet::cup(OrderedSet&& other) &&
   }
 
   if (maxElem() < other.minElem()) {
-    MDIOrdCollection result = std::move(_pieces);
+    OrdMDICollection result = std::move(_pieces);
     result.insert(result.end(), std::make_move_iterator(other._pieces.begin())
       , std::make_move_iterator(other._pieces.end()));
     return OrderedSet{std::move(result)};
   }
 
   if (other.maxElem() < minElem()) {
-    MDIOrdCollection result = std::move(other._pieces);
+    OrdMDICollection result = std::move(other._pieces);
     result.insert(result.end(), std::make_move_iterator(_pieces.begin())
       , std::make_move_iterator(_pieces.end()));
     return OrderedSet{std::move(result)};
@@ -371,7 +371,7 @@ OrderedSet OrderedSet::cup(OrderedSet&& other) &&
 
 OrderedSet OrderedSet::complementAtom() const
 {
-  MDIOrdCollection result;
+  OrdMDICollection result;
 
   MultiDimInter mdi = *_pieces.begin();
   MultiDimInter dense_mdi;
@@ -565,7 +565,7 @@ OrderedSet OrderedSet::disjointCup(OrderedSet&& other) &&
     return std::move(*this);
   }
 
-  MDIOrdCollection result;
+  OrdMDICollection result;
   if (_pieces.back() < other._pieces.front()) {
     result.insert(result.end(), std::make_move_iterator(_pieces.begin())
       , std::make_move_iterator(_pieces.end()));
@@ -576,7 +576,7 @@ OrderedSet OrderedSet::disjointCup(OrderedSet&& other) &&
       , std::make_move_iterator(other._pieces.end()));
     result.insert(result.end(), std::make_move_iterator(_pieces.begin())
       , std::make_move_iterator(_pieces.end()));
-  } else{ 
+  } else { 
     // General case
     auto it1 = _pieces.begin();
     auto end1 = _pieces.end();
@@ -611,9 +611,31 @@ OrderedSet OrderedSet::offset(const MD_NAT& off) const
   return result;
 }
 
+SetPerimeter OrderedSet::perimeter() const
+{
+  MD_NAT min;
+  MD_NAT max;
+
+  if (!isEmpty()) {
+    std::size_t arity = this->arity();
+    min = MD_NAT{arity, Inf};
+    max = MD_NAT{arity, 0};
+    for (const MultiDimInter& mdi : _pieces) {
+      MD_NAT candidate_min = mdi.minElem();
+      MD_NAT candidate_max = mdi.maxElem();
+      for (size_t i = 0; i < arity; ++i) {
+        min[i] = std::min(min[i], candidate_min[i]);
+        max[i] = std::max(max[i], candidate_max[i]);
+      }
+    }
+  }
+
+  return SetPerimeter{min, max};
+}
+
 void OrderedSet::compact()
 {
-  MDIOrdCollection result;
+  OrdMDICollection result;
 
   if (!isEmpty()) {
     std::set<MultiDimInter> prev{_pieces.begin(), _pieces.end()};

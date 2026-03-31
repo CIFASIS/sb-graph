@@ -29,6 +29,7 @@
 #include "sbg/interval.hpp"
 #include "sbg/multidim_inter.hpp"
 #include "sbg/natural.hpp"
+#include "sbg/set_perimeter.hpp"
 
 #include <iosfwd>
 #include <memory>
@@ -89,6 +90,7 @@ public:
   UnorderedSet disjointCup(UnorderedSet&& other) const &;
   UnorderedSet disjointCup(UnorderedSet&& other) &&;
   UnorderedSet offset(const MD_NAT& off) const;
+  SetPerimeter perimeter() const;
   void compact();
 
 private:

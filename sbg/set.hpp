@@ -41,6 +41,7 @@
 #include "sbg/ord_set.hpp"
 #include "sbg/ord_unidim_dense_set.hpp"
 #include "sbg/set.hpp"
+#include "sbg/set_perimeter.hpp"
 #include "sbg/unord_set.hpp"
 
 #include <iosfwd>
@@ -108,6 +109,7 @@ public:
   Set disjointCup(Set&& other) const &;
   Set disjointCup(Set&& other) &&;
   Set offset(const MD_NAT& off) const;
+  SetPerimeter perimeter() const;
   void compact();
 
 private:

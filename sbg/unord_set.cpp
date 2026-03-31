@@ -413,6 +413,28 @@ UnorderedSet UnorderedSet::offset(const MD_NAT& off) const
   return result;
 }
 
+SetPerimeter UnorderedSet::perimeter() const
+{
+  MD_NAT min;
+  MD_NAT max;
+
+  if (!isEmpty()) {
+    std::size_t arity = this->arity();
+    min = MD_NAT{arity, Inf};
+    max = MD_NAT{arity, 0};
+    for (const MultiDimInter& mdi : _pieces) {
+      MD_NAT candidate_min = mdi.minElem();
+      MD_NAT candidate_max = mdi.maxElem();
+      for (size_t i = 0; i < arity; ++i) {
+        min[i] = std::min(min[i], candidate_min[i]);
+        max[i] = std::max(max[i], candidate_max[i]);
+      }
+    }
+  }
+
+  return SetPerimeter{min, max};
+}
+
 void UnorderedSet::compact()
 {
   MDIUnordCollection result;

@@ -45,7 +45,7 @@ public:
 
 // Constructors/Destructors ----------------------------------------------------
 
-UnordPWMap::UnordPWMap() {}
+UnordPWMap::UnordPWMap() : _pieces() {}
 
 UnordPWMap::UnordPWMap(const Set& s) : _pieces() {
   if (!s.isEmpty()) {
@@ -59,7 +59,10 @@ UnordPWMap::UnordPWMap(const Map& m) : _pieces() {
   }
 }
 
-UnordPWMap::UnordPWMap(UnordPWMap::UnordMapCollection pieces)
+UnordPWMap::UnordPWMap(const UnordPWMap::UnordMapCollection& pieces)
+  : _pieces(pieces) {}
+
+UnordPWMap::UnordPWMap(UnordPWMap::UnordMapCollection&& pieces)
   : _pieces(std::move(pieces)) {}
 
 // Getters ---------------------------------------------------------------------
@@ -69,6 +72,20 @@ UnordPWMap::ConstIt UnordPWMap::begin() const { return _pieces.begin(); }
 UnordPWMap::ConstIt UnordPWMap::end() const { return _pieces.end(); }
 
 // Setters ---------------------------------------------------------------------
+
+void UnordPWMap::insert(const Map& m)
+{
+  if (!m.isEmpty()) {
+    _pieces.push_back(m);
+  }
+}
+
+void UnordPWMap::insert(Map&& m)
+{
+  if (!m.isEmpty()) {
+    _pieces.push_back(std::move(m));
+  }
+}
 
 void UnordPWMap::pushBack(const Map& m)
 {
@@ -463,22 +480,6 @@ Set UnordPWMap::lessImage(const UnordPWMap& other) const
   return min_in_pw1; 
 }  
 
-UnordPWMap UnordPWMap::offsetDom(const MD_NAT& offset) const
-{
-  UnordPWMap result;
-
-  for (const Map& m : _pieces) {
-    result._pieces.emplace_back(m.domain().offset(offset), m.law());
-  }
-
-  return result;
-}
-
-bool operator<(const Map& m1, const Map& m2)
-{
-  return true;
-}
-
 void UnordPWMap::compact()
 {
   using MapSet = std::set<Map, MapLess>;
@@ -514,8 +515,8 @@ void UnordPWMap::compact()
       }
     } while (actual != prev);
 
-    for (const Map& mdi : actual) {
-      result.push_back(mdi);
+    for (const Map& m : actual) {
+      result.push_back(m);
     }
   }
 

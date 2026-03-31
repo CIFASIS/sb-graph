@@ -42,7 +42,7 @@ SBG::LIB::DirectedSBG buildSCCFromMatching(const SBG::LIB::MatchData& data)
   for (const SBG::LIB::Map& m : auxVmap) { 
     SBG::LIB::Set domain = m.domain();
     domain.compact();
-    Vmap.pushBack(SBG::LIB::Map(domain, m.law()));
+    Vmap.emplace(domain, m.law());
   }
 
   SBG::LIB::PWMap map1 = bsbg.map1();
@@ -94,7 +94,7 @@ SBG::LIB::DirectedSBG buildSortFromSCC(const SBG::LIB::SCCData& data)
 
   SBG::LIB::PWMap Emap = dsbg.Emap().restrict(Ediff);
 
-  return SBG::LIB::DirectedSBG {V, Vmap, mapB, mapD, Emap};
+  return SBG::LIB::DirectedSBG{V, Vmap, mapB, mapD, Emap};
 }
 
 } // namespace misc

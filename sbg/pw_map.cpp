@@ -132,11 +132,9 @@ PWMap::PWMap(const PWMapKind kind, Map m) : _impl()
   }
 }
 
-PWMap::PWMap(const detail::PWMapImpl& impl)
-  : _impl(impl) {}
+PWMap::PWMap(const detail::PWMapImpl& impl) : _impl(impl) {}
 
-PWMap::PWMap(detail::PWMapImpl&& impl)
-  : _impl(std::move(impl)) {}
+PWMap::PWMap(detail::PWMapImpl&& impl) : _impl(std::move(impl)) {}
 
 // Getters ---------------------------------------------------------------------
 
@@ -152,14 +150,14 @@ PWMap::ConstIt PWMap::end()
 
 // Setters ---------------------------------------------------------------------
 
-void PWMap::pushBack(const Map& m)
+void PWMap::insert(const Map& m)
 {
-  std::visit([&m](auto& a) -> void { a.pushBack(m); } , _impl);
+  std::visit([&m](auto& a) -> void { a.insert(m); } , _impl);
 }
 
-void PWMap::pushBack(Map&& m)
+void PWMap::insert(Map&& m)
 {
-  std::visit([move_m = std::move(m)](auto& a) { a.pushBack(move_m); }
+  std::visit([move_m = std::move(m)](auto& a) { a.insert(move_m); }
     , _impl);
 }
 
@@ -416,15 +414,6 @@ Set PWMap::lessImage(const PWMap& other) const
       }
     }
     , _impl, other._impl);
-}
-
-PWMap PWMap::offsetDom(const MD_NAT& offset) const
-{
-  return std::visit([&offset](const auto& a) -> PWMap
-    {
-      return PWMap{a.offsetDom(offset)};
-    }
-    , _impl);
 }
 
 void PWMap::compact()

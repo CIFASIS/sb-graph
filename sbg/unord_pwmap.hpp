@@ -48,15 +48,16 @@ public:
   UnordPWMap();
   UnordPWMap(const Set& s);
   UnordPWMap(const Map& m);
-  UnordPWMap(UnordMapCollection pieces);
+  UnordPWMap(const UnordMapCollection& pieces);
+  UnordPWMap(UnordMapCollection&& pieces);
 
   ConstIt begin() const;
   ConstIt end() const;
 
   template<typename... Args>
-  void emplaceBack(Args&&... args);
-  void pushBack(const Map& m);
-  void pushBack(Map&& m);
+  void emplace(Args&&... args);
+  void insert(const Map& m);
+  void insert(Map&& m);
 
   bool operator==(const UnordPWMap& other) const;
   bool operator!=(const UnordPWMap& other) const;
@@ -97,12 +98,13 @@ public:
   Set equalImage(const UnordPWMap& other) const;
   Set lessImage(const UnordPWMap& other) const;
 
-  UnordPWMap offsetDom(const MD_NAT& offset) const;
-
   void compact();
 
 private:
-  UnordMapCollection _pieces;
+  template<typename... Args>
+  void emplaceBack(Args&&... args);
+  void pushBack(const Map& m);
+  void pushBack(Map&& m);
 
   /**
    * @brief Calculates (if possible) compactly the result of mapInf.\n
@@ -118,7 +120,15 @@ private:
    * compose pw' with itself up to convergence.
    */
   UnordPWMap mapInf(unsigned int n) const;
+
+  UnordMapCollection _pieces;
 };
+
+template<typename... Args>
+inline void UnordPWMap::emplace(Args&&... args)
+{
+  _pieces.emplace_back(std::forward<Args>(args)...);
+}
 
 template<typename... Args>
 inline void UnordPWMap::emplaceBack(Args&&... args)

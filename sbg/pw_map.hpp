@@ -75,14 +75,14 @@ public:
   ConstIt end();
 
   template<typename... Args>
-  void emplaceBack(Args&&... args);
+  void emplace(Args&&... args);
   /**
    * @brief Adds a piece to the pw.
    * Precondition: \p m domain should not be empty, and should have no
    * intersection with the current domain of the PWMap.
    */
-  void pushBack(const Map& m);
-  void pushBack(Map&& m);
+  void insert(const Map& m);
+  void insert(Map&& m);
 
   /**
    * @brief Two pws are equal if they satisfy the function extensionality
@@ -214,12 +214,6 @@ public:
   Set lessImage(const PWMap& other) const;
 
   /**
-   * @brief Sum a constant value to every element in the domain of the pw. The
-   * law remains unchanged.
-   */
-  PWMap offsetDom(const MD_NAT& offset) const;
-
-  /**
    * @brief Minimize internal representation cost. Heuristic guided.
    */
   void compact();
@@ -234,9 +228,9 @@ private:
 std::ostream& operator<<(std::ostream& out, const PWMap& pw);
 
 template<typename... Args>
-inline void PWMap::emplaceBack(Args&&... args)
+inline void PWMap::emplace(Args&&... args)
 {
-  std::visit([&](auto& a) { a.emplaceBack(std::forward<Args>(args)...); } , _impl);
+  std::visit([&](auto& a) { a.emplace(std::forward<Args>(args)...); } , _impl);
 }
 
 } // namespace LIB

@@ -94,7 +94,7 @@ PWMap MinAdjMRV::calculate(const DirectedSBG& dsbg)
                 for (; dmap.domain().intersection(Vc.intersection(VR)).isEmpty();) {
                   Set domain = ith.difference(dmap.domain());
                   Expression expr(MD_NAT{arity, dist});
-                  dmap.emplaceBack(Map{domain, expr});
+                  dmap.emplace(domain, expr);
                   // Update ith to vertices that have outgoing edges entering ith
                   ith = mapB.image(mapD.preImage(ith));
                   ++dist;

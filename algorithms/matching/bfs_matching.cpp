@@ -84,14 +84,12 @@ PWMap BFSMatching::partitionSubsetEdges() const
     Set domain_edges = Emap.preImage(min_elem_set);
 
     Expression matched_expr{MD_NAT{arity, j}};
-    Map matched_map{_M.intersection(domain_edges), matched_expr};
-    ++j;
-    Expression free_expr{MD_NAT{arity, j}};
-    Map free_map{free_edges.intersection(domain_edges), free_expr};
+    result.emplace(_M.intersection(domain_edges), matched_expr);
     ++j;
 
-    result.emplaceBack(matched_map);
-    result.emplaceBack(free_map);
+    Expression free_expr{MD_NAT{arity, j}};
+    result.emplace(free_edges.intersection(domain_edges), free_expr);
+    ++j;
 
     set_edges = set_edges.difference(min_elem_set);
   }

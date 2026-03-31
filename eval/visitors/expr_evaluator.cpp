@@ -232,7 +232,7 @@ ExprBaseType ExprEvaluator::operator()(AST::PWLMap v) const
   LIB::PWMap result = LIB::PWMAP_FACT.createPWMap();
 
   for (const AST::Expr& e : v.maps()) {
-    result.emplaceBack(eval<LIB::Map>(*this, e, "Map"));
+    result.insert(eval<LIB::Map>(*this, e, "Map"));
   }
 
   Util::ERROR_UNLESS(result.arity() == _eval_context.arity()

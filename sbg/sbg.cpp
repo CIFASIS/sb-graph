@@ -73,7 +73,7 @@ void SBG::addSetVertex(const Set& vertices)
     MD_NAT max = set_vertices.isEmpty() ? MD_NAT{arity, 0}
       : set_vertices.maxElem();
     MD_NAT one_all_dims{arity, 1};
-    _Vmap.emplaceBack(vertices, max + one_all_dims);
+    _Vmap.emplace(vertices, max + one_all_dims);
   }
 }
 
@@ -94,7 +94,7 @@ void SBG::addSetEdge(const PWMap& pw1, const PWMap& pw2)
       MD_NAT one_all_dims{arity, 1};
       _map1 = std::move(_map1).concatenation(pw1);
       _map2 = std::move(_map2).concatenation(pw2);
-      _Emap.emplaceBack(edges, max + one_all_dims);
+      _Emap.emplace(edges, max + one_all_dims);
     }
   } else {
     Util::ERROR("Trying to add existing edges: ", edges1, " to SBG\n");

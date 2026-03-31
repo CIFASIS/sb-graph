@@ -67,7 +67,7 @@ PWMap denseDom(SBG::LIB::NAT map_sz)
     }
     Expression multidim_id{1, 0};
 
-    pw.emplaceBack(domain, multidim_id);
+    pw.emplace(domain, multidim_id);
   }
 
   return pw;
@@ -101,8 +101,8 @@ std::pair<PWMap, PWMap> minAdjMaps(SBG::LIB::NAT map_sz)
     Expression multidim_id{2, 1, 0};
     Expression minus_one{2, 1, RATIONAL{-1, 1}};
 
-    pw1.emplaceBack(domain1, multidim_id);
-    pw2.emplaceBack(domain2, minus_one);
+    pw1.emplace(domain1, multidim_id);
+    pw2.emplace(domain2, minus_one);
   }
 
   return {pw1, pw2};
@@ -137,8 +137,8 @@ std::pair<PWMap, PWMap> interlacedMaps(SBG::LIB::NAT map_sz)
 
     Expression multidim_id{2, 1, 0};
 
-    pw1.emplaceBack(domain1, multidim_id);
-    pw2.emplaceBack(domain2, multidim_id);
+    pw1.emplace(domain1, multidim_id);
+    pw2.emplace(domain2, multidim_id);
   }
 
   return {pw1, pw2};
@@ -177,8 +177,8 @@ std::pair<PWMap, PWMap> contiguousMaps(SBG::LIB::NAT map_sz)
 
     Expression multidim_id{2, 1, 0};
 
-    pw1.emplaceBack(domain1, multidim_id);
-    pw2.emplaceBack(domain2, multidim_id);
+    pw1.emplace(domain1, multidim_id);
+    pw2.emplace(domain2, multidim_id);
   }
 
   return {pw1, pw2};

@@ -37,26 +37,6 @@ namespace Eval {
 namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Overload pattern ------------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-/**
- * @brief Provides in-place lambdas for visitation for the different
- * operations. These are needed because different structures share the same
- * functions (for example, isEmpty can be applied to intervals, sets, etc.).
- */
-
-template<class... Ts>
-class Overload : Ts... {
-public:
-  using Ts::operator()...;
-  Overload(Ts... ts) : Ts(ts)... {};
-};
-
-template<class... Ts>
-Overload(Ts...) -> Overload<Ts...>;
-
-////////////////////////////////////////////////////////////////////////////////
 // Built-in Operators ----------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 

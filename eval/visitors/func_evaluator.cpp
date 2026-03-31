@@ -35,6 +35,7 @@
 #include "sbg/set.hpp"
 #include "sbg/pw_map.hpp"
 #include "util/debug.hpp"
+#include "util/defs.hpp"
 
 namespace SBG {
 
@@ -130,7 +131,7 @@ ExprBaseType BuiltInOperators::oppositeEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 1
     , "oppositeEvaluator: wrong number of arguments\n");
 
-  auto opposite_evaluator = Overload {
+  auto opposite_evaluator = Util::Overload {
     [](LIB::NAT a)
     {
       return ExprBaseType{LIB::RATIONAL{static_cast<LIB::INT>(a), -1}};
@@ -151,7 +152,7 @@ ExprBaseType BuiltInOperators::cardinalEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 1
     , "cardinalEvaluator: wrong number of arguments\n");
 
-  const auto cardinal_evaluator = Overload {
+  const auto cardinal_evaluator = Util::Overload {
     [](LIB::Set a) { return (LIB::NAT) a.cardinal(); },
     [](auto a) { 
       Util::ERROR("cardinalEvaluator: wrong argument ", a, " for #\n");
@@ -166,7 +167,7 @@ ExprBaseType BuiltInOperators::complementEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 1
     , "complementEvaluator: wrong number of arguments\n");
 
-  const auto complement_evaluator = Overload {
+  const auto complement_evaluator = Util::Overload {
     [](LIB::Set a) { return ExprBaseType{a.complement()}; },
     [](auto a) { 
       Util::ERROR("complementEvaluator: wrong argument ", a
@@ -182,7 +183,7 @@ ExprBaseType BuiltInOperators::addEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 2
     , "addEvaluator: wrong number of arguments\n");
 
-  const auto add_evaluator = Overload {
+  const auto add_evaluator = Util::Overload {
     [](LIB::NAT a, LIB::NAT b) { return ExprBaseType{a + b}; },
     [](LIB::MD_NAT a, LIB::MD_NAT b) { return ExprBaseType{a + b}; },
     [](LIB::RATIONAL a, LIB::RATIONAL b) { return ExprBaseType{a + b}; },
@@ -209,7 +210,7 @@ ExprBaseType BuiltInOperators::subEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 2
     , "subEvaluator: wrong number of arguments\n");
   
-  const auto sub_evaluator = Overload {
+  const auto sub_evaluator = Util::Overload {
     [](LIB::NAT a, LIB::NAT b) {
       if (a > b) {
         return ExprBaseType{LIB::NAT{a - b}};
@@ -240,7 +241,7 @@ ExprBaseType BuiltInOperators::multEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 2
     , "multEvaluator: wrong number of arguments\n");
 
-  const auto mult_evaluator = Overload {
+  const auto mult_evaluator = Util::Overload {
     [](LIB::NAT a, LIB::NAT b)
     {
       return ExprBaseType{LIB::RATIONAL{static_cast<LIB::INT>(a*b)}};
@@ -268,7 +269,7 @@ ExprBaseType BuiltInOperators::eqEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 2
     , "eqEvaluator: wrong number of arguments\n");
 
-  const auto eq_evaluator = Overload {
+  const auto eq_evaluator = Util::Overload {
     [](LIB::MD_NAT a, LIB::MD_NAT b) { return a == b; },
     [](LIB::RATIONAL a, LIB::RATIONAL b) { return a == b; },
     [](LIB::Set a, LIB::Set b) { return a == b; },
@@ -289,7 +290,7 @@ ExprBaseType BuiltInOperators::lessEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 2
     , "lessEvaluator: wrong number of arguments\n");
 
-  const auto less_evaluator = Overload {
+  const auto less_evaluator = Util::Overload {
     [](LIB::MD_NAT a, LIB::MD_NAT b) { return a < b; },
     [](LIB::RATIONAL a, LIB::RATIONAL b) { return a < b; },
     [](auto a, auto b) { 
@@ -306,7 +307,7 @@ ExprBaseType BuiltInOperators::capEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 2
     , "capEvaluator: wrong number of arguments\n");
 
-  const auto cap_evaluator = Overload{
+  const auto cap_evaluator = Util::Overload{
     [](LIB::Set a, LIB::Set b) { return ExprBaseType{a.intersection(b)}; },
     [](auto a, auto b) { 
       Util::ERROR("capEvaluator: wrong arguments ", a, ", ", b
@@ -322,7 +323,7 @@ ExprBaseType BuiltInOperators::cupEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 2
     , "cupEvaluator: wrong number of arguments\n");
 
-  const auto cup_evaluator = Overload{
+  const auto cup_evaluator = Util::Overload{
     [](LIB::Set a, LIB::Set b) { return ExprBaseType{a.cup(b)}; },
     [](auto a, auto b) {
       Util::ERROR("cupEvaluator: wrong arguments ", a, ", ", b
@@ -338,7 +339,7 @@ ExprBaseType BuiltInOperators::diffEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 2
     , "diffEvaluator: wrong number of arguments\n");
 
-  const auto diff_evaluator = Overload{
+  const auto diff_evaluator = Util::Overload{
     [](LIB::Set a, LIB::Set b) { return ExprBaseType{a.difference(b)}; },
     [](auto a, auto b) {
       Util::ERROR("diffEvaluator: wrong arguments ", a, ", ", b
@@ -442,7 +443,7 @@ ExprBaseType BuiltInFunctions::emptyEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 1 
     , "emptyEvaluator: wrong number of arguments\n");
 
-  const auto empty_evaluator = Overload {
+  const auto empty_evaluator = Util::Overload {
     [](LIB::Set a) { return a.isEmpty(); },
     [](auto a) { 
       Util::ERROR("emptyEvaluator: wrong argument ", a, " for isEmpty\n"); 
@@ -457,7 +458,7 @@ ExprBaseType BuiltInFunctions::minEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 1
     , "minEvaluator: wrong number of arguments\n");
 
-  const auto min_evaluator = Overload {
+  const auto min_evaluator = Util::Overload {
     [](LIB::Set a) { return a.minElem(); },
     [](auto a) { 
       Util::ERROR("minEvaluator: wrong argument ", a, " for minElem\n"); 
@@ -472,7 +473,7 @@ ExprBaseType BuiltInFunctions::maxEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 1
     , "maxEvaluator: wrong number of arguments\n");
 
-  const auto max_evaluator = Overload {
+  const auto max_evaluator = Util::Overload {
     [](LIB::Set a) { return a.maxElem(); },
     [](auto a) { 
       Util::ERROR("maxEvaluator: wrong argument ", a, " for maxElem\n"); 
@@ -487,7 +488,7 @@ ExprBaseType BuiltInFunctions::restrictEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 2
     , "restrictEvaluator: wrong number of arguments\n");
 
-  const auto restrict_evaluator = Overload {
+  const auto restrict_evaluator = Util::Overload {
     [](LIB::PWMap a, LIB::Set b) { return ExprBaseType{a.restrict(b)}; },
     [](auto a, auto b) {
       Util::ERROR("restrictEvaluator: wrong arguments ", a, ", ", b
@@ -503,7 +504,7 @@ ExprBaseType BuiltInFunctions::composeEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 2
     , "composeEvaluator: wrong number of arguments\n");
 
-  const auto compose_evaluator = Overload {
+  const auto compose_evaluator = Util::Overload {
     [](LIB::Expression a, LIB::Expression b)
     {
       return ExprBaseType{a.composition(b)};
@@ -524,7 +525,7 @@ ExprBaseType BuiltInFunctions::inverseEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 1
     , "inverseEvaluator: wrong number of arguments\n");
 
-  const auto inverse_evaluator = Overload {
+  const auto inverse_evaluator = Util::Overload {
     [](LIB::Expression a) { return ExprBaseType{a.inverse()}; },
     [](LIB::PWMap a) { return ExprBaseType{a.inverse()}; },
     [](auto a) { 
@@ -538,7 +539,7 @@ ExprBaseType BuiltInFunctions::inverseEvaluator(const EBTList& args)
 ExprBaseType BuiltInFunctions::imageEvaluator(const EBTList& args)
 {
   if (args.size() == 1) {
-    const auto image_evaluator = Overload {
+    const auto image_evaluator = Util::Overload {
       [](LIB::Map a) { return ExprBaseType{a.image()}; },
       [](LIB::PWMap a) { return ExprBaseType{a.image()}; },
       [](auto a) { 
@@ -549,7 +550,7 @@ ExprBaseType BuiltInFunctions::imageEvaluator(const EBTList& args)
     return std::visit(image_evaluator, args[0]);
   }
   else if (args.size() == 2) {
-    const auto image2_evaluator = Overload {
+    const auto image2_evaluator = Util::Overload {
       [](LIB::Set a, LIB::Map b) { return ExprBaseType{b.image(a)}; },
       [](LIB::Set a, LIB::PWMap b) { return ExprBaseType{b.image(a)}; },
       [](auto a, auto b) { 
@@ -571,7 +572,7 @@ ExprBaseType BuiltInFunctions::preImageEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 2
     , "preImageEvaluator: wrong number of arguments\n");
 
-  const auto pre_image_evaluator = Overload {
+  const auto pre_image_evaluator = Util::Overload {
     [](LIB::Set a, LIB::Map b) { return ExprBaseType{b.preImage(a)}; },
     [](LIB::Set a, LIB::PWMap b) { return ExprBaseType{b.preImage(a)}; },
     [](auto a, auto b) { 
@@ -588,7 +589,7 @@ ExprBaseType BuiltInFunctions::domEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 1
     , "domEvaluator: wrong number of arguments\n");
 
-  const auto dom_evaluator = Overload {
+  const auto dom_evaluator = Util::Overload {
     [](LIB::PWMap a) { return ExprBaseType{a.domain()}; },
     [](auto a) {
       Util::ERROR("domEvaluator: wrong arguments ", a, "for dom\n");
@@ -603,7 +604,7 @@ ExprBaseType BuiltInFunctions::combineEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 2
     , "combineEvaluator: wrong number of arguments\n");
 
-  const auto combine_evaluator = Overload {
+  const auto combine_evaluator = Util::Overload {
     [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType{a.combine(b)}; },
     [](auto a, auto b) { 
       Util::ERROR("combineEvaluator: wrong arguments ", a, ", ", b
@@ -619,7 +620,7 @@ ExprBaseType BuiltInFunctions::minMapEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 2
     , "minMapEvaluator: wrong number of arguments\n");
 
-  const auto min_map_evaluator = Overload {
+  const auto min_map_evaluator = Util::Overload {
     [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType{a.min(b)}; },
     [](auto a, auto b) {
       Util::ERROR("minMapEvaluator: wrong arguments ", a, ", ", b
@@ -636,7 +637,7 @@ ExprBaseType BuiltInFunctions::minMapEvaluator(const EBTList& args)
 //  Util::ERROR_UNLESS(args.size() == 1
 //    , "reduceEvaluator: wrong number of arguments\n");
 //
-//  const auto reduce_evaluator = Overload {
+//  const auto reduce_evaluator = Util::Overload {
 //    [](LIB::PWMap a) { return ExprBaseType{a.reduce()}; },
 //    [](auto a) {
 //      Util::ERROR("reduceEvaluator: wrong argument ", a, " for reduce\n"); 
@@ -651,7 +652,7 @@ ExprBaseType BuiltInFunctions::minAdjEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 2
     , "minAdjEvaluator: wrong number of arguments\n");
 
-  const auto min_adj_evaluator = Overload {
+  const auto min_adj_evaluator = Util::Overload {
     [](LIB::PWMap a, LIB::PWMap b) { return ExprBaseType{a.minAdj(b)}; },
     [](auto a, auto b) { 
       Util::ERROR("minAdjEvaluator: wrong arguments ", a, ", ", b
@@ -667,7 +668,7 @@ ExprBaseType BuiltInFunctions::mapInfEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 1
     , "mapInfEvaluator: wrong number of arguments\n");
 
-  const auto inf_evaluator = Overload {
+  const auto inf_evaluator = Util::Overload {
     [](LIB::PWMap a) { return ExprBaseType{a.mapInf()}; },
     [](auto a) { 
       Util::ERROR("mapInfEvaluator: wrong argument ", a, " for mapInf\n"); 
@@ -684,7 +685,7 @@ ExprBaseType BuiltInFunctions::connectedEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 1
     , "connectedEvaluator: wrong number of arguments\n");
 
-  const auto connected_evaluator = Overload {
+  const auto connected_evaluator = Util::Overload {
     [](LIB::SBG a) { return ExprBaseType{connectedComponents(a)}; },
     [](auto a) {
       Util::ERROR("connectedEvaluator: wrong argument ", a, " for CC\n"); 
@@ -700,7 +701,7 @@ ExprBaseType BuiltInFunctions::matchingEvaluator(const EBTList& args)
     , "matchingEvaluator: wrong number of arguments\n");
 
   LIB::Matching match_impl = LIB::MATCH_FACT.createMatchAlgorithm();
-  const auto matching_evaluator = Overload {
+  const auto matching_evaluator = Util::Overload {
     [&match_impl](LIB::BipartiteSBG a, LIB::NAT b) { 
       // TODO return ExprBaseType{match_impl.calculate(a.copy(b))};
       return ExprBaseType{match_impl.calculate(a)};
@@ -724,7 +725,7 @@ ExprBaseType BuiltInFunctions::sccEvaluator(const EBTList& args)
     , "sccEvaluator: wrong number of arguments\n");
 
   LIB::SCC scc_impl = LIB::SCC_FACT.createSCCAlgorithm();
-  const auto scc_evaluator = Overload {
+  const auto scc_evaluator = Util::Overload {
     [&scc_impl](LIB::DirectedSBG a) { 
       return ExprBaseType{scc_impl.calculate(a).rmap()};
     },
@@ -743,7 +744,7 @@ ExprBaseType BuiltInFunctions::topoSortEvaluator(const EBTList& args)
     , "topoSortEvaluator: wrong number of arguments\n");
 
   LIB::TopoSort ts_impl = LIB::TS_FACT.createTSAlgorithm();
-  const auto ts_evaluator = Overload {
+  const auto ts_evaluator = Util::Overload {
     [&ts_impl](LIB::DirectedSBG a) { 
       return ExprBaseType{ts_impl.calculate(a)};
     },
@@ -761,7 +762,7 @@ ExprBaseType BuiltInFunctions::cutVertexEvaluator(const EBTList& args)
     , "cutVertexEvaluator: wrong number of arguments\n");
 
   LIB::CutVertex cv_impl = LIB::CV_FACT.createCVAlgorithm();
-  const auto cv_evaluator = Overload {
+  const auto cv_evaluator = Util::Overload {
     [&cv_impl](LIB::DirectedSBG a) { 
       return ExprBaseType{cv_impl.calculate(a)};
     },
@@ -781,7 +782,7 @@ ExprBaseType BuiltInFunctions::matchSCCEvaluator(const EBTList& args)
 
   LIB::Matching match_impl = LIB::MATCH_FACT.createMatchAlgorithm();
   LIB::SCC scc_impl = LIB::SCC_FACT.createSCCAlgorithm();
-  const auto match_scc_evaluator = Overload {
+  const auto match_scc_evaluator = Util::Overload {
     [&match_impl, &scc_impl](LIB::BipartiteSBG a, LIB::NAT b) { 
       // TODO LIB::MatchData match_result = match_impl.calculate(a.copy(b));
       LIB::MatchData match_result = match_impl.calculate(a);
@@ -807,7 +808,7 @@ ExprBaseType BuiltInFunctions::matchSCCEvaluator(const EBTList& args)
 /*
 ExprBaseType BuiltInFunctions::matchSCCTSEvaluator(const EBTList& args)
 {
-  const auto match_scc_ts_evaluator = Overload {
+  const auto match_scc_ts_evaluator = Util::Overload {
     [](LIB::SBG a, LIB::NAT b, bool c) { 
       LIB::BFSMatching match(a.copy(b), c);
       LIB::Set match_res = match.calculate().matched_edges();

@@ -34,6 +34,7 @@
 #include "sbg/linear_expr.hpp"
 #include "sbg/map.hpp"
 #include "sbg/multidim_inter.hpp"
+#include "util/defs.hpp"
 
 namespace SBG {
 
@@ -59,16 +60,6 @@ private:
   static MapVector reduce(const OrdUnidimDenseSet& s
     , const ExpressionImpl& expr);
 };
-
-template<class... Ts>
-class Overload : Ts... {
-public:
-  using Ts::operator()...;
-  Overload(Ts... ts) : Ts(ts)... {};
-};
-
-template<class... Ts>
-Overload(Ts...) -> Overload<Ts...>;
 
 } // namespace detail
 

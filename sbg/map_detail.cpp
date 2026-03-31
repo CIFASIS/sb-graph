@@ -91,7 +91,7 @@ CompactSetImpl compactImage(const CompactSetImpl& s, const Expr& expr
 
 Set MapDetail::image(const Set& s, const Expression& expr)
 {
-  auto image_evaluator = Overload {
+  auto image_evaluator = Util::Overload {
     [&](const UnorderedSet& a)
     {
       return Set{detail::compactImage<UnorderedSet, MultiDimInter
@@ -154,7 +154,7 @@ CompactSetImpl compactPreImage(const CompactSetImpl& s, const Expr& expr)
 
 Set MapDetail::preImage(const Set& s, const Expression& expr)
 {
-  auto pre_image_evaluator = Overload {
+  auto pre_image_evaluator = Util::Overload {
     [&](const UnorderedSet& a)
     {
       return Set{detail::compactPreImage<UnorderedSet, MultiDimInter
@@ -264,7 +264,7 @@ Set MapDetail::lessImage(const Expression& expr1, const Expression& expr2)
 {
   Set result = SET_FACT.createSet();
 
-  auto less_image_evaluator = Overload {
+  auto less_image_evaluator = Util::Overload {
     [&](UnorderedSet& a)
     {
       detail::lessImage<UnorderedSet, MultiDimInter, ExpressionImpl>(
@@ -438,7 +438,7 @@ MapVector MapDetail::reduce(const Map& m)
     return result;
   }
 
-  auto reduce_evaluator = Overload {
+  auto reduce_evaluator = Util::Overload {
     [&](const UnorderedSet& a)
     {
       return MDICollectionReduce<UnorderedSet>(a, law._impl);

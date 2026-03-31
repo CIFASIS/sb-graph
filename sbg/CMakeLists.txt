@@ -15,8 +15,10 @@ target_sources(
     linear_expr.cpp
     map.cpp
     map_detail.cpp
+    map_entry.cpp
     multidim_inter.cpp
     natural.cpp
+    ord_pwmap.cpp
     ord_set.cpp
     ord_unidim_dense_set.cpp
     pw_map.cpp
@@ -25,11 +27,10 @@ target_sources(
     sbg.cpp
     set.cpp
     set_fact.cpp
+    set_perimeter.cpp
     unord_pwmap.cpp
     unord_set.cpp
     #dom_ord_pwmap.cpp
-    #map_entry.cpp
-    #ord_pwmap.cpp
 )
 
 add_custom_target(sbg-doc

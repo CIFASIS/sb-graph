@@ -104,8 +104,8 @@ public:
 private:
   template<typename... Args>
   void emplaceBack(Args&&... args);
-  void pushBack(const Map& entry);
-  void pushBack(Map&& entry);
+  void pushBack(const Map& m);
+  void pushBack(Map&& m);
   void pushBack(const MapEntry& entry);
   void pushBack(MapEntry&& entry);
 
@@ -145,7 +145,7 @@ private:
 template<typename... Args>
 inline void OrdPWMap::emplace(Args&&... args)
 {
-  _pieces.emplace(std::forward<Args>(args)...);
+  insert(Map{std::forward<Args>(args)...});
 }
 
 template<typename... Args>

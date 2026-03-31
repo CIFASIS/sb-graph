@@ -26,7 +26,9 @@
 #ifndef SBGRAPH_SBG_MAP_ENTRY_HPP_
 #define SBGRAPH_SBG_MAP_ENTRY_HPP_
 
+#include "sbg/expression.hpp"
 #include "sbg/map.hpp"
+#include "sbg/set.hpp"
 #include "sbg/set_perimeter.hpp"
 
 namespace SBG {
@@ -37,8 +39,8 @@ namespace detail {
 
 class MapEntry {
 public:
+  MapEntry(const Set& s, const Expression& expr);
   MapEntry(const Map& m);
-  MapEntry(Map&& m);
 
   const Map& map() const;
   const SetPerimeter& perimeter() const;

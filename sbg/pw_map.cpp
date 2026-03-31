@@ -131,7 +131,7 @@ PWMap::PWMap(const PWMapKind kind, Set s) : _impl()
     }
 
     case PWMapKind::kOrdered: {
-      _impl = detail::UnordPWMap{s};
+      _impl = detail::OrdPWMap{s};
       break;
     }
 
@@ -155,7 +155,7 @@ PWMap::PWMap(const PWMapKind kind, Map m) : _impl()
     }
 
     case PWMapKind::kOrdered: {
-      _impl = detail::UnordPWMap{m};
+      _impl = detail::OrdPWMap{m};
       break;
     }
 

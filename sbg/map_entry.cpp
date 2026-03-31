@@ -29,11 +29,11 @@ namespace detail {
 // Map entry -------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
+MapEntry::MapEntry(const Set& s, const Expression& expr)
+  : _map(s, expr), _perimeter(s.perimeter()) {}
+
 MapEntry::MapEntry(const Map& m)
   : _map(m), _perimeter(m.domain().perimeter()) {}
-
-MapEntry::MapEntry(Map&& m)
-  : _map(std::move(m)), _perimeter(m.domain().perimeter()) {}
 
 const Map& MapEntry::map() const { return _map; }
 

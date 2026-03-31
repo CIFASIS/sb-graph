@@ -151,7 +151,7 @@ std::size_t OrdPWMap::advanceHint(std::size_t hint, const MapEntry& jth_entry)
     } else {
       break;
     }
-  } 
+  }
 
   return hint;
 }

@@ -49,25 +49,25 @@ PWMap UnordPWMapFact::createPWMap(const Map& m) const
 // OrdPWMap Factory ------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-//OrdPWMapFact::OrdPWMapFact() {}
-//
-//PWMap OrdPWMapFact::createPWMap() const
-//{
-//  return PWMap(std::make_unique<OrdPWMap>());
-//}
-//
-//PWMap OrdPWMapFact::createPWMap(const Set &s) const
-//{
-//  return PWMap(std::make_unique<OrdPWMap>(s));
-//}
-//
-//PWMap OrdPWMapFact::createPWMap(const Map &m) const
-//{
-//  return PWMap(std::make_unique<OrdPWMap>(m));
-//}
-//
+OrdPWMapFact::OrdPWMapFact() {}
+
+PWMap OrdPWMapFact::createPWMap() const
+{
+  return PWMap{PWMapKind::kOrdered};
+}
+
+PWMap OrdPWMapFact::createPWMap(const Set& s) const
+{
+  return PWMap{PWMapKind::kOrdered, s};
+}
+
+PWMap OrdPWMapFact::createPWMap(const Map& m) const
+{
+  return PWMap{PWMapKind::kOrdered, m};
+}
+
 //////////////////////////////////////////////////////////////////////////////////
-//// DomOrdPWMap Factory ------------------------------------------------------------
+//// DomOrdPWMap Factory ---------------------------------------------------------
 //////////////////////////////////////////////////////////////////////////////////
 //
 //DomOrdPWMapFact::DomOrdPWMapFact() {}
@@ -104,18 +104,19 @@ const PWMapKind& PWMapFactory::kind() const { return _kind; }
 
 void PWMapFactory::set_pwmap_fact(PWMapKind kind)
 {
+  _kind = kind;
   switch (kind) {
     case PWMapKind::kUnordered: {
-      _kind = kind;
       _impl = UnordPWMapFact{};
       break;
     }
 
-    //case SetKind::kOrdered: {
-    //  _impl = OrdPWMapFact{};
-    //}
+    case PWMapKind::kOrdered: {
+      _impl = OrdPWMapFact{};
+      break;
+    }
 
-    //case SetKind::OrdUnidimDense: {
+    //case PWMapKind::kDomOrdered: {
     //  _impl = DomOrdPWMapFact{};
     //}
 

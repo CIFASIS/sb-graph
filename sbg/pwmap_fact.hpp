@@ -39,26 +39,26 @@ public:
   UnordPWMapFact();
 
   PWMap createPWMap() const;
-  PWMap createPWMap(const Set &s) const;
-  PWMap createPWMap(const Map &m) const;
+  PWMap createPWMap(const Set& s) const;
+  PWMap createPWMap(const Map& m) const;
 };
 
-//class OrdPWMapFact {
-//  public:
-//  OrdPWMapFact();
-//
-//  PWMap createPWMap() const override;
-//  PWMap createPWMap(const Set &s) const override;
-//  PWMap createPWMap(const Map &m) const override;
-//};
-//
+class OrdPWMapFact {
+public:
+  OrdPWMapFact();
+
+  PWMap createPWMap() const;
+  PWMap createPWMap(const Set& s) const;
+  PWMap createPWMap(const Map& m) const;
+};
+
 //class DomOrdPWMapFact {
 //  public:
 //  DomOrdPWMapFact();
 //
 //  PWMap createPWMap() const override;
-//  PWMap createPWMap(const Set &s) const override;
-//  PWMap createPWMap(const Map &m) const override;
+//  PWMap createPWMap(const Set& s) const override;
+//  PWMap createPWMap(const Map& m) const override;
 //};
 
 /**
@@ -80,7 +80,7 @@ public:
   PWMap createPWMap(Map m) const;
 
 private:
-  using FactImpl = std::variant<UnordPWMapFact>;
+  using FactImpl = std::variant<UnordPWMapFact, OrdPWMapFact>;
 
   PWMapFactory();
 

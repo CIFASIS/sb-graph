@@ -18,13 +18,48 @@
  ******************************************************************************/
 
 #include "sbg/pw_map.hpp"
+#include "sbg/set_fact.hpp"
 #include "util/debug.hpp"
+#include "util/defs.hpp"
 
 #include <iostream>
 
 namespace SBG {
 
 namespace LIB {
+
+////////////////////////////////////////////////////////////////////////////////
+// PWMap Iterator --------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+PWMap::ConstIt::ConstIt(detail::UnordPWMap::ConstIt it) : _it(it) {}
+
+PWMap::ConstIt::ConstIt(detail::OrdPWMap::ConstIt it) : _it(it) {}
+
+const Map& PWMap::ConstIt::operator*()
+{
+  auto it_visitor = SBG::Util::Overload {
+    [](const detail::UnordPWMap::ConstIt& i) -> const Map& { return *i; },
+    [](const detail::OrdPWMap::ConstIt& i) -> const Map& { return i->map(); }
+  };
+  return std::visit(it_visitor, _it);
+}
+
+PWMap::ConstIt PWMap::ConstIt::operator++()
+{
+  std::visit([](auto& i) { ++i; }, _it);
+  return *this;
+}
+
+bool PWMap::ConstIt::operator==(const ConstIt& other)
+{
+  return _it == other._it;
+}
+
+bool PWMap::ConstIt::operator!=(const ConstIt& other)
+{
+  return _it != other._it;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // PWMap implementations -------------------------------------------------------
@@ -72,6 +107,7 @@ PWMap::PWMap(const PWMapKind kind) : _impl()
     }
 
     case PWMapKind::kOrdered: {
+      _impl = detail::OrdPWMap{};
       break;
     }
 
@@ -95,6 +131,7 @@ PWMap::PWMap(const PWMapKind kind, Set s) : _impl()
     }
 
     case PWMapKind::kOrdered: {
+      _impl = detail::UnordPWMap{s};
       break;
     }
 
@@ -118,6 +155,7 @@ PWMap::PWMap(const PWMapKind kind, Map m) : _impl()
     }
 
     case PWMapKind::kOrdered: {
+      _impl = detail::UnordPWMap{m};
       break;
     }
 
@@ -140,12 +178,14 @@ PWMap::PWMap(detail::PWMapImpl&& impl) : _impl(std::move(impl)) {}
 
 PWMap::ConstIt PWMap::begin()
 {
-  return std::visit([](const auto& a) { return a.begin(); }, _impl);
+  return std::visit([](const auto& a) { return PWMap::ConstIt(a.begin()); }
+    , _impl);
 }
 
 PWMap::ConstIt PWMap::end()
 {
-  return std::visit([](const auto& a) { return a.end(); }, _impl);
+  return std::visit([](const auto& a) { return PWMap::ConstIt(a.end()); }
+    , _impl);
 }
 
 // Setters ---------------------------------------------------------------------
@@ -394,7 +434,7 @@ Set PWMap::equalImage(const PWMap& other) const
         return a.equalImage(b);
       } else {
         Util::ERROR("PWMap::equalImage: mismatched implementations\n");
-        return PWMap{PWMapKind::kUnordered};
+        return SET_FACT.createSet();
       }
     }
     , _impl, other._impl);
@@ -410,7 +450,7 @@ Set PWMap::lessImage(const PWMap& other) const
         return a.lessImage(b);
       } else {
         Util::ERROR("PWMap::lessImage: mismatched implementations\n");
-        return PWMap{PWMapKind::kUnordered};
+        return SET_FACT.createSet();
       }
     }
     , _impl, other._impl);

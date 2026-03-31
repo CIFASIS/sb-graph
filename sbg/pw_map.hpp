@@ -36,6 +36,7 @@
 
 #include "sbg/map.hpp"
 #include "sbg/set.hpp"
+#include "sbg/ord_pwmap.hpp"
 #include "sbg/unord_pwmap.hpp"
 
 namespace SBG {
@@ -48,7 +49,7 @@ namespace detail {
 // PWMaps implementations ------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-using PWMapImpl = std::variant<UnordPWMap>;
+using PWMapImpl = std::variant<UnordPWMap, OrdPWMap>;
 
 } // namespace detail
 
@@ -62,7 +63,21 @@ std::ostream& operator<<(std::ostream& out, PWMapKind kind);
 
 class PWMap {
 public:
-  using ConstIt = std::vector<Map>::const_iterator;
+  class ConstIt {
+  public:
+    const Map& operator*();
+    ConstIt operator++();
+    bool operator==(const ConstIt& other);
+    bool operator!=(const ConstIt& other);
+  
+  private: 
+    ConstIt(detail::UnordPWMap::ConstIt it);
+    ConstIt(detail::OrdPWMap::ConstIt it);
+
+    std::variant<detail::UnordPWMap::ConstIt, detail::OrdPWMap::ConstIt> _it;
+
+    friend class PWMap;
+  };
 
   /**
    * @brief Constructs an empty domain pw.

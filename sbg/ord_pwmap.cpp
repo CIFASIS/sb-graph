@@ -164,7 +164,7 @@ CoreOperation OrdPWMap::traverse(const OrdPWMap& other, CoreOperation core_op)
 {
   OrdMapCollection short_pw = _pieces;
   OrdMapCollection long_pw = other._pieces;
-  if (other._pieces.size() < _pieces.size()) {
+  if (!core_op.orderMatters() && other._pieces.size() < _pieces.size()) {
     short_pw = other._pieces;
     long_pw  = _pieces;
   }
@@ -247,6 +247,8 @@ public:
     return true;
   }
 
+  bool orderMatters() const { return false; }
+
   bool result() const { return _are_equal; }
 
 private:
@@ -279,6 +281,8 @@ public:
     _result.insertHint(_global_pos, added);
     return true;
   }
+
+  bool orderMatters() const { return false; }
 
   OrdPWMap result() const { return _result; }
 
@@ -586,7 +590,7 @@ OrdPWMap OrdPWMap::reduce() const
   for (const MapEntry& entry : _pieces) {
     std::vector<Map> reduced = entry.map().reduce();
     for(Map& reduced_map : reduced) {
-      result.pushBack(std::move(reduced_map));
+      result.insert(std::move(reduced_map));
     }
   }
 
@@ -627,6 +631,8 @@ public:
 
     return true;
   }
+
+  bool orderMatters() const { return true; }
 
   OrdPWMap result() const { return _result; }
 
@@ -678,6 +684,8 @@ public:
     return true;
   }
 
+  bool orderMatters() const { return false; }
+
   Set result() const { return _result; }
 
 private:
@@ -706,6 +714,8 @@ public:
     return true;
   }
 
+  bool orderMatters() const { return true; }
+
   Set result() const { return _result; }
 
 private:
@@ -719,7 +729,7 @@ Set OrdPWMap::lessImage(const OrdPWMap& other) const
   }
 
   if (_pieces == other._pieces) {
-    return domain();
+    return SET_FACT.createSet();
   }
 
   return traverse(other, LessImageCore{}).result();

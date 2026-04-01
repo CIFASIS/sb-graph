@@ -85,7 +85,7 @@ void flatten_set(SBG::LIB::Set &set, const SBG::LIB::WeightedSBGraph& graph);
 SBG::LIB::WeightedSBGraph create_air_conditioners_graph();
 
 
-SBG::LIB::WeightedSBGraph create_air_conditioners_with_controller_graph(int size);
+SBG::LIB::WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sections);
 
 
 /// It returns the edge cost or node weight of the input set. It looks for a key in cost that intersects

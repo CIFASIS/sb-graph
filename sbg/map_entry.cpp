@@ -48,6 +48,16 @@ bool MapEntry::operator<(const MapEntry& other) const
 {
   return _perimeter.min() < other._perimeter.min();
 }
+
+MaybeMapEntry MapEntry::compact(const MapEntry& other) const
+{
+  MaybeMap compacted = _map.compact(other._map);
+  if (compacted) {
+    return MaybeMapEntry{compacted.value()};
+  }
+
+  return {};
+}
 	
 } // namespace detail
 

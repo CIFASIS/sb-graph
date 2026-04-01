@@ -37,10 +37,10 @@ namespace detail {
 
 // Auxliary definitions --------------------------------------------------------
 
-class MapLess {
+class MapEntryLess {
 public:
-  bool operator()(const Map& a, const Map& b) const {
-    return a.domain().minElem() < b.domain().minElem();
+  bool operator()(const MapEntry& a, const MapEntry& b) const {
+    return a.map().domain().minElem() < b.map().domain().minElem();
   }
 };
 
@@ -735,9 +735,47 @@ Set OrdPWMap::lessImage(const OrdPWMap& other) const
   return traverse(other, LessImageCore{}).result();
 } 
 
-// TODO
 void OrdPWMap::compact()
 {
+  using MapSet = std::set<MapEntry, MapEntryLess>;
+
+  OrdMapCollection result;
+
+  if (!isEmpty()) {
+    MapSet set_result;
+    MapSet to_erase;
+    do {
+      MapSet new_set_result;
+      to_erase.clear();
+
+      MapSet::iterator ith = set_result.begin();
+      MapSet::iterator last = set_result.end();
+      for (; ith != last; ++ith) {
+        MapEntry ith_compact = *ith;
+        MapSet::iterator next = ith;
+        ++next;
+        for (; next != last; ++next) {
+          MaybeMapEntry new_compact = ith_compact.compact(*next);
+          if (new_compact) {
+            ith_compact = new_compact.value();
+            to_erase.insert(*next);
+          }
+        }
+
+        if (to_erase.find(ith_compact) == to_erase.end()) {
+          new_set_result.insert(ith_compact);
+        }
+      }
+
+      std::swap(set_result, new_set_result);
+    } while (!to_erase.empty());
+
+    for (const MapEntry& map_entry : set_result) {
+      result.push_back(map_entry);
+    }
+  }
+
+  _pieces = std::move(result);
 }
 
 } // namespace detail

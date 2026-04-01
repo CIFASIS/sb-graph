@@ -31,11 +31,17 @@
 #include "sbg/set.hpp"
 #include "sbg/set_perimeter.hpp"
 
+#include <optional>
+
 namespace SBG {
 
 namespace LIB {
 
 namespace detail {
+
+class MapEntry;
+
+using MaybeMapEntry = std::optional<MapEntry>;
 
 class MapEntry {
 public:
@@ -47,6 +53,8 @@ public:
 
   bool operator==(const MapEntry& other) const;
   bool operator<(const MapEntry& other) const;
+
+  MaybeMapEntry compact(const MapEntry& other) const;
 
 private:
   Map _map;

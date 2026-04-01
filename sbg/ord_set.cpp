@@ -635,21 +635,23 @@ SetPerimeter OrderedSet::perimeter() const
 
 void OrderedSet::compact()
 {
+  using MDISet = std::set<MultiDimInter>;
+
   OrdMDICollection result;
 
   if (!isEmpty()) {
-    std::set<MultiDimInter> prev{_pieces.begin(), _pieces.end()};
-    std::set<MultiDimInter> actual = prev;
+    MDISet set_result{std::make_move_iterator(_pieces.begin())
+      , std::make_move_iterator(_pieces.end())};
+    MDISet to_erase;
     do {
-      prev = actual;
-      actual = std::set<MultiDimInter>{};
+      MDISet new_set_result;
+      to_erase.clear();
 
-      std::set<MultiDimInter>::iterator ith = prev.begin();
-      std::set<MultiDimInter>::iterator last = prev.end();
-      std::set<MultiDimInter> to_erase;
+      MDISet::iterator ith = set_result.begin();
+      MDISet::iterator last = set_result.end();
       for (; ith != last; ++ith) {
         MultiDimInter ith_compact = *ith;
-        std::set<MultiDimInter>::iterator next = ith;
+        MDISet::iterator next = ith;
         ++next;
         for (; next != last; ++next) {
           MaybeMDI new_compact = ith_compact.compact(*next);
@@ -660,13 +662,15 @@ void OrderedSet::compact()
         }
 
         if (to_erase.find(ith_compact) == to_erase.end()) {
-          actual.insert(ith_compact);
+          new_set_result.insert(ith_compact);
         }
-      } 
-    } while (actual != prev);
+      }
 
-    for (const MultiDimInter& mdi : actual) {
-      result.push_back(mdi);
+      std::swap(set_result, new_set_result);
+    } while (!to_erase.empty());
+
+    for (const MultiDimInter& m : set_result) {
+      result.push_back(m);
     }
   }
 

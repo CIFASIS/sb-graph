@@ -487,16 +487,15 @@ void UnordPWMap::compact()
   UnordMapCollection result;
 
   if (!isEmpty()) {
-    MapSet prev{std::make_move_iterator(_pieces.begin())
+    MapSet set_result{std::make_move_iterator(_pieces.begin())
       , std::make_move_iterator(_pieces.end())};
-    MapSet actual = prev;
+    MapSet to_erase;
     do {
-      prev = actual;
-      actual = MapSet{};
+      MapSet new_set_result;
+      to_erase.clear();
 
-      MapSet::iterator ith = prev.begin();
-      MapSet::iterator last = prev.end();
-      MapSet to_erase;
+      MapSet::iterator ith = set_result.begin();
+      MapSet::iterator last = set_result.end();
       for (; ith != last; ++ith) {
         Map ith_compact = *ith;
         MapSet::iterator next = ith;
@@ -510,12 +509,14 @@ void UnordPWMap::compact()
         }
 
         if (to_erase.find(ith_compact) == to_erase.end()) {
-          actual.insert(ith_compact);
+          new_set_result.insert(ith_compact);
         }
       }
-    } while (actual != prev);
 
-    for (const Map& m : actual) {
+      std::swap(set_result, new_set_result);
+    } while (!to_erase.empty());
+
+    for (const Map& m : set_result) {
       result.push_back(m);
     }
   }

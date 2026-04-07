@@ -193,14 +193,14 @@ int get_air_conditioners_controller_size(const string& name)
   size_t last_dot = name.find_last_of('.');
 
   if (last_underscore != std::string::npos && last_dot != std::string::npos) {
-      // Extract the string between '_' and '.'
-      std::string size_str = name.substr(last_underscore + 1, last_dot - last_underscore - 1);
-      int size = std::stoi(size_str);
-      return size;
+    // Extract the string between '_' and '.'
+    std::string size_str = name.substr(last_underscore + 1, last_dot - last_underscore - 1);
+    int size = std::stoi(size_str);
+    return size;
   }
 
-    cerr << "the file does not have the expected format" << std::endl;
-    throw 1;
+  cerr << "the file does not have the expected format" << std::endl;
+  throw 1;
 }
 
 tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> partitionate_traditional(const PartitionerParams& params)
@@ -211,7 +211,7 @@ tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> parti
   double time_to_build_graph = 0.;
   if (filename.find("air_conditioners_cont") != std::string::npos) {
     auto size = get_air_conditioners_controller_size(filename);
-    auto sb_graph = create_air_conditioners_with_controller_graph(size);
+    auto sb_graph = create_air_conditioners_with_controller_graph(size, *params.number_of_partitions);
     auto end_build_graph = chrono::high_resolution_clock::now();
     auto time_to_build_graph = chrono::duration<double, std::milli>(end_build_graph - start_build_graph).count();
     sb_graph_ptr = make_unique<SBG::LIB::WeightedSBGraph>(move(sb_graph));
@@ -222,15 +222,16 @@ tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> parti
 
   cout << "sb_graph: " << *sb_graph_ptr << endl;
   cout << "connections:\n";
-  for (auto it1 = sb_graph_ptr->map1().begin(), it2 = sb_graph_ptr->map2().begin(); it1 != sb_graph_ptr->map1().end() and it2 != sb_graph_ptr->map2().end(); ++it1, ++it2) {
+  for (auto it1 = sb_graph_ptr->map1().begin(), it2 = sb_graph_ptr->map2().begin();
+       it1 != sb_graph_ptr->map1().end() and it2 != sb_graph_ptr->map2().end(); ++it1, ++it2) {
     auto n1 = (*it1).image();
     auto n2 = (*it2).image();
-    cout << n1 << ", " << n2 << "\n";
+    cout << n1 << ", " << n2 << " from " << (*it1).dom() << "\n";
   }
   cout << endl;
 
   auto start_partitionate = chrono::high_resolution_clock::now();
-  auto partitions = 
+  auto partitions =
       best_initial_partition(*sb_graph_ptr, *params.number_of_partitions, params.initial_partition_strategy, params.enable_multithreading);
   cout << "chosen partition " << partitions << endl;
 
@@ -483,7 +484,7 @@ int main(int argc, char** argv)
       read_directory(*params.directory, dir_files);
 
       for (const auto& f : dir_files) {
-        if(f.substr(f.find_last_of(".") + 1) == "csv") {
+        if (f.substr(f.find_last_of(".") + 1) == "csv") {
           cout << "Ignoring " << f << endl;
           continue;
         }
@@ -497,7 +498,11 @@ int main(int argc, char** argv)
 
         auto max_imb = metrics::maximum_imbalance(partition_from_file, *sb_graph);
 
-        metrics::communication_metrics comm_metrics = metrics::communication_metrics{edge_cut, comm_volume, max_comm_volume, };
+        metrics::communication_metrics comm_metrics = metrics::communication_metrics{
+            edge_cut,
+            comm_volume,
+            max_comm_volume,
+        };
         metrics[std::filesystem::path(f).filename().string()] = comm_metrics;
       }
     }

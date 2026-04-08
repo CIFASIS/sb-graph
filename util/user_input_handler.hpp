@@ -43,7 +43,7 @@ class UserInputHandler {
   UserInputHandler();
   virtual ~UserInputHandler() = default;
 
-  virtual void execute(int arg_count, char* args[]) = 0;
+  virtual void execute(int argc, char* argv[]) = 0;
 
   protected:
   prog_opts::options_description _generic; ///< Descriptive info (version, etc.) 

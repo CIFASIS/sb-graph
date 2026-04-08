@@ -71,4 +71,4 @@ private:
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_EVAL_USER_INPUT_HPP_

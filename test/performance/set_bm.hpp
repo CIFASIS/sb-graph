@@ -1,10 +1,6 @@
-/** @file main.hpp
+/** @file set_bm.hpp
 
- @brief <b>SBG program evaluator</b>
-
- These modules allows the user to test the SBG modules. To do so the user should
- provide a SBG program file. The file will be parser, and next the visitors
- will be used to return a result.
+ @brief <b>Set Benchmark</b>
 
  <hr>
 
@@ -25,16 +21,21 @@
 
  ******************************************************************************/
 
-#include <iostream>
+#ifndef SBGRAPH_TEST_PERFORMANCE_SET_BM_HPP_
+#define SBGRAPH_TEST_PERFORMANCE_SET_BM_HPP_
 
-#include "eval/eval_exec.hpp"
+namespace SBG {
 
-int main(int argc, char* argv[])
-{
-  std::cout << std::boolalpha;
+namespace perf {
 
-  SBG::Eval::EvalExecutor eval_exec;
-  eval_exec.execute(argc, argv);
+namespace detail {
 
-  return 0;
-}
+void registerSetBenchmarks();
+
+} // namespace detail
+
+} // namespace perf
+
+} // namespace SBG
+
+#endif // SBGRAPH_TEST_PERFORMANCE_SET_BM_HPP_

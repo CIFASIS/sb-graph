@@ -36,6 +36,8 @@ namespace Parser {
 
 ParserExecutor::ParserExecutor() : UserInputHandler()
 {
+  // First option without name is the input file
+  _positional.add("input-file", 1);
   _cmd_line_opts.add(_generic).add(_config).add(_hidden);
   _cfg_file_opts.add(_config).add(_hidden);
   _visible.add(_generic).add(_config);

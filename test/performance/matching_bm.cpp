@@ -17,93 +17,86 @@
 
  ******************************************************************************/
 
-/**
- * @file custom_match_bm.cpp
- * @brief Executes the SBG version of the matching algorithm for the desired
- * file. It is used to showcase the constant execution time when the repetitive
- * patterns increase its size. The final benchmark increases the number of
- * repetitve patterns, copying the original graph several times.
- * @note The input .test file should define a variable N that describes the
- * "size" of the repetitive patterns of the graph. 
- */
-
-#include <benchmark/benchmark.h>
-
 #include "algorithms/matching/matching.hpp"
 #include "algorithms/matching/matching_fact.hpp"
 #include "eval/user_impl_map.hpp"
-#include "sbg/directed_sbg.hpp"
+#include "sbg/bipartite_sbg.hpp"
 #include "test/performance/utils.hpp"
+#include "test/performance/matching_bm.hpp"
 
-namespace Test {
+#include <benchmark/benchmark.h>
 
-namespace Internal {
+namespace SBG {
 
-////////////////////////////////////////////////////////////////////////////////
-// Auxiliary data --------------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
+namespace perf {
 
-int lower = 100;
-int mult = 10;
-int upper = 1e6;
-
-const char *filename = std::getenv("TEST_FILE");
+namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Benchmarks ------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-static void BM_CustomMatchTest(benchmark::State& state)
+static void BM_Matching(benchmark::State& state, std::string filename)
 {
   int N = state.range(0);
 
   SBG::LIB::Matching match_algorithm
     = SBG::LIB::MATCH_FACT.createMatchAlgorithm();
   SBG::LIB::BipartiteSBG match_sbg = generateSBG(filename, N, 1); 
-
   for (auto _ : state) {
-    match_algorithm.calculate(match_sbg);
+    benchmark::DoNotOptimize(match_algorithm.calculate(match_sbg));
   }
+
   state.SetComplexityN(N);
 }
-BENCHMARK(BM_CustomMatchTest)->RangeMultiplier(10)->Range(lower, upper)
-  ->Complexity()->Unit(benchmark::kMillisecond);
 
-static void BM_CustomMatchCopies(benchmark::State& state)
+static void BM_MatchingCopies(benchmark::State& state, std::string filename)
 {
   int N = state.range(0);
 
+  // Calculate Matching
   SBG::LIB::Matching match_algorithm
     = SBG::LIB::MATCH_FACT.createMatchAlgorithm();
   SBG::LIB::BipartiteSBG match_sbg = generateSBG(filename, 100, N);
 
   for (auto _ : state) {
-    match_algorithm.calculate(match_sbg);
+    benchmark::DoNotOptimize(match_algorithm.calculate(match_sbg));
   }
   state.SetComplexityN(N);
 }
-BENCHMARK(BM_CustomMatchCopies)->RangeMultiplier(2)->Range(1, 128)
-  ->Complexity()->Unit(benchmark::kMillisecond);
-
-} // namespace Internal
-
-} // namespace Test
 
 ////////////////////////////////////////////////////////////////////////////////
-// Main ------------------------------------------------------------------------
+// Register Benchmarks ---------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-int main(int argc, char *argv[])
+void registerMatchingBenchmarks(std::string filename)
 {
-  if (Test::Internal::filename) {
-    const char *set_impl = std::getenv("SET_IMPL");
-    const char *pw_impl = std::getenv("PW_IMPL");
-    SBG::Eval::setSetFactory(set_impl ? std::stoi(set_impl) : 1);
-    SBG::Eval::setPWFactory(pw_impl ? std::stoi(pw_impl) : 1);
+  benchmark::RegisterBenchmark(
+    ("BM_Matching/" + filename).c_str(),
+    [filename](benchmark::State& state) {
+      BM_Matching(state, filename);
+    }
+  )->RangeMultiplier(10)->Range(100, 1e6)->Complexity()
+    ->Unit(benchmark::kMillisecond);
 
-    ::benchmark::Initialize(&argc, argv);
-    ::benchmark::RunSpecifiedBenchmarks();
-  }
-
-  return 0;
+  benchmark::RegisterBenchmark(
+    ("BM_MatchingCopies/" + filename).c_str(),
+    [filename](benchmark::State& state) {
+      BM_MatchingCopies(state, filename);
+    }
+  )->RangeMultiplier(2)->Range(1, 128)->Complexity()
+    ->Unit(benchmark::kMillisecond);
 }
+
+void registerMatchingBenchmarks()
+{
+  registerMatchingBenchmarks("../../TestRL1.test");
+  registerMatchingBenchmarks("../../TestRL2.test");
+  registerMatchingBenchmarks("../../TestRL3.test");
+}
+
+} // namespace detail
+
+} // namespace perf
+
+} // namespace SBG

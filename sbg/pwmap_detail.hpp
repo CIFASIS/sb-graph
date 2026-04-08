@@ -1,10 +1,9 @@
-/** @file main.hpp
+/** @file pwmap_detail.hpp
 
- @brief <b>SBG program evaluator</b>
+ @brief <b>PWMap implementation access</b>
 
- These modules allows the user to test the SBG modules. To do so the user should
- provide a SBG program file. The file will be parser, and next the visitors
- will be used to return a result.
+ This module is intended for internal use to access the implementation of
+ PWMaps, for example to benchmark private methods.
 
  <hr>
 
@@ -25,16 +24,36 @@
 
  ******************************************************************************/
 
-#include <iostream>
+#ifndef SBGRAPH_SBG_PWMAP_DETAIL__HPP_
+#define SBGRAPH_SBG_PWMAP_DETAIL__HPP_
 
-#include "eval/eval_exec.hpp"
+#include "sbg/pw_map.hpp"
 
-int main(int argc, char* argv[])
-{
-  std::cout << std::boolalpha;
+namespace SBG {
 
-  SBG::Eval::EvalExecutor eval_exec;
-  eval_exec.execute(argc, argv);
+namespace LIB {
 
-  return 0;
-}
+namespace detail {
+
+class PWMapAccessKey {
+public:
+  PWMap reduce(PWMap pw);
+
+private:
+  PWMapAccessKey() = default;
+
+  friend class PWMapAccess;
+};
+
+class PWMapAccess {
+public:
+  static PWMapAccessKey key();
+};
+
+} // namespace detail
+
+} // namespace LIB
+
+}  // namespace SBG
+
+#endif // SBGRAPH_SBG_PWMAP_DETAIL_HPP_

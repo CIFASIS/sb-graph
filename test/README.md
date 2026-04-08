@@ -26,28 +26,15 @@ Executes system tests for the partitioner.
 
 ## performance
 
-Measures and outputs execution time of predefined tests.
-
-The following benchmarks can be executed from the sb-graph/build/ directory
-with the following commands:
-  - `make run-benchmark`: benchmark for some implementations of Sets and PWMaps.
-  - `make run-match`: benchmark for the maximum matching algorithm applied to
-    TestRL1.test, TestRL2.test and TestRL3.test.
-  - `make run-scc`: benchmark for the SCC algorithm applied to TestRL1.test,
-    TestRL2.test and TestRL3.test.
+Measures and outputs execution time of predefined tests. The corresponding
+binary is sb-graph/test/build/bin/sbg-benchmark (to see available options run
+the executable with --help as argument). For the algorithms benchmark it accepts
+a single test file as a positional argument. The binary also supports Google
+Benchmark options, i.e. --benchmark_filter=filter.
 
 In the ./test/build/bin there are also some helpful binaries:
   - boost-perf: used to evaluate the performance of traditional graphs
     algorithms.
-  - custom-match-benchmark: benchmark for the maximum matching algorithm applied
-    to a custom .test file. Environmental variables TEST_FILE, SET_IMPL and
-    PW_IMPL are support. So, for example,
-    `TEST_FILE="../../TestRL1.test" SET_IMPL="2" ./custom-match-benchmark` runs
-    the benchmark for TestRL1.test with the ordered unidimensional dense set
-    implementation.
-  - custom-scc-benchmark: benchmark for the SCC algorithm applied to a custom
-    .test file. Environmental variables TEST_FILE, SET_IMPL and PW_IMPL are
-    supported.
   - custom-boost-benchmark: benchmark for the C++ Boost Graph Library
     traditional scalar algorithms. This benchmark is introduced to compare
     the SBG approach with existing techniques. Environmental variable TEST_FILE

@@ -1,12 +1,4 @@
-/** @file main.hpp
-
- @brief <b>SBG program evaluator</b>
-
- These modules allows the user to test the SBG modules. To do so the user should
- provide a SBG program file. The file will be parser, and next the visitors
- will be used to return a result.
-
- <hr>
+/*******************************************************************************
 
  This file is part of Set--Based Graph Library.
 
@@ -25,16 +17,27 @@
 
  ******************************************************************************/
 
-#include <iostream>
+#include "sbg/pwmap_detail.hpp"
 
-#include "eval/eval_exec.hpp"
+namespace SBG {
 
-int main(int argc, char* argv[])
+namespace LIB {
+
+namespace detail {
+
+PWMap PWMapAccessKey::reduce(PWMap pw)
 {
-  std::cout << std::boolalpha;
-
-  SBG::Eval::EvalExecutor eval_exec;
-  eval_exec.execute(argc, argv);
-
-  return 0;
+  auto& impl = pw._impl;
+  return std::visit(
+    [](auto&& impl) -> PWMap {
+      return PWMap{impl.reduce()};
+    }, impl);
 }
+
+PWMapAccessKey PWMapAccess::key() { return PWMapAccessKey{}; };
+
+} // namespace detail
+
+} // namespace LIB
+
+} // namespace SBG

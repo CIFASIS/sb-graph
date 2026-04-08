@@ -122,6 +122,8 @@ private:
   UnordPWMap mapInf(unsigned int n) const;
 
   UnordMapCollection _pieces;
+
+  friend class PWMapAccessKey;
 };
 
 template<typename... Args>

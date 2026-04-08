@@ -1,12 +1,4 @@
-/** @file main.hpp
-
- @brief <b>SBG program evaluator</b>
-
- These modules allows the user to test the SBG modules. To do so the user should
- provide a SBG program file. The file will be parser, and next the visitors
- will be used to return a result.
-
- <hr>
+/*****************************************************************************
 
  This file is part of Set--Based Graph Library.
 
@@ -25,16 +17,12 @@
 
  ******************************************************************************/
 
-#include <iostream>
+#include "test/performance/bm_exec.hpp"
 
-#include "eval/eval_exec.hpp"
-
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
-  std::cout << std::boolalpha;
-
-  SBG::Eval::EvalExecutor eval_exec;
-  eval_exec.execute(argc, argv);
+  SBG::perf::detail::BMExecutor bm_exec;
+  bm_exec.execute(argc, argv);
 
   return 0;
 }

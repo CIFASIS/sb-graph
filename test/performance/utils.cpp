@@ -17,25 +17,47 @@
 
  ******************************************************************************/
 
-#include <fstream>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <regex>
-
 #include "algorithms/matching/matching.hpp"
 #include "algorithms/matching/matching_fact.hpp"
-#include "algorithms/misc/causalization_builders.hpp"
+#include "algorithms/matching/match_data.hpp"
+#include "eval/base_type.hpp"
 #include "eval/file_evaluator.cpp"
-#include "eval/user_impl_map.hpp"
+#include "eval/pretty_print.hpp"
 #include "sbg/bipartite_sbg.hpp"
+#include "sbg/expression.hpp"
+#include "sbg/interval.hpp"
+#include "sbg/natural.hpp"
+#include "sbg/pw_map.hpp"
+#include "sbg/pwmap_fact.hpp"
+#include "sbg/rational.hpp"
+#include "sbg/set.hpp"
+#include "sbg/set_fact.hpp"
 
-namespace Test {
+#include <fstream>
+#include <iostream>
+#include <unistd.h>
+#include <regex>
+#include <sys/wait.h>
+#include <string>
 
-namespace Internal {
+namespace SBG {
 
+namespace perf {
+
+namespace detail {
+
+using SBG::LIB::NAT;
+using SBG::LIB::RATIONAL;
+using SBG::LIB::detail::Interval;
+using SBG::LIB::Set;
+using SBG::LIB::Expression;
+using SBG::LIB::PWMap;
+using SBG::LIB::BipartiteSBG;
+using SBG::LIB::Matching;
+using SBG::LIB::MatchData;
 
 ////////////////////////////////////////////////////////////////////////////////
-// Auxiliary functions ---------------------------------------------------------
+// File Manipulation -----------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 bool updateN(const std::string& filename, int N)
@@ -72,7 +94,7 @@ bool updateN(const std::string& filename, int N)
   return true;
 }
 
-SBG::LIB::BipartiteSBG generateSBG(std::string filename, int N, int copies)
+BipartiteSBG generateSBG(std::string filename, int N, int copies)
 {
   std::streambuf* original_buf = std::cout.rdbuf();
   std::ofstream nullStream("/dev/null");
@@ -82,12 +104,12 @@ SBG::LIB::BipartiteSBG generateSBG(std::string filename, int N, int copies)
   updateN(filename, N);
 
   // Get graph from file
-  SBG::LIB::BipartiteSBG g;
+  BipartiteSBG g;
   SBG::Eval::ProgramIO eval_result = SBG::Eval::parseEvalFile(filename); 
-  for (const SBG::Eval::ExprResult &ev : eval_result.exprs()) {
+  for (const SBG::Eval::ExprResult& ev : eval_result.exprs()) {
     SBG::Eval::ExprBaseType e = std::get<1>(ev);
-    if (std::holds_alternative<SBG::LIB::BipartiteSBG>(e)) {
-      g = std::get<SBG::LIB::BipartiteSBG>(e);
+    if (std::holds_alternative<BipartiteSBG>(e)) {
+      g = std::get<BipartiteSBG>(e);
     }
   }
 
@@ -97,17 +119,228 @@ SBG::LIB::BipartiteSBG generateSBG(std::string filename, int N, int copies)
   //TODO return g.copy(copies);
 }
 
-SBG::LIB::MatchData calculateMatching(std::string filename, int N, int copies)
+MatchData calculateMatching(std::string filename, int N, int copies)
 {
   // Calculate matching
-  SBG::LIB::BipartiteSBG match_sbg = generateSBG(filename, N, copies);
-  SBG::LIB::Matching match_algorithm
+  BipartiteSBG match_sbg = generateSBG(filename, N, copies);
+  Matching match_algorithm
     = SBG::LIB::MATCH_FACT.createMatchAlgorithm();
-  SBG::LIB::MatchData match_result = match_algorithm.calculate(match_sbg);
+  MatchData match_result = match_algorithm.calculate(match_sbg);
 
   return match_result;  
 }
 
-} // namespace Internal
+////////////////////////////////////////////////////////////////////////////////
+// Set Construction ------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
-} // namespace Test
+std::pair<Set, Set> nonDisjointPieces(NAT set_sz)
+{
+  NAT inter_sz = 100;
+
+  Set s1 = SBG::LIB::SET_FACT.createSet();
+  Set s2 = SBG::LIB::SET_FACT.createSet();
+  for (unsigned int h = 0; h < set_sz; ++h) {
+    Interval i1{h*inter_sz, 1, (h + 1)*inter_sz - 1};
+    Set jth_s1 = SBG::LIB::SET_FACT.createSet(i1.begin(), i1.step()
+      , i1.end());
+    s1 = s1.disjointCup(jth_s1);
+
+    NAT off = inter_sz/2;
+    Interval i2{off + (h*inter_sz), 1, off + (h + 1)*inter_sz - 1};
+    Set jth_s2 = SBG::LIB::SET_FACT.createSet(i2.begin(), i2.step(), i2.end());
+    s2 = s2.disjointCup(jth_s2);
+  }
+
+  Set second_dim = SBG::LIB::SET_FACT.createSet(0, 1, inter_sz - 1);
+  s1 = s1.cartesianProduct(second_dim);
+  s2 = s2.cartesianProduct(second_dim);
+
+  return std::make_pair(std::move(s1), std::move(s2));
+}
+
+std::pair<Set, Set> interlacedPieces(NAT set_sz)
+{
+  NAT inter_sz = 100;
+
+  Set s1 = SBG::LIB::SET_FACT.createSet();
+  Set s2 = SBG::LIB::SET_FACT.createSet();
+  for (SBG::LIB::NAT j = 0; j < set_sz; j += 2) {
+    Set jth_s1 = SBG::LIB::SET_FACT.createSet(j*100, 1, (j + 1)*100 - 1);
+    s1 = std::move(s1.disjointCup(jth_s1));
+    Set jth_s2 = SBG::LIB::SET_FACT.createSet((j + 1)*100, 1, (j + 2)*100 - 1);
+    s2 = std::move(s2.disjointCup(jth_s2));
+  }
+
+  return std::make_pair(std::move(s1), std::move(s2));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// PWMap Construction ----------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+PWMap denseDom(NAT map_sz)
+{
+  NAT inter_sz = 100;
+  NAT set_sz = 10;
+
+  PWMap pw = SBG::LIB::PWMAP_FACT.createPWMap();
+  for (unsigned int j = 0; j < map_sz; ++j) {
+    Set domain = SBG::LIB::SET_FACT.createSet();
+    NAT offset = j*set_sz*inter_sz;
+    for (unsigned int h = 0; h < set_sz; ++h) {
+      Interval i{offset + (h*inter_sz), 1, offset + (h + 1)*inter_sz - 1};
+      Set jth_domain
+        = SBG::LIB::SET_FACT.createSet(i.begin(), i.step(), i.end());
+      domain = std::move(domain).disjointCup(std::move(jth_domain));
+    }
+    Expression id{1, 0};
+
+    pw.emplace(domain, id);
+  }
+
+  return pw;
+}
+
+std::pair<PWMap, PWMap> minAdjMaps(NAT map_sz)
+{
+  NAT inter_sz = 100;
+  NAT set_sz = 10;
+
+  Set second_dim = SBG::LIB::SET_FACT.createSet(0, 1, inter_sz - 1);
+  PWMap pw1 = SBG::LIB::PWMAP_FACT.createPWMap();
+  PWMap pw2 = SBG::LIB::PWMAP_FACT.createPWMap();
+  for (unsigned int j = 0; j < map_sz; ++j) {
+    Set domain1 = SBG::LIB::SET_FACT.createSet();
+    Set domain2 = SBG::LIB::SET_FACT.createSet();
+    NAT offset = j*set_sz*inter_sz;
+    for (unsigned int h = 0; h < set_sz; ++h) {
+      Interval i1{offset + (h*inter_sz), 1, offset + (h + 1)*inter_sz - 1};
+      Set jth_domain1 = SBG::LIB::SET_FACT.createSet(i1.begin(), i1.step()
+        , i1.end());
+      domain1 = std::move(domain1).disjointCup(std::move(jth_domain1));
+
+      NAT offset2 = offset + inter_sz/2;
+      Interval i2{offset2 + (h*inter_sz), 1, offset2 + (h + 1)*inter_sz - 1};
+      Set jth_domain2 = SBG::LIB::SET_FACT.createSet(i2.begin(), i2.step()
+        , i2.end());
+      domain2 = std::move(domain2).disjointCup(std::move(jth_domain2));
+    }
+
+    Expression id{1, 0};
+    Expression minus_one{1, RATIONAL{-1, 1}};
+
+    pw1.emplace(domain1, id);
+    pw2.emplace(domain2, minus_one);
+  }
+
+  return {pw1, pw2};
+}
+
+std::pair<PWMap, PWMap> interlacedMaps(NAT map_sz)
+{
+  NAT inter_sz = 100;
+  NAT set_sz = 10;
+
+  Set second_dim = SBG::LIB::SET_FACT.createSet(0, 1, inter_sz - 1);
+  PWMap pw1 = SBG::LIB::PWMAP_FACT.createPWMap();
+  PWMap pw2 = SBG::LIB::PWMAP_FACT.createPWMap();
+  for (unsigned int j = 0; j < map_sz; ++j) {
+    Set domain1 = SBG::LIB::SET_FACT.createSet();
+    Set domain2 = SBG::LIB::SET_FACT.createSet();
+    NAT offset = j*set_sz*inter_sz;
+    for (unsigned int h = 0; h < set_sz; h += 2) {
+      Interval i1{offset + (h*inter_sz), 1, offset + (h + 1)*inter_sz - 1};
+      Set jth_domain1 = SBG::LIB::SET_FACT.createSet(i1.begin(), i1.step()
+        , i1.end());
+      domain1 = std::move(domain1).disjointCup(std::move(jth_domain1));
+
+      NAT offset2 = offset + inter_sz;
+      Interval i2{offset2 + (h*inter_sz), 1, offset2 + (h + 1)*inter_sz - 1};
+      Set jth_domain2 = SBG::LIB::SET_FACT.createSet(i2.begin(), i2.step()
+        , i2.end());
+      domain2 = std::move(domain2).disjointCup(std::move(jth_domain2));
+    }
+    domain1 = domain1.cartesianProduct(second_dim);
+    domain2 = domain2.cartesianProduct(second_dim);
+
+    Expression multidim_id{2, 1, 0};
+
+    pw1.emplace(domain1, multidim_id);
+    pw2.emplace(domain2, multidim_id);
+  }
+
+  return {pw1, pw2};
+}
+
+std::pair<PWMap, PWMap> nonDisjointMaps(NAT map_sz)
+{
+  NAT inter_sz = 100;
+  NAT set_sz = 10;
+
+  Set second_dim = SBG::LIB::SET_FACT.createSet(0, 1, inter_sz - 1);
+  PWMap pw1 = SBG::LIB::PWMAP_FACT.createPWMap();
+  PWMap pw2 = SBG::LIB::PWMAP_FACT.createPWMap();
+  for (unsigned int j = 0; j < map_sz; ++j) {
+    Set domain1 = SBG::LIB::SET_FACT.createSet();
+    Set domain2 = SBG::LIB::SET_FACT.createSet();
+    NAT offset = j*set_sz*inter_sz;
+    for (unsigned int h = 0; h < set_sz; ++h) {
+      Interval i1{offset + (h*inter_sz), 1, offset + (h + 1)*inter_sz - 1};
+      Set jth_domain1 = SBG::LIB::SET_FACT.createSet(i1.begin(), i1.step()
+        , i1.end());
+      domain1 = std::move(domain1).disjointCup(std::move(jth_domain1));
+
+      NAT offset2 = offset + inter_sz/2;
+      Interval i2{offset2 + (h*inter_sz), 1, offset2 + (h + 1)*inter_sz - 1};
+      Set jth_domain2 = SBG::LIB::SET_FACT.createSet(i2.begin(), i2.step()
+        , i2.end());
+      domain2 = std::move(domain2).disjointCup(std::move(jth_domain2));
+    }
+    domain1 = domain1.cartesianProduct(second_dim);
+    domain2 = domain2.cartesianProduct(second_dim);
+
+    Expression multidim_id{2, 1, 0};
+
+    pw1.emplace(domain1, multidim_id);
+    pw2.emplace(domain2, multidim_id);
+  }
+
+  return {pw1, pw2};
+}
+
+PWMap reducibleMaps(NAT map_sz)
+{
+  NAT inter_sz = 100;
+  NAT set_sz = 10;
+
+  Set second_dim = SBG::LIB::SET_FACT.createSet(0, 1, inter_sz - 1);
+  PWMap pw = SBG::LIB::PWMAP_FACT.createPWMap();
+  for (unsigned int j = 0; j < map_sz; ++j) {
+    Set domain = SBG::LIB::SET_FACT.createSet();
+    NAT offset = j*set_sz*inter_sz;
+    for (unsigned int h = 0; h < set_sz; ++h) {
+      Interval i{offset + (h*inter_sz), 1, offset + (h + 1)*inter_sz - 1};
+      Set jth_domain
+        = SBG::LIB::SET_FACT.createSet(i.begin(), i.step(), i.end());
+      domain = std::move(domain).disjointCup(std::move(jth_domain));
+    }
+    domain = domain.cartesianProduct(second_dim);
+
+    Expression plus_one{1, 1};
+    Expression id{1, 0};
+    Expression expr = plus_one.cartesianProduct(id);
+
+    pw.emplace(domain, expr);
+  }
+
+  return pw;
+}
+
+
+
+} // namespace detail
+
+} // namespace perf
+
+} // namespace SBG

@@ -20,7 +20,6 @@
 #include "sbg/set_fact.hpp"
 #include "sbg/ord_pwmap.hpp"
 
-#include <algorithm>
 #include <forward_list>
 #include <set>
 #include <iostream>
@@ -410,15 +409,14 @@ Set OrdPWMap::preImage(const Set& subcodom) const
 
 OrdPWMap OrdPWMap::inverse() const
 {
-  OrdMapCollection result;
+  OrdPWMap result;
 
   for (const MapEntry& entry : _pieces) {
     Map m = entry.map();
-    result.emplace_back(Map{m.image(), m.law().inverse()});
+    result.emplace(Map{m.image(), m.law().inverse()});
   }
 
-  std::sort(result.begin(), result.end()); 
-  return OrdPWMap{std::move(result)};
+  return result;
 }
 
 OrdPWMap OrdPWMap::composition(const OrdPWMap& other) const
@@ -589,7 +587,7 @@ OrdPWMap OrdPWMap::reduce() const
 
   for (const MapEntry& entry : _pieces) {
     std::vector<Map> reduced = entry.map().reduce();
-    for(Map& reduced_map : reduced) {
+    for (Map& reduced_map : reduced) {
       result.insert(std::move(reduced_map));
     }
   }

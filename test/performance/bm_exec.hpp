@@ -1,4 +1,8 @@
-/*****************************************************************************
+/** @file bm_exec.hpp
+
+ @brief <b>Executor for benchmarks</b>
+
+ <hr>
 
  This file is part of Set--Based Graph Library.
 
@@ -17,6 +21,34 @@
 
  ******************************************************************************/
 
-#include <benchmark/benchmark.h>
+#ifndef SBGRAPH_TEST_PERFORMANCE_BM_EXEC_HPP_
+#define SBGRAPH_TEST_PERFORMANCE_BM_EXEC_HPP_
 
-BENCHMARK_MAIN();
+#include "util/user_input_handler.hpp"
+
+namespace SBG {
+
+namespace perf {
+
+namespace detail {
+
+class BMExecutor : public Util::UserInputHandler {
+public:
+  BMExecutor();
+
+  void execute(int arg_count, char* args[]) override;
+
+private:
+  boost::optional<int> _benchmark;
+  boost::optional<int> _set_impl;
+  boost::optional<int> _pw_impl;
+  boost::optional<int> _scc_impl;
+};
+
+} // namespace detail
+
+} // namespace perf
+
+} // namespace SBG
+
+#endif // SBGRAPH_TEST_PERFORMANCE_BM_EXEC_HPP_

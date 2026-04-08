@@ -59,9 +59,6 @@ UserInputHandler::UserInputHandler() : _generic("Generic options")
   _hidden.add_options()
     ("input-file", prog_opts::value(&_input_file)
       , "Input SBG program");
-
-  // First option without name is the input file
-  _positional.add("input-file", 1);
 }
 
 } // namespace Util

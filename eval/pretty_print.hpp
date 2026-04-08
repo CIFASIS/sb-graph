@@ -74,4 +74,4 @@ std::ostream& operator<<(std::ostream& out, const ProgramIO& p);
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_EVAL_PRETTY_PRINT_HPP_

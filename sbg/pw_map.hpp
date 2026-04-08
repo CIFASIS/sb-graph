@@ -51,6 +51,8 @@ namespace detail {
 
 using PWMapImpl = std::variant<UnordPWMap, OrdPWMap>;
 
+class PWMapAccessKey;
+
 } // namespace detail
 
 enum class PWMapKind { kUnordered, kOrdered, kDomOrdered };
@@ -238,6 +240,8 @@ private:
   PWMap(detail::PWMapImpl&& impl);
 
   detail::PWMapImpl _impl;
+
+  friend class detail::PWMapAccessKey;
 };
 
 std::ostream& operator<<(std::ostream& out, const PWMap& pw);

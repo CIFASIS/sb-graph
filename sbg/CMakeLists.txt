@@ -22,6 +22,7 @@ target_sources(
     ord_set.cpp
     ord_unidim_dense_set.cpp
     pw_map.cpp
+    pwmap_detail.cpp
     pwmap_fact.cpp
     rational.cpp
     sbg.cpp

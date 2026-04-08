@@ -140,6 +140,7 @@ private:
 
   friend class AddCore;
   friend class MinAdjCore;
+  friend class PWMapAccessKey;
 };
 
 template<typename... Args>

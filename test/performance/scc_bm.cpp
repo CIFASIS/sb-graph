@@ -17,43 +17,27 @@
 
  ******************************************************************************/
 
-/**
- * @file custom_scc_bm.cpp
- * @brief Executes the SBG version of the SCC algorithm for the desired file. It
- * is used to showcase the constant execution time when the repetitive patterns
- * increase its size. The final benchmark increases the number of repetitve
- * patterns, copying the original graph several times.
- * @note The input .test file should define a variable N that describes the
- * "size" of the repetitive patterns of the graph. 
- */
-
+#include "algorithms/matching/match_data.hpp"
 #include "algorithms/scc/scc.hpp"
 #include "algorithms/scc/scc_fact.hpp"
-#include "eval/user_impl_map.hpp"
+#include "algorithms/misc/causalization_builders.hpp"
 #include "sbg/directed_sbg.hpp"
+#include "test/performance/scc_bm.hpp"
 #include "test/performance/utils.hpp"
 
 #include <benchmark/benchmark.h>
 
-namespace Test {
+namespace SBG {
 
-namespace Internal {
+namespace perf {
 
-////////////////////////////////////////////////////////////////////////////////
-// Auxiliary data --------------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-int lower = 100;
-int mult = 10;
-int upper = 1e6;
-
-const char *filename = std::getenv("TEST_FILE");
+namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Benchmarks ------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-static void BM_CustomSCCTest(benchmark::State& state)
+static void BM_SCC(benchmark::State& state, std::string filename)
 {
   int N = state.range(0);
   SBG::LIB::MatchData match_result = calculateMatching(filename, N, 1);
@@ -61,29 +45,12 @@ static void BM_CustomSCCTest(benchmark::State& state)
   SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
 
   for (auto _ : state) {
-    scc_algorithm.calculate(scc_dsbg);
+    benchmark::DoNotOptimize(scc_algorithm.calculate(scc_dsbg));
   }
   state.SetComplexityN(N);
 }
-BENCHMARK(BM_CustomSCCTest)->RangeMultiplier(mult)->Range(lower, upper)
-  ->Complexity()->Unit(benchmark::kMillisecond);
 
-static void BM_CustomSCCTestWithBuilder(benchmark::State& state)
-{
-  int N = state.range(0);
-  SBG::LIB::MatchData match_result = calculateMatching(filename, N, 1);
-  SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
-
-  for (auto _ : state) {
-    SBG::LIB::DirectedSBG scc_dsbg = misc::buildSCCFromMatching(match_result); 
-    scc_algorithm.calculate(scc_dsbg);
-  }
-  state.SetComplexityN(N);
-}
-BENCHMARK(BM_CustomSCCTestWithBuilder)->RangeMultiplier(mult)
-  ->Range(lower, upper)->Complexity()->Unit(benchmark::kMillisecond);
-
-static void BM_CustomSCCTestCopies(benchmark::State& state)
+static void BM_SCCWithBuilder(benchmark::State& state, std::string filename)
 {
   int N = state.range(0);
   SBG::LIB::MatchData match_result = calculateMatching(filename, 100, N);
@@ -91,32 +58,64 @@ static void BM_CustomSCCTestCopies(benchmark::State& state)
 
   for (auto _ : state) {
     SBG::LIB::DirectedSBG scc_dsbg = misc::buildSCCFromMatching(match_result); 
-    scc_algorithm.calculate(scc_dsbg);
+    benchmark::DoNotOptimize(scc_algorithm.calculate(scc_dsbg));
   }
   state.SetComplexityN(N);
 }
-BENCHMARK(BM_CustomSCCTestCopies)->RangeMultiplier(2)->Range(1, 128)
-  ->Complexity()->Unit(benchmark::kMillisecond);
 
-} // namespace Internal
-
-} // namespace Test
-
-////////////////////////////////////////////////////////////////////////////////
-// Main ------------------------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-int main(int argc, char *argv[])
+static void BM_SCCCopies(benchmark::State& state, std::string filename)
 {
-  if (Test::Internal::filename) {
-    const char *set_impl = std::getenv("SET_IMPL");
-    const char *pw_impl = std::getenv("PW_IMPL");
-    SBG::Eval::setSetFactory(set_impl ? std::stoi(set_impl) : 1);
-    SBG::Eval::setPWFactory(pw_impl ? std::stoi(pw_impl) : 1);
+  int N = state.range(0);
+  SBG::LIB::MatchData match_result = calculateMatching(filename, 100, N);
+  SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
 
-    ::benchmark::Initialize(&argc, argv);
-    ::benchmark::RunSpecifiedBenchmarks();
+  for (auto _ : state) {
+    SBG::LIB::DirectedSBG scc_dsbg = misc::buildSCCFromMatching(match_result); 
+    benchmark::DoNotOptimize(scc_algorithm.calculate(scc_dsbg));
   }
-
-  return 0;
+  state.SetComplexityN(N);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Register Benchmarks ---------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+void registerSCCBenchmarks(std::string filename)
+{
+  benchmark::RegisterBenchmark(
+    ("BM_SCC/" + filename).c_str(),
+    [filename](benchmark::State& state) {
+      BM_SCC(state, filename);
+    }
+  )->RangeMultiplier(10)->Range(100, 1e6)->Complexity()
+    ->Unit(benchmark::kMillisecond);
+
+  benchmark::RegisterBenchmark(
+    ("BM_SCCWithBuilder/" + filename).c_str(),
+    [filename](benchmark::State& state) {
+      BM_SCCWithBuilder(state, filename);
+    }
+  )->RangeMultiplier(10)->Range(100, 1e6)->Complexity()
+    ->Unit(benchmark::kMillisecond);
+
+  benchmark::RegisterBenchmark(
+    ("BM_SCCCopies/" + filename).c_str(),
+    [filename](benchmark::State& state) {
+      BM_SCCWithBuilder(state, filename);
+    }
+  )->RangeMultiplier(2)->Range(1, 128)->Complexity()
+    ->Unit(benchmark::kMillisecond);
+}
+
+void registerSCCBenchmarks()
+{
+  registerSCCBenchmarks("../../TestRL1.test");
+  registerSCCBenchmarks("../../TestRL2.test");
+  registerSCCBenchmarks("../../TestRL3.test");
+}
+
+} // namespace detail
+
+} // namespace perf
+
+} // namespace SBG

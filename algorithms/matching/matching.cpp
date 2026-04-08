@@ -34,10 +34,12 @@ std::ostream& operator<<(std::ostream& out, const MatchKind kind)
   switch (kind) {
     case MatchKind::kBFSPaths: {
       out << "BFS paths";
+      break;
     }
 
     default: {
       Util::ERROR("Unsupported matching algorithm implementation");
+      break;
     }
   }
 

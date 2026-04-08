@@ -37,7 +37,8 @@ Matching BFSMatchingFact::createMatchAlgorithm() const
 // Factory for clients --------------------------------------------------------- 
 ////////////////////////////////////////////////////////////////////////////////
 
-MatchFactory::MatchFactory() : _kind(MatchKind::kBFSPaths), _impl() {}
+MatchFactory::MatchFactory()
+  : _kind(MatchKind::kBFSPaths), _impl(BFSMatchingFact{}) {}
 
 MatchFactory& MatchFactory::instance()
 {
@@ -58,6 +59,7 @@ void MatchFactory::set_match_fact(MatchKind kind)
 
     default: {
       Util::ERROR("Unsupported matching implementation");
+      break;
     }
   }
 }

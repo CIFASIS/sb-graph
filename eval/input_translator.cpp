@@ -47,10 +47,10 @@ void InputTranslator::translate(EvalUserInput& input)
     setPWFactory(*pw);
   }
 
-  //EvalUserInput::MaybeInt scc = input.scc_impl();
-  //if (scc) {
-  //  setSCCFactory(*scc);
-  //}
+  EvalUserInput::MaybeInt scc = input.scc_impl();
+  if (scc) {
+    setSCCFactory(*scc);
+  }
 }
 
 } // namespace detail

@@ -115,8 +115,6 @@ int main(int argc, char* argv[])
 
   std::cout << "Partitioning " << json_file_name << " into " << parts << " parts using " << partition_method << std::endl;
 
-  std::vector<std::chrono::duration<double>> durations;
-
   std::vector<std::string> methods;
   if (partition_method.empty()) {
     methods = {"SBG", "Metis", "Scotch", "Kahip"};
@@ -124,8 +122,10 @@ int main(int argc, char* argv[])
     methods = {partition_method};
   }
 
+  GraphPartitioner partitioner(json_file_name, parts);
   for (const auto& m : methods) {
-    GraphPartitioner partitioner(json_file_name, parts);
+    std::vector<std::chrono::duration<double>> durations;
+
     for (size_t i = 0; i < number_of_executions; i++) {
       std::cout << "running " << i << " of " << number_of_executions << std::endl;
       auto [partition, duration] = partitioner.createPartition(m, parts, i == number_of_executions - 1);

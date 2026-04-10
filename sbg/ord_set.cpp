@@ -611,7 +611,7 @@ OrderedSet OrderedSet::offset(const MD_NAT& off) const
   return result;
 }
 
-SetPerimeter OrderedSet::perimeter() const
+Perimeter OrderedSet::perimeter() const
 {
   MD_NAT min;
   MD_NAT max;
@@ -630,7 +630,7 @@ SetPerimeter OrderedSet::perimeter() const
     }
   }
 
-  return SetPerimeter{min, max};
+  return Perimeter{min, max};
 }
 
 void OrderedSet::compact()

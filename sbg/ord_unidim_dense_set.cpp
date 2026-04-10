@@ -365,7 +365,7 @@ OrdUnidimDenseSet OrdUnidimDenseSet::difference(const OrdUnidimDenseSet& other)
 OrdUnidimDenseSet OrdUnidimDenseSet::cartesianProduct(const OrdUnidimDenseSet&
   other) const
 {
-  Util::ERROR("OrdUnidimDenseSet::cartesianProduct: operation not supported");
+  Util::ERROR("OrdUnidimDenseSet::cartesianProduct: operation not supported\n");
 
   return OrdUnidimDenseSet{};
 }
@@ -433,9 +433,9 @@ OrdUnidimDenseSet OrdUnidimDenseSet::offset(const MD_NAT& offset) const
   return result;
 }
 
-SetPerimeter OrdUnidimDenseSet::perimeter() const
+Perimeter OrdUnidimDenseSet::perimeter() const
 {
-  return SetPerimeter{minElem(), maxElem()};
+  return Perimeter{minElem(), maxElem()};
 }
 
 void OrdUnidimDenseSet::compact()

@@ -1,4 +1,12 @@
-/*******************************************************************************
+/** @file perimeter.pp
+
+ @brief <b>Perimeter</b>
+
+ The perimeter is the smallest dense MultiDimInter that contains all of the
+ elements of a collection of multi-dimensional values. Thus, is can be defined
+ using only two multi-dimensional values.
+
+ <hr>
 
  This file is part of Set--Based Graph Library.
 
@@ -17,35 +25,31 @@
 
  ******************************************************************************/
 
-#include "sbg/set_perimeter.hpp"
+#ifndef SBGRAPH_SBG_PERIMETER_HPP_
+#define SBGRAPH_SBG_PERIMETER_HPP_
+
+#include "sbg/natural.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
-////////////////////////////////////////////////////////////////////////////////
-// Set perimeter ---------------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
+class Perimeter {
+public:
+  Perimeter(const MD_NAT& min, const MD_NAT& max);
 
-SetPerimeter::SetPerimeter(const MD_NAT& min, const MD_NAT& max)
-  : _min(min), _max(max) {}
+  const MD_NAT& min() const;
+  const MD_NAT& max() const;
 
-const MD_NAT& SetPerimeter::min() const { return _min; }
+  bool overlap(const Perimeter& other) const;
 
-const MD_NAT& SetPerimeter::max() const { return _max; }
-
-bool SetPerimeter::overlap(const SetPerimeter& other) const
-{
-  std::size_t arity = _min.arity();
-  for (std::size_t j = 0; j < arity; ++j) {
-    if (_max[j] < other._min[j] || other._max[j] < _min[j]) {
-      return false;
-    }
-  }
-  
-  return true;
-}
+private:
+  MD_NAT _min;
+  MD_NAT _max;
+};
 
 } // namespace LIB
 
 } // namespace SBG
+
+#endif // SBGRAPH_SBG_PERIMETER_HPP_

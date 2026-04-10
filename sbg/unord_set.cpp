@@ -413,7 +413,7 @@ UnorderedSet UnorderedSet::offset(const MD_NAT& off) const
   return result;
 }
 
-SetPerimeter UnorderedSet::perimeter() const
+Perimeter UnorderedSet::perimeter() const
 {
   MD_NAT min;
   MD_NAT max;
@@ -432,7 +432,7 @@ SetPerimeter UnorderedSet::perimeter() const
     }
   }
 
-  return SetPerimeter{min, max};
+  return Perimeter{min, max};
 }
 
 void UnorderedSet::compact()

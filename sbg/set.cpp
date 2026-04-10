@@ -345,7 +345,7 @@ Set Set::offset(const MD_NAT& off) const
     , _impl);
 }
 
-SetPerimeter Set::perimeter() const
+Perimeter Set::perimeter() const
 {
   return std::visit([](const auto& a) { return a.perimeter(); }, _impl);
 }

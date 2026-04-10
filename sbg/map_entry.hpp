@@ -29,7 +29,7 @@
 #include "sbg/expression.hpp"
 #include "sbg/map.hpp"
 #include "sbg/set.hpp"
-#include "sbg/set_perimeter.hpp"
+#include "sbg/perimeter.hpp"
 
 #include <optional>
 
@@ -49,7 +49,7 @@ public:
   MapEntry(const Map& m);
 
   const Map& map() const;
-  const SetPerimeter& perimeter() const;
+  const Perimeter& perimeter() const;
 
   bool operator==(const MapEntry& other) const;
   bool operator<(const MapEntry& other) const;
@@ -58,7 +58,7 @@ public:
 
 private:
   Map _map;
-  SetPerimeter _perimeter;
+  Perimeter _perimeter;
 };
 
 } // namespace detail

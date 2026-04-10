@@ -178,6 +178,8 @@ Interval Interval::offset(const NAT off) const
   return Interval{_begin + off, _step, _end + off};
 }
 
+Perimeter Interval::perimeter() const { return Perimeter(_begin, _end); }
+
 MaybeInterval Interval::compact(const Interval& other) const
 {
   if (_step == other._step) {

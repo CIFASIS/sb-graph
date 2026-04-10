@@ -30,6 +30,7 @@
 
 #include "sbg/interval.hpp"
 #include "sbg/natural.hpp"
+#include "sbg/perimeter.hpp"
 
 #include <iosfwd>
 #include <optional>
@@ -121,6 +122,8 @@ public:
    * It will be used by ordered sets operations.
    */
   MultiDimInter least(const MultiDimInter& other) const;
+
+  Perimeter perimeter() const;
 
   /**
    * @brief Merge two contiguous mdis if possible. If not, then the result is

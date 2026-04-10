@@ -32,7 +32,7 @@
 #include "sbg/interval.hpp"
 #include "sbg/multidim_inter.hpp"
 #include "sbg/natural.hpp"
-#include "sbg/set_perimeter.hpp"
+#include "sbg/perimeter.hpp"
 
 #include <iosfwd>
 #include <memory>
@@ -92,7 +92,7 @@ public:
   OrdUnidimDenseSet disjointCup(OrdUnidimDenseSet&& other) const &;
   OrdUnidimDenseSet disjointCup(OrdUnidimDenseSet&& other) &&;
   OrdUnidimDenseSet offset(const MD_NAT& offset) const;
-  SetPerimeter perimeter() const;
+  Perimeter perimeter() const;
   void compact();
 
 private:
@@ -117,6 +117,8 @@ private:
 
 private:
   OrdIntervalCollection _pieces;
+
+  friend class SetAccessKey;
 };
 
 } // namespace detail

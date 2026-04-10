@@ -29,7 +29,7 @@
 #include "sbg/interval.hpp"
 #include "sbg/multidim_inter.hpp"
 #include "sbg/natural.hpp"
-#include "sbg/set_perimeter.hpp"
+#include "sbg/perimeter.hpp"
 
 #include <iosfwd>
 #include <memory>
@@ -90,7 +90,7 @@ public:
   OrderedSet disjointCup(OrderedSet&& other) const &;
   OrderedSet disjointCup(OrderedSet&& other) &&;
   OrderedSet offset(const MD_NAT& off) const;
-  SetPerimeter perimeter() const;
+  Perimeter perimeter() const;
   void compact();
 
 private:
@@ -114,6 +114,8 @@ private:
   OrderedSet complementAtom() const;
 
   OrdMDICollection _pieces;
+
+  friend class SetAccessKey;
 };
 
 } // namespace detail

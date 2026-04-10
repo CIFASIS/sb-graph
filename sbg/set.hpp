@@ -41,7 +41,7 @@
 #include "sbg/ord_set.hpp"
 #include "sbg/ord_unidim_dense_set.hpp"
 #include "sbg/set.hpp"
-#include "sbg/set_perimeter.hpp"
+#include "sbg/perimeter.hpp"
 #include "sbg/unord_set.hpp"
 
 #include <iosfwd>
@@ -62,7 +62,7 @@ using SetImpl = std::variant<detail::UnorderedSet
   , detail::OrdUnidimDenseSet
   , detail::OrderedSet>;
 
-class MapDetail;
+class SetAccessKey;
 
 }
 
@@ -109,7 +109,7 @@ public:
   Set disjointCup(Set&& other) const &;
   Set disjointCup(Set&& other) &&;
   Set offset(const MD_NAT& off) const;
-  SetPerimeter perimeter() const;
+  Perimeter perimeter() const;
   void compact();
 
 private:
@@ -118,7 +118,7 @@ private:
 
   detail::SetImpl _impl;
 
-  friend class detail::MapDetail;
+  friend class detail::SetAccessKey;
 };
 
 std::ostream& operator<<(std::ostream& out, const Set& s);

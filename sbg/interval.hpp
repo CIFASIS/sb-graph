@@ -32,6 +32,7 @@
 #define SBGRAPH_SBG_INTERVAL_HPP_
 
 #include "sbg/natural.hpp"
+#include "sbg/perimeter.hpp"
 
 #include <iosfwd>
 #include <optional>
@@ -83,6 +84,8 @@ public:
    * @brief Sum a constant value to every element of the interval.
    */
   Interval offset(const NAT off) const;
+
+  Perimeter perimeter() const;
 
   /**
    * @brief Merge two contiguous intervals if possible. If not, then the result

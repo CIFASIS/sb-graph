@@ -216,6 +216,11 @@ MultiDimInter MultiDimInter::least(const MultiDimInter& other) const
   return std::min(*this, other);
 }
 
+Perimeter MultiDimInter::perimeter() const
+{
+  return Perimeter{minElem(), maxElem()};
+}
+
 MaybeMDI MultiDimInter::compact(const MultiDimInter& other) const
 {
   MultiDimInter result;

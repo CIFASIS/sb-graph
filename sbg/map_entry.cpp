@@ -37,7 +37,7 @@ MapEntry::MapEntry(const Map& m)
 
 const Map& MapEntry::map() const { return _map; }
 
-const SetPerimeter& MapEntry::perimeter() const { return _perimeter; }
+const Perimeter& MapEntry::perimeter() const { return _perimeter; }
 
 bool MapEntry::operator==(const MapEntry& other) const
 {

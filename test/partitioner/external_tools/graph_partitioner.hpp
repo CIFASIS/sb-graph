@@ -54,7 +54,7 @@ struct Partition {
 
 class GraphPartitioner {
   public:
-  explicit GraphPartitioner(const std::string &name);
+  explicit GraphPartitioner(const std::string &name, unsigned int parts);
 
   std::tuple<Partition, std::chrono::duration<double>> createPartition(const std::string& partition_method, unsigned int partitions, bool save_to_file);
 

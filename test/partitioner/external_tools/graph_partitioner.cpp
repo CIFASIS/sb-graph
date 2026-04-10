@@ -52,7 +52,7 @@ static const std::unordered_map<std::string, PartitionMethod> PARTITION_METHOD_M
 
 static std::unique_ptr<SBG::LIB::WeightedSBGraph> sbg_graph;
 
-GraphPartitioner::GraphPartitioner(const std::string &name) : _name(name) { generateInputGraph(); }
+GraphPartitioner::GraphPartitioner(const std::string &name, unsigned int parts) : _name(name), _nbr_parts(parts) { generateInputGraph(); }
 
 std::string GraphPartitioner::validPartitionMethodsStr()
 {
@@ -68,41 +68,37 @@ std::string GraphPartitioner::validPartitionMethodsStr()
   return valid_methods.str();
 }
 
-
-static void write_node_by_partition(
-  const sbg_partitioner::PartitionMap& partitions,
-  const SBG::LIB::WeightedSBGraph& sb_graph,
-  const std::string& partition_method_name)
+static void write_node_by_partition(const sbg_partitioner::PartitionMap &partitions, const SBG::LIB::WeightedSBGraph &sb_graph,
+                                    const std::string &partition_method_name)
 {
-    std::cout << "writing results of SBG to " << partition_method_name << std::endl;
-    sbg_partitioner::Partition nodes;
-    nodes.reserve(sb_graph.V().size());
-    for (auto v : sb_graph.V()) {
-        nodes.push_back(v);
-    }
+  std::cout << "writing results of SBG to " << partition_method_name << std::endl;
+  sbg_partitioner::Partition nodes;
+  nodes.reserve(sb_graph.V().size());
+  for (auto v : sb_graph.V()) {
+    nodes.push_back(v);
+  }
 
-    sbg_partitioner::sort_partition_intervals(nodes);
+  sbg_partitioner::sort_partition_intervals(nodes);
 
-    // expand it and write it
-    std::vector<unsigned> partition_by_node;
-    std::ofstream output_file(partition_method_name);
-    for (const auto& n : nodes) {
-        for (unsigned v_0 = n.intervals()[0].begin(); v_0 <= n.intervals()[0].end(); v_0++) {
-            SBG::LIB::SetPiece set_piece;
-            set_piece.emplaceBack(SBG::LIB::Interval(v_0, n.intervals()[0].step(), v_0));
-            for (size_t i = 0; i < partitions.size(); i++) {
-                sbg_partitioner::Partition p = partitions.at(i);
-                auto p_set = sbg_partitioner::from_vector(p);
-                if (not SBG::LIB::SET_FACT.createSet(set_piece).intersection(p_set).isEmpty()) {
-                    partition_by_node.push_back(i);
-                    output_file << std::to_string(i) << std::endl;
-                    break;
-                }
-            }
+  // expand it and write it
+  std::vector<unsigned> partition_by_node;
+  std::ofstream output_file(partition_method_name);
+  for (const auto &n : nodes) {
+    for (unsigned v_0 = n.intervals()[0].begin(); v_0 <= n.intervals()[0].end(); v_0++) {
+      SBG::LIB::SetPiece set_piece;
+      set_piece.emplaceBack(SBG::LIB::Interval(v_0, n.intervals()[0].step(), v_0));
+      for (size_t i = 0; i < partitions.size(); i++) {
+        sbg_partitioner::Partition p = partitions.at(i);
+        auto p_set = sbg_partitioner::from_vector(p);
+        if (not SBG::LIB::SET_FACT.createSet(set_piece).intersection(p_set).isEmpty()) {
+          partition_by_node.push_back(i);
+          output_file << std::to_string(i) << std::endl;
+          break;
         }
+      }
     }
+  }
 }
-
 
 std::tuple<Partition, std::chrono::duration<double>> GraphPartitioner::createPartition(const std::string &partition_method_name,
                                                                                        unsigned int partitions, bool save_to_file)
@@ -132,7 +128,7 @@ std::tuple<Partition, std::chrono::duration<double>> GraphPartitioner::createPar
       partitionUsingMetis(partition);
       break;
     case PartitionMethod::HMetis:
-      // for now, disabled      
+      // for now, disabled
       // partitionUsingHMetis(partition);
       break;
     case PartitionMethod::Scotch:
@@ -155,7 +151,8 @@ std::tuple<Partition, std::chrono::duration<double>> GraphPartitioner::createPar
   std::cout << "Partition Time: " << duration.count() << " seconds." << std::endl;
 
   if (save_to_file) {
-    const std::string fileName = _name + "-" + partition_method_name + "-" + std::to_string(_nbr_parts) + "-" + std::to_string(_nbr_vtxs) + ".partition";
+    const std::string fileName =
+        _name + "-" + partition_method_name + "-" + std::to_string(_nbr_parts) + "-" + std::to_string(_nbr_vtxs) + ".partition";
     if (partition_method == PartitionMethod::SBG) {
       write_node_by_partition(sbg_partitions, *sbg_graph, fileName);
     } else {
@@ -178,34 +175,37 @@ void GraphPartitioner::generateInputGraph()
 }
 
 namespace {
-int get_air_conditioners_controller_size(const std::string& name)
+int get_air_conditioners_controller_size(const std::string &name)
 {
   size_t last_underscore = name.find_last_of('_');
   size_t last_dot = name.find_last_of('.');
 
   if (last_underscore != std::string::npos && last_dot != std::string::npos) {
-      // Extract the string between '_' and '.'
-      std::string size_str = name.substr(last_underscore + 1, last_dot - last_underscore - 1);
-      int size = std::stoi(size_str);
-      return size;
+    // Extract the string between '_' and '.'
+    std::string size_str = name.substr(last_underscore + 1, last_dot - last_underscore - 1);
+    int size = std::stoi(size_str);
+    return size;
   }
 
   std::cerr << "the file does not have the expected format" << std::endl;
   throw 1;
 }
-}
+}  // namespace
 
 void GraphPartitioner::readGraphFromJson()
 {
   std::cout << "GraphPartitioner::readGraphFromJson" << std::endl;
   if (_name.find("air_conditioners_cont") != std::string::npos) {
+    std::cout << "Creating graph for air conditioners with controller" << std::endl;
     auto size = get_air_conditioners_controller_size(_name);
-    auto temp_sbg_graph = sbg_partitioner::create_air_conditioners_with_controller_graph(size);
+    auto temp_sbg_graph = sbg_partitioner::create_air_conditioners_with_controller_graph(size, _nbr_parts);
     sbg_graph.reset(new SBG::LIB::WeightedSBGraph(temp_sbg_graph));
   } else {
+    std::cout << "Creating graph from file " << _name << std::endl;
     auto temp_sbg_graph = sbg_partitioner::build_sb_graph(_name);
     sbg_graph.reset(new SBG::LIB::WeightedSBGraph(temp_sbg_graph));
   }
+  std::cout << *sbg_graph << std::endl;
   readGraphFromSBG();
 }
 
@@ -294,8 +294,8 @@ void GraphPartitioner::partitionUsingMetis(Partition &partition)
   options[METIS_OPTION_OBJTYPE] = METIS_OBJTYPE_VOL;
   options[METIS_OPTION_SEED] = 1;
 
-  auto result = METIS_PartGraphKway(&_nbr_vtxs, &ncon, _xadj.data(), _adjncy.data(), _vwgt.data(), nullptr, _ewgt.data(), &_nbr_parts, nullptr, nullptr,
-                                    options.data(), &edgecut, partition.values.data());
+  auto result = METIS_PartGraphKway(&_nbr_vtxs, &ncon, _xadj.data(), _adjncy.data(), _vwgt.data(), nullptr, _ewgt.data(), &_nbr_parts,
+                                    nullptr, nullptr, options.data(), &edgecut, partition.values.data());
   if (result != METIS_OK) {
     std::cerr << "There was an error in METIS" << std::endl;
     throw 1;
@@ -360,25 +360,25 @@ void GraphPartitioner::readPartitionFile(const std::string &file_name, Partition
 
 void GraphPartitioner::partitionUsingScotch(Partition &partition)
 {
-  SCOTCH_Graph    graph_sc;
-  SCOTCH_Strat    strat;
-  
+  SCOTCH_Graph graph_sc;
+  SCOTCH_Strat strat;
+
   SCOTCH_graphInit(&graph_sc);
   SCOTCH_stratInit(&strat);
 
   if (SCOTCH_stratGraphMapBuild(&strat, SCOTCH_STRATQUALITY, _nbr_parts, 0.05)) {
-      std::cerr << "Error building graph partition strategy" << std::endl;
-      throw 1;
+    std::cerr << "Error building graph partition strategy" << std::endl;
+    throw 1;
   }
 
   if (SCOTCH_graphBuild(&graph_sc, 0, _nbr_vtxs, _xadj.data(), NULL, NULL, NULL, _edges, _adjncy.data(), NULL) != 0) {
-      std::cerr << "Error: Scotch Graph Build" << std::endl;
-      throw 1;
+    std::cerr << "Error: Scotch Graph Build" << std::endl;
+    throw 1;
   }
 
   if (SCOTCH_graphPart(&graph_sc, _nbr_parts, &strat, partition.values.data()) != 0) {
-      std::cerr << "Error: Scotch Graph Partition" << std::endl;
-      throw 1;
+    std::cerr << "Error: Scotch Graph Partition" << std::endl;
+    throw 1;
   }
 
   SCOTCH_stratExit(&strat);
@@ -406,6 +406,7 @@ void GraphPartitioner::partitionUsingSBG(sbg_partitioner::PartitionMap &partitio
 
 void GraphPartitioner::readGraphFromSBG()
 {
+  std::cout << "GraphPartitioner::readGraphFromSBG" << std::endl;
   _nbr_vtxs = sbg_graph->V().cardinal();
   // asumming all setpiece are unidimensional and have step 1
   int max_node = -1;

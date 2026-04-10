@@ -64,7 +64,7 @@ void parseArgs(int argc, char* argv[], std::string& sbg_json_input, int& partiti
     }
   }
 
-  if (sbg_json_input.empty() || partitions <= 0 || partition_method.empty() || imbalance < 0) {
+  if (sbg_json_input.empty() || partitions <= 0 || imbalance < 0) {
     usage();
     exit(EXIT_FAILURE);
   }
@@ -107,31 +107,40 @@ void addRecord(const std::string& filename, const std::string& method, int parti
 int main(int argc, char* argv[])
 {
   std::string json_file_name;
-  int partitions;
+  int parts;
   std::string partition_method;
   int imbalance;
 
-  parseArgs(argc, argv, json_file_name, partitions, partition_method, imbalance);
+  parseArgs(argc, argv, json_file_name, parts, partition_method, imbalance);
 
-  std::cout << "Partitioning " << json_file_name << " into " << partitions << " parts using " << partition_method << std::endl;
+  std::cout << "Partitioning " << json_file_name << " into " << parts << " parts using " << partition_method << std::endl;
 
   std::vector<std::chrono::duration<double>> durations;
 
-  for (size_t i = 0; i < number_of_executions; i++) {
-    std::cout << "running " << i << " of " << number_of_executions << std::endl;
-    GraphPartitioner partitioner(json_file_name);
-    auto [partition, duration] = partitioner.createPartition(partition_method, partitions, i == number_of_executions - 1);
-
-    if (i < number_of_cold_executions) {
-      continue;
-    }
-
-    durations.push_back(duration);
+  std::vector<std::string> methods;
+  if (partition_method.empty()) {
+    methods = {"SBG", "Metis", "Scotch", "Kahip"};
+  } else {
+    methods = {partition_method};
   }
 
-  std::filesystem::path json_file_name_path(json_file_name);
+  for (const auto& m : methods) {
+    GraphPartitioner partitioner(json_file_name, parts);
+    for (size_t i = 0; i < number_of_executions; i++) {
+      std::cout << "running " << i << " of " << number_of_executions << std::endl;
+      auto [partition, duration] = partitioner.createPartition(m, parts, i == number_of_executions - 1);
 
-  addRecord(json_file_name_path.filename().replace_extension("csv"), partition_method, partitions, durations);
+      if (i < number_of_cold_executions) {
+        continue;
+      }
+
+      durations.push_back(duration);
+    }
+
+    std::filesystem::path json_file_name_path(json_file_name);
+
+    addRecord(json_file_name_path.filename().replace_extension("csv"), m, parts, durations);
+  }
 
   // write results to a file
   // std::filesystem::path json_filesystem_path(json_file_name);

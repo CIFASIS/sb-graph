@@ -19,6 +19,7 @@
 
 #include "sbg/set_fact.hpp"
 #include "sbg/ord_pwmap.hpp"
+#include "sbg/perimeter.hpp"
 
 #include <forward_list>
 #include <set>
@@ -82,8 +83,7 @@ void OrdPWMap::insert(Map&& m)
 {
   if (!m.isEmpty()) {
     MapEntry entry{m};
-    if (isEmpty()
-      || _pieces.back().perimeter().min() < entry.perimeter().min()) { 
+    if (isEmpty() || _pieces.back() < entry) { 
       _pieces.push_back(entry);
     } else {
       insertHint(0, std::move(m));
@@ -157,13 +157,12 @@ std::size_t OrdPWMap::advanceHint(std::size_t hint, const MapEntry& jth_entry)
 
 // Traverse --------------------------------------------------------------------
 
-template<typename CoreOperation>
-CoreOperation OrdPWMap::traverse(const OrdPWMap& other, CoreOperation core_op)
-  const
+template<typename Core>
+Core OrdPWMap::traverse(const OrdPWMap& other, Core core_op) const
 {
   OrdMapCollection short_pw = _pieces;
   OrdMapCollection long_pw = other._pieces;
-  if (!core_op.orderMatters() && other._pieces.size() < _pieces.size()) {
+  if (!core_op.orderMatters() && long_pw.size() < short_pw.size()) {
     short_pw = other._pieces;
     long_pw  = _pieces;
   }
@@ -177,14 +176,14 @@ CoreOperation OrdPWMap::traverse(const OrdPWMap& other, CoreOperation core_op)
 
   auto short_begin = short_pw.begin();
   for (const MapEntry& long_mpe : long_pw) {
-    const SetPerimeter& long_perimeter = long_mpe.perimeter();
+    const Perimeter& long_perimeter = long_mpe.perimeter();
     
     auto prev_index = indexes.before_begin();
     auto curr_index = indexes.begin();
     while (curr_index != indexes.end()) {
       size_t idx = *curr_index;
       const MapEntry& short_mpe = *(short_begin + idx);
-      const SetPerimeter& short_perimeter = short_mpe.perimeter(); 
+      const Perimeter& short_perimeter = short_mpe.perimeter(); 
       
       // Here short_map is "before" long_map, so it is also "before" all the
       // remaining sets in long_pw, thus it can be discarded. 
@@ -360,10 +359,10 @@ OrdPWMap OrdPWMap::restrict(const Set& subdom) const
 
   OrdPWMap result;
   NAT global_pos = 0;
-  SetPerimeter subdom_perimeter = subdom.perimeter();
+  Perimeter subdom_perimeter = subdom.perimeter();
   const MD_NAT subdom_max_perimeter = subdom_perimeter.max();
   for (const MapEntry& entry : _pieces) {
-    const SetPerimeter& entry_perimeter = entry.perimeter();
+    const Perimeter& entry_perimeter = entry.perimeter();
     if (subdom_perimeter.overlap(entry_perimeter)) {
       result.advanceHint(global_pos, entry);
       result.insertHint(global_pos, entry.map().restrict(subdom));
@@ -428,12 +427,12 @@ OrdPWMap OrdPWMap::composition(const OrdPWMap& other) const
     Map other_map = other_entry.map();
     Set img = other_map.image();
     
-    SetPerimeter img_perimeter = img.perimeter();
+    Perimeter img_perimeter = img.perimeter();
     result.advanceHint(global_pos, other_entry);
     MD_NAT img_max_perimeter = img_perimeter.max();
 
     for (const MapEntry& entry : _pieces) {
-      const SetPerimeter& entry_perimeter = entry.perimeter();
+      const Perimeter& entry_perimeter = entry.perimeter();
       if (entry_perimeter.overlap(img_perimeter)) {
         Map composed = entry.map().composition(other_map);
         result.insertHint(global_pos, composed);
@@ -622,7 +621,7 @@ public:
         _result = std::move(min_adj_result).combine(std::move(_result));
         _visited = std::move(_visited).cup(std::move(min_adj_domain));
       } else {
-        _result.pushBack(std::move(min_adj));
+        _result.insert(std::move(min_adj));
         _visited = std::move(_visited).disjointCup(std::move(min_adj_domain));
       }
     }
@@ -740,7 +739,8 @@ void OrdPWMap::compact()
   OrdMapCollection result;
 
   if (!isEmpty()) {
-    MapSet set_result;
+    MapSet set_result{std::make_move_iterator(_pieces.begin())
+      , std::make_move_iterator(_pieces.end())};
     MapSet to_erase;
     do {
       MapSet new_set_result;

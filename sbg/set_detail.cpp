@@ -1,11 +1,4 @@
-/** @file pwmap_detail.hpp
-
- @brief <b>PWMap implementation access</b>
-
- This module is intended for internal use to access the implementation of
- PWMaps, for example to benchmark private methods.
-
- <hr>
+/*******************************************************************************
 
  This file is part of Set--Based Graph Library.
 
@@ -24,10 +17,7 @@
 
  ******************************************************************************/
 
-#ifndef SBGRAPH_SBG_PWMAP_DETAIL_HPP_
-#define SBGRAPH_SBG_PWMAP_DETAIL_HPP_
-
-#include "sbg/pw_map.hpp"
+#include "sbg/set_detail.hpp"
 
 namespace SBG {
 
@@ -35,25 +25,25 @@ namespace LIB {
 
 namespace detail {
 
-class PWMapAccessKey {
-public:
-  PWMap reduce(PWMap pw) const;
+SetImpl SetAccessKey::impl(Set s) const { return s._impl; }
 
-private:
-  PWMapAccessKey() = default;
+Set SetAccessKey::createSet(SetImpl s_impl) const { return Set{s_impl}; }
 
-  friend class PWMapAccess;
-};
+OrderedSet::OrdMDICollection SetAccessKey::pieces(OrderedSet s) const
+{
+  return s._pieces;
+}
 
-class PWMapAccess {
-public:
-  static PWMapAccessKey key();
-};
+OrdUnidimDenseSet::OrdIntervalCollection SetAccessKey::pieces(
+  OrdUnidimDenseSet s) const
+{
+  return s._pieces;
+}
+
+SetAccessKey SetAccess::key() { return SetAccessKey{}; };
 
 } // namespace detail
 
 } // namespace LIB
 
-}  // namespace SBG
-
-#endif // SBGRAPH_SBG_PWMAP_DETAIL_HPP_
+} // namespace SBG

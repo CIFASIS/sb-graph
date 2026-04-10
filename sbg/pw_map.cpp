@@ -112,6 +112,7 @@ PWMap::PWMap(const PWMapKind kind) : _impl()
     }
 
     case PWMapKind::kDomOrdered: {
+      _impl = detail::DomOrdPWMap{};
       break;
     }
 
@@ -136,6 +137,7 @@ PWMap::PWMap(const PWMapKind kind, Set s) : _impl()
     }
 
     case PWMapKind::kDomOrdered: {
+      _impl = detail::DomOrdPWMap{s};
       break;
     }
 
@@ -160,6 +162,7 @@ PWMap::PWMap(const PWMapKind kind, Map m) : _impl()
     }
 
     case PWMapKind::kDomOrdered: {
+      _impl = detail::DomOrdPWMap{m};
       break;
     }
 

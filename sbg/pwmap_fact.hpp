@@ -52,14 +52,14 @@ public:
   PWMap createPWMap(const Map& m) const;
 };
 
-//class DomOrdPWMapFact {
-//  public:
-//  DomOrdPWMapFact();
-//
-//  PWMap createPWMap() const override;
-//  PWMap createPWMap(const Set& s) const override;
-//  PWMap createPWMap(const Map& m) const override;
-//};
+class DomOrdPWMapFact {
+public:
+  DomOrdPWMapFact();
+
+  PWMap createPWMap() const;
+  PWMap createPWMap(const Set& s) const;
+  PWMap createPWMap(const Map& m) const;
+};
 
 /**
  * @brief Single instance of pw factory to be used by clients in need of
@@ -80,7 +80,7 @@ public:
   PWMap createPWMap(Map m) const;
 
 private:
-  using FactImpl = std::variant<UnordPWMapFact, OrdPWMapFact>;
+  using FactImpl = std::variant<UnordPWMapFact, OrdPWMapFact, DomOrdPWMapFact>;
 
   PWMapFactory();
 

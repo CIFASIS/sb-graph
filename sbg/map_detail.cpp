@@ -21,6 +21,7 @@
 #include "sbg/natural.hpp"
 #include "sbg/ord_unidim_dense_set.hpp"
 #include "sbg/rational.hpp"
+#include "sbg/set_detail.hpp"
 #include "sbg/set_fact.hpp"
 #include "sbg/unord_set.hpp"
 
@@ -91,25 +92,26 @@ CompactSetImpl compactImage(const CompactSetImpl& s, const Expr& expr
 
 Set MapDetail::image(const Set& s, const Expression& expr)
 {
+  SetAccessKey key = SetAccess::key();
   auto image_evaluator = Util::Overload {
     [&](const UnorderedSet& a)
     {
-      return Set{detail::compactImage<UnorderedSet, MultiDimInter
-        , ExpressionImpl>(a, expr._impl, expr.isInjective())};
+      return key.createSet(detail::compactImage<UnorderedSet, MultiDimInter
+        , ExpressionImpl>(a, expr._impl, expr.isInjective()));
     },
     [&](const OrdUnidimDenseSet& a)
     {
-      return Set{detail::compactImage<OrdUnidimDenseSet, Interval, LinearExpr>(
-        a, expr._impl[0], expr.isInjective())};
+      return key.createSet(detail::compactImage<OrdUnidimDenseSet, Interval
+        , LinearExpr>(a, expr._impl[0], expr.isInjective()));
     },
     [&](const OrderedSet& a)
     {
-      return Set{detail::compactImage<OrderedSet, MultiDimInter
-        , ExpressionImpl>(a, expr._impl, expr.isInjective())};
+      return key.createSet(detail::compactImage<OrderedSet, MultiDimInter
+        , ExpressionImpl>(a, expr._impl, expr.isInjective()));
     },
     [&](const auto& a) { return Set{SetKind::kUnordered}; }
   };
-  return std::visit(image_evaluator, s._impl);
+  return std::visit(image_evaluator, key.impl(s));
 }
 
 // Pre-image -------------------------------------------------------------------
@@ -154,25 +156,26 @@ CompactSetImpl compactPreImage(const CompactSetImpl& s, const Expr& expr)
 
 Set MapDetail::preImage(const Set& s, const Expression& expr)
 {
+  SetAccessKey key = SetAccess::key();
   auto pre_image_evaluator = Util::Overload {
     [&](const UnorderedSet& a)
     {
-      return Set{detail::compactPreImage<UnorderedSet, MultiDimInter
-        , ExpressionImpl>(a, expr._impl)};
+      return key.createSet(detail::compactPreImage<UnorderedSet, MultiDimInter
+        , ExpressionImpl>(a, expr._impl));
     },
     [&](const OrdUnidimDenseSet& a)
     {
-      return Set{detail::compactPreImage<OrdUnidimDenseSet, Interval
-        , LinearExpr>(a, expr._impl[0])};
+      return key.createSet(detail::compactPreImage<OrdUnidimDenseSet, Interval
+        , LinearExpr>(a, expr._impl[0]));
     },
     [&](const OrderedSet& a)
     {
-      return Set{detail::compactPreImage<OrderedSet, MultiDimInter
-        , ExpressionImpl>(a, expr._impl)};
+      return key.createSet(detail::compactPreImage<OrderedSet, MultiDimInter
+        , ExpressionImpl>(a, expr._impl));
     },
     [&](const auto& a) { return Set{SetKind::kUnordered}; }
   };
-  return std::visit(pre_image_evaluator, s._impl);
+  return std::visit(pre_image_evaluator, key.impl(s));
 }
 
 // Less image ------------------------------------------------------------------
@@ -264,27 +267,28 @@ Set MapDetail::lessImage(const Expression& expr1, const Expression& expr2)
 {
   Set result = SET_FACT.createSet();
 
+  SetAccessKey key = SetAccess::key();
   auto less_image_evaluator = Util::Overload {
-    [&](UnorderedSet& a)
+    [&](UnorderedSet&& a)
     {
       detail::lessImage<UnorderedSet, MultiDimInter, ExpressionImpl>(
         expr1._impl, expr2._impl, a);
-      return Set{a};
+      return key.createSet(a);
     },
-    [&](OrdUnidimDenseSet& a)
+    [&](OrdUnidimDenseSet&& a)
     {
       a.pushBack(detail::lessImage(expr1._impl[0], expr2._impl[0]));
-      return Set{a};
+      return key.createSet(a);
     },
-    [&](OrderedSet& a)
+    [&](OrderedSet&& a)
     {
       detail::lessImage<OrderedSet, MultiDimInter, ExpressionImpl>(
         expr1._impl, expr2._impl, a);
-      return Set{a};
+      return key.createSet(a);
     },
-    [&](auto& a) { return Set{SetKind::kUnordered}; }
+    [&](auto&& a) { return Set{SetKind::kUnordered}; }
   };
-  return std::visit(less_image_evaluator, result._impl);
+  return std::visit(less_image_evaluator, key.impl(result));
 
   return result;
 }
@@ -391,6 +395,7 @@ MapVector MapDetail::MDICollectionReduce(const CompactSetImpl& s
 {
   MapVector result;
 
+  SetAccessKey key = SetAccess::key();
   for (const MultiDimInter& mdi : s) {
     unsigned int k_reduce = 0;
     AtomicMapVector reduced = detail::reduce(mdi, expr, k_reduce);
@@ -401,8 +406,7 @@ MapVector MapDetail::MDICollectionReduce(const CompactSetImpl& s
       mdi_copy[k_reduce] = r.first;
       domain.pushBack(mdi_copy);
       expr_copy[k_reduce] = r.second;
-      result.emplace_back(Set{domain}
-        , Expression{expr_copy});
+      result.emplace_back(key.createSet(domain), Expression{expr_copy});
     }
   }
 
@@ -414,12 +418,13 @@ MapVector MapDetail::reduce(const OrdUnidimDenseSet& s
 {
   MapVector result;
 
+  SetAccessKey key = SetAccess::key();
   for (const Interval& i : s) {
     AtomicMapVector reduced = detail::reduce(i, expr[0]);
     for (const AtomicMap& r : reduced) {
       OrdUnidimDenseSet domain;
       domain.pushBack(r.first);
-      result.emplace_back(Set{domain}
+      result.emplace_back(key.createSet(domain)
         , Expression{ExpressionImpl{r.second}});
     }
   }
@@ -438,6 +443,7 @@ MapVector MapDetail::reduce(const Map& m)
     return result;
   }
 
+  SetAccessKey key = SetAccess::key();
   auto reduce_evaluator = Util::Overload {
     [&](const UnorderedSet& a)
     {
@@ -453,7 +459,7 @@ MapVector MapDetail::reduce(const Map& m)
     },
     [&](const auto& a) { return Set{SetKind::kUnordered}; }
   };
-  return std::visit(reduce_evaluator, m.domain()._impl);
+  return std::visit(reduce_evaluator, key.impl(m.domain()));
 }
 
 } // namespace detail

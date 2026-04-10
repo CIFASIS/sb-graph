@@ -66,27 +66,27 @@ PWMap OrdPWMapFact::createPWMap(const Map& m) const
   return PWMap{PWMapKind::kOrdered, m};
 }
 
-//////////////////////////////////////////////////////////////////////////////////
-//// DomOrdPWMap Factory ---------------------------------------------------------
-//////////////////////////////////////////////////////////////////////////////////
-//
-//DomOrdPWMapFact::DomOrdPWMapFact() {}
-//
-//PWMap DomOrdPWMapFact::createPWMap() const
-//{
-//  return PWMap(std::make_unique<DomOrdPWMap>());
-//}
-//
-//PWMap DomOrdPWMapFact::createPWMap(const Set &s) const
-//{
-//  return PWMap(std::make_unique<DomOrdPWMap>(s));
-//}
-//
-//PWMap DomOrdPWMapFact::createPWMap(const Map &m) const
-//{
-//  return PWMap(std::make_unique<DomOrdPWMap>(m));
-//}
-//
+////////////////////////////////////////////////////////////////////////////////
+// DomOrdPWMap Factory ---------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+DomOrdPWMapFact::DomOrdPWMapFact() {}
+
+PWMap DomOrdPWMapFact::createPWMap() const
+{
+  return PWMap{PWMapKind::kDomOrdered};
+}
+
+PWMap DomOrdPWMapFact::createPWMap(const Set &s) const
+{
+  return PWMap{PWMapKind::kDomOrdered, s};
+}
+
+PWMap DomOrdPWMapFact::createPWMap(const Map &m) const
+{
+  return PWMap{PWMapKind::kDomOrdered, m};
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Factory for clients --------------------------------------------------------- 
 ////////////////////////////////////////////////////////////////////////////////
@@ -116,9 +116,10 @@ void PWMapFactory::set_pwmap_fact(PWMapKind kind)
       break;
     }
 
-    //case PWMapKind::kDomOrdered: {
-    //  _impl = DomOrdPWMapFact{};
-    //}
+    case PWMapKind::kDomOrdered: {
+      _impl = DomOrdPWMapFact{};
+      break;
+    }
 
     default: {
       Util::ERROR("Unsupported ", kind, " PWMap implementation\n");

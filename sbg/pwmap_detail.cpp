@@ -25,7 +25,7 @@ namespace LIB {
 
 namespace detail {
 
-PWMap PWMapAccessKey::reduce(PWMap pw)
+PWMap PWMapAccessKey::reduce(PWMap pw) const
 {
   auto& impl = pw._impl;
   return std::visit(

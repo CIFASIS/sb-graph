@@ -34,9 +34,10 @@
 #ifndef SBGRAPH_SBG_PW_MAP_HPP_
 #define SBGRAPH_SBG_PW_MAP_HPP_
 
+#include "sbg/dom_ord_pwmap.hpp"
 #include "sbg/map.hpp"
-#include "sbg/set.hpp"
 #include "sbg/ord_pwmap.hpp"
+#include "sbg/set.hpp"
 #include "sbg/unord_pwmap.hpp"
 
 namespace SBG {
@@ -49,7 +50,7 @@ namespace detail {
 // PWMaps implementations ------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-using PWMapImpl = std::variant<UnordPWMap, OrdPWMap>;
+using PWMapImpl = std::variant<UnordPWMap, OrdPWMap, DomOrdPWMap>;
 
 class PWMapAccessKey;
 

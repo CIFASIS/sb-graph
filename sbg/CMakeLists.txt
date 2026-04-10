@@ -9,6 +9,7 @@ target_sources(
     PRIVATE
     bipartite_sbg.cpp
     directed_sbg.cpp
+    dom_ord_pwmap.cpp
     expression.cpp
     fixed_points.cpp
     interval.cpp
@@ -21,17 +22,17 @@ target_sources(
     ord_pwmap.cpp
     ord_set.cpp
     ord_unidim_dense_set.cpp
+    perimeter.cpp
     pw_map.cpp
     pwmap_detail.cpp
     pwmap_fact.cpp
     rational.cpp
     sbg.cpp
     set.cpp
+    set_detail.cpp
     set_fact.cpp
-    set_perimeter.cpp
     unord_pwmap.cpp
     unord_set.cpp
-    #dom_ord_pwmap.cpp
 )
 
 add_custom_target(sbg-doc

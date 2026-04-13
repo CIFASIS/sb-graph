@@ -67,7 +67,8 @@ void BipartiteSBG::addSetVertex(const Set& X, const Set& Y)
 {
   Set vertices = X.cup(Y);
   if (!vertices.intersection(_V).isEmpty()) {
-    Util::ERROR("Trying to add existing vertices: ", vertices, " to SBG\n");
+    Util::ERROR("BipartiteSBG::addSetVertex: trying to add existing vertices: "
+      , vertices, " to SBG\n");
   } else if (!vertices.isEmpty()) {
     _V = _V.cup(vertices);
     Set set_vertices = _Vmap.image();
@@ -86,8 +87,8 @@ void BipartiteSBG::addSetEdge(const PWMap& pw1, const PWMap& pw2)
   Set edges1 = pw1.domain();
   Set edges2 = pw2.domain();
   if (edges1 != edges2) {
-    // TODO
-    Util::ERROR("The domain of ", edges1, " is different from ", edges2, "\n");
+    Util::ERROR("BipartiteSBG::addSetEdge: ", edges1, " is different from "
+      , edges2, "\n");
   } else if (edges1.intersection(_E).isEmpty()) {
     Set edges = edges1;
     if (!edges.isEmpty()) {
@@ -102,7 +103,8 @@ void BipartiteSBG::addSetEdge(const PWMap& pw1, const PWMap& pw2)
       _Emap.emplace(edges, max + one_all_dims);
     }
   } else {
-    Util::ERROR("Trying to add existing edges: ", edges1, " to SBG\n");
+    Util::ERROR("BipartiteSBG::addSetEdge: trying to add existing edges: "
+      , edges1, " to SBG\n");
   }
 }
 
@@ -120,6 +122,67 @@ std::ostream& operator<<(std::ostream& out, const BipartiteSBG& g)
   out << "Y: " << g.Y() << "\n";
 
   return out;
+}
+
+// Extra operations ------------------------------------------------------------
+
+BipartiteSBG copy(unsigned int copies, BipartiteSBG sbg)
+{
+  if (copies == 0) {
+    Util::ERROR("BipartiteSBG::copy: zeros copies is not allowed\n");
+  }
+
+  Set X = sbg.X();
+  Set Y = sbg.Y();
+  Set V = sbg.V();
+  PWMap Vmap = sbg.Vmap();
+  PWMap map1 = sbg.map1();
+  PWMap map2 = sbg.map2();
+  PWMap Emap = sbg.Emap();
+  Set E = sbg.E();
+
+  for (unsigned int j = 1; j < copies; ++j) {
+    MD_NAT max_v = sbg.V().maxElem();
+    Set set_vertices = Vmap.image();
+    while (!set_vertices.isEmpty()) {
+      Set min_elem_set = SET_FACT.createSet(set_vertices.minElem());
+      Set vertices = Vmap.preImage(min_elem_set);
+      Set jth_X = vertices.intersection(X);
+      Set jth_Y = vertices.intersection(Y);
+      sbg.addSetVertex(jth_X.offset(max_v), jth_Y.offset(max_v));
+
+      set_vertices = set_vertices.difference(min_elem_set);
+    }
+
+    Expression offset_v;
+    for (std::size_t k = 0; k < max_v.arity(); ++k) {
+      offset_v = offset_v.cartesianProduct(Expression{1, max_v[k]});
+    }
+    PWMap offset_pw_v = PWMAP_FACT.createPWMap(Map{V, offset_v});
+
+    MD_NAT max_e = sbg.E().maxElem();
+    Expression offset_e;
+    for (std::size_t k = 0; k < max_e.arity(); ++k) {
+      offset_e = offset_e.cartesianProduct(Expression{1, max_e[k]});
+    }
+    PWMap offset_pw_e = PWMAP_FACT.createPWMap(Map{E, offset_e});
+    PWMap inverse_offset_pw_e = offset_pw_e.inverse();
+
+    Set set_edges = Emap.image();
+    while (!set_edges.isEmpty()) {
+      Set min_elem_set = SET_FACT.createSet(set_edges.minElem());
+      Set edges = Emap.preImage(min_elem_set);
+      PWMap pw1 = map1.restrict(edges);
+      PWMap pw2 = map2.restrict(edges);
+      pw1 = offset_pw_v.composition(pw1.composition(inverse_offset_pw_e));
+      pw2 = offset_pw_v.composition(pw2.composition(inverse_offset_pw_e));
+      sbg.addSetEdge(pw1, pw2);
+
+      set_edges = set_edges.difference(min_elem_set);
+    }
+  }
+
+  return sbg;
 }
 
 } // namespace LIB

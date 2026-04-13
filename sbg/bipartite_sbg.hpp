@@ -97,6 +97,8 @@ private:
 
 std::ostream& operator<<(std::ostream& out, const BipartiteSBG& g);
 
+BipartiteSBG copy(unsigned int copies, BipartiteSBG sbg);
+
 } // namespace LIB
 
 }  // namespace SBG

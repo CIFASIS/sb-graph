@@ -703,12 +703,10 @@ ExprBaseType BuiltInFunctions::matchingEvaluator(const EBTList& args)
   LIB::Matching match_impl = LIB::MATCH_FACT.createMatchAlgorithm();
   const auto matching_evaluator = Util::Overload {
     [&match_impl](LIB::BipartiteSBG a, LIB::NAT b) { 
-      // TODO return ExprBaseType{match_impl.calculate(a.copy(b))};
-      return ExprBaseType{match_impl.calculate(a)};
+      return ExprBaseType{match_impl.calculate(copy(b, a))};
     },
     [&match_impl](LIB::BipartiteSBG a, LIB::MD_NAT b) { 
-      // TODO return ExprBaseType{match_impl.calculate(a.copy(b[0]))};
-      return ExprBaseType{match_impl.calculate(a)};
+      return ExprBaseType{match_impl.calculate(copy(b[0], a))};
     },
     [](auto a, auto b) {
       Util::ERROR("matchingEvaluator: wrong arguments ", a, ", ", b
@@ -784,14 +782,12 @@ ExprBaseType BuiltInFunctions::matchSCCEvaluator(const EBTList& args)
   LIB::SCC scc_impl = LIB::SCC_FACT.createSCCAlgorithm();
   const auto match_scc_evaluator = Util::Overload {
     [&match_impl, &scc_impl](LIB::BipartiteSBG a, LIB::NAT b) { 
-      // TODO LIB::MatchData match_result = match_impl.calculate(a.copy(b));
-      LIB::MatchData match_result = match_impl.calculate(a);
+      LIB::MatchData match_result = match_impl.calculate(copy(b, a));
       LIB::DirectedSBG dsbg = misc::buildSCCFromMatching(match_result);
       return ExprBaseType{scc_impl.calculate(dsbg).rmap()};
     },
     [&match_impl, &scc_impl](LIB::BipartiteSBG a, LIB::MD_NAT b) { 
-      // TODO LIB::MatchData match_result = match_impl.calculate(a.copy(b[0]));
-      LIB::MatchData match_result = match_impl.calculate(a);
+      LIB::MatchData match_result = match_impl.calculate(copy(b[0], a));
       LIB::DirectedSBG dsbg = misc::buildSCCFromMatching(match_result);
       return ExprBaseType{scc_impl.calculate(dsbg).rmap()};
     },

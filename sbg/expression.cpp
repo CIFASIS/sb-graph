@@ -193,7 +193,6 @@ FixedPointsInfo Expression::fixedPoints() const
 {
   std::vector<Solution> result;
 
-  std::optional<NAT> empty = {};
   for (unsigned int k = 0; k < arity(); ++k) {
     detail::LinearExpr kth = _impl[k];
     if (kth.isId()) {

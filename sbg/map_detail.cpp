@@ -373,10 +373,10 @@ AtomicMapVector reduce(const MultiDimInter& mdi, const ExpressionImpl& expr
   , unsigned int& k_reduce)
 {
   // Identify reducible dimension k_reduce
-  unsigned int arity = mdi.arity();
+  std::size_t arity = mdi.arity();
   Interval reducible_interval;
   LinearExpr reducible_expr;
-  for (auto k = 0; k < arity; ++k) {
+  for (std::size_t k = 0; k < arity; ++k) {
     LinearExpr linear_expr = expr[k];
     if (linear_expr.slope() == 1 && linear_expr.offset() != 0) {
       k_reduce = k; 

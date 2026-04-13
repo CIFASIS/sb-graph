@@ -47,7 +47,6 @@ int SetImplExprVisitor::operator()(AST::UnaryOp v) const
 
 int SetImplExprVisitor::operator()(AST::BinOp v) const 
 {
-  int impl = 2;
   int limpl = boost::apply_visitor(*this, v.left());
   int rimpl = boost::apply_visitor(*this, v.right());
 

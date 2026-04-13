@@ -178,6 +178,7 @@ MatchData BFSMatching::calculate(const BipartiteSBG& bsbg)
   Util::Internal::TimeProfiler profiler{"Total matching exec time: "};
 
   init(bsbg);
+  Util::SBG_LOG << "Matching bipartite SBG: " << bsbg << "\n\n";
   _X = bsbg.X();
   _Y = bsbg.Y();
 

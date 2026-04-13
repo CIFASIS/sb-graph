@@ -39,7 +39,6 @@ EvalUserInput AutomImplVisitor::visit(AST::SBGProgram p) const
 { 
   // Statement inspection ------------------------------------------------------ 
 
-  LIB::NAT dims = 1;
   AST::IsConfig cfg_visit;
   EvalContext eval_context;
   if (!p.stms().empty()) {

@@ -166,9 +166,11 @@ std::pair<Set, Set> interlacedPieces(NAT set_sz)
   Set s1 = SBG::LIB::SET_FACT.createSet();
   Set s2 = SBG::LIB::SET_FACT.createSet();
   for (SBG::LIB::NAT j = 0; j < set_sz; j += 2) {
-    Set jth_s1 = SBG::LIB::SET_FACT.createSet(j*100, 1, (j + 1)*100 - 1);
+    Set jth_s1 = SBG::LIB::SET_FACT.createSet(j*inter_sz, 1
+      , (j + 1)*inter_sz - 1);
     s1 = std::move(s1.disjointCup(jth_s1));
-    Set jth_s2 = SBG::LIB::SET_FACT.createSet((j + 1)*100, 1, (j + 2)*100 - 1);
+    Set jth_s2 = SBG::LIB::SET_FACT.createSet((j + 1)*inter_sz, 1
+      , (j + 2)*inter_sz - 1);
     s2 = std::move(s2.disjointCup(jth_s2));
   }
 

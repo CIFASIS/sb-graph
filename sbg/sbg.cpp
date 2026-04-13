@@ -65,7 +65,8 @@ const PWMap& SBG::Emap() const { return _Emap; }
 void SBG::addSetVertex(const Set& vertices)
 {
   if (!vertices.intersection(_V).isEmpty()) {
-    Util::ERROR("Trying to add existing vertices: ", vertices, " to SBG\n");
+    Util::ERROR("SBG::addSetVertex: trying to add existing vertices: ", vertices
+      , " to SBG\n");
   } else if (!vertices.isEmpty()) {
     _V = std::move(_V).cup(vertices);
     Set set_vertices = _Vmap.image();
@@ -82,8 +83,8 @@ void SBG::addSetEdge(const PWMap& pw1, const PWMap& pw2)
   Set edges1 = pw1.domain();
   Set edges2 = pw2.domain();
   if (edges1 != edges2) {
-    // TODO
-    Util::ERROR("The domain of ", edges1, " is different from ", edges2, "\n");
+    Util::ERROR("SBG::addSetEdge: ", edges1, " is different from ", edges2
+      , "\n");
   } else if (edges1.intersection(_E).isEmpty()) {
     Set edges = edges1;
     if (!edges.isEmpty()) {
@@ -97,7 +98,8 @@ void SBG::addSetEdge(const PWMap& pw1, const PWMap& pw2)
       _Emap.emplace(edges, max + one_all_dims);
     }
   } else {
-    Util::ERROR("Trying to add existing edges: ", edges1, " to SBG\n");
+    Util::ERROR("SBG::addSetEdge: trying to add existing edges: ", edges1
+      , " to SBG\n");
   }
 }
 

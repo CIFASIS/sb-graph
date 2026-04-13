@@ -101,7 +101,7 @@ void registerSCCBenchmarks(std::string filename)
   benchmark::RegisterBenchmark(
     ("BM_SCCCopies/" + filename).c_str(),
     [filename](benchmark::State& state) {
-      BM_SCCWithBuilder(state, filename);
+      BM_SCCCopies(state, filename);
     }
   )->RangeMultiplier(2)->Range(1, 128)->Complexity()
     ->Unit(benchmark::kMillisecond);

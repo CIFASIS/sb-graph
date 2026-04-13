@@ -29,9 +29,9 @@ namespace LIB {
 
 RATIONAL::RATIONAL() : _value() {}
 
-RATIONAL::RATIONAL(INT n) : _value(RatType{n, 1}) {}
+RATIONAL::RATIONAL(INT n) : _value(RATIONAL::RATIONALT{n, 1}) {}
 
-RATIONAL::RATIONAL(const RatType& value) : _value(value) {}
+RATIONAL::RATIONAL(const RATIONAL::RATIONALT& value) : _value(value) {}
 
 RATIONAL::RATIONAL(INT n, INT d) : _value()
 {
@@ -41,7 +41,7 @@ RATIONAL::RATIONAL(INT n, INT d) : _value()
 
 // Getters ---------------------------------------------------------------------
 
-const RatType& RATIONAL::value() const  { return _value; }
+const RATIONAL::RATIONALT& RATIONAL::value() const  { return _value; }
 
 INT RATIONAL::numerator() const { return _value.numerator(); }
 
@@ -136,7 +136,7 @@ INT RATIONAL::ceiling() const
 
 std::ostream& operator<<(std::ostream& out, const RATIONAL& r)
 {
-  RatType rv = r.value();
+  RATIONAL::RATIONALT rv = r.value();
   INT num = rv.numerator(), den = rv.denominator();
 
   if (num == 0) {

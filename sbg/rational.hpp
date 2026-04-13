@@ -46,13 +46,13 @@ namespace LIB {
 using INT = long long int;
 constexpr INT INT_Inf = std::numeric_limits<INT>::max();
 
-using RatType = boost::rational<INT>;
-
 /**
  * @brief Used as coefficients and slopes in linear expressions.
  */
 class RATIONAL {
 public:
+  using RATIONALT = boost::rational<INT>;
+
   /**
    * @brief Zero constructor.
    */
@@ -66,7 +66,7 @@ public:
   /**
    * @brief Copy constructor.
    */
-  RATIONAL(const RatType& value);
+  RATIONAL(const RATIONALT& value);
 
   /**
    * @brief Construct rational r = n/d.
@@ -76,7 +76,7 @@ public:
   RATIONAL(const RATIONAL& r) = default;
   RATIONAL(RATIONAL&& r) = default;
 
-  const RatType& value() const;
+  const RATIONALT& value() const;
   INT numerator() const;
   INT denominator() const;
 
@@ -101,7 +101,7 @@ public:
   INT ceiling() const;
 
 private:
-  RatType _value;
+  RATIONALT _value;
 };
 std::ostream& operator<<(std::ostream& out, const RATIONAL& r);
 

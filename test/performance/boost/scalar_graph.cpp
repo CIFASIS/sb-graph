@@ -17,9 +17,13 @@
 
  ******************************************************************************/
 
-#include <test/performance/boost/ordinary_graph.hpp>
+#include <test/performance/boost/scalar_graph.hpp>
 
-namespace OG {
+namespace SBG {
+
+namespace perf {
+
+namespace detail {
 
 // Graph -----------------------------------------------------------------------
 
@@ -92,4 +96,8 @@ std::ostream& operator<<(std::ostream& out, const DirectedGraph& dgraph)
   return out;
 }
 
-}  // namespace OG
+} // namespace detail
+
+} // namespace perf
+
+} // namespace SBG

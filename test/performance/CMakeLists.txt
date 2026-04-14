@@ -1,8 +1,11 @@
-# SBG Benchmark for different Set and PWMap implementations
+# SBG Benchmark for different Set, PWMap, and SBG algorithms implementations
 add_executable(sbg-benchmark main.cpp)
 
 target_sources(sbg-benchmark
                PRIVATE
+               boost/scalar_graph.cpp
+               boost/scalar_graph_builder.cpp
+               boost/scc_graph_builder.cpp
                main.cpp
                bm_exec.cpp
                matching_bm.cpp
@@ -27,5 +30,3 @@ target_link_libraries(sbg-benchmark
                       PRIVATE
                       sbg-dev
                       sbg-eval-lib)
-
-#add_subdirectory(boost)

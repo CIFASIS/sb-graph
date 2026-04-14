@@ -1,6 +1,6 @@
 /** @file ordinary_graph_builder.hpp
 
- @brief <b>Ordinary Graph Builder</b>
+ @brief <b>Scalar Graph Builder</b>
 
  Module in charge of constructing the scalar graph used as input of the scalar
  causalization from a SBG. The generated result will be used as input of the
@@ -25,22 +25,26 @@
 
  ******************************************************************************/
 
-#ifndef SBGRAPH_TEST_PERFORMANCE_BOOST_ORDINARY_GRAPH_BUILDER_HPP_
-#define SBGRAPH_TEST_PERFORMANCE_BOOST_ORDINARY_GRAPH_BUILDER_HPP_
+#ifndef SBGRAPH_TEST_PERFORMANCE_BOOST_SCALAR_GRAPH_BUILDER_HPP_
+#define SBGRAPH_TEST_PERFORMANCE_BOOST_SCALAR_GRAPH_BUILDER_HPP_
 
 #include "sbg/bipartite_sbg.hpp"
 #include "sbg/natural.hpp"
-#include "test/performance/boost/ordinary_graph.hpp"
+#include "test/performance/boost/scalar_graph.hpp"
 #include "util/logger.hpp"
 
 #include <map>
 #include <vector>
 
-namespace OG {
+namespace SBG {
 
-class OrdinaryGraphBuilder {
+namespace perf {
+
+namespace detail {
+
+class ScalarGraphBuilder {
 public:
-  OrdinaryGraphBuilder(SBG::LIB::BipartiteSBG bsbg);
+  ScalarGraphBuilder(SBG::LIB::BipartiteSBG bsbg);
 
   BipartiteGraph build();
   BipartiteGraph build(SBG::LIB::NAT number_vertices, EdgeVector& edges
@@ -55,6 +59,10 @@ private:
   std::vector<int> _partition;
 };
 
-}  // namespace OG
+} // namespace detail
 
-#endif // SBGRAPH_TEST_PERFORMANCE_BOOST_ORRDINARY_GRAPH_BUILDER_HPP_
+} // namespace perf
+
+} // namespace SBG
+
+#endif // SBGRAPH_TEST_PERFORMANCE_BOOST_SCALAR_GRAPH_BUILDER_HPP_

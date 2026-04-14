@@ -23,7 +23,11 @@
 #include <iostream>
 #include <numeric>
 
-namespace {
+namespace SBG {
+
+namespace LIB {
+
+namespace detail {
 
 // Auxiliary functions ---------------------------------------------------------
 
@@ -36,14 +40,6 @@ bool isMember(const SBG::LIB::NAT x, const SBG::LIB::detail::Interval& i)
   int rem = fmod(x - i.begin(), i.step());
   return rem == 0;
 }
-
-} // namespace
-
-namespace SBG {
-
-namespace LIB {
-
-namespace detail {
 
 // Constructors/Destructors ----------------------------------------------------
 

@@ -31,22 +31,32 @@
 #include "sbg/ord_set.hpp"
 #include "sbg/ord_unidim_dense_set.hpp"
 
+#include <optional>
+
 namespace SBG {
 
 namespace LIB {
 
 namespace detail {
 
+using MaybeMD_NAT = std::optional<MD_NAT>;
+
 class SetAccessKey {
 public:
   SetImpl impl(Set s) const;
   Set createSet(SetImpl s_impl) const;
+  MaybeMD_NAT nextElem(const MD_NAT& current, const Set& s) const;
+  std::vector<MD_NAT> flatten(const Set& s) const;
 
   OrderedSet::OrdMDICollection pieces(OrderedSet s) const;
   OrdUnidimDenseSet::OrdIntervalCollection pieces(OrdUnidimDenseSet s) const;
 
 private:
   SetAccessKey() = default;
+
+  template<typename SetImplT>
+  std::vector<MD_NAT> flatten(const SetImplT& s) const;
+  std::vector<MD_NAT> flatten(const OrdUnidimDenseSet& s) const;
 
   friend class SetAccess;
 };

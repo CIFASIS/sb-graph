@@ -18,6 +18,9 @@
  ******************************************************************************/
 
 #include "sbg/set_detail.hpp"
+#include "util/defs.hpp"
+
+#include <cmath>
 
 namespace SBG {
 
@@ -25,9 +28,69 @@ namespace LIB {
 
 namespace detail {
 
+// SetAccessKey ----------------------------------------------------------------
+
 SetImpl SetAccessKey::impl(Set s) const { return s._impl; }
 
 Set SetAccessKey::createSet(SetImpl s_impl) const { return Set{s_impl}; }
+
+template<typename SetImplT>
+std::vector<MD_NAT> SetAccessKey::flatten(const SetImplT& s) const
+{
+  std::vector<MD_NAT> result;
+  auto pieces = s._pieces;
+  result.reserve(pieces.size());
+
+  std::size_t arity = s.arity();
+  for (const MultiDimInter& mdi : pieces) {
+    MD_NAT min_elem = mdi.minElem();
+    MD_NAT x = min_elem;
+    unsigned int mdi_sz = mdi.cardinal();
+    for (unsigned int j = 0; j < mdi_sz; ++j) {
+      unsigned int accumulated_sz = 1;
+      for (std::size_t k = 0; k < arity; ++k) {
+        Interval i = mdi[k];
+        accumulated_sz *= i.cardinal();
+        x[k] = i.begin() + i.step()*fmod(j, accumulated_sz);
+      }
+    }
+  }
+
+  return result;
+}
+
+std::vector<MD_NAT> SetAccessKey::flatten(const OrdUnidimDenseSet& s) const
+{
+  std::vector<MD_NAT> result;
+
+  for (const Interval& i : s._pieces) {
+    for (NAT j = i.begin(); j <= i.end(); j += i.step()) {
+      result.emplace_back(j);
+    }
+  }
+
+  return result;
+}
+
+std::vector<MD_NAT> SetAccessKey::flatten(const Set& s) const
+{
+  auto flatten_evaluator = Util::Overload {
+    [&](const UnorderedSet& a)
+    {
+      return flatten<UnorderedSet>(a);
+    },
+    [&](const OrdUnidimDenseSet& a)
+    {
+      return flatten(a);
+    },
+    [&](const OrderedSet& a)
+    {
+      return flatten<OrderedSet>(a);
+    },
+    [&](const auto& a) { return std::vector<NAT>{}; }
+  };
+  return std::visit(flatten_evaluator, s._impl);
+}
 
 OrderedSet::OrdMDICollection SetAccessKey::pieces(OrderedSet s) const
 {

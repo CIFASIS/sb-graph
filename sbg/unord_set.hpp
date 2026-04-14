@@ -100,6 +100,8 @@ private:
   UnorderedSet complementAtom() const;
 
   MDIUnordCollection _pieces;
+
+  friend class SetAccessKey;
 };
 
 } // namespace detail

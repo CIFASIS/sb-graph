@@ -1,6 +1,6 @@
-/** @file ordinary_graph.hpp
+/** @file scalar_graph.hpp
 
- @brief <b>Ordinary Graph</b>
+ @brief <b>Scalar Graph</b>
 
  Module that defines the structure for scalar graphs.
 
@@ -23,14 +23,18 @@
 
  ******************************************************************************/
 
-#ifndef PERF_ORDINARY_GRAPH_HPP
-#define PERF_ORDINARY_GRAPH_HPP
-
-#include <boost/graph/adjacency_list.hpp>
+#ifndef SBGRAPH_TEST_PERFORMANCE_BOOST_SCALAR_GRAPH_HPP_
+#define SBGRAPH_TEST_PERFORMANCE_BOOST_SCALAR_GRAPH_HPP_
 
 #include "sbg/natural.hpp"
 
-namespace OG {
+#include <boost/graph/adjacency_list.hpp>
+
+namespace SBG {
+
+namespace perf {
+
+namespace detail {
 
 using Vertex = SBG::LIB::NAT;
 using VertexVector = std::vector<Vertex>;
@@ -65,6 +69,10 @@ using DirectedGraph = boost::adjacency_list<boost::vecS, boost::vecS
   , boost::bidirectionalS>;
 std::ostream& operator<<(std::ostream& out, const DirectedGraph& dgraph);
 
-}  // namespace OG
+} // namespace detail
 
-#endif
+} // namespace perf
+
+} // namespace SBG
+
+#endif // SBGRAPH_TEST_PERFORMANCE_BOOST_SCALAR_GRAPH_HPP_

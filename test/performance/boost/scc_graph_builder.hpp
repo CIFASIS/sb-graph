@@ -25,21 +25,26 @@
 
  ******************************************************************************/
 
-#ifndef PERF_SCC_BUILDER_HPP
-#define PERF_SCC_BUILDER_HPP
+#ifndef SBGRAPH_TEST_PERFORMANCE_BOOST_SCC_GRAPH_BUILDER_HPP_
+#define SBGRAPH_TEST_PERFORMANCE_BOOST_SCC_GRAPH_BUILDER_HPP_
 
-#include <map>
+#include "sbg/natural.hpp"
+#include "test/performance/boost/scalar_graph.hpp"
 
-#include "test/performance/boost/ordinary_graph.hpp"
-#include "util/logger.hpp"
+#include <unordered_map>
 
-namespace OG {
+namespace SBG {
+
+namespace perf {
+
+namespace detail { 
 
 ////////////////////////////////////////////////////////////////////////////////
 // Auxiliary structures --------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-struct EdgeHash {
+class EdgeHash {
+public:
   std::size_t operator()(const Edge& e) const;
 };
 
@@ -56,7 +61,7 @@ struct EdgeHash {
  *   and {X ∩ {u1, v1}, Y ∩ {u2, v2}} ∈ (E\M)}.
  */
 class SCCGraphBuilder {
-  public:
+public:
   SCCGraphBuilder(BipartiteGraph&& g, VertexVector&& matching);
 
   DirectedGraph build();
@@ -64,12 +69,16 @@ class SCCGraphBuilder {
   SBG::LIB::NAT translateVertices();
   EdgeVector getEdgeList();
 
-  private:
+private:
   const BipartiteGraph _bgraph; ///< Input bipartite graph
   const VertexVector _matching;
   std::unordered_map<Edge, Vertex, EdgeHash> _vertex_map;
 };
 
-}  // namespace OG
+} // namespace detail
 
-#endif
+} // namespace perf
+
+} // namespace SBG
+
+#endif // SBGRAPH_TEST_PERFORMANCE_BOOST_SCC_GRAPH_BUILDER_HPP_

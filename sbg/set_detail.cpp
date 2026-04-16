@@ -46,12 +46,14 @@ std::vector<MD_NAT> SetAccessKey::flatten(const SetImplT& s) const
     MD_NAT min_elem = mdi.minElem();
     MD_NAT x = min_elem;
     unsigned int mdi_sz = mdi.cardinal();
+    unsigned int div = mdi_sz; 
     for (unsigned int j = 0; j < mdi_sz; ++j) {
-      unsigned int accumulated_sz = 1;
-      for (std::size_t k = 0; k < arity; ++k) {
-        Interval i = mdi[k];
-        accumulated_sz *= i.cardinal();
-        x[k] = i.begin() + i.step()*fmod(j, accumulated_sz);
+      unsigned int rem = j;
+      for (std::size_t k = arity; k > 0; --k) {
+        Interval i = mdi[k-1];
+        unsigned int kth_card = i.cardinal();
+        x[k] = i.begin() + i.step()*fmod(rem, kth_card);
+        rem /= kth_card;
       }
     }
   }

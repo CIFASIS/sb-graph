@@ -23,6 +23,8 @@
 #include "test/performance/boost/scalar_graph_builder.hpp"
 #include "util/time_profiler.hpp"
 
+#include <iostream>
+
 namespace SBG {
 
 namespace perf {

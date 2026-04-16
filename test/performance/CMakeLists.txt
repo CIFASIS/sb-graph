@@ -3,6 +3,7 @@ add_executable(sbg-benchmark main.cpp)
 
 target_sources(sbg-benchmark
                PRIVATE
+               boost/boost_bm.cpp
                boost/scalar_graph.cpp
                boost/scalar_graph_builder.cpp
                boost/scc_graph_builder.cpp

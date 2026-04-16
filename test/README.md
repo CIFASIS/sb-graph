@@ -31,15 +31,3 @@ binary is sb-graph/test/build/bin/sbg-benchmark (to see available options run
 the executable with --help as argument). For the algorithms benchmark it accepts
 a single test file as a positional argument. The binary also supports Google
 Benchmark options, i.e. --benchmark_filter=filter.
-
-In the ./test/build/bin there are also some helpful binaries:
-  - boost-perf: used to evaluate the performance of traditional graphs
-    algorithms.
-  - custom-boost-benchmark: benchmark for the C++ Boost Graph Library
-    traditional scalar algorithms. This benchmark is introduced to compare
-    the SBG approach with existing techniques. Environmental variable TEST_FILE
-    is supported. The benchmark will start calculating some data, without
-    printing results for some seconds. 
-    If the process terminates with a Segmentation Fault, increase
-    stack size with the following command: `ulimit -s stack_size` (128000 is
-    recommended for stack_size).

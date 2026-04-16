@@ -17,16 +17,18 @@
 
  ******************************************************************************/
 
+#include "test/performance/bm_exec.hpp"
 #include "algorithms/matching/matching_fact.hpp"
 #include "algorithms/scc/scc_fact.hpp"
 #include "eval/user_impl_map.hpp"
 #include "sbg/pwmap_fact.hpp"
 #include "sbg/set_fact.hpp"
-#include "test/performance/bm_exec.hpp"
+#include "test/performance/boost/boost_bm.hpp"
 #include "test/performance/matching_bm.hpp"
 #include "test/performance/pwmap_bm.hpp"
 #include "test/performance/scc_bm.hpp"
 #include "test/performance/set_bm.hpp"
+#include "util/debug.hpp"
 #include "util/user_input_handler.hpp"
 
 #include <benchmark/benchmark.h>
@@ -85,7 +87,8 @@ BMExecutor::BMExecutor()
     ("scc_impl", Util::prog_opts::value(&_scc_impl),
      "Desired SCC algorithm implementation:"
      "\n  - 0 for V1 of minimum reachable SCC"
-     "\n  - 1 for V2 of minimum reachable SCC (default option)");
+     "\n  - 1 for V2 of minimum reachable SCC (default option)")
+    ("boost", "Executes Boost Graph Library algorithms for scalar graphs");
 
   _positional.add("input-file", 1);
   _cmd_line_opts.add(_generic).add(_config).add(_hidden);
@@ -137,37 +140,46 @@ void BMExecutor::execute(int argc, char* argv[])
   SBG::Eval::setSCCFactory(*_scc_impl);
   printHeader(vm);
 
-  switch (*_benchmark) {
-    case 0: {
-      registerSetBenchmarks();
-      break;
+  if (vm.count("boost")) {
+    if (_input_file) {
+      registerBoostBenchmarks(*_input_file);
+    } else {
+      Util::ERROR("BoostExecutor: must provide a SBG program filename to run "
+        , "Boost benchmark\n");
     }
-
-    case 1: {
-      registerPWMapBenchmarks();
-      break;
-    }
-
-    case 2: {
-      if (_input_file) {
-        registerMatchingBenchmarks(*_input_file);
-      } else {
-        registerMatchingBenchmarks();
+  } else {
+    switch (*_benchmark) {
+      case 0: {
+        registerSetBenchmarks();
+        break;
       }
-      break;
-    }
 
-    case 3: {
-      if (_input_file) {
-        registerSCCBenchmarks(*_input_file);
-      } else {
-        registerSCCBenchmarks();
+      case 1: {
+        registerPWMapBenchmarks();
+        break;
       }
-      break;
-    }
 
-    default: {
-      break;
+      case 2: {
+        if (_input_file) {
+          registerMatchingBenchmarks(*_input_file);
+        } else {
+          registerMatchingBenchmarks();
+        }
+        break;
+      }
+
+      case 3: {
+        if (_input_file) {
+          registerSCCBenchmarks(*_input_file);
+        } else {
+          registerSCCBenchmarks();
+        }
+        break;
+      }
+
+      default: {
+        break;
+      }
     }
   }
 

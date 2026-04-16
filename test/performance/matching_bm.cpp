@@ -19,7 +19,6 @@
 
 #include "algorithms/matching/matching.hpp"
 #include "algorithms/matching/matching_fact.hpp"
-#include "eval/user_impl_map.hpp"
 #include "sbg/bipartite_sbg.hpp"
 #include "test/performance/utils.hpp"
 #include "test/performance/matching_bm.hpp"

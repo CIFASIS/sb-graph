@@ -131,6 +131,7 @@ PWMap LtEdgesMRV::calculate(const DirectedSBG& dsbg)
       // Calculate representatives map
       rmap = _smap.mapInf();
       rmap = rmap.min(old_rmap).combine(std::move(rmap));
+      rmap.compact();
     } while (!E.isEmpty());
   }
 

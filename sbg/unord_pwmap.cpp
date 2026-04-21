@@ -20,6 +20,7 @@
 #include "sbg/set_fact.hpp"
 #include "sbg/unord_pwmap.hpp"
 
+#include <algorithm>
 #include <forward_list>
 #include <set>
 #include <iostream>
@@ -34,7 +35,7 @@ namespace detail {
 // Unordered PWMap Implementation ----------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-// Auxliary definitions --------------------------------------------------------
+// Auxiliary definitions -------------------------------------------------------
 
 class MapLess {
 public:
@@ -487,8 +488,13 @@ void UnordPWMap::compact()
   UnordMapCollection result;
 
   if (!isEmpty()) {
-    MapSet set_result{std::make_move_iterator(_pieces.begin())
-      , std::make_move_iterator(_pieces.end())};
+    MapSet set_result;
+    for (const Map& m : _pieces) {
+      Set new_domain = m.domain();
+      new_domain.compact();
+      set_result.emplace(new_domain, m.law());
+    }
+
     MapSet to_erase;
     do {
       MapSet new_set_result;

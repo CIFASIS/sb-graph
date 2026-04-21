@@ -30,7 +30,7 @@ using namespace SBG::LIB;
 rapidjson::Value setJson(const Set &s
   , rapidjson::Document::AllocatorType &alloc)
 {
-  rapidjson::Value res(rapidjson::kArrayType);
+  rapidjson::Value result(rapidjson::kArrayType);
 
   for (const SetPiece &mdi : s) {
     rapidjson::Value inter_array(rapidjson::kArrayType);
@@ -51,15 +51,15 @@ rapidjson::Value setJson(const Set &s
     }
     rapidjson::Value mdi_obj(rapidjson::kObjectType);
     mdi_obj.AddMember("interval", inter_array, alloc);
-    res.PushBack(mdi_obj, alloc);
+    result.PushBack(mdi_obj, alloc);
   }
 
-  return res;
+  return result;
 }
 
 rapidjson::Value expJson(Exp exp, rapidjson::Document::AllocatorType &alloc)
 {
-  rapidjson::Value res(rapidjson::kArrayType);
+  rapidjson::Value result(rapidjson::kArrayType);
 
   for (const LExp &le : exp) {
     rapidjson::Value le_array(rapidjson::kArrayType);
@@ -76,17 +76,17 @@ rapidjson::Value expJson(Exp exp, rapidjson::Document::AllocatorType &alloc)
     h.SetString(ssh.str().c_str(), strlen(ssh.str().c_str()), alloc);
     le_array.PushBack(h, alloc);
 
-    res.PushBack(le_array, alloc);
+    result.PushBack(le_array, alloc);
   }
 
-  return res;
+  return result;
 }
 
 rapidjson::Value mapJson(
   const PWMap &pw, rapidjson::Document::AllocatorType &alloc
 )
 {
-  rapidjson::Value res(rapidjson::kArrayType);
+  rapidjson::Value result(rapidjson::kArrayType);
 
   for (const Map &map : pw) {
     rapidjson::Value ith(rapidjson::kObjectType);
@@ -94,10 +94,10 @@ rapidjson::Value mapJson(
     ith.AddMember("dom", setJson(map.dom(), alloc), alloc);
     ith.AddMember("exp", expJson(map.exp(), alloc), alloc);
 
-    res.PushBack(ith, alloc);
+    result.PushBack(ith, alloc);
   }
 
-  return res;
+  return result;
 }
 
 void buildJson(const Set &matching, const PWMap &scc, const PWMap &order)
@@ -127,8 +127,6 @@ void buildJson(const Set &matching, const PWMap &scc, const PWMap &order)
   d.Accept(writer);
 
   fclose(fp);
-
-  return;
 }
 
 } // namespace MISC

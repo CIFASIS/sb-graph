@@ -35,12 +35,12 @@ namespace detail {
 // Ordered PWMap Implementation ------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-// Auxliary definitions --------------------------------------------------------
+// Auxiliary definitions -------------------------------------------------------
 
-class MapEntryLess {
+class MapLess {
 public:
-  bool operator()(const MapEntry& a, const MapEntry& b) const {
-    return a.map().domain().minElem() < b.map().domain().minElem();
+  bool operator()(const Map& a, const Map& b) const {
+    return a.domain().minElem() < b.domain().minElem();
   }
 };
 
@@ -734,13 +734,19 @@ Set OrdPWMap::lessImage(const OrdPWMap& other) const
 
 void OrdPWMap::compact()
 {
-  using MapSet = std::set<MapEntry, MapEntryLess>;
+  using MapSet = std::set<Map, MapLess>;
 
-  OrdMapCollection result;
+  OrdPWMap result;
 
   if (!isEmpty()) {
-    MapSet set_result{std::make_move_iterator(_pieces.begin())
-      , std::make_move_iterator(_pieces.end())};
+    MapSet set_result;
+    for (const MapEntry& entry : _pieces) {
+      const Map& m = entry.map();
+      Set new_domain = m.domain();
+      new_domain.compact();
+      set_result.emplace(new_domain, m.law());
+    }
+
     MapSet to_erase;
     do {
       MapSet new_set_result;
@@ -749,11 +755,11 @@ void OrdPWMap::compact()
       MapSet::iterator ith = set_result.begin();
       MapSet::iterator last = set_result.end();
       for (; ith != last; ++ith) {
-        MapEntry ith_compact = *ith;
+        Map ith_compact = *ith;
         MapSet::iterator next = ith;
         ++next;
         for (; next != last; ++next) {
-          MaybeMapEntry new_compact = ith_compact.compact(*next);
+          MaybeMap new_compact = ith_compact.compact(*next);
           if (new_compact) {
             ith_compact = new_compact.value();
             to_erase.insert(*next);
@@ -768,12 +774,12 @@ void OrdPWMap::compact()
       std::swap(set_result, new_set_result);
     } while (!to_erase.empty());
 
-    for (const MapEntry& map_entry : set_result) {
-      result.push_back(map_entry);
+    for (const Map& m : set_result) {
+      result.insert(m);
     }
   }
 
-  _pieces = std::move(result);
+  _pieces = std::move(result._pieces);
 }
 
 } // namespace detail

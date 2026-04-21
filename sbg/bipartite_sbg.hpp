@@ -29,6 +29,7 @@
 
 #include "sbg/pw_map.hpp"
 #include "sbg/set.hpp"
+#include "sbg/set_fact.hpp"
 
 #include <iosfwd>
 
@@ -84,6 +85,12 @@ public:
    */
   void addSetEdge(const PWMap& pw1, const PWMap& pw2);
 
+  template<typename FuncT>
+  void foreachSetVertex(FuncT&& f) const;
+
+  template<typename FuncT>
+  void foreachSetEdge(FuncT&& f) const;
+
 private:
   Set _V; ///< Vertex definitions
   PWMap _Vmap;
@@ -96,6 +103,32 @@ private:
 };
 
 std::ostream& operator<<(std::ostream& out, const BipartiteSBG& g);
+
+// Template definitions --------------------------------------------------------
+
+template<typename FuncT>
+inline void BipartiteSBG::foreachSetVertex(FuncT&& f) const
+{
+  Set remaining = _Vmap.image();
+  while (!remaining.isEmpty()) {
+    const MD_NAT& x = remaining.minElem();
+    f(x);
+    remaining = remaining.difference(SET_FACT.createSet(x));
+  }
+}
+
+template<typename FuncT>
+inline void BipartiteSBG::foreachSetEdge(FuncT&& f) const
+{
+  Set remaining = _Emap.image();
+  while (!remaining.isEmpty()) {
+    const MD_NAT& x = remaining.minElem();
+    f(x);
+    remaining = remaining.difference(SET_FACT.createSet(x));
+  }
+}
+
+// Extra operations ------------------------------------------------------------
 
 BipartiteSBG copy(unsigned int copies, BipartiteSBG sbg);
 

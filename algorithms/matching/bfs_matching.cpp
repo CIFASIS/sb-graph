@@ -18,6 +18,7 @@
  ******************************************************************************/
 
 #include "algorithms/matching/bfs_matching.hpp"
+#include "sbg/natural.hpp"
 #include "sbg/pwmap_fact.hpp"
 #include "sbg/set_fact.hpp"
 #include "util/logger.hpp"
@@ -78,10 +79,9 @@ PWMap BFSMatching::partitionSubsetEdges() const
   std::size_t arity = free_edges.arity();
   NAT j = 1;
   PWMap Emap = _dsbg.Emap();
-  Set set_edges = Emap.image();
-  while (!set_edges.isEmpty()) {
-    Set min_elem_set = SET_FACT.createSet(set_edges.minElem());
-    Set domain_edges = Emap.preImage(min_elem_set);
+  _dsbg.foreachSetEdge([&](const MD_NAT& SE)
+  {
+    Set domain_edges = Emap.preImage(SET_FACT.createSet(SE));
 
     Expression matched_expr{MD_NAT{arity, j}};
     result.emplace(_M.intersection(domain_edges), matched_expr);
@@ -90,9 +90,7 @@ PWMap BFSMatching::partitionSubsetEdges() const
     Expression free_expr{MD_NAT{arity, j}};
     result.emplace(free_edges.intersection(domain_edges), free_expr);
     ++j;
-
-    set_edges = set_edges.difference(min_elem_set);
-  }
+  });
 
   return result;
 }

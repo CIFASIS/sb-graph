@@ -40,6 +40,7 @@
 #define SBGRAPH_SBG_DIRECTED_SBG_HPP_
 
 #include "sbg/set.hpp"
+#include "sbg/set_fact.hpp"
 #include "sbg/pw_map.hpp"
 
 #include <iosfwd>
@@ -89,10 +90,16 @@ public:
   void addSetEdge(const PWMap& pw1, const PWMap& pw2);
 
   /**
-   * @brief Erase vertices \p vs from the DirectedSBG, together with associated edges
-   * with \p vs.
+   * @brief Erase vertices \p vs from the DirectedSBG, together with associated
+   * edges with \p vs.
    */
   void eraseVertices(const Set& vs);
+
+  template<typename FuncT>
+  void foreachSetVertex(FuncT&& f) const;
+
+  template<typename FuncT>
+  void foreachSetEdge(FuncT&& f) const;
 
 private:
   Set _V; ///< Vertices definitions
@@ -104,6 +111,30 @@ private:
 };
 
 std::ostream& operator<<(std::ostream& out, const DirectedSBG& dg);
+
+// Template definitions --------------------------------------------------------
+
+template<typename FuncT>
+inline void DirectedSBG::foreachSetVertex(FuncT&& f) const
+{
+  Set remaining = _Vmap.image();
+  while (!remaining.isEmpty()) {
+    const MD_NAT& x = remaining.minElem();
+    f(x);
+    remaining = remaining.difference(SET_FACT.createSet(x));
+  }
+}
+
+template<typename FuncT>
+inline void DirectedSBG::foreachSetEdge(FuncT&& f) const
+{
+  Set remaining = _Emap.image();
+  while (!remaining.isEmpty()) {
+    const MD_NAT& x = remaining.minElem();
+    f(x);
+    remaining = remaining.difference(SET_FACT.createSet(x));
+  }
+}
 
 } // namespace LIB
 

@@ -143,6 +143,8 @@ private:
   friend class PWMapAccessKey;
 };
 
+// Template definitions --------------------------------------------------------
+
 template<typename... Args>
 inline void OrdPWMap::emplace(Args&&... args)
 {

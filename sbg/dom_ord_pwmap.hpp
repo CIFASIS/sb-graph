@@ -146,6 +146,8 @@ private:
   friend class PWMapAccessKey;
 };
 
+// Template definitions --------------------------------------------------------
+
 template<typename... Args>
 inline void DomOrdPWMap::emplace(Args&&... args)
 {

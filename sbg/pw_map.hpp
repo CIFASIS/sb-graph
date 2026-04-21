@@ -247,6 +247,8 @@ private:
 
 std::ostream& operator<<(std::ostream& out, const PWMap& pw);
 
+// Template definitions --------------------------------------------------------
+
 template<typename... Args>
 inline void PWMap::emplace(Args&&... args)
 {

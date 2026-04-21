@@ -20,20 +20,25 @@
 #include "algorithms/misc/causalization_builders.hpp"
 #include "sbg/bipartite_sbg.hpp"
 #include "sbg/set.hpp"
+#include "sbg/set_fact.hpp"
 #include "sbg/pw_map.hpp"
 #include "sbg/pwmap_fact.hpp"
 #include "sbg/map.hpp"
 #include "util/time_profiler.hpp"
 
+#include <tuple>
+
 namespace misc {
 
-SBG::LIB::DirectedSBG buildSCCFromMatching(const SBG::LIB::MatchData& data)
-{
-  SBG::Util::Internal::TimeProfiler profiler{"SBG SCC builder: "};
+////////////////////////////////////////////////////////////////////////////////
+// Algebraic loops graph -------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
+std::tuple<SBG::LIB::Set, SBG::LIB::PWMap> buildSCCVertices(
+  const SBG::LIB::MatchData& data)
+{
   const SBG::LIB::BipartiteSBG& bsbg = data.bsbg();
   SBG::LIB::Set M = data.M();
-  SBG::LIB::Set free_edges = bsbg.E().difference(M);
 
   M.compact();
   SBG::LIB::Set V = M;
@@ -44,6 +49,15 @@ SBG::LIB::DirectedSBG buildSCCFromMatching(const SBG::LIB::MatchData& data)
     domain.compact();
     Vmap.emplace(domain, m.law());
   }
+
+  return {V, Vmap};
+}
+
+std::tuple<SBG::LIB::PWMap, SBG::LIB::PWMap, SBG::LIB::PWMap> buildSCCEdges(
+  const SBG::LIB::MatchData& data, const SBG::LIB::PWMap& Vmap)
+{
+  const SBG::LIB::BipartiteSBG& bsbg = data.bsbg();
+  SBG::LIB::Set M = data.M();
 
   SBG::LIB::PWMap map1 = bsbg.map1();
   SBG::LIB::PWMap map2 = bsbg.map2();
@@ -58,19 +72,91 @@ SBG::LIB::DirectedSBG buildSCCFromMatching(const SBG::LIB::MatchData& data)
   SBG::LIB::PWMap map2_toY = map2.restrict(map2.preImage(Y));
   SBG::LIB::PWMap mapU = map1_toY.concatenation(map2_toY);
 
+  SBG::LIB::Set free_edges = bsbg.E().difference(M);
   SBG::LIB::PWMap matchedF_inv = mapF.restrict(M).inverse();
   SBG::LIB::PWMap unmatchedF = mapF.restrict(free_edges);
   SBG::LIB::PWMap mapB = matchedF_inv.composition(unmatchedF);
   mapB.compact();
+
   SBG::LIB::PWMap matchedU_inv = mapU.restrict(M).inverse();
   SBG::LIB::PWMap unmatchedU = mapU.restrict(free_edges);
   SBG::LIB::PWMap mapD = matchedU_inv.composition(unmatchedU);
   mapD.compact();
 
   SBG::LIB::PWMap Emap = bsbg.Emap().restrict(free_edges);
+  Emap.compact();
+
+  return {mapB, mapD, Emap};
+}
+
+SBG::LIB::PWMap partitionEmap(const SBG::LIB::DirectedSBG& dsbg)
+{
+  SBG::LIB::PWMap Vmap = dsbg.Vmap();
+  SBG::LIB::PWMap mapB = dsbg.mapB();
+  SBG::LIB::PWMap mapD = dsbg.mapD();
+  SBG::LIB::PWMap Emap = dsbg.Emap();
+
+  std::size_t arity = dsbg.V().arity();
+  SBG::LIB::NAT j = 1;
+  SBG::LIB::PWMap partitioned_Emap = SBG::LIB::PWMAP_FACT.createPWMap();
+  dsbg.foreachSetEdge([&](const SBG::LIB::MD_NAT& SE)
+  {
+    SBG::LIB::Set E = Emap.preImage(SBG::LIB::SET_FACT.createSet(SE));
+    SBG::LIB::Set SV_starts = Vmap.image(mapB.image(E));
+    SBG::LIB::Set SV_ends = Vmap.image(mapD.image(E));
+    if (SV_starts.cardinal()*SV_ends.cardinal() > 1) {
+      SBG::LIB::Set remaining1 = SV_starts;
+      while (!remaining1.isEmpty()) {
+        SBG::LIB::Set SV1 = SBG::LIB::SET_FACT.createSet(remaining1.minElem());
+        SBG::LIB::Set V1 = Vmap.preImage(SV1); 
+
+        SBG::LIB::Set remaining2 = SV_ends;
+        while (!remaining2.isEmpty()) {
+          SBG::LIB::Set SV2 = SBG::LIB::SET_FACT.createSet(remaining2.minElem());
+          SBG::LIB::Set V2 = Vmap.preImage(SV2); 
+
+          SBG::LIB::Set edges_V1_V2 = mapB.preImage(V1).intersection(
+            mapD.preImage(V2));
+          partitioned_Emap.emplace(E.intersection(edges_V1_V2)
+            , SBG::LIB::Expression{SBG::LIB::MD_NAT{arity, j}});
+          ++j;
+
+          remaining2 = remaining2.difference(SV2);
+        }
+        remaining1 = remaining1.difference(SV1);
+      }
+    } else {
+      partitioned_Emap.emplace(E
+        , SBG::LIB::Expression{SBG::LIB::MD_NAT{arity, j}});
+      ++j;
+    }
+  });
+
+  return partitioned_Emap;
+}
+
+SBG::LIB::DirectedSBG buildSCCFromMatching(const SBG::LIB::MatchData& data)
+{
+  SBG::Util::Internal::TimeProfiler profiler{"SBG SCC builder: "};
+
+  SBG::LIB::Set V = SBG::LIB::SET_FACT.createSet();
+  SBG::LIB::PWMap Vmap = SBG::LIB::PWMAP_FACT.createPWMap();
+  std::tie(V, Vmap) = buildSCCVertices(data);
+
+  SBG::LIB::PWMap mapB = SBG::LIB::PWMAP_FACT.createPWMap();
+  SBG::LIB::PWMap mapD = SBG::LIB::PWMAP_FACT.createPWMap();
+  SBG::LIB::PWMap Emap = SBG::LIB::PWMAP_FACT.createPWMap();
+  std::tie(mapB, mapD, Emap) = buildSCCEdges(data, Vmap);
+
+  SBG::LIB::DirectedSBG dsbg{V, Vmap, mapB, mapD, Emap};
+  Emap = partitionEmap(dsbg);
 
   return SBG::LIB::DirectedSBG{V, Vmap, mapB, mapD, Emap};
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Vertical ordering graph ----------------------------------------------------- 
+////////////////////////////////////////////////////////////////////////////////
 
 SBG::LIB::DirectedSBG buildSortFromSCC(const SBG::LIB::SCCData& data)
 {

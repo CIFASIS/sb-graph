@@ -479,7 +479,21 @@ Set UnordPWMap::lessImage(const UnordPWMap& other) const
   }
 
   return min_in_pw1; 
-}  
+}
+
+UnordPWMap UnordPWMap::imageMultiplicity() const
+{
+  Map initial_result{image(), Expression{arity(), 0, 0}};
+  UnordPWMap result{initial_result};
+
+  for (const Map& m : _pieces) {
+    UnordPWMap jth_mult{m.imageMultiplicity()};
+    UnordPWMap sum_mult = jth_mult + result;
+    result = std::move(sum_mult).combine(std::move(result));
+  }
+
+  return result;
+} 
 
 void UnordPWMap::compact()
 {

@@ -90,6 +90,7 @@ public:
   static ExprBaseType reduceEvaluator(const EBTList& args);
   static ExprBaseType minAdjEvaluator(const EBTList& args);
   static ExprBaseType mapInfEvaluator(const EBTList& args);
+  static ExprBaseType imageMultEvaluator(const EBTList& args);
   static ExprBaseType connectedEvaluator(const EBTList& args);
   static ExprBaseType matchingEvaluator(const EBTList& args);
   static ExprBaseType sccEvaluator(const EBTList& args);

@@ -24,6 +24,10 @@
 #include "sbg/set_detail.hpp"
 #include "sbg/set_fact.hpp"
 #include "sbg/unord_set.hpp"
+#include "util/debug.hpp"
+
+#include <tuple>
+#include <utility>
 
 namespace SBG {
 
@@ -109,7 +113,11 @@ Set MapDetail::image(const Set& s, const Expression& expr)
       return key.createSet(detail::compactImage<OrderedSet, MultiDimInter
         , ExpressionImpl>(a, expr._impl, expr.isInjective()));
     },
-    [&](const auto& a) { return Set{SetKind::kUnordered}; }
+    [&](const auto& a)
+    {
+      Util::ERROR("MapDetail::image: unsupported Set implementation");
+      return Set{SetKind::kUnordered};
+    }
   };
   return std::visit(image_evaluator, key.impl(s));
 }
@@ -173,7 +181,11 @@ Set MapDetail::preImage(const Set& s, const Expression& expr)
       return key.createSet(detail::compactPreImage<OrderedSet, MultiDimInter
         , ExpressionImpl>(a, expr._impl));
     },
-    [&](const auto& a) { return Set{SetKind::kUnordered}; }
+    [&](const auto& a)
+    {
+      Util::ERROR("MapDetail::preImage: unsupported Set implementation");
+      return Set{SetKind::kUnordered};
+    }
   };
   return std::visit(pre_image_evaluator, key.impl(s));
 }
@@ -286,7 +298,11 @@ Set MapDetail::lessImage(const Expression& expr1, const Expression& expr2)
         expr1._impl, expr2._impl, a);
       return key.createSet(a);
     },
-    [&](auto&& a) { return Set{SetKind::kUnordered}; }
+    [&](auto&& a)
+    {
+      Util::ERROR("MapDetail::lessImage: unsupported Set implementation");
+      return Set{SetKind::kUnordered};
+    }
   };
   return std::visit(less_image_evaluator, key.impl(result));
 
@@ -457,9 +473,127 @@ MapVector MapDetail::reduce(const Map& m)
     {
       return MDICollectionReduce<OrderedSet>(a, law._impl);
     },
-    [&](const auto& a) { return Set{SetKind::kUnordered}; }
+    [&](const auto& a)
+    {
+      Util::ERROR("MapDetail::reduce: unsupported Set implementation");
+      return Set{SetKind::kUnordered};
+    }
   };
   return std::visit(reduce_evaluator, key.impl(m.domain()));
+}
+
+// Image multiplicity ----------------------------------------------------------
+
+AtomicMap imageMultiplicity(const Interval& i, const LinearExpr& linear_expr)
+{
+  Interval image = detail::image(i, linear_expr);
+  if (linear_expr.isConstant()) {
+    return AtomicMap{image, LinearExpr{0, i.cardinal()}};
+  }
+
+  return AtomicMap{image, LinearExpr{0, 1}};
+}
+
+AtomicMDMap imageMultiplicity(const MultiDimInter& mdi
+  , const ExpressionImpl& expr)
+{
+  MultiDimInter result_mdi;
+  ExpressionImpl result_expr;
+
+  std::size_t arity = mdi.arity();
+  for (std::size_t j = 0; j < arity; ++j) {
+    AtomicMap jth = imageMultiplicity(mdi[j], expr[j]);
+    result_mdi.pushBack(std::get<0>(jth));
+    result_expr.push_back(std::get<1>(jth));
+  }
+
+  return AtomicMDMap{result_mdi, result_expr};
+}
+
+template<typename CompactSetImplT, typename PieceT, typename ExprT>
+MapVector MapDetail::imageMultiplicity(const CompactSetImplT& s
+  , const ExprT& expr)
+{
+  MapVector result;
+
+  SetAccessKey key = SetAccess::key();
+  for (const PieceT& p : s) {
+    MapVector jth_result;
+
+    bool repeated = false;
+    AtomicMDMap jth = detail::imageMultiplicity(p, expr);
+    Map p_multiplicity{key.createSet(CompactSetImplT{std::get<0>(jth)})
+      , std::get<1>(jth)};
+    for (const Map& m : result) {
+      Set m_domain = m.domain();
+      Set cap = m_domain.intersection(p_multiplicity.domain());
+      if (!cap.isEmpty()) {
+        jth_result.push_back(p_multiplicity + m);
+        jth_result.push_back(m.restrict(m_domain.difference(cap)));
+        repeated = true;
+      }
+    }
+
+    if (!repeated) {
+      jth_result.push_back(p_multiplicity);
+    }
+
+    std::swap(result, jth_result);
+  }
+
+  return result;
+}
+
+MapVector MapDetail::imageMultiplicity(const Map& m)
+{
+  MapVector result;
+
+  Set domain = m.domain();
+  Expression law = m.law();
+
+  if (m.isEmpty()) {
+    return result;
+  }
+
+  if (law.isInjective()) {
+    Set result_domain = m.image();
+    Expression result_expr{MD_NAT{domain.arity(), 1}};
+    result.emplace_back(result_domain, result_expr);
+    return result;
+  }
+
+  if (law.isConstant()) {
+    Set result_domain = m.image();
+    Expression result_expr{MD_NAT{domain.arity(), domain.cardinal()}};
+    result.emplace_back(result_domain, result_expr);
+    return result;
+  }
+
+  SetAccessKey key = SetAccess::key();
+  auto img_mult_evaluator = Util::Overload {
+    [&](const UnorderedSet& a)
+    {
+      return imageMultiplicity<UnorderedSet, MultiDimInter, ExpressionImpl>(
+        a, law._impl);
+    },
+    [&](const OrdUnidimDenseSet& a)
+    {
+      Util::ERROR("MapDetail::imageMultiplicity: uni-dimensional already "
+        , "solved");
+      return MapVector{};
+    },
+    [&](const OrderedSet& a)
+    {
+      return imageMultiplicity<OrderedSet, MultiDimInter, ExpressionImpl>(
+        a, law._impl);
+    },
+    [&](const auto& a)
+    {
+      Util::ERROR("MapDetail::imageMultiplicity: unsupported Set implementation");
+      return MapVector{};
+    }
+  };
+  return std::visit(img_mult_evaluator, key.impl(m.domain()));
 }
 
 } // namespace detail

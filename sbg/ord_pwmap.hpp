@@ -49,6 +49,7 @@ public:
   OrdPWMap();
   OrdPWMap(const Set& s);
   OrdPWMap(const Map& m);
+  OrdPWMap(const std::vector<Map>& pieces);
   OrdPWMap(const OrdMapCollection& pieces);
   OrdPWMap(OrdMapCollection&& pieces);
 
@@ -98,6 +99,8 @@ public:
   Set sharedImage() const;
   Set equalImage(const OrdPWMap& other) const;
   Set lessImage(const OrdPWMap& other) const;
+
+  OrdPWMap imageMultiplicity() const;
 
   void compact();
 

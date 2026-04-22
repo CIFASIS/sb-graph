@@ -189,6 +189,11 @@ std::vector<Map> Map::reduce() const
   return detail::MapDetail::reduce(*this);
 }
 
+std::vector<Map> Map::imageMultiplicity() const
+{
+  return detail::MapDetail::imageMultiplicity(*this);
+}
+
 MaybeMap Map::compact(const Map& other) const
 {
   Set result_domain = SET_FACT.createSet();

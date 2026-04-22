@@ -70,6 +70,7 @@ ExprEvaluator::ExprEvaluator(EvalContext& eval_ctx) : _eval_context(eval_ctx)
   eval_ctx.insertFunction("minMap", BuiltInFunctions::minMapEvaluator);
   eval_ctx.insertFunction("minAdj", BuiltInFunctions::minAdjEvaluator);
   eval_ctx.insertFunction("mapInf", BuiltInFunctions::mapInfEvaluator);
+  eval_ctx.insertFunction("imgMult", BuiltInFunctions::imageMultEvaluator);
   eval_ctx.insertFunction("cc", BuiltInFunctions::connectedEvaluator);
   eval_ctx.insertFunction("match", BuiltInFunctions::matchingEvaluator);
   eval_ctx.insertFunction("scc", BuiltInFunctions::sccEvaluator);

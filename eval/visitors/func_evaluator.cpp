@@ -677,6 +677,22 @@ ExprBaseType BuiltInFunctions::mapInfEvaluator(const EBTList& args)
   };
   return std::visit(inf_evaluator, args[0]);
 }
+
+ExprBaseType BuiltInFunctions::imageMultEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 1
+    , "imageMultEvaluator: wrong number of arguments\n");
+
+  const auto img_mult_evaluator = Util::Overload {
+    [](LIB::PWMap a) { return ExprBaseType{a.imageMultiplicity()}; },
+    [](auto a) { 
+      Util::ERROR("imageMultEvaluator: wrong argument ", a
+        , " for imageMultiplicity\n"); 
+      return ExprBaseType{}; 
+    }
+  };
+  return std::visit(img_mult_evaluator, args[0]);
+}
   
 // Algorithms evaluators ------------------------------------------------------
 

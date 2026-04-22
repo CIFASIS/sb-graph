@@ -60,6 +60,12 @@ OrdPWMap::OrdPWMap(const Map& m) : _pieces() {
   }
 }
 
+OrdPWMap::OrdPWMap(const std::vector<Map>& pieces) : _pieces() {
+  for (const Map& m : pieces) {
+    insert(m);
+  }
+}
+
 OrdPWMap::OrdPWMap(const OrdPWMap::OrdMapCollection& pieces)
   : _pieces(pieces) {}
 
@@ -730,6 +736,20 @@ Set OrdPWMap::lessImage(const OrdPWMap& other) const
   }
 
   return traverse(other, LessImageCore{}).result();
+} 
+
+OrdPWMap OrdPWMap::imageMultiplicity() const
+{
+  Map initial_result{image(), Expression{arity(), 0, 0}};
+  OrdPWMap result{initial_result};
+
+  for (const MapEntry& entry : _pieces) {
+    OrdPWMap jth_mult{entry.map().imageMultiplicity()};
+    OrdPWMap sum_mult = jth_mult + result;
+    result = std::move(sum_mult).combine(std::move(result));
+  }
+
+  return result;
 } 
 
 void OrdPWMap::compact()

@@ -98,6 +98,8 @@ public:
   Set equalImage(const UnordPWMap& other) const;
   Set lessImage(const UnordPWMap& other) const;
 
+  UnordPWMap imageMultiplicity() const;
+
   void compact();
 
 private:

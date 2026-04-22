@@ -53,6 +53,7 @@ public:
   DomOrdPWMap();
   DomOrdPWMap(const Set& s);
   DomOrdPWMap(const Map& m);
+  DomOrdPWMap(const std::vector<Map>& pieces);
   DomOrdPWMap(const OrdMapCollection& pieces);
   DomOrdPWMap(OrdMapCollection&& pieces);
 
@@ -102,6 +103,8 @@ public:
   Set sharedImage() const;
   Set equalImage(const DomOrdPWMap& other) const;
   Set lessImage(const DomOrdPWMap& other) const;
+
+  DomOrdPWMap imageMultiplicity() const;
 
   void compact();
 

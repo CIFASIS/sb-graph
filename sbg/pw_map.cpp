@@ -459,6 +459,12 @@ Set PWMap::lessImage(const PWMap& other) const
     , _impl, other._impl);
 }
 
+PWMap PWMap::imageMultiplicity() const
+{
+  return std::visit([](const auto& a) { return PWMap{a.imageMultiplicity()}; }
+    , _impl);
+}
+
 void PWMap::compact()
 {
   std::visit([](auto& a) { a.compact(); }, _impl);

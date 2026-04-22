@@ -35,6 +35,7 @@
 
 #include <iosfwd>
 #include <optional>
+#include <vector>
 
 namespace SBG {
 
@@ -147,6 +148,12 @@ public:
    * map). For example, reduce({[1:1:100]} -> x+1) = {[1:1:100]} -> 101.
    */
   std::vector<Map> reduce() const;
+
+  /**
+   * @brief Calculates the multiplicity for each element of the image, i.e. the
+   * number of pre-images of each one.
+   */
+  std::vector<Map> imageMultiplicity() const;
 
   /**
    * @brief Minimize internal representation cost. Heuristic guided.

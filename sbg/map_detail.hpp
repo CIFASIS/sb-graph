@@ -36,6 +36,8 @@
 #include "sbg/multidim_inter.hpp"
 #include "util/defs.hpp"
 
+#include <vector>
+
 namespace SBG {
 
 namespace LIB {
@@ -44,6 +46,7 @@ namespace detail {
 
 using AtomicMap = std::pair<Interval, LinearExpr>;
 using AtomicMapVector = std::vector<AtomicMap>;
+using AtomicMDMap = std::pair<MultiDimInter, ExpressionImpl>;
 using MapVector = std::vector<Map>;
 
 class MapDetail {
@@ -52,6 +55,7 @@ public:
   static Set preImage(const Set& s, const Expression& expr);
   static Set lessImage(const Expression& expr1, const Expression& expr2);
   static MapVector reduce(const Map& m);
+  static MapVector imageMultiplicity(const Map& m);
 
 private:
   template<typename SetMDIImpl>
@@ -59,6 +63,10 @@ private:
     , const ExpressionImpl& expr);
   static MapVector reduce(const OrdUnidimDenseSet& s
     , const ExpressionImpl& expr);
+
+  template<typename CompactSetImplT, typename PieceT, typename ExprT>
+  static MapVector imageMultiplicity(const CompactSetImplT& s
+    , const ExprT& expr);
 };
 
 } // namespace detail

@@ -231,6 +231,8 @@ public:
    */
   Set lessImage(const PWMap& other) const;
 
+  PWMap imageMultiplicity() const;
+
   /**
    * @brief Minimize internal representation cost. Heuristic guided.
    */

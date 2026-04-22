@@ -45,7 +45,6 @@ class SetAccessKey {
 public:
   SetImpl impl(Set s) const;
   Set createSet(SetImpl s_impl) const;
-  MaybeMD_NAT nextElem(const MD_NAT& current, const Set& s) const;
   std::vector<MD_NAT> flatten(const Set& s) const;
 
   OrderedSet::OrdMDICollection pieces(OrderedSet s) const;

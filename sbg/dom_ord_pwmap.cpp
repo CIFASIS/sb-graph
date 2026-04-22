@@ -67,6 +67,12 @@ DomOrdPWMap::DomOrdPWMap(const Map& m) : _pieces() {
   }
 }
 
+DomOrdPWMap::DomOrdPWMap(const std::vector<Map>& pieces) : _pieces() {
+  for (const Map& m : pieces) {
+    insert(m);
+  }
+}
+
 DomOrdPWMap::DomOrdPWMap(const DomOrdPWMap::OrdMapCollection& pieces)
   : _pieces(pieces) {}
 
@@ -764,6 +770,20 @@ Set DomOrdPWMap::lessImage(const DomOrdPWMap& other) const
   }
 
   return traverse(_pieces, other._pieces, LessImageCore{}).result();
+} 
+
+DomOrdPWMap DomOrdPWMap::imageMultiplicity() const
+{
+  Map initial_result{image(), Expression{arity(), 0, 0}};
+  DomOrdPWMap result{initial_result};
+
+  for (const MapEntry& entry : _pieces) {
+    DomOrdPWMap jth_mult{entry.map().imageMultiplicity()};
+    DomOrdPWMap sum_mult = jth_mult + result;
+    result = std::move(sum_mult).combine(std::move(result));
+  }
+
+  return result;
 } 
 
 void DomOrdPWMap::compact()

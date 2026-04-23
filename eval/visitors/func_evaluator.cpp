@@ -17,14 +17,15 @@
 
  ******************************************************************************/
 
+#include "eval/visitors/func_evaluator.hpp"
 #include "algorithms/cc/cc.hpp"
-//#include "algorithms/cutvertex/cv_fact.hpp"
+#include "algorithms/mfvs/min_feedback_vertex_set.hpp"
+#include "algorithms/mfvs/mfvs_fact.hpp"
 #include "algorithms/matching/matching_fact.hpp"
 #include "algorithms/misc/causalization_builders.hpp"
 #include "algorithms/scc/scc_fact.hpp"
 //#include "algorithms/toposort/ts_fact.hpp"
 #include "eval/base_type.hpp"
-#include "eval/visitors/func_evaluator.hpp"
 #include "sbg/bipartite_sbg.hpp"
 #include "sbg/expression.hpp"
 #include "sbg/interval.hpp"
@@ -42,85 +43,6 @@ namespace SBG {
 namespace Eval {
 
 namespace detail {
-
-////////////////////////////////////////////////////////////////////////////////
-// Auxiliary functions ---------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-//TODO
-/**
- * @brief Returns a new bipartite SBG constructed by copying \p times the
- * the current bipartite SBG, disconnected one from each other.
- */
-/*
-LIB::BipartiteSBG copy(unsigned int times, BipartiteSBG bsbg)
-{
-  Set ith_V = _V;
-  Set new_V = ith_V;
-  PWMap ith_Vmap = _Vmap;
-  PWMap new_Vmap = ith_Vmap;
-  PWMap ith_map1 = _map1;
-  PWMap new_map1 = ith_map1;
-  PWMap ith_map2 = _map2;
-  PWMap new_map2 = ith_map2;
-  PWMap ith_Emap = _Emap;
-  PWMap new_Emap = ith_Emap;
-  PWMap ith_subE = _subEmap;
-  PWMap new_subE = ith_subE;
-  Set ith_X = _X;
-  Set new_X = ith_X;
-  Set ith_Y = _Y;
-  Set new_Y = ith_Y;
-
-  if (!ith_V.isEmpty()) {
-    MD_NAT maxv = ith_V.maxElem();
-    auto dims = maxv.arity();
-    MD_NAT maxV
-      = ith_Vmap.isEmpty() ? MD_NAT(dims, 0) : ith_Vmap.image().maxElem();
-    MD_NAT maxe = _E.isEmpty() ? MD_NAT(dims, 0) : _E.maxElem();
-    MD_NAT maxE
-      = ith_Emap.isEmpty() ? MD_NAT(dims, 0) : ith_Emap.image().maxElem();
-
-    Exp off;
-    for (unsigned int j = 0; j < dims; ++j) {
-      RATIONAL o = RATIONAL(maxv[j]) - RATIONAL(maxe[j]);
-      off.emplaceBack(LExp(0, o));
-    }
-
-    for (unsigned int j = 0; j < times; ++j) {
-      if (j > 0) {
-        new_V = new_V.disjointCup(ith_V);
-        new_Vmap = new_Vmap.concatenation(ith_Vmap);
-        new_map1 = new_map1.concatenation(ith_map1);
-        new_map2 = new_map2.concatenation(ith_map2);
-        new_Emap = new_Emap.concatenation(ith_Emap);
-        new_subE = new_subE.concatenation(ith_subE);
-        new_X = new_X.disjointCup(ith_X);
-        new_Y = new_Y.disjointCup(ith_Y);
-      }
-
-      ith_V = ith_V.offset(maxv);
-      ith_Vmap = ith_Vmap.offsetDom(maxv);
-      ith_Vmap = ith_Vmap.offsetImage(maxV);
-
-      ith_map1 = ith_map1.offsetDom(maxe);
-      ith_map1 = ith_map1.offsetImage(off);
-      ith_map2 = ith_map2.offsetDom(maxe);
-      ith_map2 = ith_map2.offsetImage(off);
-      ith_Emap = ith_Emap.offsetDom(maxe);
-      ith_Emap = ith_Emap.offsetImage(maxE);
-      ith_subE = ith_subE.offsetDom(maxe);
-      ith_subE = ith_subE.offsetImage(maxE);
-
-      ith_X = ith_X.offset(maxv);
-      ith_Y = ith_Y.offset(maxv);
-    }
-  }
-
-  return BipartiteSBG{new_V, new_Vmap, new_map1, new_map2, new_Emap, new_subE
-    , new_X, new_Y};
-}
-*/
 
 ////////////////////////////////////////////////////////////////////////////////
 // Built-in operators evaluators -----------------------------------------------
@@ -631,22 +553,6 @@ ExprBaseType BuiltInFunctions::minMapEvaluator(const EBTList& args)
   return std::visit(min_map_evaluator, args[0], args[1]);
 }
 
-// TODO 
-//ExprBaseType BuiltInFunctions::reduceEvaluator(const EBTList& args)
-//{
-//  Util::ERROR_UNLESS(args.size() == 1
-//    , "reduceEvaluator: wrong number of arguments\n");
-//
-//  const auto reduce_evaluator = Util::Overload {
-//    [](LIB::PWMap a) { return ExprBaseType{a.reduce()}; },
-//    [](auto a) {
-//      Util::ERROR("reduceEvaluator: wrong argument ", a, " for reduce\n"); 
-//      return ExprBaseType{};
-//    }
-//  };
-//  return std::visit(reduce_evaluator, args[0]);
-//}
-  
 ExprBaseType BuiltInFunctions::minAdjEvaluator(const EBTList& args)
 {
   Util::ERROR_UNLESS(args.size() == 2
@@ -751,44 +657,6 @@ ExprBaseType BuiltInFunctions::sccEvaluator(const EBTList& args)
   return std::visit(scc_evaluator, args[0]);
 }
 
-/*
-ExprBaseType BuiltInFunctions::topoSortEvaluator(const EBTList& args)
-{
-  Util::ERROR_UNLESS(args.size() == 1
-    , "topoSortEvaluator: wrong number of arguments\n");
-
-  LIB::TopoSort ts_impl = LIB::TS_FACT.createTSAlgorithm();
-  const auto ts_evaluator = Util::Overload {
-    [&ts_impl](LIB::DirectedSBG a) { 
-      return ExprBaseType{ts_impl.calculate(a)};
-    },
-    [](auto a) {
-      Util::ERROR("topoSortEvaluator: wrong argument ", a, " for sort\n"); 
-      return ExprBaseType{};
-    }
-  };
-  return std::visit(ts_evaluator, args[0]);
-}
-
-ExprBaseType BuiltInFunctions::cutVertexEvaluator(const EBTList& args)
-{
-  Util::ERROR_UNLESS(args.size() == 1
-    , "cutVertexEvaluator: wrong number of arguments\n");
-
-  LIB::CutVertex cv_impl = LIB::CV_FACT.createCVAlgorithm();
-  const auto cv_evaluator = Util::Overload {
-    [&cv_impl](LIB::DirectedSBG a) { 
-      return ExprBaseType{cv_impl.calculate(a)};
-    },
-    [](auto a) {
-      Util::ERROR("topoSortEvaluator: wrong argument ", a, " for sort\n"); 
-      return ExprBaseType{};
-    }
-  };
-  return std::visit(cv_evaluator, args[0]);
-}
-*/
-
 ExprBaseType BuiltInFunctions::matchSCCEvaluator(const EBTList& args)
 {
   Util::ERROR_UNLESS(args.size() == 2
@@ -817,7 +685,44 @@ ExprBaseType BuiltInFunctions::matchSCCEvaluator(const EBTList& args)
   return std::visit(match_scc_evaluator, args[0], args[1]);
 }
 
+ExprBaseType BuiltInFunctions::mfvsEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 1
+    , "mfvsEvaluator: wrong number of arguments\n");
+
+  LIB::MinFeedbackVertexSet mfvs_impl = LIB::MFVS_FACT.createMFVSAlgorithm();
+  const auto mfvs_evaluator = Util::Overload {
+    [&mfvs_impl](LIB::DirectedSBG a) { 
+      return ExprBaseType{mfvs_impl.calculate(a)};
+    },
+    [](auto a) {
+      Util::ERROR("mfvsEvaluator: wrong type of argument ", a
+        , " for MFVS algorithm\n"); 
+      return ExprBaseType{};
+    }
+  };
+  return std::visit(mfvs_evaluator, args[0]);
+}
+
 /*
+ExprBaseType BuiltInFunctions::topoSortEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 1
+    , "topoSortEvaluator: wrong number of arguments\n");
+
+  LIB::TopoSort ts_impl = LIB::TS_FACT.createTSAlgorithm();
+  const auto ts_evaluator = Util::Overload {
+    [&ts_impl](LIB::DirectedSBG a) { 
+      return ExprBaseType{ts_impl.calculate(a)};
+    },
+    [](auto a) {
+      Util::ERROR("topoSortEvaluator: wrong argument ", a, " for sort\n"); 
+      return ExprBaseType{};
+    }
+  };
+  return std::visit(ts_evaluator, args[0]);
+}
+
 ExprBaseType BuiltInFunctions::matchSCCTSEvaluator(const EBTList& args)
 {
   const auto match_scc_ts_evaluator = Util::Overload {

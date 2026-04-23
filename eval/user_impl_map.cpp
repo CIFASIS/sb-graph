@@ -95,6 +95,14 @@ UserImplMap::StructImplMap sccMap()
   return scc_mapping;
 }
 
+UserImplMap::StructImplMap mfvsMap()
+{
+  UserImplMap::StructImplMap mfvs_mapping;
+  mfvs_mapping[0] = LIB::MFVSKind::kGreedy;
+  mfvs_mapping.freeze();
+  return mfvs_mapping;
+}
+
 // TODO
 //UserImplMap::StructImplMap tsMap()
 //{
@@ -102,14 +110,6 @@ UserImplMap::StructImplMap sccMap()
 //  ts_mapping[0] = []() { return std::make_unique<LIB::MinVertexTSFact>(); };
 //  ts_mapping.freeze();
 //  return ts_mapping;
-//}
-//
-//UserImplMap::StructImplMap cvMap()
-//{
-//  UserImplMap::StructImplMap cv_mapping;
-//  cv_mapping[0] = []() { return std::make_unique<LIB::MaxDegCVFact>(); };
-//  cv_mapping.freeze();
-//  return cv_mapping;
 //}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -122,8 +122,8 @@ UserImplMap::UserImplMap()
   implementations_["pwmap"] = pwMap();
   implementations_["match"] = matchMap();
   implementations_["scc"] = sccMap();
+  implementations_["mfvs"] = mfvsMap();
   //implementations_["ts"] = tsMap();
-  //implementations_["cv"] = cvMap();
 }
 
 Kind UserImplMap::getFactory(std::string strct, int impl)

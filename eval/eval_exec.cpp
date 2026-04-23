@@ -17,9 +17,8 @@
 
  ******************************************************************************/
 
-//#include "algorithms/cutvertex/cv_fact.hpp"
-//#include "algorithms/cc/cc.hpp"
 #include "algorithms/matching/matching_fact.hpp"
+#include "algorithms/mfvs/mfvs_fact.hpp"
 #include "algorithms/scc/scc_fact.hpp"
 //#include "algorithms/toposort/ts_fact.hpp"
 #include "eval/eval_exec.hpp"
@@ -56,8 +55,8 @@ void printHeader(Util::prog_opts::variables_map vm)
     std::cout << "PWMap implementation: " << LIB::PWMAP_FACT.kind() << "\n";
     std::cout << "-----------------------------------\n";
     std::cout << "Matching algorithm: " << LIB::MATCH_FACT.kind() << "\n";
-    std::cout << "SCC algorithm: " << LIB::SCC_FACT.kind() << "\n\n";
-    //std::cout << "Cut vertex algorithm: " << LIB::CV_FACT.kind() << "\n";
+    std::cout << "SCC algorithm: " << LIB::SCC_FACT.kind() << "\n";
+    std::cout << "MFVS algorithm: " << LIB::MFVS_FACT.kind() << "\n\n";
     //std::cout << "Topological sort algorithm: " << LIB::TS_FACT.kind()
     // << "\n";
   }

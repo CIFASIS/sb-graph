@@ -29,7 +29,7 @@
 #ifndef SBGRAPH_EVAL_USER_IMPL_MAP_HPP_
 #define SBGRAPH_EVAL_USER_IMPL_MAP_HPP_
 
-//#include "algorithms/cutvertex/cv_fact.hpp"
+#include "algorithms/mfvs/min_feedback_vertex_set.hpp"
 #include "algorithms/matching/matching.hpp"
 #include "algorithms/scc/scc.hpp"
 //#include "algorithms/toposort/ts_fact.hpp"
@@ -58,7 +58,8 @@ namespace detail {
 using Kind = std::variant<LIB::SetKind
   , LIB::PWMapKind
   , LIB::MatchKind
-  , LIB::SCCKind>;
+  , LIB::SCCKind
+  , LIB::MFVSKind>;
 
 /**
  * @brief Mapping for all structures such as Set, PW and algorithms.

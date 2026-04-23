@@ -30,7 +30,7 @@ namespace SBG {
 
 namespace LIB {
 
-#define MFVS_FACT MFVSFactory::instance().cv_fact()
+#define MFVS_FACT MFVSFactory::instance()
 
 class GreedyMFVSFact {
 public:

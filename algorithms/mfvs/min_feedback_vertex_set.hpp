@@ -21,54 +21,50 @@
 
  ******************************************************************************/
 
-#ifndef SBG_CUTVERTEX_HPP
-#define SBG_CUTVERTEX_HPP
+#ifndef SBGRAPH_ALGORITHMS_MFVS_MIN_FEEDBACK_VERTEX_SET_HPP_
+#define SBGRAPH_ALGORITHMS_MFVS_MIN_FEEDBACK_VERTEX_SET_HPP_
 
-#include "algorithms/scc/scc_fact.hpp"
+#include "algorithms/mfvs/greedy_mfvs.hpp"
+#include "sbg/directed_sbg.hpp"
+
+#include <iosfwd>
+#include <variant>
 
 namespace SBG {
 
 namespace LIB {
 
-///////////////////////////////////////////////////////////////////////////////
-// Vertex Cut Set Algorithm Abstract Strategy ---------------------------------
-///////////////////////////////////////////////////////////////////////////////
-
-class CVStrategy;
-
-typedef std::unique_ptr<CVStrategy> CVStratPtr;
-
-/**
-* @brief Aims to calculate a minimum cut set of vertices, that is, a set of
-* vertices such that if these vertices are taken out, the resulting graph has no
-* SCC left. Since this is a NP-hard problem, heuristics are used, and thus is
-* not guaranteed that the set is actually minimum.
-*/
-class CVStrategy {
-  public:
-  virtual ~CVStrategy() = default;
-
-  CVStrategy();
-
-  virtual Set calculate(const DSBG& dsbg) const = 0;
-};
+namespace detail {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Vertex Cut Set Algorithm Interface (context) ------------------------------- 
+// Minimum Feedback Vertex Set Implementations --------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
-class CutVertex {
-  public:
-  CutVertex(CVStratPtr strat);
+using MFVSImpl = std::variant<GreedyMFVS>;
 
-  Set calculate(const DSBG& dsbg) const;
+}
 
-  private:
-  CVStratPtr strategy_;
+enum class MFVSKind { kGreedy };
+
+std::ostream& operator<<(std::ostream& out, const MFVSKind kind);
+
+///////////////////////////////////////////////////////////////////////////////
+// Minimum Feedback Vertex Set Algorithm --------------------------------------
+///////////////////////////////////////////////////////////////////////////////
+
+class MinFeedbackVertexSet {
+public:
+  MinFeedbackVertexSet(MFVSKind kind);
+
+  Set calculate(const DirectedSBG& dsbg);
+
+private:
+  MFVSKind _kind;
+  detail::MFVSImpl _impl;
 };
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_MFVS_MIN_FEEDBACK_VERTEX_SET_HPP_

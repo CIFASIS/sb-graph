@@ -17,41 +17,57 @@
 
  ******************************************************************************/
 
-#include "algorithms/cutvertex/cv_fact.hpp"
-#include "algorithms/cutvertex/maxdeg_cv.hpp"
+#include "algorithms/mfvs/min_feedback_vertex_set.hpp"
+#include "util/debug.hpp"
+#include "util/time_profiler.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Maximum Degree Cut Vertex Factory -------------------------------------------
+// MFVS Algorithm implementations ----------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-CutVertex MaxDegCVFact::createCVAlgorithm() const
+std::ostream& operator<<(std::ostream& out, const MFVSKind kind)
 {
-  return CutVertex(std::make_unique<MaxDegCutVertex>());
-}
+  switch (kind) {
+    case MFVSKind::kGreedy: {
+      out << "maximum degree greedy";
+      break;
+    }
 
-std::string MaxDegCVFact::prettyPrint() const
-{
-  return "maximum degree vertex";
+    default: {
+      Util::ERROR("MFVSKind::operator<<: unsupported MFVS implementation");
+      break;
+    }
+  }
+
+  return out;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Factory for clients --------------------------------------------------------- 
+// MFVS Algorithm Interface ----------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-CVFactory::CVFactory() : cv_fact_(std::make_unique<MaxDegCVFact>()) {}
-
-CVFact& CVFactory::cv_fact()
+MinFeedbackVertexSet::MinFeedbackVertexSet(MFVSKind kind) : _kind(kind), _impl()
 {
-  return *cv_fact_;
+  switch (kind) {
+    case MFVSKind::kGreedy: {
+      _impl = detail::GreedyMFVS{};
+      break;
+    }
+
+    default: {
+      Util::ERROR("MinFeedbackVertexSet: unsupported MFVS implementation");
+      break;
+    }
+  }
 }
 
-void CVFactory::set_cv_fact(CVFactPtr cv_fact)
+Set MinFeedbackVertexSet::calculate(const DirectedSBG& dsbg)
 {
-  cv_fact_ = std::move(cv_fact);
+  return std::visit([&](auto& a) { return a.calculate(dsbg); }, _impl);
 }
 
 } // namespace LIB

@@ -1,6 +1,6 @@
-/** @file cv_fact.hpp
+/** @file mfvs_fact.hpp
 
- @brief <b>Vertex Cut Set Algorithm Factory</b>
+ @brief <b>Minimum Feedback Vertex Set Algorithm Factory</b>
 
  <hr>
 
@@ -21,60 +21,51 @@
 
  ******************************************************************************/
 
-#ifndef SBG_CV_FACT_HPP
-#define SBG_CV_FACT_HPP
+#ifndef SBGRAPH_ALGORITHMS_MFVS_MFVS_FACT_HPP_
+#define SBGRAPH_ALGORITHMS_MFVS_MFVS_FACT_HPP_
 
-#include "cut_vertex.hpp"
+#include "min_feedback_vertex_set.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
-#define CV_FACT CVFactory::instance().cv_fact()
+#define MFVS_FACT MFVSFactory::instance().cv_fact()
 
-class CVFact {
-  public:
-  virtual ~CVFact() = default;
-  CVFact() = default;
+class GreedyMFVSFact {
+public:
+  GreedyMFVSFact() = default;
 
-  virtual CutVertex createCVAlgorithm() const = 0;
-  virtual std::string prettyPrint() const = 0;
+  MinFeedbackVertexSet createMFVSAlgorithm() const;
 };
-
-class MaxDegCVFact : public CVFact {
-  public:
-  MaxDegCVFact() = default;
-
-  CutVertex createCVAlgorithm() const override;
-  std::string prettyPrint() const override;
-};
-
-using CVFactPtr = std::unique_ptr<CVFact>;
 
 /**
  * @brief Single instance of cv factory to be used by clients in need of
  * creating an instance of a cv algorithm. A client includes this file and
- * calls CV_FACT.createCVAlgorithm(args).
+ * calls MFVS_FACT.createMFVSAlgorithm(args).
  */
-class CVFactory {
-  public:
-  ~CVFactory() = default;
+class MFVSFactory {
+public:
+  ~MFVSFactory() = default;
 
-  static CVFactory& instance() {
-    static CVFactory instance_;
-    return instance_;
-  }
-  CVFact& cv_fact();
-  void set_cv_fact(CVFactPtr cv_fact);
+  static MFVSFactory& instance();
+  const MFVSKind& kind() const;
 
-  private:
-  CVFactory();
+  void set_mfvs_fact(MFVSKind kind);
 
-  CVFactPtr cv_fact_;
+  MinFeedbackVertexSet createMFVSAlgorithm() const;
+
+private:
+  using MFVSFactImpl = std::variant<GreedyMFVSFact>;
+
+  MFVSFactory();
+
+  MFVSKind _kind;
+  MFVSFactImpl _impl;
 };
 
 } // namespace LIB
 
 }  // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_MFVS_MFVS_FACT_HPP_

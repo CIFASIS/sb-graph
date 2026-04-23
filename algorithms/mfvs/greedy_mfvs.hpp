@@ -1,6 +1,6 @@
-/** @file maxdeg_cv.hpp
+/** @file greedy_mfvs.hpp
 
- @brief <b>SBG Maximum Degree Vertex Cut Set Algorithm implementation</b>
+ @brief <b>Concrete SBG Greedy MFVS Algorithm implementation</b>
 
  <hr>
 
@@ -21,35 +21,36 @@
 
  ******************************************************************************/
 
-#ifndef SBG_MAXDEG_CUTVERTEX_HPP
-#define SBG_MAXDEG_CUTVERTEX_HPP
+#ifndef SBGRAPH_ALGORITHMS_MFVS_GREEDY_MFVS_HPP_
+#define SBGRAPH_ALGORITHMS_MFVS_GREEDY_MFVS_HPP_
 
-#include "algorithms/cutvertex/cut_vertex.hpp"
-#include "algorithms/scc/scc_fact.hpp"
+#include "sbg/directed_sbg.hpp"
+#include "sbg/set.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
+namespace detail {
+
 ///////////////////////////////////////////////////////////////////////////////
-// Maximum Degree Vertex Cut Set Algorithm Implementation (concrete strategy) -
+// Degree Greedy MFVS Algorithm Implementation --------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
  * @brief In each step takes out the vertex of maximum degree.
  */
-class MaxDegCutVertex : public CVStrategy {
-  public:
-  MaxDegCutVertex();
+class GreedyMFVS {
+public:
+  GreedyMFVS();
 
-  Set calculate(const DSBG& dsbg) const override;
-
-  private:
-  PWMap getDegMap(const DSBG& dsbg) const;
+  Set calculate(const DirectedSBG& input_dsbg) const;
 };
+
+} // namespace detail
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_MFVS_GREEDY_MFVS_HPP_

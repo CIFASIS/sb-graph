@@ -17,31 +17,57 @@
 
  ******************************************************************************/
 
-#include <chrono>
-
-#include "algorithms/cutvertex/cut_vertex.hpp"
-#include "algorithms/scc/scc.hpp"
-#include "util/logger.hpp"
+#include "algorithms/mfvs/mfvs_fact.hpp"
+#include "util/debug.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Vertex Cut Set Algorithm Abstract Strategy Constructors ---------------------
+// Maximum Degree Cut Vertex Factory -------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-CVStrategy::CVStrategy() {}
-
-////////////////////////////////////////////////////////////////////////////////
-// Vertex Cut Set Algorithm Interface ------------------------------------------ 
-////////////////////////////////////////////////////////////////////////////////
-
-CutVertex::CutVertex(CVStratPtr strat) : strategy_(std::move(strat)) {}
-
-Set CutVertex::calculate(const DSBG& dsbg) const
+MinFeedbackVertexSet GreedyMFVSFact::createMFVSAlgorithm() const
 {
-  return strategy_->calculate(dsbg);
+  return MinFeedbackVertexSet{MFVSKind::kGreedy};
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Factory for clients --------------------------------------------------------- 
+////////////////////////////////////////////////////////////////////////////////
+
+MFVSFactory::MFVSFactory()
+  : _kind(MFVSKind::kGreedy), _impl(GreedyMFVSFact{}) {}
+
+MFVSFactory& MFVSFactory::instance()
+{
+  static MFVSFactory _instance;
+  return _instance;
+}
+
+const MFVSKind& MFVSFactory::kind() const { return _kind; }
+
+void MFVSFactory::set_mfvs_fact(MFVSKind kind)
+{
+  _kind = kind;
+  switch (kind) {
+    case MFVSKind::kGreedy: {
+      _impl = GreedyMFVSFact{};
+    }
+
+    default: {
+      Util::ERROR("MFVSFactory::set_mfvs_fact: unsupported MFVS ", kind
+        , " implementation");
+      break;
+    }
+  }
+}
+
+MinFeedbackVertexSet MFVSFactory::createMFVSAlgorithm() const
+{
+  return std::visit([](const auto& a) { return a.createMFVSAlgorithm(); }
+    , _impl);
 }
 
 } // namespace LIB

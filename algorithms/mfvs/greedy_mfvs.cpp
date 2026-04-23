@@ -77,28 +77,24 @@ Set GreedyMFVS::calculate(const DirectedSBG& input_dsbg) const
   Util::DEBUG_LOG << "initial mfvs dsbg:\n" << dsbg << "\n";
 
   PWMap rmap = SCC_FACT.createSCCAlgorithm().calculate(dsbg).rmap();
-  if (rmap.fixedPoints() == rmap.domain()) {
-    return SET_FACT.createSet();
-  } 
-
   Set fvs_result = SET_FACT.createSet();
   Set visitedSV = SET_FACT.createSet();
-  while (!dsbg.V().isEmpty()) {
+  while (rmap.fixedPoints() != rmap.domain()) {
     // Get minimum vertex with maximum degree
     MD_NAT max_degree_vertex = maxDegreeVertex(dsbg);
     Set Vj = SET_FACT.createSet(max_degree_vertex);
-    fvs_result = std::move(fvs_result).disjointCup(std::move(Vj));
+    fvs_result = std::move(fvs_result).disjointCup(Vj);
 
     // Handle repetition
     PWMap Vmap = dsbg.Vmap();
     Set repeatedSV = visitedSV.intersection(Vmap.image(Vj));
     if (!repeatedSV.isEmpty()) {
       Set V_plus = Vmap.preImage(Vmap.image(Vj));
-      fvs_result = std::move(fvs_result).disjointCup(std::move(V_plus));
+      fvs_result = std::move(fvs_result).cup(std::move(V_plus));
 
-      repeatedSV = repeatedSV.difference(Vmap.image(Vj));
+      visitedSV = repeatedSV.difference(Vmap.image(Vj));
     } else {
-      repeatedSV = std::move(repeatedSV).disjointCup(Vmap.image(Vj));
+      visitedSV = std::move(repeatedSV).disjointCup(Vmap.image(Vj));
     }
 
     // Erase selected vertices
@@ -107,7 +103,7 @@ Set GreedyMFVS::calculate(const DirectedSBG& input_dsbg) const
     // Resulting SCC from induced graph
     rmap = SCC_FACT.createSCCAlgorithm().calculate(dsbg).rmap();
 
-    Util::DEBUG_LOG << "Vj: " << Vj << "\n\n";
+    Util::DEBUG_LOG << "Vj: " << Vj << "\n";
     Util::DEBUG_LOG << "new rmap: " << rmap << "\n\n";
   }
 

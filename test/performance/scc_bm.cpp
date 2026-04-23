@@ -41,7 +41,7 @@ static void BM_SCC(benchmark::State& state, std::string filename)
 {
   int N = state.range(0);
   SBG::LIB::MatchData match_result = calculateMatching(filename, N, 1);
-  SBG::LIB::DirectedSBG scc_dsbg = misc::buildSCCFromMatching(match_result); 
+  SBG::LIB::DirectedSBG scc_dsbg = misc::buildLoopDetectionSBG(match_result); 
   SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
 
   for (auto _ : state) {
@@ -57,7 +57,7 @@ static void BM_SCCWithBuilder(benchmark::State& state, std::string filename)
   SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
 
   for (auto _ : state) {
-    SBG::LIB::DirectedSBG scc_dsbg = misc::buildSCCFromMatching(match_result); 
+    SBG::LIB::DirectedSBG scc_dsbg = misc::buildLoopDetectionSBG(match_result); 
     benchmark::DoNotOptimize(scc_algorithm.calculate(scc_dsbg));
   }
   state.SetComplexityN(N);
@@ -70,7 +70,7 @@ static void BM_SCCCopies(benchmark::State& state, std::string filename)
   SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
 
   for (auto _ : state) {
-    SBG::LIB::DirectedSBG scc_dsbg = misc::buildSCCFromMatching(match_result); 
+    SBG::LIB::DirectedSBG scc_dsbg = misc::buildLoopDetectionSBG(match_result); 
     benchmark::DoNotOptimize(scc_algorithm.calculate(scc_dsbg));
   }
   state.SetComplexityN(N);

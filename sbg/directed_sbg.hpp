@@ -90,10 +90,12 @@ public:
   void addSetEdge(const PWMap& pw1, const PWMap& pw2);
 
   /**
-   * @brief Erase vertices \p vs from the DirectedSBG, together with associated
-   * edges with \p vs.
+   * @brief Erase vertices \p vs from the DirectedSBG, together with adjacent
+   * edges of \p vs.
    */
-  void eraseVertices(const Set& vs);
+  void eraseVertices(const Set& V);
+
+  void eraseEdges(const Set& E);
 
   template<typename FuncT>
   void foreachSetVertex(FuncT&& f) const;

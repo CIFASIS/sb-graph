@@ -103,13 +103,21 @@ void DirectedSBG::addSetEdge(const PWMap& pwB, const PWMap& pwD)
   }
 }
 
-void DirectedSBG::eraseVertices(const Set& vs)
+void DirectedSBG::eraseVertices(const Set& V)
 {
-  _V = _V.difference(vs);
+  _V = _V.difference(V);
   _Vmap = _Vmap.restrict(_V);
 
-  Set eraseE = _mapB.preImage(vs).cup(_mapD.preImage(vs));
+  Set eraseE = _mapB.preImage(V).cup(_mapD.preImage(V));
   _E = _E.difference(eraseE);
+  _mapB = _mapB.restrict(_E);
+  _mapD = _mapD.restrict(_E);
+  _Emap = _Emap.restrict(_E);
+}
+
+void DirectedSBG::eraseEdges(const Set& E)
+{
+  _E = _E.difference(E);
   _mapB = _mapB.restrict(_E);
   _mapD = _mapD.restrict(_E);
   _Emap = _Emap.restrict(_E);

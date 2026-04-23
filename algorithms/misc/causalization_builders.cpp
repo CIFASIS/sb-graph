@@ -31,7 +31,7 @@
 namespace misc {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Algebraic loops graph -------------------------------------------------------
+// Algebraic loops detection graph builder -------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 std::tuple<SBG::LIB::Set, SBG::LIB::PWMap> buildSCCVertices(
@@ -135,9 +135,9 @@ SBG::LIB::PWMap partitionEmap(const SBG::LIB::DirectedSBG& dsbg)
   return partitioned_Emap;
 }
 
-SBG::LIB::DirectedSBG buildSCCFromMatching(const SBG::LIB::MatchData& data)
+SBG::LIB::DirectedSBG buildLoopDetectionSBG(const SBG::LIB::MatchData& data)
 {
-  SBG::Util::Internal::TimeProfiler profiler{"SBG SCC builder: "};
+  SBG::Util::Internal::TimeProfiler profiler{"SBG Loop Detection builder: "};
 
   SBG::LIB::Set V = SBG::LIB::SET_FACT.createSet();
   SBG::LIB::PWMap Vmap = SBG::LIB::PWMAP_FACT.createPWMap();
@@ -155,12 +155,26 @@ SBG::LIB::DirectedSBG buildSCCFromMatching(const SBG::LIB::MatchData& data)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Vertical ordering graph ----------------------------------------------------- 
+// Algebraic loops breaker graph builder ---------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-SBG::LIB::DirectedSBG buildSortFromSCC(const SBG::LIB::SCCData& data)
+SBG::LIB::DirectedSBG buildTearingSBG(const SBG::LIB::SCCData& data)
 {
-  SBG::Util::Internal::TimeProfiler profiler{"SBG Topological Sort builder: "}; 
+  SBG::Util::Internal::TimeProfiler profiler{"SBG Tearing builder: "};
+
+  SBG::LIB::DirectedSBG dsbg = data.dsbg();
+  dsbg.eraseEdges(data.Ediff());
+
+  return dsbg;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Vertical sort graph builder ------------------------------------------------- 
+////////////////////////////////////////////////////////////////////////////////
+
+SBG::LIB::DirectedSBG buildVerticalSortingSBG(const SBG::LIB::SCCData& data)
+{
+  SBG::Util::Internal::TimeProfiler profiler{"SBG Vertical Sorting builder: "}; 
 
   const SBG::LIB::DirectedSBG& dsbg = data.dsbg();
   SBG::LIB::PWMap rmap = data.rmap();

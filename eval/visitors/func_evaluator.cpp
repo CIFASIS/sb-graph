@@ -667,12 +667,12 @@ ExprBaseType BuiltInFunctions::matchSCCEvaluator(const EBTList& args)
   const auto match_scc_evaluator = Util::Overload {
     [&match_impl, &scc_impl](LIB::BipartiteSBG a, LIB::NAT b) { 
       LIB::MatchData match_result = match_impl.calculate(copy(b, a));
-      LIB::DirectedSBG dsbg = misc::buildSCCFromMatching(match_result);
+      LIB::DirectedSBG dsbg = misc::buildLoopDetectionSBG(match_result);
       return ExprBaseType{scc_impl.calculate(dsbg).rmap()};
     },
     [&match_impl, &scc_impl](LIB::BipartiteSBG a, LIB::MD_NAT b) { 
       LIB::MatchData match_result = match_impl.calculate(copy(b[0], a));
-      LIB::DirectedSBG dsbg = misc::buildSCCFromMatching(match_result);
+      LIB::DirectedSBG dsbg = misc::buildLoopDetectionSBG(match_result);
       return ExprBaseType{scc_impl.calculate(dsbg).rmap()};
     },
     [](auto a, auto b) {
@@ -729,7 +729,7 @@ ExprBaseType BuiltInFunctions::matchSCCTSEvaluator(const EBTList& args)
     [](LIB::SBG a, LIB::NAT b, bool c) { 
       LIB::BFSMatching match(a.copy(b), c);
       LIB::Set match_res = match.calculate().matched_edges();
-      LIB::SCC scc(misc::buildSCCFromMatching(match), c);
+      LIB::SCC scc(misc::buildLoopDetectionSBG(match), c);
       LIB::PWMap scc_res = scc.calculate();
       LIB::DirectedSBG ts_dsbg = misc::buildSortFromSCC(scc, scc_res);
       LIB::TopoSort ts = LIB::MinVertexTSAF().createTSAlgorithm(ts_dsbg);
@@ -740,7 +740,7 @@ ExprBaseType BuiltInFunctions::matchSCCTSEvaluator(const EBTList& args)
     [](LIB::SBG a, LIB::MD_NAT b, bool c) { 
       LIB::BFSMatching match(a.copy(b[0]), c);
       LIB::Set match_res = match.calculate().matched_edges();
-      LIB::SCC scc(misc::buildSCCFromMatching(match), c);
+      LIB::SCC scc(misc::buildLoopDetectionSBG(match), c);
       LIB::PWMap scc_res = scc.calculate();
       LIB::DirectedSBG ts_dsbg = misc::buildSortFromSCC(scc, scc_res);
       LIB::TopoSort ts = LIB::MinVertexTSAF().createTSAlgorithm(ts_dsbg);

@@ -34,9 +34,17 @@
 
 namespace misc {
 
-SBG::LIB::DirectedSBG buildSCCFromMatching(const SBG::LIB::MatchData& data);
+/**
+ * @brief Builds the directed SBG used to detect algebraic loops.
+ */
+SBG::LIB::DirectedSBG buildLoopDetectionSBG(const SBG::LIB::MatchData& data);
 
-SBG::LIB::DirectedSBG buildSortFromSCC(const SBG::LIB::SCCData& data);
+/**
+ * @brief Builds the directed SBG used to identify tearing variables.
+ */
+SBG::LIB::DirectedSBG buildTearingSBG(const SBG::LIB::SCCData& data);
+
+SBG::LIB::DirectedSBG buildVerticalSortingSBG(const SBG::LIB::SCCData& data);
 
 }  // namespace misc
 

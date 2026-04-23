@@ -75,6 +75,7 @@ ExprEvaluator::ExprEvaluator(EvalContext& eval_ctx) : _eval_context(eval_ctx)
   eval_ctx.insertFunction("match", BuiltInFunctions::matchingEvaluator);
   eval_ctx.insertFunction("scc", BuiltInFunctions::sccEvaluator);
   eval_ctx.insertFunction("matchSCC", BuiltInFunctions::matchSCCEvaluator);
+  eval_ctx.insertFunction("mfvs", BuiltInFunctions::mfvsEvaluator);
 }
 
 ExprBaseType ExprEvaluator::operator()(AST::Natural v) const

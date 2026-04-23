@@ -33,12 +33,12 @@ namespace LIB {
 std::ostream& operator<<(std::ostream& out, const SCCKind kind)
 {
   switch (kind) {
-    case SCCKind::MinReachV1: {
+    case SCCKind::kMinReachV1: {
       out << "minimum reachable V1";
       break;
     }
 
-    case SCCKind::MinReachV2: {
+    case SCCKind::kMinReachV2: {
       out << "minimum reachable V2";
       break;
     }
@@ -59,12 +59,12 @@ std::ostream& operator<<(std::ostream& out, const SCCKind kind)
 SCC::SCC(SCCKind kind) : _kind(kind), _impl()
 {
   switch (kind) {
-    case SCCKind::MinReachV1: {
+    case SCCKind::kMinReachV1: {
       _impl = detail::MinReachSCCV1{};
       break;
     }
 
-    case SCCKind::MinReachV2: {
+    case SCCKind::kMinReachV2: {
       _impl = detail::MinReachSCCV2{};
       break;
     }

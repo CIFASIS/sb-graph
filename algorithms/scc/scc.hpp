@@ -46,7 +46,7 @@ using SCCImpl = std::variant<MinReachSCCV1, MinReachSCCV2>;
 
 } // namespace detail
 
-enum class SCCKind { MinReachV1, MinReachV2 };
+enum class SCCKind { kMinReachV1, kMinReachV2 };
 
 std::ostream& operator<<(std::ostream& out, const SCCKind kind);
 

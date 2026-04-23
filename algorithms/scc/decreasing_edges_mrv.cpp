@@ -91,7 +91,7 @@ PWMap LtEdgesMRV::repetitivePaths(const PWMap& rmap
     _visitedSE = _visitedSE.difference(Emap.image(E_repetition));
     _n = 0;
   } else {
-    _visitedSE = std::move(_visitedSE).disjointCup(std::move(Emap.image(Pj)));
+    _visitedSE = std::move(_visitedSE).disjointCup(Emap.image(Pj));
     ++_n;
   }
 

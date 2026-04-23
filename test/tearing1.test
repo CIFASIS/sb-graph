@@ -1,4 +1,4 @@
-// SCC test, with a simple long cycle
+// Tearing test, with a simple long cycle
 
 N = 100000;
 

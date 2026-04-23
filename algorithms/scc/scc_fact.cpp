@@ -31,7 +31,7 @@ namespace LIB {
 
 SCC MinReachSCCV1Fact::createSCCAlgorithm() const
 {
-  return SCC{SCCKind::MinReachV1};
+  return SCC{SCCKind::kMinReachV1};
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -40,7 +40,7 @@ SCC MinReachSCCV1Fact::createSCCAlgorithm() const
 
 SCC MinReachSCCV2Fact::createSCCAlgorithm() const
 {
-  return SCC{SCCKind::MinReachV2};
+  return SCC{SCCKind::kMinReachV2};
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ SCC MinReachSCCV2Fact::createSCCAlgorithm() const
 ////////////////////////////////////////////////////////////////////////////////
 
 SCCFactory::SCCFactory()
-  : _kind(SCCKind::MinReachV2), _impl(MinReachSCCV2Fact{}) {}
+  : _kind(SCCKind::kMinReachV2), _impl(MinReachSCCV2Fact{}) {}
 
 SCCFactory& SCCFactory::instance()
 {
@@ -62,12 +62,12 @@ void SCCFactory::set_scc_fact(SCCKind kind)
 {
   _kind = kind;
   switch (kind) {
-    case SCCKind::MinReachV1: {
+    case SCCKind::kMinReachV1: {
       _impl = MinReachSCCV1Fact{};
       break;
     }
 
-    case SCCKind::MinReachV2: {
+    case SCCKind::kMinReachV2: {
       _impl = MinReachSCCV2Fact{};
       break;
     }

@@ -89,8 +89,8 @@ UserImplMap::StructImplMap matchMap()
 UserImplMap::StructImplMap sccMap()
 {
   UserImplMap::StructImplMap scc_mapping;
-  scc_mapping[0] = LIB::SCCKind::MinReachV1;
-  scc_mapping[1] = LIB::SCCKind::MinReachV2;
+  scc_mapping[0] = LIB::SCCKind::kMinReachV1;
+  scc_mapping[1] = LIB::SCCKind::kMinReachV2;
   scc_mapping.freeze();
   return scc_mapping;
 }

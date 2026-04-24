@@ -2,6 +2,8 @@ import subprocess
 import psutil
 import time
 import matplotlib.pyplot as plt
+from pathlib import Path
+
 
 def monitor(command):
     # Start the C++ process
@@ -31,9 +33,9 @@ def monitor(command):
 
 # Run and Plot
 inputs = [
-    "/workspaces/sb-graph/test/partitioner/data/air_conditioners_cont_4_1000.json",
-    "/workspaces/sb-graph/test/partitioner/data/air_conditioners_cont_4_10000.json",
-    "/workspaces/sb-graph/test/partitioner/data/air_conditioners_cont_4_100000.json"
+    "/workspaces/sb-graph/test/partitioner/external_tools/data/advection_1000.json",
+    "/workspaces/sb-graph/test/partitioner/external_tools/data/advection_10000.json",
+    "/workspaces/sb-graph/test/partitioner/external_tools/data/advection_100000.json"
 ]
 
 colors = {
@@ -58,13 +60,13 @@ plt.grid(True)
 
 for f in inputs:
     for _ in range(1):
-        times, mem, mem2 = monitor(f"/workspaces/sb-graph/install/bin/sbg-partitioner -f {f} -p 4 -m Kahip")
+        times, mem, mem2 = monitor(f"sleep 1; /workspaces/sb-graph/install/bin/sbg-partitioner -f {f} -p 16")
 
-        plt.plot(times, mem, color=colors[f])
-        plt.plot(times, mem2, color=colors2[f])
+        # plt.plot(times, mem, color=colors[f])
+        plt.plot(times, mem2, color=colors2[f], label=Path(f).stem)
 plt.legend()
 
 # Save the plot instead of showing it
-output_file = "memory_benchmark.png"
-plt.savefig(output_file)
+output_file = "memory_benchmark_advection_16.svg"
+plt.savefig(output_file, format='svg', bbox_inches='tight')
 print(f"Benchmark finished. Results saved to {output_file}")

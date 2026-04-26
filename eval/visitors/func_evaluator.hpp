@@ -116,6 +116,8 @@ class BuiltInFunctions {
   static ExprBaseType matchSCCEvaluator(const EBTList& args);
   static ExprBaseType tearingEvaluator(const EBTList& args);
   static ExprBaseType matchTearingEvaluator(const EBTList& args);
+  static ExprBaseType tearingTSEvaluator(const EBTList& args);
+  static ExprBaseType matchTearingTSEvaluator(const EBTList& args);
 };
 
 } // namespace Eval

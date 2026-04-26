@@ -114,6 +114,76 @@ PWMap MinVertexTopoSort::calculate(const DSBG& dsbg) const
   return smap.compact();
 }
 
+PWMap MinVertexTopoSort::calculate(const DSBG& dsbg, const PWMap& rmap) const
+{
+  Util::DEBUG_LOG << "Topological sort dsbg:\n" << dsbg << "\n\n";
+
+  auto begin = std::chrono::high_resolution_clock::now();
+  PWMap mapB = dsbg.mapB(), mapD = dsbg.mapD(), Vmap = dsbg.Vmap();
+  PWMap smap = PW_FACT.createPWMap();
+  Set U = dsbg.V(), Nd = U.difference(mapB.image());
+  if (!Nd.isEmpty()) {
+    MD_NAT vsucc = Nd.minElem();
+    Set SV = SET_FACT.createSet(), E = dsbg.E();
+    do {
+      Set vsucc_set = SET_FACT.createSet(SetPiece(vsucc));
+      Set Nd_vsucc = Nd.intersection(Vmap.preImage(Vmap.image(vsucc_set)));
+      Set Nd_vsucc_scc = Nd.intersection(rmap.preImage(rmap.image(vsucc_set)));
+      MD_NAT v = Nd_vsucc_scc.isEmpty() ? Nd.minElem() : Nd_vsucc_scc.minElem();
+      if (!Nd_vsucc.isEmpty())
+        v = Nd_vsucc.minElem();
+      Set d = SET_FACT.createSet(v);
+      Exp e = calculateExp(v, vsucc);
+      vsucc = v;
+
+      Set SVd = Vmap.image(d);
+      bool cond = SVd.intersection(SV).isEmpty();
+      if (!cond) {
+        Set dvs = Vmap.preImage(SVd);
+        for (const Map& map : smap.restrict(dvs)) {
+          if (e == map.exp()) {
+            d = dvs.difference(smap.dom());
+            break;
+          }
+        }
+      }
+      smap.emplaceBack(Map(d, e));
+      
+      Set Nsucc = U.difference(smap.dom());
+      Set S = smap.dom().difference(smap.preImage(Nsucc));
+
+      E = E.difference(mapD.preImage(S));
+      mapB = mapB.restrict(E);
+      mapD = mapD.restrict(E);
+
+      U = U.difference(S);
+      Nd = U.difference(mapB.image());
+      SV = SV.cup(SVd);
+      if (S == smap.dom()) {
+        Set start = smap.dom().difference(smap.image());
+        if (!start.isEmpty())
+          vsucc = start.minElem(); 
+      }
+
+      Util::DEBUG_LOG << "S: " << S << "\n";
+      Util::DEBUG_LOG << "U: " << U << "\n";
+      Util::DEBUG_LOG << "E: " << E << "\n";
+      Util::DEBUG_LOG << "Nd: " << Nd << "\n";
+      Util::DEBUG_LOG << "smap: " << smap << "\n\n";
+    } while (!U.isEmpty());
+  }
+  auto end = std::chrono::high_resolution_clock::now();
+
+  auto total = std::chrono::duration_cast<std::chrono::microseconds>(
+    end - begin
+  );
+  Util::SBG_LOG << "Total topological sort exec time: " << total.count() << " [μs]\n\n"; 
+
+  Util::DEBUG_LOG << "Topological sort result:\n" << smap.compact() << "\n\n";
+
+  return smap.compact();
+}
+
 } // namespace LIB
 
 } // namespace SBG

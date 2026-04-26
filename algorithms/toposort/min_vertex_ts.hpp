@@ -43,6 +43,8 @@ class MinVertexTopoSort : public TSStrategy {
   MinVertexTopoSort();
 
   PWMap calculate(const DSBG& dsbg) const override; 
+
+  PWMap calculate(const DSBG& dsbg, const PWMap& rmap) const override; 
 };
 
 } // namespace LIB

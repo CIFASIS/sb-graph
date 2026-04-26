@@ -75,7 +75,9 @@ ExprEvaluator::ExprEvaluator(EvalContext& eval_ctx) : eval_ctx_(eval_ctx)
   eval_ctx.insertFunction("cut", BuiltInFunctions::cutVertexEvaluator);
   eval_ctx.insertFunction("matchSCC", BuiltInFunctions::matchSCCEvaluator);
   eval_ctx.insertFunction("tearing", BuiltInFunctions::tearingEvaluator);
+  eval_ctx.insertFunction("tearingTS", BuiltInFunctions::tearingTSEvaluator);
   eval_ctx.insertFunction("matchTearing", BuiltInFunctions::matchTearingEvaluator);
+  eval_ctx.insertFunction("matchTearingTS", BuiltInFunctions::matchTearingTSEvaluator);
 }
 
 ExprBaseType ExprEvaluator::operator()(AST::Natural v) const

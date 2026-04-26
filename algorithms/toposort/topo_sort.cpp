@@ -43,6 +43,11 @@ PWMap TopoSort::calculate(const DSBG& dsbg) const
   return strategy_->calculate(dsbg);
 }
 
+PWMap TopoSort::calculate(const DSBG& dsbg, const PWMap& rmap) const
+{
+  return strategy_->calculate(dsbg, rmap);
+}
+
 } // namespace LIB
 
 } // namespace SBG

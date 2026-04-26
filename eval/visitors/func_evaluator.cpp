@@ -722,7 +722,7 @@ ExprBaseType BuiltInFunctions::tearingEvaluator(const EBTList& args)
   LIB::Tearing tearing_impl = LIB::TEARING_FACT.createTearingAlgorithm();
   const auto tearing_evaluator = Overload {
     [&tearing_impl](LIB::DSBG a) { 
-      return ExprBaseType(tearing_impl.calculate(a).rmap());
+      return ExprBaseType(tearing_impl.calculate(a).dsbg());
     },
     [](auto a) {
       Util::ERROR("tearingEvaluator: wrong argument ", a, " for tearing\n"); 
@@ -735,7 +735,7 @@ ExprBaseType BuiltInFunctions::tearingEvaluator(const EBTList& args)
 ExprBaseType BuiltInFunctions::matchTearingEvaluator(const EBTList& args)
 {
   Util::ERROR_UNLESS(args.size() == 2
-    , "tearingEvaluator: wrong number of arguments");
+    , "matchTearingEvaluator: wrong number of arguments");
 
   LIB::Matching match_impl = LIB::MATCH_FACT.createMatchAlgorithm();
   LIB::Tearing tearing_impl = LIB::TEARING_FACT.createTearingAlgorithm();
@@ -758,6 +758,58 @@ ExprBaseType BuiltInFunctions::matchTearingEvaluator(const EBTList& args)
   };
 
   return std::visit(match_tearing_evaluator, args[0], args[1]);
+}
+
+
+ExprBaseType BuiltInFunctions::tearingTSEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 1
+    , "topoSortEvaluator: wrong number of arguments\n");
+
+  LIB::Tearing tearing_impl = LIB::TEARING_FACT.createTearingAlgorithm();
+  LIB::TopoSort ts_impl = LIB::TS_FACT.createTSAlgorithm();
+  const auto ts_evaluator = Overload {
+    [&tearing_impl, &ts_impl](LIB::DSBG a) {
+      LIB::DSBG tearing_dsbg = tearing_impl.calculate(a).dsbg();
+      return ExprBaseType(ts_impl.calculate(tearing_dsbg));
+    },
+    [](auto a) {
+      Util::ERROR("topoSortEvaluator: wrong argument ", a, " for sort\n"); 
+      return ExprBaseType();
+    }
+  };
+  return std::visit(ts_evaluator, args[0]);
+}
+
+ExprBaseType BuiltInFunctions::matchTearingTSEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 2
+    , "sortEvaluator: wrong number of arguments");
+
+  LIB::Matching match_impl = LIB::MATCH_FACT.createMatchAlgorithm();
+  LIB::Tearing tearing_impl = LIB::TEARING_FACT.createTearingAlgorithm();
+  LIB::TopoSort ts_impl = LIB::TS_FACT.createTSAlgorithm();
+  const auto sort_tearing_evaluator = Overload {
+    [&match_impl, &tearing_impl, &ts_impl](LIB::BipartiteSBG a, LIB::NAT b) { 
+      LIB::MatchData match_result = match_impl.calculate(a.copy(b));
+      LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result);
+      LIB::DSBG tearing_dsbg = tearing_impl.calculate(scc_dsbg).dsbg();
+      return ExprBaseType(ts_impl.calculate(tearing_dsbg));
+    },
+    [&match_impl, &tearing_impl, &ts_impl](LIB::BipartiteSBG a, LIB::MD_NAT b) { 
+      LIB::MatchData match_result = match_impl.calculate(a.copy(b[0]));
+      LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result);
+      LIB::DSBG tearing_dsbg = tearing_impl.calculate(scc_dsbg).dsbg();
+      return ExprBaseType(ts_impl.calculate(tearing_dsbg));
+    },
+    [](auto a, auto b) {
+      Util::ERROR("match_tearing_evaluator: wrong arguments ", a, ", ", b
+        , " for matchTearing\n"); 
+      return ExprBaseType();
+    }
+  };
+
+  return std::visit(sort_tearing_evaluator, args[0], args[1]);
 }
 
 /*

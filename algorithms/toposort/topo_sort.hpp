@@ -45,6 +45,8 @@ class TSStrategy {
   TSStrategy();
 
   virtual PWMap calculate(const DSBG& dsbg) const = 0;
+
+  virtual PWMap calculate(const DSBG& dsbg, const PWMap& rmap) const = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -59,6 +61,8 @@ class TopoSort {
   TopoSort(TSStratPtr strat);
 
   PWMap calculate(const DSBG& dsbg) const;
+
+  PWMap calculate(const DSBG& dsbg, const PWMap& rmap) const;
 };
 
 } // namespace LIB

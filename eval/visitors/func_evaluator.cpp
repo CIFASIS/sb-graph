@@ -764,17 +764,17 @@ ExprBaseType BuiltInFunctions::matchTearingEvaluator(const EBTList& args)
 ExprBaseType BuiltInFunctions::tearingTSEvaluator(const EBTList& args)
 {
   Util::ERROR_UNLESS(args.size() == 1
-    , "topoSortEvaluator: wrong number of arguments\n");
+    , "tearingTSEvaluator: wrong number of arguments\n");
 
   LIB::Tearing tearing_impl = LIB::TEARING_FACT.createTearingAlgorithm();
   LIB::TopoSort ts_impl = LIB::TS_FACT.createTSAlgorithm();
   const auto ts_evaluator = Overload {
     [&tearing_impl, &ts_impl](LIB::DSBG a) {
-      LIB::DSBG tearing_dsbg = tearing_impl.calculate(a).dsbg();
-      return ExprBaseType(ts_impl.calculate(tearing_dsbg));
+      LIB::TearingData tearing_res = tearing_impl.calculate(a);
+      return ExprBaseType(ts_impl.calculate(tearing_res.dsbg(), tearing_res.rmap()));
     },
     [](auto a) {
-      Util::ERROR("topoSortEvaluator: wrong argument ", a, " for sort\n"); 
+      Util::ERROR("tearingTSEvaluator: wrong argument ", a, " for tearingTS\n"); 
       return ExprBaseType();
     }
   };
@@ -784,7 +784,7 @@ ExprBaseType BuiltInFunctions::tearingTSEvaluator(const EBTList& args)
 ExprBaseType BuiltInFunctions::matchTearingTSEvaluator(const EBTList& args)
 {
   Util::ERROR_UNLESS(args.size() == 2
-    , "sortEvaluator: wrong number of arguments");
+    , "matchTearingTSEvaluator: wrong number of arguments");
 
   LIB::Matching match_impl = LIB::MATCH_FACT.createMatchAlgorithm();
   LIB::Tearing tearing_impl = LIB::TEARING_FACT.createTearingAlgorithm();
@@ -793,18 +793,18 @@ ExprBaseType BuiltInFunctions::matchTearingTSEvaluator(const EBTList& args)
     [&match_impl, &tearing_impl, &ts_impl](LIB::BipartiteSBG a, LIB::NAT b) { 
       LIB::MatchData match_result = match_impl.calculate(a.copy(b));
       LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result);
-      LIB::DSBG tearing_dsbg = tearing_impl.calculate(scc_dsbg).dsbg();
-      return ExprBaseType(ts_impl.calculate(tearing_dsbg));
+      LIB::TearingData tearing_res = tearing_impl.calculate(scc_dsbg);
+      return ExprBaseType(ts_impl.calculate(tearing_res.dsbg(), tearing_res.rmap()));
     },
     [&match_impl, &tearing_impl, &ts_impl](LIB::BipartiteSBG a, LIB::MD_NAT b) { 
       LIB::MatchData match_result = match_impl.calculate(a.copy(b[0]));
       LIB::DSBG scc_dsbg = MISC::buildSCCFromMatching(match_result);
-      LIB::DSBG tearing_dsbg = tearing_impl.calculate(scc_dsbg).dsbg();
-      return ExprBaseType(ts_impl.calculate(tearing_dsbg));
+      LIB::TearingData tearing_res = tearing_impl.calculate(scc_dsbg);
+      return ExprBaseType(ts_impl.calculate(tearing_res.dsbg(), tearing_res.rmap()));
     },
     [](auto a, auto b) {
-      Util::ERROR("match_tearing_evaluator: wrong arguments ", a, ", ", b
-        , " for matchTearing\n"); 
+      Util::ERROR("matchTearingTSEvaluator: wrong arguments ", a, ", ", b
+        , " for matchTearingTS\n"); 
       return ExprBaseType();
     }
   };

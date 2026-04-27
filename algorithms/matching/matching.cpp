@@ -66,6 +66,8 @@ Matching::Matching(MatchKind kind) : _kind(kind), _impl()
 
 MatchData Matching::calculate(const BipartiteSBG& bsbg)
 {
+  Util::Internal::TimeProfiler profiler{"Total matching execution time: "};
+
   return std::visit([&](auto& a) { return a.calculate(bsbg); }, _impl);
 }
 

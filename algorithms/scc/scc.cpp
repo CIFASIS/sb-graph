@@ -21,6 +21,7 @@
 #include "algorithms/scc/scc.hpp"
 #include "util/debug.hpp"
 #include "util/logger.hpp"
+#include "util/time_profiler.hpp"
 
 namespace SBG {
 
@@ -78,6 +79,8 @@ SCC::SCC(SCCKind kind) : _kind(kind), _impl()
 
 SCCData SCC::calculate(const DirectedSBG& dsbg)
 {
+  Util::Internal::TimeProfiler profiler{"Total SCC execution time: "};
+
   return std::visit([&](auto& a) { return a.calculate(dsbg); }, _impl);
 }
 

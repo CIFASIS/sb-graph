@@ -38,7 +38,8 @@ namespace detail {
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * @brief In each step takes out the vertex of maximum degree.
+ * @brief In each step takes out the vertex of maximum degree. When a
+ * set-vertex is visited again, it takes out all those vertices.
  */
 class GreedyMFVS {
 public:

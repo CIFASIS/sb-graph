@@ -35,15 +35,24 @@
 namespace misc {
 
 /**
- * @brief Builds the directed SBG used to detect algebraic loops.
+ * @brief Builds the directed SBG used to detect algebraic loops. To do so,
+ * it merges the matched edges of the input SBG of \p data, adding them
+ * as vertices of the new graphs. Then, it adds an edge (u, v) if in the
+ * input bipartite SBG there was an unmatched edge between the matched edges
+ * represented by u and v. The direction of (u, v) is from left to right
+ * according to the input bipartite SBG.
  */
 SBG::LIB::DirectedSBG buildLoopDetectionSBG(const SBG::LIB::MatchData& data);
 
 /**
- * @brief Builds the directed SBG used to identify tearing variables.
+ * @brief Builds the directed SBG used to identify tearing variables. To do so,
+ * it erases the edges of the input SBG of \p data that connect different SCC.
  */
 SBG::LIB::DirectedSBG buildTearingSBG(const SBG::LIB::SCCData& data);
 
+/**
+ * @brief Builds the directed acyclic SBG used to order vertically equations.
+ */
 SBG::LIB::DirectedSBG buildVerticalSortingSBG(const SBG::LIB::SCCData& data);
 
 }  // namespace misc

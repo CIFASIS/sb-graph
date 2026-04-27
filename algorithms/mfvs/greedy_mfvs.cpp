@@ -24,7 +24,6 @@
 #include "sbg/pw_map.hpp"
 #include "sbg/set_fact.hpp"
 #include "util/logger.hpp"
-#include "util/time_profiler.hpp"
 
 #include <numeric>
 
@@ -70,8 +69,6 @@ MD_NAT maxDegreeVertex(const DirectedSBG& dsbg)
 
 Set GreedyMFVS::calculate(const DirectedSBG& input_dsbg) const
 {
-  Util::Internal::TimeProfiler profiler{"Total MFVS exec time: "};
-
   DirectedSBG dsbg = input_dsbg;
 
   Util::DEBUG_LOG << "initial mfvs dsbg:\n" << dsbg << "\n";

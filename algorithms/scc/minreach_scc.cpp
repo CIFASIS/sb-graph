@@ -23,7 +23,6 @@
 #include "sbg/pwmap_fact.hpp"
 #include "sbg/set_fact.hpp"
 #include "util/logger.hpp"
-#include "util/time_profiler.hpp"
 
 namespace SBG {
 
@@ -61,7 +60,6 @@ SCCData MinReachSCC::calculate(const DirectedSBG& dsbg)
 {
   Util::DEBUG_LOG << "MinReachSCC dsbg: \n" << dsbg << "\n\n";
 
-  Util::Internal::TimeProfiler profiler{"Total MinReachSCC exec time: "};
   init(dsbg);
 
   PWMap rmap = PWMAP_FACT.createPWMap();

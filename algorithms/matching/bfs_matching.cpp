@@ -22,7 +22,6 @@
 #include "sbg/pwmap_fact.hpp"
 #include "sbg/set_fact.hpp"
 #include "util/logger.hpp"
-#include "util/time_profiler.hpp"
 
 namespace SBG {
 
@@ -173,8 +172,6 @@ void BFSMatching::init(const BipartiteSBG& bsbg)
 
 MatchData BFSMatching::calculate(const BipartiteSBG& bsbg)
 {
-  Util::Internal::TimeProfiler profiler{"Total matching exec time: "};
-
   init(bsbg);
   Util::SBG_LOG << "Matching bipartite SBG: " << bsbg << "\n\n";
   _X = bsbg.X();

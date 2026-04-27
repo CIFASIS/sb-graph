@@ -67,6 +67,8 @@ MinFeedbackVertexSet::MinFeedbackVertexSet(MFVSKind kind) : _kind(kind), _impl()
 
 Set MinFeedbackVertexSet::calculate(const DirectedSBG& dsbg)
 {
+  Util::Internal::TimeProfiler profiler{"Total MFVS exec time: "};
+
   return std::visit([&](auto& a) { return a.calculate(dsbg); }, _impl);
 }
 

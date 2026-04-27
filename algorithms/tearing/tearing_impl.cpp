@@ -33,13 +33,16 @@ namespace LIB {
 // Tearing Algorithm ---------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-TearingV1::TearingV1(SCCPtr sccAlgorithm) : dsbg_(), finalDSBG(), tearIOMap_ (PW_FACT.createPWMap()),sccAlgorithm_(std::move(sccAlgorithm)) {}
+TearingV1::TearingV1(SCCPtr sccAlgorithm) : dsbg_(), finalDSBG(), tearIOMap_ (PW_FACT.createPWMap()), 
+  finalMapB(PW_FACT.createPWMap()), finalMapD(PW_FACT.createPWMap()), sccAlgorithm_(std::move(sccAlgorithm)) {}
 
 
 void TearingV1::init(const DSBG& dsbg)
 {
   dsbg_ = dsbg;
   finalDSBG = dsbg;
+  finalMapB = dsbg.mapB();
+  finalMapD = dsbg.mapD();
   return;
 }
 
@@ -53,34 +56,34 @@ TearingData TearingV1::calculate(const DSBG& dsbg)
   MD_NAT maxOffset = dsbg_.V().maxElem();
   SCCData result = sccAlgorithm_->calculate(dsbg_);
   PWMap rmap_ = result.rmap();
-  PWMap finalMapB = dsbg_.mapB();
-  PWMap finalMapD = dsbg_.mapD();
   Set e_notscc = result.Ediff();
   Set e_scc = dsbg_.E().difference(e_notscc);
   Set v_tear = rmap_.image(rmap_.dom().difference(rmap_.fixedPoints()));
+  
   while (!v_tear.isEmpty())  {
     PWMap rmap = result.rmap();
     PWMap tearIOMap = PW_FACT.createPWMap(v_tear).offsetImage(maxOffset);
     finalDSBG = finalDSBG.addSV(tearIOMap.image());
     maxOffset = finalDSBG.V().maxElem();
     tearIOMap_ = tearIOMap.combine(tearIOMap_);
-    rmap = rmap.combine(tearIOMap.inverse()); // Separar 
+    rmap = rmap.combine(tearIOMap.inverse());
     rmap_ = rmap_.combine(rmap);
+
     Set e_tear_scc = dsbg_.mapD().restrict(e_scc).preImage(v_tear);
     Set e_tear_notscc = dsbg_.mapB().restrict(e_notscc).preImage(v_tear);
-    // PWMap mapB_scc = dsbg_.mapB().restrict(e_scc).composition(rmap); // Necessary?
     PWMap mapD_scc = tearIOMap.composition(dsbg_.mapD().restrict(e_tear_scc));
     PWMap mapB_notscc = tearIOMap.composition(dsbg_.mapB().restrict(e_tear_notscc));
-    // PWMap mapD_notscc = dsbg_.mapD().restrict(e_notscc).composition(rmap); // Necessary?
+
     finalMapB = mapB_notscc.combine(finalMapB);
     finalMapD = mapD_scc.combine(finalMapD);
-    dsbg_ = DSBG(finalDSBG.V().compact(), finalDSBG.Vmap().compact()
-      , finalMapB.compact(), finalMapD.compact(), finalDSBG.Emap().compact(), finalDSBG.subEmap().compact());
+
+    dsbg_ = DSBG(finalDSBG.V().compact(), finalDSBG.Vmap().compact(), 
+      finalMapB.compact(), finalMapD.compact(), finalDSBG.Emap().compact(), finalDSBG.subEmap().compact());
+    
     result = sccAlgorithm_->calculate(dsbg_);
     e_notscc = result.Ediff();
     e_scc = e_scc.difference(e_notscc);
-    rmap = result.rmap();
-    v_tear = rmap.image().difference(rmap.fixedPoints());
+    v_tear = rmap_.image(rmap_.dom().difference(rmap_.fixedPoints()));
   }
 
   finalDSBG = dsbg_;

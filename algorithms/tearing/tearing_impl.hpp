@@ -62,6 +62,8 @@ class TearingV1 : public TearingStrategy {
   DSBG dsbg_; ///< Input DSBG
   DSBG finalDSBG; ///< Output DSBG
   PWMap tearIOMap_; ///< Output tearing vertex map
+  PWMap finalMapB; ///< Output DSBG mapB
+  PWMap finalMapD; ///< Output DSBG mapD
 };
 
 } // namespace LIB

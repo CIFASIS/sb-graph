@@ -17,30 +17,58 @@
 
  ******************************************************************************/
 
-#include <chrono>
-
-#include "algorithms/toposort/topo_sort.hpp"
-#include "util/logger.hpp"
+#include "algorithms/sorting/topological/ts_fact.hpp"
+#include "util/debug.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Topological Sort Algorithm Abstract Strategy Constructors -------------------
+// Minimum Vertex Topological Sorting Factory ----------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-TSStrategy::TSStrategy() {}
-
-////////////////////////////////////////////////////////////////////////////////
-// Topological Sort Algorithm Interface ----------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-TopoSort::TopoSort(TSStratPtr strat) : strategy_(std::move(strat)) {}
-
-PWMap TopoSort::calculate(const DSBG& dsbg) const
+TopologicalSorting MinVertexTSFact::createTSAlgorithm() const
 {
-  return strategy_->calculate(dsbg);
+  return TopologicalSorting{TSKind::kMinVertex};
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Factory for clients --------------------------------------------------------- 
+////////////////////////////////////////////////////////////////////////////////
+
+TSFactory::TSFactory()
+  : _kind(TSKind::kMinVertex), _impl(MinVertexTSFact{}) {}
+
+TSFactory& TSFactory::instance()
+{
+  static TSFactory _instance;
+  return _instance;
+}
+
+const TSKind& TSFactory::kind() const { return _kind; }
+
+void TSFactory::set_ts_fact(TSKind kind)
+{
+  _kind = kind;
+  switch (kind) {
+    case TSKind::kMinVertex: {
+      _impl = MinVertexTSFact{};
+      break;
+    }
+
+    default: {
+      Util::ERROR("TSFactory::set_ts_fact: unsupported topological sorting ",
+        "implementation");
+      break;
+    }
+  }
+}
+
+TopologicalSorting TSFactory::createTSAlgorithm() const
+{
+  return std::visit([](const auto& a) { return a.createTSAlgorithm(); }
+    , _impl);
 }
 
 } // namespace LIB

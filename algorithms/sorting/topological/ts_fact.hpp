@@ -1,6 +1,6 @@
 /** @file ts_fact.hpp
 
- @brief <b>Topological Sort Algorithm Factory</b>
+ @brief <b>Topological Sorting Algorithm Factory</b>
 
  <hr>
 
@@ -21,61 +21,52 @@
 
  ******************************************************************************/
 
-#ifndef SBG_TS_FACT_HPP
-#define SBG_TS_FACT_HPP
+#ifndef SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_TS_FACT_HPP_
+#define SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_TS_FACT_HPP_
 
-#include "topo_sort.hpp"
+#include "algorithms/sorting/topological/min_vertex_ts.hpp"
+#include "algorithms/sorting/topological/topological_sorting.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
-#define TS_FACT TSFactory::instance().ts_fact()
+#define TS_FACT TSFactory::instance()
 
-class TSFact {
-  public:
-  virtual ~TSFact() = default;
-  TSFact() = default;
-
-  virtual TopoSort createTSAlgorithm() const = 0;
-  virtual std::string prettyPrint() const = 0;
-};
-
-class MinVertexTSFact : public TSFact {
-  public:
+class MinVertexTSFact {
+public:
   MinVertexTSFact() = default;
 
-  TopoSort createTSAlgorithm() const override;
-  std::string prettyPrint() const override;
+  TopologicalSorting createTSAlgorithm() const;
 };
-
-using TSFactPtr = std::unique_ptr<TSFact>;
 
 /**
- * @brief Single instance of ts factory to be used by clients in need of
- * creating an instance of a ts algorithm. A client includes this file and
- * calls TS_FACT.createTSAlgorithm(args).
+ * @brief Single instance of topological sorting factory to be used by clients
+ * in need of creating an instance of a matching algorithm. A client includes
+ * this file and calls TS_FACT.createTSAlgorithm(args).
  */
 class TSFactory {
-  public:
+public:
   ~TSFactory() = default;
 
-  static TSFactory& instance() {
-    static TSFactory instance_;
-    return instance_;
-  }
-  TSFact& ts_fact();
-  void set_ts_fact(TSFactPtr ts_fact);
+  static TSFactory& instance();
+  const TSKind& kind() const;
 
-  private:
+  void set_ts_fact(TSKind kind);
+
+  TopologicalSorting createTSAlgorithm() const;
+
+private:
+  using TSFactImpl = std::variant<MinVertexTSFact>;
+
   TSFactory();
 
-  TSFactPtr ts_fact_;
+  TSKind _kind;
+  TSFactImpl _impl;
 };
-
 
 } // namespace LIB
 
 }  // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_TS_FACT_HPP_

@@ -17,41 +17,61 @@
 
  ******************************************************************************/
 
-#include "algorithms/toposort/ts_fact.hpp"
-#include "algorithms/toposort/min_vertex_ts.hpp"
+#include "algorithms/sorting/topological/topological_sorting.hpp"
+#include "util/debug.hpp"
+#include "util/time_profiler.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Minimum Vertex Topological Sort Factory -------------------------------------
+// Topological Sorting Algorithm implementations -------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-TopoSort MinVertexTSFact::createTSAlgorithm() const
+std::ostream& operator<<(std::ostream& out, const TSKind kind)
 {
-  return TopoSort(std::make_unique<MinVertexTopoSort>());
-}
+  switch (kind) {
+    case TSKind::kMinVertex: {
+      out << "minimum vertex";
+      break;
+    }
 
-std::string MinVertexTSFact::prettyPrint() const
-{
-  return "minimum vertex";
+    default: {
+      Util::ERROR("TSKind::operator<<: unsupported topological sorting "
+        , "algorithm implementation");
+      break;
+    }
+  }
+
+  return out;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Factory for clients --------------------------------------------------------- 
+// Topological Sorting Algorithm Interface -------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-TSFactory::TSFactory() : ts_fact_(std::make_unique<MinVertexTSFact>()) {}
-
-TSFact& TSFactory::ts_fact()
+TopologicalSorting::TopologicalSorting(TSKind kind) : _kind(kind), _impl()
 {
-  return *ts_fact_;
+  switch (kind) {
+    case TSKind::kMinVertex: {
+      _impl = detail::MinVertexTS{};
+      break;
+    }
+
+    default: {
+      Util::ERROR("TopologicalSorting::operator<<: unsupported topological "
+        , "sorting algorithm implementation");
+    }
+  }  
 }
 
-void TSFactory::set_ts_fact(TSFactPtr ts_fact)
+PWMap TopologicalSorting::calculate(const DirectedSBG& dsbg, const PWMap& pmap)
 {
-  ts_fact_ = std::move(ts_fact);
+  auto text = "Total topological sorting execution time: ";
+  Util::Internal::TimeProfiler profiler{text};
+
+  return std::visit([&](auto& a) { return a.calculate(dsbg, pmap); }, _impl);
 }
 
 } // namespace LIB

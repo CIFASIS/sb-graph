@@ -1,6 +1,6 @@
 /** @file min_vertex_ts.hpp
 
- @brief <b>Concrete SBG Minimum Vertex Topological Sort Algorithm
+ @brief <b>Concrete SBG Minimum Vertex Topological Sorting Algorithm
  implementation</b>
 
  <hr>
@@ -22,31 +22,49 @@
 
  ******************************************************************************/
 
-#ifndef SBG_MIN_VERTEX_TS_HPP
-#define SBG_MIN_VERTEX_TS_HPP
+#ifndef SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_MIN_VERTEX_TS_HPP_
+#define SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_MIN_VERTEX_TS_HPP_
 
-#include "algorithms/toposort/topo_sort.hpp"
+#include "sbg/directed_sbg.hpp"
+#include "sbg/expression.hpp"
+#include "sbg/pw_map.hpp"
+#include "sbg/set.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
+namespace detail {
+
 ////////////////////////////////////////////////////////////////////////////////
-// Minimum Vertex Topological Sort Algorithm Implementation (concrete strategy)
+// Minimum Vertex Topological Sorting Algorithm Implementation -----------------
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
  * @brief In each step takes out the minimum vertex without dependencies.
  */
-class MinVertexTopoSort : public TSStrategy {
-  public:
-  MinVertexTopoSort();
+class MinVertexTS {
+public:
+  MinVertexTS();
 
-  PWMap calculate(const DSBG& dsbg) const override; 
+  PWMap calculate(const DirectedSBG& dsbg, const PWMap& pmap);
+
+private:
+  PWMap independentRepetition(const Set& independent_V_plus
+    , const Expression& successor_expr) const;
+
+  PWMap dependentRepetition(const Set& init_V) const;
+
+  PWMap _smap;
+  DirectedSBG _dsbg;
+  Set _visitedSV;
+  unsigned int _n;
 };
+
+} // namespace detail
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_MIN_VERTEX_TS_HPP_

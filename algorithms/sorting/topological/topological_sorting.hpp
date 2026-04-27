@@ -21,48 +21,47 @@
 
  ******************************************************************************/
 
-#ifndef SBG_TOPOSORT_HPP
-#define SBG_TOPOSORT_HPP
+#ifndef SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_TOPOLOGICAL_SORTING_HPP_
+#define SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_TOPOLOGICAL_SORTING_HPP_
 
+#include "algorithms/sorting/topological/min_vertex_ts.hpp"
 #include "sbg/directed_sbg.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
-////////////////////////////////////////////////////////////////////////////////
-// Topological Sort Algorithm Abstract Strategy --------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-class TSStrategy;
-
-typedef std::unique_ptr<TSStrategy> TSStratPtr;
-
-class TSStrategy {
-  public:
-  virtual ~TSStrategy() = default;
-
-  TSStrategy();
-
-  virtual PWMap calculate(const DSBG& dsbg) const = 0;
-};
+namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Topological Sort Algorithm Interface (context) ------------------------------
+// Topological Sorting Algorithm Implementations -------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-class TopoSort {
-  private:
-  TSStratPtr strategy_;
+using TSImpl = std::variant<MinVertexTS>;
 
-  public:
-  TopoSort(TSStratPtr strat);
+} // namespace detail
 
-  PWMap calculate(const DSBG& dsbg) const;
+enum class TSKind { kMinVertex };
+
+std::ostream& operator<<(std::ostream& out, const TSKind kind);
+
+////////////////////////////////////////////////////////////////////////////////
+// Topological Sorting Algorithm -----------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+class TopologicalSorting {
+public:
+  TopologicalSorting(TSKind kind);
+
+  PWMap calculate(const DirectedSBG& dsbg, const PWMap& pmap);
+
+private:
+  TSKind _kind;
+  detail::TSImpl _impl;
 };
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_TOPOLOGICAL_SORTING_HPP_

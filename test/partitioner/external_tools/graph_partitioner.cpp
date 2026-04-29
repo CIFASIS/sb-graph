@@ -38,6 +38,7 @@
 #include <algorithms/partitioner/build_sb_graph.hpp>
 #include <algorithms/partitioner/kernighan_lin_partitioner.hpp>
 #include <algorithms/partitioner/partition_graph.hpp>
+#include <algorithms/partitioner/partition_graph_cc.hpp>
 #include <algorithms/partitioner/sbg_partitioner_types.hpp>
 #include <algorithms/partitioner/weighted_sb_graph.hpp>
 
@@ -206,6 +207,21 @@ void GraphPartitioner::readGraphFromJson()
     sbg_graph.reset(new SBG::LIB::WeightedSBGraph(temp_sbg_graph));
   }
   std::cout << *sbg_graph << std::endl;
+
+  {
+    auto new_vertices = sbg_partitioner::using_cc::split_sets_according_to_relations(*sbg_graph);
+    sbg_graph.reset(
+      new SBG::LIB::WeightedSBGraph(
+        new_vertices,
+        SBG::LIB::PW_FACT.createPWMap(),
+        sbg_graph->map1().compact(),
+        sbg_graph->map2().compact(),
+        SBG::LIB::PW_FACT.createPWMap(),
+        SBG::LIB::PW_FACT.createPWMap()
+      )
+    );
+  }
+
   readGraphFromSBG();
 }
 

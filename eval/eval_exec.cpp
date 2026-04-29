@@ -20,7 +20,7 @@
 #include "algorithms/matching/matching_fact.hpp"
 #include "algorithms/mfvs/mfvs_fact.hpp"
 #include "algorithms/scc/scc_fact.hpp"
-//#include "algorithms/toposort/ts_fact.hpp"
+#include "algorithms/sorting/topological/ts_fact.hpp"
 #include "eval/eval_exec.hpp"
 #include "eval/file_evaluator.hpp"
 #include "eval/input_translator.hpp"
@@ -56,9 +56,9 @@ void printHeader(Util::prog_opts::variables_map vm)
     std::cout << "-----------------------------------\n";
     std::cout << "Matching algorithm: " << LIB::MATCH_FACT.kind() << "\n";
     std::cout << "SCC algorithm: " << LIB::SCC_FACT.kind() << "\n";
-    std::cout << "MFVS algorithm: " << LIB::MFVS_FACT.kind() << "\n\n";
-    //std::cout << "Topological sort algorithm: " << LIB::TS_FACT.kind()
-    // << "\n";
+    std::cout << "MFVS algorithm: " << LIB::MFVS_FACT.kind() << "\n";
+    std::cout << "Topological sorting algorithm: " << LIB::TS_FACT.kind()
+      << "\n";
   }
   std::cout << "-----------------------------------\n";
   std::cout << ">>>>>>>>>>> Eval result <<<<<<<<<<<\n";

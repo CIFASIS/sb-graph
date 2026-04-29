@@ -148,8 +148,8 @@ SBG::LIB::DirectedSBG buildLoopDetectionSBG(const SBG::LIB::MatchData& data)
   SBG::LIB::PWMap Emap = SBG::LIB::PWMAP_FACT.createPWMap();
   std::tie(mapB, mapD, Emap) = buildSCCEdges(data, Vmap);
 
-  SBG::LIB::DirectedSBG dsbg{V, Vmap, mapB, mapD, Emap};
-  Emap = partitionEmap(dsbg);
+  //SBG::LIB::DirectedSBG dsbg{V, Vmap, mapB, mapD, Emap};
+  //Emap = partitionEmap(dsbg);
 
   return SBG::LIB::DirectedSBG{V, Vmap, mapB, mapD, Emap};
 }
@@ -172,27 +172,21 @@ SBG::LIB::DirectedSBG buildTearingSBG(const SBG::LIB::SCCData& data)
 // Vertical sort graph builder ------------------------------------------------- 
 ////////////////////////////////////////////////////////////////////////////////
 
-SBG::LIB::DirectedSBG buildVerticalSortingSBG(const SBG::LIB::SCCData& data)
+SBG::LIB::DirectedSBG buildVerticalSortingSBG(const SBG::LIB::SCCData& data
+  , const SBG::LIB::Set& mfvs)
 {
   SBG::Util::Internal::TimeProfiler profiler{"SBG Vertical Sorting builder: "}; 
 
   const SBG::LIB::DirectedSBG& dsbg = data.dsbg();
-  SBG::LIB::PWMap rmap = data.rmap();
-  SBG::LIB::Set Ediff = data.Ediff();
 
-  SBG::LIB::PWMap mapB = rmap.composition(dsbg.mapB().restrict(Ediff));
-  mapB.compact();
-  SBG::LIB::PWMap mapD = rmap.composition(dsbg.mapD().restrict(Ediff));
-  mapD.compact();
+  SBG::LIB::Set V = dsbg.V();
+  SBG::LIB::PWMap Vmap = dsbg.Vmap();
 
-  rmap.compact();
-  SBG::LIB::PWMap aux_rmap = rmap;
-  SBG::LIB::PWMap reps_rmap = aux_rmap.restrict(aux_rmap.fixedPoints());
-  SBG::LIB::Set V = reps_rmap.domain();
-
-  SBG::LIB::PWMap Vmap = dsbg.Vmap().restrict(V);
-
-  SBG::LIB::PWMap Emap = dsbg.Emap().restrict(Ediff);
+  SBG::LIB::Set dependencies = dsbg.mapD().preImage(mfvs);
+  SBG::LIB::Set E = dsbg.E().difference(dependencies);
+  SBG::LIB::PWMap mapB = dsbg.mapB().restrict(E);
+  SBG::LIB::PWMap mapD = dsbg.mapD().restrict(E);
+  SBG::LIB::PWMap Emap = dsbg.Emap().restrict(E);
 
   return SBG::LIB::DirectedSBG{V, Vmap, mapB, mapD, Emap};
 }

@@ -49,6 +49,13 @@ Expression::Expression(std::size_t n, const RATIONAL& slope
   }
 }
 
+Expression::Expression(const MD_NAT& from, const MD_NAT& to)
+{
+  for (unsigned int k = 0; k < from.arity(); ++k) {
+    _impl.emplace_back(1, to[k] - from[k]);
+  }
+}
+
 Expression::Expression(const detail::ExpressionImpl& impl) : _impl(impl) {}
 
 Expression::Expression(detail::ExpressionImpl&& impl)

@@ -103,14 +103,13 @@ UserImplMap::StructImplMap mfvsMap()
   return mfvs_mapping;
 }
 
-// TODO
-//UserImplMap::StructImplMap tsMap()
-//{
-//  UserImplMap::StructImplMap ts_mapping;
-//  ts_mapping[0] = []() { return std::make_unique<LIB::MinVertexTSFact>(); };
-//  ts_mapping.freeze();
-//  return ts_mapping;
-//}
+UserImplMap::StructImplMap tsMap()
+{
+  UserImplMap::StructImplMap ts_mapping;
+  ts_mapping[0] = LIB::TSKind::kMinVertex;
+  ts_mapping.freeze();
+  return ts_mapping;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // User Implementation Map -----------------------------------------------------
@@ -123,7 +122,7 @@ UserImplMap::UserImplMap()
   implementations_["match"] = matchMap();
   implementations_["scc"] = sccMap();
   implementations_["mfvs"] = mfvsMap();
-  //implementations_["ts"] = tsMap();
+  implementations_["ts"] = tsMap();
 }
 
 Kind UserImplMap::getFactory(std::string strct, int impl)

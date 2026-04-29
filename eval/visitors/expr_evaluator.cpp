@@ -17,13 +17,6 @@
 
  ******************************************************************************/
 
-#include "algorithms/cc/cc.hpp"
-//#include "algorithms/cutvertex/cv_fact.hpp"
-#include "algorithms/matching/matching_fact.hpp"
-#include "algorithms/scc/scc_fact.hpp"
-//#include "algorithms/toposort/ts_fact.hpp"
-#include "algorithms/misc/causalization_builders.hpp"
-#include "algorithms/misc/causalization_json.hpp"
 #include "eval/visitors/expr_evaluator.hpp"
 #include "eval/visitors/func_evaluator.hpp"
 #include "eval/visitors/linear_expr_evaluator.hpp"
@@ -76,6 +69,10 @@ ExprEvaluator::ExprEvaluator(EvalContext& eval_ctx) : _eval_context(eval_ctx)
   eval_ctx.insertFunction("scc", BuiltInFunctions::sccEvaluator);
   eval_ctx.insertFunction("matchSCC", BuiltInFunctions::matchSCCEvaluator);
   eval_ctx.insertFunction("mfvs", BuiltInFunctions::mfvsEvaluator);
+  eval_ctx.insertFunction("matchSCCMFVS"
+    , BuiltInFunctions::matchSCCMFVSEvaluator);
+  eval_ctx.insertFunction("sort", BuiltInFunctions::topoSortEvaluator);
+  eval_ctx.insertFunction("causalize", BuiltInFunctions::causalizationEvaluator);
 }
 
 ExprBaseType ExprEvaluator::operator()(AST::Natural v) const

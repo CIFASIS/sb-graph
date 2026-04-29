@@ -67,6 +67,12 @@ public:
    */
   Expression(std::size_t n, const RATIONAL& slope, const RATIONAL& offset);
 
+  /**
+   * @brief Creates an injective expression that maps the first argument to the
+   * second one.
+   */
+  Expression(const MD_NAT& from, const MD_NAT& to);
+
   bool operator==(const Expression& other) const;
   bool operator!=(const Expression& other) const;
   Expression operator+(const Expression& other) const;

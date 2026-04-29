@@ -32,7 +32,7 @@
 #include "algorithms/mfvs/min_feedback_vertex_set.hpp"
 #include "algorithms/matching/matching.hpp"
 #include "algorithms/scc/scc.hpp"
-//#include "algorithms/toposort/ts_fact.hpp"
+#include "algorithms/sorting/topological/topological_sorting.hpp"
 #include "sbg/pw_map.hpp"
 #include "sbg/set.hpp"
 
@@ -59,7 +59,8 @@ using Kind = std::variant<LIB::SetKind
   , LIB::PWMapKind
   , LIB::MatchKind
   , LIB::SCCKind
-  , LIB::MFVSKind>;
+  , LIB::MFVSKind
+  , LIB::TSKind>;
 
 /**
  * @brief Mapping for all structures such as Set, PW and algorithms.

@@ -40,25 +40,28 @@ namespace detail {
 // Minimum Vertex Topological Sorting Algorithm Implementation -----------------
 ////////////////////////////////////////////////////////////////////////////////
 
-/**
- * @brief In each step takes out the minimum vertex without dependencies.
- */
 class MinVertexTS {
 public:
   MinVertexTS();
 
+  /**
+   * @brief Concrete implementation that in each step takes out the minimum
+   * vertex without dependencies. It also implements different strategies to
+   * sort a large number of vertices.
+   */
   PWMap calculate(const DirectedSBG& dsbg, const PWMap& pmap);
 
 private:
-  PWMap independentRepetition(const Set& independent_V_plus
-    , const Expression& successor_expr) const;
+  MD_NAT getMinVertex();
 
-  PWMap dependentRepetition(const Set& init_V) const;
+  PWMap repetition(const Set& init_V, const DirectedSBG& dsbg) const;
 
   PWMap _smap;
   DirectedSBG _dsbg;
+  Set _priority;
+  Set _same_SV;
+  Set _independent;
   Set _visitedSV;
-  unsigned int _n;
 };
 
 } // namespace detail

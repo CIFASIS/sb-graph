@@ -96,7 +96,9 @@ public:
   static ExprBaseType sccEvaluator(const EBTList& args);
   static ExprBaseType matchSCCEvaluator(const EBTList& args);
   static ExprBaseType mfvsEvaluator(const EBTList& args);
+  static ExprBaseType matchSCCMFVSEvaluator(const EBTList& args);
   static ExprBaseType topoSortEvaluator(const EBTList& args);
+  static ExprBaseType causalizationEvaluator(const EBTList& args);
 };
 
 } // namespace detail

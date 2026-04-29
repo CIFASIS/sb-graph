@@ -53,7 +53,8 @@ SBG::LIB::DirectedSBG buildTearingSBG(const SBG::LIB::SCCData& data);
 /**
  * @brief Builds the directed acyclic SBG used to order vertically equations.
  */
-SBG::LIB::DirectedSBG buildVerticalSortingSBG(const SBG::LIB::SCCData& data);
+SBG::LIB::DirectedSBG buildVerticalSortingSBG(const SBG::LIB::SCCData& data
+  , const SBG::LIB::Set& mfvs);
 
 }  // namespace misc
 

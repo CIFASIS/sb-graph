@@ -1,4 +1,4 @@
-// Topological sort test, with a simple recursion, and a self recursion on the right
+// Topological sort test, with a simple recursion
 
 N = 100000;
 
@@ -29,5 +29,5 @@ sort(
             |, {[V3:1:V3]} -> |0*x+4|>>
   mapB: <<{[1:1:E1]} -> |1*x+0|, {[E1+1:1:E2]} -> |1*x+off2d|, {[E2+1:1:E3]} -> |1*x-off3b|>>
   mapD: <<{[1:1:E1]} -> |1*x+off1d|, {[E1+1:1:E2]} -> |1*x+0|, {[E2+1:1:E3]} -> |1*x+off3d|>>
-  Emap: <<{[1:1:E1]} -> |0*x+1|, {[E1+1:1:E2], [E2+1:1:E3]} -> |0*x+2|>>
+  Emap: <<{[1:1:E1]} -> |0*x+1|, {[E1+1:1:E2]} -> |0*x+2|, {[E2+1:1:E3]} -> |0*x+3|>>
 );

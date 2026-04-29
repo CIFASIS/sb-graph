@@ -36,50 +36,75 @@ namespace detail {
 
 MinVertexTS::MinVertexTS()
   : _smap(PWMAP_FACT.createPWMap()), _dsbg(), _visitedSV(SET_FACT.createSet())
-    , _n(0) {}
+    , _priority(SET_FACT.createSet()), _same_SV(SET_FACT.createSet())
+    , _independent(SET_FACT.createSet()) {}
 
-Expression calculateExpr(const MD_NAT& old_value, const MD_NAT& new_value)
+/*
+ * @brief Given any two vertices u and v of the repetition, it checks that any
+ * (u, v) edge (if it exists) satisfies that u comes before v in the sorting. 
+ */
+void checkSorting(const PWMap& result, const DirectedSBG& dsbg)
 {
-  return Expression{old_value};
-}
+  PWMap mapB = dsbg.mapB(); 
+  PWMap mapD = dsbg.mapD(); 
+  Set result_vertices = result.domain().cup(result.image());
+  Set ED = mapD.preImage(result_vertices);
+  Set EB = mapB.preImage(result_vertices);
+  Set E = EB.intersection(ED);
+  PWMap jth_result = result;
+  Set E_old = E;
+  while (!E.isEmpty()) {
+    Set Ej = jth_result.composition(mapD).equalImage(mapB); 
+    E = E.difference(Ej);
+    Util::ERROR_UNLESS(E_old != E, "checkSorting: the sorting ", result
+      , " is incorrect\n");
 
-PWMap MinVertexTS::independentRepetition(const Set& independent_V_plus,
-  const Expression& successor_expr) const
-{
-  PWMap result = PWMAP_FACT.createPWMap();
-
-  result.emplace(independent_V_plus, successor_expr);
-  bool independent_image = result.image().difference(independent_V_plus).isEmpty();
-  Util::ERROR_UNLESS(independent_image/*&& result.isInjective()*/
-    , "MinVertexTS::independentRepetition: incorrect guessing ", result);
-
-  return result;
-}
-
-PWMap MinVertexTS::dependentRepetition(const Set& init_V) const
-{
-  PWMap result = PWMAP_FACT.createPWMap();
-
-  Set Vi = init_V;
-  Set V = SET_FACT.createSet();
-  for (unsigned int j = 0; j < _n; ++j) {
-    Vi = _smap.image(Vi);
-    V = std::move(V).disjointCup(std::move(Vi));
+    jth_result = result.composition(jth_result);
   }
-  PWMap smap_repetition = _smap.restrict(V);
-  PWMap mapB = _dsbg.mapB();
-  PWMap mapD = _dsbg.mapD();
-  Set E_repetition = smap_repetition.composition(mapB).equalImage(mapD);
+}
 
-  PWMap Emap = _dsbg.Emap();
-  Set E_plus = Emap.preImage(Emap.image(E_repetition));
-  PWMap mapB_plus = mapB.restrict(E_plus);
-  PWMap mapD_plus = mapD.restrict(E_plus);
-  result = mapB_plus.minAdj(mapD_plus);
+PWMap MinVertexTS::repetition(const Set& init_V
+  , const DirectedSBG& dsbg) const
+{
+  PWMap result = PWMAP_FACT.createPWMap();
 
-  /*TODO: check well-formed result*/
+  PWMap Vmap = dsbg.Vmap();
+  Set Vj = init_V;
+  Set init_SV = Vmap.image(init_V);
+  bool repetition = true;
+  do {
+    PWMap jth_smap = _smap.restrict(Vj);
+    Set V_plus = Vmap.preImage(Vmap.image(Vj)).difference(_smap.domain());
+    result.emplace(V_plus, (*jth_smap.begin()).law());
+    Vj = _smap.image(Vj);
+    repetition = !Vmap.image(Vj).intersection(init_SV).isEmpty();
+  } while (!repetition);
+
+  checkSorting(result, dsbg);
 
   return result;
+}
+
+MD_NAT MinVertexTS::getMinVertex()
+{
+  Set V = _dsbg.V(); 
+  PWMap mapD = _dsbg.mapD();
+  _independent = V.difference(mapD.image());
+
+  Set Vj = _independent;
+  if (Vj.isEmpty()) {
+    Util::ERROR("MinVertexTS::getMinVertex: the SBG is not acyclic\n");
+  }
+  Set independent_priority = Vj.intersection(_priority);
+  if (!independent_priority.isEmpty()) {
+    Vj = independent_priority;
+  }
+  Set Vj_same_SV = Vj.intersection(_same_SV);
+  if (!Vj_same_SV.isEmpty()) {
+    Vj = Vj_same_SV;
+  }
+
+  return Vj.minElem();
 }
 
 PWMap MinVertexTS::calculate(const DirectedSBG& dsbg
@@ -89,60 +114,41 @@ PWMap MinVertexTS::calculate(const DirectedSBG& dsbg
 
   _dsbg = dsbg;
 
-  PWMap _smap = PWMAP_FACT.createPWMap();
+  _smap = PWMAP_FACT.createPWMap();
 
-  Set same_SCC = _dsbg.V();
-  Set same_SV = _dsbg.V();
+  if (dsbg.V().isEmpty()) {
+    return _smap;
+  }
+
+  _priority = _dsbg.V();
+  _same_SV = _dsbg.V();
   Set visited_SV = SET_FACT.createSet();
   Expression successor_expr{_dsbg.V().arity(), 1, 0};
-  MD_NAT old_vi;
+  MD_NAT vj;
+  MD_NAT old_vj = _dsbg.V().difference(_dsbg.mapD().image()).minElem();
   do {
-    Set V = _dsbg.V(); 
-    PWMap mapD = _dsbg.mapD();
-    Set independent = V.difference(mapD.image());
-
-    Set Vi = independent;
-    if (Vi.isEmpty()) {
-      Util::ERROR("Topological sorting: the SBG is not acyclic");
-    }
-    Set independent_same_SCC = Vi.intersection(same_SCC);
-    if (independent_same_SCC.isEmpty()) {
-      Vi = independent_same_SCC;
-    }
-    Set Vi_same_SV = Vi.intersection(same_SV);
-    if (Vi_same_SV.isEmpty()) {
-      Vi = Vi_same_SV;
-    }
+    // Find new minimum vertex, and add it to the sorting
+    vj = getMinVertex();
+    Set vj_set = SET_FACT.createSet(vj);
+    successor_expr = Expression{vj, old_vj};
+    _smap.emplace(vj_set, successor_expr);
 
     // Handle repetition
     PWMap Vmap = _dsbg.Vmap();
-    MD_NAT vi = Vi.minElem();
-    Set vi_set = SET_FACT.createSet(vi);
-    Set repeatedSV = _visitedSV.intersection(Vmap.image(vi_set));
+    Set repeatedSV = _visitedSV.intersection(Vmap.image(vj_set));
     if (!repeatedSV.isEmpty()) {
-      Set V_plus = Vmap.preImage(Vmap.image(vi_set));
-      Set independent_V_plus = independent.intersection(V_plus);
-      PWMap smap_plus = PWMAP_FACT.createPWMap();
-      if (!independent_V_plus.isEmpty()) {
-        smap_plus = independentRepetition(independent_V_plus, successor_expr);
-      } else {
-        smap_plus = dependentRepetition(vi_set);
-      }
+      PWMap smap_plus = repetition(vj_set, dsbg);
       _smap = std::move(smap_plus).combine(std::move(_smap));
-      _n = 0;
-    } else  {
-      _smap.emplace(vi_set, successor_expr);
-
-      _visitedSV = std::move(_visitedSV).disjointCup(Vmap.image(vi_set));
-      ++_n;
+      vj = _smap.domain().difference(_smap.image()).minElem();
+    } else {
+      _visitedSV = std::move(_visitedSV).disjointCup(Vmap.image(vj_set));
     } 
 
     // Update values for new iteration
     _dsbg.eraseVertices(_smap.domain());
-    old_vi = vi;
-    successor_expr = calculateExpr(old_vi, vi);
-    same_SCC = pmap.preImage(pmap.image(vi_set));
-    same_SV = Vmap.preImage(Vmap.image(vi_set));
+    old_vj = vj;
+    _priority = pmap.preImage(pmap.image(vj_set));
+    _same_SV = Vmap.preImage(Vmap.image(vj_set));
   } while (!_dsbg.V().isEmpty());
 
   _smap.compact();

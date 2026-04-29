@@ -21,10 +21,13 @@
 #include "algorithms/cc/cc.hpp"
 #include "algorithms/mfvs/min_feedback_vertex_set.hpp"
 #include "algorithms/mfvs/mfvs_fact.hpp"
+#include "algorithms/matching/matching.hpp"
 #include "algorithms/matching/matching_fact.hpp"
 #include "algorithms/misc/causalization_builders.hpp"
+#include "algorithms/scc/scc.hpp"
 #include "algorithms/scc/scc_fact.hpp"
-//#include "algorithms/toposort/ts_fact.hpp"
+#include "algorithms/sorting/topological/topological_sorting.hpp"
+#include "algorithms/sorting/topological/ts_fact.hpp"
 #include "eval/base_type.hpp"
 #include "sbg/bipartite_sbg.hpp"
 #include "sbg/expression.hpp"
@@ -35,6 +38,7 @@
 #include "sbg/rational.hpp"
 #include "sbg/set.hpp"
 #include "sbg/pw_map.hpp"
+#include "sbg/pwmap_fact.hpp"
 #include "util/debug.hpp"
 #include "util/defs.hpp"
 
@@ -662,27 +666,14 @@ ExprBaseType BuiltInFunctions::matchSCCEvaluator(const EBTList& args)
   Util::ERROR_UNLESS(args.size() == 2
     , "matchSCCEvaluator: wrong number of arguments");
 
-  LIB::Matching match_impl = LIB::MATCH_FACT.createMatchAlgorithm();
-  LIB::SCC scc_impl = LIB::SCC_FACT.createSCCAlgorithm();
-  const auto match_scc_evaluator = Util::Overload {
-    [&match_impl, &scc_impl](LIB::BipartiteSBG a, LIB::NAT b) { 
-      LIB::MatchData match_result = match_impl.calculate(copy(b, a));
-      LIB::DirectedSBG dsbg = misc::buildLoopDetectionSBG(match_result);
-      return ExprBaseType{scc_impl.calculate(dsbg).rmap()};
-    },
-    [&match_impl, &scc_impl](LIB::BipartiteSBG a, LIB::MD_NAT b) { 
-      LIB::MatchData match_result = match_impl.calculate(copy(b[0], a));
-      LIB::DirectedSBG dsbg = misc::buildLoopDetectionSBG(match_result);
-      return ExprBaseType{scc_impl.calculate(dsbg).rmap()};
-    },
-    [](auto a, auto b) {
-      Util::ERROR("match_scc_evaluator: wrong arguments ", a, ", ", b
-        , " for matchSCC\n"); 
-      return ExprBaseType{};
-    }
-  };
+  const ExprBaseType match_base_type = matchingEvaluator(args);
 
-  return std::visit(match_scc_evaluator, args[0], args[1]);
+  const LIB::MatchData match_result = std::get<LIB::MatchData>(match_base_type);
+  LIB::DirectedSBG dsbg = misc::buildLoopDetectionSBG(match_result);
+  LIB::SCC scc_impl = LIB::SCC_FACT.createSCCAlgorithm();
+  LIB::SCCData scc_result = scc_impl.calculate(dsbg);
+
+  return ExprBaseType{scc_result.rmap()};
 }
 
 ExprBaseType BuiltInFunctions::mfvsEvaluator(const EBTList& args)
@@ -704,16 +695,32 @@ ExprBaseType BuiltInFunctions::mfvsEvaluator(const EBTList& args)
   return std::visit(mfvs_evaluator, args[0]);
 }
 
-/*
+ExprBaseType BuiltInFunctions::matchSCCMFVSEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 2
+    , "matchSCCMFVSEvaluator: wrong number of arguments");
+
+  const ExprBaseType match_base_type = matchingEvaluator(args);
+
+  const LIB::MatchData match_result = std::get<LIB::MatchData>(match_base_type);
+  LIB::DirectedSBG dsbg = misc::buildLoopDetectionSBG(match_result);
+  LIB::SCC scc_impl = LIB::SCC_FACT.createSCCAlgorithm();
+  LIB::SCCData scc_result = scc_impl.calculate(dsbg);
+
+  dsbg = misc::buildTearingSBG(scc_result);
+  LIB::MinFeedbackVertexSet mfvs_impl = LIB::MFVS_FACT.createMFVSAlgorithm();
+  return ExprBaseType{mfvs_impl.calculate(dsbg)};
+}
+
 ExprBaseType BuiltInFunctions::topoSortEvaluator(const EBTList& args)
 {
   Util::ERROR_UNLESS(args.size() == 1
     , "topoSortEvaluator: wrong number of arguments\n");
 
-  LIB::TopoSort ts_impl = LIB::TS_FACT.createTSAlgorithm();
+  LIB::TopologicalSorting ts_impl = LIB::TS_FACT.createTSAlgorithm();
   const auto ts_evaluator = Util::Overload {
     [&ts_impl](LIB::DirectedSBG a) { 
-      return ExprBaseType{ts_impl.calculate(a)};
+      return ExprBaseType{ts_impl.calculate(a, LIB::PWMAP_FACT.createPWMap())};
     },
     [](auto a) {
       Util::ERROR("topoSortEvaluator: wrong argument ", a, " for sort\n"); 
@@ -723,39 +730,27 @@ ExprBaseType BuiltInFunctions::topoSortEvaluator(const EBTList& args)
   return std::visit(ts_evaluator, args[0]);
 }
 
-ExprBaseType BuiltInFunctions::matchSCCTSEvaluator(const EBTList& args)
+ExprBaseType BuiltInFunctions::causalizationEvaluator(const EBTList& args)
 {
-  const auto match_scc_ts_evaluator = Util::Overload {
-    [](LIB::SBG a, LIB::NAT b, bool c) { 
-      LIB::BFSMatching match(a.copy(b), c);
-      LIB::Set match_res = match.calculate().matched_edges();
-      LIB::SCC scc(misc::buildLoopDetectionSBG(match), c);
-      LIB::PWMap scc_res = scc.calculate();
-      LIB::DirectedSBG ts_dsbg = misc::buildSortFromSCC(scc, scc_res);
-      LIB::TopoSort ts = LIB::MinVertexTSAF().createTSAlgorithm(ts_dsbg);
-      LIB::PWMap ts_res = ts.calculate(); 
-      misc::buildJson(match_res, scc_res, ts_res);
-      return ExprBaseType{ts_res};
-    },
-    [](LIB::SBG a, LIB::MD_NAT b, bool c) { 
-      LIB::BFSMatching match(a.copy(b[0]), c);
-      LIB::Set match_res = match.calculate().matched_edges();
-      LIB::SCC scc(misc::buildLoopDetectionSBG(match), c);
-      LIB::PWMap scc_res = scc.calculate();
-      LIB::DirectedSBG ts_dsbg = misc::buildSortFromSCC(scc, scc_res);
-      LIB::TopoSort ts = LIB::MinVertexTSAF().createTSAlgorithm(ts_dsbg);
-      LIB::PWMap ts_res = ts.calculate(); 
-      misc::buildJson(match_res, scc_res, ts_res);
-      return ExprBaseType{ts_res};
-    },
-    [](auto a, auto b, auto c) {
-      Util::ERROR("match_scc_ts_evaluator: wrong arguments ", a, ", ", b
-        , " for matchSCCTS\n"); 
-      return ExprBaseType{};
-    }
-  };
+  Util::ERROR_UNLESS(args.size() == 2
+    , "causalizationEvaluator: wrong number of arguments");
+
+  const ExprBaseType match_base_type = matchingEvaluator(args);
+
+  const LIB::MatchData match_result = std::get<LIB::MatchData>(match_base_type);
+  LIB::DirectedSBG dsbg = misc::buildLoopDetectionSBG(match_result);
+  LIB::SCC scc_impl = LIB::SCC_FACT.createSCCAlgorithm();
+  LIB::SCCData scc_result = scc_impl.calculate(dsbg);
+
+  dsbg = misc::buildTearingSBG(scc_result);
+  LIB::MinFeedbackVertexSet mfvs_impl = LIB::MFVS_FACT.createMFVSAlgorithm();
+  LIB::Set mfvs_result = mfvs_impl.calculate(dsbg);
+
+  dsbg = misc::buildVerticalSortingSBG(scc_result, mfvs_result);
+  LIB::TopologicalSorting ts_impl = LIB::TS_FACT.createTSAlgorithm();
+  LIB::PWMap ts_result = ts_impl.calculate(dsbg, scc_result.rmap());
+  return ExprBaseType{ts_result};
 }
-*/
 
 } // namespace detail
 

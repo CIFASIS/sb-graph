@@ -2,7 +2,7 @@
 
 /*
 model test
-  constant Integer N=10;
+  constant Integer N=100000;
   Real a[N], b[N-1], c[N-1];
 equation
   for i in 1:N-1 loop

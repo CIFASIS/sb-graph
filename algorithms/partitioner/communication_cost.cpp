@@ -175,7 +175,7 @@ void CommunicationCost::update_partitions(PartitionMap& partitions, optional<ref
 }
 
 
-Set CommunicationCost::get_ec_by_partition_ids(unsigned partition_id)
+Set CommunicationCost::get_ec_by_partition_id(unsigned partition_id)
 {
     return _cost_by_partition[partition_id].first;
 }
@@ -269,10 +269,10 @@ void CommunicationCostSync::update_partitions(PartitionMap& partitions, optional
 }
 
 
-Set CommunicationCostSync::get_ec_by_partition_ids(unsigned partition_id)
+Set CommunicationCostSync::get_ec_by_partition_id(unsigned partition_id)
 {
     const lock_guard<mutex> lock(_mutex);
-    return _comm_cost.get_ec_by_partition_ids(partition_id);
+    return _comm_cost.get_ec_by_partition_id(partition_id);
 }
 
 

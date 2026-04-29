@@ -64,7 +64,7 @@ public:
      * @return External edges of the given partition.
      * @note These values are pre-computed when the object is created or partitions are updated.
      */
-    virtual SBG::LIB::Set get_ec_by_partition_ids(unsigned partition_id) = 0; // non-const since _cost_by_partition may be updated
+    virtual SBG::LIB::Set get_ec_by_partition_id(unsigned partition_id) = 0; // non-const since _cost_by_partition may be updated
 
     /**
      * It returns the edges that communicate the set piece nodes in partition `partition_id` with other partitions.
@@ -110,7 +110,7 @@ public:
 
     void update_partitions(PartitionMap& partitions, std::optional<std::reference_wrapper<const std::list<size_t>>> modified_partitions = std::nullopt) override;
 
-    SBG::LIB::Set get_ec_by_partition_ids(unsigned partition_id)  override; // non-const since _cost_by_partition may be updated
+    SBG::LIB::Set get_ec_by_partition_id(unsigned partition_id)  override; // non-const since _cost_by_partition may be updated
 
     SBG::LIB::Set get_ec_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes)  override;
 
@@ -150,7 +150,7 @@ public:
 
     void update_partitions(PartitionMap& partitions, std::optional<std::reference_wrapper<const std::list<size_t>>> modified_partitions = std::nullopt) override;
 
-    SBG::LIB::Set get_ec_by_partition_ids(unsigned partition_id) override; // non-const since _cost_by_partition may be updated
+    SBG::LIB::Set get_ec_by_partition_id(unsigned partition_id) override; // non-const since _cost_by_partition may be updated
 
     SBG::LIB::Set get_ec_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes) override;
 

@@ -76,8 +76,7 @@ bool RATIONAL::operator>=(const RATIONAL& r) const
 
 bool RATIONAL::operator==(const INT& other) const
 {
-  RATIONAL aux = *this;
-  return aux.numerator() == other && aux.denominator() == 1;
+  return numerator() == other && denominator() == 1;
 }
 
 RATIONAL RATIONAL::operator-() const

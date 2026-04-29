@@ -27,8 +27,9 @@
 #include "sbg/map.hpp"
 #include "sbg/set.hpp"
 
-#include <vector>
 #include <iosfwd>
+#include <vector>
+#include <tuple>
 
 namespace SBG {
 
@@ -133,13 +134,19 @@ private:
 template<typename... Args>
 inline void UnordPWMap::emplace(Args&&... args)
 {
-  _pieces.emplace_back(std::forward<Args>(args)...);
+  auto&& domain = std::get<0>(std::forward_as_tuple(args...));
+  if (!domain.isEmpty()) {
+    _pieces.emplace_back(std::forward<Args>(args)...);
+  }
 }
 
 template<typename... Args>
 inline void UnordPWMap::emplaceBack(Args&&... args)
 {
-  _pieces.emplace_back(std::forward<Args>(args)...);
+  auto&& domain = std::get<0>(std::forward_as_tuple(args...));
+  if (!domain.isEmpty()) {
+    _pieces.emplace_back(std::forward<Args>(args)...);
+  }
 }
 
 } // namespace detail

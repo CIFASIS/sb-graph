@@ -29,6 +29,8 @@
 
 #include "sbg/rational.hpp"
 
+#include <iosfwd>
+
 namespace SBG {
 
 namespace LIB {

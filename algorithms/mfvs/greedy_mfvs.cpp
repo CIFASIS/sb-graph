@@ -104,6 +104,7 @@ Set GreedyMFVS::calculate(const DirectedSBG& input_dsbg) const
     Util::DEBUG_LOG << "new rmap: " << rmap << "\n\n";
   }
 
+  fvs_result.compact();
   return fvs_result;
 }
 

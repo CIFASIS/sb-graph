@@ -51,7 +51,7 @@ public:
    * vertex. Then, it finds edges with a greater representative in its start
    * than its end. With those edges it constructs a successor map, which is
    * composed with itself up to convergence.
-   * It also handles recursive paths (i.e. paths that have a length depending
+   * It also handles repetitive paths (i.e. paths that have a length depending
    * on the size of the intervals that define the DSBG).
    */
   PWMap calculate(const DirectedSBG& dsbg);
@@ -65,7 +65,7 @@ private:
   Set decreasingRepresentative(const PWMap& rmap) const;
 
   /*
-   * @brief Calculates the MRV for recursive paths.
+   * @brief Calculates the MRV for repetitive paths.
    */
   PWMap repetitivePaths(const PWMap& rmap, const PWMap& decreasing_smap);
 

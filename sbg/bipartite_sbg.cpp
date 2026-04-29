@@ -156,14 +156,16 @@ BipartiteSBG copy(unsigned int copies, BipartiteSBG sbg)
 
     Expression offset_v;
     for (std::size_t k = 0; k < max_v.arity(); ++k) {
-      offset_v = offset_v.cartesianProduct(Expression{1, max_v[k]});
+      offset_v = offset_v.cartesianProduct(Expression{RATIONAL{1}
+        , RATIONAL{max_v[k]}});
     }
     PWMap offset_pw_v = PWMAP_FACT.createPWMap(Map{V, offset_v});
 
     MD_NAT max_e = sbg.E().maxElem();
     Expression offset_e;
     for (std::size_t k = 0; k < max_e.arity(); ++k) {
-      offset_e = offset_e.cartesianProduct(Expression{1, max_e[k]});
+      offset_e = offset_e.cartesianProduct(Expression{RATIONAL{1}
+        , RATIONAL{max_e[k]}});
     }
     PWMap offset_pw_e = PWMAP_FACT.createPWMap(Map{E, offset_e});
     PWMap inverse_offset_pw_e = offset_pw_e.inverse();

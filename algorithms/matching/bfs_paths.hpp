@@ -51,9 +51,9 @@ public:
   /**
    * @brief Concrete implementation that starts with the identity pw for
    * vertices belonging to `endings`. In each step adds adjacent vertices to
-   * the map. It also detects recursions (i.e. if a Set-Vertex is visited more)
+   * the map. It also detects repetitions (i.e. if a set-vertex is visited more)
    * than once, replicating the same path for every element of the same
-   * Set-Vertex.
+   * set-vertex.
    */
   Set calculate(const DirectedSBG& dsbg, const Set& endings);
 };

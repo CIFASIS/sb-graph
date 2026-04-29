@@ -196,7 +196,7 @@ PWMap denseDom(NAT map_sz)
         = SBG::LIB::SET_FACT.createSet(i.begin(), i.step(), i.end());
       domain = std::move(domain).disjointCup(std::move(jth_domain));
     }
-    Expression id{1, 0};
+    Expression id{RATIONAL{1}, RATIONAL{0}};
 
     pw.emplace(domain, id);
   }
@@ -229,8 +229,8 @@ std::pair<PWMap, PWMap> minAdjMaps(NAT map_sz)
       domain2 = std::move(domain2).disjointCup(std::move(jth_domain2));
     }
 
-    Expression id{1, 0};
-    Expression minus_one{1, RATIONAL{-1, 1}};
+    Expression id{RATIONAL{1}, RATIONAL{0}};
+    Expression minus_one{RATIONAL{1}, RATIONAL{-1, 1}};
 
     pw1.emplace(domain1, id);
     pw2.emplace(domain2, minus_one);
@@ -329,8 +329,8 @@ PWMap reducibleMaps(NAT map_sz)
     }
     domain = domain.cartesianProduct(second_dim);
 
-    Expression plus_one{1, 1};
-    Expression id{1, 0};
+    Expression plus_one{RATIONAL{1}, RATIONAL{1}};
+    Expression id{RATIONAL{1}, RATIONAL{0}};
     Expression expr = plus_one.cartesianProduct(id);
 
     pw.emplace(domain, expr);

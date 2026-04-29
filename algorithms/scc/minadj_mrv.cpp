@@ -61,9 +61,9 @@ PWMap MinAdjMRV::calculate(const DirectedSBG& dsbg)
       Vc = V.difference(old_rmap.equalImage(rmap));
       if (!Vc.isEmpty()) {
         // If the mrv is in the same SV, the algorithm would detect a false
-        // recursion, i.e. if we have a cycle 1 -> 2 -> ... -> 10 -> 1,
-        // where SV = [1:10], then it detects a recursion when mrv(10)
-        // becomes "1" (false recursion). So we take self mrvs out.
+        // repetition, i.e. if we have a cycle 1 -> 2 -> ... -> 10 -> 1,
+        // where SV = [1:10], then it detects a repetition when mrv(10)
+        // becomes "1" (false repetition). So we take self mrvs out.
         Set other_rep = rmap.domain().difference(rmap.fixedPoints());
         PWMap Vmap = dsbg.Vmap();
         Set set_vertices = Vmap.image();
@@ -74,8 +74,8 @@ PWMap MinAdjMRV::calculate(const DirectedSBG& dsbg)
             // Vertices in the set-vertex that share its rep with other vertex
             // in the set-vertex
             Set VR = rmap.restrict(vs.intersection(other_rep)).sharedImage();
-            // There is a recursive vertex that changed its rep in the last step
-            // (to avoid computing again an already found recursion)
+            // There is a repeated vertex that changed its rep in the last step
+            // (to avoid computing again an already found repetition).
             if (!VR.intersection(Vc).isEmpty()) {
               // Vertices that reach the shared representative
               Set repV = rmap.preImage(rmap.image(VR));
@@ -113,7 +113,7 @@ PWMap MinAdjMRV::calculate(const DirectedSBG& dsbg)
                 PWMap smap_plus = rmap.restrict(VR);
                 smap_plus = std::move(smap_plus).combine(auxB.minAdj(auxD));
 
-                // Update rmap for recursion, and leave the rest unchanged
+                // Update rmap for repetition, and leave the rest unchanged
                 rec_rmap = std::move(smap_plus).combine(rec_rmap);
                 rec_rmap.compact();
 

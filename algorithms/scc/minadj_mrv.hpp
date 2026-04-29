@@ -49,7 +49,7 @@ public:
    * @brief Concrete implementation that starts with the identity pw for every
    * vertex. Then, for every vertex it compares the current MRV with the MRVs
    * of their adjacent reachable vertices.
-   * It also handles recursive paths (i.e. paths that have a length depending
+   * It also handles repetitive paths (i.e. paths that have a length depending
    * on the size of the intervals that define the DSBG).
    */
   PWMap calculate(const DirectedSBG& dsbg);

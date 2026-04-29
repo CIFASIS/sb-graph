@@ -151,13 +151,19 @@ private:
 template<typename... Args>
 inline void OrdPWMap::emplace(Args&&... args)
 {
-  insert(Map{std::forward<Args>(args)...});
+  auto&& domain = std::get<0>(std::forward_as_tuple(args...));
+  if (!domain.isEmpty()) {
+    insert(Map{std::forward<Args>(args)...});
+  }
 }
 
 template<typename... Args>
 inline void OrdPWMap::emplaceBack(Args&&... args)
 {
-  _pieces.emplace_back(std::forward<Args>(args)...);
+  auto&& domain = std::get<0>(std::forward_as_tuple(args...));
+  if (!domain.isEmpty()) {
+    _pieces.emplace_back(std::forward<Args>(args)...);
+  }
 }
 
 } // namespace detail

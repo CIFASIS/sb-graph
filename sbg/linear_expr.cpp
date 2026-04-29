@@ -19,6 +19,8 @@
 
 #include "sbg/linear_expr.hpp"
 
+#include <iostream>
+
 namespace SBG {
 
 namespace LIB {

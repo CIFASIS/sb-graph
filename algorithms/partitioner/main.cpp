@@ -25,6 +25,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <vector>
 
 #include <algorithms/cc/cc.hpp>
 #include <sbg/set_fact.hpp>
@@ -271,6 +272,27 @@ tuple<SBG::LIB::WeightedSBGraph, PartitionMap, double, double> run_partitioner(c
   auto end_partitionate = chrono::high_resolution_clock::now();
   auto time_to_partitionate = chrono::duration<double, std::milli>(end_partitionate - start_partitionate).count();
 
+  ofstream edges_file("edges.txt");
+  auto edges = sb_graph.E().compact();
+  for (int i = (*edges.begin())[0].begin(); i <= (*edges.begin())[0].end(); i++) {
+    auto departure = (*sb_graph.map1().image(SBG::LIB::SET_FACT.createSet(SBG::LIB::Interval(i))).begin())[0].begin();
+    auto arrival = (*sb_graph.map2().image(SBG::LIB::SET_FACT.createSet(SBG::LIB::Interval(i))).begin())[0].begin();
+    edges_file << departure << " " << arrival << endl;
+  }
+
+
+  vector<unsigned> partition_vector((*sb_graph.V().compact().begin())[0].end() + 1, 0);
+  for (unsigned i = 0; i < partitions.size(); i++) {
+    for (int vert_idx = 0; vert_idx < partitions.at(i).size(); vert_idx++) {
+      for (int val = (*partitions.at(i).at(vert_idx).begin()).begin(); val <= (*partitions.at(i).at(vert_idx).begin()).end(); val++) {
+        partition_vector[val] = i;
+      }
+    }
+  }
+
+  ofstream parts_file("parts.txt");
+  for_each(partition_vector.begin(), partition_vector.end(), [&parts_file](const auto val) { parts_file << val << "\n"; });
+
   return {sb_graph, partitions, time_to_build_graph, time_to_partitionate};
 }
 
@@ -475,9 +497,9 @@ int main(int argc, char** argv)
     s = get_pretty_sb_graph(sb_graph);
   }
 
-  sort_before_print(partitions, sb_graph);
+  // sort_before_print(partitions, sb_graph);
 
-  string output = get_output(partitions);
+  // string output = get_output(partitions);
 
 #ifdef USE_MEMORY_TRACKER
   std::cout << tracker.total_allocated << " bytes were allocated during this execution." << std::endl;

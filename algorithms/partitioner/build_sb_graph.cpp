@@ -26,6 +26,7 @@
 #include <rapidjson/document.h>
 #include <rapidjson/pointer.h>
 #include <rapidjson/istreamwrapper.h>
+#include <set>
 #include <vector>
 #include <util/defs.hpp>
 #include <util/logger.hpp>
@@ -1080,5 +1081,35 @@ WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sect
   return graph;
 
 }
+
+
+Set split_sets_according_to_relations(const WeightedSBGraph& sb_graph)
+{
+    set<int> endpoints = {};
+    for (auto it1 = sb_graph.map1().begin(), it2 = sb_graph.map2().begin(); it1 != sb_graph.map1().end() and it2 != sb_graph.map2().end(); ++it1, ++it2) {
+        auto im1 = (*it1).image();
+        endpoints.insert((*im1.begin())[0].begin());
+        endpoints.insert((*im1.begin())[0].end() + 1);
+
+        auto im2 = (*it2).image();
+        endpoints.insert((*im2.begin())[0].begin());
+        endpoints.insert((*im2.begin())[0].end() + 1);
+    }
+
+    auto vertices = SET_FACT.createSet();
+    for (auto it = endpoints.begin();;) {
+        int current = *it;
+        ++it;
+        if (it == endpoints.end()) {
+            break;
+        }
+        vertices.emplaceBack(Interval(current, 1, *it - 1));
+    }
+    
+    cout << "vertices: " << vertices << endl;
+
+    return vertices;
+}
+
 
 }  // namespace sbg_partitioner

@@ -26,7 +26,6 @@
 #include <algorithms/partitioner/communication_cost.hpp>
 #include <algorithms/partitioner/kernighan_lin_partitioner.hpp>
 #include <algorithms/partitioner/partition_graph.hpp>
-#include <algorithms/partitioner/partition_graph_cc.hpp>
 
 /// @file parser_test.cpp
 ///
@@ -185,7 +184,7 @@ TEST(DISABLED_test_adjacency_matrix, PartitionerTests)
 
         auto sb_graph = sbg_partitioner::build_sb_graph(get_full_file_name(f), false);
 
-        auto injective_conn = sbg_partitioner::using_cc::split_sets_according_to_relations(sb_graph);
+        auto injective_conn = sbg_partitioner::split_sets_according_to_relations(sb_graph);
 
         sbg_partitioner::using_cc::SetPointers sorted_nodes = {};
         unsigned index = 0;

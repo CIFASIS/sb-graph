@@ -34,7 +34,6 @@
 #include "communication_cost.hpp"
 #include "kernighan_lin_partitioner.hpp"
 #include "partition_graph.hpp"
-#include "partition_graph_cc.hpp"
 #include "partition_metrics_api.hpp"
 #include "sbg_partitioner_log.hpp"
 #include "sbg_partitioner_types.hpp"
@@ -203,49 +202,54 @@ int get_air_conditioners_controller_size(const string& name)
   throw 1;
 }
 
-tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> partitionate_traditional(const PartitionerParams& params)
+SBG::LIB::WeightedSBGraph get_sbg(const std::string& filename, unsigned number_of_parts)
 {
-  auto start_build_graph = chrono::high_resolution_clock::now();
-  unique_ptr<SBG::LIB::WeightedSBGraph> sb_graph_ptr;
-  auto filename = *params.filename;
-  double time_to_build_graph = 0.;
   if (filename.find("air_conditioners_cont") != std::string::npos) {
     auto size = get_air_conditioners_controller_size(filename);
-    auto sb_graph = create_air_conditioners_with_controller_graph(size, *params.number_of_partitions);
-    auto end_build_graph = chrono::high_resolution_clock::now();
-    auto time_to_build_graph = chrono::duration<double, std::milli>(end_build_graph - start_build_graph).count();
-    sb_graph_ptr = make_unique<SBG::LIB::WeightedSBGraph>(move(sb_graph));
+    auto sb_graph = create_air_conditioners_with_controller_graph(size, number_of_parts);
+    return sb_graph;
   } else {
     auto sb_graph = build_sb_graph(filename, false);
-    sb_graph_ptr = make_unique<SBG::LIB::WeightedSBGraph>(move(sb_graph));
+    return sb_graph;
+  }
+}
+
+SBG::LIB::WeightedSBGraph build_computational_sbg(const PartitionerParams& params)
+{
+  SBG::LIB::WeightedSBGraph sb_graph = get_sbg(*params.filename, *params.number_of_partitions);
+
+  // This is a hack to get intervals from their relations
+  auto new_vertices = split_sets_according_to_relations(sb_graph);
+
+  // check that all vertices were included
+  if (sanity_check_enabled) {
+    auto diff1 = new_vertices.difference(sb_graph.V());
+    assert(not diff1.isEmpty());
+
+    auto diff2 = sb_graph.V().difference(new_vertices);
+    assert(not diff2.isEmpty());
+
+    cout << "diff1 " << diff1 << ", " << "diff2 " << diff2 << endl;
   }
 
-  {
-    // This is a hack to get intervals from their relations
-    auto new_vertices = using_cc::split_sets_according_to_relations(*sb_graph_ptr);
+  return SBG::LIB::WeightedSBGraph(
+      new_vertices,
+      SBG::LIB::PW_FACT.createPWMap(),
+      sb_graph.map1().compact(),
+      sb_graph.map2().compact(),
+      SBG::LIB::PW_FACT.createPWMap(),
+      SBG::LIB::PW_FACT.createPWMap()
+  );
+}
 
-    if (sanity_check_enabled) {
-      auto diff1 = new_vertices.difference(sb_graph_ptr->V());
-      assert(not diff1.isEmpty());
 
-      auto diff2 = sb_graph_ptr->V().difference(new_vertices);
-      assert(not diff2.isEmpty());
-
-      cout << "diff1 " << diff1 << ", " << "diff2 " << diff2 << endl;
-    }
-
-    sb_graph_ptr.reset(
-      new SBG::LIB::WeightedSBGraph(
-        new_vertices,
-        SBG::LIB::PW_FACT.createPWMap(),
-        sb_graph_ptr->map1().compact(),
-        sb_graph_ptr->map2().compact(),
-        SBG::LIB::PW_FACT.createPWMap(),
-        SBG::LIB::PW_FACT.createPWMap()
-      )
-    );
-  }
-
+tuple<SBG::LIB::WeightedSBGraph, PartitionMap, double, double> run_partitioner(const PartitionerParams& params)
+{
+  auto start_building_graph = chrono::high_resolution_clock::now();
+  auto filename = *params.filename;
+  auto sb_graph = build_computational_sbg(params);
+  auto end_building_graph = chrono::high_resolution_clock::now();
+  auto time_to_build_graph = chrono::duration<double, std::milli>(end_building_graph- start_building_graph).count();
 #ifdef SBG_PARTITIONER_LOGGING
   cout << "sb_graph: " << *sb_graph_ptr << endl;
   cout << "connections:\n";
@@ -260,84 +264,16 @@ tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> parti
 
   auto start_partitionate = chrono::high_resolution_clock::now();
   auto partitions =
-      best_initial_partition(*sb_graph_ptr, *params.number_of_partitions, params.initial_partition_strategy, params.enable_multithreading);
+      best_initial_partition(sb_graph, *params.number_of_partitions, params.initial_partition_strategy, params.enable_multithreading);
   cout << "chosen partition " << partitions << endl;
 
-  kl_sbg_imbalance_partitioner(*sb_graph_ptr, partitions, params.epsilon, params.enable_multithreading);
+  kl_sbg_imbalance_partitioner(sb_graph, partitions, params.epsilon, params.enable_multithreading);
   auto end_partitionate = chrono::high_resolution_clock::now();
   auto time_to_partitionate = chrono::duration<double, std::milli>(end_partitionate - start_partitionate).count();
 
-  return {move(sb_graph_ptr), partitions, time_to_build_graph, time_to_partitionate};
+  return {sb_graph, partitions, time_to_build_graph, time_to_partitionate};
 }
 
-tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> partitionate_using_adjacency_matrix(
-    const PartitionerParams& params)
-{
-  auto start_build_graph = chrono::high_resolution_clock::now();
-  auto sb_graph = make_unique<SBG::LIB::WeightedSBGraph>(build_sb_graph(params.filename->c_str(), false));
-  auto end_build_graph = chrono::high_resolution_clock::now();
-  auto time_to_build_graph = chrono::duration<double, std::milli>(end_build_graph - start_build_graph).count();
-
-  cout << "sb_graph: " << *sb_graph << endl;
-
-  auto injective_conn = using_cc::split_sets_according_to_relations(*sb_graph);
-
-  logging::sbg_log << "injective connections " << injective_conn << endl;
-#if SBG_PARTITIONER_LOGGING
-  logging::sbg_log << "remaining " << sb_graph->V().difference(injective_conn) << endl;
-#endif
-
-  auto start_partitionate = chrono::high_resolution_clock::now();
-  using_cc::SetPointers sorted_nodes = {};
-  unsigned index = 0;
-  for (const auto& s : injective_conn) {
-    sorted_nodes.push_back(using_cc::SetPointer(index++, s, 0, s.cardinal()));
-  }
-
-  sbg_partitioner::CommunicationCostCC comm_cc(*sb_graph, sorted_nodes);
-
-  std::vector<sbg_partitioner::using_cc::SetPointers> sorted_partitions;
-  auto new_graph = SBG::LIB::WeightedSBGraph(injective_conn, sb_graph->Vmap(), sb_graph->map1(), sb_graph->map2(), sb_graph->Emap(),
-                                             sb_graph->subEmap());
-
-  auto non_sorted_partitions =
-      best_initial_partition(new_graph, *params.number_of_partitions, params.initial_partition_strategy, params.enable_multithreading);
-
-  // logging::sbg_log << "converting nodes into set pointers" << endl;
-  auto start_conversion = chrono::high_resolution_clock::now();
-  for (const auto& partition : non_sorted_partitions) {
-    sorted_partitions.emplace_back();
-    for (const auto& v : partition) {
-      for (const auto& n : sorted_nodes) {
-        if (not v.intersection(n.set_piece).isEmpty()) {
-          size_t offset = v.begin()[0].begin() - n.set_piece.begin()[0].begin();
-          sorted_partitions.back().emplace_back(n.index, n.set_piece, offset, v.cardinal());
-        }
-      }
-    }
-  }
-  auto end_conversion = chrono::high_resolution_clock::now();
-  auto conversion_time = chrono::duration<double, std::milli>(end_conversion - start_conversion).count();
-  // auto sorted_partitions = using_cc::best_initial_partition(*sb_graph, sorted_nodes, comm_cc, *params.number_of_partitions,
-  // InitialPartitionStrategy::DFS_DISTRIBUTIVE_POSTORDER);
-
-  if (sanity_check_enabled) {
-    sanity_check(*sb_graph, sbg_partitioner::using_cc::rebuild_partitions(sorted_nodes, sorted_partitions), *params.number_of_partitions);
-  }
-
-  using_cc::kl_sbg_imbalance_partitioner(*sb_graph, sorted_nodes, sorted_partitions, comm_cc, 0.);
-
-  auto partitions = sbg_partitioner::using_cc::rebuild_partitions(sorted_nodes, sorted_partitions);
-  auto end_partitionate = chrono::high_resolution_clock::now();
-  auto time_to_partitionate = chrono::duration<double, std::milli>(end_partitionate - start_partitionate).count();
-  time_to_partitionate -= conversion_time;
-
-  if (sanity_check_enabled) {
-    sanity_check(*sb_graph, partitions, *params.number_of_partitions);
-  }
-
-  return {move(sb_graph), partitions, time_to_build_graph, time_to_partitionate};
-}
 
 static struct option long_options[] = {{"config-filename", required_argument, 0, 'c'},
                                        {"filename", required_argument, 0, 'f'},
@@ -348,7 +284,6 @@ static struct option long_options[] = {{"config-filename", required_argument, 0,
                                        {"directory", required_argument, 0, 'd'},
                                        {"initial-partition-strategy", required_argument, 0, 'i'},
                                        {"enable-multithreading", no_argument, 0, 't'},
-                                       {"use-adjacency-matrix", no_argument, 0, 'k'},
                                        {"version", no_argument, 0, 'v'},
                                        {"help", no_argument, 0, 'h'}};
 
@@ -360,7 +295,7 @@ int main(int argc, char** argv)
   // look for configuration file
   while (true) {
     int option_index = 0;
-    opt = getopt_long(argc, argv, "c:f:p:e:o:g:d:i:ktmvh:", long_options, &option_index);
+    opt = getopt_long(argc, argv, "c:f:p:e:o:g:d:i:tmvh:", long_options, &option_index);
     if (opt == EOF) break;
 
     switch (opt) {
@@ -384,7 +319,7 @@ int main(int argc, char** argv)
   optind = 0;
   while (true) {
     int option_index = 0;
-    opt = getopt_long(argc, argv, "c:f:p:e:o:g:d:i:ktmvh:", long_options, &option_index);
+    opt = getopt_long(argc, argv, "c:f:p:e:o:g:d:i:tmvh:", long_options, &option_index);
     if (opt == EOF) break;
 
     switch (opt) {
@@ -441,10 +376,6 @@ int main(int argc, char** argv)
       params.enable_multithreading = true;
       break;
 
-    case 'k':
-      params.use_connected_components = true;
-      break;
-
     case 'v':
       version();
       exit(0);
@@ -481,28 +412,16 @@ int main(int argc, char** argv)
     s = "";
   }
 
-  unique_ptr<SBG::LIB::WeightedSBGraph> sb_graph;
-  PartitionMap partitions;
-  double time_to_build_graph, time_to_partitionate = 0.0;
-  if (not params.use_connected_components) {
-    tie(sb_graph, partitions, time_to_build_graph, time_to_partitionate) = partitionate_traditional(params);
-  } else {
-    tie(sb_graph, partitions, time_to_build_graph, time_to_partitionate) = partitionate_using_adjacency_matrix(params);
-  }
-
-  if (not sb_graph) {
-    cerr << "Something happened and the graph was not even created. Returning earlier" << endl;
-    return 1;
-  }
+  auto [sb_graph, partitions, time_to_build_graph, time_to_partitionate] = run_partitioner(params);
 
   if (params.compute_metrics) {
     map<string, metrics::communication_metrics> metrics;
 
-    int edge_cut = metrics::edge_cut(partitions, *sb_graph);
+    int edge_cut = metrics::edge_cut(partitions, sb_graph);
 
-    auto [comm_volume, max_comm_volume] = metrics::communication_volume(partitions, *sb_graph);
+    auto [comm_volume, max_comm_volume] = metrics::communication_volume(partitions, sb_graph);
 
-    auto max_imb = metrics::maximum_imbalance(partitions, *sb_graph);
+    auto max_imb = metrics::maximum_imbalance(partitions, sb_graph);
 
     metrics::communication_metrics comm_metrics = metrics::communication_metrics{edge_cut, comm_volume, max_comm_volume, max_imb};
     metrics["sbg-partitioner"] = comm_metrics;
@@ -518,13 +437,13 @@ int main(int argc, char** argv)
         }
         cout << f << endl;
 
-        auto partition_from_file = metrics::read_partition_from_file(f, *sb_graph, *params.number_of_partitions);
+        auto partition_from_file = metrics::read_partition_from_file(f, sb_graph, *params.number_of_partitions);
 
-        int edge_cut = metrics::edge_cut(partition_from_file, *sb_graph);
+        int edge_cut = metrics::edge_cut(partition_from_file, sb_graph);
 
-        auto [comm_volume, max_comm_volume] = metrics::communication_volume(partition_from_file, *sb_graph);
+        auto [comm_volume, max_comm_volume] = metrics::communication_volume(partition_from_file, sb_graph);
 
-        auto max_imb = metrics::maximum_imbalance(partition_from_file, *sb_graph);
+        auto max_imb = metrics::maximum_imbalance(partition_from_file, sb_graph);
 
         metrics::communication_metrics comm_metrics = metrics::communication_metrics{
             edge_cut,
@@ -549,14 +468,14 @@ int main(int argc, char** argv)
   cout << "time_to_partitionate = " << time_to_partitionate << " ms" << endl;
 
   if (sanity_check_enabled) {
-    sanity_check(*sb_graph, partitions, *params.number_of_partitions);
+    sanity_check(sb_graph, partitions, *params.number_of_partitions);
   }
 
   if (s) {
-    s = get_pretty_sb_graph(*sb_graph);
+    s = get_pretty_sb_graph(sb_graph);
   }
 
-  sort_before_print(partitions, *sb_graph);
+  sort_before_print(partitions, sb_graph);
 
   string output = get_output(partitions);
 

@@ -88,6 +88,12 @@ SBG::LIB::WeightedSBGraph create_air_conditioners_graph();
 SBG::LIB::WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sections);
 
 
+/***
+ * @brief Splits sets according to their relations, defined by the piecewise maps of the graph.
+ */
+SBG::LIB::Set split_sets_according_to_relations(const SBG::LIB::WeightedSBGraph& sb_graph);
+
+
 /// It returns the edge cost or node weight of the input set. It looks for a key in cost that intersects
 /// the input set, and returns its value. If no key intersects the input set, it will return 1.
 /// @param set input set we want to know the cost or weight/

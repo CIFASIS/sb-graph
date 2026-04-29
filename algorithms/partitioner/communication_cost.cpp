@@ -24,7 +24,6 @@
 
 #include "communication_cost.hpp"
 #include "partition_graph.hpp"
-#include "partition_graph_cc.hpp"
 #include "sbg_partitioner_log.hpp"
 
 

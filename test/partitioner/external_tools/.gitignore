@@ -1,0 +1,6 @@
+install/
+3rd-party/KaHIP/deploy/
+3rd-party/boost/
+3rd-party/sbg/
+data/
+build/

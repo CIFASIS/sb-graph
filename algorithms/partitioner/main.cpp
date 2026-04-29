@@ -220,6 +220,33 @@ tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> parti
     sb_graph_ptr = make_unique<SBG::LIB::WeightedSBGraph>(move(sb_graph));
   }
 
+  {
+    // This is a hack to get intervals from their relations
+    auto new_vertices = using_cc::split_sets_according_to_relations(*sb_graph_ptr);
+
+    if (sanity_check_enabled) {
+      auto diff1 = new_vertices.difference(sb_graph_ptr->V());
+      assert(not diff1.isEmpty());
+
+      auto diff2 = sb_graph_ptr->V().difference(new_vertices);
+      assert(not diff2.isEmpty());
+
+      cout << "diff1 " << diff1 << ", " << "diff2 " << diff2 << endl;
+    }
+
+    sb_graph_ptr.reset(
+      new SBG::LIB::WeightedSBGraph(
+        new_vertices,
+        SBG::LIB::PW_FACT.createPWMap(),
+        sb_graph_ptr->map1().compact(),
+        sb_graph_ptr->map2().compact(),
+        SBG::LIB::PW_FACT.createPWMap(),
+        SBG::LIB::PW_FACT.createPWMap()
+      )
+    );
+  }
+
+#ifdef SBG_PARTITIONER_LOGGING
   cout << "sb_graph: " << *sb_graph_ptr << endl;
   cout << "connections:\n";
   for (auto it1 = sb_graph_ptr->map1().begin(), it2 = sb_graph_ptr->map2().begin();
@@ -229,6 +256,7 @@ tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> parti
     cout << n1 << ", " << n2 << " from " << (*it1).dom() << "\n";
   }
   cout << endl;
+#endif
 
   auto start_partitionate = chrono::high_resolution_clock::now();
   auto partitions =
@@ -252,7 +280,7 @@ tuple<unique_ptr<SBG::LIB::WeightedSBGraph>, PartitionMap, double, double> parti
 
   cout << "sb_graph: " << *sb_graph << endl;
 
-  auto injective_conn = using_cc::split_nodes_into_injective_domains(*sb_graph);
+  auto injective_conn = using_cc::split_sets_according_to_relations(*sb_graph);
 
   logging::sbg_log << "injective connections " << injective_conn << endl;
 #if SBG_PARTITIONER_LOGGING

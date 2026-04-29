@@ -196,132 +196,35 @@ pair<Set, Set> take_granular_option(const Set& set_1, const Set& set_2)
     return {new_set_1, new_set_2};
 }
 
+}
 
-list<pair<SBG::LIB::Set, SBG::LIB::Set>> granularize_intervals_into_injective_domains(const WeightedSBGraph& sb_graph)
+
+Set split_sets_according_to_relations(const WeightedSBGraph& sb_graph)
 {
-    list<pair<SBG::LIB::Set, SBG::LIB::Set>> linked_intervals;
-    
+    set<int> endpoints = {};
     for (auto it1 = sb_graph.map1().begin(), it2 = sb_graph.map2().begin(); it1 != sb_graph.map1().end() and it2 != sb_graph.map2().end(); ++it1, ++it2) {
-        auto slope1 = (*it1).exp().exps()[0].slope();
-        auto slope2 = (*it2).exp().exps()[0].slope();
+        auto im1 = (*it1).image();
+        endpoints.insert((*im1.begin())[0].begin());
+        endpoints.insert((*im1.begin())[0].end() + 1);
 
-        if ((slope1 > 0 and slope2 > 0) or (*it1).dom().cardinal() == 1) {
-            auto im1_ = (*it1).image();
-            auto im2_ = (*it2).image();
-
-            auto [im1, im2] = take_granular_option(im1_, im2_);
-
-            linked_intervals.push_back(make_pair(im1, im2));
-        }
+        auto im2 = (*it2).image();
+        endpoints.insert((*im2.begin())[0].begin());
+        endpoints.insert((*im2.begin())[0].end() + 1);
     }
 
-    bool change =  true;
-    while (change) {
-        change = false;
-        for (const auto& [im1, im2] : linked_intervals) {
-            for (auto& [p1, p2] : linked_intervals) {
-                if (not p1.intersection(im1).isEmpty()) {
-                    // logging::sbg_log << "intersection between " << p1 << ", " << im1 << " " << granular_union(im1.intersection(p1), p1) << endl;
-                    auto new_p1 = p1;
-                    auto new_p2 = p2;
-                    new_p1 = granular_union(im1.intersection(new_p1), new_p1);
-                    tie(new_p1, new_p2) = take_granular_option(new_p1, new_p2);
-
-                    if (not (set_comparison(p1, new_p1) and set_comparison(p2, new_p2))) {
-                        p1 = new_p1;
-                        p2 = new_p2;
-                        change = true;
-                    }
-                }
-
-                if (not p2.intersection(im1).isEmpty()) {
-                    // logging::sbg_log << "intersection between " << p2 << ", " << im1 << " " << granular_union(im1.intersection(p2), p2) << endl;
-                    auto new_p1 = p1;
-                    auto new_p2 = p2;
-                    new_p2 = granular_union(im1.intersection(new_p2), new_p2);
-                    tie(new_p1, new_p2) = take_granular_option(new_p1, new_p2);
-
-                    if (not (set_comparison(p1, new_p1) and set_comparison(p2, new_p2))) {
-                        p1 = new_p1;
-                        p2 = new_p2;
-                        change = true;
-                    }
-                }
-
-                if (not p1.intersection(im2).isEmpty()) {
-                    // logging::sbg_log << "intersection between " << p1 << ", " << im2 << " " << granular_union(im2.intersection(p1), p1) << endl;
-                    auto new_p1 = p1;
-                    auto new_p2 = p2;
-                    new_p1 = granular_union(im2.intersection(new_p1), new_p1);
-                    tie(new_p1, new_p2) = take_granular_option(new_p1, new_p2);
-
-                    if (not (set_comparison(p1, new_p1) and set_comparison(p2, new_p2))) {
-                        p1 = new_p1;
-                        p2 = new_p2;
-                        change = true;
-                    }
-                }
-
-                if (not p2.intersection(im2).isEmpty()) {
-                    // logging::sbg_log << "intersection between " << p2 << ", " << im2  << " " << granular_union(im2.intersection(p2), p2) << endl;
-                    auto new_p1 = p1;
-                    auto new_p2 = p2;
-                    new_p2 = granular_union(im2.intersection(new_p2), new_p2);
-                    tie(new_p1, new_p2) = take_granular_option(new_p1, new_p2);
-
-                    if (not (set_comparison(p1, new_p1) and set_comparison(p2, new_p2))) {
-                        p1 = new_p1;
-                        p2 = new_p2;
-                        change = true;
-                    }
-                }
-            }
+    auto vertices = SET_FACT.createSet();
+    for (auto it = endpoints.begin();;) {
+        int current = *it;
+        ++it;
+        if (it == endpoints.end()) {
+            break;
         }
+        vertices.emplaceBack(Interval(current, 1, *it - 1));
     }
+    
+    cout << "injective_conn: " << vertices << endl;
 
-    return linked_intervals;
-}
-
-
-Set convert_linked_intervals_into_sets(const list<pair<Set, Set>>& linked_intervals)
-{
-    auto injective_conn = SBG::LIB::SET_FACT.createSet();
-    set<unsigned> points;
-    for (const auto& [p1, p2] : linked_intervals) {
-        for (const auto& p : p1){
-            points.insert(p[0].begin());
-            points.insert(p[0].end() + 1);
-        }
-
-        for (const auto& p : p2){
-            points.insert(p[0].begin());
-            points.insert(p[0].end() + 1);
-        }
-    }
-
-    logging::sbg_log << "[";
-    for_each(points.begin(), points.end(), [](auto& p) { logging::sbg_log << p << " "; });
-    logging::sbg_log << "]" << endl;
-
-    vector<unsigned> points_vector(points.begin(), points.end());
-
-    for (size_t i = 0; i < points_vector.size() - 1; i++) {
-        injective_conn.emplaceBack(SBG::LIB::Interval(points_vector[i], 1, points_vector[i + 1] - 1));
-    }
-
-    return injective_conn;
-}
-
-}
-
-
-Set split_nodes_into_injective_domains(const WeightedSBGraph& sb_graph)
-{
-    auto linked_intervals = granularize_intervals_into_injective_domains(sb_graph);
-    auto injective_conn = convert_linked_intervals_into_sets(linked_intervals);
-    cout << "injective_conn: " << injective_conn << endl;
-
-    return injective_conn;
+    return vertices;
 }
 
 

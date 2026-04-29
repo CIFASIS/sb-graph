@@ -52,7 +52,10 @@ std::vector<SetPointers> best_initial_partition(
     const InitialPartitionStrategy strategy);
 
 
-SBG::LIB::Set split_nodes_into_injective_domains(const SBG::LIB::WeightedSBGraph& sb_graph);
+/***
+ * @brief Splits sets according to their relations, defined by the piecewise maps of the graph.
+ */
+SBG::LIB::Set split_sets_according_to_relations(const SBG::LIB::WeightedSBGraph& sb_graph);
 
 
 int bisection(

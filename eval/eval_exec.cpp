@@ -69,23 +69,27 @@ void printHeader(Util::prog_opts::variables_map vm)
 // Evaluation Executor ---------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-EvalExecutor::EvalExecutor() : scc_impl_(1)
+EvalExecutor::EvalExecutor() : _scc_impl(1), _mfvs_impl(1)
 {
   _config.add_options()
-    ("set_impl,s", Util::prog_opts::value(&set_impl_),
+    ("set_impl,s", Util::prog_opts::value(&_set_impl),
      " Desired set implementation:"
      "\n  - 0 for unordered sets (default option)"
      "\n  - 1 for ordered sets"
      "\n  - 2 for unidimensional ordered dense sets")
-    ("pw_impl,p", Util::prog_opts::value(&pw_impl_),
+    ("pw_impl,p", Util::prog_opts::value(&_pw_impl),
      " Desired PWMap implementation:"
      "\n  - 0 for unordered PWMaps (default option)"
      "\n  - 1 for ordered PWMaps"
      "\n  - 2 for domain ordered PWMaps")
-    ("scc_impl", Util::prog_opts::value(&scc_impl_),
+    ("scc_impl", Util::prog_opts::value(&_scc_impl),
      "Desired SCC algorithm implementation:"
      "\n  - 0 for V1 of minimum reachable SCC"
-     "\n  - 1 for V2 of minimum reachable SCC (default option)");
+     "\n  - 1 for V2 of minimum reachable SCC (default option)")
+    ("mfvs_impl", Util::prog_opts::value(&_mfvs_impl),
+     "Desired MFVS algorithm implementation:"
+     "\n  - 0 for degree greedy MFVS"
+     "\n  - 1 for smallest set-vertex MFVS (default option)");
 
   // First option without name is the input file
   _positional.add("input-file", 1);
@@ -105,21 +109,23 @@ detail::EvalUserInput EvalExecutor::chooseImplementation()
   result.set_set_impl(autom_impl.set_impl());
   result.set_pw_impl(autom_impl.pw_impl());
 
-  if (set_impl_) {
-    if (set_impl_ > autom_impl.set_impl()) {
+  if (_set_impl) {
+    if (_set_impl > autom_impl.set_impl()) {
       Util::ERROR("Incompatible set implementation for the SBG input\n");
     }
 
-    result.set_set_impl(set_impl_);
+    result.set_set_impl(_set_impl);
   }
-  if (pw_impl_) {
-    if (pw_impl_ > autom_impl.pw_impl()) {
+  if (_pw_impl) {
+    if (_pw_impl > autom_impl.pw_impl()) {
       Util::ERROR("Incompatible PWMap implementation for the SBG input\n");
     }
 
-    result.set_pw_impl(pw_impl_);
+    result.set_pw_impl(_pw_impl);
   }
-  result.set_scc_impl(scc_impl_);
+
+  result.set_scc_impl(_scc_impl);
+  result.set_mfvs_impl(_mfvs_impl);
 
   return result;
 }

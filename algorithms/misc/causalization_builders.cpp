@@ -89,14 +89,15 @@ std::tuple<SBG::LIB::PWMap, SBG::LIB::PWMap, SBG::LIB::PWMap> buildSCCEdges(
   return {mapB, mapD, Emap};
 }
 
-SBG::LIB::PWMap partitionEmap(const SBG::LIB::DirectedSBG& dsbg)
+void partitionEmap(SBG::LIB::DirectedSBG& dsbg)
 {
+  SBG::LIB::Set V = dsbg.V();
   SBG::LIB::PWMap Vmap = dsbg.Vmap();
   SBG::LIB::PWMap mapB = dsbg.mapB();
   SBG::LIB::PWMap mapD = dsbg.mapD();
   SBG::LIB::PWMap Emap = dsbg.Emap();
 
-  std::size_t arity = dsbg.V().arity();
+  std::size_t arity = V.arity();
   SBG::LIB::NAT j = 1;
   SBG::LIB::PWMap partitioned_Emap = SBG::LIB::PWMAP_FACT.createPWMap();
   dsbg.foreachSetEdge([&](const SBG::LIB::MD_NAT& SE)
@@ -132,7 +133,7 @@ SBG::LIB::PWMap partitionEmap(const SBG::LIB::DirectedSBG& dsbg)
     }
   });
 
-  return partitioned_Emap;
+  dsbg = SBG::LIB::DirectedSBG{V, Vmap, mapB, mapD, partitioned_Emap};
 }
 
 SBG::LIB::DirectedSBG buildLoopDetectionSBG(const SBG::LIB::MatchData& data)
@@ -148,10 +149,10 @@ SBG::LIB::DirectedSBG buildLoopDetectionSBG(const SBG::LIB::MatchData& data)
   SBG::LIB::PWMap Emap = SBG::LIB::PWMAP_FACT.createPWMap();
   std::tie(mapB, mapD, Emap) = buildSCCEdges(data, Vmap);
 
-  //SBG::LIB::DirectedSBG dsbg{V, Vmap, mapB, mapD, Emap};
-  //Emap = partitionEmap(dsbg);
+  SBG::LIB::DirectedSBG dsbg{V, Vmap, mapB, mapD, Emap};
+  partitionEmap(dsbg);
 
-  return SBG::LIB::DirectedSBG{V, Vmap, mapB, mapD, Emap};
+  return dsbg;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

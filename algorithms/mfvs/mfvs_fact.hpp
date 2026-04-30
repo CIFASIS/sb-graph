@@ -39,6 +39,13 @@ public:
   MinFeedbackVertexSet createMFVSAlgorithm() const;
 };
 
+class SmallSVMFVSFact {
+public:
+  SmallSVMFVSFact() = default;
+
+  MinFeedbackVertexSet createMFVSAlgorithm() const;
+};
+
 /**
  * @brief Single instance of cv factory to be used by clients in need of
  * creating an instance of a cv algorithm. A client includes this file and
@@ -56,7 +63,7 @@ public:
   MinFeedbackVertexSet createMFVSAlgorithm() const;
 
 private:
-  using MFVSFactImpl = std::variant<GreedyMFVSFact>;
+  using MFVSFactImpl = std::variant<GreedyMFVSFact, SmallSVMFVSFact>;
 
   MFVSFactory();
 

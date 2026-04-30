@@ -40,9 +40,10 @@ public:
 private:
   detail::EvalUserInput chooseImplementation();
 
-  boost::optional<int> set_impl_;
-  boost::optional<int> pw_impl_;
-  boost::optional<int> scc_impl_;
+  boost::optional<int> _set_impl;
+  boost::optional<int> _pw_impl;
+  boost::optional<int> _scc_impl;
+  boost::optional<int> _mfvs_impl;
 };
 
 } // namespace Eval

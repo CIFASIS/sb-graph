@@ -1,6 +1,6 @@
-/** @file cut_vertex.hpp
+/** @file smallest_sv_mfvs.hpp
 
- @brief <b>SBG Vertex Cut Set Algorithm Abstract Interface</b>
+ @brief <b>Concrete SBG Smallest SV MFVS Algorithm implementation</b>
 
  <hr>
 
@@ -21,15 +21,11 @@
 
  ******************************************************************************/
 
-#ifndef SBGRAPH_ALGORITHMS_MFVS_MIN_FEEDBACK_VERTEX_SET_HPP_
-#define SBGRAPH_ALGORITHMS_MFVS_MIN_FEEDBACK_VERTEX_SET_HPP_
+#ifndef SBGRAPH_ALGORITHMS_MFVS_SMALLEST_SV_MFVS_HPP_
+#define SBGRAPH_ALGORITHMS_MFVS_SMALLEST_SV_MFVS_HPP_
 
-#include "algorithms/mfvs/greedy_mfvs.hpp"
-#include "algorithms/mfvs/smallest_sv_mfvs.hpp"
 #include "sbg/directed_sbg.hpp"
-
-#include <iosfwd>
-#include <variant>
+#include "sbg/set.hpp"
 
 namespace SBG {
 
@@ -38,34 +34,25 @@ namespace LIB {
 namespace detail {
 
 ///////////////////////////////////////////////////////////////////////////////
-// Minimum Feedback Vertex Set Implementations --------------------------------
+// Smallest set-vertex MFVS Algorithm Implementation --------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
-using MFVSImpl = std::variant<GreedyMFVS, SmallestSVMFVS>;
-
-}
-
-enum class MFVSKind { kGreedy, kSmallSV };
-
-std::ostream& operator<<(std::ostream& out, const MFVSKind kind);
-
-///////////////////////////////////////////////////////////////////////////////
-// Minimum Feedback Vertex Set Algorithm --------------------------------------
-///////////////////////////////////////////////////////////////////////////////
-
-class MinFeedbackVertexSet {
+/**
+ * @brief In each step takes out vertices of the smallest set-vertex available.
+ * This way, it is first checked if it is possible to disconnect the SBG
+ * with a constant number of elements.
+ */
+class SmallestSVMFVS {
 public:
-  MinFeedbackVertexSet(MFVSKind kind);
+  SmallestSVMFVS();
 
-  Set calculate(const DirectedSBG& dsbg);
-
-private:
-  MFVSKind _kind;
-  detail::MFVSImpl _impl;
+  Set calculate(const DirectedSBG& input_dsbg) const;
 };
+
+} // namespace detail
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif // SBGRAPH_ALGORITHMS_MFVS_MIN_FEEDBACK_VERTEX_SET_HPP_
+#endif // SBGRAPH_ALGORITHMS_MFVS_GREEDY_MFVS_HPP_

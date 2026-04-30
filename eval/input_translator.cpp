@@ -51,6 +51,11 @@ void InputTranslator::translate(EvalUserInput& input)
   if (scc) {
     setSCCFactory(*scc);
   }
+
+  EvalUserInput::MaybeInt mfvs = input.mfvs_impl();
+  if (mfvs) {
+    setMFVSFactory(*mfvs);
+  }
 }
 
 } // namespace detail

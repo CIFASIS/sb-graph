@@ -113,6 +113,7 @@ private:
 void setSetFactory(int set_impl);
 void setPWFactory(int pw_impl);
 void setSCCFactory(int scc_impl);
+void setMFVSFactory(int mfvs_impl);
 
 } // namespace Eval
 

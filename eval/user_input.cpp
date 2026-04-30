@@ -33,64 +33,64 @@ EvalUserInput::EvalUserInput() {}
 
 EvalUserInput::MaybeInt EvalUserInput::set_impl() const
 {
-  return set_impl_;
+  return _set_impl;
 }
 
 EvalUserInput::MaybeInt EvalUserInput::pw_impl() const
 {
-  return pw_impl_;
+  return _pw_impl;
 }
 
 EvalUserInput::MaybeInt EvalUserInput::match_impl() const
 {
-  return match_impl_;
+  return _match_impl;
 }
 
 EvalUserInput::MaybeInt EvalUserInput::scc_impl() const
 {
-  return scc_impl_;
+  return _scc_impl;
+}
+
+EvalUserInput::MaybeInt EvalUserInput::mfvs_impl() const
+{
+  return _mfvs_impl;
 }
 
 EvalUserInput::MaybeInt EvalUserInput::ts_impl() const
 {
-  return ts_impl_;
-}
-
-EvalUserInput::MaybeInt EvalUserInput::cv_impl() const
-{
-  return cv_impl_;
+  return _ts_impl;
 }
 
 // Setters ---------------------------------------------------------------------
 
 void EvalUserInput::set_set_impl(MaybeInt set_impl)
 {
-  set_impl_ = set_impl;
+  _set_impl = set_impl;
 }
 
 void EvalUserInput::set_pw_impl(MaybeInt pw_impl)
 {
-  pw_impl_ = pw_impl;
+  _pw_impl = pw_impl;
 }
 
 void EvalUserInput::set_match_impl(MaybeInt match_impl)
 {
-  match_impl_ = match_impl;
+  _match_impl = match_impl;
 }
 
 void EvalUserInput::set_scc_impl(MaybeInt scc_impl)
 {
-  scc_impl_ = scc_impl;
+  _scc_impl = scc_impl;
+}
+
+void EvalUserInput::set_mfvs_impl(MaybeInt mfvs_impl)
+{
+  _mfvs_impl = mfvs_impl;
 }
 
 void EvalUserInput::set_ts_impl(MaybeInt ts_impl)
 {
-  ts_impl_ = ts_impl;
-}
-
-void EvalUserInput::set_cv_impl(MaybeInt cv_impl)
-{
-  cv_impl_ = cv_impl;
+  _ts_impl = ts_impl;
 }
 
 } // namespace detail

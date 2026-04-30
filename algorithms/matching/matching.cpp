@@ -60,6 +60,7 @@ Matching::Matching(MatchKind kind) : _kind(kind), _impl()
 
     default: {
       Util::ERROR("Unsupported matching algorithm implementation");
+      break;
     }
   }  
 }

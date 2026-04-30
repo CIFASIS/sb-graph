@@ -25,7 +25,7 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Maximum Degree Cut Vertex Factory -------------------------------------------
+// Maximum Degree MFVS Factory -------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 MinFeedbackVertexSet GreedyMFVSFact::createMFVSAlgorithm() const
@@ -34,11 +34,20 @@ MinFeedbackVertexSet GreedyMFVSFact::createMFVSAlgorithm() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// Smallest set-vertex MFVS Factory --------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+MinFeedbackVertexSet SmallSVMFVSFact::createMFVSAlgorithm() const
+{
+  return MinFeedbackVertexSet{MFVSKind::kSmallSV};
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Factory for clients --------------------------------------------------------- 
 ////////////////////////////////////////////////////////////////////////////////
 
 MFVSFactory::MFVSFactory()
-  : _kind(MFVSKind::kGreedy), _impl(GreedyMFVSFact{}) {}
+  : _kind(MFVSKind::kSmallSV), _impl(SmallSVMFVSFact{}) {}
 
 MFVSFactory& MFVSFactory::instance()
 {
@@ -54,6 +63,12 @@ void MFVSFactory::set_mfvs_fact(MFVSKind kind)
   switch (kind) {
     case MFVSKind::kGreedy: {
       _impl = GreedyMFVSFact{};
+      break;
+    }
+
+    case MFVSKind::kSmallSV: {
+      _impl = SmallSVMFVSFact{};
+      break;
     }
 
     default: {

@@ -37,6 +37,11 @@ std::ostream& operator<<(std::ostream& out, const MFVSKind kind)
       break;
     }
 
+    case MFVSKind::kSmallSV: {
+      out << "smallest set-vertex";
+      break;
+    }
+
     default: {
       Util::ERROR("MFVSKind::operator<<: unsupported MFVS implementation");
       break;
@@ -55,6 +60,11 @@ MinFeedbackVertexSet::MinFeedbackVertexSet(MFVSKind kind) : _kind(kind), _impl()
   switch (kind) {
     case MFVSKind::kGreedy: {
       _impl = detail::GreedyMFVS{};
+      break;
+    }
+
+    case MFVSKind::kSmallSV: {
+      _impl = detail::SmallestSVMFVS{};
       break;
     }
 

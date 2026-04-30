@@ -18,6 +18,7 @@
  ******************************************************************************/
 
 #include "algorithms/scc/scc_fact.hpp"
+#include "algorithms/mfvs/mfvs_fact.hpp"
 #include "eval/user_impl_map.hpp"
 #include "sbg/pw_map.hpp"
 #include "sbg/pwmap_fact.hpp"
@@ -99,6 +100,7 @@ UserImplMap::StructImplMap mfvsMap()
 {
   UserImplMap::StructImplMap mfvs_mapping;
   mfvs_mapping[0] = LIB::MFVSKind::kGreedy;
+  mfvs_mapping[1] = LIB::MFVSKind::kSmallSV;
   mfvs_mapping.freeze();
   return mfvs_mapping;
 }
@@ -156,6 +158,15 @@ void setSCCFactory(int scc_impl)
   LIB::SCCKind scc_fact = std::get<LIB::SCCKind>(
     detail::IMPL_MAP.getFactory("scc", scc_impl));
   LIB::SCC_FACT.set_scc_fact(scc_fact);
+
+  return;
+}
+
+void setMFVSFactory(int mfvs_impl)
+{
+  LIB::MFVSKind mfvs_fact = std::get<LIB::MFVSKind>(
+    detail::IMPL_MAP.getFactory("mfvs", mfvs_impl));
+  LIB::MFVS_FACT.set_mfvs_fact(mfvs_fact);
 
   return;
 }

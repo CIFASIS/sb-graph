@@ -364,9 +364,7 @@ int main(int argc, char** argv)
       break;
 
     case 'r':
-      if (optarg) {
-        params.dump_results = true;
-      }
+      params.dump_results = true;
       break;
 
     case 'g':

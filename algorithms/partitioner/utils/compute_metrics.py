@@ -1,12 +1,13 @@
 import numpy as np
 import pandas as pd
+import sys
 
 def compute_partition_metrics(graph_path, partition_path):
     # 1. Efficiently load the data
-    print("Reading files...")
+    print(f"Reading files... {graph_path} and {partition_path}")
     # Adjust sep if your file uses something other than whitespace
-    edges = np.loadtxt('edges.txt', dtype=np.int32)
-    partitions = np.loadtxt('parts.txt', dtype=np.int32)
+    edges = np.loadtxt(graph_path, dtype=np.int32)
+    partitions = np.loadtxt(partition_path, dtype=np.int32)
 
     src = edges[:, 0]
     tgt = edges[:, 1]
@@ -50,11 +51,11 @@ def compute_partition_metrics(graph_path, partition_path):
     max_part_id = volume_per_partition.idxmax()
 
     return {
-        "edge_cut": edge_cut,
-        "total_volume": total_comm_volume,
-        "max_volume": max_comm_volume,
-        "max_partition": max_part_id
+        "edge_cut": str(edge_cut),
+        "total_volume": str(total_comm_volume),
+        "max_volume": str(max_comm_volume),
+        "max_partition": str(max_part_id)
     }
 
-results = compute_partition_metrics('edges.txt', 'parts.txt')
+results = compute_partition_metrics(sys.argv[2], sys.argv[1])
 print(results)

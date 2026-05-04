@@ -272,26 +272,28 @@ tuple<SBG::LIB::WeightedSBGraph, PartitionMap, double, double> run_partitioner(c
   auto end_partitionate = chrono::high_resolution_clock::now();
   auto time_to_partitionate = chrono::duration<double, std::milli>(end_partitionate - start_partitionate).count();
 
-  ofstream edges_file("edges.txt");
-  auto edges = sb_graph.E().compact();
-  for (int i = (*edges.begin())[0].begin(); i <= (*edges.begin())[0].end(); i++) {
-    auto departure = (*sb_graph.map1().image(SBG::LIB::SET_FACT.createSet(SBG::LIB::Interval(i))).begin())[0].begin();
-    auto arrival = (*sb_graph.map2().image(SBG::LIB::SET_FACT.createSet(SBG::LIB::Interval(i))).begin())[0].begin();
-    edges_file << departure << " " << arrival << endl;
-  }
+  if (params.dump_results) {
+    ofstream edges_file(std::filesystem::path(filename).stem().string() + "_edges.txt");
+    auto edges = sb_graph.E().compact();
+    for (int i = (*edges.begin())[0].begin(); i <= (*edges.begin())[0].end(); i++) {
+      auto departure = (*sb_graph.map1().image(SBG::LIB::SET_FACT.createSet(SBG::LIB::Interval(i))).begin())[0].begin();
+      auto arrival = (*sb_graph.map2().image(SBG::LIB::SET_FACT.createSet(SBG::LIB::Interval(i))).begin())[0].begin();
+      edges_file << departure << " " << arrival << endl;
+    }
 
 
-  vector<unsigned> partition_vector((*sb_graph.V().compact().begin())[0].end() + 1, 0);
-  for (unsigned i = 0; i < partitions.size(); i++) {
-    for (int vert_idx = 0; vert_idx < partitions.at(i).size(); vert_idx++) {
-      for (int val = (*partitions.at(i).at(vert_idx).begin()).begin(); val <= (*partitions.at(i).at(vert_idx).begin()).end(); val++) {
-        partition_vector[val] = i;
+    vector<unsigned> partition_vector((*sb_graph.V().compact().begin())[0].end() + 1, 0);
+    for (unsigned i = 0; i < partitions.size(); i++) {
+      for (int vert_idx = 0; vert_idx < partitions.at(i).size(); vert_idx++) {
+        for (int val = (*partitions.at(i).at(vert_idx).begin()).begin(); val <= (*partitions.at(i).at(vert_idx).begin()).end(); val++) {
+          partition_vector[val] = i;
+        }
       }
     }
-  }
 
-  ofstream parts_file("parts.txt");
-  for_each(partition_vector.begin(), partition_vector.end(), [&parts_file](const auto val) { parts_file << val << "\n"; });
+    ofstream parts_file(std::filesystem::path(filename).stem().string() + "_parts.txt");
+    for_each(partition_vector.begin(), partition_vector.end(), [&parts_file](const auto val) { parts_file << val << "\n"; });
+  }
 
   return {sb_graph, partitions, time_to_build_graph, time_to_partitionate};
 }
@@ -306,6 +308,7 @@ static struct option long_options[] = {{"config-filename", required_argument, 0,
                                        {"directory", required_argument, 0, 'd'},
                                        {"initial-partition-strategy", required_argument, 0, 'i'},
                                        {"enable-multithreading", no_argument, 0, 't'},
+                                       {"dump-results", no_argument, 0, 'r'},
                                        {"version", no_argument, 0, 'v'},
                                        {"help", no_argument, 0, 'h'}};
 
@@ -317,7 +320,7 @@ int main(int argc, char** argv)
   // look for configuration file
   while (true) {
     int option_index = 0;
-    opt = getopt_long(argc, argv, "c:f:p:e:o:g:d:i:tmvh:", long_options, &option_index);
+    opt = getopt_long(argc, argv, "c:f:p:e:r:g:d:i:tmvh:", long_options, &option_index);
     if (opt == EOF) break;
 
     switch (opt) {
@@ -341,7 +344,7 @@ int main(int argc, char** argv)
   optind = 0;
   while (true) {
     int option_index = 0;
-    opt = getopt_long(argc, argv, "c:f:p:e:o:g:d:i:tmvh:", long_options, &option_index);
+    opt = getopt_long(argc, argv, "c:f:p:e:r:g:d:i:tmvh:", long_options, &option_index);
     if (opt == EOF) break;
 
     switch (opt) {
@@ -360,9 +363,9 @@ int main(int argc, char** argv)
       }
       break;
 
-    case 'o':
+    case 'r':
       if (optarg) {
-        params.output_sb_graph = string(optarg);
+        params.dump_results = true;
       }
       break;
 
@@ -429,11 +432,6 @@ int main(int argc, char** argv)
   cout << "filename is " << *params.filename << endl;
   cout << "number of partitions is " << *params.number_of_partitions << endl;
 
-  optional<string> s;
-  if (params.output_sb_graph) {
-    s = "";
-  }
-
   auto [sb_graph, partitions, time_to_build_graph, time_to_partitionate] = run_partitioner(params);
 
   if (params.compute_metrics) {
@@ -492,14 +490,6 @@ int main(int argc, char** argv)
   if (sanity_check_enabled) {
     sanity_check(sb_graph, partitions, *params.number_of_partitions);
   }
-
-  if (s) {
-    s = get_pretty_sb_graph(sb_graph);
-  }
-
-  // sort_before_print(partitions, sb_graph);
-
-  // string output = get_output(partitions);
 
 #ifdef USE_MEMORY_TRACKER
   std::cout << tracker.total_allocated << " bytes were allocated during this execution." << std::endl;

@@ -40,12 +40,11 @@ struct PartitionerParams
     std::optional<std::string> directory = std::nullopt;
     std::optional<unsigned> number_of_partitions = std::nullopt;
     std::optional<std::string> output_file;
-    std::optional<std::string> output_sb_graph = std::nullopt;
     float epsilon = 0.0;
     InitialPartitionStrategy initial_partition_strategy = InitialPartitionStrategy::ALL;
     bool enable_multithreading = false;
     bool compute_metrics = false;
-    bool use_connected_components = false;
+    bool dump_results = false;
 };
 
 }

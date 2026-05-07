@@ -31,6 +31,8 @@
 #include "sbg/natural.hpp"
 #include "sbg/perimeter.hpp"
 
+#include "rapidjson/document.h"
+
 #include <iosfwd>
 #include <memory>
 #include <vector>
@@ -117,6 +119,11 @@ private:
 
   friend class SetAccessKey;
 };
+
+// Non-member functions --------------------------------------------------------
+
+rapidjson::Value toJSON(OrderedSet s
+  , rapidjson::Document::AllocatorType& alloc);
 
 } // namespace detail
 

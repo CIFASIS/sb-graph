@@ -32,6 +32,8 @@
 #include "sbg/map_entry.hpp"
 #include "sbg/set.hpp"
 
+#include "rapidjson/document.h"
+
 #include <vector>
 #include <iosfwd>
 
@@ -171,6 +173,11 @@ inline void DomOrdPWMap::emplaceBack(Args&&... args)
 
 template<typename OrdCollection1, typename OrdCollection2, typename Core>
 Core traverse(const OrdCollection1& lhs, const OrdCollection2& rhs, Core op);
+
+// Non-member functions --------------------------------------------------------
+
+rapidjson::Value toJSON(DomOrdPWMap pw
+  , rapidjson::Document::AllocatorType& alloc);
 
 } // namespace detail
 

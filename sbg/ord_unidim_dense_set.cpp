@@ -133,34 +133,6 @@ OrdUnidimDenseSet::ConstIt OrdUnidimDenseSet::end() const
 
 // Setters ---------------------------------------------------------------------
 
-/*
-void OrdUnidimDenseSet::emplace(const SetPiece& mdi)
-{
-  if (mdi.isEmpty()) {
-    return;
-  }
-
-  if (_pieces.empty() || _pieces.back() < mdi) {
-    _pieces.emplace_back(mdi);
-    return;
-  }
-
-  if (mdi < _pieces.front()) {
-    _pieces.emplace(_pieces.begin(), mdi);
-    return;
-  }
-
-  auto it = _pieces.begin();
-  auto end = _pieces.end();
-  for (; it != end; ++it) {
-    if (mdi < *it) {
-      break;
-    }
-  }
-  _pieces.emplace(it, mdi);
-}
-*/
-
 void OrdUnidimDenseSet::pushBack(const Interval& i)
 {
   if (i.isEmpty()) {
@@ -511,6 +483,25 @@ OrdUnidimDenseSet OrdUnidimDenseSet::traverse(
   }
   result._pieces.insert(result.end(), it1, end1);
   result._pieces.insert(result.end(), it2, end2);
+
+  return result;
+}
+
+// Non-member functions --------------------------------------------------------
+
+rapidjson::Value toJSON(OrdUnidimDenseSet s
+  , rapidjson::Document::AllocatorType& alloc)
+{
+  rapidjson::Value result{rapidjson::kArrayType};
+
+  rapidjson::Value interval_array{rapidjson::kArrayType};
+  for (const Interval& i : s) {
+    rapidjson::Value jth = detail::toJSON(i, alloc);
+    interval_array.PushBack(jth, alloc);
+  }
+  rapidjson::Value mdi_obj{rapidjson::kObjectType};
+  mdi_obj.AddMember("pieces", interval_array, alloc);
+  result.PushBack(mdi_obj, alloc);
 
   return result;
 }

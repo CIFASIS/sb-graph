@@ -34,6 +34,8 @@
 #include "sbg/natural.hpp"
 #include "sbg/perimeter.hpp"
 
+#include "rapidjson/document.h"
+
 #include <iosfwd>
 #include <optional>
 
@@ -104,6 +106,10 @@ bool operator==(const Interval& lhs, const Interval& rhs);
 bool operator!=(const Interval& lhs, const Interval& rhs);
 
 std::ostream& operator<<(std::ostream& out, const Interval& i);
+
+// Non-member functions --------------------------------------------------------
+
+rapidjson::Value toJSON(Interval i, rapidjson::Document::AllocatorType& alloc);
 
 } // namespace detail
 

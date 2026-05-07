@@ -34,6 +34,8 @@
 #include "sbg/natural.hpp"
 #include "sbg/perimeter.hpp"
 
+#include "rapidjson/document.h"
+
 #include <iosfwd>
 #include <memory>
 #include <vector>
@@ -115,11 +117,15 @@ private:
   OrdUnidimDenseSet traverse(Interval f(const Interval&, const Interval&)
     , const OrdUnidimDenseSet& other) const;
 
-private:
   OrdIntervalCollection _pieces;
 
   friend class SetAccessKey;
 };
+
+// Non-member definitions ------------------------------------------------------
+
+rapidjson::Value toJSON(OrdUnidimDenseSet s
+  , rapidjson::Document::AllocatorType& alloc);
 
 } // namespace detail
 

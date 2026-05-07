@@ -225,6 +225,19 @@ Expression Expression::cartesianProduct(const Expression& other) const
   return result;
 }
 
+rapidjson::Value Expression::toJSON(rapidjson::Document::AllocatorType& alloc)
+  const
+{
+  rapidjson::Value result{rapidjson::kArrayType};
+
+  for (const detail::LinearExpr& le : _impl) {
+    rapidjson::Value jth = detail::toJSON(le, alloc);
+    result.PushBack(jth, alloc);
+  }
+
+  return result;
+}
+
 } // namespace LIB
 
 } // namespace SBG

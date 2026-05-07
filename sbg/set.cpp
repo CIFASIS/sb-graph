@@ -352,6 +352,12 @@ Perimeter Set::perimeter() const
 
 void Set::compact() { std::visit([](auto& a) { a.compact(); }, _impl); }
 
+rapidjson::Value Set::toJSON(rapidjson::Document::AllocatorType& alloc) const
+{
+  return std::visit([&alloc](auto a) { return detail::toJSON(a, alloc); }
+    , _impl);
+}
+
 }  // namespace LIB
 
 }  // namespace SBG

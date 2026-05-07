@@ -44,6 +44,8 @@
 #include "sbg/perimeter.hpp"
 #include "sbg/unord_set.hpp"
 
+#include  "rapidjson/document.h"
+
 #include <iosfwd>
 #include <memory>
 #include <variant>
@@ -111,6 +113,7 @@ public:
   Set offset(const MD_NAT& off) const;
   Perimeter perimeter() const;
   void compact();
+  rapidjson::Value toJSON(rapidjson::Document::AllocatorType& alloc) const;
 
 private:
   Set(const detail::SetImpl& impl);

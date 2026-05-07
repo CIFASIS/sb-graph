@@ -20,6 +20,7 @@
 #include "sbg/linear_expr.hpp"
 
 #include <iostream>
+#include <sstream>
 
 namespace SBG {
 
@@ -134,6 +135,26 @@ bool LinearExpr::isInjective() const { return _slope != 0; }
 RATIONAL LinearExpr::intersectionPoint(const LinearExpr& other) const
 {
   return (other._offset - _offset)/(_slope - other._slope);
+}
+
+rapidjson::Value toJSON(LinearExpr le
+  , rapidjson::Document::AllocatorType& alloc)
+{
+  rapidjson::Value result{rapidjson::kArrayType};
+
+  std::stringstream ssm;
+  ssm << le.slope();
+  rapidjson::Value m;
+  m.SetString(ssm.str().c_str(), strlen(ssm.str().c_str()), alloc);
+  result.PushBack(m, alloc);
+
+  std::stringstream ssh;
+  ssh << le.offset();
+  rapidjson::Value h;
+  h.SetString(ssh.str().c_str(), strlen(ssh.str().c_str()), alloc);
+  result.PushBack(h, alloc);
+
+  return result;
 }
 
 } // namespace detail

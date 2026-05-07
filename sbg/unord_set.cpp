@@ -479,6 +479,25 @@ void UnorderedSet::compact()
   _pieces = std::move(result);
 }
 
+// Non-member functions --------------------------------------------------------
+
+rapidjson::Value toJSON(UnorderedSet s
+  , rapidjson::Document::AllocatorType& alloc) 
+{
+  rapidjson::Value result{rapidjson::kArrayType};
+
+  rapidjson::Value mdi_array{rapidjson::kArrayType};
+  for (const MultiDimInter& mdi : s) {
+    rapidjson::Value jth = detail::toJSON(mdi, alloc);
+    mdi_array.PushBack(jth, alloc);
+  }
+  rapidjson::Value mdi_obj{rapidjson::kObjectType};
+  mdi_obj.AddMember("pieces", mdi_array, alloc);
+  result.PushBack(mdi_obj, alloc);
+
+  return result;
+}
+
 } // namespace detail
 
 } // namespace LIB

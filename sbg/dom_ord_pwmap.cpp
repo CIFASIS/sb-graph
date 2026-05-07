@@ -836,6 +836,21 @@ void DomOrdPWMap::compact()
   _pieces = std::move(result._pieces);
 }
 
+// Non-member functions --------------------------------------------------------
+
+rapidjson::Value toJSON(DomOrdPWMap pw
+  , rapidjson::Document::AllocatorType& alloc)
+{
+  rapidjson::Value result{rapidjson::kArrayType};
+
+  for (const MapEntry& entry : pw) {
+    rapidjson::Value jth = toJSON(entry.map(), alloc);
+    result.PushBack(jth, alloc);
+  }
+
+  return result;
+}
+
 } // namespace detail
 
 } // namespace LIB

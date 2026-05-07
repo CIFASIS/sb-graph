@@ -25,16 +25,35 @@
 
  ******************************************************************************/
 
-#ifndef MISC_CAUSALIZATION_JSON_HPP
-#define MISC_CAUSALIZAITON_JSON_HPP
+#ifndef SBGRAPH_ALGORITHMS_MISC_CAUSALIZATION_JSON_HPP_
+#define SBGRAPH_ALGORITHMS_MISC_CAUSALIZAITON_JSON_HPP_
 
-#include <sbg/sbg.hpp>
+#include "sbg/pw_map.hpp"
+#include "sbg/set.hpp"
 
-namespace MISC {
+namespace misc {
 
-void buildJson(const SBG::LIB::Set &matching, const SBG::LIB::PWMap &scc
-  , const SBG::LIB::PWMap &order);
+class CausalizationResult {
+public:
+  CausalizationResult(SBG::LIB::Set horizontal_sorting
+    , SBG::LIB::PWMap algebraic_loops
+    , SBG::LIB::Set mfvs
+    , SBG::LIB::PWMap vertical_sorting);
 
-} // namespace MISC
+  const SBG::LIB::Set& horizontal_sorting() const;
+  const SBG::LIB::PWMap& algebraic_loops() const;
+  const SBG::LIB::Set& mfvs() const;
+  const SBG::LIB::PWMap& vertical_sorting() const;
 
-#endif
+private:
+  SBG::LIB::Set _horizontal_sorting;
+  SBG::LIB::PWMap _algebraic_loops;
+  SBG::LIB::Set _mfvs;
+  SBG::LIB::PWMap _vertical_sorting;
+};
+
+void toJSON(const CausalizationResult& causalized);
+
+} // namespace misc
+
+#endif // SBGRAPH_ALGORITHMS_MISC_CAUSALIZATION_JSON_HPP_

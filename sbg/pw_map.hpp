@@ -40,6 +40,8 @@
 #include "sbg/set.hpp"
 #include "sbg/unord_pwmap.hpp"
 
+#include "rapidjson/document.h"
+
 namespace SBG {
 
 namespace LIB {
@@ -237,6 +239,8 @@ public:
    * @brief Minimize internal representation cost. Heuristic guided.
    */
   void compact();
+
+  rapidjson::Value toJSON(rapidjson::Document::AllocatorType& alloc) const;
 
 private:
   PWMap(const detail::PWMapImpl& impl);

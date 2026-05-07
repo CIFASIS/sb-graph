@@ -29,6 +29,8 @@
 
 #include "sbg/rational.hpp"
 
+#include "rapidjson/document.h"
+
 #include <iosfwd>
 
 namespace SBG {
@@ -96,7 +98,12 @@ private:
   RATIONAL _slope;
   RATIONAL _offset;
 };
-std::ostream &operator<<(std::ostream &out, const LinearExpr &le);
+std::ostream &operator<<(std::ostream &out, const LinearExpr& le);
+
+// Non-member functions --------------------------------------------------------
+
+rapidjson::Value toJSON(LinearExpr le
+  , rapidjson::Document::AllocatorType& alloc);
 
 } // namespace detail
 

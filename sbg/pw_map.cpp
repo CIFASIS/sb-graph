@@ -470,6 +470,12 @@ void PWMap::compact()
   std::visit([](auto& a) { a.compact(); }, _impl);
 }
 
+rapidjson::Value PWMap::toJSON(rapidjson::Document::AllocatorType& alloc) const
+{
+  return std::visit([&alloc](auto a) { return detail::toJSON(a, alloc); }
+    , _impl);
+}
+
 }  // namespace LIB
 
 }  // namespace SBG

@@ -206,6 +206,18 @@ MaybeMap Map::compact(const Map& other) const
   return {};
 }
 
+// Non-member functions --------------------------------------------------------
+
+rapidjson::Value toJSON(Map m, rapidjson::Document::AllocatorType& alloc)
+{
+  rapidjson::Value result{rapidjson::kObjectType};
+
+  result.AddMember("domain", m.domain().toJSON(alloc), alloc);
+  result.AddMember("law", m.law().toJSON(alloc), alloc);
+
+  return result;
+}
+
 } // namespace LIB
 
 } // namespace SBG

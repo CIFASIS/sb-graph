@@ -32,6 +32,8 @@
 #include "sbg/linear_expr.hpp"
 #include "sbg/multidim_inter.hpp"
 
+#include "rapidjson/document.h"
+
 #include <vector>
 
 namespace SBG {
@@ -124,6 +126,8 @@ public:
    * g(x1, ..., x(n+m)) = (f(x1, ..., xn), g(x(n+1), ..., x(n+m))) flattened.
    */
   Expression cartesianProduct(const Expression& other) const;
+
+  rapidjson::Value toJSON(rapidjson::Document::AllocatorType& alloc) const;
 
 private:
   detail::ExpressionImpl _impl;

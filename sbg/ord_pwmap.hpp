@@ -28,6 +28,8 @@
 #include "sbg/map_entry.hpp"
 #include "sbg/set.hpp"
 
+#include "rapidjson/document.h"
+
 #include <vector>
 #include <iosfwd>
 
@@ -165,6 +167,10 @@ inline void OrdPWMap::emplaceBack(Args&&... args)
     _pieces.emplace_back(std::forward<Args>(args)...);
   }
 }
+
+// Non-member functions --------------------------------------------------------
+
+rapidjson::Value toJSON(OrdPWMap pw, rapidjson::Document::AllocatorType& alloc);
 
 } // namespace detail
 

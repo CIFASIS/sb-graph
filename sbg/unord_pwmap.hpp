@@ -27,6 +27,8 @@
 #include "sbg/map.hpp"
 #include "sbg/set.hpp"
 
+#include "rapidjson/document.h"
+
 #include <iosfwd>
 #include <vector>
 #include <tuple>
@@ -148,6 +150,11 @@ inline void UnordPWMap::emplaceBack(Args&&... args)
     _pieces.emplace_back(std::forward<Args>(args)...);
   }
 }
+
+// Non-member functions --------------------------------------------------------
+
+rapidjson::Value toJSON(UnordPWMap pw
+  , rapidjson::Document::AllocatorType& alloc);
 
 } // namespace detail
 

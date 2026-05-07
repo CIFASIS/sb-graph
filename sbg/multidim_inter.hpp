@@ -32,6 +32,8 @@
 #include "sbg/natural.hpp"
 #include "sbg/perimeter.hpp"
 
+#include "rapidjson/document.h"
+
 #include <iosfwd>
 #include <optional>
 
@@ -136,11 +138,18 @@ private:
 };
 std::ostream& operator<<(std::ostream& out, const MultiDimInter& mdi);
 
+// Template definitions --------------------------------------------------------
+
 template<typename... Args>
 inline void MultiDimInter::emplaceBack(Args&&... args)
 {
   _intervals.emplace_back(std::forward<Args>(args)...);
 }
+
+// Non-member functions --------------------------------------------------------
+
+rapidjson::Value toJSON(MultiDimInter mdi
+  , rapidjson::Document::AllocatorType& alloc);
 
 } // namespace detail
 

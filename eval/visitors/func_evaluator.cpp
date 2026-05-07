@@ -24,6 +24,7 @@
 #include "algorithms/matching/matching.hpp"
 #include "algorithms/matching/matching_fact.hpp"
 #include "algorithms/misc/causalization_builders.hpp"
+#include "algorithms/misc/causalization_json.hpp"
 #include "algorithms/scc/scc.hpp"
 #include "algorithms/scc/scc_fact.hpp"
 #include "algorithms/sorting/topological/topological_sorting.hpp"
@@ -749,6 +750,11 @@ ExprBaseType BuiltInFunctions::causalizationEvaluator(const EBTList& args)
   dsbg = misc::buildVerticalSortingSBG(scc_result, mfvs_result);
   LIB::TopologicalSorting ts_impl = LIB::TS_FACT.createTSAlgorithm();
   LIB::PWMap ts_result = ts_impl.calculate(dsbg, scc_result.rmap());
+
+  misc::CausalizationResult causalized{match_result.M(), scc_result.rmap()
+    , mfvs_result, ts_result};
+  misc::toJSON(causalized);
+
   return ExprBaseType{ts_result};
 }
 

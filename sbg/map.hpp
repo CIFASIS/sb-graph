@@ -33,6 +33,8 @@
 #include "sbg/expression.hpp"
 #include "sbg/set.hpp"
 
+#include "rapidjson/document.h"
+
 #include <iosfwd>
 #include <optional>
 #include <vector>
@@ -166,6 +168,10 @@ private:
   Expression _law;
 };
 std::ostream& operator<<(std::ostream& out, const Map& s);
+
+// Non-member functions --------------------------------------------------------
+
+rapidjson::Value toJSON(Map m, rapidjson::Document::AllocatorType& alloc);
 
 } // namespace LIB
 

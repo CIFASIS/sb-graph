@@ -192,6 +192,22 @@ MaybeInterval Interval::compact(const Interval& other) const
   return {};
 }
 
+// Non-member functions --------------------------------------------------------
+
+rapidjson::Value toJSON(Interval i, rapidjson::Document::AllocatorType& alloc)
+{
+  rapidjson::Value result{rapidjson::kArrayType};
+
+  rapidjson::Value begin{static_cast<uint64_t>(i.begin())};
+  result.PushBack(begin, alloc);
+  rapidjson::Value step{static_cast<uint64_t>(i.step())};
+  result.PushBack(step, alloc);
+  rapidjson::Value end{static_cast<uint64_t>(i.end())};
+  result.PushBack(end, alloc);
+
+  return result;
+}
+
 } // namespace detail
 
 } // namespace LIB

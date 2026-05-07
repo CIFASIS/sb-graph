@@ -544,6 +544,21 @@ void UnordPWMap::compact()
   _pieces = std::move(result);
 }
 
+// Non-member functions --------------------------------------------------------
+
+rapidjson::Value toJSON(UnordPWMap pw
+  , rapidjson::Document::AllocatorType& alloc)
+{
+  rapidjson::Value result{rapidjson::kArrayType};
+
+  for (const Map& m : pw) {
+    rapidjson::Value jth = toJSON(m, alloc);
+    result.PushBack(jth, alloc);
+  }
+
+  return result;
+}
+
 } // namespace detail
 
 } // namespace LIB

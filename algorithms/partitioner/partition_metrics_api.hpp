@@ -44,6 +44,8 @@ float maximum_imbalance(const PartitionMap& partitions, const SBG::LIB::Weighted
 PartitionMap read_partition_from_file(const std::string& name, const SBG::LIB::WeightedSBGraph& sb_graph, int number_of_partitions);
 
 std::ostream& operator<<(std::ostream& os, const communication_metrics& comm_metrics);
+
+void dump_results(const SBG::LIB::WeightedSBGraph& sb_graph, const std::string& filename, const PartitionMap& partition);
 }
 
 }

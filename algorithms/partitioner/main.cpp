@@ -233,6 +233,18 @@ SBG::LIB::WeightedSBGraph build_computational_sbg(const PartitionerParams& param
     cout << "diff1 " << diff1 << ", " << "diff2 " << diff2 << endl;
   }
 
+  #ifdef SBG_PARTITIONER_LOGGING
+    cout << "sb_graph: " << sb_graph << endl;
+    cout << "connections:\n";
+    for (auto it1 = sb_graph.map1().begin(), it2 = sb_graph.map2().begin();
+        it1 != sb_graph.map1().end() and it2 != sb_graph.map2().end(); ++it1, ++it2) {
+      auto n1 = (*it1).image();
+      auto n2 = (*it2).image();
+      cout << n1 << ", " << n2 << " from " << (*it1).dom() << "\n";
+    }
+    cout << endl;
+  #endif
+
   return SBG::LIB::WeightedSBGraph(
       new_vertices,
       SBG::LIB::PW_FACT.createPWMap(),
@@ -251,51 +263,23 @@ tuple<SBG::LIB::WeightedSBGraph, PartitionMap, double, double> run_partitioner(c
   auto sb_graph = build_computational_sbg(params);
   auto end_building_graph = chrono::high_resolution_clock::now();
   auto time_to_build_graph = chrono::duration<double, std::milli>(end_building_graph- start_building_graph).count();
-#ifdef SBG_PARTITIONER_LOGGING
-  cout << "sb_graph: " << *sb_graph_ptr << endl;
-  cout << "connections:\n";
-  for (auto it1 = sb_graph_ptr->map1().begin(), it2 = sb_graph_ptr->map2().begin();
-       it1 != sb_graph_ptr->map1().end() and it2 != sb_graph_ptr->map2().end(); ++it1, ++it2) {
-    auto n1 = (*it1).image();
-    auto n2 = (*it2).image();
-    cout << n1 << ", " << n2 << " from " << (*it1).dom() << "\n";
-  }
-  cout << endl;
-#endif
 
   auto start_partitionate = chrono::high_resolution_clock::now();
-  auto partitions =
+  auto partition =
       best_initial_partition(sb_graph, *params.number_of_partitions, params.initial_partition_strategy, params.enable_multithreading);
-  cout << "chosen partition " << partitions << endl;
+  cout << "chosen partition " << partition << endl;
 
-  kl_sbg_imbalance_partitioner(sb_graph, partitions, params.epsilon, params.enable_multithreading);
+  kl_sbg_imbalance_partitioner(sb_graph, partition, params.epsilon, params.enable_multithreading);
   auto end_partitionate = chrono::high_resolution_clock::now();
   auto time_to_partitionate = chrono::duration<double, std::milli>(end_partitionate - start_partitionate).count();
 
   if (params.dump_results) {
-    ofstream edges_file(std::filesystem::path(filename).stem().string() + "_edges.txt");
-    auto edges = sb_graph.E().compact();
-    for (int i = (*edges.begin())[0].begin(); i <= (*edges.begin())[0].end(); i++) {
-      auto departure = (*sb_graph.map1().image(SBG::LIB::SET_FACT.createSet(SBG::LIB::Interval(i))).begin())[0].begin();
-      auto arrival = (*sb_graph.map2().image(SBG::LIB::SET_FACT.createSet(SBG::LIB::Interval(i))).begin())[0].begin();
-      edges_file << departure << " " << arrival << endl;
-    }
-
-
-    vector<unsigned> partition_vector((*sb_graph.V().compact().begin())[0].end() + 1, 0);
-    for (unsigned i = 0; i < partitions.size(); i++) {
-      for (int vert_idx = 0; vert_idx < partitions.at(i).size(); vert_idx++) {
-        for (int val = (*partitions.at(i).at(vert_idx).begin()).begin(); val <= (*partitions.at(i).at(vert_idx).begin()).end(); val++) {
-          partition_vector[val] = i;
-        }
-      }
-    }
-
-    ofstream parts_file(std::filesystem::path(filename).stem().string() + "_parts.txt");
-    for_each(partition_vector.begin(), partition_vector.end(), [&parts_file](const auto val) { parts_file << val << "\n"; });
+    // graph may be compacted, so compute it again
+    auto actual_sbg = get_sbg(*params.filename, *params.number_of_partitions);
+    metrics::dump_results(actual_sbg, *params.filename, partition);    
   }
 
-  return {sb_graph, partitions, time_to_build_graph, time_to_partitionate};
+  return {sb_graph, partition, time_to_build_graph, time_to_partitionate};
 }
 
 
@@ -431,6 +415,8 @@ int main(int argc, char** argv)
   cout << "number of partitions is " << *params.number_of_partitions << endl;
 
   auto [sb_graph, partitions, time_to_build_graph, time_to_partitionate] = run_partitioner(params);
+
+  cout << "Partition obtained after refining:\n" << partitions << endl;
 
   if (params.compute_metrics) {
     map<string, metrics::communication_metrics> metrics;

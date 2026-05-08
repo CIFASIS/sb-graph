@@ -16,6 +16,7 @@
 
  ******************************************************************************/
 
+#include <filesystem>
 #include <fstream>
 
 #include <sbg/sbg.hpp>
@@ -226,6 +227,34 @@ ostream& operator<<(ostream& os, const communication_metrics& comm_metrics)
          << comm_metrics.maximum_imbalance;
 
     return os;
+}
+
+
+void dump_results(const SBG::LIB::WeightedSBGraph& sb_graph, const std::string& filename, const PartitionMap& partition)
+{
+    cout << "Dump results!" << endl;
+    ofstream edges_file(std::filesystem::path(filename).stem().string() + "_edges.txt");
+    auto edges = sb_graph.E().compact();
+    for (int i = (*edges.begin())[0].begin(); i <= (*edges.begin())[0].end(); i++) {
+      auto departure = (*sb_graph.map1().image(SBG::LIB::SET_FACT.createSet(SBG::LIB::Interval(i))).begin())[0].begin();
+      auto arrival = (*sb_graph.map2().image(SBG::LIB::SET_FACT.createSet(SBG::LIB::Interval(i))).begin())[0].begin();
+      edges_file << departure << " " << arrival << endl;
+    }
+    cout << "connections ok" << endl;
+
+
+    vector<unsigned> partition_vector((*sb_graph.V().compact().begin())[0].end() + 1, 0);
+    for (unsigned i = 0; i < partition.size(); i++) {
+      for (int vert_idx = 0; vert_idx < partition.at(i).size(); vert_idx++) {
+        for (int val = (*partition.at(i).at(vert_idx).begin()).begin(); val <= (*partition.at(i).at(vert_idx).begin()).end(); val++) {
+          partition_vector[val] = i;
+        }
+      }
+    }
+    cout << "parts ok" << endl;
+
+    ofstream parts_file(std::filesystem::path(filename).stem().string() + "_parts.txt");
+    for_each(partition_vector.begin(), partition_vector.end(), [&parts_file](const auto val) { parts_file << val << "\n"; });
 }
 
 }

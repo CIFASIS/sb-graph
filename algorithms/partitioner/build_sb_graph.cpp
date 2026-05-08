@@ -994,10 +994,19 @@ WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sect
   lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + (size - 1)), Exp(LExp(1, RATIONAL(ev_6_domain_init - current_offset, 1)))));
   current_offset += size;
 
+  rhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + (size - 1)), Exp(LExp(1, RATIONAL(-current_offset, 1)))));
+  lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + (size - 1)), Exp(LExp(1, RATIONAL(ev_6_domain_init - current_offset, 1)))));
+  current_offset += size;
+
   // th -> ev_7 [label="<- {4013:4262} -> ", arrowhead="none"]
   // th -> ev_8 [label="<- {4263:4512} -> ", arrowhead="none"]
   // th -> ev_9 [label="<- {4513:4762} -> ", arrowhead="none"]
   // th -> ev_10 [label="<- {4763:5012} -> ", arrowhead="none"]
+  for (int i = 0; i < sections; i++) {
+    rhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + (quarter - 1)), Exp(LExp(1, RATIONAL(-current_offset + i * quarter, 1)))));
+    lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + (quarter - 1)), Exp(LExp(1, RATIONAL(part_total_domain_init + i * quarter - current_offset, 1)))));
+    current_offset += quarter;
+  }
   for (int i = 0; i < sections; i++) {
     rhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + (quarter - 1)), Exp(LExp(1, RATIONAL(-current_offset + i * quarter, 1)))));
     lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + (quarter - 1)), Exp(LExp(1, RATIONAL(part_total_domain_init + i * quarter - current_offset, 1)))));

@@ -171,13 +171,17 @@ Set Map::lessImage(const Map& other) const
 
 Map Map::minAdj(const Map& other) const
 {
-  Set result_domain = image(_domain.intersection(other._domain));
+  Set this_other_dom = _domain.intersection(other._domain);
+  if (this_other_dom.isEmpty()) {
+    return Map{};
+  }
 
+  Set result_domain = image(this_other_dom);
   Expression result_expr;
-  Set image2 = other.image(result_domain);
   if (_law.isInjective()) {
     result_expr = other._law.composition(_law.inverse());
   } else {
+    Set image2 = other.image(this_other_dom);
     result_expr = Expression{image2.minElem()};
   }
 

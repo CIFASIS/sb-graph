@@ -25,12 +25,12 @@ target_sources(
     perimeter.cpp
     pw_map.cpp
     pwmap_detail.cpp
-    pwmap_fact.cpp
+    pwmap_impl.cpp
     rational.cpp
     sbg.cpp
     set.cpp
     set_detail.cpp
-    set_fact.cpp
+    set_impl.cpp
     unord_pwmap.cpp
     unord_set.cpp
 )

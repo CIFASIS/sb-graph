@@ -18,7 +18,7 @@
  ******************************************************************************/
 
 #include "sbg/pw_map.hpp"
-#include "sbg/set_fact.hpp"
+#include "sbg/pwmap_impl.hpp"
 #include "util/debug.hpp"
 #include "util/defs.hpp"
 
@@ -62,44 +62,14 @@ bool PWMap::ConstIt::operator!=(const ConstIt& other)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PWMap implementations -------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-std::ostream& operator<<(std::ostream& out, PWMapKind kind)
-{
-  switch (kind) {
-    case PWMapKind::kUnordered: {
-      out << "unordered";
-      break;
-    }
-
-    case PWMapKind::kOrdered: {
-      out << "ordered";
-      break;
-    }
-
-    case PWMapKind::kDomOrdered: {
-      out << "domain ordered";
-      break;
-    }
-
-    default: {
-      Util::ERROR("Unsupported ", kind, " implementation\n");
-      break;
-    }
-  }
-
-  return out;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // PWMap  ----------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 // Constructors ----------------------------------------------------------------
 
-PWMap::PWMap(const PWMapKind kind) : _impl()
+PWMap::PWMap() : _impl()
 {
+  PWMapKind kind = PWMAP_IMPL.kind();
   switch (kind) {
     case PWMapKind::kUnordered: {
       _impl = detail::UnordPWMap{};
@@ -123,8 +93,9 @@ PWMap::PWMap(const PWMapKind kind) : _impl()
   }
 }
 
-PWMap::PWMap(const PWMapKind kind, Set s) : _impl()
+PWMap::PWMap(Set s) : _impl()
 {
+  PWMapKind kind = PWMAP_IMPL.kind();
   switch (kind) {
     case PWMapKind::kUnordered: {
       _impl = detail::UnordPWMap{s};
@@ -148,8 +119,9 @@ PWMap::PWMap(const PWMapKind kind, Set s) : _impl()
   }
 }
 
-PWMap::PWMap(const PWMapKind kind, Map m) : _impl()
-{
+PWMap::PWMap(Map m) : _impl()
+{ 
+  PWMapKind kind = PWMAP_IMPL.kind();
   switch (kind) {
     case PWMapKind::kUnordered: {
       _impl = detail::UnordPWMap{m};
@@ -226,7 +198,7 @@ PWMap PWMap::operator+(const PWMap& other) const
         return PWMap{a + b};
       } else {
         Util::ERROR("PWMap::operator+: mismatched implementations\n");
-        return PWMap{PWMapKind::kUnordered};
+        return PWMap{};
       }
     }
     , _impl, other._impl);
@@ -309,7 +281,7 @@ PWMap PWMap::composition(const PWMap& other) const
         return PWMap{a.composition(b)};
       } else {
         Util::ERROR("PWMap::composition: mismatched implementations\n");
-        return PWMap{PWMapKind::kUnordered};
+        return PWMap{};
       }
     }
     , _impl, other._impl);
@@ -353,7 +325,7 @@ PWMap PWMap::concatenation(PWMap&& other) &&
         return PWMap{std::move(a).concatenation(std::move(b))};
       } else {
         Util::ERROR("PWMap::concatenation: mismatched implementations\n");
-        return PWMap{PWMapKind::kUnordered};
+        return PWMap{};
       }
     }
     , std::move(_impl), std::move(other._impl));
@@ -384,7 +356,7 @@ PWMap PWMap::combine(PWMap&& other) &&
         return PWMap{std::move(a).combine(std::move(b))};
       } else {
         Util::ERROR("PWMap::combine: mismatched implementations\n");
-        return PWMap{PWMapKind::kUnordered};
+        return PWMap{};
       }
     }
     , std::move(_impl), std::move(other._impl));
@@ -400,7 +372,7 @@ PWMap PWMap::min(const PWMap& other) const
         return PWMap{a.min(b)};
       } else {
         Util::ERROR("PWMap::min: mismatched implementations\n");
-        return PWMap{PWMapKind::kUnordered};
+        return PWMap{};
       }
     }
     , _impl, other._impl);
@@ -416,7 +388,7 @@ PWMap PWMap::minAdj(const PWMap& other) const
         return PWMap{a.minAdj(b)};
       } else {
         Util::ERROR("PWMap::minAdj: mismatched implementations\n");
-        return PWMap{PWMapKind::kUnordered};
+        return PWMap{};
       }
     }
     , _impl, other._impl);
@@ -437,7 +409,7 @@ Set PWMap::equalImage(const PWMap& other) const
         return a.equalImage(b);
       } else {
         Util::ERROR("PWMap::equalImage: mismatched implementations\n");
-        return SET_FACT.createSet();
+        return Set{};
       }
     }
     , _impl, other._impl);
@@ -453,7 +425,7 @@ Set PWMap::lessImage(const PWMap& other) const
         return a.lessImage(b);
       } else {
         Util::ERROR("PWMap::lessImage: mismatched implementations\n");
-        return SET_FACT.createSet();
+        return Set{};
       }
     }
     , _impl, other._impl);

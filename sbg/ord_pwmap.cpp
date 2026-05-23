@@ -17,7 +17,6 @@
 
  ******************************************************************************/
 
-#include "sbg/set_fact.hpp"
 #include "sbg/ord_pwmap.hpp"
 #include "sbg/perimeter.hpp"
 
@@ -336,7 +335,7 @@ bool OrdPWMap::isEmpty() const { return _pieces.empty(); }
 
 Set OrdPWMap::domain() const &
 {
-  Set result = SET_FACT.createSet();
+  Set result;
 
   for (const MapEntry& entry : _pieces) {
     result = std::move(result).disjointCup(entry.map().domain());
@@ -347,7 +346,7 @@ Set OrdPWMap::domain() const &
 
 Set OrdPWMap::domain() &&
 {
-  Set result = SET_FACT.createSet();
+  Set result;
 
   for (MapEntry& entry : _pieces) {
     result = std::move(result).disjointCup(std::move(entry.map()).domain());
@@ -387,7 +386,7 @@ OrdPWMap OrdPWMap::restrict(const Set& subdom) const
 
 Set OrdPWMap::image() const
 {
-  Set result = SET_FACT.createSet();
+  Set result;
 
   for (const MapEntry& entry : _pieces) {
     result = std::move(result).cup(entry.map().image());
@@ -403,7 +402,7 @@ Set OrdPWMap::image(const Set& subdom) const
 
 Set OrdPWMap::preImage(const Set& subcodom) const
 {
-  Set result = SET_FACT.createSet();
+  Set result;
 
   for (const MapEntry& entry : _pieces) {
     result = std::move(result).disjointCup(entry.map().preImage(subcodom));
@@ -481,7 +480,7 @@ OrdPWMap OrdPWMap::mapInf() const { return mapInf(0); }
 
 Set OrdPWMap::fixedPoints() const
 {
-  Set result = SET_FACT.createSet();
+  Set result;
 
   for (const MapEntry& entry : _pieces) {
     result = std::move(result).disjointCup(entry.map().fixedPoints());
@@ -641,7 +640,7 @@ public:
 
 private:
   OrdPWMap _result;
-  Set _visited = SET_FACT.createSet(); 
+  Set _visited; 
 };
 
 OrdPWMap OrdPWMap::minAdj(const OrdPWMap& other) const
@@ -655,8 +654,8 @@ OrdPWMap OrdPWMap::minAdj(const OrdPWMap& other) const
 
 Set OrdPWMap::sharedImage() const
 {
-  Set repeated_image = SET_FACT.createSet();
-  Set visited = SET_FACT.createSet();
+  Set repeated_image;
+  Set visited;
   for (const MapEntry& entry : _pieces) {
     Set m_image = entry.map().image();
     Set image_in_visited = m_image.intersection(visited);
@@ -692,13 +691,13 @@ public:
   Set result() const { return _result; }
 
 private:
-  Set _result = SET_FACT.createSet();
+  Set _result;
 };
 
 Set OrdPWMap::equalImage(const OrdPWMap& other) const
 {
   if (isEmpty() || other.isEmpty()) {
-    return SET_FACT.createSet();
+    return Set{};
   }
 
   if (_pieces == other._pieces) {
@@ -722,17 +721,17 @@ public:
   Set result() const { return _result; }
 
 private:
-  Set _result = SET_FACT.createSet();
+  Set _result;
 };
 
 Set OrdPWMap::lessImage(const OrdPWMap& other) const
 {
   if (isEmpty() || other.isEmpty()) {
-    return SET_FACT.createSet();
+    return Set{};
   }
 
   if (_pieces == other._pieces) {
-    return SET_FACT.createSet();
+    return Set{};
   }
 
   return traverse(other, LessImageCore{}).result();

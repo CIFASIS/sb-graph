@@ -40,7 +40,6 @@
 #define SBGRAPH_SBG_DIRECTED_SBG_HPP_
 
 #include "sbg/set.hpp"
-#include "sbg/set_fact.hpp"
 #include "sbg/pw_map.hpp"
 
 #include <iosfwd>
@@ -123,7 +122,7 @@ inline void DirectedSBG::foreachSetVertex(FuncT&& f) const
   while (!remaining.isEmpty()) {
     const MD_NAT& x = remaining.minElem();
     f(x);
-    remaining = remaining.difference(SET_FACT.createSet(x));
+    remaining = remaining.difference(Set{x});
   }
 }
 
@@ -134,7 +133,7 @@ inline void DirectedSBG::foreachSetEdge(FuncT&& f) const
   while (!remaining.isEmpty()) {
     const MD_NAT& x = remaining.minElem();
     f(x);
-    remaining = remaining.difference(SET_FACT.createSet(x));
+    remaining = remaining.difference(Set{x});
   }
 }
 

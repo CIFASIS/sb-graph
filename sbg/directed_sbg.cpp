@@ -19,8 +19,6 @@
 
 #include "sbg/natural.hpp"
 #include "sbg/directed_sbg.hpp"
-#include "sbg/pwmap_fact.hpp"
-#include "sbg/set_fact.hpp"
 #include "util/debug.hpp"
 
 #include <iostream>
@@ -35,10 +33,7 @@ namespace LIB {
 
 // Constructors/Destructors ----------------------------------------------------
 
-DirectedSBG::DirectedSBG()
-  : _V(SET_FACT.createSet()), _Vmap(PWMAP_FACT.createPWMap())
-  , _E(SET_FACT.createSet()), _mapB(PWMAP_FACT.createPWMap())
-  , _mapD(PWMAP_FACT.createPWMap()), _Emap(PWMAP_FACT.createPWMap()) {}
+DirectedSBG::DirectedSBG() : _V(), _Vmap(), _E(), _mapB(), _mapD(), _Emap() {}
 
 DirectedSBG::DirectedSBG(const Set& V, const PWMap& Vmap
   , const PWMap& mapB, const PWMap& mapD

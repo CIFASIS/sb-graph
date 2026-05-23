@@ -24,7 +24,7 @@
 #include "sbg/perimeter.hpp"
 #include "sbg/pwmap_detail.hpp"
 #include "sbg/set_detail.hpp"
-#include "sbg/set_fact.hpp"
+#include "sbg/set_impl.hpp"
 #include "util/defs.hpp"
 #include "util/debug.hpp"
 
@@ -176,11 +176,6 @@ Core traverse(const OrdCollection1& lhs, const OrdCollection2& rhs
 {
   OrdCollection1 short_collection = lhs;
   OrdCollection2 long_collection = rhs;
-  //if (!core_op.orderMatters()
-  //  && long_collection.size() < short_collection.size()) {
-  //  short_collection = rhs;
-  //  long_collection  = lhs;
-  //}
 
   // Indexes list corresponding to remaining maps in short_collection
   std::forward_list<size_t> indexes;
@@ -345,7 +340,7 @@ bool DomOrdPWMap::isEmpty() const { return _pieces.empty(); }
 
 Set DomOrdPWMap::domain() const &
 {
-  Set result = SET_FACT.createSet();
+  Set result;
 
   for (const MapEntry& entry : _pieces) {
     result = std::move(result).disjointCup(entry.map().domain());
@@ -356,7 +351,7 @@ Set DomOrdPWMap::domain() const &
 
 Set DomOrdPWMap::domain() &&
 {
-  Set result = SET_FACT.createSet();
+  Set result;
 
   for (MapEntry& entry : _pieces) {
     result = std::move(result).disjointCup(std::move(entry.map()).domain());
@@ -404,24 +399,18 @@ DomOrdPWMap DomOrdPWMap::restrict(const Set& subdom) const
     },
     [&](const auto& impl)
     {
-      Util::ERROR("DomOrdPWMap::restrict: unsupported ", SET_FACT.kind()
+      Util::ERROR("DomOrdPWMap::restrict: unsupported ", SET_IMPL.kind()
         , " set implementation");
       return DomOrdPWMap{};
     }
   };
-
-  //print(std::cout);
-  //std::cout << "\n";
-  //std::cout << subdom << "\n";
-  //std::visit(restrict_evaluator, key.impl(subdom)).print(std::cout);
-  //std::cout << "\n\n";
 
   return std::visit(restrict_evaluator, key.impl(subdom));
 }
 
 Set DomOrdPWMap::image() const
 {
-  Set result = SET_FACT.createSet();
+  Set result;
 
   for (const MapEntry& entry : _pieces) {
     result = std::move(result).cup(entry.map().image());
@@ -437,7 +426,7 @@ Set DomOrdPWMap::image(const Set& subdom) const
 
 Set DomOrdPWMap::preImage(const Set& subcodom) const
 {
-  Set result = SET_FACT.createSet();
+  Set result;
 
   for (const MapEntry& entry : _pieces) {
     result = std::move(result).disjointCup(entry.map().preImage(subcodom));
@@ -515,7 +504,7 @@ DomOrdPWMap DomOrdPWMap::mapInf() const { return mapInf(0); }
 
 Set DomOrdPWMap::fixedPoints() const
 {
-  Set result = SET_FACT.createSet();
+  Set result;
 
   for (const MapEntry& entry : _pieces) {
     result = std::move(result).disjointCup(entry.map().fixedPoints());
@@ -675,7 +664,7 @@ public:
 
 private:
   DomOrdPWMap _result;
-  Set _visited = SET_FACT.createSet(); 
+  Set _visited; 
 };
 
 DomOrdPWMap DomOrdPWMap::minAdj(const DomOrdPWMap& other) const
@@ -689,8 +678,8 @@ DomOrdPWMap DomOrdPWMap::minAdj(const DomOrdPWMap& other) const
 
 Set DomOrdPWMap::sharedImage() const
 {
-  Set repeated_image = SET_FACT.createSet();
-  Set visited = SET_FACT.createSet();
+  Set repeated_image;
+  Set visited;
   for (const MapEntry& entry : _pieces) {
     Set m_image = entry.map().image();
     Set image_in_visited = m_image.intersection(visited);
@@ -726,13 +715,13 @@ public:
   Set result() const { return _result; }
 
 private:
-  Set _result = SET_FACT.createSet();
+  Set _result;
 };
 
 Set DomOrdPWMap::equalImage(const DomOrdPWMap& other) const
 {
   if (isEmpty() || other.isEmpty()) {
-    return SET_FACT.createSet();
+    return Set{};
   }
 
   if (_pieces == other._pieces) {
@@ -756,17 +745,17 @@ public:
   Set result() const { return _result; }
 
 private:
-  Set _result = SET_FACT.createSet();
+  Set _result;
 };
 
 Set DomOrdPWMap::lessImage(const DomOrdPWMap& other) const
 {
   if (isEmpty() || other.isEmpty()) {
-    return SET_FACT.createSet();
+    return Set{};
   }
 
   if (_pieces == other._pieces) {
-    return SET_FACT.createSet();
+    return Set{};
   }
 
   return traverse(_pieces, other._pieces, LessImageCore{}).result();

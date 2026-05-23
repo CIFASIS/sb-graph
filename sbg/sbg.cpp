@@ -18,9 +18,7 @@
  ******************************************************************************/
 
 #include "sbg/natural.hpp"
-#include "sbg/pwmap_fact.hpp"
 #include "sbg/sbg.hpp"
-#include "sbg/set_fact.hpp"
 #include "util/debug.hpp"
 
 #include <iostream>
@@ -36,9 +34,7 @@ namespace LIB {
 // Constructors/Destructors ----------------------------------------------------
 
 SBG::SBG() 
-  : _V(SET_FACT.createSet()), _Vmap(PWMAP_FACT.createPWMap())
-  , _E(SET_FACT.createSet()), _map1(PWMAP_FACT.createPWMap())
-  , _map2(PWMAP_FACT.createPWMap()), _Emap(PWMAP_FACT.createPWMap()) {}
+  : _V(), _Vmap(), _E(), _map1(), _map2(), _Emap() {}
 
 SBG::SBG(const Set& V, const PWMap& Vmap
   , const PWMap& map1, const PWMap& map2

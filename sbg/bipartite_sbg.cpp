@@ -19,8 +19,6 @@
 
 #include "sbg/bipartite_sbg.hpp"
 #include "sbg/natural.hpp"
-#include "sbg/pwmap_fact.hpp"
-#include "sbg/set_fact.hpp"
 #include "util/debug.hpp"
 
 #include <iostream>
@@ -32,10 +30,10 @@ namespace LIB {
 // Constructors/Destructors ----------------------------------------------------
 
 BipartiteSBG::BipartiteSBG()
-  : _V(SET_FACT.createSet()), _Vmap(PWMAP_FACT.createPWMap())
-  , _E(SET_FACT.createSet()), _map1(PWMAP_FACT.createPWMap())
-  , _map2(PWMAP_FACT.createPWMap()), _Emap(PWMAP_FACT.createPWMap())
-  , _X(SET_FACT.createSet()), _Y(SET_FACT.createSet()) {}
+  : _V(), _Vmap()
+  , _E(), _map1()
+  , _map2(), _Emap()
+  , _X(), _Y() {}
 
 BipartiteSBG::BipartiteSBG(const Set& V, const PWMap& Vmap
   , const PWMap& map1, const PWMap& map2, const PWMap& Emap
@@ -145,7 +143,7 @@ BipartiteSBG copy(unsigned int copies, BipartiteSBG sbg)
     MD_NAT max_v = sbg.V().maxElem();
     Set set_vertices = Vmap.image();
     while (!set_vertices.isEmpty()) {
-      Set min_elem_set = SET_FACT.createSet(set_vertices.minElem());
+      Set min_elem_set{set_vertices.minElem()};
       Set vertices = Vmap.preImage(min_elem_set);
       Set jth_X = vertices.intersection(X);
       Set jth_Y = vertices.intersection(Y);
@@ -159,7 +157,7 @@ BipartiteSBG copy(unsigned int copies, BipartiteSBG sbg)
       offset_v = offset_v.cartesianProduct(Expression{RATIONAL{1}
         , RATIONAL{max_v[k]}});
     }
-    PWMap offset_pw_v = PWMAP_FACT.createPWMap(Map{V, offset_v});
+    PWMap offset_pw_v{Map{V, offset_v}};
 
     MD_NAT max_e = sbg.E().maxElem();
     Expression offset_e;
@@ -167,12 +165,12 @@ BipartiteSBG copy(unsigned int copies, BipartiteSBG sbg)
       offset_e = offset_e.cartesianProduct(Expression{RATIONAL{1}
         , RATIONAL{max_e[k]}});
     }
-    PWMap offset_pw_e = PWMAP_FACT.createPWMap(Map{E, offset_e});
+    PWMap offset_pw_e{Map{E, offset_e}};
     PWMap inverse_offset_pw_e = offset_pw_e.inverse();
 
     Set set_edges = Emap.image();
     while (!set_edges.isEmpty()) {
-      Set min_elem_set = SET_FACT.createSet(set_edges.minElem());
+      Set min_elem_set{set_edges.minElem()};
       Set edges = Emap.preImage(min_elem_set);
       PWMap pw1 = map1.restrict(edges);
       PWMap pw2 = map2.restrict(edges);

@@ -17,7 +17,6 @@
 
  ******************************************************************************/
 
-#include "sbg/set_fact.hpp"
 #include "sbg/unord_pwmap.hpp"
 
 #include <algorithm>
@@ -186,7 +185,7 @@ bool UnordPWMap::isEmpty() const { return _pieces.empty(); }
 
 Set UnordPWMap::domain() const &
 {
-  Set result = SET_FACT.createSet();
+  Set result;
 
   for (const Map& m : _pieces) {
     result = std::move(result).disjointCup(m.domain());
@@ -197,7 +196,7 @@ Set UnordPWMap::domain() const &
 
 Set UnordPWMap::domain() &&
 {
-  Set result = SET_FACT.createSet();
+  Set result;
 
   for (Map& m : _pieces) {
     result = std::move(result).disjointCup(std::move(m).domain());
@@ -219,7 +218,7 @@ UnordPWMap UnordPWMap::restrict(const Set& subdom) const
 
 Set UnordPWMap::image() const
 {
-  Set result = SET_FACT.createSet();
+  Set result;
 
   for (const Map& m : _pieces) {
     result = std::move(result).cup(m.image());
@@ -235,7 +234,7 @@ Set UnordPWMap::image(const Set& subdom) const
 
 Set UnordPWMap::preImage(const Set& subcodom) const
 {
-  Set result = SET_FACT.createSet();
+  Set result;
 
   for (const Map& m : _pieces) {
     result = std::move(result).disjointCup(m.preImage(subcodom));
@@ -293,7 +292,7 @@ UnordPWMap UnordPWMap::mapInf() const { return mapInf(0); }
 
 Set UnordPWMap::fixedPoints() const
 {
-  Set result = SET_FACT.createSet();
+  Set result;
 
   for (const Map& m : _pieces) {
     result = std::move(result).disjointCup(m.fixedPoints());
@@ -399,7 +398,7 @@ UnordPWMap UnordPWMap::minAdj(const UnordPWMap& other) const
 {
   UnordPWMap result;
 
-  Set visited = SET_FACT.createSet();
+  Set visited;
   for (const Map& m1 : _pieces) {
     for (const Map& m2 : other._pieces) {
       Map min_adj = m1.minAdj(m2);
@@ -427,8 +426,8 @@ UnordPWMap UnordPWMap::minAdj(const UnordPWMap& other) const
 
 Set UnordPWMap::sharedImage() const
 {
-  Set repeated_image = SET_FACT.createSet();
-  Set visited = SET_FACT.createSet();
+  Set repeated_image;
+  Set visited;
   for (const Map& m : _pieces) {
     Set image_in_visited = m.image().intersection(visited);
     if (!image_in_visited.isEmpty()) {
@@ -443,7 +442,7 @@ Set UnordPWMap::sharedImage() const
 
 Set UnordPWMap::equalImage(const UnordPWMap& other) const
 {
-  Set result = SET_FACT.createSet();
+  Set result;
 
   if (_pieces == other._pieces) {
     return domain();
@@ -468,10 +467,10 @@ Set UnordPWMap::equalImage(const UnordPWMap& other) const
 Set UnordPWMap::lessImage(const UnordPWMap& other) const
 {
   if (isEmpty() || other.isEmpty()) {
-    return SET_FACT.createSet();
+    return Set{};
   }
 
-  Set min_in_pw1 = SET_FACT.createSet();
+  Set min_in_pw1;
   for (const Map& m1 : _pieces) {
     for (const Map& m2 : other._pieces) {
       min_in_pw1 = std::move(min_in_pw1).disjointCup(m1.lessImage(m2));

@@ -29,7 +29,6 @@
 
 #include "sbg/pw_map.hpp"
 #include "sbg/set.hpp"
-#include "sbg/set_fact.hpp"
 
 #include <iosfwd>
 
@@ -113,7 +112,7 @@ inline void BipartiteSBG::foreachSetVertex(FuncT&& f) const
   while (!remaining.isEmpty()) {
     const MD_NAT& x = remaining.minElem();
     f(x);
-    remaining = remaining.difference(SET_FACT.createSet(x));
+    remaining = remaining.difference(Set{x});
   }
 }
 
@@ -124,7 +123,7 @@ inline void BipartiteSBG::foreachSetEdge(FuncT&& f) const
   while (!remaining.isEmpty()) {
     const MD_NAT& x = remaining.minElem();
     f(x);
-    remaining = remaining.difference(SET_FACT.createSet(x));
+    remaining = remaining.difference(Set{x});
   }
 }
 

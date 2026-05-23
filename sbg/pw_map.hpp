@@ -58,10 +58,6 @@ class PWMapAccessKey;
 
 } // namespace detail
 
-enum class PWMapKind { kUnordered, kOrdered, kDomOrdered };
-
-std::ostream& operator<<(std::ostream& out, PWMapKind kind);
-
 ////////////////////////////////////////////////////////////////////////////////
 // PWMap -----------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
@@ -79,7 +75,8 @@ public:
     ConstIt(detail::UnordPWMap::ConstIt it);
     ConstIt(detail::OrdPWMap::ConstIt it);
 
-    std::variant<detail::UnordPWMap::ConstIt, detail::OrdPWMap::ConstIt> _it;
+    std::variant<detail::UnordPWMap::ConstIt
+      , detail::OrdPWMap::ConstIt> _it;
 
     friend class PWMap;
   };
@@ -87,9 +84,9 @@ public:
   /**
    * @brief Constructs an empty domain pw.
    */
-  PWMap(const PWMapKind kind);
-  PWMap(const PWMapKind kind, Set s);
-  PWMap(const PWMapKind kind, Map m);
+  PWMap();
+  PWMap(Set s);
+  PWMap(Map m);
 
   ConstIt begin();
   ConstIt end();

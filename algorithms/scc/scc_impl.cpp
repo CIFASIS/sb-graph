@@ -17,32 +17,27 @@
 
  ******************************************************************************/
 
-#include "algorithms/scc/mrv.hpp"
-#include "algorithms/scc/scc.hpp"
 #include "algorithms/scc/scc_impl.hpp"
 #include "util/debug.hpp"
-#include "util/logger.hpp"
-#include "util/time_profiler.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// SCC Algorithm ---------------------------------------------------------------
+// SCC implementations --------------------------------------------------------- 
 ////////////////////////////////////////////////////////////////////////////////
 
-SCC::SCC() : _impl()
+std::ostream& operator<<(std::ostream& out, const SCCKind kind)
 {
-  SCCKind kind = SCC_IMPL.kind();
   switch (kind) {
     case SCCKind::kMinReachV1: {
-      _impl = detail::MinReachSCCV1{};
+      out << "minimum reachable V1";
       break;
     }
 
     case SCCKind::kMinReachV2: {
-      _impl = detail::MinReachSCCV2{};
+      out << "minimum reachable V2";
       break;
     }
 
@@ -51,14 +46,21 @@ SCC::SCC() : _impl()
       break;
     }
   }
+
+  return out;
 }
 
-SCCData SCC::calculate(const DirectedSBG& dsbg)
+SCCImplementation::SCCImplementation() : _kind(SCCKind::kMinReachV2) {}
+
+SCCImplementation& SCCImplementation::instance()
 {
-  Util::Internal::TimeProfiler profiler{"Total SCC execution time: "};
-
-  return std::visit([&](auto& a) { return a.calculate(dsbg); }, _impl);
+  static SCCImplementation _instance;
+  return _instance;
 }
+
+const SCCKind& SCCImplementation::kind() const { return _kind; }
+
+void SCCImplementation::set_scc_fact(SCCKind kind) { _kind = kind; }
 
 } // namespace LIB
 

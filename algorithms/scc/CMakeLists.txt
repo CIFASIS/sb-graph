@@ -6,5 +6,5 @@ target_sources(
         minreach_scc.cpp
         scc.cpp
         scc_data.cpp
-        scc_fact.cpp
+        scc_impl.cpp
 )

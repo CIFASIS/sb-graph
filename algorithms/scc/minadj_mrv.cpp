@@ -18,8 +18,6 @@
  ******************************************************************************/
 
 #include "algorithms/scc/minadj_mrv.hpp"
-#include "sbg/pwmap_fact.hpp"
-#include "sbg/set_fact.hpp"
 #include "util/logger.hpp"
 
 namespace SBG {
@@ -41,13 +39,14 @@ PWMap MinAdjMRV::calculate(const DirectedSBG& dsbg)
   PWMap Emap = dsbg.Emap();
   if (!V.isEmpty()) {
     std::size_t arity = V.arity();
-    PWMap rmap = PWMAP_FACT.createPWMap(V), old_rmap = PWMAP_FACT.createPWMap();
+    PWMap rmap{V};
+    PWMap old_rmap;
 
     if (E.isEmpty()) {
       return rmap;
     }
 
-    Set Vc = SET_FACT.createSet();
+    Set Vc;
     do {
       old_rmap = rmap;
 
@@ -57,7 +56,7 @@ PWMap MinAdjMRV::calculate(const DirectedSBG& dsbg)
       rmap = rmap.min(new_rmap).combine(std::move(rmap));
       Util::DEBUG_LOG << "rmap before rec: " << rmap << "\n\n";
 
-      PWMap rec_rmap = PWMAP_FACT.createPWMap();
+      PWMap rec_rmap;
       Vc = V.difference(old_rmap.equalImage(rmap));
       if (!Vc.isEmpty()) {
         // If the mrv is in the same SV, the algorithm would detect a false
@@ -68,7 +67,7 @@ PWMap MinAdjMRV::calculate(const DirectedSBG& dsbg)
         PWMap Vmap = dsbg.Vmap();
         Set set_vertices = Vmap.image();
         while (!set_vertices.isEmpty()) {
-          Set min_elem_set = SET_FACT.createSet(set_vertices.minElem());
+          Set min_elem_set{set_vertices.minElem()};
           Set vs = Vmap.preImage(min_elem_set);
           if (!vs.intersection(Vc).isEmpty()) {
             // Vertices in the set-vertex that share its rep with other vertex
@@ -87,7 +86,7 @@ PWMap MinAdjMRV::calculate(const DirectedSBG& dsbg)
               Set ER = ERB.intersection(ERD);
               if (!end.isEmpty() && !ER.isEmpty()) {
                 // Distance map
-                PWMap dmap = PWMAP_FACT.createPWMap();
+                PWMap dmap;
                 Set ith = end;
                 NAT dist = 0;
                 // Calculate distance for vertices in same_rep that reach reps
@@ -142,7 +141,7 @@ PWMap MinAdjMRV::calculate(const DirectedSBG& dsbg)
     return rmap;
   }
 
-  return PWMAP_FACT.createPWMap();
+  return PWMap{};
 }
 
 } // namespace LIB

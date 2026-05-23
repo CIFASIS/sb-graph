@@ -20,8 +20,6 @@
 #include "algorithms/scc/decreasing_edges_mrv.hpp"
 #include "algorithms/scc/minreach_scc.hpp"
 #include "algorithms/scc/minadj_mrv.hpp"
-#include "sbg/pwmap_fact.hpp"
-#include "sbg/set_fact.hpp"
 #include "util/logger.hpp"
 
 namespace SBG {
@@ -34,7 +32,7 @@ namespace detail {
 // Minimum Reachable SCC Algorithm ---------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-MinReachSCC::MinReachSCC() : _dsbg(), _E(SET_FACT.createSet()) {}
+MinReachSCC::MinReachSCC() : _dsbg(), _E() {}
 
 void MinReachSCC::swapEdgesDirection(const Set& E)
 {
@@ -62,17 +60,17 @@ SCCData MinReachSCC::calculate(const DirectedSBG& dsbg)
 
   init(dsbg);
 
-  PWMap rmap = PWMAP_FACT.createPWMap();
-  Set Ediff = SET_FACT.createSet();
+  PWMap rmap;
+  Set Ediff;
   Set oldE = dsbg.E();
-  Set deleted_edges = SET_FACT.createSet();
+  Set deleted_edges;
   do {
     oldE = _dsbg.E();
     rmap = sccStep();
     rmap.compact();
     Ediff = oldE.difference(_dsbg.E());
     deleted_edges = std::move(deleted_edges).disjointCup(Ediff);
-  } while (Ediff != SET_FACT.createSet());
+  } while (Ediff != Set{});
 
   Util::DEBUG_LOG << "MinReachSCC result: " << rmap << "\n\n";
 

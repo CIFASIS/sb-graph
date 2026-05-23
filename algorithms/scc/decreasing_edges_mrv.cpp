@@ -18,8 +18,6 @@
  ******************************************************************************/
 
 #include "algorithms/scc/decreasing_edges_mrv.hpp"
-#include "sbg/pwmap_fact.hpp"
-#include "sbg/set_fact.hpp"
 #include "util/logger.hpp"
 
 #include <iostream>
@@ -32,8 +30,7 @@ namespace LIB {
 // Minimum Adjacent MRV Implementation -----------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-LtEdgesMRV::LtEdgesMRV() : _dsbg(), _smap(PWMAP_FACT.createPWMap())
-  , _visitedSE(SET_FACT.createSet()), _n(0) {}
+LtEdgesMRV::LtEdgesMRV() : _dsbg(), _smap(), _visitedSE(), _n(0) {}
 
 Set LtEdgesMRV::decreasingRepresentative(const PWMap& rmap) const
 {
@@ -41,7 +38,7 @@ Set LtEdgesMRV::decreasingRepresentative(const PWMap& rmap) const
   PWMap mapD = _dsbg.mapD();
 
   if (mapB.isEmpty() || mapD.isEmpty()) {
-    return SET_FACT.createSet();
+    return Set{};
   }
 
   PWMap rmapB = rmap.composition(mapB);
@@ -54,7 +51,7 @@ Set LtEdgesMRV::decreasingRepresentative(const PWMap& rmap) const
 PWMap LtEdgesMRV::repetitivePaths(const PWMap& rmap
   , const PWMap& decreasing_smap)
 {
-  PWMap result = PWMAP_FACT.createPWMap();
+  PWMap result;
 
   // Calculate edges in paths described by decreasing_smap
   const PWMap& mapB = _dsbg.mapB();
@@ -106,15 +103,15 @@ PWMap LtEdgesMRV::calculate(const DirectedSBG& dsbg)
   _dsbg = dsbg;
   PWMap mapB = _dsbg.mapB();
   PWMap mapD = _dsbg.mapD();
-  _visitedSE = SET_FACT.createSet();
+  _visitedSE;
 
-  _smap = PWMAP_FACT.createPWMap(dsbg.V());
+  _smap = PWMap{dsbg.V()};
   PWMap rmap = _smap;
 
   if (!_dsbg.V().isEmpty() && !_dsbg.E().isEmpty()) {
     _n = 0;
-    PWMap old_rmap = PWMAP_FACT.createPWMap();
-    Set E = SET_FACT.createSet();
+    PWMap old_rmap;
+    Set E;
     do {
       old_rmap = rmap;
 

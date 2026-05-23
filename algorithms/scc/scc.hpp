@@ -46,22 +46,17 @@ using SCCImpl = std::variant<MinReachSCCV1, MinReachSCCV2>;
 
 } // namespace detail
 
-enum class SCCKind { kMinReachV1, kMinReachV2 };
-
-std::ostream& operator<<(std::ostream& out, const SCCKind kind);
-
 ////////////////////////////////////////////////////////////////////////////////
 // SCC Algorithm ---------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 class SCC {
 public:
-  SCC(SCCKind kind);
+  SCC();
 
   SCCData calculate(const DirectedSBG& dsbg);
 
 private:
-  SCCKind _kind;
   detail::SCCImpl _impl;
 };
 

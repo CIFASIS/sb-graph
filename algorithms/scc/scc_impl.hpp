@@ -1,4 +1,8 @@
-/*******************************************************************************
+/** @file scc_impl.hpp
+
+ @brief <b>SCC Algorithm Implementation</b>
+
+ <hr>
 
  This file is part of Set--Based Graph Library.
 
@@ -17,49 +21,45 @@
 
  ******************************************************************************/
 
-#include "algorithms/scc/mrv.hpp"
-#include "algorithms/scc/scc.hpp"
-#include "algorithms/scc/scc_impl.hpp"
-#include "util/debug.hpp"
-#include "util/logger.hpp"
-#include "util/time_profiler.hpp"
+#ifndef SBGRAPH_ALGORITHMS_SCC_SCC_IMPL_HPP_
+#define SBGRAPH_ALGORITHMS_SCC_SCC_IMPL_HPP_
+
+#include <iosfwd>
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// SCC Algorithm ---------------------------------------------------------------
+// SCC implementations ---------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-SCC::SCC() : _impl()
-{
-  SCCKind kind = SCC_IMPL.kind();
-  switch (kind) {
-    case SCCKind::kMinReachV1: {
-      _impl = detail::MinReachSCCV1{};
-      break;
-    }
+enum class SCCKind { kMinReachV1, kMinReachV2 };
 
-    case SCCKind::kMinReachV2: {
-      _impl = detail::MinReachSCCV2{};
-      break;
-    }
+std::ostream& operator<<(std::ostream& out, const SCCKind kind);
 
-    default: {
-      Util::ERROR("Unsupported SCC implementation");
-      break;
-    }
-  }
-}
+#define SCC_IMPL SCCImplementation::instance()
 
-SCCData SCC::calculate(const DirectedSBG& dsbg)
-{
-  Util::Internal::TimeProfiler profiler{"Total SCC execution time: "};
+/**
+ * @brief Singleton that keeps record of the chosen SCC implementation. 
+ */
+class SCCImplementation {
+public:
+  ~SCCImplementation() = default;
 
-  return std::visit([&](auto& a) { return a.calculate(dsbg); }, _impl);
-}
+  static SCCImplementation& instance();
+
+  const SCCKind& kind() const;
+  void set_scc_fact(SCCKind kind);
+
+private:
+  SCCImplementation();
+
+  SCCKind _kind;
+};
 
 } // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG
+
+#endif // SBGRAPH_ALGORITHMS_SCC_SCC_IMPL_HPP_

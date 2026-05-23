@@ -19,8 +19,6 @@
 
 #include "algorithms/matching/bfs_matching.hpp"
 #include "sbg/natural.hpp"
-#include "sbg/pwmap_fact.hpp"
-#include "sbg/set_fact.hpp"
 #include "util/logger.hpp"
 
 namespace SBG {
@@ -47,9 +45,8 @@ bool BFSMatching::ExitCondition::isSatisfied()
 
 // Algorithm -------------------------------------------------------------------
 
-BFSMatching::BFSMatching() : _M(SET_FACT.createSet()), _dsbg()
-  , _direction(Direction::kForward), _X(SET_FACT.createSet())
-  , _Y(SET_FACT.createSet()) {}
+BFSMatching::BFSMatching() : _M(), _dsbg() , _direction(Direction::kForward)
+  , _X(), _Y() {}
 
 void BFSMatching::swapEdgesDirection(const Set& E)
 {
@@ -73,14 +70,14 @@ void BFSMatching::swapDirection(const Set& E)
 
 PWMap BFSMatching::partitionSubsetEdges() const
 {
-  PWMap result = PWMAP_FACT.createPWMap();
+  PWMap result;
   Set free_edges = _dsbg.E().difference(_M);
   std::size_t arity = free_edges.arity();
   NAT j = 1;
   PWMap Emap = _dsbg.Emap();
   _dsbg.foreachSetEdge([&](const MD_NAT& SE)
   {
-    Set domain_edges = Emap.preImage(SET_FACT.createSet(SE));
+    Set domain_edges = Emap.preImage(Set{SE});
 
     Expression matched_expr{MD_NAT{arity, j}};
     result.emplace(_M.intersection(domain_edges), matched_expr);

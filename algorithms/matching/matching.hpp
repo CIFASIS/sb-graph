@@ -44,22 +44,17 @@ using MatchImpl = std::variant<BFSMatching>;
 
 } // namespace detail
 
-enum class MatchKind { kBFSPaths };
-
-std::ostream& operator<<(std::ostream& out, const MatchKind kind);
-
 ////////////////////////////////////////////////////////////////////////////////
 // Matching Algorithm ----------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 class Matching {
 public:
-  Matching(MatchKind kind);
+  Matching();
 
   MatchData calculate(const BipartiteSBG& bsbg);
 
 private:
-  MatchKind _kind;
   detail::MatchImpl _impl;
 };
 

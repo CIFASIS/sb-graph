@@ -18,6 +18,7 @@
  ******************************************************************************/
 
 #include "algorithms/matching/matching.hpp"
+#include "algorithms/matching/matching_impl.hpp"
 #include "util/debug.hpp"
 #include "util/time_profiler.hpp"
 
@@ -26,32 +27,12 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Matching Algorithm implementations ------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-std::ostream& operator<<(std::ostream& out, const MatchKind kind)
-{
-  switch (kind) {
-    case MatchKind::kBFSPaths: {
-      out << "BFS paths";
-      break;
-    }
-
-    default: {
-      Util::ERROR("Unsupported matching algorithm implementation");
-      break;
-    }
-  }
-
-  return out;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // Matching Algorithm Interface ------------------------------------------------ 
 ////////////////////////////////////////////////////////////////////////////////
 
-Matching::Matching(MatchKind kind) : _kind(kind), _impl()
+Matching::Matching() : _impl()
 {
+  MatchKind kind = MATCH_IMPL.kind();
   switch (kind) {
     case MatchKind::kBFSPaths: {
       _impl = detail::BFSMatching{};

@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "algorithms/matching/matching_fact.hpp"
+#include "algorithms/matching/matching_impl.hpp"
 #include "util/debug.hpp"
 
 namespace SBG {
@@ -25,50 +25,37 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// BFS Paths Matching Factory --------------------------------------------------
+// Matching implementations ----------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-Matching BFSMatchingFact::createMatchAlgorithm() const
+std::ostream& operator<<(std::ostream& out, const MatchKind kind)
 {
-  return Matching(MatchKind::kBFSPaths);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Factory for clients --------------------------------------------------------- 
-////////////////////////////////////////////////////////////////////////////////
-
-MatchFactory::MatchFactory()
-  : _kind(MatchKind::kBFSPaths), _impl(BFSMatchingFact{}) {}
-
-MatchFactory& MatchFactory::instance()
-{
-  static MatchFactory _instance;
-  return _instance;
-}
-
-const MatchKind& MatchFactory::kind() const { return _kind; }
-
-void MatchFactory::set_match_fact(MatchKind kind)
-{
-  _kind = kind;
   switch (kind) {
     case MatchKind::kBFSPaths: {
-      _impl = BFSMatchingFact{};
+      out << "BFS paths";
       break;
     }
 
     default: {
-      Util::ERROR("Unsupported matching implementation");
+      Util::ERROR("Unsupported matching algorithm implementation");
       break;
     }
   }
+
+  return out;
 }
 
-Matching MatchFactory::createMatchAlgorithm() const
+MatchImplementation::MatchImplementation() : _kind(MatchKind::kBFSPaths) {}
+
+MatchImplementation& MatchImplementation::instance()
 {
-  return std::visit([](const auto& a) { return a.createMatchAlgorithm(); }
-    , _impl);
+  static MatchImplementation _instance;
+  return _instance;
 }
+
+const MatchKind& MatchImplementation::kind() const { return _kind; }
+
+void MatchImplementation::set_match_fact(MatchKind kind) { _kind = kind; }
 
 } // namespace LIB
 

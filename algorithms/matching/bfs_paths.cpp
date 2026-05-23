@@ -18,8 +18,6 @@
  ******************************************************************************/
 
 #include "algorithms/matching/bfs_paths.hpp"
-#include "sbg/pwmap_fact.hpp"
-#include "sbg/set_fact.hpp"
 #include "util/logger.hpp"
 
 namespace SBG {
@@ -44,14 +42,14 @@ Set BFSPaths::calculate(const DirectedSBG& dsbg, const Set& endings)
   PWMap Emap = dsbg.Emap();
 
   // Successor map to unmatched vertices
-  PWMap smap = PWMAP_FACT.createPWMap(endings);
+  PWMap smap{endings};
 
   // A record of allowed edges to keep out cycle edges
   Set E = dsbg.E();
   // Ingoing edges to vertices that reach endings
   Set ingoing = mapD.preImage(endings); 
   // A record of visited set-edges
-  Set visitedSE = SET_FACT.createSet();
+  Set visitedSE;
   do {
     // Calculate successor for ith vertices
     PWMap ingoingB = auxB.restrict(ingoing);

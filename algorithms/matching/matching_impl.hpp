@@ -1,6 +1,6 @@
-/** @file matching_fact.hpp
+/** @file matching_impl.hpp
 
- @brief <b>Matching Algorithm Factory</b>
+ @brief <b>Matching Algorithm Implementation</b>
 
  <hr>
 
@@ -21,51 +21,45 @@
 
  ******************************************************************************/
 
-#ifndef SBGRAPH_ALGORITHMS_MATCHING_MATCHING_FACT_HPP_
-#define SBGRAPH_ALGORITHMS_MATCHING_MATCHING_FACT_HPP_
+#ifndef SBGRAPH_ALGORITHMS_MATCHING_MATCHING_IMPL_HPP_
+#define SBGRAPH_ALGORITHMS_MATCHING_MATCHING_IMPL_HPP_
 
-#include "algorithms/matching/matching.hpp"
+#include <iosfwd>
 
 namespace SBG {
 
 namespace LIB {
 
-#define MATCH_FACT MatchFactory::instance()
+////////////////////////////////////////////////////////////////////////////////
+// Matching implementations ----------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
-class BFSMatchingFact {
-public:
-  BFSMatchingFact() = default;
+enum class MatchKind { kBFSPaths };
 
-  Matching createMatchAlgorithm() const;
-};
+std::ostream& operator<<(std::ostream& out, const MatchKind kind);
+
+#define MATCH_IMPL MatchImplementation::instance()
 
 /**
- * @brief Single instance of match factory to be used by clients in need of
- * creating an instance of a matching algorithm. A client includes this file and
- * calls MATCH_FACT.createMatchAlgorithm(args).
+ * @brief Singleton that keeps record of the chosen matching implementation.
  */
-class MatchFactory {
+class MatchImplementation {
 public:
-  ~MatchFactory() = default;
+  ~MatchImplementation() = default;
 
-  static MatchFactory& instance();
+  static MatchImplementation& instance();
+
   const MatchKind& kind() const;
-
   void set_match_fact(MatchKind kind);
 
-  Matching createMatchAlgorithm() const;
-
 private:
-  using MatchFactImpl = std::variant<BFSMatchingFact>;
-
-  MatchFactory();
+  MatchImplementation();
 
   MatchKind _kind;
-  MatchFactImpl _impl;
 };
 
 } // namespace LIB
 
 }  // namespace SBG
 
-#endif // SBGRAPH_ALGORITHMS_MATCHING_MATCHING_FACT_HPP_
+#endif // SBGRAPH_ALGORITHMS_MATCHING_MATCHING_IMPL_HPP_

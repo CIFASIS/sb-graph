@@ -19,11 +19,9 @@
 
 #include "algorithms/misc/causalization_builders.hpp"
 #include "sbg/bipartite_sbg.hpp"
-#include "sbg/set.hpp"
-#include "sbg/set_fact.hpp"
-#include "sbg/pw_map.hpp"
-#include "sbg/pwmap_fact.hpp"
 #include "sbg/map.hpp"
+#include "sbg/pw_map.hpp"
+#include "sbg/set.hpp"
 #include "util/time_profiler.hpp"
 
 #include <tuple>
@@ -43,7 +41,7 @@ std::tuple<SBG::LIB::Set, SBG::LIB::PWMap> buildSCCVertices(
   M.compact();
   SBG::LIB::Set V = M;
   SBG::LIB::PWMap auxVmap = data.bsbg().Emap().restrict(M);
-  SBG::LIB::PWMap Vmap = SBG::LIB::PWMAP_FACT.createPWMap();
+  SBG::LIB::PWMap Vmap;
   for (const SBG::LIB::Map& m : auxVmap) { 
     SBG::LIB::Set domain = m.domain();
     domain.compact();
@@ -99,21 +97,21 @@ void partitionEmap(SBG::LIB::DirectedSBG& dsbg)
 
   std::size_t arity = V.arity();
   SBG::LIB::NAT j = 1;
-  SBG::LIB::PWMap partitioned_Emap = SBG::LIB::PWMAP_FACT.createPWMap();
+  SBG::LIB::PWMap partitioned_Emap;
   dsbg.foreachSetEdge([&](const SBG::LIB::MD_NAT& SE)
   {
-    SBG::LIB::Set E = Emap.preImage(SBG::LIB::SET_FACT.createSet(SE));
+    SBG::LIB::Set E = Emap.preImage(SBG::LIB::Set{SE});
     SBG::LIB::Set SV_starts = Vmap.image(mapB.image(E));
     SBG::LIB::Set SV_ends = Vmap.image(mapD.image(E));
     if (SV_starts.cardinal()*SV_ends.cardinal() > 1) {
       SBG::LIB::Set remaining1 = SV_starts;
       while (!remaining1.isEmpty()) {
-        SBG::LIB::Set SV1 = SBG::LIB::SET_FACT.createSet(remaining1.minElem());
+        SBG::LIB::Set SV1 = SBG::LIB::Set{remaining1.minElem()};
         SBG::LIB::Set V1 = Vmap.preImage(SV1); 
 
         SBG::LIB::Set remaining2 = SV_ends;
         while (!remaining2.isEmpty()) {
-          SBG::LIB::Set SV2 = SBG::LIB::SET_FACT.createSet(remaining2.minElem());
+          SBG::LIB::Set SV2 = SBG::LIB::Set{remaining2.minElem()};
           SBG::LIB::Set V2 = Vmap.preImage(SV2); 
 
           SBG::LIB::Set edges_V1_V2 = mapB.preImage(V1).intersection(
@@ -140,13 +138,13 @@ SBG::LIB::DirectedSBG buildLoopDetectionSBG(const SBG::LIB::MatchData& data)
 {
   SBG::Util::Internal::TimeProfiler profiler{"SBG Loop Detection builder: "};
 
-  SBG::LIB::Set V = SBG::LIB::SET_FACT.createSet();
-  SBG::LIB::PWMap Vmap = SBG::LIB::PWMAP_FACT.createPWMap();
+  SBG::LIB::Set V;
+  SBG::LIB::PWMap Vmap;
   std::tie(V, Vmap) = buildSCCVertices(data);
 
-  SBG::LIB::PWMap mapB = SBG::LIB::PWMAP_FACT.createPWMap();
-  SBG::LIB::PWMap mapD = SBG::LIB::PWMAP_FACT.createPWMap();
-  SBG::LIB::PWMap Emap = SBG::LIB::PWMAP_FACT.createPWMap();
+  SBG::LIB::PWMap mapB;
+  SBG::LIB::PWMap mapD;
+  SBG::LIB::PWMap Emap;
   std::tie(mapB, mapD, Emap) = buildSCCEdges(data, Vmap);
 
   SBG::LIB::DirectedSBG dsbg{V, Vmap, mapB, mapD, Emap};

@@ -22,8 +22,6 @@
 #include "eval/visitors/linear_expr_evaluator.hpp"
 #include "eval/visitors/nat_evaluator.hpp"
 #include "eval/visitors/rational_evaluator.hpp"
-#include "sbg/pwmap_fact.hpp"
-#include "sbg/set_fact.hpp"
 #include "util/debug.hpp"
 
 namespace SBG {
@@ -143,12 +141,12 @@ ExprBaseType ExprEvaluator::operator()(AST::Interval v) const
   LIB::NAT s = boost::apply_visitor(nat_evaluator, v.step());
   LIB::NAT e = boost::apply_visitor(nat_evaluator, v.end());
 
-  return LIB::SET_FACT.createSet(b, s, e);
+  return LIB::Set{b, s, e};
 }
 
 ExprBaseType ExprEvaluator::operator()(AST::MultiDimInter v) const
 {
-  LIB::Set result = LIB::SET_FACT.createSet();
+  LIB::Set result;
 
   int i = 0;
   for (const AST::Expr& e : v.intervals())  {
@@ -171,7 +169,7 @@ ExprBaseType ExprEvaluator::operator()(AST::MultiDimInter v) const
 
 ExprBaseType ExprEvaluator::operator()(AST::Set v) const
 {
-  LIB::Set result = LIB::SET_FACT.createSet();
+  LIB::Set result;
 
   for (const AST::Expr& e : v.pieces()) {
     LIB::Set jth_element = eval<LIB::Set>(*this, e, "Set");
@@ -228,7 +226,7 @@ ExprBaseType ExprEvaluator::operator()(AST::LinearMap v) const
 
 ExprBaseType ExprEvaluator::operator()(AST::PWLMap v) const
 {
-  LIB::PWMap result = LIB::PWMAP_FACT.createPWMap();
+  LIB::PWMap result;
 
   for (const AST::Expr& e : v.maps()) {
     result.insert(eval<LIB::Map>(*this, e, "Map"));

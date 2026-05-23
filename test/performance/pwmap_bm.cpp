@@ -18,9 +18,7 @@
  ******************************************************************************/
 
 #include "sbg/set.hpp"
-#include "sbg/set_fact.hpp"
 #include "sbg/pw_map.hpp"
-#include "sbg/pwmap_fact.hpp"
 #include "sbg/pwmap_detail.hpp"
 #include "test/performance/utils.hpp"
 
@@ -34,9 +32,7 @@ namespace perf {
 
 namespace detail {
 
-using SBG::LIB::SetKind;
 using SBG::LIB::Set;
-using SBG::LIB::PWMapKind;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Benchmarks ------------------------------------------------------------------

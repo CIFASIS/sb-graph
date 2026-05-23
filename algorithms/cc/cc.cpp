@@ -18,7 +18,6 @@
  ******************************************************************************/
 
 #include "algorithms/cc/cc.hpp"
-#include "sbg/pwmap_fact.hpp"
 #include "sbg/set.hpp"
 #include "util/logger.hpp"
 #include "util/time_profiler.hpp"
@@ -37,8 +36,8 @@ PWMap connectedComponents(const SBG& sbg)
 
   Set V = sbg.V();
   if (!V.isEmpty()) {
-    PWMap rmap = PWMAP_FACT.createPWMap(V);
-    PWMap old_rmap = PWMAP_FACT.createPWMap();
+    PWMap rmap{V};
+    PWMap old_rmap;
 
     if (sbg.E().isEmpty()) {
       return rmap;
@@ -70,7 +69,7 @@ PWMap connectedComponents(const SBG& sbg)
     return rmap;
   }
 
-  return PWMAP_FACT.createPWMap();
+  return PWMap{};
 }
 
 } // namespace LIB

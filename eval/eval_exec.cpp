@@ -17,18 +17,18 @@
 
  ******************************************************************************/
 
-#include "algorithms/matching/matching_fact.hpp"
-#include "algorithms/mfvs/mfvs_fact.hpp"
-#include "algorithms/scc/scc_fact.hpp"
-#include "algorithms/sorting/topological/ts_fact.hpp"
+#include "algorithms/matching/matching_impl.hpp"
+#include "algorithms/mfvs/mfvs_impl.hpp"
+#include "algorithms/scc/scc_impl.hpp"
+#include "algorithms/sorting/topological/ts_impl.hpp"
 #include "eval/eval_exec.hpp"
 #include "eval/file_evaluator.hpp"
 #include "eval/input_translator.hpp"
 #include "eval/file_evaluator.hpp"
 #include "eval/visitors/autom_impl_visitor.hpp"
 #include "parser/file_parser.hpp"
-#include "sbg/set_fact.hpp"
-#include "sbg/pwmap_fact.hpp"
+#include "sbg/pwmap_impl.hpp"
+#include "sbg/set_impl.hpp"
 #include "util/debug.hpp"
 #include "util/logger.hpp"
 #include "util/time_profiler.hpp"
@@ -51,13 +51,13 @@ void printHeader(Util::prog_opts::variables_map vm)
 {
   if (vm.count("debug")) {
     std::cout << "-----------------------------------\n";
-    std::cout << "Set implementation: " << LIB::SET_FACT.kind() << "\n";
-    std::cout << "PWMap implementation: " << LIB::PWMAP_FACT.kind() << "\n";
+    std::cout << "Set implementation: " << LIB::SET_IMPL.kind() << "\n";
+    std::cout << "PWMap implementation: " << LIB::PWMAP_IMPL.kind() << "\n";
     std::cout << "-----------------------------------\n";
-    std::cout << "Matching algorithm: " << LIB::MATCH_FACT.kind() << "\n";
-    std::cout << "SCC algorithm: " << LIB::SCC_FACT.kind() << "\n";
-    std::cout << "MFVS algorithm: " << LIB::MFVS_FACT.kind() << "\n";
-    std::cout << "Topological sorting algorithm: " << LIB::TS_FACT.kind()
+    std::cout << "Matching algorithm: " << LIB::MATCH_IMPL.kind() << "\n";
+    std::cout << "SCC algorithm: " << LIB::SCC_IMPL.kind() << "\n";
+    std::cout << "MFVS algorithm: " << LIB::MFVS_IMPL.kind() << "\n";
+    std::cout << "Topological sorting algorithm: " << LIB::TS_IMPL.kind()
       << "\n";
   }
   std::cout << "-----------------------------------\n";

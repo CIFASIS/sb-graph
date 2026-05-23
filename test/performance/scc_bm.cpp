@@ -19,7 +19,6 @@
 
 #include "algorithms/matching/match_data.hpp"
 #include "algorithms/scc/scc.hpp"
-#include "algorithms/scc/scc_fact.hpp"
 #include "algorithms/misc/causalization_builders.hpp"
 #include "sbg/directed_sbg.hpp"
 #include "test/performance/scc_bm.hpp"
@@ -42,7 +41,7 @@ static void BM_SCC(benchmark::State& state, std::string filename)
   int N = state.range(0);
   SBG::LIB::MatchData match_result = calculateMatching(filename, N, 1);
   SBG::LIB::DirectedSBG scc_dsbg = misc::buildLoopDetectionSBG(match_result); 
-  SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
+  SBG::LIB::SCC scc_algorithm;
 
   for (auto _ : state) {
     benchmark::DoNotOptimize(scc_algorithm.calculate(scc_dsbg));
@@ -54,7 +53,7 @@ static void BM_SCCWithBuilder(benchmark::State& state, std::string filename)
 {
   int N = state.range(0);
   SBG::LIB::MatchData match_result = calculateMatching(filename, 100, N);
-  SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
+  SBG::LIB::SCC scc_algorithm;
 
   for (auto _ : state) {
     SBG::LIB::DirectedSBG scc_dsbg = misc::buildLoopDetectionSBG(match_result); 
@@ -67,7 +66,7 @@ static void BM_SCCCopies(benchmark::State& state, std::string filename)
 {
   int N = state.range(0);
   SBG::LIB::MatchData match_result = calculateMatching(filename, 100, N);
-  SBG::LIB::SCC scc_algorithm = SBG::LIB::SCC_FACT.createSCCAlgorithm();
+  SBG::LIB::SCC scc_algorithm;
 
   for (auto _ : state) {
     SBG::LIB::DirectedSBG scc_dsbg = misc::buildLoopDetectionSBG(match_result); 

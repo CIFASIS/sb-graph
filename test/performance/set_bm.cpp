@@ -21,7 +21,6 @@
 #include "sbg/multidim_inter.hpp"
 #include "sbg/natural.hpp"
 #include "sbg/set.hpp"
-#include "sbg/set_fact.hpp"
 #include "test/performance/utils.hpp"
 
 #include <benchmark/benchmark.h>
@@ -37,7 +36,6 @@ namespace detail {
 
 using SBG::LIB::NAT;
 using SBG::LIB::detail::Interval;
-using SBG::LIB::SetKind;
 using SBG::LIB::Set;
 
 ////////////////////////////////////////////////////////////////////////////////

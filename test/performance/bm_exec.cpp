@@ -18,11 +18,11 @@
  ******************************************************************************/
 
 #include "test/performance/bm_exec.hpp"
-#include "algorithms/matching/matching_fact.hpp"
-#include "algorithms/scc/scc_fact.hpp"
+#include "algorithms/matching/matching_impl.hpp"
+#include "algorithms/scc/scc_impl.hpp"
 #include "eval/user_impl_map.hpp"
-#include "sbg/pwmap_fact.hpp"
-#include "sbg/set_fact.hpp"
+#include "sbg/pwmap_impl.hpp"
+#include "sbg/set_impl.hpp"
 #include "test/performance/boost/boost_bm.hpp"
 #include "test/performance/matching_bm.hpp"
 #include "test/performance/pwmap_bm.hpp"
@@ -52,11 +52,11 @@ void printHeader(Util::prog_opts::variables_map vm)
 {
   if (vm.count("debug")) {
     std::cout << "-----------------------------------\n";
-    std::cout << "Set implementation: " << LIB::SET_FACT.kind() << "\n";
-    std::cout << "PWMap implementation: " << LIB::PWMAP_FACT.kind() << "\n";
+    std::cout << "Set implementation: " << LIB::SET_IMPL.kind() << "\n";
+    std::cout << "PWMap implementation: " << LIB::PWMAP_IMPL.kind() << "\n";
     std::cout << "-----------------------------------\n";
-    std::cout << "Matching algorithm: " << LIB::MATCH_FACT.kind() << "\n";
-    std::cout << "SCC algorithm: " << LIB::SCC_FACT.kind() << "\n\n";
+    std::cout << "Matching algorithm: " << LIB::MATCH_IMPL.kind() << "\n";
+    std::cout << "SCC algorithm: " << LIB::SCC_IMPL.kind() << "\n\n";
   }
 }
 

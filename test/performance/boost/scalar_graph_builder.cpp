@@ -19,7 +19,6 @@
 
 #include "sbg/multidim_inter.hpp"
 #include "sbg/set_detail.hpp"
-#include "sbg/set_fact.hpp"
 #include "test/performance/boost/scalar_graph_builder.hpp"
 #include "util/time_profiler.hpp"
 
@@ -79,7 +78,7 @@ void ScalarGraphBuilder::translateVertices()
   for (const MD_NAT& v : vertices) { 
     _vertex_map[v] = count;
     _partition.emplace_back(
-      SBG::LIB::SET_FACT.createSet(v).intersection(X).isEmpty());
+      SBG::LIB::Set{v}.intersection(X).isEmpty());
     ++count;
   }
 }
@@ -99,7 +98,7 @@ EdgeVector ScalarGraphBuilder::getEdgeList()
   std::vector<MD_NAT> edges = key.flatten(E);
   for (const MD_NAT& e : edges) {
     // Get endings of edge
-    Set domain = SBG::LIB::SET_FACT.createSet(e);
+    Set domain = SBG::LIB::Set{e};
     Vertex v1 = _vertex_map[map1.image(domain).minElem()];
     Vertex v2 = _vertex_map[map2.image(domain).minElem()];
     result.emplace_back(v1, v2);

@@ -17,13 +17,9 @@
 
  ******************************************************************************/
 
-#include "algorithms/scc/scc_fact.hpp"
-#include "algorithms/mfvs/mfvs_fact.hpp"
 #include "eval/user_impl_map.hpp"
 #include "sbg/pw_map.hpp"
-#include "sbg/pwmap_fact.hpp"
 #include "sbg/set.hpp"
-#include "sbg/set_fact.hpp"
 #include "util/debug.hpp"
 
 namespace SBG {
@@ -143,21 +139,21 @@ void setSetFactory(int set_impl)
 {
   LIB::SetKind set_fact = std::get<LIB::SetKind>(detail::IMPL_MAP.getFactory(
     "set", set_impl));
-  LIB::SET_FACT.set_set_fact(set_fact);
+  LIB::SET_IMPL.set_set_fact(set_fact);
 }
 
 void setPWFactory(int pw_impl)
 {
   LIB::PWMapKind pwmap_fact = std::get<LIB::PWMapKind>(
     detail::IMPL_MAP.getFactory("pwmap", pw_impl));
-  LIB::PWMAP_FACT.set_pwmap_fact(pwmap_fact);
+  LIB::PWMAP_IMPL.set_pwmap_fact(pwmap_fact);
 }
 
 void setSCCFactory(int scc_impl)
 {
   LIB::SCCKind scc_fact = std::get<LIB::SCCKind>(
     detail::IMPL_MAP.getFactory("scc", scc_impl));
-  LIB::SCC_FACT.set_scc_fact(scc_fact);
+  LIB::SCC_IMPL.set_scc_fact(scc_fact);
 
   return;
 }
@@ -166,7 +162,7 @@ void setMFVSFactory(int mfvs_impl)
 {
   LIB::MFVSKind mfvs_fact = std::get<LIB::MFVSKind>(
     detail::IMPL_MAP.getFactory("mfvs", mfvs_impl));
-  LIB::MFVS_FACT.set_mfvs_fact(mfvs_fact);
+  LIB::MFVS_IMPL.set_mfvs_fact(mfvs_fact);
 
   return;
 }

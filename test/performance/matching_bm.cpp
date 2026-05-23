@@ -17,11 +17,10 @@
 
  ******************************************************************************/
 
+#include "test/performance/matching_bm.hpp"
 #include "algorithms/matching/matching.hpp"
-#include "algorithms/matching/matching_fact.hpp"
 #include "sbg/bipartite_sbg.hpp"
 #include "test/performance/utils.hpp"
-#include "test/performance/matching_bm.hpp"
 
 #include <benchmark/benchmark.h>
 
@@ -39,8 +38,7 @@ static void BM_Matching(benchmark::State& state, std::string filename)
 {
   int N = state.range(0);
 
-  SBG::LIB::Matching match_algorithm
-    = SBG::LIB::MATCH_FACT.createMatchAlgorithm();
+  SBG::LIB::Matching match_algorithm;
   SBG::LIB::BipartiteSBG match_sbg = generateSBG(filename, N, 1); 
   for (auto _ : state) {
     benchmark::DoNotOptimize(match_algorithm.calculate(match_sbg));
@@ -54,8 +52,7 @@ static void BM_MatchingCopies(benchmark::State& state, std::string filename)
   int N = state.range(0);
 
   // Calculate Matching
-  SBG::LIB::Matching match_algorithm
-    = SBG::LIB::MATCH_FACT.createMatchAlgorithm();
+  SBG::LIB::Matching match_algorithm;
   SBG::LIB::BipartiteSBG match_sbg = generateSBG(filename, 100, N);
 
   for (auto _ : state) {

@@ -17,46 +17,50 @@
 
  ******************************************************************************/
 
-#include "algorithms/mfvs/min_feedback_vertex_set.hpp"
 #include "algorithms/mfvs/mfvs_impl.hpp"
 #include "util/debug.hpp"
-#include "util/time_profiler.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// MFVS Algorithm Interface ----------------------------------------------------
+// MFVS implementations -------------------------------------------------------- 
 ////////////////////////////////////////////////////////////////////////////////
 
-MinFeedbackVertexSet::MinFeedbackVertexSet() : _impl()
+std::ostream& operator<<(std::ostream& out, const MFVSKind kind)
 {
-  MFVSKind kind = MFVS_IMPL.kind();
   switch (kind) {
     case MFVSKind::kGreedy: {
-      _impl = detail::GreedyMFVS{};
+      out << "maximum degree greedy";
       break;
     }
 
     case MFVSKind::kSmallSV: {
-      _impl = detail::SmallestSVMFVS{};
+      out << "smallest set-vertex";
       break;
     }
 
     default: {
-      Util::ERROR("MinFeedbackVertexSet: unsupported MFVS implementation");
+      Util::ERROR("MFVSKind::operator<<: unsupported MFVS implementation");
       break;
     }
   }
+
+  return out;
 }
 
-Set MinFeedbackVertexSet::calculate(const DirectedSBG& dsbg)
+MFVSImplementation::MFVSImplementation() : _kind(MFVSKind::kSmallSV) {}
+
+MFVSImplementation& MFVSImplementation::instance()
 {
-  Util::Internal::TimeProfiler profiler{"Total MFVS exec time: "};
-
-  return std::visit([&](auto& a) { return a.calculate(dsbg); }, _impl);
+  static MFVSImplementation _instance;
+  return _instance;
 }
+
+const MFVSKind& MFVSImplementation::kind() const { return _kind; }
+
+void MFVSImplementation::set_mfvs_fact(MFVSKind kind) { _kind = kind; }
 
 } // namespace LIB
 

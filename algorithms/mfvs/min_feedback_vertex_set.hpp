@@ -45,22 +45,17 @@ using MFVSImpl = std::variant<GreedyMFVS, SmallestSVMFVS>;
 
 }
 
-enum class MFVSKind { kGreedy, kSmallSV };
-
-std::ostream& operator<<(std::ostream& out, const MFVSKind kind);
-
 ///////////////////////////////////////////////////////////////////////////////
 // Minimum Feedback Vertex Set Algorithm --------------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
 class MinFeedbackVertexSet {
 public:
-  MinFeedbackVertexSet(MFVSKind kind);
+  MinFeedbackVertexSet();
 
   Set calculate(const DirectedSBG& dsbg);
 
 private:
-  MFVSKind _kind;
   detail::MFVSImpl _impl;
 };
 

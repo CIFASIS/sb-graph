@@ -19,10 +19,8 @@
 
 #include "algorithms/mfvs/smallest_sv_mfvs.hpp"
 #include "algorithms/scc/scc.hpp"
-#include "algorithms/scc/scc_fact.hpp"
 #include "sbg/natural.hpp"
 #include "sbg/pw_map.hpp"
-#include "sbg/set_fact.hpp"
 #include "util/logger.hpp"
 
 #include <numeric>
@@ -58,10 +56,10 @@ MD_NAT getVertexFromSmallestSV(const DirectedSBG& dsbg)
       min_mult = jth_mult;
     }
 
-    remaining = remaining.difference(SET_FACT.createSet(jth_mult));
+    remaining = remaining.difference(Set{jth_mult});
   }
 
-  Set small_sv = mmap.preImage(SET_FACT.createSet(min_mult));
+  Set small_sv = mmap.preImage(Set{min_mult});
   Set vertex = Vmap.preImage(small_sv);
 
   return vertex.minElem();
@@ -73,13 +71,13 @@ Set SmallestSVMFVS::calculate(const DirectedSBG& input_dsbg) const
 
   Util::DEBUG_LOG << "initial smallest set-vertex mfvs dsbg:\n" << dsbg << "\n";
 
-  PWMap rmap = SCC_FACT.createSCCAlgorithm().calculate(dsbg).rmap();
-  Set fvs_result = SET_FACT.createSet();
-  Set visitedSV = SET_FACT.createSet();
+  PWMap rmap = SCC{}.calculate(dsbg).rmap();
+  Set fvs_result;
+  Set visitedSV;
   while (rmap.fixedPoints() != rmap.domain()) {
     // Get vertex from smallest set-vertex
     MD_NAT smallest_sv_vertex = getVertexFromSmallestSV(dsbg);
-    Set Vj = SET_FACT.createSet(smallest_sv_vertex);
+    Set Vj{smallest_sv_vertex};
     fvs_result = std::move(fvs_result).disjointCup(Vj);
 
     // Handle repetition
@@ -98,7 +96,7 @@ Set SmallestSVMFVS::calculate(const DirectedSBG& input_dsbg) const
     dsbg.eraseVertices(fvs_result);
 
     // Resulting SCC from induced graph
-    rmap = SCC_FACT.createSCCAlgorithm().calculate(dsbg).rmap();
+    rmap = SCC{}.calculate(dsbg).rmap();
 
     Util::DEBUG_LOG << "Vj: " << Vj << "\n";
     Util::DEBUG_LOG << "new rmap: " << rmap << "\n\n";

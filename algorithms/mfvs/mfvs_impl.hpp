@@ -1,4 +1,8 @@
-/*******************************************************************************
+/** @file mfvs_impl.hpp
+
+ @brief <b>Minimum Feedback Vertex Set Algorithm Implementation</b>
+
+ <hr>
 
  This file is part of Set--Based Graph Library.
 
@@ -17,47 +21,45 @@
 
  ******************************************************************************/
 
-#include "algorithms/mfvs/min_feedback_vertex_set.hpp"
-#include "algorithms/mfvs/mfvs_impl.hpp"
-#include "util/debug.hpp"
-#include "util/time_profiler.hpp"
+#ifndef SBGRAPH_ALGORITHMS_MFVS_MFVS_IMPL_HPP_
+#define SBGRAPH_ALGORITHMS_MFVS_MFVS_IMPL_HPP_
+
+#include <iosfwd>
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// MFVS Algorithm Interface ----------------------------------------------------
+// MFVS implementations --------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-MinFeedbackVertexSet::MinFeedbackVertexSet() : _impl()
-{
-  MFVSKind kind = MFVS_IMPL.kind();
-  switch (kind) {
-    case MFVSKind::kGreedy: {
-      _impl = detail::GreedyMFVS{};
-      break;
-    }
+enum class MFVSKind { kGreedy, kSmallSV };
 
-    case MFVSKind::kSmallSV: {
-      _impl = detail::SmallestSVMFVS{};
-      break;
-    }
+std::ostream& operator<<(std::ostream& out, const MFVSKind kind);
 
-    default: {
-      Util::ERROR("MinFeedbackVertexSet: unsupported MFVS implementation");
-      break;
-    }
-  }
-}
+#define MFVS_IMPL MFVSImplementation::instance()
 
-Set MinFeedbackVertexSet::calculate(const DirectedSBG& dsbg)
-{
-  Util::Internal::TimeProfiler profiler{"Total MFVS exec time: "};
+/**
+ * @brief Singleton that keeps record of the chosen MFVS implementation.
+ */
+class MFVSImplementation {
+public:
+  ~MFVSImplementation() = default;
 
-  return std::visit([&](auto& a) { return a.calculate(dsbg); }, _impl);
-}
+  static MFVSImplementation& instance();
+
+  const MFVSKind& kind() const;
+  void set_mfvs_fact(MFVSKind kind);
+
+private:
+  MFVSImplementation();
+
+  MFVSKind _kind;
+};
 
 } // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG
+
+#endif // SBGRAPH_ALGORITHMS_MFVS_MFVS_IMPL_HPP_

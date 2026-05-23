@@ -3,6 +3,6 @@ target_sources(
     PRIVATE
         greedy_mfvs.cpp
         min_feedback_vertex_set.cpp
-        mfvs_fact.cpp
+        mfvs_impl.cpp
         smallest_sv_mfvs.cpp
 )

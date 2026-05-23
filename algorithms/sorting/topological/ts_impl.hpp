@@ -1,6 +1,6 @@
-/** @file topo_sort.hpp
+/** @file ts_impl.hpp
 
- @brief <b>SBG Topological Sort Algorithm Abstract Interface</b>
+ @brief <b>Topological Sorting Algorithm Implementation</b>
 
  <hr>
 
@@ -21,42 +21,45 @@
 
  ******************************************************************************/
 
-#ifndef SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_TOPOLOGICAL_SORTING_HPP_
-#define SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_TOPOLOGICAL_SORTING_HPP_
+#ifndef SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_TS_IMPL_HPP_
+#define SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_TS_IMPL_HPP_
 
-#include "algorithms/sorting/topological/min_vertex_ts.hpp"
-#include "sbg/directed_sbg.hpp"
+#include <iosfwd>
 
 namespace SBG {
 
 namespace LIB {
 
-namespace detail {
-
 ////////////////////////////////////////////////////////////////////////////////
-// Topological Sorting Algorithm Implementations -------------------------------
+// Topological Sorting implementations -----------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-using TSImpl = std::variant<MinVertexTS>;
+enum class TSKind { kMinVertex };
 
-} // namespace detail
+std::ostream& operator<<(std::ostream& out, const TSKind kind);
 
-////////////////////////////////////////////////////////////////////////////////
-// Topological Sorting Algorithm -----------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
+#define TS_IMPL TSImplementation::instance()
 
-class TopologicalSorting {
+/**
+ * @brief Singleton that keeps record of the chosen sorting implementation.
+ */
+class TSImplementation {
 public:
-  TopologicalSorting();
+  ~TSImplementation() = default;
 
-  PWMap calculate(const DirectedSBG& dsbg, const PWMap& pmap);
+  static TSImplementation& instance();
+
+  const TSKind& kind() const;
+  void set_ts_fact(TSKind kind);
 
 private:
-  detail::TSImpl _impl;
+  TSImplementation();
+
+  TSKind _kind;
 };
 
 } // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG
 
-#endif // SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_TOPOLOGICAL_SORTING_HPP_
+#endif // SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_TS_IMPL_HPP_

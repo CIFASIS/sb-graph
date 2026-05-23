@@ -19,8 +19,6 @@
 
 #include "algorithms/sorting/topological/min_vertex_ts.hpp"
 #include "sbg/natural.hpp"
-#include "sbg/pwmap_fact.hpp"
-#include "sbg/set_fact.hpp"
 #include "util/debug.hpp"
 #include "util/logger.hpp"
 
@@ -35,9 +33,8 @@ namespace detail {
 ////////////////////////////////////////////////////////////////////////////////
 
 MinVertexTS::MinVertexTS()
-  : _smap(PWMAP_FACT.createPWMap()), _dsbg(), _visitedSV(SET_FACT.createSet())
-    , _priority(SET_FACT.createSet()), _same_SV(SET_FACT.createSet())
-    , _independent(SET_FACT.createSet()) {}
+  : _smap(), _dsbg(), _visitedSV(), _priority(), _same_SV(), _independent()
+    , _max_repetition_depth(0) {}
 
 /*
  * @brief Given any two vertices u and v of the repetition, it checks that any
@@ -66,21 +63,32 @@ void checkSorting(const PWMap& result, const DirectedSBG& dsbg)
 PWMap MinVertexTS::repetition(const Set& init_V
   , const DirectedSBG& dsbg) const
 {
-  PWMap result = PWMAP_FACT.createPWMap();
+  PWMap result;
 
   PWMap Vmap = dsbg.Vmap();
   Set Vj = init_V;
   Set init_SV = Vmap.image(init_V);
+  Expression final_expr;
   bool repetition = true;
+  unsigned int n = 0;
   do {
     PWMap jth_smap = _smap.restrict(Vj);
     Set V_plus = Vmap.preImage(Vmap.image(Vj)).difference(_smap.domain());
-    result.emplace(V_plus, (*jth_smap.begin()).law());
+    final_expr = (*jth_smap.begin()).law();
+    result.emplace(V_plus, final_expr);
     Vj = _smap.image(Vj);
     repetition = !Vmap.image(Vj).intersection(init_SV).isEmpty();
-  } while (!repetition);
+    ++n;
+  } while (!repetition && n < _max_repetition_depth);
 
-  checkSorting(result, dsbg);
+  if (repetition) {
+    Expression init_expr = (*_smap.restrict(init_V).begin()).law();
+    if (init_expr == final_expr) {
+      checkSorting(result, dsbg);
+    }
+  } else {
+    result;
+  }
 
   return result;
 }
@@ -114,7 +122,7 @@ PWMap MinVertexTS::calculate(const DirectedSBG& dsbg
 
   _dsbg = dsbg;
 
-  _smap = PWMAP_FACT.createPWMap();
+  _smap = PWMap{};
 
   if (dsbg.V().isEmpty()) {
     return _smap;
@@ -122,14 +130,14 @@ PWMap MinVertexTS::calculate(const DirectedSBG& dsbg
 
   _priority = _dsbg.V();
   _same_SV = _dsbg.V();
-  Set visited_SV = SET_FACT.createSet();
+  Set visited_SV;
   Expression successor_expr{_dsbg.V().arity(), 1, 0};
   MD_NAT vj;
   MD_NAT old_vj = _dsbg.V().difference(_dsbg.mapD().image()).minElem();
   do {
     // Find new minimum vertex, and add it to the sorting
     vj = getMinVertex();
-    Set vj_set = SET_FACT.createSet(vj);
+    Set vj_set{vj};
     successor_expr = Expression{vj, old_vj};
     _smap.emplace(vj_set, successor_expr);
 
@@ -140,8 +148,10 @@ PWMap MinVertexTS::calculate(const DirectedSBG& dsbg
       PWMap smap_plus = repetition(vj_set, dsbg);
       _smap = std::move(smap_plus).combine(std::move(_smap));
       vj = _smap.domain().difference(_smap.image()).minElem();
+      _max_repetition_depth = 0;
     } else {
       _visitedSV = std::move(_visitedSV).disjointCup(Vmap.image(vj_set));
+      _max_repetition_depth++;
     } 
 
     // Update values for new iteration

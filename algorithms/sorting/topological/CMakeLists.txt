@@ -3,5 +3,5 @@ target_sources(
     PRIVATE
         min_vertex_ts.cpp
         topological_sorting.cpp
-        ts_fact.cpp
+        ts_impl.cpp
 )

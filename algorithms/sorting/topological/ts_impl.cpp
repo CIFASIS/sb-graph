@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "algorithms/sorting/topological/ts_fact.hpp"
+#include "algorithms/sorting/topological/ts_impl.hpp"
 #include "util/debug.hpp"
 
 namespace SBG {
@@ -25,51 +25,38 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Minimum Vertex Topological Sorting Factory ----------------------------------
+// Topological Sorting implementations
 ////////////////////////////////////////////////////////////////////////////////
 
-TopologicalSorting MinVertexTSFact::createTSAlgorithm() const
+std::ostream& operator<<(std::ostream& out, const TSKind kind)
 {
-  return TopologicalSorting{TSKind::kMinVertex};
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Factory for clients --------------------------------------------------------- 
-////////////////////////////////////////////////////////////////////////////////
-
-TSFactory::TSFactory()
-  : _kind(TSKind::kMinVertex), _impl(MinVertexTSFact{}) {}
-
-TSFactory& TSFactory::instance()
-{
-  static TSFactory _instance;
-  return _instance;
-}
-
-const TSKind& TSFactory::kind() const { return _kind; }
-
-void TSFactory::set_ts_fact(TSKind kind)
-{
-  _kind = kind;
   switch (kind) {
     case TSKind::kMinVertex: {
-      _impl = MinVertexTSFact{};
+      out << "minimum vertex";
       break;
     }
 
     default: {
-      Util::ERROR("TSFactory::set_ts_fact: unsupported topological sorting ",
-        "implementation");
+      Util::ERROR("TSKind::operator<<: unsupported topological sorting "
+        , "algorithm implementation");
       break;
     }
   }
+
+  return out;
 }
 
-TopologicalSorting TSFactory::createTSAlgorithm() const
+TSImplementation::TSImplementation() : _kind(TSKind::kMinVertex) {}
+
+TSImplementation& TSImplementation::instance()
 {
-  return std::visit([](const auto& a) { return a.createTSAlgorithm(); }
-    , _impl);
+  static TSImplementation _instance;
+  return _instance;
 }
+
+const TSKind& TSImplementation::kind() const { return _kind; }
+
+void TSImplementation::set_ts_fact(TSKind kind) { _kind = kind; }
 
 } // namespace LIB
 

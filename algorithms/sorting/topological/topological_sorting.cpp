@@ -18,6 +18,7 @@
  ******************************************************************************/
 
 #include "algorithms/sorting/topological/topological_sorting.hpp"
+#include "algorithms/sorting/topological/ts_impl.hpp"
 #include "util/debug.hpp"
 #include "util/time_profiler.hpp"
 
@@ -26,33 +27,12 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Topological Sorting Algorithm implementations -------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-std::ostream& operator<<(std::ostream& out, const TSKind kind)
-{
-  switch (kind) {
-    case TSKind::kMinVertex: {
-      out << "minimum vertex";
-      break;
-    }
-
-    default: {
-      Util::ERROR("TSKind::operator<<: unsupported topological sorting "
-        , "algorithm implementation");
-      break;
-    }
-  }
-
-  return out;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // Topological Sorting Algorithm Interface -------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-TopologicalSorting::TopologicalSorting(TSKind kind) : _kind(kind), _impl()
+TopologicalSorting::TopologicalSorting() : _impl()
 {
+  TSKind kind = TS_IMPL.kind();
   switch (kind) {
     case TSKind::kMinVertex: {
       _impl = detail::MinVertexTS{};

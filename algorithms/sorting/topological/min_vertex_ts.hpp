@@ -62,6 +62,7 @@ private:
   Set _same_SV;
   Set _independent;
   Set _visitedSV;
+  unsigned int _max_repetition_depth;
 };
 
 } // namespace detail

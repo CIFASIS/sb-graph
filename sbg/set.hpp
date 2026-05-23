@@ -68,21 +68,17 @@ class SetAccessKey;
 
 }
 
-enum class SetKind { kUnordered, kOrdered, kOrdUnidimDense };
-
-std::ostream& operator<<(std::ostream& out, const SetKind kind);
-
 ////////////////////////////////////////////////////////////////////////////////
 // Set -------------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 class Set {
 public:
-  Set(const SetKind kind);
-  Set(const SetKind kind, const MD_NAT& x);
-  Set(const SetKind kind, MD_NAT&& x);
-  Set(const SetKind kind, const NAT lo, const NAT st, const NAT hi);
-  Set(const SetKind kind, const FixedPointsInfo& info);
+  Set();
+  Set(const MD_NAT& x);
+  Set(MD_NAT&& x);
+  Set(const NAT lo, const NAT st, const NAT hi);
+  Set(const FixedPointsInfo& info);
 
   bool operator==(const Set& other) const;
   bool operator!=(const Set& other) const;

@@ -19,7 +19,6 @@
 
 #include "sbg/map.hpp"
 #include "sbg/map_detail.hpp"
-#include "sbg/set_fact.hpp"
 
 #include <iostream>
 
@@ -33,10 +32,10 @@ namespace LIB {
 
 // Constructors/Destructors ----------------------------------------------------
 
-Map::Map() : _domain(SET_FACT.createSet()) {}
+Map::Map() : _domain() {}
 
 Map::Map(const MD_NAT& x, const Expression& expr)
-  : _domain(SET_FACT.createSet(x)), _law(expr) {}
+  : _domain(x), _law(expr) {}
 
 Map::Map(const Set& s, const Expression& expr) : _domain(s), _law(expr) {}
 
@@ -111,12 +110,12 @@ Set Map::image() const { return image(_domain); }
 Set Map::image(const Set& subdom) const
 {
   if (isEmpty() || subdom.isEmpty()) {
-    return SET_FACT.createSet();
+    return Set{};
   }
 
   Set domain_subdom = _domain.intersection(subdom);
   if (domain_subdom.isEmpty()) {
-    return SET_FACT.createSet();
+    return Set{};
   }
 
   return detail::MapDetail::image(domain_subdom, _law);
@@ -143,7 +142,7 @@ Map Map::composition(const Map& other) const
 Set Map::fixedPoints() const
 {
   FixedPointsInfo fixed_points_info = _law.fixedPoints();
-  Set universal_fixed = SET_FACT.createSet(fixed_points_info);
+  Set universal_fixed{fixed_points_info};
   return _domain.intersection(std::move(universal_fixed));
 }
 
@@ -200,7 +199,7 @@ std::vector<Map> Map::imageMultiplicity() const
 
 MaybeMap Map::compact(const Map& other) const
 {
-  Set result_domain = SET_FACT.createSet();
+  Set result_domain;
   if (_law == other.law()) {
     Set result_dom = _domain.disjointCup(other.domain());
     result_dom.compact();

@@ -22,7 +22,7 @@
 #include "sbg/ord_unidim_dense_set.hpp"
 #include "sbg/rational.hpp"
 #include "sbg/set_detail.hpp"
-#include "sbg/set_fact.hpp"
+#include "sbg/set_impl.hpp"
 #include "sbg/unord_set.hpp"
 #include "util/debug.hpp"
 
@@ -277,7 +277,7 @@ void lessImage(const Expr& expr1
 
 Set MapDetail::lessImage(const Expression& expr1, const Expression& expr2)
 {
-  Set result = SET_FACT.createSet();
+  Set result;
 
   SetAccessKey key = SetAccess::key();
   auto less_image_evaluator = Util::Overload {

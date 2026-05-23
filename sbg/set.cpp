@@ -18,6 +18,7 @@
  ******************************************************************************/
 
 #include "sbg/set.hpp"
+#include "sbg/set_impl.hpp"
 #include "util/debug.hpp"
 
 #include <iostream>
@@ -27,44 +28,14 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Set implementations ---------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-std::ostream& operator<<(std::ostream& out, const SetKind kind)
-{
-  switch (kind) {
-    case SetKind::kUnordered: {
-      out << "unordered";
-      break;
-    }
-
-    case SetKind::kOrdered: {
-      out << "ordered";
-      break;
-    }
-
-    case SetKind::kOrdUnidimDense: {
-      out << "uni-dimensional ordered dense";
-      break;
-    }
-
-    default: {
-      Util::ERROR("Unsupported ", kind, " Set implementation\n");
-      break;
-    }
-  }
-
-  return out;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // Set  ------------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 // Constructors ----------------------------------------------------------------
 
-Set::Set(const SetKind kind) : _impl()
+Set::Set() : _impl()
 {
+  SetKind kind = SET_IMPL.kind();
   switch (kind) {
     case SetKind::kUnordered: {
       _impl = detail::UnorderedSet{};
@@ -88,8 +59,9 @@ Set::Set(const SetKind kind) : _impl()
   }
 }
 
-Set::Set(const SetKind kind, const MD_NAT& x) : _impl()
+Set::Set(const MD_NAT& x) : _impl()
 {
+  SetKind kind = SET_IMPL.kind();
   switch (kind) {
     case SetKind::kUnordered: {
       _impl = detail::UnorderedSet{x};
@@ -113,9 +85,35 @@ Set::Set(const SetKind kind, const MD_NAT& x) : _impl()
   }
 }
 
-Set::Set(const SetKind kind, const NAT lo, const NAT step, const NAT hi)
-  : _impl()
+Set::Set(MD_NAT&& x) : _impl()
 {
+  SetKind kind = SET_IMPL.kind();
+  switch (kind) {
+    case SetKind::kUnordered: {
+      _impl = detail::UnorderedSet{x};
+      break;
+    }
+
+    case SetKind::kOrdered: {
+      _impl = detail::OrderedSet{x};
+      break;
+    }
+
+    case SetKind::kOrdUnidimDense: {
+      _impl = detail::OrdUnidimDenseSet{x[0]};
+      break;
+    }
+
+    default: {
+      Util::ERROR("Unsupported ", kind, " Set implementation\n");
+      break;
+    }
+  }
+}
+
+Set::Set(const NAT lo, const NAT step, const NAT hi) : _impl()
+{
+  SetKind kind = SET_IMPL.kind();
   switch (kind) {
     case SetKind::kUnordered: {
       _impl = detail::UnorderedSet{detail::Interval(lo, step, hi)};
@@ -139,8 +137,9 @@ Set::Set(const SetKind kind, const NAT lo, const NAT step, const NAT hi)
   }
 }
 
-Set::Set(const SetKind kind, const FixedPointsInfo& info) : _impl()
+Set::Set(const FixedPointsInfo& info) : _impl()
 {
+  SetKind kind = SET_IMPL.kind();
   switch (kind) {
     case SetKind::kUnordered: {
       _impl = detail::UnorderedSet{info};
@@ -224,7 +223,7 @@ Set Set::intersection(const Set& other) const &
         return Set{a.intersection(b)};
       } else {
         Util::ERROR("Set::intersection: mismatched implementations\n");
-        return Set{SetKind::kUnordered};
+        return Set{};
       }
     }
     , _impl, other._impl);
@@ -255,7 +254,7 @@ Set Set::cup(Set&& other) &&
         return Set{std::move(a).cup(std::move(b))};
       } else {
         Util::ERROR("Set::cup: mismatched implementations\n");
-        return Set{SetKind::kUnordered};
+        return Set{};
       }
     }
     , std::move(_impl), std::move(other._impl));
@@ -278,7 +277,7 @@ Set Set::difference(const Set& other) const
         return Set{a.difference(b)};
       } else {
         Util::ERROR("Set::difference: mismatched implementations\n");
-        return Set{SetKind::kUnordered};
+        return Set{};
       }
     }
     , _impl, other._impl);
@@ -294,7 +293,7 @@ Set Set::cartesianProduct(const Set& other) const
         return Set{a.cartesianProduct(b)};
       } else {
         Util::ERROR("Set::cartesianProduct: mismatched implementations\n");
-        return Set{SetKind::kUnordered};
+        return Set{};
       }
     }
     , _impl, other._impl);
@@ -332,7 +331,7 @@ Set Set::disjointCup(Set&& other) &&
         return Set{std::move(a).disjointCup(std::move(b))};
       } else {
         Util::ERROR("Set::disjointCup: mismatched implementations\n");
-        return Set{SetKind::kUnordered};
+        return Set{};
       }
     }
     , std::move(_impl), std::move(other._impl));

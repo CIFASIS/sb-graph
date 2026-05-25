@@ -128,6 +128,15 @@ Set Map::preImage(const Set& subcodom) const
     .intersection(_domain);
 }
 
+Map Map::inverse() const
+{
+  if (_domain.cardinal() == 1) {
+    return Map{image(), _domain.minElem()};
+  }
+
+  return Map{image(), _law.inverse()};
+}
+
 Map Map::composition(const Map& other) const
 {
   Set result_domain = _domain.intersection(other.image());

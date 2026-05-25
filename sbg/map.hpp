@@ -113,7 +113,13 @@ public:
    * @param subcodom Set of elements in the image of the map for which the
    * pre image will be calculated.
    */
-  Set preImage(const Set& subcodom) const; // opt
+  Set preImage(const Set& subcodom) const;
+
+  /**
+   * @brief Calculates the inverse of a map.
+   * Precondition: map should be bijective.
+   */
+  Map inverse() const;
 
   /**
    * @brief Calculate the composition of \p this with \p other, i.e.

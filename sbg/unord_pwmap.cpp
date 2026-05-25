@@ -248,7 +248,7 @@ UnordPWMap UnordPWMap::inverse() const
   UnordPWMap result;
 
   for (const Map& m : _pieces) {
-    result.emplaceBack(m.image(), m.law().inverse());
+    result.pushBack(m.inverse());
   }
 
   return result;

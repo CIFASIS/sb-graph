@@ -416,8 +416,7 @@ OrdPWMap OrdPWMap::inverse() const
   OrdPWMap result;
 
   for (const MapEntry& entry : _pieces) {
-    Map m = entry.map();
-    result.emplace(Map{m.image(), m.law().inverse()});
+    result.emplace(entry.map().inverse());
   }
 
   return result;

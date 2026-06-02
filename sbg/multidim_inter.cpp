@@ -259,16 +259,13 @@ MaybeMDI MultiDimInter::compact(const MultiDimInter& other) const
 rapidjson::Value toJSON(MultiDimInter mdi
   , rapidjson::Document::AllocatorType& alloc)
 {
-  rapidjson::Value result{rapidjson::kArrayType};
-
   rapidjson::Value interval_array{rapidjson::kArrayType};
   for (const Interval& i : mdi) {
     rapidjson::Value jth = toJSON(i, alloc);
     interval_array.PushBack(jth, alloc);
   }
-  rapidjson::Value mdi_obj{rapidjson::kObjectType};
-  mdi_obj.AddMember("bounds", interval_array, alloc);
-  result.PushBack(mdi_obj, alloc);
+  rapidjson::Value result{rapidjson::kObjectType};
+  result.AddMember("bounds", interval_array, alloc);
 
   return result;
 }

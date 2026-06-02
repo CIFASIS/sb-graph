@@ -492,16 +492,16 @@ OrdUnidimDenseSet OrdUnidimDenseSet::traverse(
 rapidjson::Value toJSON(OrdUnidimDenseSet s
   , rapidjson::Document::AllocatorType& alloc)
 {
-  rapidjson::Value result{rapidjson::kArrayType};
-
   rapidjson::Value interval_array{rapidjson::kArrayType};
   for (const Interval& i : s) {
-    rapidjson::Value jth = detail::toJSON(i, alloc);
+    rapidjson::Value jth_array{rapidjson::kArrayType};
+    jth_array.PushBack(detail::toJSON(i, alloc), alloc);
+    rapidjson::Value jth{rapidjson::kObjectType};
+    jth.AddMember("bounds", jth_array, alloc);
     interval_array.PushBack(jth, alloc);
   }
-  rapidjson::Value mdi_obj{rapidjson::kObjectType};
-  mdi_obj.AddMember("pieces", interval_array, alloc);
-  result.PushBack(mdi_obj, alloc);
+  rapidjson::Value result{rapidjson::kObjectType};
+  result.AddMember("pieces", interval_array, alloc);
 
   return result;
 }

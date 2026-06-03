@@ -88,6 +88,9 @@ SBG::LIB::WeightedSBGraph create_air_conditioners_graph();
 SBG::LIB::WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sections);
 
 
+SBG::LIB::WeightedSBGraph create_advection2D_graph(int size);
+
+
 /***
  * @brief Splits sets according to their relations, defined by the piecewise maps of the graph.
  */

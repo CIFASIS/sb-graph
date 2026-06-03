@@ -715,22 +715,19 @@ pair<Set, Set> cut_interval_by_dimension(const Set& set_piece, const NodeWeight&
     auto s = SET_FACT.createSet();
     auto t = to_vector(set_piece);
     std::sort(t.begin(), t.end(), [](const auto& a, const auto& b) { return a.minElem() < b.minElem(); });
-    auto sset_piece = from_vector(t);
-    cout << "now it is " << sset_piece << endl;
 
     for (auto actual_set_piece : t) {
       if (size == 0) {
         break;
       }
-      cout << "taking " << actual_set_piece << endl;
+
       size_t rows = actual_set_piece.maxElem()[0] - actual_set_piece.minElem()[0] + 1;
       size_t cols = actual_set_piece.maxElem()[1] - actual_set_piece.minElem()[1] + 1;
       size_t expected_size = actual_set_piece.cardinal() < size ? actual_set_piece.cardinal() : size;
-      cout << "size " << expected_size << " rows " << rows << " cols " << cols << endl;
+
       size_t n_rows = expected_size / cols;
       size_t n_cols = expected_size % cols;
-      cout << "cardinality " << n_rows << " " << n_cols << endl;
-      cout << "would be: ";
+
       size_t current_size = s.cardinal();
       if (n_rows > 0) {
         s = s.cup(SET_FACT.createSet(MultiDimInter({Interval(actual_set_piece.minElem()[0], 1, actual_set_piece.minElem()[0] + n_rows - 1),
@@ -743,9 +740,7 @@ pair<Set, Set> cut_interval_by_dimension(const Set& set_piece, const NodeWeight&
         s = s.cup(ss);
       }
       // cout << s << " " << actual_set_piece.difference(s) << endl;
-      cout << "now lets check " << s << " " << s.cardinal() << endl;
       size -= (s.cardinal() - current_size);
-      cout << "now size is " << size << endl;
     }
 
     return make_pair(s, set_piece.difference(s));
@@ -1137,7 +1132,6 @@ WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sect
 
 WeightedSBGraph create_advection2D_graph(int size)
 {
-  cout << "create_advection2D_graph" << endl;
   Set nodes = SET_FACT.createSet();
 
   // Real u[N,N];
@@ -1145,7 +1139,6 @@ WeightedSBGraph create_advection2D_graph(int size)
   nodes.emplaceBack(u);
   int current_offset_1 = size;
   int current_offset_2 = size;
-  cout << nodes << endl;
 
   // maps
   PWMap rhs_maps = PW_FACT.createPWMap();
@@ -1166,7 +1159,6 @@ WeightedSBGraph create_advection2D_graph(int size)
           })));
   current_offset_1 += size - 1;
   current_offset_2 += 1;
-  cout << "borders 1" << endl;
 
   // Borders
   // for j in 2:N loop
@@ -1180,7 +1172,6 @@ WeightedSBGraph create_advection2D_graph(int size)
           Exp({LExp(0, 0), LExp(1, RATIONAL(-current_offset_2, 1))})));
   current_offset_1 += 1;
   current_offset_2 += size - 1;
-  cout << "borders 2" << endl;
 
   // Rest of the grid.
   // for i in 2:N, j in 2:N loop
@@ -1240,8 +1231,6 @@ Set split_sets_according_to_relations(const WeightedSBGraph& sb_graph)
     }
     vertices.emplaceBack(Interval(current, 1, *it - 1));
   }
-
-  cout << "vertices: " << vertices << endl;
 
   return vertices;
 }

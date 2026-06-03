@@ -200,14 +200,6 @@ Set get_part_internal_comm(const Set& s, const WeightedSBGraph& graph)
   return e1.cup(e2);
 }
 
-Set get_part_comm(const Set& s, const WeightedSBGraph& graph)
-{
-  auto d1 = graph.map1().preImage(s);
-  auto d2 = graph.map2().preImage(s);
-  auto d = d1.cup(d2);
-  return d;
-}
-
 GainObjectImbalance update_diff(CostMatrixImbalance& cost_matrix, const Partition& remaining_partition_a, const Set& moved_from_partition_a,
                                 pair<Set, Set> affected_node_a, const Partition& remaining_partition_b, const Set& moved_from_partition_b,
                                 pair<Set, Set> affected_node_b, const WeightedSBGraph& graph, const NodeWeight& node_weight,
@@ -218,8 +210,9 @@ GainObjectImbalance update_diff(CostMatrixImbalance& cost_matrix, const Partitio
   logging::sbg_log << affected_node_a.first << ", " << affected_node_a.second << endl;
   logging::sbg_log << affected_node_b.first << ", " << affected_node_b.second << endl;
 
-  if (cost_matrix.empty()) {
+  if (cost_matrix.empty() and (remaining_partition_a.empty() or remaining_partition_b.empty())) {
     logging::sbg_log << "Cost matrix is empty, nothing to update." << endl;
+    logging::sbg_log << remaining_partition_a << ", " << remaining_partition_b << endl;
     return gain_object;
   }
 
@@ -256,10 +249,10 @@ GainObjectImbalance update_diff(CostMatrixImbalance& cost_matrix, const Partitio
   // now, update ic and ec according to the last changes
   CostMatrixImbalance new_cost_matrix;
 
-  if (cost_matrix.empty()) {
-    logging::sbg_log << "After updating cost matrix is empty, nothing to update." << endl;
-    return gain_object;
-  }
+  //   if (cost_matrix.empty()) {
+  //     logging::sbg_log << "After updating cost matrix is empty, nothing to update." << endl;
+  //     return gain_object;
+  //   }
 
   // using a reference to copy the element only once when returning
   optional<GainObjectImbalance> max_gain_object = nullopt;
@@ -302,7 +295,6 @@ GainObjectImbalance update_diff(CostMatrixImbalance& cost_matrix, const Partitio
       return comm_aff;
     };
 
-    auto& comm = get_communication_cost();
     auto comm_aff_a = get_edges_by_set(affected_node_a.first);
     auto comm_aff_b = get_edges_by_set(affected_node_b.first);
 
@@ -358,9 +350,9 @@ GainObjectImbalance update_diff(CostMatrixImbalance& cost_matrix, const Partitio
 
       int gain = ec_edges.cardinal() - ic_edges.cardinal();
       auto g = GainObjectImbalance(remaining_partition_a.size() - 1, i, gain, ec_a, ic_a, set_a.cardinal(), ec_b, ic_b, set_b.cardinal());
-      new_cost_matrix.push_back(move(g));
-      if ((not max_gain_object) or new_cost_matrix.back().gain > max_gain_object->gain) {
-        max_gain_object = new_cost_matrix.back();
+      cost_matrix.push_back(move(g));
+      if ((not max_gain_object) or cost_matrix.back().gain > max_gain_object->gain) {
+        max_gain_object = cost_matrix.back();
       }
     }
   }
@@ -389,11 +381,16 @@ GainObjectImbalance update_diff(CostMatrixImbalance& cost_matrix, const Partitio
 
       int gain = ec_edges.cardinal() - ic_edges.cardinal();
       auto g = GainObjectImbalance(i, remaining_partition_b.size() - 1, gain, ec_a, ic_a, set_a.cardinal(), ec_b, ic_b, set_b.cardinal());
-      new_cost_matrix.push_back(move(g));
-      if ((not max_gain_object) or new_cost_matrix.back().gain > max_gain_object->gain) {
-        max_gain_object = new_cost_matrix.back();
+      cost_matrix.push_back(move(g));
+      if ((not max_gain_object) or cost_matrix.back().gain > max_gain_object->gain) {
+        max_gain_object = cost_matrix.back();
       }
     }
+  }
+
+  if (cost_matrix.empty()) {
+    logging::sbg_log << "After updating cost matrix is empty, nothing to update." << endl;
+    return gain_object;
   }
 
   assert(max_gain_object);
@@ -470,6 +467,11 @@ int kl_sbg_imbalance(const WeightedSBGraph& graph, ICommunicationCost& cost_matr
     logging::sbg_log << "inside the while " << a_c << ", " << b_c << " ";
     logging::sbg_log << get_partition_size(a_c, node_weights) << ", " << get_partition_size(b_c, node_weights) << endl;
     logging::sbg_log << gm << endl;
+
+    if (gm.empty()) {
+      cout << "Gain matrix is empty but parts have not been exausted" << endl;
+      break;
+    }
 
     assert(not gm.empty());
 

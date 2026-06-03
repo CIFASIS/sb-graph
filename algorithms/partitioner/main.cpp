@@ -247,7 +247,10 @@ SBG::LIB::WeightedSBGraph build_computational_sbg(const PartitionerParams& param
     cout << n1 << ", " << n2 << " from " << (*it1).dom() << " " << (*it1).dom().cardinal() << "\n";
   }
   cout << endl;
-  return sb_graph;
+
+  if (not params.filename->find("air_conditioners_cont") != std::string::npos) {
+    return sb_graph;
+  }
 
   // This is a hack to get intervals from their relations
   auto new_vertices = split_sets_according_to_relations(sb_graph);

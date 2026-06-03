@@ -203,21 +203,51 @@ int get_air_conditioners_controller_size(const string& name)
   throw 1;
 }
 
+int get_advection2D_size(const string& name)
+{
+  size_t last_underscore = name.find_last_of('_');
+  size_t last_dot = name.find_last_of('.');
+
+  if (last_underscore != std::string::npos && last_dot != std::string::npos) {
+    // Extract the string between '_' and '.'
+    std::string size_str = name.substr(last_underscore + 1, last_dot - last_underscore - 1);
+    int size = std::stoi(size_str);
+    return size;
+  }
+
+  cerr << "the file does not have the expected format" << std::endl;
+  throw 1;
+}
+
 SBG::LIB::WeightedSBGraph get_sbg(const std::string& filename, unsigned number_of_parts)
 {
   if (filename.find("air_conditioners_cont") != std::string::npos) {
     auto size = get_air_conditioners_controller_size(filename);
     auto sb_graph = create_air_conditioners_with_controller_graph(size, number_of_parts);
     return sb_graph;
+  } else if (filename.find("advection2D") != std::string::npos) {
+    auto size = get_air_conditioners_controller_size(filename);
+    auto sb_graph = create_advection2D_graph(size);
+    return sb_graph;
   } else {
     auto sb_graph = build_sb_graph(filename, false);
+    cout << sb_graph << endl;
     return sb_graph;
   }
 }
 
 SBG::LIB::WeightedSBGraph build_computational_sbg(const PartitionerParams& params)
 {
+  cout << "Building computational SB Graph" << endl;
   SBG::LIB::WeightedSBGraph sb_graph = get_sbg(*params.filename, *params.number_of_partitions);
+  for (auto it1 = sb_graph.map1().begin(), it2 = sb_graph.map2().begin(); it1 != sb_graph.map1().end() and it2 != sb_graph.map2().end();
+       ++it1, ++it2) {
+    auto n1 = (*it1).image();
+    auto n2 = (*it2).image();
+    cout << n1 << ", " << n2 << " from " << (*it1).dom() << " " << (*it1).dom().cardinal() << "\n";
+  }
+  cout << endl;
+  return sb_graph;
 
   // This is a hack to get intervals from their relations
   auto new_vertices = split_sets_according_to_relations(sb_graph);
@@ -225,36 +255,29 @@ SBG::LIB::WeightedSBGraph build_computational_sbg(const PartitionerParams& param
   // check that all vertices were included
   if (sanity_check_enabled) {
     auto diff1 = new_vertices.difference(sb_graph.V());
-    assert(not diff1.isEmpty());
+    assert(diff1.isEmpty());
 
     auto diff2 = sb_graph.V().difference(new_vertices);
-    assert(not diff2.isEmpty());
+    assert(diff2.isEmpty());
 
-    cout << "diff1 " << diff1 << ", " << "diff2 " << diff2 << endl;
+    cout << "diff1 " << diff1 << ", " << "diff2 " << diff2 << " " << diff2.isEmpty() << endl;
   }
 
-  #ifdef SBG_PARTITIONER_LOGGING
-    cout << "sb_graph: " << sb_graph << endl;
-    cout << "connections:\n";
-    for (auto it1 = sb_graph.map1().begin(), it2 = sb_graph.map2().begin();
-        it1 != sb_graph.map1().end() and it2 != sb_graph.map2().end(); ++it1, ++it2) {
-      auto n1 = (*it1).image();
-      auto n2 = (*it2).image();
-      cout << n1 << ", " << n2 << " from " << (*it1).dom() << "\n";
-    }
-    cout << endl;
-  #endif
+#ifdef SBG_PARTITIONER_LOGGING
+  cout << "sb_graph: " << sb_graph << endl;
+  cout << "connections:\n";
+  for (auto it1 = sb_graph.map1().begin(), it2 = sb_graph.map2().begin(); it1 != sb_graph.map1().end() and it2 != sb_graph.map2().end();
+       ++it1, ++it2) {
+    auto n1 = (*it1).image();
+    auto n2 = (*it2).image();
+    cout << n1 << ", " << n2 << " from " << (*it1).dom() << "\n";
+  }
+  cout << endl;
+#endif
 
-  return SBG::LIB::WeightedSBGraph(
-      new_vertices,
-      SBG::LIB::PW_FACT.createPWMap(),
-      sb_graph.map1().compact(),
-      sb_graph.map2().compact(),
-      SBG::LIB::PW_FACT.createPWMap(),
-      SBG::LIB::PW_FACT.createPWMap()
-  );
+  return SBG::LIB::WeightedSBGraph(new_vertices, SBG::LIB::PW_FACT.createPWMap(), sb_graph.map1().compact(), sb_graph.map2().compact(),
+                                   SBG::LIB::PW_FACT.createPWMap(), SBG::LIB::PW_FACT.createPWMap());
 }
-
 
 tuple<SBG::LIB::WeightedSBGraph, PartitionMap, double, double> run_partitioner(const PartitionerParams& params)
 {
@@ -262,7 +285,8 @@ tuple<SBG::LIB::WeightedSBGraph, PartitionMap, double, double> run_partitioner(c
   auto filename = *params.filename;
   auto sb_graph = build_computational_sbg(params);
   auto end_building_graph = chrono::high_resolution_clock::now();
-  auto time_to_build_graph = chrono::duration<double, std::milli>(end_building_graph- start_building_graph).count();
+  auto time_to_build_graph = chrono::duration<double, std::milli>(end_building_graph - start_building_graph).count();
+  cout << sb_graph << endl;
 
   auto start_partitionate = chrono::high_resolution_clock::now();
   auto partition =
@@ -276,12 +300,11 @@ tuple<SBG::LIB::WeightedSBGraph, PartitionMap, double, double> run_partitioner(c
   if (params.dump_results) {
     // graph may be compacted, so compute it again
     auto actual_sbg = get_sbg(*params.filename, *params.number_of_partitions);
-    metrics::dump_results(actual_sbg, *params.filename, partition);    
+    metrics::dump_results(actual_sbg, *params.filename, partition);
   }
 
   return {sb_graph, partition, time_to_build_graph, time_to_partitionate};
 }
-
 
 static struct option long_options[] = {{"config-filename", required_argument, 0, 'c'},
                                        {"filename", required_argument, 0, 'f'},

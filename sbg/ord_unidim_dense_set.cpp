@@ -31,30 +31,22 @@ member_imp(OrdUnidimDenseSet, OrdUnidimDenseSet::MDIOrdCollection, pieces);
 
 OrdUnidimDenseSet::~OrdUnidimDenseSet() {}
 OrdUnidimDenseSet::OrdUnidimDenseSet() : pieces_() {}
-OrdUnidimDenseSet::OrdUnidimDenseSet(MD_NAT x) : pieces_() {
-  pieces_.emplace_back(SetPiece(x));
-}
-OrdUnidimDenseSet::OrdUnidimDenseSet(Interval i) : pieces_() {
-  if (!i.isEmpty())
-    pieces_.emplace_back(SetPiece(i));
-}
-OrdUnidimDenseSet::OrdUnidimDenseSet(SetPiece mdi) : pieces_() {
-  if (!mdi.isEmpty())
-    pieces_.emplace_back(mdi);
-}
-OrdUnidimDenseSet::OrdUnidimDenseSet(OrdUnidimDenseSet::MDIOrdCollection pieces)
-  : pieces_(std::move(pieces)) {}
-
-SetStratPtr OrdUnidimDenseSet::clone() const
+OrdUnidimDenseSet::OrdUnidimDenseSet(MD_NAT x) : pieces_() { pieces_.emplace_back(SetPiece(x)); }
+OrdUnidimDenseSet::OrdUnidimDenseSet(Interval i) : pieces_()
 {
-  return std::make_unique<OrdUnidimDenseSet>(pieces_);
+  if (!i.isEmpty()) pieces_.emplace_back(SetPiece(i));
 }
+OrdUnidimDenseSet::OrdUnidimDenseSet(SetPiece mdi) : pieces_()
+{
+  if (!mdi.isEmpty()) pieces_.emplace_back(mdi);
+}
+OrdUnidimDenseSet::OrdUnidimDenseSet(OrdUnidimDenseSet::MDIOrdCollection pieces) : pieces_(std::move(pieces)) {}
 
-member_imp(OrdUnidimDenseSet::Iterator
-  , OrdUnidimDenseSet::MDIOrdCollection::const_iterator, it);
+SetStratPtr OrdUnidimDenseSet::clone() const { return std::make_unique<OrdUnidimDenseSet>(pieces_); }
 
-OrdUnidimDenseSet::Iterator::Iterator(
-  OrdUnidimDenseSet::MDIOrdCollection::const_iterator it) : it_(it) {}
+member_imp(OrdUnidimDenseSet::Iterator, OrdUnidimDenseSet::MDIOrdCollection::const_iterator, it);
+
+OrdUnidimDenseSet::Iterator::Iterator(OrdUnidimDenseSet::MDIOrdCollection::const_iterator it) : it_(it) {}
 
 void OrdUnidimDenseSet::Iterator::operator++()
 {
@@ -62,22 +54,19 @@ void OrdUnidimDenseSet::Iterator::operator++()
   return;
 }
 
-bool OrdUnidimDenseSet::Iterator::operator!=(const SetStrategy::Iterator& other)
-  const
+bool OrdUnidimDenseSet::Iterator::operator!=(const SetStrategy::Iterator& other) const
 {
-  return it_ != static_cast<const OrdUnidimDenseSet::Iterator *>(&other)->it_;
+  return it_ != static_cast<const OrdUnidimDenseSet::Iterator*>(&other)->it_;
 }
 
-bool OrdUnidimDenseSet::Iterator::operator==(const SetStrategy::Iterator& other)
-  const
+bool OrdUnidimDenseSet::Iterator::operator==(const SetStrategy::Iterator& other) const
 {
-  return it_ == static_cast<const OrdUnidimDenseSet::Iterator *>(&other)->it_;
+  return it_ == static_cast<const OrdUnidimDenseSet::Iterator*>(&other)->it_;
 }
 
-bool OrdUnidimDenseSet::Iterator::operator<(const SetStrategy::Iterator& other)
-  const
+bool OrdUnidimDenseSet::Iterator::operator<(const SetStrategy::Iterator& other) const
 {
-  return it_ < static_cast<const OrdUnidimDenseSet::Iterator *>(&other)->it_;
+  return it_ < static_cast<const OrdUnidimDenseSet::Iterator*>(&other)->it_;
 }
 
 const SetPiece& OrdUnidimDenseSet::Iterator::operator*() const { return *it_; }
@@ -96,8 +85,7 @@ std::size_t OrdUnidimDenseSet::size() const { return pieces_.size(); }
 
 void OrdUnidimDenseSet::emplace(const SetPiece& mdi)
 {
-  if (mdi.isEmpty())
-    return;
+  if (mdi.isEmpty()) return;
 
   if (pieces_.empty() || pieces_.back() < mdi) {
     pieces_.emplace_back(mdi);
@@ -112,8 +100,7 @@ void OrdUnidimDenseSet::emplace(const SetPiece& mdi)
   auto it = pieces_.begin();
   auto end = pieces_.end();
   for (; it != end; ++it) {
-    if (mdi < *it)
-      break;
+    if (mdi < *it) break;
   }
   pieces_.emplace(it, mdi);
 
@@ -158,10 +145,7 @@ bool OrdUnidimDenseSet::operator==(const SetStrategy& other) const
   return ths.pieces_ == othr.pieces_;
 }
 
-bool OrdUnidimDenseSet::operator!=(const SetStrategy& other) const
-{
-  return !(*this == other);
-}
+bool OrdUnidimDenseSet::operator!=(const SetStrategy& other) const { return !(*this == other); }
 
 std::ostream& OrdUnidimDenseSet::print(std::ostream& out) const
 {
@@ -170,7 +154,7 @@ std::ostream& OrdUnidimDenseSet::print(std::ostream& out) const
   out << "{";
   if (sz > 0) {
     unsigned int j = 0;
-    for (const SetPiece& mdi : pieces_) { 
+    for (const SetPiece& mdi : pieces_) {
       if (j < sz - 1) {
         out << mdi << ", ";
       } else {
@@ -187,9 +171,9 @@ std::ostream& OrdUnidimDenseSet::print(std::ostream& out) const
 
 // Set operations --------------------------------------------------------------
 
-unsigned int OrdUnidimDenseSet::cardinal() const
+size_t OrdUnidimDenseSet::cardinal() const
 {
-  unsigned int result = 0;
+  size_t result = 0;
 
   for (const SetPiece& mdi : pieces_) {
     result += mdi.cardinal();
@@ -200,10 +184,7 @@ unsigned int OrdUnidimDenseSet::cardinal() const
 
 bool OrdUnidimDenseSet::isEmpty() const { return pieces_.empty(); }
 
-MD_NAT OrdUnidimDenseSet::minElem() const
-{
-  return pieces_.begin()->minElem();
-}
+MD_NAT OrdUnidimDenseSet::minElem() const { return pieces_.begin()->minElem(); }
 
 MD_NAT OrdUnidimDenseSet::maxElem() const
 {
@@ -249,11 +230,11 @@ SetStratPtr OrdUnidimDenseSet::intersection(const SetStrategy& other) const
   return std::make_unique<OrdUnidimDenseSet>(std::move(cap));
 }
 
-SetStratPtr OrdUnidimDenseSet::cup(const SetStrategy& other) const &
+SetStratPtr OrdUnidimDenseSet::cup(const SetStrategy& other) const&
 {
   // Special cases
   OrdUnidimDenseSetCRef othr = static_cast<OrdUnidimDenseSetCRef>(other);
-  if (isEmpty()) { 
+  if (isEmpty()) {
     return std::make_unique<OrdUnidimDenseSet>(othr.pieces_);
   }
 
@@ -280,15 +261,15 @@ SetStratPtr OrdUnidimDenseSet::cup(const SetStrategy& other) const &
   return othr.disjointCup(*diff);
 }
 
-SetStratPtr OrdUnidimDenseSet::cup(SetStrategy&& other) && 
-{ 
+SetStratPtr OrdUnidimDenseSet::cup(SetStrategy&& other) &&
+{
   // Special cases
   OrdUnidimDenseSetRef othr = static_cast<OrdUnidimDenseSetRef>(other);
   if (other.isEmpty() || pieces_ == othr.pieces_) {
     return std::make_unique<OrdUnidimDenseSet>(std::move(pieces_));
   }
 
-  if (isEmpty()) { 
+  if (isEmpty()) {
     return std::make_unique<OrdUnidimDenseSet>(std::move(othr.pieces_));
   }
 
@@ -315,22 +296,20 @@ SetStratPtr OrdUnidimDenseSet::complement() const
   OrdUnidimDenseSet res;
 
   if (isEmpty()) {
-    res.emplaceBack(SetPiece(Interval(0, 1, Inf))); 
+    res.emplaceBack(SetPiece(Interval(0, 1, Inf)));
     return std::make_unique<OrdUnidimDenseSet>(res);
   }
 
   auto first_it = pieces_.begin();
   Interval first(0, 1, first_it->operator[](0).begin() - 1);
-  if (!first.isEmpty())
-    res.emplaceBack(SetPiece(first));
+  if (!first.isEmpty()) res.emplaceBack(SetPiece(first));
   NAT last = first_it->maxElem()[0];
 
   ++first_it;
   MDIOrdCollection second(first_it, pieces_.end());
   for (const SetPiece& mdi : second) {
     Interval ith(last + 1, 1, mdi[0].begin() - 1);
-    if (!ith.isEmpty())
-      res.emplaceBack(SetPiece(ith));
+    if (!ith.isEmpty()) res.emplaceBack(SetPiece(ith));
     last = mdi.maxElem()[0];
   }
   Interval end(last + 1, 1, Inf);
@@ -356,16 +335,15 @@ SetStratPtr OrdUnidimDenseSet::difference(const SetStrategy& other) const
 
 std::size_t OrdUnidimDenseSet::arity() const
 {
-  if (isEmpty())
-    return 0;
+  if (isEmpty()) return 0;
 
   return pieces_.begin()->arity();
 }
 
-SetStratPtr OrdUnidimDenseSet::disjointCup(const SetStrategy& other) const &
+SetStratPtr OrdUnidimDenseSet::disjointCup(const SetStrategy& other) const&
 {
   OrdUnidimDenseSetCRef othr = static_cast<OrdUnidimDenseSetCRef>(other);
-  
+
   // Special cases
   if (isEmpty()) {
     return std::make_unique<OrdUnidimDenseSet>(othr.pieces_);
@@ -387,7 +365,7 @@ SetStratPtr OrdUnidimDenseSet::disjointCup(const SetStrategy& other) const &
     result.insert(result.end(), pieces_.begin(), pieces_.end());
     return std::make_unique<OrdUnidimDenseSet>(std::move(result));
   }
-  
+
   MDIOrdCollection cup = traverse(&SetPiece::least, othr.pieces_);
   return std::make_unique<OrdUnidimDenseSet>(std::move(cup));
 }
@@ -417,7 +395,7 @@ SetStratPtr OrdUnidimDenseSet::disjointCup(SetStrategy&& other) &&
     result.insert(result.end(), pieces_.begin(), pieces_.end());
     return std::make_unique<OrdUnidimDenseSet>(std::move(result));
   }
-  
+
   MDIOrdCollection cup = traverse(&SetPiece::least, othr.pieces_);
   return std::make_unique<OrdUnidimDenseSet>(std::move(cup));
 }
@@ -427,8 +405,7 @@ SetStratPtr OrdUnidimDenseSet::filterSet(bool (*f)(const SetPiece& mdi)) const
   MDIOrdCollection res;
 
   for (const SetPiece& mdi : pieces_)
-    if (f(mdi))
-      res.emplace_back(mdi);
+    if (f(mdi)) res.emplace_back(mdi);
 
   return std::make_unique<OrdUnidimDenseSet>(std::move(res));
 }
@@ -437,8 +414,7 @@ SetStratPtr OrdUnidimDenseSet::offset(const MD_NAT& off) const
 {
   MDIOrdCollection res;
 
-  for (const SetPiece& mdi : pieces_)
-    res.emplace_back(mdi.offset(off));
+  for (const SetPiece& mdi : pieces_) res.emplace_back(mdi.offset(off));
 
   return std::make_unique<OrdUnidimDenseSet>(std::move(res));
 }
@@ -447,8 +423,7 @@ SetStratPtr OrdUnidimDenseSet::compact() const
 {
   MDIOrdCollection res;
 
-  if (isEmpty())
-    return std::make_unique<OrdUnidimDenseSet>(std::move(res));
+  if (isEmpty()) return std::make_unique<OrdUnidimDenseSet>(std::move(res));
 
   auto next_it = pieces_.begin();
   ++next_it;
@@ -469,14 +444,12 @@ SetStratPtr OrdUnidimDenseSet::compact() const
   return std::make_unique<OrdUnidimDenseSet>(std::move(res));
 }
 
-OrdUnidimDenseSet::MDIOrdCollection OrdUnidimDenseSet::boundedTraverse(
-    SetPiece (SetPiece::*f)(const SetPiece&) const, const MDIOrdCollection& other
-) const
+OrdUnidimDenseSet::MDIOrdCollection OrdUnidimDenseSet::boundedTraverse(SetPiece (SetPiece::*f)(const SetPiece&) const,
+                                                                       const MDIOrdCollection& other) const
 {
   MDIOrdCollection res;
 
-  if (isEmpty() || other.empty())
-    return res;
+  if (isEmpty() || other.empty()) return res;
 
   auto it1 = pieces_.begin();
   auto end1 = pieces_.end();
@@ -489,12 +462,11 @@ OrdUnidimDenseSet::MDIOrdCollection OrdUnidimDenseSet::boundedTraverse(
     mdi2 = *it2;
 
     SetPiece funci = (mdi1.*f)(mdi2);
-    if (!funci.isEmpty())
-      res.emplace_back(funci);
+    if (!funci.isEmpty()) res.emplace_back(funci);
 
     if (mdi1.maxElem() < mdi2.maxElem()) {
       ++it1;
-    } else { 
+    } else {
       ++it2;
     }
   }
@@ -502,18 +474,15 @@ OrdUnidimDenseSet::MDIOrdCollection OrdUnidimDenseSet::boundedTraverse(
   return res;
 }
 
-OrdUnidimDenseSet::MDIOrdCollection OrdUnidimDenseSet::traverse(
-    SetPiece (SetPiece::*f)(const SetPiece&) const, const MDIOrdCollection& other
-) const
+OrdUnidimDenseSet::MDIOrdCollection OrdUnidimDenseSet::traverse(SetPiece (SetPiece::*f)(const SetPiece&) const,
+                                                                const MDIOrdCollection& other) const
 {
   MDIOrdCollection res;
 
-  if (isEmpty())
-    return other;
+  if (isEmpty()) return other;
 
-  if (other.empty())
-    return pieces_;
-  
+  if (other.empty()) return pieces_;
+
   auto it1 = pieces_.begin();
   auto end1 = pieces_.end();
   auto it2 = other.begin();
@@ -525,8 +494,7 @@ OrdUnidimDenseSet::MDIOrdCollection OrdUnidimDenseSet::traverse(
     mdi2 = *it2;
 
     SetPiece funci = (mdi1.*f)(mdi2);
-    if (!funci.isEmpty())
-      res.emplace_back(funci);
+    if (!funci.isEmpty()) res.emplace_back(funci);
 
     if (mdi1.maxElem() < mdi2.maxElem()) {
       ++it1;
@@ -548,6 +516,6 @@ OrdUnidimDenseSet::MDIOrdCollection OrdUnidimDenseSet::traverse(
   return res;
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

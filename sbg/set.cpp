@@ -39,11 +39,9 @@ SetStrategy::SetStrategy(const SetPiece& mdi) {}
 ////////////////////////////////////////////////////////////////////////////////
 
 Set::Set(SetStratPtr strat) : strategy_(std::move(strat)) {}
-Set::Set(const Set& other)
-  : strategy_(other.strategy_ ? other.strategy_->clone() : nullptr) {}
+Set::Set(const Set& other) : strategy_(other.strategy_ ? other.strategy_->clone() : nullptr) {}
 
-Set::Iterator::Iterator(std::shared_ptr<SetStrategy::Iterator> it)
-  : it_(std::move(it)) {}
+Set::Iterator::Iterator(std::shared_ptr<SetStrategy::Iterator> it) : it_(std::move(it)) {}
 
 void Set::Iterator::operator++()
 {
@@ -76,25 +74,20 @@ void Set::emplaceBack(SetPiece mdi)
   return;
 }
 
-bool Set::operator==(const Set& other) const
-{
-  return *strategy_ == *other.strategy_;
-}
+bool Set::operator==(const Set& other) const { return *strategy_ == *other.strategy_; }
 
 bool Set::operator!=(const Set& other) const { return !(*this == other); }
 
 Set& Set::operator=(const Set& other)
 {
-  if (this !=& other)
-    strategy_ = other.strategy_->clone();
+  if (this != &other) strategy_ = other.strategy_->clone();
 
   return *this;
 }
 
 Set& Set::operator=(Set&& other)
 {
-  if (this !=& other)
-    strategy_ = std::move(other.strategy_);
+  if (this != &other) strategy_ = std::move(other.strategy_);
 
   return *this;
 }
@@ -111,7 +104,7 @@ std::ostream& operator<<(std::ostream& out, const Set& s)
   return out;
 }
 
-unsigned int Set::cardinal() const { return strategy_->cardinal(); }
+size_t Set::cardinal() const { return strategy_->cardinal(); }
 
 bool Set::isEmpty() const { return strategy_->isEmpty(); }
 
@@ -119,52 +112,25 @@ MD_NAT Set::minElem() const { return strategy_->minElem(); }
 
 MD_NAT Set::maxElem() const { return strategy_->maxElem(); }
 
-Set Set::intersection(const Set& other) const
-{
-  return Set(strategy_->intersection(*other.strategy_));
-}
+Set Set::intersection(const Set& other) const { return Set(strategy_->intersection(*other.strategy_)); }
 
-Set Set::cup(const Set& other) const &
-{
-  return Set(strategy_->cup(*other.strategy_));
-}
+Set Set::cup(const Set& other) const& { return Set(strategy_->cup(*other.strategy_)); }
 
-Set Set::cup(Set&& other) &&
-{
-  return Set(std::move(*strategy_).cup(std::move(*other.strategy_)));
-}
+Set Set::cup(Set&& other) && { return Set(std::move(*strategy_).cup(std::move(*other.strategy_))); }
 
-Set Set::complement() const
-{
-  return Set(strategy_->complement());
-}
+Set Set::complement() const { return Set(strategy_->complement()); }
 
-Set Set::difference(const Set& other) const
-{
-  return Set(strategy_->difference(*other.strategy_));
-}
+Set Set::difference(const Set& other) const { return Set(strategy_->difference(*other.strategy_)); }
 
-std::size_t Set::arity() const  { return strategy_->arity(); }
+std::size_t Set::arity() const { return strategy_->arity(); }
 
-Set Set::disjointCup(const Set& other) const &
-{
-  return Set(strategy_->disjointCup(*other.strategy_));
-}
+Set Set::disjointCup(const Set& other) const& { return Set(strategy_->disjointCup(*other.strategy_)); }
 
-Set Set::disjointCup(Set&& other) &&
-{
-  return Set(std::move(*strategy_).disjointCup(std::move(*other.strategy_)));
-}
+Set Set::disjointCup(Set&& other) && { return Set(std::move(*strategy_).disjointCup(std::move(*other.strategy_))); }
 
-Set Set::filterSet(bool (*f)(const SetPiece& mdi)) const
-{
-  return strategy_->filterSet(f);
-}
+Set Set::filterSet(bool (*f)(const SetPiece& mdi)) const { return strategy_->filterSet(f); }
 
-Set Set::offset(const MD_NAT& off) const
-{
-  return strategy_->offset(off);
-}
+Set Set::offset(const MD_NAT& off) const { return strategy_->offset(off); }
 
 Set Set::compact() const { return strategy_->compact(); }
 

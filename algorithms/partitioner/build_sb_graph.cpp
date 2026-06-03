@@ -366,9 +366,10 @@ Set get_edge_domain(Set image_intersection_set, Set& edge_set, int& max_value)
   return edge_domain_set;
 }
 
-tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>& nodes, const map<int, int>& node_offsets, int& max_value, bool compact_maps)
+tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>& nodes, const map<int, int>& node_offsets, int& max_value,
+                                                      bool compact_maps)
 {
-  Set edge_set = SET_FACT.createSet();      // Our set of edges
+  Set edge_set = SET_FACT.createSet();     // Our set of edges
   PWMap rhs_maps = PW_FACT.createPWMap();  // Map object of one of the sides
   PWMap lhs_maps = PW_FACT.createPWMap();  // Map object of one of the other side
   EdgeCost costs;                          // Weight of edges
@@ -456,8 +457,8 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
             auto im = Interval(node_candidate_exps.exps()[0].offset().numerator(), 1, node_candidate_exps.exps()[0].offset().numerator());
             auto im_set = SET_FACT.createSet(im);
 
-            Map to_current_node = create_set_edge_map(im_set, edge_domain_set,
-                                                      Exp(LExp(0, node_candidate_exps.exps()[0].offset())), node_offsets.at(id));
+            Map to_current_node =
+                create_set_edge_map(im_set, edge_domain_set, Exp(LExp(0, node_candidate_exps.exps()[0].offset())), node_offsets.at(id));
             logging::sbg_log << "to_current_node " << to_current_node << endl;
 
             lhs_maps.emplaceBack(to_current_node);
@@ -483,8 +484,8 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
 
             auto im = Interval(exp.exps()[0].offset().numerator(), 1, exp.exps()[0].offset().numerator());
             auto im_set = SET_FACT.createSet(im);
-            Map to_node_candidate = create_set_edge_map(im_set, edge_domain_set,
-                                                        Exp(LExp(0, node_candidate_exps.exps()[0].offset())), node_offsets.at(i));
+            Map to_node_candidate =
+                create_set_edge_map(im_set, edge_domain_set, Exp(LExp(0, node_candidate_exps.exps()[0].offset())), node_offsets.at(i));
             logging::sbg_log << "to_node_candidate " << to_node_candidate << endl;
 
             lhs_maps.emplaceBack(to_current_node);
@@ -503,8 +504,7 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
               Exp(LExp(RATIONAL(node_candidate.lhs[0].exps[0].first, 1), RATIONAL(node_candidate.lhs[0].exps[0].second, 1)));
           auto pre_ima_candidate = node_candidate_CanonMap.dom();
           logging::sbg_log << "pre_ima_candidate " << pre_ima_candidate << " from " << node_candidate_CanonMap << endl;
-          auto node_candidate_map =
-              create_set_edge_map(pre_ima_candidate, edge_domain_set, first_lhs_node_candidate, node_offsets.at(i));
+          auto node_candidate_map = create_set_edge_map(pre_ima_candidate, edge_domain_set, first_lhs_node_candidate, node_offsets.at(i));
           auto node_candidate_map_image = node_candidate_map.image();
           logging::sbg_log << "map is " << node_candidate_map << endl;
           logging::sbg_log << "image: " << node_candidate_map_image << endl;
@@ -565,12 +565,12 @@ SBG::LIB::WeightedSBGraph create_sb_graph(const std::map<int, Node>& nodes, bool
   return graph;
 }
 
-unsigned add_adjacent_nodes(const Map& incoming_map, const Map& arrival_map, const Set& node, Set& adjacents)
+size_t add_adjacent_nodes(const Map& incoming_map, const Map& arrival_map, const Set& node, Set& adjacents)
 {
   auto map_image = incoming_map.dom();
   auto node_map_intersection = map_image.intersection(node);
 
-  unsigned qty = 0;
+  size_t qty = 0;
   if (not node_map_intersection.isEmpty()) {
     auto pre_image = incoming_map.preImage(node_map_intersection);
     auto adjs = arrival_map.image(pre_image);
@@ -701,7 +701,7 @@ pair<Set, Set> cut_bidimensional_interval(const SetPiece& set_piece, size_t s)
   return make_pair(OrdSet_ret, remaining);
 }
 
-pair<Set, Set> cut_interval_by_dimension(Set& set_piece, const NodeWeight& node_weight, std::size_t size)
+pair<Set, Set> cut_interval_by_dimension(const Set& set_piece, const NodeWeight& node_weight, std::size_t size)
 {
   if (set_piece.isEmpty()) {
     return make_pair(SET_FACT.createSet(), SET_FACT.createSet());
@@ -709,6 +709,46 @@ pair<Set, Set> cut_interval_by_dimension(Set& set_piece, const NodeWeight& node_
 
   if (size == 0) {
     return make_pair(SET_FACT.createSet(), set_piece);
+  }
+
+  if (set_piece.arity() == 2) {
+    auto s = SET_FACT.createSet();
+    auto t = to_vector(set_piece);
+    std::sort(t.begin(), t.end(), [](const auto& a, const auto& b) { return a.minElem() < b.minElem(); });
+    auto sset_piece = from_vector(t);
+    cout << "now it is " << sset_piece << endl;
+
+    for (auto actual_set_piece : t) {
+      if (size == 0) {
+        break;
+      }
+      cout << "taking " << actual_set_piece << endl;
+      size_t rows = actual_set_piece.maxElem()[0] - actual_set_piece.minElem()[0] + 1;
+      size_t cols = actual_set_piece.maxElem()[1] - actual_set_piece.minElem()[1] + 1;
+      size_t expected_size = actual_set_piece.cardinal() < size ? actual_set_piece.cardinal() : size;
+      cout << "size " << expected_size << " rows " << rows << " cols " << cols << endl;
+      size_t n_rows = expected_size / cols;
+      size_t n_cols = expected_size % cols;
+      cout << "cardinality " << n_rows << " " << n_cols << endl;
+      cout << "would be: ";
+      size_t current_size = s.cardinal();
+      if (n_rows > 0) {
+        s = s.cup(SET_FACT.createSet(MultiDimInter({Interval(actual_set_piece.minElem()[0], 1, actual_set_piece.minElem()[0] + n_rows - 1),
+                                                    Interval(actual_set_piece.minElem()[1], 1, actual_set_piece.maxElem()[1])})));
+      }
+      if (n_cols > 0) {
+        auto ss =
+            SET_FACT.createSet(MultiDimInter({Interval(actual_set_piece.minElem()[0] + n_rows, 1, actual_set_piece.minElem()[0] + n_rows),
+                                              Interval(actual_set_piece.minElem()[1], 1, actual_set_piece.minElem()[1] + n_cols - 1)}));
+        s = s.cup(ss);
+      }
+      // cout << s << " " << actual_set_piece.difference(s) << endl;
+      cout << "now lets check " << s << " " << s.cardinal() << endl;
+      size -= (s.cardinal() - current_size);
+      cout << "now size is " << size << endl;
+    }
+
+    return make_pair(s, set_piece.difference(s));
   }
 
   size_t actual_size = size / unsigned(get_set_cost(*set_piece.begin(), node_weight));
@@ -719,29 +759,23 @@ pair<Set, Set> cut_interval_by_dimension(Set& set_piece, const NodeWeight& node_
   return make_pair(SET_FACT.createSet(p_1), SET_FACT.createSet(p_2));
 }
 
-unsigned get_node_size(const SetPiece& node, const NodeWeight& node_weight)
+size_t get_node_size(const SetPiece& node, const NodeWeight& node_weight)
 {
   int weight = get_set_cost(node, node_weight);
 
-  unsigned acc = node.intervals().front().end() - node.intervals().front().begin() + 1;
-
-  for (size_t i = 1; i < node.intervals().size(); i++) {
-    auto interval = node.intervals()[i];
-    acc = acc * (interval.end() - interval.begin() + 1);
-  }
-
+  size_t acc = node.cardinal();
   acc *= weight;
 
   return acc;
 }
 
-unsigned get_node_size(const Set& node, const NodeWeight& node_weight)
+size_t get_node_size(const Set& node, const NodeWeight& node_weight)
 {
   if (node.isEmpty()) {
     return 0;
   }
 
-  unsigned size = 0;
+  size_t size = 0;
   for (const auto& set_piece : node) {
     size += get_node_size(set_piece, node_weight);
   }
@@ -749,9 +783,9 @@ unsigned get_node_size(const Set& node, const NodeWeight& node_weight)
   return size;
 }
 
-unsigned get_partition_size(const vector<SetPiece>& node, const NodeWeight& node_weight)
+size_t get_partition_size(const vector<SetPiece>& node, const NodeWeight& node_weight)
 {
-  unsigned size = 0;
+  size_t size = 0;
   for (const auto& set_piece : node) {
     size += set_piece.cardinal();
   }
@@ -913,7 +947,6 @@ SBG::LIB::WeightedSBGraph create_air_conditioners_graph()
   return graph;
 }
 
-
 WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sections)
 {
   int quarter = size / sections;
@@ -928,7 +961,7 @@ WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sect
 
   // ierr [label="N2=ierr{1000:1000}"]
   int ierr_domain_init = current_offset;
-  auto ierr   = Interval(current_offset, 1, current_offset);
+  auto ierr = Interval(current_offset, 1, current_offset);
   nodes.emplaceBack(ierr);
   current_offset += 1;
 
@@ -979,8 +1012,8 @@ WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sect
   // ev_8 [label="N11=ev_8 {2263:2512}"]
   // ev_9 [label="N12=ev_9 {2513:2762}"]
   int part_total_domain_init = current_offset;
-  for (int i = 0 ; i < sections; i++) {    
-    auto ev_i  = Interval(current_offset, 1, current_offset + quarter - 1);
+  for (int i = 0; i < sections; i++) {
+    auto ev_i = Interval(current_offset, 1, current_offset + quarter - 1);
     nodes.emplaceBack(ev_i);
     current_offset += quarter;
   }
@@ -991,11 +1024,13 @@ WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sect
 
   // th -> ev_6 [label="<- {3013:4012} -> ", arrowhead="none"]
   rhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + (size - 1)), Exp(LExp(1, RATIONAL(-current_offset, 1)))));
-  lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + (size - 1)), Exp(LExp(1, RATIONAL(ev_6_domain_init - current_offset, 1)))));
+  lhs_maps.emplaceBack(
+      Map(Interval(current_offset, 1, current_offset + (size - 1)), Exp(LExp(1, RATIONAL(ev_6_domain_init - current_offset, 1)))));
   current_offset += size;
 
   rhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + (size - 1)), Exp(LExp(1, RATIONAL(-current_offset, 1)))));
-  lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + (size - 1)), Exp(LExp(1, RATIONAL(ev_6_domain_init - current_offset, 1)))));
+  lhs_maps.emplaceBack(
+      Map(Interval(current_offset, 1, current_offset + (size - 1)), Exp(LExp(1, RATIONAL(ev_6_domain_init - current_offset, 1)))));
   current_offset += size;
 
   // th -> ev_7 [label="<- {4013:4262} -> ", arrowhead="none"]
@@ -1003,13 +1038,17 @@ WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sect
   // th -> ev_9 [label="<- {4513:4762} -> ", arrowhead="none"]
   // th -> ev_10 [label="<- {4763:5012} -> ", arrowhead="none"]
   for (int i = 0; i < sections; i++) {
-    rhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + (quarter - 1)), Exp(LExp(1, RATIONAL(-current_offset + i * quarter, 1)))));
-    lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + (quarter - 1)), Exp(LExp(1, RATIONAL(part_total_domain_init + i * quarter - current_offset, 1)))));
+    rhs_maps.emplaceBack(
+        Map(Interval(current_offset, 1, current_offset + (quarter - 1)), Exp(LExp(1, RATIONAL(-current_offset + i * quarter, 1)))));
+    lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + (quarter - 1)),
+                             Exp(LExp(1, RATIONAL(part_total_domain_init + i * quarter - current_offset, 1)))));
     current_offset += quarter;
   }
   for (int i = 0; i < sections; i++) {
-    rhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + (quarter - 1)), Exp(LExp(1, RATIONAL(-current_offset + i * quarter, 1)))));
-    lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + (quarter - 1)), Exp(LExp(1, RATIONAL(part_total_domain_init + i * quarter - current_offset, 1)))));
+    rhs_maps.emplaceBack(
+        Map(Interval(current_offset, 1, current_offset + (quarter - 1)), Exp(LExp(1, RATIONAL(-current_offset + i * quarter, 1)))));
+    lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + (quarter - 1)),
+                             Exp(LExp(1, RATIONAL(part_total_domain_init + i * quarter - current_offset, 1)))));
     current_offset += quarter;
   }
 
@@ -1030,22 +1069,26 @@ WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sect
 
   // ptotal -> ev_1 [label="1001 <- {5016:5019} -> ", arrowhead="none"]
   rhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + sections - 1), Exp(LExp(0, ptotal_domain_init))));
-  lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + sections - 1), Exp(LExp(1, RATIONAL(ev_1_domain_init - current_offset, 1)))));
+  lhs_maps.emplaceBack(
+      Map(Interval(current_offset, 1, current_offset + sections - 1), Exp(LExp(1, RATIONAL(ev_1_domain_init - current_offset, 1)))));
   current_offset += sections;
 
   // ptotal -> ev_2 [label="1001 <- {5020:5023} -> ", arrowhead="none"]
   rhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + sections - 1), Exp(LExp(0, ptotal_domain_init))));
-  lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + sections - 1), Exp(LExp(1, RATIONAL(ev_2_domain_init - current_offset, 1)))));
+  lhs_maps.emplaceBack(
+      Map(Interval(current_offset, 1, current_offset + sections - 1), Exp(LExp(1, RATIONAL(ev_2_domain_init - current_offset, 1)))));
   current_offset += sections;
-  
+
   // ptotal -> ev_5 [label="1001 <- {5024:5024} -> 1012", arrowhead="none"]
   rhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset), Exp(LExp(0, ptotal_domain_init))));
   lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset), Exp(LExp(0, ev_5_domain_init))));
   current_offset += 1;
 
   // ev_1 -> ev_2 [label=" <- {5025:5028} -> ", arrowhead="none"]
-  rhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + sections - 1), Exp(LExp(1, RATIONAL(ev_1_domain_init - current_offset, 1)))));
-  lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + sections - 1), Exp(LExp(1, RATIONAL(ev_2_domain_init - current_offset, 1)))));
+  rhs_maps.emplaceBack(
+      Map(Interval(current_offset, 1, current_offset + sections - 1), Exp(LExp(1, RATIONAL(ev_1_domain_init - current_offset, 1)))));
+  lhs_maps.emplaceBack(
+      Map(Interval(current_offset, 1, current_offset + sections - 1), Exp(LExp(1, RATIONAL(ev_2_domain_init - current_offset, 1)))));
   current_offset += sections;
 
   // ev_1 -> ev_7 [label="1002 <- {5029:5278} -> ", arrowhead="none"]
@@ -1054,7 +1097,8 @@ WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sect
   // ev_1 -> ev_10 [label="1005 <- {5779:6028} -> ", arrowhead="none"]
   for (int i = 0; i < sections; i++) {
     rhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + quarter - 1), Exp(LExp(0, ev_1_domain_init))));
-    lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + quarter - 1), Exp(LExp(1, RATIONAL(part_total_domain_init - current_offset + quarter * i, 1)))));
+    lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + quarter - 1),
+                             Exp(LExp(1, RATIONAL(part_total_domain_init - current_offset + quarter * i, 1)))));
     current_offset += quarter;
   }
 
@@ -1074,7 +1118,8 @@ WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sect
   // ev_5 -> ev_10 [label="1012 <- {6781:7030} -> ", arrowhead="none"]
   for (int i = 0; i < sections; i++) {
     rhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + quarter - 1), Exp(LExp(0, ev_5_domain_init))));
-    lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + quarter - 1), Exp(LExp(1, RATIONAL(-current_offset + part_total_domain_init + i * quarter, 1)))));
+    lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + quarter - 1),
+                             Exp(LExp(1, RATIONAL(-current_offset + part_total_domain_init + i * quarter, 1)))));
     current_offset += quarter;
   }
 
@@ -1088,37 +1133,117 @@ WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sect
   cout << graph << endl;
 
   return graph;
-
 }
 
+WeightedSBGraph create_advection2D_graph(int size)
+{
+  cout << "create_advection2D_graph" << endl;
+  Set nodes = SET_FACT.createSet();
+
+  // Real u[N,N];
+  auto u = MultiDimInter({Interval(0, 1, size - 1), Interval(0, 1, size - 1)});
+  nodes.emplaceBack(u);
+  int current_offset_1 = size;
+  int current_offset_2 = size;
+  cout << nodes << endl;
+
+  // maps
+  PWMap rhs_maps = PW_FACT.createPWMap();
+  PWMap lhs_maps = PW_FACT.createPWMap();
+
+  // Borders
+  // for i in 2:N loop
+  //   der(u[i,1])=-ax*u[i,1]/dx - ay*(u[i,1] - u[i-1,1])/dy + r*(u[i,1]^2-u[i,1]^3);
+  // end for;
+  rhs_maps.emplaceBack(
+      Map(MultiDimInter({Interval(current_offset_1, 1, current_offset_1 + size - 2), Interval(current_offset_2, 1, current_offset_2)}),
+          Exp({LExp(1, RATIONAL(-current_offset_1 + 1, 1)), LExp(0, 0)})));  // row fixed in 1 (first one)
+  lhs_maps.emplaceBack(
+      Map(MultiDimInter({Interval(current_offset_1, 1, current_offset_1 + size - 2), Interval(current_offset_2, 1, current_offset_2)}),
+          Exp({
+              LExp(1, RATIONAL(-current_offset_1, 1)),
+              LExp(0, 0),
+          })));
+  current_offset_1 += size - 1;
+  current_offset_2 += 1;
+  cout << "borders 1" << endl;
+
+  // Borders
+  // for j in 2:N loop
+  //   der(u[1,j])=-ax*(u[1,j] - u[1,j-1])/dx - ay*u[1,j]/dy + r*(u[1,j]^2-u[1,j]^3);
+  // end for;
+  rhs_maps.emplaceBack(
+      Map(MultiDimInter({Interval(current_offset_1, 1, current_offset_1), Interval(current_offset_2, 1, current_offset_2 + size - 2)}),
+          Exp({LExp(0, 0), LExp(1, RATIONAL(-current_offset_2 + 1, 1))})));  // row fixed in 1 (first one)
+  lhs_maps.emplaceBack(
+      Map(MultiDimInter({Interval(current_offset_1, 1, current_offset_1), Interval(current_offset_2, 1, current_offset_2 + size - 2)}),
+          Exp({LExp(0, 0), LExp(1, RATIONAL(-current_offset_2, 1))})));
+  current_offset_1 += 1;
+  current_offset_2 += size - 1;
+  cout << "borders 2" << endl;
+
+  // Rest of the grid.
+  // for i in 2:N, j in 2:N loop
+  // der(u[i, j]) -> u[i,j-1]
+  rhs_maps.emplaceBack(
+      Map(MultiDimInter(
+              {Interval(current_offset_1, 1, current_offset_1 + size - 2), Interval(current_offset_2, 1, current_offset_2 + size - 2)}),
+          Exp({LExp(1, RATIONAL(-current_offset_1 + 1, 1)), LExp(1, RATIONAL(-current_offset_2 + 1, 1))})));  // row fixed in 1 (first one)
+  lhs_maps.emplaceBack(Map(MultiDimInter({Interval(current_offset_1, 1, current_offset_1 + size - 2),
+                                          Interval(current_offset_2, 1, current_offset_2 + size - 2)}),
+                           Exp({LExp(1, RATIONAL(-current_offset_1 + 1, 1)), LExp(1, RATIONAL(-current_offset_2, 1))})));
+  current_offset_1 += size - 1;
+  current_offset_2 += size - 1;
+  // der(u[i, j]) -> u[i-1,j])
+  rhs_maps.emplaceBack(
+      Map(MultiDimInter(
+              {Interval(current_offset_1, 1, current_offset_1 + size - 2), Interval(current_offset_2, 1, current_offset_2 + size - 2)}),
+          Exp({LExp(1, RATIONAL(-current_offset_1 + 1, 1)), LExp(1, RATIONAL(-current_offset_2 + 1, 1))})));  // row fixed in 1 (first one)
+  lhs_maps.emplaceBack(Map(MultiDimInter({Interval(current_offset_1, 1, current_offset_1 + size - 2),
+                                          Interval(current_offset_2, 1, current_offset_2 + size - 2)}),
+                           Exp({LExp(1, RATIONAL(-current_offset_1, 1)), LExp(1, RATIONAL(-current_offset_2 + 1, 1))})));
+  current_offset_1 += size - 1;
+  current_offset_2 += size - 1;
+
+  auto vmap = PW_FACT.createPWMap();
+  auto vsap = PW_FACT.createPWMap();
+  auto emap = PW_FACT.createPWMap();
+
+  // Now, let's build a graph!
+  SBG::LIB::WeightedSBGraph graph(nodes, vmap, rhs_maps, lhs_maps, emap, vsap);  // This will be our graph
+
+  // cout << graph << endl;
+
+  return graph;
+}
 
 Set split_sets_according_to_relations(const WeightedSBGraph& sb_graph)
 {
-    set<int> endpoints = {};
-    for (auto it1 = sb_graph.map1().begin(), it2 = sb_graph.map2().begin(); it1 != sb_graph.map1().end() and it2 != sb_graph.map2().end(); ++it1, ++it2) {
-        auto im1 = (*it1).image();
-        endpoints.insert((*im1.begin())[0].begin());
-        endpoints.insert((*im1.begin())[0].end() + 1);
+  set<int> endpoints = {};
+  for (auto it1 = sb_graph.map1().begin(), it2 = sb_graph.map2().begin(); it1 != sb_graph.map1().end() and it2 != sb_graph.map2().end();
+       ++it1, ++it2) {
+    auto im1 = (*it1).image();
+    endpoints.insert((*im1.begin())[0].begin());
+    endpoints.insert((*im1.begin())[0].end() + 1);
 
-        auto im2 = (*it2).image();
-        endpoints.insert((*im2.begin())[0].begin());
-        endpoints.insert((*im2.begin())[0].end() + 1);
+    auto im2 = (*it2).image();
+    endpoints.insert((*im2.begin())[0].begin());
+    endpoints.insert((*im2.begin())[0].end() + 1);
+  }
+
+  auto vertices = SET_FACT.createSet();
+  for (auto it = endpoints.begin();;) {
+    int current = *it;
+    ++it;
+    if (it == endpoints.end()) {
+      break;
     }
+    vertices.emplaceBack(Interval(current, 1, *it - 1));
+  }
 
-    auto vertices = SET_FACT.createSet();
-    for (auto it = endpoints.begin();;) {
-        int current = *it;
-        ++it;
-        if (it == endpoints.end()) {
-            break;
-        }
-        vertices.emplaceBack(Interval(current, 1, *it - 1));
-    }
-    
-    cout << "vertices: " << vertices << endl;
+  cout << "vertices: " << vertices << endl;
 
-    return vertices;
+  return vertices;
 }
-
 
 }  // namespace sbg_partitioner

@@ -73,7 +73,7 @@ class UnorderedSet : public SetStrategy {
 
   // Traditional set operations ------------------------------------------------
 
-  unsigned int cardinal() const override;
+  size_t cardinal() const override;
   bool isEmpty() const override;
   MD_NAT minElem() const override;
   MD_NAT maxElem() const override;

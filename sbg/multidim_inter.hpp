@@ -96,7 +96,7 @@ class MultiDimInter {
    * @brief Number of elements contained in the mdi, i.e.
    * cardinal([1:1:10]x[1:1:10]) = 100. 
    */
-  unsigned int cardinal() const;
+  size_t cardinal() const;
   bool isEmpty() const;
   MD_NAT minElem() const;
   MD_NAT maxElem() const;

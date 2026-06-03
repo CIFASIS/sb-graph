@@ -32,17 +32,14 @@ using namespace SBG::LIB;
 namespace sbg_partitioner {
 
 PartitionStrategyGreedy::PartitionStrategyGreedy(unsigned number_of_partitions, const SBG::LIB::WeightedSBGraph graph)
-    : PartitionStrategy(),
-      _number_of_partitions(number_of_partitions),
-      _current_partition(0),
-      _node_weight(graph.get_node_weights())
+    : PartitionStrategy(), _number_of_partitions(number_of_partitions), _current_partition(0), _node_weight(graph.get_node_weights())
 {
   // get total of nodes by accumulating all interval values
   _total_of_nodes = get_node_size(graph.V(), SBG::LIB::NodeWeight());
   size_t actual_total_of_nodes = get_node_size(graph.V(), _node_weight);
 
-  unsigned min_amount_by_partition = actual_total_of_nodes / number_of_partitions;
-  unsigned surplus = actual_total_of_nodes % number_of_partitions;
+  size_t min_amount_by_partition = actual_total_of_nodes / number_of_partitions;
+  size_t surplus = actual_total_of_nodes % number_of_partitions;
   // unsigned acceptable_surplus = ceil(min_amount_by_partition * 0.05);
 
   // logging::sbg_log << "PartitionStrategyGreedy::PartitionStrategyGreedy " << actual_total_of_nodes << ", " << min_amount_by_partition <<
@@ -54,7 +51,7 @@ PartitionStrategyGreedy::PartitionStrategyGreedy(unsigned number_of_partitions, 
   }
 }
 
-vector<unsigned> sort_keys_by_value(const map<unsigned, unsigned>& current_size_by_partition)
+vector<unsigned> sort_keys_by_value(const map<unsigned, size_t>& current_size_by_partition)
 {
   vector<unsigned> keys;
   keys.reserve(current_size_by_partition.size());
@@ -78,15 +75,15 @@ void PartitionStrategyGreedy::operator()(const SetPiece& node)
   Set node_to_be_added = SET_FACT.createSet(node);
 
   // let's just work with sizes
-  map<unsigned, unsigned> size_by_partition;
-  unsigned pending_node_elements = get_node_size(node, SBG::LIB::NodeWeight());
+  map<unsigned, size_t> size_by_partition;
+  size_t pending_node_elements = get_node_size(node, SBG::LIB::NodeWeight());
   int node_weight = get_set_cost(node, _node_weight);
 
   auto keys_sort_by_value = sort_keys_by_value(_current_size_by_partition);
   for (const auto i : keys_sort_by_value) {
     if (_expected_size_by_partition > _current_size_by_partition[i]) {  // nothing to do for now
       auto available = _expected_size_by_partition - _current_size_by_partition[i];
-      unsigned elements_can_take = available / node_weight;
+      size_t elements_can_take = available / node_weight;
       elements_can_take = min(pending_node_elements, elements_can_take);
       pending_node_elements -= elements_can_take;
       size_by_partition[i] = elements_can_take * node_weight;
@@ -99,7 +96,7 @@ void PartitionStrategyGreedy::operator()(const SetPiece& node)
     // look for the partion that has least elements
     unsigned p = keys_sort_by_value.front();
 
-    unsigned to_be_added = pending_node_elements * node_weight;
+    size_t to_be_added = pending_node_elements * node_weight;
 
     size_by_partition[p] += to_be_added;
     _current_size_by_partition[p] += to_be_added;
@@ -125,10 +122,7 @@ map<unsigned, set<SetPiece>> PartitionStrategyGreedy::partitions() const { retur
 /* PartitionStrategyDistributive */
 
 PartitionStrategyDistributive::PartitionStrategyDistributive(unsigned number_of_partitions, const WeightedSBGraph graph)
-    : PartitionStrategy(),
-      _number_of_partitions(number_of_partitions),
-      _nodes(graph.V()),
-      _node_weight(graph.get_node_weights())
+    : PartitionStrategy(), _number_of_partitions(number_of_partitions), _nodes(graph.V()), _node_weight(graph.get_node_weights())
 {
   for (unsigned i = 0; i < _number_of_partitions; i++) {
     auto p = make_pair(i, 0);
@@ -139,11 +133,11 @@ PartitionStrategyDistributive::PartitionStrategyDistributive(unsigned number_of_
 // Using an unnamed manespace to define functions with internal linkage
 namespace {
 
-void add_surplus_sorting_by_value(const map<unsigned, unsigned>& current_size_by_partition, map<unsigned, unsigned>& size_by_partition,
-                                  unsigned surplus)
+void add_surplus_sorting_by_value(const map<size_t, size_t>& current_size_by_partition, map<size_t, size_t>& size_by_partition,
+                                  size_t surplus)
 {
   // Declare vector of pairs
-  vector<pair<unsigned, unsigned>> current_size_by_partition_vector;
+  vector<pair<size_t, size_t>> current_size_by_partition_vector;
 
   // Copy key-value pair from Map
   // to vector of pairs
@@ -153,7 +147,7 @@ void add_surplus_sorting_by_value(const map<unsigned, unsigned>& current_size_by
 
   // Sort using comparator function
   sort(current_size_by_partition_vector.begin(), current_size_by_partition_vector.end(),
-       [](const pair<unsigned, unsigned>& a, const pair<unsigned, unsigned>& b) { return a.second < b.second; });
+       [](const pair<size_t, size_t>& a, const pair<size_t, size_t>& b) { return a.second < b.second; });
 
   // Print the sorted value
   for (const auto& it : current_size_by_partition_vector) {
@@ -174,10 +168,10 @@ void PartitionStrategyDistributive::operator()(const SBG::LIB::SetPiece& node)
   logging::sbg_log << "Adding " << node << " distributively to partitions" << endl;
 #endif
   auto s = get_node_size(node, NodeWeight());
-  unsigned size_by_part = s / _number_of_partitions;
-  unsigned surplus = s % _number_of_partitions;
+  size_t size_by_part = s / _number_of_partitions;
+  size_t surplus = s % _number_of_partitions;
 
-  map<unsigned, unsigned> size_by_partition;
+  map<size_t, size_t> size_by_partition;
 
   for (const auto [i, p] : _current_size_by_partition) {
     size_by_partition[i] = size_by_part;

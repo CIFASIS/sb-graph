@@ -33,30 +33,22 @@ member_imp(UnorderedSet, UnorderedSet::MDIUnordCollection, pieces);
 
 UnorderedSet::~UnorderedSet() {}
 UnorderedSet::UnorderedSet() : pieces_() {}
-UnorderedSet::UnorderedSet(const MD_NAT& x) : pieces_() {
-  pieces_.emplace_back(SetPiece(x));
-}
-UnorderedSet::UnorderedSet(const Interval& i) : pieces_() {
-  if (!i.isEmpty())
-    pieces_.emplace_back(SetPiece(i));
-}
-UnorderedSet::UnorderedSet(const SetPiece& mdi) : pieces_() {
-  if (!mdi.isEmpty())
-    pieces_.emplace_back(mdi);
-}
-UnorderedSet::UnorderedSet(const UnorderedSet::MDIUnordCollection& pieces)
-  : pieces_(std::move(pieces)) {}
-
-SetStratPtr UnorderedSet::clone() const
+UnorderedSet::UnorderedSet(const MD_NAT& x) : pieces_() { pieces_.emplace_back(SetPiece(x)); }
+UnorderedSet::UnorderedSet(const Interval& i) : pieces_()
 {
-  return std::make_unique<UnorderedSet>(*this);
+  if (!i.isEmpty()) pieces_.emplace_back(SetPiece(i));
 }
+UnorderedSet::UnorderedSet(const SetPiece& mdi) : pieces_()
+{
+  if (!mdi.isEmpty()) pieces_.emplace_back(mdi);
+}
+UnorderedSet::UnorderedSet(const UnorderedSet::MDIUnordCollection& pieces) : pieces_(std::move(pieces)) {}
 
-member_imp(UnorderedSet::Iterator
-  , UnorderedSet::MDIUnordCollection::const_iterator, it);
+SetStratPtr UnorderedSet::clone() const { return std::make_unique<UnorderedSet>(*this); }
 
-UnorderedSet::Iterator::Iterator(
-  UnorderedSet::MDIUnordCollection::const_iterator it) : it_(it) {}
+member_imp(UnorderedSet::Iterator, UnorderedSet::MDIUnordCollection::const_iterator, it);
+
+UnorderedSet::Iterator::Iterator(UnorderedSet::MDIUnordCollection::const_iterator it) : it_(it) {}
 
 void UnorderedSet::Iterator::operator++()
 {
@@ -64,34 +56,26 @@ void UnorderedSet::Iterator::operator++()
   return;
 }
 
-bool UnorderedSet::Iterator::operator!=(const SetStrategy::Iterator& other)
-  const
+bool UnorderedSet::Iterator::operator!=(const SetStrategy::Iterator& other) const
 {
-  return it_ != static_cast<const UnorderedSet::Iterator *>(&other)->it_;
+  return it_ != static_cast<const UnorderedSet::Iterator*>(&other)->it_;
 }
 
-bool UnorderedSet::Iterator::operator==(const SetStrategy::Iterator& other)
-  const
+bool UnorderedSet::Iterator::operator==(const SetStrategy::Iterator& other) const
 {
-  return it_ == static_cast<const UnorderedSet::Iterator *>(&other)->it_;
+  return it_ == static_cast<const UnorderedSet::Iterator*>(&other)->it_;
 }
 
 bool UnorderedSet::Iterator::operator<(const SetStrategy::Iterator& other) const
 {
-  return it_ < static_cast<const UnorderedSet::Iterator *>(&other)->it_;
+  return it_ < static_cast<const UnorderedSet::Iterator*>(&other)->it_;
 }
 
 const SetPiece& UnorderedSet::Iterator::operator*() const { return *it_; }
 
-std::shared_ptr<SetStrategy::Iterator> UnorderedSet::begin() const
-{
-  return std::make_shared<UnorderedSet::Iterator>(pieces_.begin());
-}
+std::shared_ptr<SetStrategy::Iterator> UnorderedSet::begin() const { return std::make_shared<UnorderedSet::Iterator>(pieces_.begin()); }
 
-std::shared_ptr<SetStrategy::Iterator> UnorderedSet::end() const
-{
-  return std::make_shared<UnorderedSet::Iterator>(pieces_.end());
-}
+std::shared_ptr<SetStrategy::Iterator> UnorderedSet::end() const { return std::make_shared<UnorderedSet::Iterator>(pieces_.end()); }
 
 std::size_t UnorderedSet::size() const { return pieces_.size(); }
 
@@ -119,16 +103,12 @@ bool UnorderedSet::operator==(const SetStrategy& other) const
 {
   UnordSetCRef othr = static_cast<UnordSetCRef>(other);
 
-  if (pieces_ == othr.pieces_)
-    return true;
+  if (pieces_ == othr.pieces_) return true;
 
   return difference(other)->isEmpty() && other.difference(*this)->isEmpty();
 }
 
-bool UnorderedSet::operator!=(const SetStrategy& other) const
-{
-  return !(*this == other);
-}
+bool UnorderedSet::operator!=(const SetStrategy& other) const { return !(*this == other); }
 
 std::ostream& UnorderedSet::print(std::ostream& out) const
 {
@@ -137,9 +117,9 @@ std::ostream& UnorderedSet::print(std::ostream& out) const
   out << "{";
   if (sz > 0) {
     unsigned int j = 0;
-    for (const SetPiece& mdi : pieces_) { 
+    for (const SetPiece& mdi : pieces_) {
       if (j < sz - 1) {
-        out << mdi << ", "; 
+        out << mdi << ", ";
       } else {
         out << mdi;
       }
@@ -154,12 +134,12 @@ std::ostream& UnorderedSet::print(std::ostream& out) const
 
 // Set operations --------------------------------------------------------------
 
-unsigned int UnorderedSet::cardinal() const
+size_t UnorderedSet::cardinal() const
 {
-  unsigned int result = 0;
+  size_t result = 0;
 
   for (const SetPiece& mdi : pieces_) {
-    result += mdi.cardinal();
+    result += size_t(mdi.cardinal());
   }
 
   return result;
@@ -172,10 +152,9 @@ MD_NAT UnorderedSet::minElem() const
   MD_NAT res = pieces_.begin()->minElem();
   for (const SetPiece& mdi : pieces_) {
     MD_NAT ith = mdi.minElem();
-    if (ith < res)
-      res = ith;
+    if (ith < res) res = ith;
   }
-  
+
   return res;
 }
 
@@ -184,10 +163,9 @@ MD_NAT UnorderedSet::maxElem() const
   MD_NAT res = pieces_.begin()->maxElem();
   for (const SetPiece& mdi : pieces_) {
     MD_NAT ith = mdi.maxElem();
-    if (res < ith)
-      res = ith;
+    if (res < ith) res = ith;
   }
-  
+
   return res;
 }
 
@@ -232,11 +210,11 @@ SetStratPtr UnorderedSet::intersection(const SetStrategy& other) const
   return std::make_unique<UnorderedSet>(std::move(result));
 }
 
-SetStratPtr UnorderedSet::cup(const SetStrategy& other) const &
+SetStratPtr UnorderedSet::cup(const SetStrategy& other) const&
 {
   UnordSetCRef othr = static_cast<UnordSetCRef>(other);
 
-  if (isEmpty()) { 
+  if (isEmpty()) {
     return std::make_unique<UnorderedSet>(othr.pieces_);
   }
 
@@ -260,7 +238,7 @@ SetStratPtr UnorderedSet::cup(SetStrategy&& other) &&
 {
   UnordSetCRef othr = static_cast<UnordSetCRef>(other);
 
-  if (isEmpty()) { 
+  if (isEmpty()) {
     return std::make_unique<UnorderedSet>(std::move(othr.pieces_));
   }
 
@@ -285,8 +263,7 @@ SetStratPtr UnorderedSet::complementAtom() const
 
   SetPiece mdi = *pieces_.begin();
   SetPiece dense_mdi;
-  for (const Interval& i : mdi)
-    dense_mdi.emplaceBack(Interval(i.begin(), 1, i.end()));
+  for (const Interval& i : mdi) dense_mdi.emplaceBack(Interval(i.begin(), 1, i.end()));
   SetPiece during_mdi = dense_mdi;
 
   Interval univ_one_dim(0, 1, Inf);
@@ -332,8 +309,7 @@ SetStratPtr UnorderedSet::complementAtom() const
     during_mdi[dim] = i;
 
     // Insert results of current dim
-    for (const SetPiece& mdi : c)
-      res.emplace_back(mdi);
+    for (const SetPiece& mdi : c) res.emplace_back(mdi);
 
     ++dim;
   }
@@ -378,17 +354,16 @@ SetStratPtr UnorderedSet::difference(const SetStrategy& other) const
 
 std::size_t UnorderedSet::arity() const
 {
-  if (isEmpty())
-    return 0;
+  if (isEmpty()) return 0;
 
   return pieces_.begin()->arity();
 }
 
-SetStratPtr UnorderedSet::disjointCup(const SetStrategy& other) const &
+SetStratPtr UnorderedSet::disjointCup(const SetStrategy& other) const&
 {
   UnordSetCRef othr = static_cast<UnordSetCRef>(other);
 
-  if (isEmpty()) { 
+  if (isEmpty()) {
     return std::make_unique<UnorderedSet>(othr.pieces_);
   }
 
@@ -408,7 +383,7 @@ SetStratPtr UnorderedSet::disjointCup(SetStrategy&& other) &&
 {
   UnordSetCRef othr = static_cast<UnordSetCRef>(other);
 
-  if (isEmpty()) { 
+  if (isEmpty()) {
     return std::make_unique<UnorderedSet>(std::move(othr.pieces_));
   }
 
@@ -474,18 +449,16 @@ SetStratPtr UnorderedSet::compact() const
           }
         }
 
-        if (to_erase.find(ith_compact) == to_erase.end())
-          actual.insert(ith_compact);
+        if (to_erase.find(ith_compact) == to_erase.end()) actual.insert(ith_compact);
       }
     } while (actual != prev);
 
-    for (const SetPiece& mdi : actual)
-      res.emplace_back(mdi);
+    for (const SetPiece& mdi : actual) res.emplace_back(mdi);
   }
 
   return std::make_unique<UnorderedSet>(std::move(res));
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

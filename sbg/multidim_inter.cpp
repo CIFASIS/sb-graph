@@ -26,86 +26,57 @@ namespace LIB {
 member_imp(MultiDimInter, InterVector, intervals);
 
 MultiDimInter::MultiDimInter() : intervals_() {}
-MultiDimInter::MultiDimInter(const MD_NAT &x) : intervals_() {
-  for (NAT xi : x)
-    intervals_.push_back(Interval(xi, 1, xi));
-}
-MultiDimInter::MultiDimInter(const Interval &i) : intervals_()
+MultiDimInter::MultiDimInter(const MD_NAT &x) : intervals_()
 {
-  intervals_.push_back(i);
+  for (NAT xi : x) intervals_.push_back(Interval(xi, 1, xi));
 }
-MultiDimInter::MultiDimInter(const unsigned int &nmbr_copies
-                             , const Interval &i) : intervals_() {
-  for (unsigned int j = 0; j < nmbr_copies; ++j)
-    intervals_.push_back(i);
+MultiDimInter::MultiDimInter(const Interval &i) : intervals_() { intervals_.push_back(i); }
+MultiDimInter::MultiDimInter(const unsigned int &nmbr_copies, const Interval &i) : intervals_()
+{
+  for (unsigned int j = 0; j < nmbr_copies; ++j) intervals_.push_back(i);
 }
-MultiDimInter::MultiDimInter(const InterVector &iv)
-  : intervals_(std::move(iv)) {}
+MultiDimInter::MultiDimInter(const InterVector &iv) : intervals_(std::move(iv)) {}
 
 MultiDimInter::iterator MultiDimInter::begin() { return intervals_.begin(); }
 MultiDimInter::iterator MultiDimInter::end() { return intervals_.end(); }
-MultiDimInter::const_iterator MultiDimInter::begin() const
-{
-  return intervals_.begin();
-}
-MultiDimInter::const_iterator MultiDimInter::end() const
-{
-  return intervals_.end();
-}
+MultiDimInter::const_iterator MultiDimInter::begin() const { return intervals_.begin(); }
+MultiDimInter::const_iterator MultiDimInter::end() const { return intervals_.end(); }
 
-void MultiDimInter::emplaceBack(Interval i) 
-{ 
-  if (i.isEmpty()){
-    intervals_ = InterVector();}
-  else
+void MultiDimInter::emplaceBack(Interval i)
+{
+  if (i.isEmpty()) {
+    intervals_ = InterVector();
+  } else
     intervals_.push_back(i);
   return;
 }
 
-Interval &MultiDimInter::operator[](std::size_t n)
-{
-  return intervals_[n];
-}
+Interval &MultiDimInter::operator[](std::size_t n) { return intervals_[n]; }
 
-const Interval &MultiDimInter::operator[](std::size_t n) const
-{
-  return intervals_[n];
-}
+const Interval &MultiDimInter::operator[](std::size_t n) const { return intervals_[n]; }
 
-bool MultiDimInter::operator==(const MultiDimInter &other) const
-{
-  return intervals_ == other.intervals_;
-}
+bool MultiDimInter::operator==(const MultiDimInter &other) const { return intervals_ == other.intervals_; }
 
-bool MultiDimInter::operator!=(const MultiDimInter &other) const
-{
-  return !(*this == other);
-}
+bool MultiDimInter::operator!=(const MultiDimInter &other) const { return !(*this == other); }
 
 bool MultiDimInter::operator<(const MultiDimInter &other) const
 {
-  if (other.isEmpty())
-    return false;
+  if (other.isEmpty()) return false;
 
-  if (isEmpty())
-    return true;
+  if (isEmpty()) return true;
 
   return minElem() < other.minElem();
 }
 
-bool MultiDimInter::operator>(const MultiDimInter& other) const
-{
-  return !(*this == other && *this < other);
-}
+bool MultiDimInter::operator>(const MultiDimInter &other) const { return !(*this == other && *this < other); }
 
 std::ostream &operator<<(std::ostream &out, const MultiDimInter &mdi)
 {
   std::size_t sz = mdi.arity();
 
   if (sz > 0) {
-    for (std::size_t j = 0; j < sz - 1; ++j)
-      out << mdi[j] << "x";
-    out << mdi[sz-1];
+    for (std::size_t j = 0; j < sz - 1; ++j) out << mdi[j] << "x";
+    out << mdi[sz - 1];
   }
 
   return out;
@@ -113,12 +84,11 @@ std::ostream &operator<<(std::ostream &out, const MultiDimInter &mdi)
 
 // Set functions ---------------------------------------------------------------
 
-unsigned int MultiDimInter::cardinal() const
+size_t MultiDimInter::cardinal() const
 {
-  unsigned int res = 1;
+  size_t res = 1;
 
-  for (const Interval &i : intervals_)
-    res *= i.cardinal();
+  for (const Interval &i : intervals_) res *= i.cardinal();
 
   return res;
 }
@@ -129,8 +99,7 @@ MD_NAT MultiDimInter::minElem() const
 {
   MD_NAT res;
 
-  for (const Interval &i : intervals_)
-    res.emplaceBack(i.begin());
+  for (const Interval &i : intervals_) res.emplaceBack(i.begin());
 
   return res;
 }
@@ -139,16 +108,14 @@ MD_NAT MultiDimInter::maxElem() const
 {
   MD_NAT res;
 
-  for (const Interval &i : intervals_)
-    res.emplaceBack(i.end());
+  for (const Interval &i : intervals_) res.emplaceBack(i.end());
 
   return res;
 }
 
 MultiDimInter MultiDimInter::intersection(const MultiDimInter &other) const
 {
-  if (isEmpty() || other.isEmpty())
-    return MultiDimInter();
+  if (isEmpty() || other.isEmpty()) return MultiDimInter();
 
   MultiDimInter res;
 
@@ -172,16 +139,12 @@ MultiDimInter MultiDimInter::offset(const MD_NAT &off) const
 {
   MultiDimInter res;
 
-  for (unsigned int j = 0; j < arity(); ++j)
-    res.emplaceBack(operator[](j).offset(off[j]));
+  for (unsigned int j = 0; j < arity(); ++j) res.emplaceBack(operator[](j).offset(off[j]));
 
   return res;
 }
 
-MultiDimInter MultiDimInter::least(const MultiDimInter &other) const
-{
-  return std::min(*this, other);
-}
+MultiDimInter MultiDimInter::least(const MultiDimInter &other) const { return std::min(*this, other); }
 
 MaybeMDI MultiDimInter::compact(const MultiDimInter &other) const
 {
@@ -216,6 +179,6 @@ MaybeMDI MultiDimInter::compact(const MultiDimInter &other) const
   return res;
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

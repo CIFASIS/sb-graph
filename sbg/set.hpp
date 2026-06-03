@@ -119,7 +119,7 @@ class SetStrategy {
    * @brief Number of elements contained in the set, i.e.
    * cardinal({[1:1:10]x[1:1:10], [101:1:200]x[201:1:300]}) = 10100. 
    */
-  virtual unsigned int cardinal() const = 0;
+  virtual size_t cardinal() const = 0;
   virtual bool isEmpty() const = 0;
   virtual MD_NAT minElem() const = 0;
   virtual MD_NAT maxElem() const = 0;
@@ -207,7 +207,7 @@ class Set {
 
   // Traditional set operations ------------------------------------------------
 
-  unsigned int cardinal() const;
+  size_t cardinal() const;
   bool isEmpty() const;
   MD_NAT minElem() const;
   MD_NAT maxElem() const;

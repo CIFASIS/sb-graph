@@ -53,15 +53,15 @@ SBG::LIB::Set get_adjacents(const SBG::LIB::SBG& graph, const SBG::LIB::Set& nod
 /// {[1:10], [1:10]} has 100 elements.
 /// @param node input set we want to calculate the size.
 /// @return the number of elements
-unsigned get_node_size(const SBG::LIB::SetPiece& node, const SBG::LIB::NodeWeight& node_weight);
+size_t get_node_size(const SBG::LIB::SetPiece& node, const SBG::LIB::NodeWeight& node_weight);
 
 
 /// Takes each set piece and calculates its size, it returns the sum of them
-unsigned get_node_size(const SBG::LIB::Set& node, const SBG::LIB::NodeWeight& node_weight);
+size_t get_node_size(const SBG::LIB::Set& node, const SBG::LIB::NodeWeight& node_weight);
 
 
 /// Takes each set piece of the partition and calculates its size, it returns the sum of them
-unsigned get_partition_size(const std::vector<SBG::LIB::SetPiece>& node, const SBG::LIB::NodeWeight& node_weight);
+size_t get_partition_size(const std::vector<SBG::LIB::SetPiece>& node, const SBG::LIB::NodeWeight& node_weight);
 
 
 /// Takes a set of edges and compute its cost.

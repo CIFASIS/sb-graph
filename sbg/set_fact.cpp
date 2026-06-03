@@ -30,105 +30,54 @@ namespace LIB {
 // Unordered Set Factory -------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-Set UnordSetFact::createSet() const
-{
-  return Set(std::make_unique<UnorderedSet>());
-}
+Set UnordSetFact::createSet() const { return Set(std::make_unique<UnorderedSet>()); }
 
-Set UnordSetFact::createSet(const MD_NAT &x) const
-{
-  return Set(std::make_unique<UnorderedSet>(x));
-}
+Set UnordSetFact::createSet(const MD_NAT &x) const { return Set(std::make_unique<UnorderedSet>(x)); }
 
-Set UnordSetFact::createSet(const Interval &i) const
-{
-  return Set(std::make_unique<UnorderedSet>(i));
-}
+Set UnordSetFact::createSet(const Interval &i) const { return Set(std::make_unique<UnorderedSet>(i)); }
 
-Set UnordSetFact::createSet(const SetPiece &mdi) const
-{
-  return Set(std::make_unique<UnorderedSet>(mdi));
-}
+Set UnordSetFact::createSet(const SetPiece &mdi) const { return Set(std::make_unique<UnorderedSet>(mdi)); }
 
-std::string UnordSetFact::prettyPrint() const
-{
-  return "unordered";
-}
+std::string UnordSetFact::prettyPrint() const { return "unordered"; }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Ordered Unidimensional Dense Set Factory ------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-Set OrdUnidimDenseSetFact::createSet() const
-{
-  return Set(std::make_unique<OrdUnidimDenseSet>());
-}
+Set OrdUnidimDenseSetFact::createSet() const { return Set(std::make_unique<OrdUnidimDenseSet>()); }
 
-Set OrdUnidimDenseSetFact::createSet(const MD_NAT &x) const
-{
-  return Set(std::make_unique<OrdUnidimDenseSet>(x));
-}
+Set OrdUnidimDenseSetFact::createSet(const MD_NAT &x) const { return Set(std::make_unique<OrdUnidimDenseSet>(x)); }
 
-Set OrdUnidimDenseSetFact::createSet(const Interval &i) const
-{
-  return Set(std::make_unique<OrdUnidimDenseSet>(i));
-}
+Set OrdUnidimDenseSetFact::createSet(const Interval &i) const { return Set(std::make_unique<OrdUnidimDenseSet>(i)); }
 
-Set OrdUnidimDenseSetFact::createSet(const SetPiece &mdi) const
-{
-  return Set(std::make_unique<OrdUnidimDenseSet>(mdi));
-}
+Set OrdUnidimDenseSetFact::createSet(const SetPiece &mdi) const { return Set(std::make_unique<OrdUnidimDenseSet>(mdi)); }
 
-std::string OrdUnidimDenseSetFact::prettyPrint() const
-{
-  return "ordered unidimensional dense";
-}
+std::string OrdUnidimDenseSetFact::prettyPrint() const { return "ordered unidimensional dense"; }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Ordered Set Factory ---------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-Set OrdSetFact::createSet() const
-{
-  return Set(std::make_unique<OrderedSet>());
-}
+Set OrdSetFact::createSet() const { return Set(std::make_unique<OrderedSet>()); }
 
-Set OrdSetFact::createSet(const MD_NAT &x) const
-{
-  return Set(std::make_unique<OrderedSet>(x));
-}
+Set OrdSetFact::createSet(const MD_NAT &x) const { return Set(std::make_unique<OrderedSet>(x)); }
 
-Set OrdSetFact::createSet(const Interval &i) const
-{
-  return Set(std::make_unique<OrderedSet>(i));
-}
+Set OrdSetFact::createSet(const Interval &i) const { return Set(std::make_unique<OrderedSet>(i)); }
 
-Set OrdSetFact::createSet(const SetPiece &mdi) const
-{
-  return Set(std::make_unique<OrderedSet>(mdi));
-}
+Set OrdSetFact::createSet(const SetPiece &mdi) const { return Set(std::make_unique<OrderedSet>(mdi)); }
 
-std::string OrdSetFact::prettyPrint() const
-{
-  return "ordered";
-}
+std::string OrdSetFact::prettyPrint() const { return "ordered"; }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Factory for clients --------------------------------------------------------- 
+// Factory for clients ---------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-SetFactory::SetFactory() : set_fact_(std::make_unique<UnordSetFact>()) {}
+SetFactory::SetFactory() : set_fact_(std::make_unique<OrdSetFact>()) {}
 
-SetFact& SetFactory::set_fact()
-{
-  return *set_fact_;
-}
+SetFact &SetFactory::set_fact() { return *set_fact_; }
 
-void SetFactory::set_set_fact(SetFactPtr set_fact)
-{
-  set_fact_ = std::move(set_fact);
-}
+void SetFactory::set_set_fact(SetFactPtr set_fact) { set_fact_ = std::move(set_fact); }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

@@ -62,7 +62,7 @@ private:
     unsigned _acceptable_amount;
     std::map<unsigned, std::set<SBG::LIB::SetPiece>> _partitions;
     size_t _expected_size_by_partition;
-    std::map<unsigned, unsigned> _current_size_by_partition;
+    std::map<unsigned, size_t> _current_size_by_partition;
     SBG::LIB::NodeWeight _node_weight;
 };
 
@@ -89,11 +89,11 @@ public:
 private:
     unsigned _number_of_partitions;
     unsigned _current_partition;
-    unsigned _total_of_nodes;
-    unsigned _acceptable_surplus;
-    unsigned _acceptable_amount;
+    size_t _total_of_nodes;
+    size_t _acceptable_surplus;
+    size_t _acceptable_amount;
     std::map<unsigned, std::set<SBG::LIB::SetPiece>> _partitions;
-    std::map<unsigned, unsigned> _current_size_by_partition;
+    std::map<size_t, size_t> _current_size_by_partition;
     SBG::LIB::Set _nodes;
     SBG::LIB::NodeWeight _node_weight;
 };

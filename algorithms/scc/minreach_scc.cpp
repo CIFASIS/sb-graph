@@ -60,10 +60,11 @@ SCCData MinReachSCC::calculate(const DirectedSBG& dsbg)
 
   init(dsbg);
 
-  PWMap rmap;
-  Set Ediff;
+  PWMap rmap = sccStep();
+  rmap.compact();
   Set oldE = dsbg.E();
-  Set deleted_edges;
+  Set Ediff = oldE.difference(_dsbg.E());
+  Set deleted_edges = Ediff;
   do {
     oldE = _dsbg.E();
     rmap = sccStep();

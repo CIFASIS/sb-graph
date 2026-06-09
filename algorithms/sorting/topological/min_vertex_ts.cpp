@@ -87,7 +87,7 @@ PWMap MinVertexTS::repetition(const Set& init_V
       checkSorting(result, dsbg);
     }
   } else {
-    result;
+    result = PWMap{};
   }
 
   return result;

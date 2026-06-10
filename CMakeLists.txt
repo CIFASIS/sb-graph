@@ -4,14 +4,12 @@ project(SBG)
 
 set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/install)
 
-set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
-message("The value of variable cmake is: ${CMAKE_BUILD_TYPE}")
-
-
 # Set default build type to Release if not specified
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
+
+message("The value of variable cmake is: ${CMAKE_BUILD_TYPE}")
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)

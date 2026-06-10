@@ -349,6 +349,11 @@ GainObjectImbalance update_diff(CostMatrixImbalance& cost_matrix, const Partitio
       auto ic_edges = ic_a.cup(ic_b);
 
       int gain = ec_edges.cardinal() - ic_edges.cardinal();
+      // this is a hack for advection2D
+      if (gain <= 0) {
+        cout << "Ignoring " << set_a << " with potential gain " << gain << endl;
+        continue;
+      }
       auto g = GainObjectImbalance(remaining_partition_a.size() - 1, i, gain, ec_a, ic_a, set_a.cardinal(), ec_b, ic_b, set_b.cardinal());
       cost_matrix.push_back(move(g));
       if ((not max_gain_object) or cost_matrix.back().gain > max_gain_object->gain) {
@@ -380,6 +385,11 @@ GainObjectImbalance update_diff(CostMatrixImbalance& cost_matrix, const Partitio
       auto ic_edges = ic_a.cup(ic_b);
 
       int gain = ec_edges.cardinal() - ic_edges.cardinal();
+      // this is a hack for advection2D
+      if (gain <= 0) {
+        cout << "Ignoring " << set_b << " with potential gain " << gain << endl;
+        continue;
+      }
       auto g = GainObjectImbalance(i, remaining_partition_b.size() - 1, gain, ec_a, ic_a, set_a.cardinal(), ec_b, ic_b, set_b.cardinal());
       cost_matrix.push_back(move(g));
       if ((not max_gain_object) or cost_matrix.back().gain > max_gain_object->gain) {

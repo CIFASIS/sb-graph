@@ -85,6 +85,8 @@ class GraphPartitioner {
 
   void readGraphFromSBG();
 
+  void addRow(const SBG::LIB::Set& set);
+
   std::string _name;
   grp_t _edges;
   grp_t _nbr_parts;

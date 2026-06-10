@@ -83,17 +83,36 @@ static void write_node_by_partition(const sbg_partitioner::PartitionMap &partiti
   // expand it and write it
   std::vector<unsigned> partition_by_node;
   std::ofstream output_file(partition_method_name);
-  for (const auto &n : nodes) {
-    for (unsigned v_0 = n.intervals()[0].begin(); v_0 <= n.intervals()[0].end(); v_0++) {
-      SBG::LIB::SetPiece set_piece;
-      set_piece.emplaceBack(SBG::LIB::Interval(v_0, n.intervals()[0].step(), v_0));
-      for (size_t i = 0; i < partitions.size(); i++) {
-        sbg_partitioner::Partition p = partitions.at(i);
-        auto p_set = sbg_partitioner::from_vector(p);
-        if (not SBG::LIB::SET_FACT.createSet(set_piece).intersection(p_set).isEmpty()) {
-          partition_by_node.push_back(i);
-          output_file << std::to_string(i) << std::endl;
-          break;
+  if (sb_graph.V().arity() == 2) {
+    partition_by_node = std::vector<unsigned>(sb_graph.V().cardinal(), 0);
+    size_t row_size = (*sb_graph.V().begin()).intervals()[0].cardinal();
+    for (unsigned i = 0; i < partitions.size(); i++) {
+      for (const auto &n : partitions.at(i)) {
+        for (size_t v_0 = n.intervals()[0].begin(); v_0 <= n.intervals()[0].end(); v_0++) {
+          for (size_t v_1 = n.intervals()[1].begin(); v_1 <= n.intervals()[1].end(); v_1++) {
+            size_t vertex = v_0 * row_size + v_1;
+            partition_by_node[vertex] = i;
+          }
+        }
+      }
+    }
+    for (size_t i = 0; i < partition_by_node.size(); i++) {
+      output_file << std::to_string(partition_by_node[i]) << std::endl;
+    }
+  } else {
+    for (const auto &n : nodes) {
+      for (size_t v_0 = n.intervals()[0].begin(); v_0 <= n.intervals()[0].end(); v_0++) {
+        SBG::LIB::SetPiece set_piece;
+        set_piece.emplaceBack(SBG::LIB::Interval(v_0, n.intervals()[0].step(), v_0));
+        for (size_t i = 0; i < partitions.size(); i++) {
+          sbg_partitioner::Partition p = partitions.at(i);
+          auto p_set = sbg_partitioner::from_vector(p);
+          if (not SBG::LIB::SET_FACT.createSet(set_piece).intersection(p_set).isEmpty()) {
+            partition_by_node.push_back(i);
+            std::cout << i << std::endl;
+            output_file << std::to_string(i) << std::endl;
+            break;
+          }
         }
       }
     }
@@ -199,6 +218,18 @@ void GraphPartitioner::readGraphFromJson()
     std::cout << "Creating graph for air conditioners with controller" << std::endl;
     auto size = get_air_conditioners_controller_size(_name);
     auto temp_sbg_graph = sbg_partitioner::create_air_conditioners_with_controller_graph(size, _nbr_parts);
+
+    {
+      auto new_vertices = sbg_partitioner::split_sets_according_to_relations(temp_sbg_graph);
+      sbg_graph.reset(new SBG::LIB::WeightedSBGraph(new_vertices, SBG::LIB::PW_FACT.createPWMap(), temp_sbg_graph.map1().compact(),
+                                                    temp_sbg_graph.map2().compact(), SBG::LIB::PW_FACT.createPWMap(),
+                                                    SBG::LIB::PW_FACT.createPWMap()));
+    }
+
+  } else if (_name.find("advection2D") != std::string::npos) {
+    std::cout << "Creating graph for air conditioners with controller" << std::endl;
+    auto size = get_air_conditioners_controller_size(_name);
+    auto temp_sbg_graph = sbg_partitioner::create_advection2D_graph(size);
     sbg_graph.reset(new SBG::LIB::WeightedSBGraph(temp_sbg_graph));
   } else {
     std::cout << "Creating graph from file " << _name << std::endl;
@@ -206,20 +237,6 @@ void GraphPartitioner::readGraphFromJson()
     sbg_graph.reset(new SBG::LIB::WeightedSBGraph(temp_sbg_graph));
   }
   std::cout << *sbg_graph << std::endl;
-
-  {
-    auto new_vertices = sbg_partitioner::split_sets_according_to_relations(*sbg_graph);
-    sbg_graph.reset(
-      new SBG::LIB::WeightedSBGraph(
-        new_vertices,
-        SBG::LIB::PW_FACT.createPWMap(),
-        sbg_graph->map1().compact(),
-        sbg_graph->map2().compact(),
-        SBG::LIB::PW_FACT.createPWMap(),
-        SBG::LIB::PW_FACT.createPWMap()
-      )
-    );
-  }
 
   readGraphFromSBG();
 }
@@ -414,9 +431,44 @@ void GraphPartitioner::partitionUsingSBG(sbg_partitioner::PartitionMap &partitio
 {
   std::cout << "GraphPartitioner::partitionUsingSBG" << std::endl;
   partitions = sbg_partitioner::best_initial_partition(*sbg_graph, _nbr_parts, sbg_partitioner::InitialPartitionStrategy::ALL, false);
-  // std::cout << "chosen partition " << partitions << std::endl;
+  //   std::cout << "chosen partition " << partitions << std::endl;
 
   sbg_partitioner::kl_sbg_imbalance_partitioner(*sbg_graph, partitions, _imbalance, false);
+}
+
+void GraphPartitioner::addRow(const SBG::LIB::Set &s)
+{
+  auto edges1 = sbg_graph->map1().preImage(s);
+  auto nodes1 = sbg_graph->map2().image(edges1);
+
+  auto edges2 = sbg_graph->map2().preImage(s);
+  auto nodes2 = sbg_graph->map1().image(edges2);
+
+  auto nodes = nodes1.cup(nodes2);
+  auto nodes_vector = std::vector<int>();
+  nodes_vector.reserve(nodes.cardinal());
+
+  size_t row_size = (*(*sbg_graph->V().begin()).begin()).cardinal();
+
+  for (const auto &n : nodes) {
+    // std::cout << n << ": ";
+    auto it = n.begin();
+    auto n1 = *it;
+    ++it;
+    auto n2 = *it;
+    for (auto row = n1.begin(); row <= n1.end(); row++) {
+      for (auto col = n2.begin(); col <= n2.end(); col++) {
+        // std::cout << row << ", ";
+        nodes_vector.push_back(row_size * row + col);
+      }
+    }
+    // std::cout << std::endl;
+  }
+
+  sort(nodes_vector.begin(), nodes_vector.end());
+
+  for_each(nodes_vector.cbegin(), nodes_vector.cend(), [this](const auto &val) { _adjncy.push_back(int(val)); });
+  _xadj.push_back(_xadj.back() + nodes_vector.size());
 }
 
 void GraphPartitioner::readGraphFromSBG()
@@ -424,49 +476,59 @@ void GraphPartitioner::readGraphFromSBG()
   std::cout << "GraphPartitioner::readGraphFromSBG" << std::endl;
   _nbr_vtxs = sbg_graph->V().cardinal();
   // asumming all setpiece are unidimensional and have step 1
-  int max_node = -1;
-  for (const auto &v : sbg_graph->V()) {
-    if (int(v.begin()[0].end()) > max_node) {
-      max_node = int(v.begin()[0].end());
-    }
-  }
 
   _xadj.push_back(0);
-
-  for (int i = 0; i <= max_node; i++) {
-    auto s = SBG::LIB::SET_FACT.createSet(SBG::LIB::Interval(i, 1, i));
-    auto edges1 = sbg_graph->map1().preImage(s);
-    auto nodes1 = sbg_graph->map2().image(edges1);
-
-    auto edges2 = sbg_graph->map2().preImage(s);
-    auto nodes2 = sbg_graph->map1().image(edges2);
-
-    auto nodes = nodes1.cup(nodes2);
-    auto nodes_vector = std::vector<int>();
-    nodes_vector.reserve(nodes.cardinal());
-
-    for (const auto &n : nodes) {
-      for (int val = n.begin()[0].begin(); val <= n.begin()[0].end(); val++) {
-        nodes_vector.push_back(val);
+  std::cout << "arity: " << sbg_graph->V().arity() << std::endl;
+  if (sbg_graph->V().arity() == 2) {
+    for (const auto &v : sbg_graph->V()) {
+      auto it = v.begin();
+      const auto &v1 = *it;
+      ++it;
+      const auto v2 = *it;
+#pragma omp parallel for collapse(2)
+      for (size_t i = v1.begin(); i <= v1.end(); i++) {
+        for (size_t j = v2.begin(); j <= v2.end(); j++) {
+          auto s = SBG::LIB::SET_FACT.createSet(SBG::LIB::MultiDimInter({SBG::LIB::Interval(i, 1, i), SBG::LIB::Interval(j, 1, j)}));
+          addRow(s);
+        }
       }
     }
+  } else {
+    for (int i = 0; i <= _nbr_vtxs; i++) {
+      auto s = SBG::LIB::SET_FACT.createSet(SBG::LIB::Interval(i, 1, i));
+      auto edges1 = sbg_graph->map1().preImage(s);
+      auto nodes1 = sbg_graph->map2().image(edges1);
 
-    sort(nodes_vector.begin(), nodes_vector.end());
+      auto edges2 = sbg_graph->map2().preImage(s);
+      auto nodes2 = sbg_graph->map1().image(edges2);
 
-    for_each(nodes_vector.cbegin(), nodes_vector.cend(), [this](const auto &val) { _adjncy.push_back(int(val)); });
-    _xadj.push_back(_xadj.back() + nodes_vector.size());
+      auto nodes = nodes1.cup(nodes2);
+      auto nodes_vector = std::vector<int>();
+      nodes_vector.reserve(nodes.cardinal());
+
+      for (const auto &n : nodes) {
+        for (int val = n.begin()[0].begin(); val <= n.begin()[0].end(); val++) {
+          nodes_vector.push_back(val);
+        }
+      }
+
+      sort(nodes_vector.begin(), nodes_vector.end());
+
+      for_each(nodes_vector.cbegin(), nodes_vector.cend(), [this](const auto &val) { _adjncy.push_back(int(val)); });
+      _xadj.push_back(_xadj.back() + nodes_vector.size());
+    }
   }
 
   _edges = grp_t(_adjncy.size());
 
-  /*// @todo: Add logging, for the moment just comment the code.
+  // @todo: Add logging, for the moment just comment the code.
   for (int i = 0; i < _nbr_vtxs; ++i) {
     std::cout << "Node " << i << " Connections: ";
-    for(int j = _xadj[i]; j < _xadj[i+1]; ++j) {
+    for (int j = _xadj[i]; j < _xadj[i + 1]; ++j) {
       std::cout << _adjncy[j] << " ";
     }
-    std:: cout << std::endl;
-  }*/
+    std::cout << std::endl;
+  }
 
   // @todo: Read weights files.
   _vwgt.resize(_nbr_vtxs, 1);

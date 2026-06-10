@@ -214,16 +214,13 @@ ostream& operator<<(ostream& os, const communication_metrics& comm_metrics)
 
 void dump_results(const SBG::LIB::WeightedSBGraph& sb_graph, const std::string& filename, const PartitionMap& partition)
 {
-  cout << "Dump results!" << endl;
   ofstream edges_file(std::filesystem::path(filename).stem().string() + "_edges.txt");
   auto edges = sb_graph.E().compact();
   if (edges.arity() == 2) {
     size_t row_size = (*sb_graph.V().begin()).intervals()[0].cardinal();
-    cout << "row size " << row_size << endl;
     for (auto it = edges.begin(); it != edges.end(); ++it) {
       auto departure = sb_graph.map1().image(SET_FACT.createSet(*it));
       auto arrival = sb_graph.map2().image(SET_FACT.createSet(*it));
-      cout << "departure " << departure << " arrival " << arrival << endl;
       if (departure.size() > 1 or arrival.size() > 1) {
         cout << "we are not ready for this" << endl;
         throw 1;
@@ -246,7 +243,6 @@ void dump_results(const SBG::LIB::WeightedSBGraph& sb_graph, const std::string& 
             size_t dep_val = dep_row_val * row_size + dep_col_val;
             size_t arr_val = arr_row_val * row_size + arr_col_val;
             edges_file << dep_val << " " << arr_val << endl;
-            cout << dep_val << ", " << arr_val << ", " << sb_graph.V().cardinal() << endl;
             assert(sb_graph.V().cardinal() > dep_val);
             assert(sb_graph.V().cardinal() > arr_val);
           }

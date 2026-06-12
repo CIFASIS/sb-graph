@@ -264,24 +264,28 @@ void dump_results(const SBG::LIB::WeightedSBGraph& sb_graph, const std::string& 
   vector<unsigned> partition_vector(sb_graph.V().cardinal(), 0);
   if (sb_graph.V().arity() == 2) {
     size_t row_size = (*sb_graph.V().begin()).intervals()[0].cardinal();
-    // for (unsigned i = 0; i < partition.size(); i++) {
-    //   for (const auto& n : partition.at(i)) {
-    //     for (size_t v_0 = n.intervals()[0].begin(); v_0 <= n.intervals()[0].end(); v_0++) {
-    //       for (size_t v_1 = n.intervals()[1].begin(); v_1 <= n.intervals()[1].end(); v_1++) {
-    //         size_t vertex = v_0 * row_size + v_1;
-    //         partition_vector[vertex] = i;
-    //       }
-    //     }
-    //   }
-    // }
+    for (size_t i = 0; i < partition.size(); i++) {
+      const auto& p = partition.at(i);
+      for (const auto& set : p) {
+        for (const auto sp : set) {
+          for (size_t row = sp.intervals()[0].begin(); row <= sp.intervals()[0].end(); row++) {
+            for (size_t col = sp.intervals()[1].begin(); col <= sp.intervals()[1].end(); col++) {
+              auto val = row * row_size + col;
+              partition_vector[val] = i;
+            }
+          }
+        }
+      }
+    }
   } else {
-    // for (unsigned i = 0; i < partition.size(); i++) {
-    //   for (size_t vert_idx = 0; vert_idx < partition.at(i).size(); vert_idx++) {
-    //     for (size_t val = (*partition.at(i).at(vert_idx).begin()).begin(); val <= (*partition.at(i).at(vert_idx).begin()).end(); val++) {
-    //       partition_vector[val] = i;
-    //     }
-    //   }
-    // }
+    for (unsigned i = 0; i < partition.size(); i++) {
+      for (size_t vert_idx = 0; vert_idx < partition.at(i).size(); vert_idx++) {
+        for (size_t val = (*(*partition.at(i).at(vert_idx).begin()).begin()).begin();
+             val <= (*(*partition.at(i).at(vert_idx).begin()).begin()).end(); val++) {
+          partition_vector[val] = i;
+        }
+      }
+    }
   }
   cout << "parts ok" << endl;
 

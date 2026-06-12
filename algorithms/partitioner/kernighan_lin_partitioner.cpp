@@ -327,78 +327,6 @@ GainObjectImbalance update_diff(CostMatrixImbalance& cost_matrix, const Partitio
   }
   cost_matrix = new_cost_matrix;
 
-  // this is a hack to add an element that was created when a set piece was cut
-  //   if (affected_node_a.second.size() > 1) {
-  //     auto it = affected_node_a.second.begin();
-  //     ++it;
-  //     for (size_t i = 0; i < remaining_partition_b.size(); i++) {
-  //       auto set_a = SET_FACT.createSet(*it);
-  //       auto set_b = remaining_partition_b.at(i);
-  //       if (set_a.cardinal() != set_b.cardinal()) {
-  //         size_t size = min(set_a.cardinal(), set_b.cardinal());
-  //         set_a = cut_interval_by_dimension(set_a, graph.get_node_weights(), size).first;
-  //         set_b = cut_interval_by_dimension(set_b, graph.get_node_weights(), size).first;
-  //       }
-
-  //       auto ic_a = get_set_comm(set_a, graph).intersection(ic_part_a);
-  //       auto ec_a = get_set_comm(set_a, graph).intersection(ec);
-
-  //       auto ic_b = get_set_comm(set_b, graph).intersection(ic_part_b);
-  //       auto ec_b = get_set_comm(set_b, graph).intersection(ec);
-
-  //       auto ec_edges = ec_a.cup(ec_b).difference(ec_a.intersection(ec_b));  // disjointCup does not seem to be working
-  //       auto ic_edges = ic_a.cup(ic_b);
-
-  //       int gain = ec_edges.cardinal() - ic_edges.cardinal();
-  //       // this is a hack for advection2D
-  //     //   if (gain <= 0) {
-  //     //     cout << "Ignoring " << set_a << " with potential gain " << gain << endl;
-  //     //     continue;
-  //     //   }
-  //       auto g = GainObjectImbalance(remaining_partition_a.size() - 1, i, gain, ec_a, ic_a, set_a.cardinal(), ec_b, ic_b,
-  //       set_b.cardinal()); cost_matrix.push_back(move(g)); if ((not max_gain_object) or cost_matrix.back().gain > max_gain_object->gain)
-  //       {
-  //         max_gain_object = cost_matrix.back();
-  //       }
-  //     }
-  //   }
-
-  // this is a hack to add an element that was created when a set piece was cut
-  //   if (affected_node_b.second.size() > 1) {
-  //     auto it = affected_node_b.second.begin();
-  //     ++it;
-  //     for (size_t i = 0; i < remaining_partition_a.size(); i++) {
-  //       auto set_a = remaining_partition_a.at(i);
-  //       auto set_b = SET_FACT.createSet(*it);
-  //       if (set_a.cardinal() != set_b.cardinal()) {
-  //         size_t size = min(set_a.cardinal(), set_b.cardinal());
-  //         set_a = cut_interval_by_dimension(set_a, graph.get_node_weights(), size).first;
-  //         set_b = cut_interval_by_dimension(set_b, graph.get_node_weights(), size).first;
-  //       }
-
-  //       auto ic_a = get_set_comm(set_a, graph).intersection(ic_part_a);
-  //       auto ec_a = get_set_comm(set_a, graph).intersection(ec);
-
-  //       auto ic_b = get_set_comm(set_b, graph).intersection(ic_part_b);
-  //       auto ec_b = get_set_comm(set_b, graph).intersection(ec);
-
-  //       auto ec_edges = ec_a.cup(ec_b).difference(ec_a.intersection(ec_b));  // disjointCup does not seem to be working
-  //       auto ic_edges = ic_a.cup(ic_b);
-
-  //       int gain = ec_edges.cardinal() - ic_edges.cardinal();
-  //       // this is a hack for advection2D
-  //     //   if (gain <= 0) {
-  //     //     cout << "Ignoring " << set_b << " with potential gain " << gain << endl;
-  //     //     continue;
-  //     //   }
-  //       auto g = GainObjectImbalance(i, remaining_partition_b.size() - 1, gain, ec_a, ic_a, set_a.cardinal(), ec_b, ic_b,
-  //       set_b.cardinal()); cost_matrix.push_back(move(g)); if ((not max_gain_object) or cost_matrix.back().gain > max_gain_object->gain)
-  //       {
-  //         max_gain_object = cost_matrix.back();
-  //       }
-  //     }
-  //   }
-
   if (cost_matrix.empty()) {
     logging::sbg_log << "After updating cost matrix is empty, nothing to update." << endl;
     return gain_object;
@@ -475,7 +403,7 @@ int kl_sbg_imbalance(const WeightedSBGraph& graph, ICommunicationCost& cost_matr
 #endif
 
   while ((not a_c.empty()) and (not b_c.empty())) {
-    logging::sbg_log << "inside the while " << a_c << ", " << b_c << " ";
+    logging::sbg_log << "inside the while " << a_c << " -- " << b_c << " ";
     logging::sbg_log << get_partition_size(a_c, node_weights) << ", " << get_partition_size(b_c, node_weights) << endl;
     logging::sbg_log << gm << endl;
 

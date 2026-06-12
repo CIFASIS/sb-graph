@@ -26,7 +26,7 @@
 namespace sbg_partitioner {
 
 
-typedef std::vector<SBG::LIB::SetPiece> Partition;
+typedef std::vector<SBG::LIB::Set> Partition;
 
 typedef std::vector<Partition> PartitionMap;
 

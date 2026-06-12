@@ -61,14 +61,15 @@ GainObjectImbalance generate_gain_object(int a_idx, unsigned partition_a_id, Par
 {
   auto get_edges_by_set = [](const auto& set, auto fun) {
     auto comm_aff = SET_FACT.createSet();
-    for_each(set.begin(), set.end(), [&comm_aff, &fun](const auto sp) { comm_aff = comm_aff.cup(fun(sp)); });
+    comm_aff = comm_aff.cup(fun(set));
+    // for_each(set.begin(), set.end(), [&comm_aff, &fun](const auto sp) { comm_aff = comm_aff.cup(fun(sp)); });
 
     return comm_aff;
   };
 
   //   auto& comm = get_communication_cost();
-  auto set_a = SET_FACT.createSet(partition_a.at(a_idx));
-  auto set_b = SET_FACT.createSet(partition_b.at(b_idx));
+  auto set_a = partition_a.at(a_idx);
+  auto set_b = partition_b.at(b_idx);
   if (set_a.cardinal() != set_b.cardinal()) {
     unsigned size = min(set_b.cardinal(), set_a.cardinal());
     set_a = cut_interval_by_dimension(set_a, {}, size).first;
@@ -125,7 +126,7 @@ pair<pair<Set, Set>, pair<Set, Set>> update_sets(Partition& partition_a, Partiti
                                                  Set& current_moved_partition_b, const GainObjectImbalance& gain_object,
                                                  const WeightedSBGraph& graph)
 {
-  auto node_a = SET_FACT.createSet(partition_a[gain_object.a_idx]);
+  auto node_a = partition_a[gain_object.a_idx];
   size_t partition_size_a = get_node_size(node_a, graph.get_node_weights());
   bool node_a_is_fully_used = partition_size_a == gain_object.size_a;
   Set rest_a = SET_FACT.createSet();
@@ -134,7 +135,7 @@ pair<pair<Set, Set>, pair<Set, Set>> update_sets(Partition& partition_a, Partiti
     logging::sbg_log << "cut_interval_by_dimension " << gain_object.size_a << ": " << node_a << rest_a << endl;
   }
 
-  auto node_b = SET_FACT.createSet(partition_b[gain_object.b_idx]);
+  auto node_b = partition_b[gain_object.b_idx];
   size_t partition_size_b = get_node_size(node_b, graph.get_node_weights());
   bool node_b_is_fully_used = partition_size_b == gain_object.size_b;
   Set rest_b = SET_FACT.createSet();
@@ -145,18 +146,18 @@ pair<pair<Set, Set>, pair<Set, Set>> update_sets(Partition& partition_a, Partiti
 
   auto update_partition = [](Partition& partition, const Set& set) {
     for (Partition::iterator it = partition.begin(); it != partition.end(); ++it) {
-      auto set_p = SET_FACT.createSet(*it);
+      auto set_p = *it;
       if (not set_p.intersection(set).isEmpty()) {
         set_p = set_p.difference(set);
         if (set_p.isEmpty()) {
           partition.erase(it);
         } else {
-          *it = (*set_p.begin());
-          if (set_p.size() > 1) {
-            Set::Iterator next_it = set_p.begin();
-            ++next_it;
-            partition.push_back(*next_it);
-          }
+          *it = set_p;
+          //   if (set_p.size() > 1) {
+          //     Set::Iterator next_it = set_p.begin();
+          //     ++next_it;
+          //     partition.push_back(*next_it);
+          //   }
         }
         break;
       }
@@ -260,8 +261,8 @@ GainObjectImbalance update_diff(CostMatrixImbalance& cost_matrix, const Partitio
     if (((not node_a_fully_used) and g.a_idx == gain_object.a_idx) or ((not node_b_fully_used) and g.b_idx == gain_object.b_idx)) {
       // node a was not fully used so we need to update ec and ic
 
-      auto set_a = SET_FACT.createSet(remaining_partition_a.at(g.a_idx));
-      auto set_b = SET_FACT.createSet(remaining_partition_b.at(g.b_idx));
+      auto set_a = remaining_partition_a.at(g.a_idx);
+      auto set_b = remaining_partition_b.at(g.b_idx);
       if (set_a.cardinal() != set_b.cardinal()) {
         size_t size = min(set_a.cardinal(), set_b.cardinal());
         set_a = cut_interval_by_dimension(set_a, graph.get_node_weights(), size).first;
@@ -289,8 +290,8 @@ GainObjectImbalance update_diff(CostMatrixImbalance& cost_matrix, const Partitio
     // recompute gain
     auto get_edges_by_set = [&graph](const auto& set) {
       auto& comm = get_communication_cost();
-      auto comm_aff = SET_FACT.createSet();
-      for_each(set.begin(), set.end(), [&comm_aff, &comm](const auto sp) { comm_aff = comm_aff.cup(comm.get_set_piece_edges(sp)); });
+      auto comm_aff = comm.get_set_piece_edges(set);
+      //   for_each(set.begin(), set.end(), [&comm_aff, &comm](const auto sp) { comm_aff = comm_aff.cup(comm.get_set_piece_edges(sp)); });
 
       return comm_aff;
     };
@@ -301,14 +302,14 @@ GainObjectImbalance update_diff(CostMatrixImbalance& cost_matrix, const Partitio
     // cout << "comm a: " << affected_node_a.first << " " << comm_aff_a << endl;
     // cout << "comm b: " << affected_node_b.first << " " << comm_aff_b << endl;
 
-    auto a = SET_FACT.createSet(remaining_partition_a.at(g.a_idx));
+    auto a = remaining_partition_a.at(g.a_idx);
     auto set_g_a = cut_interval_by_dimension(a, graph.get_node_weights(), g.size_a).first;
     auto comm_a = get_edges_by_set(set_g_a);
     // cout << "actual comm of" << set_g_a << ": " << comm_a << endl;
     g.ec_nodes_a = g.ec_nodes_a.difference(comm_aff_b).cup(comm_a.intersection(comm_aff_a));
     g.ic_nodes_a = g.ic_nodes_a.difference(comm_aff_a).cup(comm_a.intersection(comm_aff_b));
 
-    auto b = SET_FACT.createSet(remaining_partition_b.at(g.b_idx));
+    auto b = remaining_partition_b.at(g.b_idx);
     auto set_g_b = cut_interval_by_dimension(b, graph.get_node_weights(), g.size_b).first;
     auto comm_b = get_edges_by_set(set_g_b);
     // cout << "actual comm of "<< set_g_b << ": " << comm_b << endl;
@@ -327,76 +328,76 @@ GainObjectImbalance update_diff(CostMatrixImbalance& cost_matrix, const Partitio
   cost_matrix = new_cost_matrix;
 
   // this is a hack to add an element that was created when a set piece was cut
-  if (affected_node_a.second.size() > 1) {
-    auto it = affected_node_a.second.begin();
-    ++it;
-    for (size_t i = 0; i < remaining_partition_b.size(); i++) {
-      auto set_a = SET_FACT.createSet(*it);
-      auto set_b = SET_FACT.createSet(remaining_partition_b.at(i));
-      if (set_a.cardinal() != set_b.cardinal()) {
-        size_t size = min(set_a.cardinal(), set_b.cardinal());
-        set_a = cut_interval_by_dimension(set_a, graph.get_node_weights(), size).first;
-        set_b = cut_interval_by_dimension(set_b, graph.get_node_weights(), size).first;
-      }
+  //   if (affected_node_a.second.size() > 1) {
+  //     auto it = affected_node_a.second.begin();
+  //     ++it;
+  //     for (size_t i = 0; i < remaining_partition_b.size(); i++) {
+  //       auto set_a = SET_FACT.createSet(*it);
+  //       auto set_b = remaining_partition_b.at(i);
+  //       if (set_a.cardinal() != set_b.cardinal()) {
+  //         size_t size = min(set_a.cardinal(), set_b.cardinal());
+  //         set_a = cut_interval_by_dimension(set_a, graph.get_node_weights(), size).first;
+  //         set_b = cut_interval_by_dimension(set_b, graph.get_node_weights(), size).first;
+  //       }
 
-      auto ic_a = get_set_comm(set_a, graph).intersection(ic_part_a);
-      auto ec_a = get_set_comm(set_a, graph).intersection(ec);
+  //       auto ic_a = get_set_comm(set_a, graph).intersection(ic_part_a);
+  //       auto ec_a = get_set_comm(set_a, graph).intersection(ec);
 
-      auto ic_b = get_set_comm(set_b, graph).intersection(ic_part_b);
-      auto ec_b = get_set_comm(set_b, graph).intersection(ec);
+  //       auto ic_b = get_set_comm(set_b, graph).intersection(ic_part_b);
+  //       auto ec_b = get_set_comm(set_b, graph).intersection(ec);
 
-      auto ec_edges = ec_a.cup(ec_b).difference(ec_a.intersection(ec_b));  // disjointCup does not seem to be working
-      auto ic_edges = ic_a.cup(ic_b);
+  //       auto ec_edges = ec_a.cup(ec_b).difference(ec_a.intersection(ec_b));  // disjointCup does not seem to be working
+  //       auto ic_edges = ic_a.cup(ic_b);
 
-      int gain = ec_edges.cardinal() - ic_edges.cardinal();
-      // this is a hack for advection2D
-      if (gain <= 0) {
-        cout << "Ignoring " << set_a << " with potential gain " << gain << endl;
-        continue;
-      }
-      auto g = GainObjectImbalance(remaining_partition_a.size() - 1, i, gain, ec_a, ic_a, set_a.cardinal(), ec_b, ic_b, set_b.cardinal());
-      cost_matrix.push_back(move(g));
-      if ((not max_gain_object) or cost_matrix.back().gain > max_gain_object->gain) {
-        max_gain_object = cost_matrix.back();
-      }
-    }
-  }
+  //       int gain = ec_edges.cardinal() - ic_edges.cardinal();
+  //       // this is a hack for advection2D
+  //     //   if (gain <= 0) {
+  //     //     cout << "Ignoring " << set_a << " with potential gain " << gain << endl;
+  //     //     continue;
+  //     //   }
+  //       auto g = GainObjectImbalance(remaining_partition_a.size() - 1, i, gain, ec_a, ic_a, set_a.cardinal(), ec_b, ic_b,
+  //       set_b.cardinal()); cost_matrix.push_back(move(g)); if ((not max_gain_object) or cost_matrix.back().gain > max_gain_object->gain)
+  //       {
+  //         max_gain_object = cost_matrix.back();
+  //       }
+  //     }
+  //   }
 
   // this is a hack to add an element that was created when a set piece was cut
-  if (affected_node_b.second.size() > 1) {
-    auto it = affected_node_b.second.begin();
-    ++it;
-    for (size_t i = 0; i < remaining_partition_a.size(); i++) {
-      auto set_a = SET_FACT.createSet(remaining_partition_a.at(i));
-      auto set_b = SET_FACT.createSet(*it);
-      if (set_a.cardinal() != set_b.cardinal()) {
-        size_t size = min(set_a.cardinal(), set_b.cardinal());
-        set_a = cut_interval_by_dimension(set_a, graph.get_node_weights(), size).first;
-        set_b = cut_interval_by_dimension(set_b, graph.get_node_weights(), size).first;
-      }
+  //   if (affected_node_b.second.size() > 1) {
+  //     auto it = affected_node_b.second.begin();
+  //     ++it;
+  //     for (size_t i = 0; i < remaining_partition_a.size(); i++) {
+  //       auto set_a = remaining_partition_a.at(i);
+  //       auto set_b = SET_FACT.createSet(*it);
+  //       if (set_a.cardinal() != set_b.cardinal()) {
+  //         size_t size = min(set_a.cardinal(), set_b.cardinal());
+  //         set_a = cut_interval_by_dimension(set_a, graph.get_node_weights(), size).first;
+  //         set_b = cut_interval_by_dimension(set_b, graph.get_node_weights(), size).first;
+  //       }
 
-      auto ic_a = get_set_comm(set_a, graph).intersection(ic_part_a);
-      auto ec_a = get_set_comm(set_a, graph).intersection(ec);
+  //       auto ic_a = get_set_comm(set_a, graph).intersection(ic_part_a);
+  //       auto ec_a = get_set_comm(set_a, graph).intersection(ec);
 
-      auto ic_b = get_set_comm(set_b, graph).intersection(ic_part_b);
-      auto ec_b = get_set_comm(set_b, graph).intersection(ec);
+  //       auto ic_b = get_set_comm(set_b, graph).intersection(ic_part_b);
+  //       auto ec_b = get_set_comm(set_b, graph).intersection(ec);
 
-      auto ec_edges = ec_a.cup(ec_b).difference(ec_a.intersection(ec_b));  // disjointCup does not seem to be working
-      auto ic_edges = ic_a.cup(ic_b);
+  //       auto ec_edges = ec_a.cup(ec_b).difference(ec_a.intersection(ec_b));  // disjointCup does not seem to be working
+  //       auto ic_edges = ic_a.cup(ic_b);
 
-      int gain = ec_edges.cardinal() - ic_edges.cardinal();
-      // this is a hack for advection2D
-      if (gain <= 0) {
-        cout << "Ignoring " << set_b << " with potential gain " << gain << endl;
-        continue;
-      }
-      auto g = GainObjectImbalance(i, remaining_partition_b.size() - 1, gain, ec_a, ic_a, set_a.cardinal(), ec_b, ic_b, set_b.cardinal());
-      cost_matrix.push_back(move(g));
-      if ((not max_gain_object) or cost_matrix.back().gain > max_gain_object->gain) {
-        max_gain_object = cost_matrix.back();
-      }
-    }
-  }
+  //       int gain = ec_edges.cardinal() - ic_edges.cardinal();
+  //       // this is a hack for advection2D
+  //     //   if (gain <= 0) {
+  //     //     cout << "Ignoring " << set_b << " with potential gain " << gain << endl;
+  //     //     continue;
+  //     //   }
+  //       auto g = GainObjectImbalance(i, remaining_partition_b.size() - 1, gain, ec_a, ic_a, set_a.cardinal(), ec_b, ic_b,
+  //       set_b.cardinal()); cost_matrix.push_back(move(g)); if ((not max_gain_object) or cost_matrix.back().gain > max_gain_object->gain)
+  //       {
+  //         max_gain_object = cost_matrix.back();
+  //       }
+  //     }
+  //   }
 
   if (cost_matrix.empty()) {
     logging::sbg_log << "After updating cost matrix is empty, nothing to update." << endl;
@@ -517,12 +518,14 @@ int kl_sbg_imbalance(const WeightedSBGraph& graph, ICommunicationCost& cost_matr
       auto partition_a_set = from_vector(a_c).cup(b_v);
       flatten_set(partition_a_set, graph);
       Partition temp_partition_a;
-      for_each(partition_a_set.begin(), partition_a_set.end(), [&temp_partition_a](auto s) { temp_partition_a.push_back(s); });
+      for_each(partition_a_set.begin(), partition_a_set.end(),
+               [&temp_partition_a](auto s) { temp_partition_a.push_back(SET_FACT.createSet(s)); });
 
       auto partition_b_set = from_vector(b_c).cup(a_v);
       flatten_set(partition_b_set, graph);
       Partition temp_partition_b;
-      for_each(partition_b_set.begin(), partition_b_set.end(), [&temp_partition_b](auto s) { temp_partition_b.push_back(s); });
+      for_each(partition_b_set.begin(), partition_b_set.end(),
+               [&temp_partition_b](auto s) { temp_partition_b.push_back(SET_FACT.createSet(s)); });
 
       int current_edge_cut = get_me_edgecut(temp_partition_a, temp_partition_b, graph).cardinal();
       int expected_gain = prev_edge_cut - current_edge_cut;
@@ -542,14 +545,14 @@ int kl_sbg_imbalance(const WeightedSBGraph& graph, ICommunicationCost& cost_matr
     partition_a_set = partition_a_set.cup(max_par_sum_set.second);
     flatten_set(partition_a_set, graph);
     partition_a.clear();
-    for_each(partition_a_set.begin(), partition_a_set.end(), [&partition_a](auto s) { partition_a.push_back(s); });
+    for_each(partition_a_set.begin(), partition_a_set.end(), [&partition_a](auto s) { partition_a.push_back(SET_FACT.createSet(s)); });
 
     auto partition_b_set = from_vector(partition_b);
     partition_b_set = partition_b_set.difference(max_par_sum_set.second);
     partition_b_set = partition_b_set.cup(max_par_sum_set.first);
     flatten_set(partition_b_set, graph);
     partition_b.clear();
-    for_each(partition_b_set.begin(), partition_b_set.end(), [&partition_b](auto s) { partition_b.push_back(s); });
+    for_each(partition_b_set.begin(), partition_b_set.end(), [&partition_b](auto s) { partition_b.push_back(SET_FACT.createSet(s)); });
   }
 
 #if PARTITION_IMBALANCE_DEBUG

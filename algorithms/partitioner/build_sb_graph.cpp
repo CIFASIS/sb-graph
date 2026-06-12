@@ -778,7 +778,7 @@ size_t get_node_size(const Set& node, const NodeWeight& node_weight)
   return size;
 }
 
-size_t get_partition_size(const vector<SetPiece>& node, const NodeWeight& node_weight)
+size_t get_partition_size(const vector<Set>& node, const NodeWeight& node_weight)
 {
   size_t size = 0;
   for (const auto& set_piece : node) {
@@ -859,7 +859,10 @@ void flatten_set(Set& set, const WeightedSBGraph& graph)
     }
 
     set_piece_this_node_vector = canonize(set_piece_this_node_vector);
-    new_partition = new_partition.cup(from_vector(set_piece_this_node_vector));
+    vector<Set> set_this_vector_nodes;
+    for_each(set_piece_this_node_vector.begin(), set_piece_this_node_vector.end(),
+             [&set_this_vector_nodes](const auto& sp) { set_this_vector_nodes.push_back(SET_FACT.createSet(sp)); });
+    new_partition = new_partition.cup(from_vector(set_this_vector_nodes));
   }
 
   auto diff = set.difference(new_partition);

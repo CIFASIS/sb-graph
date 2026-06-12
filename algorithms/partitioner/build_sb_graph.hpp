@@ -61,7 +61,7 @@ size_t get_node_size(const SBG::LIB::Set& node, const SBG::LIB::NodeWeight& node
 
 
 /// Takes each set piece of the partition and calculates its size, it returns the sum of them
-size_t get_partition_size(const std::vector<SBG::LIB::SetPiece>& node, const SBG::LIB::NodeWeight& node_weight);
+size_t get_partition_size(const std::vector<SBG::LIB::Set>& node, const SBG::LIB::NodeWeight& node_weight);
 
 
 /// Takes a set of edges and compute its cost.
@@ -107,6 +107,20 @@ int get_set_cost(const SBG::LIB::SetPiece& set_piece, const T& costs)
 {
   int weight = 1;
   auto set = SBG::LIB::SET_FACT.createSet(set_piece);
+  for (const auto& [cost_set, w] : costs) {
+    if (set.intersection(cost_set).size() > 0) {
+      weight = costs.at(cost_set);
+    }
+  }
+
+  return weight;
+}
+
+
+template<typename T>
+int get_set_cost(const SBG::LIB::Set& set, const T& costs)
+{
+  int weight = 1;
   for (const auto& [cost_set, w] : costs) {
     if (set.intersection(cost_set).size() > 0) {
       weight = costs.at(cost_set);

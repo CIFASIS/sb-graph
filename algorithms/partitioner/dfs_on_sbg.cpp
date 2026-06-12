@@ -43,13 +43,23 @@ void initialize_partitioning(SBG::LIB::WeightedSBGraph& graph, unsigned number_o
 
 void add_strategy(PartitionStrategyPtr&& strategy, bool pre_order) { sort_object.add_partition_strategy(move(strategy), pre_order); }
 
-vector<map<unsigned, set<SetPiece>>> partitionate()
+vector<map<unsigned, set<Set, setCompare>>> partitionate()
 {
   assert(initialized and "Partioning was not inialized");
 
   sort_object.start();
   sort_object.iterate();
-  vector<map<unsigned, set<SetPiece>>> partitions = sort_object.partitions();
+  vector<map<unsigned, set<Set, setCompare>>> partitions = sort_object.partitions();
+  for (size_t i = 0; i < partitions.size(); i++) {
+    const auto& part = partitions.at(i);
+    for (const auto& [id, p] : part) {
+      cout << id << ": ";
+      for (const auto& s : p) {
+        cout << s << " ";
+      }
+      cout << endl;
+    }
+  }
 
   return partitions;
 }
@@ -68,6 +78,7 @@ void DFS::initialize_adjacents()
   // Fill adjacents
   for (auto it = _nodes.begin(); it != _nodes.end(); ++it) {
     const auto incoming_node = *it;
+    std::cout << *it << std::endl;
 
     auto incoming_node_set = SET_FACT.createSet(incoming_node);
 
@@ -186,9 +197,9 @@ void DFS::fill_current_node_stack()
   }
 }
 
-vector<map<unsigned, set<SetPiece>>> DFS::partitions() const
+vector<map<unsigned, set<Set, setCompare>>> DFS::partitions() const
 {
-  vector<map<unsigned, set<SetPiece>>> partitions;
+  vector<map<unsigned, set<Set, setCompare>>> partitions;
 
   for (size_t i = 0; i < _partition_strategy_pre_order.size(); i++) {
     partitions.push_back(_partition_strategy_pre_order[i]->partitions());
@@ -227,7 +238,7 @@ void DFS::add_it_definitely(node_identifier id)
 
 void DFS::add_it_to_a_partition(node_identifier id, bool pre_order)
 {
-  auto v = *id;
+  auto v = SET_FACT.createSet(*id);
   if (pre_order) {
     for (size_t i = 0; i < _partition_strategy_pre_order.size(); i++) {
       (*_partition_strategy_pre_order[i])(v);

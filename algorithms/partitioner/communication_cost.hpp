@@ -76,7 +76,7 @@ public:
      * @note the member function is non-const since _ec_cost_by_interval and _ic_cost_by_interval may be updated to prevent to be recomputed.
      */
 
-    virtual SBG::LIB::Set get_ec_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes) = 0;
+    virtual SBG::LIB::Set get_ec_by_interval(unsigned partition_id, const SBG::LIB::Set& nodes) = 0;
 
     /**
      * It returns the edges that communicate the set piece nodes with other nodes in partition `partition_id`.
@@ -87,10 +87,10 @@ public:
      * @return Internal edges of the given set piece.
      * @note the member function is non-const since _ec_cost_by_interval and _ic_cost_by_interval may be updated to prevent to be recomputed.
      */
-    virtual SBG::LIB::Set get_ic_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes) = 0;
+    virtual SBG::LIB::Set get_ic_by_interval(unsigned partition_id, const SBG::LIB::Set& nodes) = 0;
 
 
-    virtual SBG::LIB::Set get_set_piece_edges(const SBG::LIB::SetPiece& nodes) = 0;
+    virtual SBG::LIB::Set get_set_piece_edges(const SBG::LIB::Set& nodes) = 0;
 
     virtual void clear_communication_cache() = 0;
 };
@@ -112,11 +112,11 @@ public:
 
     SBG::LIB::Set get_ec_by_partition_id(unsigned partition_id)  override; // non-const since _cost_by_partition may be updated
 
-    SBG::LIB::Set get_ec_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes)  override;
+    SBG::LIB::Set get_ec_by_interval(unsigned partition_id, const SBG::LIB::Set& nodes)  override;
 
-    SBG::LIB::Set get_ic_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes) override;
+    SBG::LIB::Set get_ic_by_interval(unsigned partition_id, const SBG::LIB::Set& nodes) override;
 
-    SBG::LIB::Set get_set_piece_edges(const SBG::LIB::SetPiece& nodes) override;
+    SBG::LIB::Set get_set_piece_edges(const SBG::LIB::Set& nodes) override;
 
     void clear_communication_cache() override;
 
@@ -125,18 +125,18 @@ private:
     PartitionMap _partitions;
 
     // since communication is independent from the partitions, we can share it between many objects
-    static std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SetPieceHash> _communication_by_set_piece;
-    static std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SetPieceHash> _communication_by_set_piece_with_common_edges;
-    static std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SetPieceHash> _inner_edges;
+    static std::unordered_map<SBG::LIB::Set, SBG::LIB::Set, SetHash> _communication_by_set_piece;
+    static std::unordered_map<SBG::LIB::Set, SBG::LIB::Set, SetHash> _communication_by_set_piece_with_common_edges;
+    static std::unordered_map<SBG::LIB::Set, SBG::LIB::Set, SetHash> _inner_edges;
     std::vector<std::pair<SBG::LIB::Set, SBG::LIB::Set>> _cost_by_partition;
-    std::vector<std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SetPieceHash>> _ec_cost_by_interval;
-    std::vector<std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SetPieceHash>> _ic_cost_by_interval;
+    std::vector<std::unordered_map<SBG::LIB::Set, SBG::LIB::Set, SetHash>> _ec_cost_by_interval;
+    std::vector<std::unordered_map<SBG::LIB::Set, SBG::LIB::Set, SetHash>> _ic_cost_by_interval;
 
     void initialize();
 
     std::pair<SBG::LIB::Set, SBG::LIB::Set> get_part_communication(unsigned id);
 
-    std::pair<SBG::LIB::Set, SBG::LIB::Set> compute_ec_ic(unsigned partition_id, const SBG::LIB::SetPiece& nodes);
+    std::pair<SBG::LIB::Set, SBG::LIB::Set> compute_ec_ic(unsigned partition_id, const SBG::LIB::Set& nodes);
 };
 
 
@@ -153,11 +153,11 @@ public:
 
     SBG::LIB::Set get_ec_by_partition_id(unsigned partition_id) override; // non-const since _cost_by_partition may be updated
 
-    SBG::LIB::Set get_ec_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes) override;
+    SBG::LIB::Set get_ec_by_interval(unsigned partition_id, const SBG::LIB::Set& nodes) override;
 
-    SBG::LIB::Set get_ic_by_interval(unsigned partition_id, const SBG::LIB::SetPiece& nodes) override;
+    SBG::LIB::Set get_ic_by_interval(unsigned partition_id, const SBG::LIB::Set& nodes) override;
 
-    SBG::LIB::Set get_set_piece_edges(const SBG::LIB::SetPiece& nodes) override;
+    SBG::LIB::Set get_set_piece_edges(const SBG::LIB::Set& nodes) override;
 
     void clear_communication_cache() override;
 
@@ -167,38 +167,38 @@ private:
 };
 
 
-class CommunicationCostCC {
-public:
-    CommunicationCostCC(const SBG::LIB::WeightedSBGraph& graph, const using_cc::SetPointers& nodes);
+// class CommunicationCostCC {
+// public:
+//     CommunicationCostCC(const SBG::LIB::WeightedSBGraph& graph, const using_cc::SetPointers& nodes);
 
-    ~CommunicationCostCC() = default;
+//     ~CommunicationCostCC() = default;
 
-    unsigned get_communication(const SBG::LIB::SetPiece& a, const SBG::LIB::SetPiece& b) const;
-    unsigned get_communication(unsigned a_idx, unsigned b_idx) const;
-    unsigned get_communication(unsigned idx) const;
-    unsigned get_communication(const SBG::LIB::SetPiece& a) const;
+//     unsigned get_communication(const SBG::LIB::Set& a, const SBG::LIB::Set& b) const;
+//     unsigned get_communication(unsigned a_idx, unsigned b_idx) const;
+//     unsigned get_communication(unsigned idx) const;
+//     unsigned get_communication(const SBG::LIB::Set& a) const;
 
-    SBG::LIB::Set get_set_piece_edges(const SBG::LIB::SetPiece& nodes);
+//     SBG::LIB::Set get_set_piece_edges(const SBG::LIB::Set& nodes);
 
-    unsigned get_index(const SBG::LIB::SetPiece& nodes) const;
+//     unsigned get_index(const SBG::LIB::Set& nodes) const;
 
-private:
-    void initialize();
+// private:
+//     void initialize();
 
-    using AdjacencyMatrix = std::vector<std::vector<unsigned>>;
+//     using AdjacencyMatrix = std::vector<std::vector<unsigned>>;
 
-    const SBG::LIB::WeightedSBGraph& _graph; // read-only members
+//     const SBG::LIB::WeightedSBGraph& _graph; // read-only members
 
-    using_cc::SetPointers _sorted_nodes;
-    SBG::LIB::PWMap _set_piece_indices;
-    AdjacencyMatrix _adjacency_matrix;
-    std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SetPieceHash> _communication_by_set_piece;
+//     using_cc::SetPointers _sorted_nodes;
+//     SBG::LIB::PWMap _set_piece_indices;
+//     AdjacencyMatrix _adjacency_matrix;
+//     std::unordered_map<SBG::LIB::Set, SBG::LIB::Set, SetHash> _communication_by_set_piece;
 
-    std::vector<std::pair<SBG::LIB::Set, SBG::LIB::Set>> _cost_by_partition;
-    std::vector<std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SetPieceHash>> _ec_cost_by_interval;
-    std::vector<std::unordered_map<SBG::LIB::SetPiece, SBG::LIB::Set, SetPieceHash>> _ic_cost_by_interval;
+//     std::vector<std::pair<SBG::LIB::Set, SBG::LIB::Set>> _cost_by_partition;
+//     std::vector<std::unordered_map<SBG::LIB::Set, SBG::LIB::Set, SetHash>> _ec_cost_by_interval;
+//     std::vector<std::unordered_map<SBG::LIB::Set, SBG::LIB::Set, SetHash>> _ic_cost_by_interval;
 
-};
+// };
 
 
 CommunicationCostPtr create_communication_cost(const SBG::LIB::WeightedSBGraph& graph, PartitionMap partitions, bool multithreading_enabled);

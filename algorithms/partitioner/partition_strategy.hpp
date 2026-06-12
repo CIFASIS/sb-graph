@@ -31,6 +31,7 @@
 
 namespace sbg_partitioner {
 
+
 class PartitionStrategy
 {
 public:
@@ -38,9 +39,9 @@ public:
 
     virtual ~PartitionStrategy() = default;
 
-    virtual void operator() (const SBG::LIB::SetPiece& node) = 0;
+    virtual void operator() (const SBG::LIB::Set& node) = 0;
 
-    virtual std::map<unsigned, std::set<SBG::LIB::SetPiece>> partitions() const = 0;
+    virtual std::map<unsigned, std::set<SBG::LIB::Set, SBG::LIB::setCompare>> partitions() const = 0;
 };
 
 class PartitionStrategyGreedy : public PartitionStrategy
@@ -48,11 +49,11 @@ class PartitionStrategyGreedy : public PartitionStrategy
 public:
     PartitionStrategyGreedy(unsigned number_of_partitions, const SBG::LIB::WeightedSBGraph graph);
 
-    virtual ~PartitionStrategyGreedy() = default;
+    ~PartitionStrategyGreedy() = default;
 
-    virtual void operator() (const SBG::LIB::SetPiece& node);
+    void operator() (const SBG::LIB::Set& node);
 
-    virtual std::map<unsigned, std::set<SBG::LIB::SetPiece>> partitions() const;
+    std::map<unsigned, std::set<SBG::LIB::Set, SBG::LIB::setCompare>> partitions() const;
 
 private:
     unsigned _number_of_partitions;
@@ -60,7 +61,7 @@ private:
     unsigned _total_of_nodes;
     unsigned _acceptable_surplus;
     unsigned _acceptable_amount;
-    std::map<unsigned, std::set<SBG::LIB::SetPiece>> _partitions;
+    std::map<unsigned, std::set<SBG::LIB::Set, SBG::LIB::setCompare>> _partitions;
     size_t _expected_size_by_partition;
     std::map<unsigned, size_t> _current_size_by_partition;
     SBG::LIB::NodeWeight _node_weight;
@@ -80,11 +81,11 @@ class PartitionStrategyDistributive : public PartitionStrategy
 public:
     PartitionStrategyDistributive(unsigned number_of_partitions, const SBG::LIB::WeightedSBGraph graph);
 
-    virtual ~PartitionStrategyDistributive() = default;
+    ~PartitionStrategyDistributive() = default;
 
-    virtual void operator() (const SBG::LIB::SetPiece& node);
+    void operator() (const SBG::LIB::Set& node);
 
-    virtual std::map<unsigned, std::set<SBG::LIB::SetPiece>> partitions() const;
+    std::map<unsigned, std::set<SBG::LIB::Set, SBG::LIB::setCompare>> partitions() const;
 
 private:
     unsigned _number_of_partitions;
@@ -92,7 +93,7 @@ private:
     size_t _total_of_nodes;
     size_t _acceptable_surplus;
     size_t _acceptable_amount;
-    std::map<unsigned, std::set<SBG::LIB::SetPiece>> _partitions;
+    std::map<unsigned, std::set<SBG::LIB::Set, SBG::LIB::setCompare>> _partitions;
     std::map<size_t, size_t> _current_size_by_partition;
     SBG::LIB::Set _nodes;
     SBG::LIB::NodeWeight _node_weight;

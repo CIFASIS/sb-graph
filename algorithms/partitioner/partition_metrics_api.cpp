@@ -90,34 +90,35 @@ int communication_volume_one_dim(const PartitionMap& partitions, const SetPiece&
   return acc;
 }
 
+// ver
 void write_node_by_partition(const PartitionMap& partitions, const WeightedSBGraph& sb_graph)
 {
-  Partition nodes;
-  nodes.reserve(sb_graph.V().size());
-  for (auto v : sb_graph.V()) {
-    nodes.push_back(v);
-  }
+  //   Partition nodes;
+  //   nodes.reserve(sb_graph.V().size());
+  //   for (auto v : sb_graph.V()) {
+  //     nodes.push_back(v);
+  //   }
 
-  sort_partition_intervals(nodes);
+  //   sort_partition_intervals(nodes);
 
-  // expand it and write it
-  vector<unsigned> partition_by_node;
-  ofstream output_file("output.txt");
-  for (const auto& n : nodes) {
-    for (unsigned v_0 = n.intervals()[0].begin(); v_0 <= n.intervals()[0].end(); v_0++) {
-      SetPiece set_piece;
-      set_piece.emplaceBack(Interval(v_0, n.intervals()[0].step(), v_0));
-      for (size_t i = 0; i < partitions.size(); i++) {
-        Partition p = partitions.at(i);
-        auto p_set = from_vector(p);
-        if (not SET_FACT.createSet(set_piece).intersection(p_set).isEmpty()) {
-          partition_by_node.push_back(i);
-          output_file << to_string(i) << endl;
-          break;
-        }
-      }
-    }
-  }
+  //   // expand it and write it
+  //   vector<unsigned> partition_by_node;
+  //   ofstream output_file("output.txt");
+  //   for (const auto& n : nodes) {
+  //     for (unsigned v_0 = n.intervals()[0].begin(); v_0 <= n.intervals()[0].end(); v_0++) {
+  //       SetPiece set_piece;
+  //       set_piece.emplaceBack(Interval(v_0, n.intervals()[0].step(), v_0));
+  //       for (size_t i = 0; i < partitions.size(); i++) {
+  //         Partition p = partitions.at(i);
+  //         auto p_set = from_vector(p);
+  //         if (not SET_FACT.createSet(set_piece).intersection(p_set).isEmpty()) {
+  //           partition_by_node.push_back(i);
+  //           output_file << to_string(i) << endl;
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   }
 }
 
 }  // namespace
@@ -141,6 +142,7 @@ int edge_cut(const PartitionMap& partitions, const WeightedSBGraph& sb_graph)
   return weight;
 }
 
+// ver
 pair<int, int> communication_volume(const PartitionMap& partitions, const WeightedSBGraph& sb_graph)
 {
   int comm_vol = 0;
@@ -150,7 +152,7 @@ pair<int, int> communication_volume(const PartitionMap& partitions, const Weight
     const auto& p = partitions.at(i);
 
     for (const auto& v : p) {
-      communication_volume_partition += communication_volume_one_dim(partitions, v, sb_graph, i);
+      //   communication_volume_partition += communication_volume_one_dim(partitions, v, sb_graph, i);
     }
 
     comm_vol += communication_volume_partition;
@@ -177,6 +179,7 @@ float maximum_imbalance(const PartitionMap& partitions, const WeightedSBGraph& s
   return max_imbalance;
 }
 
+// ver
 PartitionMap read_partition_from_file(const string& name, const WeightedSBGraph& sb_graph, int number_of_partitions)
 {
   ifstream file(name);
@@ -188,7 +191,7 @@ PartitionMap read_partition_from_file(const string& name, const WeightedSBGraph&
     // 'line' variable.
     int node_counter = 0;
     while (getline(file, line)) {
-      partitions[stoi(line)].push_back({Interval(node_counter, 1, node_counter)});
+      //   partitions[stoi(line)].push_back({Interval(node_counter, 1, node_counter)});
       node_counter++;
     }
 
@@ -261,24 +264,24 @@ void dump_results(const SBG::LIB::WeightedSBGraph& sb_graph, const std::string& 
   vector<unsigned> partition_vector(sb_graph.V().cardinal(), 0);
   if (sb_graph.V().arity() == 2) {
     size_t row_size = (*sb_graph.V().begin()).intervals()[0].cardinal();
-    for (unsigned i = 0; i < partition.size(); i++) {
-      for (const auto& n : partition.at(i)) {
-        for (size_t v_0 = n.intervals()[0].begin(); v_0 <= n.intervals()[0].end(); v_0++) {
-          for (size_t v_1 = n.intervals()[1].begin(); v_1 <= n.intervals()[1].end(); v_1++) {
-            size_t vertex = v_0 * row_size + v_1;
-            partition_vector[vertex] = i;
-          }
-        }
-      }
-    }
+    // for (unsigned i = 0; i < partition.size(); i++) {
+    //   for (const auto& n : partition.at(i)) {
+    //     for (size_t v_0 = n.intervals()[0].begin(); v_0 <= n.intervals()[0].end(); v_0++) {
+    //       for (size_t v_1 = n.intervals()[1].begin(); v_1 <= n.intervals()[1].end(); v_1++) {
+    //         size_t vertex = v_0 * row_size + v_1;
+    //         partition_vector[vertex] = i;
+    //       }
+    //     }
+    //   }
+    // }
   } else {
-    for (unsigned i = 0; i < partition.size(); i++) {
-      for (size_t vert_idx = 0; vert_idx < partition.at(i).size(); vert_idx++) {
-        for (size_t val = (*partition.at(i).at(vert_idx).begin()).begin(); val <= (*partition.at(i).at(vert_idx).begin()).end(); val++) {
-          partition_vector[val] = i;
-        }
-      }
-    }
+    // for (unsigned i = 0; i < partition.size(); i++) {
+    //   for (size_t vert_idx = 0; vert_idx < partition.at(i).size(); vert_idx++) {
+    //     for (size_t val = (*partition.at(i).at(vert_idx).begin()).begin(); val <= (*partition.at(i).at(vert_idx).begin()).end(); val++) {
+    //       partition_vector[val] = i;
+    //     }
+    //   }
+    // }
   }
   cout << "parts ok" << endl;
 

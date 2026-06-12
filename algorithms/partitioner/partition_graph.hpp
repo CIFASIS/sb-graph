@@ -32,7 +32,7 @@
 
 namespace sbg_partitioner {
 
-constexpr bool sanity_check_enabled = false;
+constexpr bool sanity_check_enabled = true;
 
 
 /// @brief Converts a Partition element into a Set.
@@ -67,7 +67,13 @@ SBG::LIB::Set get_connectivity_set(
 
 /// @brief It sorts intervals from smallest to largest from a given partition partition.
 /// @param p - partition to be sorted.
-void sort_partition_intervals(Partition& p);
+template<typename T>
+void sort_partition_intervals(std::vector<T>& p)
+{
+  constexpr auto compare_intervals = [](const auto& s1, const auto& s2) { return s1.minElem() < s2.minElem(); };
+
+  std::sort(p.begin(), p.end(), compare_intervals);
+}
 
 
 /// @brief Pretty print for a given partition.

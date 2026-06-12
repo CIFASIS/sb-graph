@@ -75,7 +75,7 @@ static void write_node_by_partition(const sbg_partitioner::PartitionMap &partiti
   sbg_partitioner::Partition nodes;
   nodes.reserve(sb_graph.V().size());
   for (auto v : sb_graph.V()) {
-    nodes.push_back(v);
+    nodes.push_back(SBG::LIB::SET_FACT.createSet(v));
   }
 
   sbg_partitioner::sort_partition_intervals(nodes);

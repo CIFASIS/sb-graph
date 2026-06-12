@@ -52,18 +52,18 @@ Set get_communication_edges(Set partition, const PWMap& map_1, const PWMap& map_
   return comm_edges;
 }
 
-[[maybe_unused]] size_t get_partition_communication(WeightedSBGraph& graph, const PartitionMap& partitions)
-{
-  Set s = SET_FACT.createSet();
-  for (size_t i = 0; i < partitions.size(); i++) {
-    auto ss = get_connectivity_set(graph, partitions, i);
-    s = ss.cup(s);
-  }
+// [[maybe_unused]] size_t get_partition_communication(WeightedSBGraph& graph, const PartitionMap& partitions)
+// {
+//   Set s = SET_FACT.createSet();
+//   for (size_t i = 0; i < partitions.size(); i++) {
+//     auto ss = get_connectivity_set(graph, partitions, i);
+//     s = ss.cup(s);
+//   }
 
-  size_t size = get_set_size(s);
+//   size_t size = get_set_size(s);
 
-  return size;
-}
+//   return size;
+// }
 
 vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, unsigned number_of_partitions,
                                              const InitialPartitionStrategy strategy)
@@ -93,28 +93,42 @@ vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, u
     add_strategy(move(s4), not pre_order);
   }
 
-  vector<map<unsigned, set<SetPiece>>> partitions = partitionate();
+  vector<map<unsigned, set<Set, setCompare>>> partitions = partitionate();
+  for (size_t i = 0; i < partitions.size(); i++) {
+    const auto& part = partitions.at(i);
+    for (const auto& [id, p] : part) {
+      cout << id << ": ";
+      for (const auto& s : p) {
+        cout << s << " ";
+      }
+      cout << endl;
+    }
+  }
 
   for (const auto& partition : partitions) {
     PartitionMap partition_set;
     for (const auto& [id, set] : partition) {
       Set one_partition_set = SET_FACT.createSet();
       Partition p;
+      cout << id << " ";
       for (auto& s : set) {
-        SetPiece intervals;
-        if (not s.intervals().empty()) {
-          for (size_t i = 0; i < s.intervals().size(); i++) {
-            Interval interv = s.intervals()[i];
-            intervals.emplaceBack(interv);
-          }
-        }
-        p.emplace_back(intervals);
+        // Set intervals = SET_FACT.createSet();
+        // if (not s.intervals().empty()) {
+        //   for (size_t i = 0; i < s.intervals().size(); i++) {
+        //     Interval interv = s.intervals()[i];
+        //     intervals.emplaceBack(interv);
+        //   }
+        // }
+        p.emplace_back(s);
+        cout << s << " ";
       }
+      cout << endl;
       partition_set.push_back(p);
     }
 
     partitions_sets.push_back(move(partition_set));
   }
+  cout << *partitions_sets.begin() << endl;
 
   for_each(partitions_sets.begin(), partitions_sets.end(), [&graph, number_of_partitions](PartitionMap& p) {
     logging::sbg_log << p << endl;
@@ -133,7 +147,7 @@ Set from_vector(const Partition& partition)
 {
   Set partition_set = SET_FACT.createSet();
   for (size_t i = 0; i < partition.size(); i++) {
-    partition_set.emplace(partition[i]);
+    partition_set = partition_set.cup(partition[i]);
   }
 
   return partition_set;
@@ -143,7 +157,7 @@ Partition to_vector(const Set& partition_set)
 {
   Partition partition;
   for (auto set_piece : partition_set) {
-    partition.push_back(move(set_piece));
+    partition.push_back(SET_FACT.createSet(move(set_piece)));
   }
 
   return partition;
@@ -156,6 +170,7 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
   std::vector<sbg_partitioner::PartitionMap> partition_maps = make_initial_partitions(graph, number_of_partitions, strategy);
 
   auto& best_initial_partitions = partition_maps.front();
+  cout << "best_initial_partitions " << best_initial_partitions << endl;
   CommunicationCostPtr comm_cost;
   if (create_comm_cost) {
     comm_cost = create_communication_cost(graph, best_initial_partitions, multithreading_enabled);
@@ -194,28 +209,31 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
   return best_initial_partitions;
 }
 
-Set get_connectivity_set(SBG::LIB::SBG& graph, const PartitionMap& partitions, size_t partition_index)
-{
-  const auto& partition_vector = partitions.at(partition_index);
-  Set partition = SET_FACT.createSet();
-  for_each(partition_vector.cbegin(), partition_vector.cend(), [&partition](auto s) { partition.emplaceBack(s); });
+// Set get_connectivity_set(SBG::LIB::SBG& graph, const PartitionMap& partitions, size_t partition_index)
+// {
+//   const auto& partition_vector = partitions.at(partition_index);
+//   Set partition = SET_FACT.createSet();
+//   for_each(partition_vector.cbegin(), partition_vector.cend(), [&partition](auto s) { partition.emplaceBack(s); });
 
-  auto comm_edges_1 = get_communication_edges(partition, graph.map1(), graph.map2());
-  auto comm_edges_2 = get_communication_edges(partition, graph.map2(), graph.map1());
-  auto comm_edges = comm_edges_1.cup(comm_edges_2);
+//   auto comm_edges_1 = get_communication_edges(partition, graph.map1(), graph.map2());
+//   auto comm_edges_2 = get_communication_edges(partition, graph.map2(), graph.map1());
+//   auto comm_edges = comm_edges_1.cup(comm_edges_2);
 
-  return comm_edges;
-}
+//   return comm_edges;
+// }
 
 void sanity_check(const WeightedSBGraph& graph, const PartitionMap& partitions_set, unsigned number_of_partitions)
 {
   // This is just a sanity check
   Set nodes_to_check = SET_FACT.createSet();
   for (unsigned i = 0; i < number_of_partitions; i++) {
+    cout << i << ", " << partitions_set[i] << endl;
     auto s_i = from_vector(partitions_set[i]);
     assert(s_i.intersection(nodes_to_check).isEmpty());
     nodes_to_check = nodes_to_check.cup(s_i);
   }
+
+  cout << "sanity check " << nodes_to_check << ", " << graph.V() << endl;
 
   Set diff = nodes_to_check.difference(graph.V());
   logging::sbg_log << "diff1 " << diff << endl;
@@ -243,55 +261,49 @@ void sanity_check(const WeightedSBGraph& graph, const PartitionMap& partitions_s
 
 string get_output(const PartitionMap& partition_map)
 {
-  rapidjson::Document json_doc;
-  rapidjson::Document::AllocatorType& allocator = json_doc.GetAllocator();
-  json_doc.SetObject();
+  //   rapidjson::Document json_doc;
+  //   rapidjson::Document::AllocatorType& allocator = json_doc.GetAllocator();
+  //   json_doc.SetObject();
 
-  rapidjson::Value obj_partitions(rapidjson::kArrayType);
-  for (size_t i = 0; i < partition_map.size(); i++) {
-    rapidjson::Value obj_partition(rapidjson::kArrayType);
-    const auto& partition = partition_map.at(i);
-    for (auto it = partition.begin(); it != partition.end(); ++it) {
-      const SetPiece& set_piece = *it;
-      rapidjson::Value obj_intervals(rapidjson::kArrayType);
-      obj_intervals.SetArray();
-      for (const Interval& interval : set_piece.intervals()) {
-        rapidjson::Value obj_interval(rapidjson::kArrayType);
-        rapidjson::Value begin(rapidjson::kNumberType);
-        begin.SetUint(interval.begin());
-        obj_interval.PushBack(begin, allocator);
-        rapidjson::Value end(rapidjson::kNumberType);
-        end.SetUint(interval.end());
-        obj_interval.PushBack(end, allocator);
+  //   rapidjson::Value obj_partitions(rapidjson::kArrayType);
+  //   for (size_t i = 0; i < partition_map.size(); i++) {
+  //     rapidjson::Value obj_partition(rapidjson::kArrayType);
+  //     const auto& partition = partition_map.at(i);
+  //     for (auto it = partition.begin(); it != partition.end(); ++it) {
+  //       const auto& set_piece = *it;
+  //       rapidjson::Value obj_intervals(rapidjson::kArrayType);
+  //       obj_intervals.SetArray();
+  //       for (const Interval& interval : set_piece) {
+  //         rapidjson::Value obj_interval(rapidjson::kArrayType);
+  //         rapidjson::Value begin(rapidjson::kNumberType);
+  //         begin.SetUint(interval.begin());
+  //         obj_interval.PushBack(begin, allocator);
+  //         rapidjson::Value end(rapidjson::kNumberType);
+  //         end.SetUint(interval.end());
+  //         obj_interval.PushBack(end, allocator);
 
-        obj_intervals.PushBack(obj_interval, allocator);
-      }
+  //         obj_intervals.PushBack(obj_interval, allocator);
+  //       }
 
-      obj_partition.PushBack(obj_intervals, allocator);
-    }
+  //       obj_partition.PushBack(obj_intervals, allocator);
+  //     }
 
-    rapidjson::Value obj_nodes(rapidjson::kObjectType);
-    obj_nodes.AddMember("nodes", obj_partition, allocator);
+  //     rapidjson::Value obj_nodes(rapidjson::kObjectType);
+  //     obj_nodes.AddMember("nodes", obj_partition, allocator);
 
-    obj_partitions.PushBack(obj_nodes, allocator);
-  }
+  //     obj_partitions.PushBack(obj_nodes, allocator);
+  //   }
 
-  json_doc.AddMember("partitions", obj_partitions, allocator);
+  //   json_doc.AddMember("partitions", obj_partitions, allocator);
 
-  // Write the JSON data to the file
-  rapidjson::StringBuffer s;
-  rapidjson::Writer<rapidjson::StringBuffer> writer(s);
-  json_doc.Accept(writer);
-  string json_data = string(s.GetString());
+  //   // Write the JSON data to the file
+  //   rapidjson::StringBuffer s;
+  //   rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+  //   json_doc.Accept(writer);
+  //   string json_data = string(s.GetString());
 
-  return json_data;
-}
-
-void sort_partition_intervals(Partition& p)
-{
-  constexpr auto compare_intervals = [](const SBG::LIB::SetPiece& s1, const SBG::LIB::SetPiece& s2) { return s1.minElem() < s2.minElem(); };
-
-  sort(p.begin(), p.end(), compare_intervals);
+  //   return json_data;
+  return "";
 }
 
 ostream& operator<<(ostream& os, const Partition& partition)

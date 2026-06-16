@@ -68,7 +68,7 @@ std::string GraphPartitioner::validPartitionMethodsStr()
   return valid_methods.str();
 }
 
-static void write_node_by_partition(const sbg_partitioner::PartitionMap &partitions, const SBG::LIB::WeightedSBGraph &sb_graph,
+static void write_node_by_partition(const sbg_partitioner::PartitionMap &partition, const SBG::LIB::WeightedSBGraph &sb_graph,
                                     const std::string &partition_method_name)
 {
   std::cout << "writing results of SBG to " << partition_method_name << std::endl;
@@ -81,42 +81,37 @@ static void write_node_by_partition(const sbg_partitioner::PartitionMap &partiti
   sbg_partitioner::sort_partition_intervals(nodes);
 
   // expand it and write it
-  std::vector<unsigned> partition_by_node;
   std::ofstream output_file(partition_method_name);
+  std::vector<unsigned> partition_vector(sb_graph.V().cardinal(), 0);
+
   if (sb_graph.V().arity() == 2) {
-    partition_by_node = std::vector<unsigned>(sb_graph.V().cardinal(), 0);
     size_t row_size = (*sb_graph.V().begin()).intervals()[0].cardinal();
-    for (unsigned i = 0; i < partitions.size(); i++) {
-      for (const auto &n : partitions.at(i)) {
-        for (size_t v_0 = n.intervals()[0].begin(); v_0 <= n.intervals()[0].end(); v_0++) {
-          for (size_t v_1 = n.intervals()[1].begin(); v_1 <= n.intervals()[1].end(); v_1++) {
-            size_t vertex = v_0 * row_size + v_1;
-            partition_by_node[vertex] = i;
+    for (size_t i = 0; i < partition.size(); i++) {
+      const auto &p = partition.at(i);
+      for (const auto &set : p) {
+        for (const auto sp : set) {
+          for (size_t row = sp.intervals()[0].begin(); row <= sp.intervals()[0].end(); row++) {
+            for (size_t col = sp.intervals()[1].begin(); col <= sp.intervals()[1].end(); col++) {
+              auto val = row * row_size + col;
+              partition_vector[val] = i;
+            }
           }
         }
       }
     }
-    for (size_t i = 0; i < partition_by_node.size(); i++) {
-      output_file << std::to_string(partition_by_node[i]) << std::endl;
-    }
   } else {
-    for (const auto &n : nodes) {
-      for (size_t v_0 = n.intervals()[0].begin(); v_0 <= n.intervals()[0].end(); v_0++) {
-        SBG::LIB::SetPiece set_piece;
-        set_piece.emplaceBack(SBG::LIB::Interval(v_0, n.intervals()[0].step(), v_0));
-        for (size_t i = 0; i < partitions.size(); i++) {
-          sbg_partitioner::Partition p = partitions.at(i);
-          auto p_set = sbg_partitioner::from_vector(p);
-          if (not SBG::LIB::SET_FACT.createSet(set_piece).intersection(p_set).isEmpty()) {
-            partition_by_node.push_back(i);
-            std::cout << i << std::endl;
-            output_file << std::to_string(i) << std::endl;
-            break;
-          }
+    for (unsigned i = 0; i < partition.size(); i++) {
+      for (size_t vert_idx = 0; vert_idx < partition.at(i).size(); vert_idx++) {
+        for (size_t val = (*(*partition.at(i).at(vert_idx).begin()).begin()).begin();
+             val <= (*(*partition.at(i).at(vert_idx).begin()).begin()).end(); val++) {
+          partition_vector[val] = i;
         }
       }
     }
   }
+  std::cout << "parts ok" << std::endl;
+
+  for_each(partition_vector.begin(), partition_vector.end(), [&output_file](const auto val) { output_file << val << "\n"; });
 }
 
 std::tuple<Partition, std::chrono::duration<double>> GraphPartitioner::createPartition(const std::string &partition_method_name,

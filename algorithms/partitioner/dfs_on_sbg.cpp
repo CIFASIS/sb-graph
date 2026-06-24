@@ -50,16 +50,6 @@ vector<map<unsigned, set<Set, setCompare>>> partitionate()
   sort_object.start();
   sort_object.iterate();
   vector<map<unsigned, set<Set, setCompare>>> partitions = sort_object.partitions();
-  for (size_t i = 0; i < partitions.size(); i++) {
-    const auto& part = partitions.at(i);
-    for (const auto& [id, p] : part) {
-      cout << id << ": ";
-      for (const auto& s : p) {
-        cout << s << " ";
-      }
-      cout << endl;
-    }
-  }
 
   return partitions;
 }
@@ -78,7 +68,6 @@ void DFS::initialize_adjacents()
   // Fill adjacents
   for (auto it = _nodes.begin(); it != _nodes.end(); ++it) {
     const auto incoming_node = *it;
-    std::cout << *it << std::endl;
 
     auto incoming_node_set = SET_FACT.createSet(incoming_node);
 

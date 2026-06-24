@@ -240,13 +240,6 @@ SBG::LIB::WeightedSBGraph build_computational_sbg(const PartitionerParams& param
 {
   cout << "Building computational SB Graph" << endl;
   SBG::LIB::WeightedSBGraph sb_graph = get_sbg(*params.filename, *params.number_of_partitions);
-  for (auto it1 = sb_graph.map1().begin(), it2 = sb_graph.map2().begin(); it1 != sb_graph.map1().end() and it2 != sb_graph.map2().end();
-       ++it1, ++it2) {
-    auto n1 = (*it1).image();
-    auto n2 = (*it2).image();
-    cout << n1 << ", " << n2 << " from " << (*it1).dom() << " " << (*it1).dom().cardinal() << "\n";
-  }
-  cout << endl;
 
   if (not params.filename->find("air_conditioners_cont") != std::string::npos) {
     return sb_graph;

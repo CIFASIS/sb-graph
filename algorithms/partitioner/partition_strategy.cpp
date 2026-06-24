@@ -86,7 +86,6 @@ void PartitionStrategyGreedy::operator()(const Set& node_to_be_added)
       elements_can_take = min(pending_node_elements, elements_can_take);
       pending_node_elements -= elements_can_take;
       size_by_partition[i] = elements_can_take * node_weight;
-      cout << i << ", " << size_by_partition[i] << endl;
       _current_size_by_partition[i] += size_by_partition[i];
     }
   }
@@ -104,7 +103,6 @@ void PartitionStrategyGreedy::operator()(const Set& node_to_be_added)
 
   Set remaining_node = node_to_be_added;
   for (unsigned i = 0; i < _number_of_partitions; i++) {
-    cout << i << ": " << size_by_partition[i] << endl;
     if (size_by_partition[i] == 0) {
       continue;
     }
@@ -113,7 +111,6 @@ void PartitionStrategyGreedy::operator()(const Set& node_to_be_added)
 
     Set node_to_be_added = SET_FACT.createSet();
     tie(node_to_be_added, remaining_node) = cut_interval_by_dimension(remaining_node, _node_weight, size_by_partition[i]);
-    cout << i << ", " << size_by_partition[i] << ", " << node_to_be_added << ", " << remaining_node << endl;
 
     for_each(node_to_be_added.begin(), node_to_be_added.end(), [&p](const auto& set_piece) { p.insert(SET_FACT.createSet(set_piece)); });
   }

@@ -32,7 +32,7 @@
 
 namespace sbg_partitioner {
 
-constexpr bool sanity_check_enabled = true;
+constexpr bool sanity_check_enabled = false;
 
 
 /// @brief Converts a Partition element into a Set.

@@ -109,9 +109,9 @@ static void write_node_by_partition(const sbg_partitioner::PartitionMap &partiti
       }
     }
   }
-  std::cout << "parts ok" << std::endl;
 
   for_each(partition_vector.begin(), partition_vector.end(), [&output_file](const auto val) { output_file << val << "\n"; });
+  std::cout << "parts ok" << std::endl;
 }
 
 std::tuple<Partition, std::chrono::duration<double>> GraphPartitioner::createPartition(const std::string &partition_method_name,

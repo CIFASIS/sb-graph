@@ -94,23 +94,12 @@ vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, u
   }
 
   vector<map<unsigned, set<Set, setCompare>>> partitions = partitionate();
-  for (size_t i = 0; i < partitions.size(); i++) {
-    const auto& part = partitions.at(i);
-    for (const auto& [id, p] : part) {
-      cout << id << ": ";
-      for (const auto& s : p) {
-        cout << s << " ";
-      }
-      cout << endl;
-    }
-  }
 
   for (const auto& partition : partitions) {
     PartitionMap partition_set;
     for (const auto& [id, set] : partition) {
       Set one_partition_set = SET_FACT.createSet();
       Partition p;
-      cout << id << " ";
       for (auto& s : set) {
         // Set intervals = SET_FACT.createSet();
         // if (not s.intervals().empty()) {
@@ -120,9 +109,7 @@ vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, u
         //   }
         // }
         p.emplace_back(s);
-        cout << s << " ";
       }
-      cout << endl;
       partition_set.push_back(p);
     }
 

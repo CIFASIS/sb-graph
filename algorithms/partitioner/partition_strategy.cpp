@@ -195,13 +195,10 @@ void PartitionStrategyDistributive::operator()(const SBG::LIB::Set& node_to_be_a
 
     Set temp_node = SET_FACT.createSet();
     tie(temp_node, remaining_nodes) = cut_interval_by_dimension(remaining_nodes, NodeWeight(), size_by_partition[i]);
-    // #if DEBUG_PARTITION_STRATEGY_ENABLED
-    cout << "About to add " << temp_node << " to " << i << ", remaining: " << remaining_nodes << endl;
-    // #endif
-    for_each(temp_node.begin(), temp_node.end(), [&p](const auto& set_piece) {
-      cout << "here we are " << set_piece << endl;
-      p.insert(SET_FACT.createSet(set_piece));
-    });
+#if DEBUG_PARTITION_STRATEGY_ENABLED
+    logging::sbg_log << "About to add " << temp_node << " to " << i << ", remaining: " << remaining_nodes << endl;
+#endif
+    for_each(temp_node.begin(), temp_node.end(), [&p](const auto& set_piece) { p.insert(SET_FACT.createSet(set_piece)); });
     _current_size_by_partition[i] += get_node_size(temp_node, _node_weight);
   }
 }

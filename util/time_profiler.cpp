@@ -28,7 +28,7 @@ void time_profiler_results()
   Internal::TimeProfiler::print_execution_time();
 }
 
-namespace Internal{
+namespace Internal {
 
 std::unordered_map<std::string, double> TimeProfiler::_execution_time = {};
 
@@ -62,7 +62,17 @@ void TimeProfiler::print_execution_time() {
   }
 }
 
+void TimeProfiler::print_execution_time(std::string function_name) {
+  if (time_profiler_enabled) {
+    for (auto&& pair : TimeProfiler::_execution_time) {
+      if (pair.first == function_name) {
+        std::cout << pair.first << ": " << pair.second << " ms" << std::endl;
+      }
+    }
+  }
 }
+
+} // namespace Internal
 
 } // namespace Util
 

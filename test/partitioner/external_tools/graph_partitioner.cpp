@@ -162,7 +162,8 @@ std::tuple<Partition, std::chrono::duration<double>> GraphPartitioner::createPar
   auto end = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> duration = end - start;
 
-  std::cout << "Partition Time: " << duration.count() << " seconds." << std::endl;
+  std::cout << "Partition Time: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " miliseconds."
+            << std::endl;
 
   if (save_to_file) {
     const std::string fileName =
@@ -517,13 +518,13 @@ void GraphPartitioner::readGraphFromSBG()
   _edges = grp_t(_adjncy.size());
 
   // @todo: Add logging, for the moment just comment the code.
-  for (int i = 0; i < _nbr_vtxs; ++i) {
+  /*for (int i = 0; i < _nbr_vtxs; ++i) {
     std::cout << "Node " << i << " Connections: ";
     for (int j = _xadj[i]; j < _xadj[i + 1]; ++j) {
       std::cout << _adjncy[j] << " ";
     }
     std::cout << std::endl;
-  }
+  }*/
 
   // @todo: Read weights files.
   _vwgt.resize(_nbr_vtxs, 1);

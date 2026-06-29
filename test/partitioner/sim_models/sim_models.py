@@ -192,6 +192,41 @@ def extract_size_from_partition(partition_name):
         )
 
 
+def generate_sections_file(size, partitions, destination):
+    """
+    Generates the C file and copies it to the specified build directory.
+    """
+    filename = "sections.c"
+    partition_size = size // partitions
+    
+    c_code = f"""int 
+getSection(int i)
+{{
+    int partition_size = {partition_size};
+    int ret = ((i - 1) / partition_size) + 1;
+    return (ret);
+}}
+"""
+    try:
+        # 1. Write the file
+        with open(filename, "w") as f:
+            f.write(c_code)
+        print(f"Successfully generated '{filename}' with partition_size {partition_size}.")
+        
+        # 2. Copy the file to the destination
+        if not os.path.exists(destination):
+            print(f"Error: Destination directory '{destination}' does not exist.")
+            return
+
+        shutil.copy(filename, destination)
+        print(f"Successfully copied '{filename}' to '{destination}'.")
+        
+    except IOError as e:
+        print(f"An error occurred during file operations: {e}")
+    except PermissionError:
+        print(f"Permission denied: Unable to write to '{destination}'.")
+
+
 def execute_simulation(model_path, partition_name):
     """
     Compiles and executes the model dynamically, assigning N size constraints first.
@@ -200,6 +235,7 @@ def execute_simulation(model_path, partition_name):
     
     model_p = Path(model_path).resolve()
     model_file = str(model_p)
+    model = file_handlers.get_file_name(model_file)
 
     partition_p = Path(partition_name).resolve()
 
@@ -209,11 +245,15 @@ def execute_simulation(model_path, partition_name):
 
     # Derive target destination (<model_name>.part in the model's directory)
     target_partition_path = model_p.with_suffix('.part')
-    
+    build_target_path = new_path = Path(os.environ['MMOC_BUILD']) / model
+    print("BUILD TARGET")
+    print(build_target_path)
+
     # Step 1: Copy custom partition to the required solver location
     try:
         print(f"Copying partition: {partition_p.name} -> {target_partition_path}")
         shutil.copy2(Path(partition_name).resolve(), target_partition_path)
+        shutil.copy2(target_partition_path, build_target_path)
     except Exception as e:
         print(f"Failed to copy partition file: {e}")
         return False
@@ -225,8 +265,9 @@ def execute_simulation(model_path, partition_name):
         print(f"Current structural Constants: {current_constants}")
         
         # Updating constant N size property
-        set_constants(model_file, {"N": size})
+        set_constants(model_file, {"N": size, "SECTIONS" : parts})
         print(f"Successfully set Constant 'N' to: {size}")
+        print(f"Successfully set Constant 'SECTIONS' to: {parts}")
         
     except Exception as e:
         print(f"Failed handling structural setup attributes: {e}")
@@ -247,7 +288,10 @@ def execute_simulation(model_path, partition_name):
             print(f"  {key}: {value}")
     else:
         print("  No annotations found")
-    
+
+    if model == "airconds_cont":
+        generate_sections_file(size, parts, build_target_path)
+
     # Step 3: Compile the model
     print(f"\nCompiling model: {model_file}")
     if compile_model(model_file):
@@ -265,7 +309,6 @@ def execute_simulation(model_path, partition_name):
         return False
     
     # Step 5: Get simulation results
-    model = file_handlers.get_file_name(model_file)
     model_log_path = file_handlers.get_full_path(model, 'MMOC_LOG')    
     sim_results(model_log_path)
     process_model_logs(file_handlers.get_base_path(model_log_path, 'MMOC_LOG'), model, sim_results)    

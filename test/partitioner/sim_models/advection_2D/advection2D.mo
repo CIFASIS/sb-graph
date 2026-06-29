@@ -38,58 +38,21 @@ model advection2D
 	    end for;
 	annotation(
     experiment(
-        MMO_Description = "Advection",
-        MMO_Solver = QSS3,
+        MMO_Description = " Advection",
+        MMO_Solver = LIQSS2,
+        MMO_Parallel = true,
         MMO_PartitionMethod = Manual,
+        MMO_LPS = 12,
         MMO_DT_Min = 1,
         Jacobian = Dense,
         MMO_BDF_PDepth = 1,
         MMO_BDF_Max_Step = 0,
         StartTime = 0.0,
-        StopTime = 10,
+        StopTime = 300,
         Tolerance = {1e-3},
-        AbsTolerance = {1e-3},
-        MMO_LPS = 8,
-        MMO_Parallel = true
+        AbsTolerance = {1e-3}
     )
 );
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

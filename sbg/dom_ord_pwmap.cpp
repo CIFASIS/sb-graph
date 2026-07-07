@@ -774,6 +774,17 @@ DomOrdPWMap DomOrdPWMap::imageMultiplicity() const
   return result;
 } 
 
+DomOrdPWMap DomOrdPWMap::offsetImage(const Expression& off) const
+{
+  DomOrdPWMap result;
+
+  for (const MapEntry& entry : _pieces) {
+    result.emplace(entry.map().offsetImage(off));
+  }
+
+  return result;
+} 
+
 void DomOrdPWMap::compact()
 {
   using MapSet = std::set<Map, MapLess>;

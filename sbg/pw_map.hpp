@@ -232,6 +232,12 @@ public:
 
   PWMap imageMultiplicity() const;
 
+    /**
+   * @brief Sum a constant value to every element in the image of the pw, that
+   * is, the law of the pw is modified without altering its domain.
+   */
+  PWMap offsetImage(const Expression& off) const;
+
   /**
    * @brief Minimize internal representation cost. Heuristic guided.
    */

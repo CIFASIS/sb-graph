@@ -1,4 +1,4 @@
-/** @file scc.hpp
+/** @file tearing.hpp
 
  @brief <b>SBG Tearing Algorithm Abstract Interface</b>
 
@@ -21,69 +21,44 @@
 
  ******************************************************************************/
 
-#ifndef SBG_TEARING_HPP
-#define SBG_TEARING_HPP
+#ifndef SBGRAPH_ALGORITHMS_TEARING_TEARING_HPP_
+#define SBGRAPH_ALGORITHMS_TEARING_TEARING_HPP_
 
 #include "sbg/directed_sbg.hpp"
+#include "algorithms/tearing/tearing_v1.hpp"
+
+#include <variant>
 
 namespace SBG {
 
 namespace LIB {
 
-////////////////////////////////////////////////////////////////////////////////
-// Auxiliary classures --------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-/**
- * @brief Saves input and output data from a Tearing algorithm run.
- */
-struct TearingData {
-  public:
-  TearingData(DSBG dsbg, PWMap rmap, PWMap tearIOMap);
-
-  const DSBG& dsbg() const;
-  const PWMap& rmap() const;
-  const PWMap& tearIOMap() const;
-
-  private:
-  DSBG dsbg_;  ///< Original input directed SBG
-  PWMap rmap_; ///< Resulting SCCs
-  PWMap tearIOMap_;  ///< Paired tearing vertices
-};
+namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Tearing Algorithm Abstract Strategy ---------------------------------------------
+// Tearing Algorithm implementations -------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-class TearingStrategy;
+using TearingImpl = std::variant<TearingV1>;
 
-typedef std::unique_ptr<TearingStrategy> TearingStratPtr;
-
-class TearingStrategy {
-  public:
-  virtual ~TearingStrategy() = default;
-
-  TearingStrategy();
-
-  virtual TearingData calculate(const DSBG& dsbg) = 0;
-};
+} // namespace detail
 
 ////////////////////////////////////////////////////////////////////////////////
-// Tearing Algorithm Interface (context) -------------------------------------------
+// Tearing Algorithm -----------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 class Tearing {
-  public:
-  Tearing(TearingStratPtr strat);
+public:
+  Tearing();
 
-  TearingData calculate(const DSBG& dsbg);
+  TearingData calculate(const DirectedSBG& dsbg);
 
-  private:
-  TearingStratPtr strategy_;
+private:
+  detail::TearingImpl _impl;
 };
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_TEARING_TEARING_HPP_

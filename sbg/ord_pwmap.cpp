@@ -750,6 +750,17 @@ OrdPWMap OrdPWMap::imageMultiplicity() const
   return result;
 } 
 
+OrdPWMap OrdPWMap::offsetImage(const Expression& off) const
+{
+  OrdPWMap result;
+
+  for (const MapEntry& entry : _pieces) {
+    result.emplace(entry.map().offsetImage(off));
+  }
+
+  return result;
+}
+
 void OrdPWMap::compact()
 {
   using MapSet = std::set<Map, MapLess>;

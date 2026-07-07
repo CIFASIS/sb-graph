@@ -494,6 +494,17 @@ UnordPWMap UnordPWMap::imageMultiplicity() const
   return result;
 } 
 
+UnordPWMap UnordPWMap::offsetImage(const Expression& off) const
+{
+  UnordPWMap result;
+
+  for (const Map& m : _pieces) {
+    result.pushBack(m.offsetImage(off));
+  }
+
+  return result;
+}
+
 void UnordPWMap::compact()
 {
   using MapSet = std::set<Map, MapLess>;

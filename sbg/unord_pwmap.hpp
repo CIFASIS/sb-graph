@@ -103,6 +103,8 @@ public:
 
   UnordPWMap imageMultiplicity() const;
 
+  UnordPWMap offsetImage(const Expression& off) const;
+
   void compact();
 
 private:

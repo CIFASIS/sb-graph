@@ -164,6 +164,12 @@ public:
   std::vector<Map> imageMultiplicity() const;
 
   /**
+   * @brief Sum an expression value to every element in the image of the map, that
+   * is, the law of the map is modified without altering its domain.
+   */
+  Map offsetImage(const Expression& off) const;
+
+  /**
    * @brief Minimize internal representation cost. Heuristic guided.
    * Precondition: maps should domain disjoint. 
    */

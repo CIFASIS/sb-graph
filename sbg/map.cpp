@@ -206,6 +206,11 @@ std::vector<Map> Map::imageMultiplicity() const
   return detail::MapDetail::imageMultiplicity(*this);
 }
 
+Map Map::offsetImage(const Expression& off) const
+{
+  return Map{_domain, _law + off};
+}
+
 MaybeMap Map::compact(const Map& other) const
 {
   Set result_domain;

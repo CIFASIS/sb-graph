@@ -17,41 +17,44 @@
 
  ******************************************************************************/
 
-#include <chrono>
-
 #include "algorithms/tearing/tearing.hpp"
+#include "algorithms/tearing/tearing_data.hpp"
+#include "algorithms/tearing/tearing_impl.hpp"
+#include "algorithms/tearing/tearing_v1.hpp"
+#include "sbg/directed_sbg.hpp"
+#include "util/debug.hpp"
 #include "util/logger.hpp"
+#include "util/time_profiler.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Auxiliary structures --------------------------------------------------------
+// Tearing Algorithm ---------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-TearingData::TearingData(DSBG dsbg, PWMap rmap, PWMap tearIOMap)
-  : dsbg_(dsbg), rmap_(rmap), tearIOMap_(tearIOMap) {}
-
-const DSBG& TearingData::dsbg() const { return dsbg_; }
-const PWMap& TearingData::rmap() const { return rmap_; }
-const PWMap& TearingData::tearIOMap() const { return tearIOMap_; }
-
-////////////////////////////////////////////////////////////////////////////////
-// Tearing Algorithm Abstract Strategy Constructors --------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-TearingStrategy::TearingStrategy() {}
-
-////////////////////////////////////////////////////////////////////////////////
-// Tearing Algorithm Interface -----------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-Tearing::Tearing(TearingStratPtr strat) : strategy_(std::move(strat)) {}
-
-TearingData Tearing::calculate(const DSBG& dsbg)
+Tearing::Tearing() : _impl()
 {
-  return strategy_->calculate(dsbg);
+  TearingKind kind = TEARING_IMPL.kind();
+  switch (kind) {
+    case TearingKind::kTearingV1: {
+      _impl = detail::TearingImpl{};
+      break;
+    }
+
+    default: {
+      Util::ERROR("Unsupported Tearing implementation");
+      break;
+    }
+  }
+}
+
+TearingData Tearing::calculate(const DirectedSBG& dsbg)
+{
+  Util::Internal::TimeProfiler profiler{"Total SCC execution time: "};
+
+  return std::visit([&](auto& a) { return a.calculate(dsbg); }, _impl);
 }
 
 } // namespace LIB

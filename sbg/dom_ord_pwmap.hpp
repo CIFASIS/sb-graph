@@ -108,6 +108,8 @@ public:
 
   DomOrdPWMap imageMultiplicity() const;
 
+  DomOrdPWMap offsetImage(const Expression& off) const;
+
   void compact();
 
 private:

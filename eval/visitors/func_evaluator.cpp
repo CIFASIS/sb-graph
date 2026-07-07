@@ -22,12 +22,10 @@
 #include "algorithms/matching/matching.hpp"
 #include "algorithms/mfvs/min_feedback_vertex_set.hpp"
 #include "algorithms/misc/causalization_builders.hpp"
-#include "algorithms/scc/scc_fact.hpp"
-#include "algorithms/tearing/tearing_fact.hpp"
-#include "algorithms/toposort/ts_fact.hpp"
 #include "eval/visitors/func_evaluator.hpp"
 #include "algorithms/misc/causalization_json.hpp"
 #include "algorithms/scc/scc.hpp"
+#include "algorithms/tearing/tearing.hpp"
 #include "algorithms/sorting/topological/topological_sorting.hpp"
 #include "eval/base_type.hpp"
 #include "sbg/bipartite_sbg.hpp"
@@ -712,6 +710,24 @@ ExprBaseType BuiltInFunctions::matchSCCMFVSEvaluator(const EBTList& args)
   return ExprBaseType{mfvs_impl.calculate(dsbg)};
 }
 
+ExprBaseType BuiltInFunctions::tearingEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 1
+    , "tearingEvaluator: wrong number of arguments\n");
+
+  LIB::Tearing tearing_impl;
+  const auto tearing_evaluator = Util::Overload {
+    [&tearing_impl](LIB::DirectedSBG a) { 
+      return ExprBaseType{tearing_impl.calculate(a).tearIOMap()};
+    },
+    [](auto a) {
+      Util::ERROR("tearingEvaluator: wrong argument ", a, " for sort\n"); 
+      return ExprBaseType{};
+    }
+  };
+  return std::visit(tearing_evaluator, args[0]);
+}
+
 ExprBaseType BuiltInFunctions::topoSortEvaluator(const EBTList& args)
 {
   Util::ERROR_UNLESS(args.size() == 1
@@ -724,6 +740,41 @@ ExprBaseType BuiltInFunctions::topoSortEvaluator(const EBTList& args)
     },
     [](auto a) {
       Util::ERROR("topoSortEvaluator: wrong argument ", a, " for sort\n"); 
+      return ExprBaseType{};
+    }
+  };
+  return std::visit(ts_evaluator, args[0]);
+}
+
+ExprBaseType BuiltInFunctions::matchTearingEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 2
+    , "matchSCCEvaluator: wrong number of arguments");
+
+  const ExprBaseType match_base_type = matchingEvaluator(args);
+
+  const LIB::MatchData match_result = std::get<LIB::MatchData>(match_base_type);
+  LIB::DirectedSBG dsbg = misc::buildLoopDetectionSBG(match_result);
+  LIB::Tearing tearing_impl;
+  LIB::TearingData tearing_result = tearing_impl.calculate(dsbg);
+
+  return ExprBaseType{tearing_result.rmap()};
+}
+
+ExprBaseType BuiltInFunctions::tearingTSEvaluator(const EBTList& args)
+{
+  Util::ERROR_UNLESS(args.size() == 1
+    , "tearingTSEvaluator: wrong number of arguments\n");
+
+  LIB::Tearing tearing_impl;
+  LIB::TopologicalSorting ts_impl;
+  const auto ts_evaluator = Util::Overload {
+    [&tearing_impl, &ts_impl](LIB::DirectedSBG a) {
+      LIB::TearingData tearing_result = tearing_impl.calculate(a);
+      return ExprBaseType{ts_impl.calculate(tearing_result.dsbg(), tearing_result.rmap())};
+    },
+    [](auto a) {
+      Util::ERROR("tearingTSEvaluator: wrong argument ", a, " for sort\n"); 
       return ExprBaseType{};
     }
   };

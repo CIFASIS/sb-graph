@@ -1,6 +1,6 @@
-/** @file scc_impl.hpp
+/** @file tearing_data.hpp
 
- @brief <b>SCC Algorithm Implementation</b>
+ @brief <b>Tearing Input and Ouput data structure</b>
 
  <hr>
 
@@ -21,45 +21,39 @@
 
  ******************************************************************************/
 
-#ifndef SBGRAPH_ALGORITHMS_TEARING_TEARING_IMPL_HPP_
-#define SBGRAPH_ALGORITHMS_TEARING_TEARING_IMPL_HPP_
+#ifndef SBGRAPH_ALGORITHMS_TEARING_TEARING_DATA_HPP_
+#define SBGRAPH_ALGORITHMS_TEARING_TEARING_DATA_HPP_
 
-#include <iosfwd>
+#include "sbg/directed_sbg.hpp"
+#include "sbg/pw_map.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Tearing implementations -----------------------------------------------------
+// Tearing Factory implementations ---------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-enum class TearingKind { kTearingV1 };
-
-std::ostream& operator<<(std::ostream& out, const TearingKind kind);
-
-#define TEARING_IMPL TearingImplementation::instance()
-
 /**
- * @brief Singleton that keeps record of the chosen SCC implementation. 
+ * @brief Saves input and output data from a Tearing algorithm run.
  */
-class TearingImplementation {
+class TearingData {
 public:
-  ~TearingImplementation() = default;
+  TearingData(DirectedSBG dsbg, PWMap rmap, PWMap tearIOMap);
 
-  static TearingImplementation& instance();
-
-  const TearingKind& kind() const;
-  void set_tearing_fact(TearingKind kind);
+  const DirectedSBG& dsbg() const;
+  const PWMap& rmap() const;
+  const PWMap& tearIOMap() const;
 
 private:
-  TearingImplementation();
-
-  TearingKind _kind;
+  DirectedSBG _dsbg;  ///< Original input directed SBG
+  PWMap _rmap; ///< Resulting SCCs
+  PWMap _tearIOMap;  ///< Paired tearing vertices
 };
 
 } // namespace LIB
 
-}  // namespace SBG
+} // namespace SBG
 
-#endif // SBGRAPH_ALGORITHMS_TEARING_TEARING_IMPL_HPP_
+#endif // SBGRAPH_ALGORITHMS_TEARING_TEARING_DATA_HPP_

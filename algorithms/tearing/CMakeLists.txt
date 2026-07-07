@@ -3,5 +3,6 @@ target_sources(
     PRIVATE
         tearing_impl.cpp
         tearing.cpp
-        tearing_fact.cpp
+        tearing_data.cpp
+        tearing_v1.cpp
 )

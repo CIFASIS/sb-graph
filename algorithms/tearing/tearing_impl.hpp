@@ -1,6 +1,6 @@
-/** @file minreach_scc.hpp
+/** @file scc_impl.hpp
 
- @brief <b>SBG Tearing Algorithm implementation</b>
+ @brief <b>SCC Algorithm Implementation</b>
 
  <hr>
 
@@ -21,51 +21,45 @@
 
  ******************************************************************************/
 
-#ifndef SBG_MINREACH_TEARING_HPP
-#define SBG_MINREACH_TEARING_HPP
+#ifndef SBGRAPH_ALGORITHMS_TEARING_TEARING_IMPL_HPP_
+#define SBGRAPH_ALGORITHMS_TEARING_TEARING_IMPL_HPP_
 
-#include "algorithms/tearing/tearing.hpp"
-#include "algorithms/scc/scc.hpp"
+#include <iosfwd>
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Tearing Algorithm Implementation (concrete strategy) ----------
+// Tearing implementations -----------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
+enum class TearingKind { kTearingV1 };
+
+std::ostream& operator<<(std::ostream& out, const TearingKind kind);
+
+#define TEARING_IMPL TearingImplementation::instance()
+
 /**
- * @brief Minimum Reachable SCC implementation. In each step it identifies edges
- * with different MRV (Minimum Reachable Vertex) in their endings, that are
- * edges connecting different SCC. Then, it swaps the direction of edges, and
- * perform the same calculations. This is repeated all edges between different
- * SCC are deleted. When this process ends each SCC is identified by its
- * minimum vertex.
+ * @brief Singleton that keeps record of the chosen SCC implementation. 
  */
+class TearingImplementation {
+public:
+  ~TearingImplementation() = default;
 
-typedef std::unique_ptr<SCC> SCCPtr;
+  static TearingImplementation& instance();
 
-class TearingV1 : public TearingStrategy {
-  public:
-  TearingV1(SCCPtr sccAlgorithm);
+  const TearingKind& kind() const;
+  void set_tearing_fact(TearingKind kind);
 
-  TearingData calculate(const DSBG& dsbg) override;
+private:
+  TearingImplementation();
 
-  protected:
-  /**
-   * @brief Initializes data members determined by the input SBG.
-   */
-  void init(const DSBG& dsbg);
-
-  SCCPtr sccAlgorithm_;
-  DSBG dsbg_; ///< Input DSBG
-  DSBG finalDSBG; ///< Output DSBG
-  PWMap tearIOMap_; ///< Output tearing vertex map
+  TearingKind _kind;
 };
 
 } // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_TEARING_TEARING_IMPL_HPP_

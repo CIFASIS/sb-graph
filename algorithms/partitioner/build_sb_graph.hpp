@@ -85,7 +85,7 @@ void flatten_set(SBG::LIB::Set &set, const SBG::LIB::WeightedSBGraph& graph);
 SBG::LIB::WeightedSBGraph create_air_conditioners_graph();
 
 
-SBG::LIB::WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sections);
+SBG::LIB::WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sections, bool duplicate_1_n_conns);
 
 
 SBG::LIB::WeightedSBGraph create_advection2D_graph(int size);

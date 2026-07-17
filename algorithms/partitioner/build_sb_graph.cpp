@@ -945,7 +945,7 @@ SBG::LIB::WeightedSBGraph create_air_conditioners_graph()
   return graph;
 }
 
-WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sections)
+WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sections, bool duplicate_1_n_conns)
 {
   int quarter = size / sections;
   int start_q = (2 * size) + 13;
@@ -1026,10 +1026,12 @@ WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sect
       Map(Interval(current_offset, 1, current_offset + (size - 1)), Exp(LExp(1, RATIONAL(ev_6_domain_init - current_offset, 1)))));
   current_offset += size;
 
-  rhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + (size - 1)), Exp(LExp(1, RATIONAL(-current_offset, 1)))));
-  lhs_maps.emplaceBack(
-      Map(Interval(current_offset, 1, current_offset + (size - 1)), Exp(LExp(1, RATIONAL(ev_6_domain_init - current_offset, 1)))));
-  current_offset += size;
+  if (duplicate_1_n_conns) {
+    rhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + (size - 1)), Exp(LExp(1, RATIONAL(-current_offset, 1)))));
+    lhs_maps.emplaceBack(
+        Map(Interval(current_offset, 1, current_offset + (size - 1)), Exp(LExp(1, RATIONAL(ev_6_domain_init - current_offset, 1)))));
+    current_offset += size;
+  }
 
   // th -> ev_7 [label="<- {4013:4262} -> ", arrowhead="none"]
   // th -> ev_8 [label="<- {4263:4512} -> ", arrowhead="none"]
@@ -1042,12 +1044,14 @@ WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sect
                              Exp(LExp(1, RATIONAL(part_total_domain_init + i * quarter - current_offset, 1)))));
     current_offset += quarter;
   }
-  for (int i = 0; i < sections; i++) {
-    rhs_maps.emplaceBack(
-        Map(Interval(current_offset, 1, current_offset + (quarter - 1)), Exp(LExp(1, RATIONAL(-current_offset + i * quarter, 1)))));
-    lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + (quarter - 1)),
-                             Exp(LExp(1, RATIONAL(part_total_domain_init + i * quarter - current_offset, 1)))));
-    current_offset += quarter;
+  if (duplicate_1_n_conns) {
+    for (int i = 0; i < sections; i++) {
+      rhs_maps.emplaceBack(
+          Map(Interval(current_offset, 1, current_offset + (quarter - 1)), Exp(LExp(1, RATIONAL(-current_offset + i * quarter, 1)))));
+      lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + (quarter - 1)),
+                               Exp(LExp(1, RATIONAL(part_total_domain_init + i * quarter - current_offset, 1)))));
+      current_offset += quarter;
+    }
   }
 
   // ierr -> ev_3 [label="<- {5013:5013} -> ", arrowhead="none"]
@@ -1098,6 +1102,14 @@ WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sect
     lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + quarter - 1),
                              Exp(LExp(1, RATIONAL(part_total_domain_init - current_offset + quarter * i, 1)))));
     current_offset += quarter;
+  }
+  if (duplicate_1_n_conns) {
+    for (int i = 0; i < sections; i++) {
+      rhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + quarter - 1), Exp(LExp(0, ev_1_domain_init))));
+      lhs_maps.emplaceBack(Map(Interval(current_offset, 1, current_offset + quarter - 1),
+                               Exp(LExp(1, RATIONAL(part_total_domain_init - current_offset + quarter * i, 1)))));
+      current_offset += quarter;
+    }
   }
 
   // ev_3 -> ev_5 [label="1010 <- {6029:6029} -> 1012", arrowhead="none"]

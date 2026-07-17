@@ -219,11 +219,11 @@ int get_advection2D_size(const string& name)
   throw 1;
 }
 
-SBG::LIB::WeightedSBGraph get_sbg(const std::string& filename, unsigned number_of_parts)
+SBG::LIB::WeightedSBGraph get_sbg(const std::string& filename, unsigned number_of_parts, bool duplicate_conns)
 {
   if (filename.find("air_conditioners_cont") != std::string::npos) {
     auto size = get_air_conditioners_controller_size(filename);
-    auto sb_graph = create_air_conditioners_with_controller_graph(size, number_of_parts);
+    auto sb_graph = create_air_conditioners_with_controller_graph(size, number_of_parts, duplicate_conns);
     return sb_graph;
   } else if (filename.find("advection2D") != std::string::npos) {
     auto size = get_air_conditioners_controller_size(filename);
@@ -239,11 +239,12 @@ SBG::LIB::WeightedSBGraph get_sbg(const std::string& filename, unsigned number_o
 SBG::LIB::WeightedSBGraph build_computational_sbg(const PartitionerParams& params)
 {
   cout << "Building computational SB Graph" << endl;
-  SBG::LIB::WeightedSBGraph sb_graph = get_sbg(*params.filename, *params.number_of_partitions);
+  SBG::LIB::WeightedSBGraph sb_graph = get_sbg(*params.filename, *params.number_of_partitions, true);
 
   if (not params.filename->find("air_conditioners_cont") != std::string::npos) {
     return sb_graph;
   }
+  return sb_graph;
 
   // This is a hack to get intervals from their relations
   auto new_vertices = split_sets_according_to_relations(sb_graph);
@@ -295,7 +296,7 @@ tuple<SBG::LIB::WeightedSBGraph, PartitionMap, double, double> run_partitioner(c
 
   if (params.dump_results) {
     // graph may be compacted, so compute it again
-    auto actual_sbg = get_sbg(*params.filename, *params.number_of_partitions);
+    auto actual_sbg = get_sbg(*params.filename, *params.number_of_partitions, false);
     metrics::dump_results(actual_sbg, *params.filename, partition);
   }
 

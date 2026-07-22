@@ -213,7 +213,7 @@ void GraphPartitioner::readGraphFromJson()
   if (_name.find("air_conditioners_cont") != std::string::npos) {
     std::cout << "Creating graph for air conditioners with controller" << std::endl;
     auto size = get_air_conditioners_controller_size(_name);
-    auto temp_sbg_graph = sbg_partitioner::create_air_conditioners_with_controller_graph(size, _nbr_parts);
+    auto temp_sbg_graph = sbg_partitioner::create_air_conditioners_with_controller_graph(size, _nbr_parts, true);
 
     {
       auto new_vertices = sbg_partitioner::split_sets_according_to_relations(temp_sbg_graph);
@@ -221,6 +221,8 @@ void GraphPartitioner::readGraphFromJson()
                                                     temp_sbg_graph.map2().compact(), SBG::LIB::PW_FACT.createPWMap(),
                                                     SBG::LIB::PW_FACT.createPWMap()));
     }
+
+    // sbg_graph.reset(new SBG::LIB::WeightedSBGraph(temp_sbg_graph));
 
   } else if (_name.find("advection2D") != std::string::npos) {
     std::cout << "Creating graph for air conditioners with controller" << std::endl;
@@ -426,10 +428,15 @@ void GraphPartitioner::partitionUsingKaHip(Partition &partition)
 void GraphPartitioner::partitionUsingSBG(sbg_partitioner::PartitionMap &partitions)
 {
   std::cout << "GraphPartitioner::partitionUsingSBG" << std::endl;
-  partitions = sbg_partitioner::best_initial_partition(*sbg_graph, _nbr_parts, sbg_partitioner::InitialPartitionStrategy::ALL, false);
+  partitions = sbg_partitioner::best_initial_partition(*sbg_graph, _nbr_parts,
+                                                       sbg_partitioner::InitialPartitionStrategy::DFS_GREEDY_POSTORDER, false);
   //   std::cout << "chosen partition " << partitions << std::endl;
 
   sbg_partitioner::kl_sbg_imbalance_partitioner(*sbg_graph, partitions, _imbalance, false);
+  std::for_each(partitions.begin(), partitions.end(), [](const auto &p) {
+    std::for_each(p.begin(), p.end(), [](const auto &s) { std::cout << s << " "; });
+    std::cout << std::endl;
+  });
 }
 
 void GraphPartitioner::addRow(const SBG::LIB::Set &s)

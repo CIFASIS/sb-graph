@@ -39,8 +39,9 @@ namespace misc {
  * it merges the matched edges of the input SBG of \p data, adding them
  * as vertices of the new graphs. Then, it adds an edge (u, v) if in the
  * input bipartite SBG there was an unmatched edge between the matched edges
- * represented by u and v. The direction of (u, v) is from left to right
- * according to the input bipartite SBG.
+ * represented by u and v. The direction of (u, v) is from right to left
+ * according to the input bipartite SBG, representing that the equation
+ * referenced by u must be solved before the equation referenced by v.
  */
 SBG::LIB::DirectedSBG buildLoopDetectionSBG(const SBG::LIB::MatchData& data);
 

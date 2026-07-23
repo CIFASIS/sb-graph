@@ -71,14 +71,14 @@ std::tuple<SBG::LIB::PWMap, SBG::LIB::PWMap, SBG::LIB::PWMap> buildSCCEdges(
   SBG::LIB::PWMap mapU = map1_toY.concatenation(map2_toY);
 
   SBG::LIB::Set free_edges = bsbg.E().difference(M);
-  SBG::LIB::PWMap matchedF_inv = mapF.restrict(M).inverse();
-  SBG::LIB::PWMap unmatchedF = mapF.restrict(free_edges);
-  SBG::LIB::PWMap mapB = matchedF_inv.composition(unmatchedF);
-  mapB.compact();
-
   SBG::LIB::PWMap matchedU_inv = mapU.restrict(M).inverse();
   SBG::LIB::PWMap unmatchedU = mapU.restrict(free_edges);
-  SBG::LIB::PWMap mapD = matchedU_inv.composition(unmatchedU);
+  SBG::LIB::PWMap mapB = matchedU_inv.composition(unmatchedU);
+  mapB.compact();
+
+  SBG::LIB::PWMap matchedF_inv = mapF.restrict(M).inverse();
+  SBG::LIB::PWMap unmatchedF = mapF.restrict(free_edges);
+  SBG::LIB::PWMap mapD = matchedF_inv.composition(unmatchedF);
   mapD.compact();
 
   SBG::LIB::PWMap Emap = bsbg.Emap().restrict(free_edges);

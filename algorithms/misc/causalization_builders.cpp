@@ -161,8 +161,14 @@ SBG::LIB::DirectedSBG buildTearingSBG(const SBG::LIB::SCCData& data)
 {
   SBG::Util::Internal::TimeProfiler profiler{"SBG Tearing builder: "};
 
+  // Erase edges connecting different SCC
   SBG::LIB::DirectedSBG dsbg = data.dsbg();
   dsbg.eraseEdges(data.Ediff());
+
+  // Erase vertices that belong to a singleton SCC
+  SBG::LIB::PWMap mmap = data.rmap().imageMultiplicity();
+  SBG::LIB::Set one{SBG::LIB::MD_NAT{dsbg.V().arity(), 1}};
+  dsbg.eraseVertices(mmap.preImage(one));
 
   return dsbg;
 }

@@ -46,15 +46,14 @@ namespace misc {
 SBG::LIB::DirectedSBG buildLoopDetectionSBG(const SBG::LIB::MatchData& data);
 
 /**
- * @brief Builds the directed SBG used to identify tearing variables. To do so,
- * it erases the edges of the input SBG of \p data that connect different SCC.
+ * @brief Builds the directed SBG used to identify tearing variables.
  */
 SBG::LIB::DirectedSBG buildTearingSBG(const SBG::LIB::SCCData& data);
 
 /**
  * @brief Builds the directed acyclic SBG used to order vertically equations.
  */
-SBG::LIB::DirectedSBG buildVerticalSortingSBG(const SBG::LIB::SCCData& data
+SBG::LIB::SCCData buildVerticalSortingSBG(const SBG::LIB::SCCData& data
   , const SBG::LIB::Set& mfvs);
 
 }  // namespace misc

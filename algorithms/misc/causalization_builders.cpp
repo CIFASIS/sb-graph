@@ -177,7 +177,7 @@ SBG::LIB::DirectedSBG buildTearingSBG(const SBG::LIB::SCCData& data)
 // Vertical sort graph builder ------------------------------------------------- 
 ////////////////////////////////////////////////////////////////////////////////
 
-SBG::LIB::DirectedSBG buildVerticalSortingSBG(const SBG::LIB::SCCData& data
+SBG::LIB::SCCData buildVerticalSortingSBG(const SBG::LIB::SCCData& data
   , const SBG::LIB::Set& mfvs)
 {
   SBG::Util::Internal::TimeProfiler profiler{"SBG Vertical Sorting builder: "}; 
@@ -187,13 +187,60 @@ SBG::LIB::DirectedSBG buildVerticalSortingSBG(const SBG::LIB::SCCData& data
   SBG::LIB::Set V = dsbg.V();
   SBG::LIB::PWMap Vmap = dsbg.Vmap();
 
-  SBG::LIB::Set dependencies = dsbg.mapD().preImage(mfvs);
-  SBG::LIB::Set E = dsbg.E().difference(dependencies);
-  SBG::LIB::PWMap mapB = dsbg.mapB().restrict(E);
-  SBG::LIB::PWMap mapD = dsbg.mapD().restrict(E);
-  SBG::LIB::PWMap Emap = dsbg.Emap().restrict(E);
+  // Take out dependencies inside SCCs for tearing variables
+  SBG::LIB::PWMap mapB = dsbg.mapB();
+  SBG::LIB::PWMap mapD = dsbg.mapD();
+  SBG::LIB::PWMap Emap = dsbg.Emap();
 
-  return SBG::LIB::DirectedSBG{V, Vmap, mapB, mapD, Emap};
+  SBG::LIB::DirectedSBG result_dsbg{V, Vmap, mapB, mapD, Emap};
+
+  // Delete ingoing edges from other SCCs to residual vertices
+  SBG::LIB::Set Ediff = data.Ediff();
+  SBG::LIB::Set ingoing = dsbg.mapD().preImage(mfvs).intersection(Ediff);
+  result_dsbg.eraseEdges(ingoing);
+
+  // Delete outgoing edges to the same SCC from residual vertices
+  SBG::LIB::Set outgoing = dsbg.mapB().preImage(mfvs).difference(Ediff);
+  result_dsbg.eraseEdges(outgoing);
+
+  // Add guess vertices
+  SBG::LIB::MD_NAT maxv = V.maxElem();
+  for (const SBG::LIB::Map& sv : Vmap) { 
+    result_dsbg.addSetVertex(mfvs.intersection(sv.domain()).offset(maxv));
+  }
+
+  // Add ingoing edges from other SCCs to guess vertices 
+  SBG::LIB::Expression maxv_expr{maxv};
+  if (!ingoing.isEmpty()) {
+    for (const SBG::LIB::Map& se : Emap) {
+      SBG::LIB::Set domain = ingoing.intersection(se.domain());
+      SBG::LIB::PWMap pwB = mapB.restrict(domain);
+      SBG::LIB::PWMap offset{SBG::LIB::Map{domain, maxv_expr}};
+      SBG::LIB::PWMap pwD = mapD.restrict(domain) + offset;
+      result_dsbg.addSetEdge(pwB, pwD);
+    }
+  }
+
+  // Add outgoing edges to the same SCC to guess vertices
+  if (!outgoing.isEmpty()) {
+    for (const SBG::LIB::Map& se : Emap) {
+      SBG::LIB::Set domain = outgoing.intersection(se.domain());
+      SBG::LIB::PWMap offset{SBG::LIB::Map{domain, maxv_expr}};
+      SBG::LIB::PWMap pwB = mapB.restrict(domain) + offset;
+      SBG::LIB::PWMap pwD = mapD.restrict(domain);
+      result_dsbg.addSetEdge(pwB, pwD);
+    }
+  }
+
+  // Add guess vertices to rmap
+  SBG::LIB::PWMap result_rmap = data.rmap();
+  SBG::LIB::PWMap mfvs_rmap = result_rmap.restrict(mfvs);
+  SBG::LIB::PWMap offset_maxv{SBG::LIB::Map{mfvs, maxv_expr}};
+  SBG::LIB::PWMap guess_rmap = result_rmap.composition(
+    (mfvs_rmap + offset_maxv).inverse());
+  result_rmap = std::move(result_rmap).concatenation(std::move(guess_rmap));
+
+  return SBG::LIB::SCCData{result_dsbg, result_rmap, Ediff};
 }
 
 } // namespace misc

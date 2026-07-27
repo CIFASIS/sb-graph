@@ -742,9 +742,11 @@ ExprBaseType BuiltInFunctions::causalizationEvaluator(const EBTList& args)
   LIB::MinFeedbackVertexSet mfvs_impl;
   LIB::Set mfvs_result = mfvs_impl.calculate(dsbg);
 
-  dsbg = misc::buildVerticalSortingSBG(scc_result, mfvs_result);
+  SBG::LIB::SCCData vs_builder_result = misc::buildVerticalSortingSBG(scc_result
+    , mfvs_result);
+  dsbg = vs_builder_result.dsbg();
   LIB::TopologicalSorting ts_impl;
-  LIB::PWMap ts_result = ts_impl.calculate(dsbg, scc_result.rmap());
+  LIB::PWMap ts_result = ts_impl.calculate(dsbg, vs_builder_result.rmap());
 
   misc::CausalizationResult causalized{match_result.M(), scc_result.rmap()
     , mfvs_result, ts_result};

@@ -115,7 +115,7 @@ Set MapDetail::image(const Set& s, const Expression& expr)
     },
     [&](const auto& a)
     {
-      Util::ERROR("MapDetail::image: unsupported Set implementation");
+      Util::ERROR("MapDetail::image: unsupported Set implementation\n");
       return Set{SetKind::kUnordered};
     }
   };
@@ -183,7 +183,7 @@ Set MapDetail::preImage(const Set& s, const Expression& expr)
     },
     [&](const auto& a)
     {
-      Util::ERROR("MapDetail::preImage: unsupported Set implementation");
+      Util::ERROR("MapDetail::preImage: unsupported Set implementation\n");
       return Set{SetKind::kUnordered};
     }
   };
@@ -300,7 +300,7 @@ Set MapDetail::lessImage(const Expression& expr1, const Expression& expr2)
     },
     [&](auto&& a)
     {
-      Util::ERROR("MapDetail::lessImage: unsupported Set implementation");
+      Util::ERROR("MapDetail::lessImage: unsupported Set implementation\n");
       return Set{SetKind::kUnordered};
     }
   };
@@ -475,7 +475,7 @@ MapVector MapDetail::reduce(const Map& m)
     },
     [&](const auto& a)
     {
-      Util::ERROR("MapDetail::reduce: unsupported Set implementation");
+      Util::ERROR("MapDetail::reduce: unsupported Set implementation\n");
       return Set{SetKind::kUnordered};
     }
   };
@@ -498,15 +498,16 @@ AtomicMDMap imageMultiplicity(const MultiDimInter& mdi
   , const ExpressionImpl& expr)
 {
   MultiDimInter result_mdi;
-  ExpressionImpl result_expr;
 
+  unsigned int card = 1;
   std::size_t arity = mdi.arity();
   for (std::size_t j = 0; j < arity; ++j) {
     AtomicMap jth = imageMultiplicity(mdi[j], expr[j]);
     result_mdi.pushBack(std::get<0>(jth));
-    result_expr.push_back(std::get<1>(jth));
+    card *= std::get<0>(jth).cardinal();
   }
 
+  ExpressionImpl result_expr{arity, LinearExpr{0, card}};
   return AtomicMDMap{result_mdi, result_expr};
 }
 
@@ -563,9 +564,8 @@ MapVector MapDetail::imageMultiplicity(const Map& m)
   }
 
   if (law.isConstant()) {
-    Set result_domain = m.image();
-    Expression result_expr{MD_NAT{domain.arity(), domain.cardinal()}};
-    result.emplace_back(result_domain, result_expr);
+    result.emplace_back(m.image(), Expression{MD_NAT{domain.arity()
+      , m.domain().cardinal()}});
     return result;
   }
 
@@ -578,8 +578,8 @@ MapVector MapDetail::imageMultiplicity(const Map& m)
     },
     [&](const OrdUnidimDenseSet& a)
     {
-      Util::ERROR("MapDetail::imageMultiplicity: uni-dimensional already "
-        , "solved");
+      Util::ERROR("MapDetail::imageMultiplicity: OrdUnidimDenseSet already "
+        , "solved\n");
       return MapVector{};
     },
     [&](const OrderedSet& a)
@@ -589,7 +589,8 @@ MapVector MapDetail::imageMultiplicity(const Map& m)
     },
     [&](const auto& a)
     {
-      Util::ERROR("MapDetail::imageMultiplicity: unsupported Set implementation");
+      Util::ERROR("MapDetail::imageMultiplicity: unsupported Set "
+        , "implementation\n");
       return MapVector{};
     }
   };

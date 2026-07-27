@@ -230,6 +230,10 @@ public:
    */
   Set lessImage(const PWMap& other) const;
 
+  /*
+   * @brief Given a map f : A -> B, it calculates a new map g : img(f) -> N^k
+   * such that g(x) = (n, ..., n) where n = #{y in A : f(y) = x}.
+   */
   PWMap imageMultiplicity() const;
 
   /**

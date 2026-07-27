@@ -52,16 +52,15 @@ public:
   PWMap calculate(const DirectedSBG& dsbg, const PWMap& pmap);
 
 private:
-  MD_NAT getMinVertex();
+  MD_NAT getVertex();
 
   PWMap repetition(const Set& init_V, const DirectedSBG& dsbg) const;
 
   PWMap _smap;
   DirectedSBG _dsbg;
   Set _priority;
-  Set _same_SV;
   Set _independent;
-  Set _visitedSV;
+  std::vector<Set> _visitedSV;
   unsigned int _max_repetition_depth;
 };
 

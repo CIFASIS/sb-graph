@@ -33,35 +33,22 @@ namespace detail {
 ////////////////////////////////////////////////////////////////////////////////
 
 MinVertexTS::MinVertexTS()
-  : _smap(), _dsbg(), _visitedSV(), _priority(), _same_SV(), _independent()
+  : _smap(), _dsbg(), _visitedSV(), _priority(), _independent()
     , _max_repetition_depth(0) {}
 
 /*
- * @brief Given any two vertices u and v of the repetition, it checks that any
- * (u, v) edge (if it exists) satisfies that u comes before v in the sorting. 
+ * @brief Checks that the returned map is a topological sort of the dsbg. 
  */
-void checkSorting(const PWMap& result, const DirectedSBG& dsbg)
+void checkSort(const PWMap& result, const DirectedSBG& dsbg)
 {
-  PWMap mapB = dsbg.mapB(); 
-  PWMap mapD = dsbg.mapD(); 
-  Set result_vertices = result.domain().cup(result.image());
-  Set ED = mapD.preImage(result_vertices);
-  Set EB = mapB.preImage(result_vertices);
-  Set E = EB.intersection(ED);
-  PWMap jth_result = result;
-  Set E_old = E;
-  while (!E.isEmpty()) {
-    Set Ej = jth_result.composition(mapD).equalImage(mapB); 
-    E = E.difference(Ej);
-    Util::ERROR_UNLESS(E_old != E, "checkSorting: the sorting ", result
-      , " is incorrect\n");
+  // Check unique start.
 
-    jth_result = result.composition(jth_result);
-  }
+  // Check if it is injective.
+
+  // Check that, if there is and edge (u, v) then u is before v in the sort.
 }
 
-PWMap MinVertexTS::repetition(const Set& init_V
-  , const DirectedSBG& dsbg) const
+PWMap MinVertexTS::repetition(const Set& init_V, const DirectedSBG& dsbg) const
 {
   PWMap result;
 
@@ -81,35 +68,44 @@ PWMap MinVertexTS::repetition(const Set& init_V
     ++n;
   } while (!repetition && n < _max_repetition_depth);
 
-  if (repetition) {
-    Expression init_expr = (*_smap.restrict(init_V).begin()).law();
-    if (init_expr == final_expr) {
-      checkSorting(result, dsbg);
-    }
-  } else {
+  if (!repetition) {
     result = PWMap{};
   }
 
   return result;
 }
 
-MD_NAT MinVertexTS::getMinVertex()
+MD_NAT MinVertexTS::getVertex()
 {
   Set V = _dsbg.V(); 
   PWMap mapD = _dsbg.mapD();
   _independent = V.difference(mapD.image());
 
+  // Independent vertices with no incoming edges.
   Set Vj = _independent;
   if (Vj.isEmpty()) {
-    Util::ERROR("MinVertexTS::getMinVertex: the SBG is not acyclic\n");
+    Util::ERROR("MinVertexTS::getVertex: the SBG is not acyclic\n");
   }
+
+  // Independent vertices with priority treatment.
   Set independent_priority = Vj.intersection(_priority);
   if (!independent_priority.isEmpty()) {
     Vj = independent_priority;
   }
-  Set Vj_same_SV = Vj.intersection(_same_SV);
-  if (!Vj_same_SV.isEmpty()) {
-    Vj = Vj_same_SV;
+
+  // Independent vertices with priority treatment, that belong to a visited
+  // set-vertex.
+  Set Vj_repeated_SV = Vj;
+  Set Vj_set_vertex = _dsbg.Vmap().image(Vj);
+  for (auto rit = _visitedSV.rbegin(); rit != _visitedSV.rend(); ++rit) {
+    Set repeatedSV = (*rit).intersection(Vj_set_vertex);
+    if (!repeatedSV.isEmpty()) {
+      Vj_repeated_SV = _dsbg.Vmap().preImage(repeatedSV).intersection(Vj);
+      break;
+    }
+  }
+  if (!Vj_repeated_SV.isEmpty()) {
+    Vj = Vj_repeated_SV;
   }
 
   return Vj.minElem();
@@ -129,28 +125,34 @@ PWMap MinVertexTS::calculate(const DirectedSBG& dsbg
   }
 
   _priority = _dsbg.V();
-  _same_SV = _dsbg.V();
-  Set visited_SV;
   Expression successor_expr{_dsbg.V().arity(), 1, 0};
   MD_NAT vj;
   MD_NAT old_vj = _dsbg.V().difference(_dsbg.mapD().image()).minElem();
   do {
-    // Find new minimum vertex, and add it to the sorting
-    vj = getMinVertex();
+    // Find new without dependencies, and add it to the sorting
+    vj = getVertex();
     Set vj_set{vj};
+    Util::DEBUG_LOG << "vj_set: " << vj_set << "\n";
     successor_expr = Expression{vj, old_vj};
     _smap.emplace(vj_set, successor_expr);
 
     // Handle repetition
     PWMap Vmap = _dsbg.Vmap();
-    Set repeatedSV = _visitedSV.intersection(Vmap.image(vj_set));
+    Set vj_set_vertex = Vmap.image(vj_set);
+    Set repeatedSV;
+    for (auto rit = _visitedSV.rbegin(); rit != _visitedSV.rend(); ++rit) {
+      repeatedSV = (*rit).intersection(vj_set_vertex);
+      if (!repeatedSV.isEmpty()) {
+        break;
+      }
+    }
     if (!repeatedSV.isEmpty()) {
       PWMap smap_plus = repetition(vj_set, dsbg);
       _smap = std::move(smap_plus).combine(std::move(_smap));
       vj = _smap.domain().difference(_smap.image()).minElem();
       _max_repetition_depth = 0;
     } else {
-      _visitedSV = std::move(_visitedSV).disjointCup(Vmap.image(vj_set));
+      _visitedSV.push_back(Vmap.image(vj_set));
       _max_repetition_depth++;
     } 
 
@@ -158,7 +160,8 @@ PWMap MinVertexTS::calculate(const DirectedSBG& dsbg
     _dsbg.eraseVertices(_smap.domain());
     old_vj = vj;
     _priority = pmap.preImage(pmap.image(vj_set));
-    _same_SV = Vmap.preImage(Vmap.image(vj_set));
+    Util::DEBUG_LOG << "smap: " << _smap << "\n";
+    Util::DEBUG_LOG << "dsbg: " << _dsbg << "\n\n";
   } while (!_dsbg.V().isEmpty());
 
   _smap.compact();

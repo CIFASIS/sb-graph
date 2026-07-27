@@ -23,6 +23,7 @@
 #include "sbg/pw_map.hpp"
 #include "util/logger.hpp"
 
+#include <functional>
 #include <numeric>
 
 namespace SBG {
@@ -32,41 +33,73 @@ namespace LIB {
 namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Greedy MFVS Algorithm -------------------------------------------------------
+// Smallest set-vertex MFVS Algorithm ------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 SmallestSVMFVS::SmallestSVMFVS() {}
 
 /**
- * @brief It calculates the minimum vertex from the smallest SV. 
+ * @brief It calculates the set of vertices that belong to the smallest
+ * set-vertices described by Vmap.
  */
-MD_NAT getVertexFromSmallestSV(const DirectedSBG& dsbg)
+Set getVerticesFromSmallestSV(const PWMap& Vmap)
 {
-  PWMap Vmap = dsbg.Vmap();
-  PWMap mmap = Vmap.imageMultiplicity();
-
-  MD_NAT min_mult{dsbg.V().arity(), Inf};
-  Set remaining = mmap.image();
+  Set Vmap_image = Vmap.image();
+  NAT min_sz = Inf;
+  Set remaining = Vmap_image;
   while (!remaining.isEmpty()) {
-    MD_NAT jth_mult = remaining.minElem();
-    NAT current_degree = std::accumulate(min_mult.begin(), min_mult.end()
-      , 0);
-    NAT jth_degree = std::accumulate(jth_mult.begin(), jth_mult.end(), 0);
-    if (jth_degree < current_degree) {
-      min_mult = jth_mult;
+    Set jth_sv{remaining.minElem()};
+    NAT jth_sz = Vmap.preImage(jth_sv).cardinal(); 
+    if (jth_sz < min_sz) {
+      min_sz = jth_sz;
     }
 
-    remaining = remaining.difference(Set{jth_mult});
+    remaining = remaining.difference(jth_sv);
   }
 
-  Set small_sv = mmap.preImage(Set{min_mult});
-  Set vertex = Vmap.preImage(small_sv);
+  Set Vsmall;
+  remaining = Vmap_image;
+  while (!remaining.isEmpty()) {
+    Set jth_sv{remaining.minElem()};
+    Set jth_vertices = Vmap.preImage(jth_sv);
+    if (jth_vertices.cardinal() == min_sz) {
+      Vsmall = Vsmall.disjointCup(jth_vertices);
+    }
 
-  return vertex.minElem();
+    remaining = remaining.difference(jth_sv);
+  }
+
+  return Vsmall;
+}
+
+/**
+ * @brief It calculates the minimum vertex of maximum degree of V. 
+ */
+MD_NAT getMaxDegreeVertex(const Set& V, const DirectedSBG& dsbg)
+{
+  PWMap mapB = dsbg.mapB();
+  PWMap mapD = dsbg.mapD();
+  Set adj_edges = mapB.preImage(V).cup(mapD.preImage(V));
+  PWMap multB = mapB.restrict(adj_edges).imageMultiplicity();
+  PWMap multD = mapD.restrict(adj_edges).imageMultiplicity();
+  PWMap mmap = (multB + multD).restrict(V);
+
+  if (mmap.isEmpty()) {
+    return V.minElem();
+  }
+
+  Set max_mult_set{mmap.image().maxElem()};
+  Set max_degree_vertices = mmap.preImage(max_mult_set);
+
+  return max_degree_vertices.minElem();
 }
 
 Set SmallestSVMFVS::calculate(const DirectedSBG& input_dsbg) const
 {
+  if (input_dsbg.V().isEmpty()) {
+    return Set{};
+  }
+
   DirectedSBG dsbg = input_dsbg;
 
   Util::DEBUG_LOG << "initial smallest set-vertex mfvs dsbg:\n" << dsbg << "\n";
@@ -75,9 +108,9 @@ Set SmallestSVMFVS::calculate(const DirectedSBG& input_dsbg) const
   Set fvs_result;
   Set visitedSV;
   while (rmap.fixedPoints() != rmap.domain()) {
-    // Get vertex from smallest set-vertex
-    MD_NAT smallest_sv_vertex = getVertexFromSmallestSV(dsbg);
-    Set Vj{smallest_sv_vertex};
+    // Get vertex from smallest set-vertex, of maximum degree
+    Set Vsmall = getVerticesFromSmallestSV(dsbg.Vmap());
+    Set Vj{getMaxDegreeVertex(Vsmall, dsbg)};
     fvs_result = std::move(fvs_result).disjointCup(Vj);
 
     // Handle repetition
@@ -86,8 +119,6 @@ Set SmallestSVMFVS::calculate(const DirectedSBG& input_dsbg) const
     if (!repeatedSV.isEmpty()) {
       Set V_plus = Vmap.preImage(Vmap.image(Vj));
       fvs_result = std::move(fvs_result).cup(std::move(V_plus));
-
-      visitedSV = repeatedSV.difference(Vmap.image(Vj));
     } else {
       visitedSV = std::move(repeatedSV).disjointCup(Vmap.image(Vj));
     }

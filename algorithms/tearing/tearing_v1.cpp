@@ -25,6 +25,7 @@
 #include "algorithms/scc/minadj_mrv.hpp"
 #include "algorithms/scc/scc.hpp"
 #include "util/logger.hpp"
+#include <iostream>
 
 namespace SBG {
 
@@ -46,6 +47,10 @@ void TearingV1::init(const DirectedSBG& dsbg)
   return;
 }
 
+Set TearingV1::getTearingSV(const PWMap rmap)  {
+  return rmap.image(rmap.domain().difference(rmap.fixedPoints()));
+}
+
 TearingData TearingV1::calculate(const DirectedSBG& dsbg)
 {
   Util::DEBUG_LOG << "TearingV1 dsbg: \n" << dsbg << "\n\n";
@@ -59,7 +64,7 @@ TearingData TearingV1::calculate(const DirectedSBG& dsbg)
   PWMap _rmap = result.rmap();
   Set e_notscc = result.Ediff();
   Set e_scc = _dsbg.E().difference(e_notscc);
-  Set v_tear = _rmap.image(_rmap.domain().difference(_rmap.fixedPoints())); // separar en otro metodo
+  Set v_tear = getTearingSV(_rmap);
 
   while (!v_tear.isEmpty())  {
     PWMap rmap = result.rmap();
@@ -84,8 +89,9 @@ TearingData TearingV1::calculate(const DirectedSBG& dsbg)
 
     result = sccAlgorithm.calculate(_dsbg);
     e_notscc = result.Ediff();
+    rmap = result.rmap();
     e_scc = e_scc.difference(e_notscc);
-    v_tear = _rmap.image(_rmap.domain().difference(_rmap.fixedPoints())); // separar en otro metodo
+    v_tear = getTearingSV(rmap);
   }
 
   _finalDSBG = _dsbg;
@@ -96,9 +102,9 @@ TearingData TearingV1::calculate(const DirectedSBG& dsbg)
   auto total = std::chrono::duration_cast<std::chrono::microseconds>(
     end - begin
   );
-  Util::SBG_LOG << "Total MinReachTearing exec time: " << total.count() << " [μs]\n\n"; 
+  Util::SBG_LOG << "Total TearingV1 exec time: " << total.count() << " [μs]\n\n"; 
 
-  Util::DEBUG_LOG << "MinReachTearing result: " << _rmap << "\n\n";
+  Util::DEBUG_LOG << "TearingV1 result: " << _rmap << "\n\n";
 
   return TearingData(_finalDSBG, _rmap, _tearIOMap);
 }

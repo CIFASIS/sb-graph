@@ -58,6 +58,11 @@ class TearingV1 {
    */
   void init(const DirectedSBG& dsbg);
 
+  /**
+   * @brief Calculates the tearing set-vertex
+   */
+  Set getTearingSV(const PWMap rmap);
+
   DirectedSBG _dsbg; ///< Input DSBG
   DirectedSBG _finalDSBG; ///< Output DSBG
   PWMap _tearIOMap; ///< Output tearing vertex map

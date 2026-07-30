@@ -34,9 +34,14 @@
 
 namespace misc {
 
+////////////////////////////////////////////////////////////////////////////////
+// Algebraic loops detection builder -------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
 /**
- * @brief Builds the directed SBG used to detect algebraic loops. To do so,
- * it merges the matched edges of the input SBG of \p data, adding them
+ * @brief Builds the directed SBG used to detect algebraic loops.
+ * 
+ * It merges the matched edges of the input SBG of \p data, adding them
  * as vertices of the new graphs. Then, it adds an edge (u, v) if in the
  * input bipartite SBG there was an unmatched edge between the matched edges
  * represented by u and v. The direction of (u, v) is from right to left
@@ -45,16 +50,56 @@ namespace misc {
  */
 SBG::LIB::DirectedSBG buildLoopDetectionSBG(const SBG::LIB::MatchData& data);
 
+////////////////////////////////////////////////////////////////////////////////
+// Algebraic loops breaker builder ---------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
 /**
  * @brief Builds the directed SBG used to identify tearing variables.
  */
 SBG::LIB::DirectedSBG buildTearingSBG(const SBG::LIB::SCCData& data);
 
+////////////////////////////////////////////////////////////////////////////////
+// Vertical sorting builder ----------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
 /**
+ * @class VerticalSortingBuilder
  * @brief Builds the directed acyclic SBG used to order vertically equations.
  */
-SBG::LIB::SCCData buildVerticalSortingSBG(const SBG::LIB::SCCData& data
-  , const SBG::LIB::Set& mfvs);
+class VerticalSortingBuilder {
+public:
+  VerticalSortingBuilder(const SBG::LIB::SCCData& data
+    , const SBG::LIB::Set& mfvs);
+
+  void buildVerticalSorting();
+
+  const SBG::LIB::DirectedSBG& dsbg() const;
+  const SBG::LIB::PWMap& rmap() const;
+
+private:
+  void addGuessVertices();
+
+  /**
+   * @brief Adds edges between tearing variables to induce an order between
+   * them.
+   */
+  void addDependencies(const SBG::LIB::PWMap& residual_to_endpoint);
+
+  /**
+   * @brief Modify edges between different SCC so that the endings are start and
+   * end points.
+   */
+  void redirectEdiff(const SBG::LIB::PWMap& reps_to_endpoint);
+
+  SBG::LIB::DirectedSBG _input_dsbg;
+  SBG::LIB::PWMap _input_rmap;
+  SBG::LIB::Set _Ediff;
+  SBG::LIB::DirectedSBG _output_dsbg;
+  SBG::LIB::PWMap _output_rmap;
+  SBG::LIB::Set _residual_vertices;
+  SBG::LIB::PWMap _guess_offset;
+};
 
 }  // namespace misc
 

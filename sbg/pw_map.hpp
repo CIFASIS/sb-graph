@@ -205,7 +205,7 @@ public:
   /**
    * @brief Given two maps pw1 (\p this) and pw2 (\p other), for every element y1
    * in the image of pw1 returns a pw res such that
-   * res(y1) = {min(pw2(x)) : pw1(x) = y1}. In SBG algorithms it is used to
+   * res(y1) = min{pw2(x) : pw1(x) = y1}. In SBG algorithms it is used to
    * calculate for every vertex which of its adjacent vertices returns the
    * minimum value according to pw \p other.
    */

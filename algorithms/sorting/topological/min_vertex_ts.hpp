@@ -30,6 +30,8 @@
 #include "sbg/pw_map.hpp"
 #include "sbg/set.hpp"
 
+#include <tuple>
+
 namespace SBG {
 
 namespace LIB {
@@ -54,10 +56,21 @@ public:
 private:
   MD_NAT getVertex();
 
-  PWMap repetition(const Set& init_V, const DirectedSBG& dsbg) const;
+  /**
+   * @brief Identifies the "path" that leads to the repetition in _smap and
+   * extends it for vertices in the same set-vertex as those that participate in
+   * the recursive "path".
+   */
+  std::tuple<Set, PWMap> detectRepetition(Set Vj, const DirectedSBG& dsbg);
 
-  PWMap _smap;
+  /**
+   * @brief Handles a repetition.
+   */
+  PWMap repetition(const Set& init_V, const DirectedSBG& dsbg);
+
   DirectedSBG _dsbg;
+  Set _start;
+  PWMap _smap;
   Set _priority;
   Set _independent;
   std::vector<Set> _visitedSV;

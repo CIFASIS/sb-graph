@@ -36,44 +36,68 @@ MinVertexTS::MinVertexTS()
   : _smap(), _dsbg(), _visitedSV(), _priority(), _independent()
     , _max_repetition_depth(0) {}
 
-/*
- * @brief Checks that the returned map is a topological sort of the dsbg. 
- */
-void checkSort(const PWMap& result, const DirectedSBG& dsbg)
+// Repetition ------------------------------------------------------------------
+
+std::tuple<Set, PWMap> MinVertexTS::detectRepetition(Set Vj
+  , const DirectedSBG& dsbg)
 {
-  // Check unique start.
-
-  // Check if it is injective.
-
-  // Check that, if there is and edge (u, v) then u is before v in the sort.
-}
-
-PWMap MinVertexTS::repetition(const Set& init_V, const DirectedSBG& dsbg) const
-{
-  PWMap result;
+  Set repetition_vertices;
+  PWMap smap_plus;
 
   PWMap Vmap = dsbg.Vmap();
-  Set Vj = init_V;
-  Set init_SV = Vmap.image(init_V);
-  Expression final_expr;
-  bool repetition = true;
+  Set init_SV = Vmap.image(Vj);
+  bool repetition = false;
   unsigned int n = 0;
   do {
-    PWMap jth_smap = _smap.restrict(Vj);
-    Set V_plus = Vmap.preImage(Vmap.image(Vj)).difference(_smap.domain());
-    final_expr = (*jth_smap.begin()).law();
-    result.emplace(V_plus, final_expr);
+    // Calculate jth result. 
+    repetition_vertices = std::move(repetition_vertices).disjointCup(Vj);
+    Set Vj_plus = Vmap.preImage(Vmap.image(Vj));
+    smap_plus = std::move(smap_plus)
+      .concatenation(Map{Vj_plus, (*(_smap.restrict(Vj).begin())).law()});
+
+    // Values for the next iteration.
     Vj = _smap.image(Vj);
     repetition = !Vmap.image(Vj).intersection(init_SV).isEmpty();
     ++n;
   } while (!repetition && n < _max_repetition_depth);
 
   if (!repetition) {
-    result = PWMap{};
+    repetition_vertices = Set{};
+    smap_plus = PWMap{};
   }
+
+  return {repetition_vertices, smap_plus};
+}
+
+PWMap MinVertexTS::repetition(const Set& init_V, const DirectedSBG& dsbg)
+{
+  // Identify repetition and extend it to vertices in the same set-vertex.
+  auto [repetition_vertices, smap_plus] = detectRepetition(init_V, dsbg);
+  smap_plus = smap_plus.restrict(smap_plus.domain().difference(_smap.domain()));
+
+  // Get erased edges up to the repetition, and erase edges that belong to the
+  // same set-edge. 
+  Set outgoing_edges = dsbg.mapB().preImage(repetition_vertices);
+  PWMap Emap = dsbg.Emap();
+  Set E_plus = Emap.preImage(Emap.image(outgoing_edges));
+  DirectedSBG dsbg_copy = _dsbg;
+  dsbg_copy.eraseEdges(E_plus);
+
+  // Identify vertices with ingoing edges after the previous step. These are
+  // "cut" vertices for the repetition.
+  PWMap not_independent{dsbg_copy.mapD().image()
+    .intersection(smap_plus.domain())};
+  not_independent = not_independent.combine(smap_plus);
+  not_independent = not_independent.combine(_smap); 
+  PWMap rmap = not_independent.mapInf();
+
+  Set reach_end_vertices = rmap.preImage(_start);
+  PWMap result = smap_plus.restrict(reach_end_vertices);
 
   return result;
 }
+
+// getVertex -------------------------------------------------------------------
 
 MD_NAT MinVertexTS::getVertex()
 {
@@ -111,32 +135,58 @@ MD_NAT MinVertexTS::getVertex()
   return Vj.minElem();
 }
 
+// Algorithm -------------------------------------------------------------------
+
+/**
+ * @brief Checks that the returned map is a topological sort of the dsbg. 
+ */
+void checkSort(PWMap& smap, const DirectedSBG& dsbg)
+{
+  // Check if it is injective, that is, if is an actual order.
+  Set fixed_points = smap.fixedPoints();
+  Set visited_img;
+  for (const Map& m : smap) {
+    Set m_image = m.image().difference(fixed_points);
+    if (!visited_img.intersection(m_image).isEmpty()) {
+      Util::ERROR("checkSort: proposed result is not an order\n");
+    }
+    visited_img = std::move(visited_img).disjointCup(std::move(m_image));
+  }
+
+  // Check if the sort is total.
+  Util::ERROR_UNLESS(smap.domain() == dsbg.V()
+    , "checkSort: the order is partial\n");
+}
+
 PWMap MinVertexTS::calculate(const DirectedSBG& dsbg
-  , const PWMap& pmap)
+  , const PWMap& scc_map)
 {
   Util::DEBUG_LOG << "Topological sort dsbg:\n" << dsbg << "\n\n";
 
+  Set V = dsbg.V();
   _dsbg = dsbg;
 
   _smap = PWMap{};
+  _priority = V;
 
-  if (dsbg.V().isEmpty()) {
+  if (V.isEmpty()) {
     return _smap;
   }
 
-  _priority = _dsbg.V();
-  Expression successor_expr{_dsbg.V().arity(), 1, 0};
+  std::size_t arity = V.arity();
+  Expression successor_expr{arity, 1, 0};
   MD_NAT vj;
-  MD_NAT old_vj = _dsbg.V().difference(_dsbg.mapD().image()).minElem();
+  MD_NAT old_vj = V.difference(_dsbg.mapD().image()).minElem();
+  _start = old_vj;
   do {
-    // Find new without dependencies, and add it to the sorting
+    // Find new vertex without dependencies, and add it to the sorting.
     vj = getVertex();
     Set vj_set{vj};
     Util::DEBUG_LOG << "vj_set: " << vj_set << "\n";
     successor_expr = Expression{vj, old_vj};
     _smap.emplace(vj_set, successor_expr);
 
-    // Handle repetition
+    // Handle repetition.
     PWMap Vmap = _dsbg.Vmap();
     Set vj_set_vertex = Vmap.image(vj_set);
     Set repeatedSV;
@@ -148,7 +198,7 @@ PWMap MinVertexTS::calculate(const DirectedSBG& dsbg
     }
     if (!repeatedSV.isEmpty()) {
       PWMap smap_plus = repetition(vj_set, dsbg);
-      _smap = std::move(smap_plus).combine(std::move(_smap));
+      _smap = std::move(smap_plus).concatenation(std::move(_smap));
       vj = _smap.domain().difference(_smap.image()).minElem();
       _max_repetition_depth = 0;
     } else {
@@ -156,16 +206,18 @@ PWMap MinVertexTS::calculate(const DirectedSBG& dsbg
       _max_repetition_depth++;
     } 
 
-    // Update values for new iteration
+    // Update values for new iteration.
     _dsbg.eraseVertices(_smap.domain());
     old_vj = vj;
-    _priority = pmap.preImage(pmap.image(vj_set));
+    _priority = scc_map.preImage(scc_map.image(vj_set));
+
     Util::DEBUG_LOG << "smap: " << _smap << "\n";
     Util::DEBUG_LOG << "dsbg: " << _dsbg << "\n\n";
   } while (!_dsbg.V().isEmpty());
 
   _smap.compact();
   Util::DEBUG_LOG << "Topological sort result:\n" << _smap << "\n\n";
+  checkSort(_smap, dsbg);
   return _smap;
 }
 

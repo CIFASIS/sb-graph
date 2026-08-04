@@ -238,11 +238,10 @@ void VerticalSortingBuilder::addGuessVertices()
   }
 
   // Add guess vertices to rmap.
-  SBG::LIB::PWMap result_rmap = _input_rmap;
-  SBG::LIB::PWMap residual_rmap = result_rmap.restrict(_residual_vertices);
-  SBG::LIB::PWMap guess_rmap = result_rmap
-    .composition((residual_rmap + _guess_offset).inverse());
-  _output_rmap = std::move(result_rmap).concatenation(std::move(guess_rmap));
+  SBG::LIB::PWMap residual_rmap = _input_rmap.restrict(_residual_vertices);
+  SBG::LIB::PWMap guess_rmap = residual_rmap
+    .composition(_guess_offset.inverse());
+  _output_rmap = _input_rmap.concatenation(std::move(guess_rmap));
 }
 
 void VerticalSortingBuilder::addDependencies(

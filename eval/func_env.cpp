@@ -23,27 +23,31 @@ namespace SBG {
 
 namespace Eval {
 
+namespace detail {
+
 FuncEnv::FuncEnv() {}
 
 FuncEnv::FIt FuncEnv::begin() const
 {
-  return functions_.begin();
+  return _functions.begin();
 }
 
 FuncEnv::FIt FuncEnv::end() const
 {
-  return functions_.end();
+  return _functions.end();
 }
 
 FuncEnv::FIt FuncEnv::find(const FuncEnv::FKey& key) const
 {
-  return functions_.find(key);
+  return _functions.find(key);
 }
 
 void FuncEnv::insert(FuncEnv::FKey key, FuncEnv::FValue value)
 {
-  functions_[key] = value;
+  _functions[key] = value;
 }
+
+} // namespace detail
 
 } // namespace Eval
 

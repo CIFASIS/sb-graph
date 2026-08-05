@@ -36,9 +36,11 @@ namespace Parser {
 
 ParserExecutor::ParserExecutor() : UserInputHandler()
 {
-  cmd_line_opts_.add(generic_).add(config_).add(hidden_);
-  cfg_file_opts_.add(config_).add(hidden_);
-  visible_.add(generic_).add(config_);
+  // First option without name is the input file
+  _positional.add("input-file", 1);
+  _cmd_line_opts.add(_generic).add(_config).add(_hidden);
+  _cfg_file_opts.add(_config).add(_hidden);
+  _visible.add(_generic).add(_config);
 }
 
 void ParserExecutor::execute(int arg_count, char* args[])
@@ -47,7 +49,7 @@ void ParserExecutor::execute(int arg_count, char* args[])
 
   Util::prog_opts::variables_map vm;
   store(Util::prog_opts::command_line_parser(arg_count, args)
-    .options(cmd_line_opts_).positional(positional_).run(), vm);
+    .options(_cmd_line_opts).positional(_positional).run(), vm);
   notify(vm);
 
   // Help handling -------------------------------------------------------------
@@ -56,7 +58,7 @@ void ParserExecutor::execute(int arg_count, char* args[])
     std::cout << "Usage: filename [options]\n";
     std::cout << "Command line options are prioritized over configuration file"
       " options.";
-    std::cout << visible_ << "\n";
+    std::cout << _visible << "\n";
     return;
   }
 
@@ -69,18 +71,18 @@ void ParserExecutor::execute(int arg_count, char* args[])
 
   // Optional configuration file handling --------------------------------------
  
-  if (config_file_) { 
-    std::ifstream config_fs((*config_file_).c_str());
+  if (_config_file) { 
+    std::ifstream config_fs((*_config_file).c_str());
     if (config_fs) {
-      store(parse_config_file(config_fs, cfg_file_opts_), vm);
+      store(parse_config_file(config_fs, _cfg_file_opts), vm);
       notify(vm);
     }
   }
 
   // Input SBG program file handling -------------------------------------------
 
-  if (input_file_) {
-    parseFile(*input_file_);
+  if (_input_file) {
+    parseFile(*_input_file);
   }
   else {
     std::cout << "Usage: filename [options]";

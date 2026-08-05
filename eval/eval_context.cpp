@@ -23,6 +23,8 @@ namespace SBG {
 
 namespace Eval {
 
+namespace detail {
+
 EvalContext::EvalContext() : arity_(1), venv_(), fenv_() {}
 
 // Getters ---------------------------------------------------------------------
@@ -58,6 +60,8 @@ void EvalContext::insertFunction(FuncEnv::FKey key, FuncEnv::FValue value)
 {
   fenv_.insert(key, value);
 }
+
+} // namespace detail
 
 } // namespace Eval
 

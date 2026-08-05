@@ -29,7 +29,7 @@
 
 #include "eval/eval_exec.hpp"
 
-int main(int argc, char**argv)
+int main(int argc, char* argv[])
 {
   std::cout << std::boolalpha;
 

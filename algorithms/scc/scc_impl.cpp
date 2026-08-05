@@ -1,0 +1,67 @@
+/*******************************************************************************
+
+ This file is part of Set--Based Graph Library.
+
+ SBG Library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ SBG Library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with SBG Library.  If not, see <http://www.gnu.org/licenses/>.
+
+ ******************************************************************************/
+
+#include "algorithms/scc/scc_impl.hpp"
+#include "util/debug.hpp"
+
+namespace SBG {
+
+namespace LIB {
+
+////////////////////////////////////////////////////////////////////////////////
+// SCC implementations --------------------------------------------------------- 
+////////////////////////////////////////////////////////////////////////////////
+
+std::ostream& operator<<(std::ostream& out, const SCCKind kind)
+{
+  switch (kind) {
+    case SCCKind::kMinReachV1: {
+      out << "minimum reachable V1";
+      break;
+    }
+
+    case SCCKind::kMinReachV2: {
+      out << "minimum reachable V2";
+      break;
+    }
+
+    default: {
+      Util::ERROR("Unsupported SCC implementation");
+      break;
+    }
+  }
+
+  return out;
+}
+
+SCCImplementation::SCCImplementation() : _kind(SCCKind::kMinReachV2) {}
+
+SCCImplementation& SCCImplementation::instance()
+{
+  static SCCImplementation _instance;
+  return _instance;
+}
+
+const SCCKind& SCCImplementation::kind() const { return _kind; }
+
+void SCCImplementation::set_scc_fact(SCCKind kind) { _kind = kind; }
+
+} // namespace LIB
+
+} // namespace SBG

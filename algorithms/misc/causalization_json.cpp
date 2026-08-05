@@ -17,119 +17,78 @@
 
  ******************************************************************************/
 
+#include "algorithms/misc/causalization_json.hpp"
+
 #include "rapidjson/document.h"
 #include "rapidjson/filewritestream.h"
 #include "rapidjson/prettywriter.h"
 
-#include "algorithms/misc/causalization_json.hpp"
-
-namespace MISC {
+namespace misc {
 
 using namespace SBG::LIB;
 
-rapidjson::Value setJson(const Set &s
-  , rapidjson::Document::AllocatorType &alloc)
+////////////////////////////////////////////////////////////////////////////////
+// Causalization result --------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+CausalizationResult::CausalizationResult(SBG::LIB::Set horizontal_sorting 
+  , SBG::LIB::PWMap algebraic_loops
+  , SBG::LIB::Set mfvs
+  , SBG::LIB::PWMap vertical_sorting) : _horizontal_sorting(horizontal_sorting)
+    , _algebraic_loops(algebraic_loops)
+    , _mfvs(mfvs)
+    , _vertical_sorting(vertical_sorting) {}
+
+const SBG::LIB::Set& CausalizationResult::horizontal_sorting() const
 {
-  rapidjson::Value res(rapidjson::kArrayType);
-
-  for (const SetPiece &mdi : s) {
-    rapidjson::Value inter_array(rapidjson::kArrayType);
-    for (const Interval &i : mdi) {
-      rapidjson::Value inter(rapidjson::kArrayType);
-
-      rapidjson::Value beg;
-      beg.SetInt(i.begin());
-      inter.PushBack(beg, alloc);
-      rapidjson::Value st;
-      st.SetInt(i.step());
-      inter.PushBack(st, alloc);
-      rapidjson::Value end;
-      end.SetInt(i.end());
-      inter.PushBack(end, alloc);
-
-      inter_array.PushBack(inter, alloc);
-    }
-    rapidjson::Value mdi_obj(rapidjson::kObjectType);
-    mdi_obj.AddMember("interval", inter_array, alloc);
-    res.PushBack(mdi_obj, alloc);
-  }
-
-  return res;
+  return _horizontal_sorting;
 }
 
-rapidjson::Value expJson(Exp exp, rapidjson::Document::AllocatorType &alloc)
+const SBG::LIB::PWMap& CausalizationResult::algebraic_loops() const
 {
-  rapidjson::Value res(rapidjson::kArrayType);
-
-  for (const LExp &le : exp) {
-    rapidjson::Value le_array(rapidjson::kArrayType);
-
-    std::stringstream ssm;
-    ssm << le.slope();
-    rapidjson::Value m;
-    m.SetString(ssm.str().c_str(), strlen(ssm.str().c_str()), alloc);
-    le_array.PushBack(m, alloc);
-
-    std::stringstream ssh;
-    ssh << le.offset();
-    rapidjson::Value h;
-    h.SetString(ssh.str().c_str(), strlen(ssh.str().c_str()), alloc);
-    le_array.PushBack(h, alloc);
-
-    res.PushBack(le_array, alloc);
-  }
-
-  return res;
+  return _algebraic_loops;
 }
 
-rapidjson::Value mapJson(
-  const PWMap &pw, rapidjson::Document::AllocatorType &alloc
-)
+const SBG::LIB::Set& CausalizationResult::mfvs() const { return _mfvs; }
+
+const SBG::LIB::PWMap& CausalizationResult::vertical_sorting() const
 {
-  rapidjson::Value res(rapidjson::kArrayType);
-
-  for (const Map &map : pw) {
-    rapidjson::Value ith(rapidjson::kObjectType);
-
-    ith.AddMember("dom", setJson(map.dom(), alloc), alloc);
-    ith.AddMember("exp", expJson(map.exp(), alloc), alloc);
-
-    res.PushBack(ith, alloc);
-  }
-
-  return res;
+  return _vertical_sorting;
 }
 
-void buildJson(const Set &matching, const PWMap &scc, const PWMap &order)
+////////////////////////////////////////////////////////////////////////////////
+// Build JSON file -------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+void toJSON(const CausalizationResult& causalized)
 {
-  rapidjson::Document d;
-  d.SetObject();
-  rapidjson::Document::AllocatorType& alloc = d.GetAllocator();
+  // Initialize rapidJSON
+  rapidjson::Document document;
+  document.SetObject();
+  rapidjson::Document::AllocatorType& alloc = document.GetAllocator();
 
-  // Create matching information
-  rapidjson::Value edges = setJson(matching, alloc);
-  d.AddMember("matching", edges, alloc);
+  // Save causalization results
+  document.AddMember("horizontal_sorting"
+    , causalized.horizontal_sorting().toJSON(alloc), alloc);
 
-  // Create SCC information
-  rapidjson::Value scc_rmap = mapJson(scc, alloc);
-  d.AddMember("scc", scc_rmap, alloc);
+  document.AddMember("algebraic_loops"
+    , causalized.algebraic_loops().toJSON(alloc), alloc);
 
-  // Create sort information
-  rapidjson::Value order_rmap = mapJson(order, alloc);
-  d.AddMember("sort", order_rmap, alloc);
+  document.AddMember("mfvs", causalized.mfvs().toJSON(alloc), alloc);
 
+  document.AddMember("vertical_sorting"
+    , causalized.vertical_sorting().toJSON(alloc), alloc);
+
+  // Write file with rapidJSON
   FILE *fp = fopen("output.json", "w");
   char write_buffer[65536];
   rapidjson::FileWriteStream os(fp, write_buffer, sizeof(write_buffer));
   rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(os);
   rapidjson::PrettyFormatOptions opt = rapidjson::kFormatSingleLineArray;
   writer.SetFormatOptions(opt);
-  d.Accept(writer);
+  document.Accept(writer);
 
   fclose(fp);
-
-  return;
 }
 
-} // namespace MISC
-
+} // namespace misc

@@ -21,14 +21,19 @@
 
  ******************************************************************************/
 
-#ifndef SBG_MINREACH_SCC_HPP
-#define SBG_MINREACH_SCC_HPP
+#ifndef SBGRAPH_ALGORITHMS_SCC_MINREACH_SCC_HPP_
+#define SBGRAPH_ALGORITHMS_SCC_MINREACH_SCC_HPP_
 
-#include "algorithms/scc/scc.hpp"
+#include "algorithms/scc/scc_data.hpp"
+#include "sbg/directed_sbg.hpp"
+#include "sbg/pw_map.hpp"
+#include "sbg/set.hpp"
 
 namespace SBG {
 
 namespace LIB {
+
+namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Minimum Reachable SCC Algorithm Implementation (concrete strategy) ----------
@@ -42,17 +47,17 @@ namespace LIB {
  * SCC are deleted. When this process ends each SCC is identified by its
  * minimum vertex.
  */
-class MinReachSCC : public SCCStrategy {
-  public:
+class MinReachSCC {
+public:
   MinReachSCC();
 
-  SCCData calculate(const DSBG& dsbg) override;
+  SCCData calculate(const DirectedSBG& dsbg);
 
-  protected:
+protected:
   /**
    * @brief Initializes data members determined by the input SBG.
    */
-  void init(const DSBG& dsbg);
+  void init(const DirectedSBG& dsbg);
 
   /**
    * @brief Performs a step of the algorithm in a certain direction, detecting
@@ -61,7 +66,7 @@ class MinReachSCC : public SCCStrategy {
   virtual PWMap sccStep() = 0;
 
   /**
-   * @brief Modifies the `dsbg_` member, restricting the domain of edges maps
+   * @brief Modifies the `_dsbg` member, restricting the domain of edges maps
    * to `E`, and swaps mapB and mapD for elements also in `E`.
    */
   void swapEdgesDirection(const Set& E);
@@ -69,10 +74,10 @@ class MinReachSCC : public SCCStrategy {
   /**
    * @brief Calculates the MRV for every vertex in DSBG.
    */
-  PWMap sccMinReach(const DSBG& dsbg) const;
+  PWMap sccMinReach(const DirectedSBG& dsbg) const;
 
-  DSBG dsbg_; ///< Input DSBG
-  Set E_;     ///< Edges with both endings in the same SCC
+  DirectedSBG _dsbg; ///< Input DSBG
+  Set _E; ///< Edges with both endings in the same SCC
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -80,11 +85,11 @@ class MinReachSCC : public SCCStrategy {
 ////////////////////////////////////////////////////////////////////////////////
 
 class MinReachSCCV1 : public MinReachSCC {
-  public:
+public:
   MinReachSCCV1();
 
-  protected:
-  PWMap sccStep() override;
+protected:
+  PWMap sccStep();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -92,15 +97,17 @@ class MinReachSCCV1 : public MinReachSCC {
 ////////////////////////////////////////////////////////////////////////////////
 
 class MinReachSCCV2 : public MinReachSCC {
-  public:
+public:
   MinReachSCCV2();
 
-  protected:
-  PWMap sccStep() override;
+protected:
+  PWMap sccStep();
 };
+
+} // namespace detail
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_SCC_MINREACH_SCC_HPP_

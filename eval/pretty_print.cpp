@@ -19,67 +19,72 @@
 
 #include "eval/pretty_print.hpp"
 
+#include <iostream>
+
 namespace SBG {
 
 namespace Eval {
 
 template<typename T, typename... Ts>
-std::ostream &operator<<(std::ostream &out, const std::variant<T, Ts...> &v)
+std::ostream& operator<<(std::ostream& out, const std::variant<T, Ts...>& v)
 {
-  std::visit([&out](auto&& arg) {
-    out << arg;
-  }, v);
+  std::visit([&out](auto&& arg){ out << arg; }, v);
 
   return out;
 }
 
-template std::ostream &operator<<(std::ostream &out, const ExprBaseType &v);
+template std::ostream& operator<<(std::ostream& out, const ExprBaseType& v);
 
-std::ostream &operator<<(std::ostream &out, const ExprResult &e)
+std::ostream& operator<<(std::ostream& out, const ExprResult& e)
 {
   out << std::get<0>(e) << "\n  --> " << std::get<1>(e) << "\n"; 
 
   return out;
 }
 
-std::ostream &operator<<(std::ostream &out, const ExprResultList &ee)
+std::ostream& operator<<(std::ostream& out, const ExprResultList& ee)
 {
-  for (ExprResult e : ee)
+  for (ExprResult e : ee) {
     out << e << "\n";
+  }
 
   return out;
 }
 
-std::ostream &operator<<(std::ostream &out, const StmResult &s)
+std::ostream& operator<<(std::ostream& out, const StmResult& s)
 {
   out << std::get<0>(s) << " = " << std::get<1>(s) << ";";
 
   return out;
 }
 
-std::ostream &operator<<(std::ostream &out, const StmResultList &ss)
+std::ostream& operator<<(std::ostream& out, const StmResultList& ss)
 {
-  for (StmResult s : ss)
+  for (StmResult s : ss) {
     out << s << "\n";
+  }
 
   return out;
 }
 
 ProgramIO::ProgramIO(StmResultList stms, ExprResultList exprs) 
-  : nmbr_dims_(1), stms_(stms), exprs_(exprs) {}
-ProgramIO::ProgramIO(unsigned int nmbr_dims, StmResultList stms
-  , ExprResultList exprs)
-  : nmbr_dims_(nmbr_dims), stms_(stms), exprs_(exprs) {}
+  : _arity(1), _stms(stms), _exprs(exprs) {}
 
-member_imp(ProgramIO, unsigned int, nmbr_dims);
-member_imp(ProgramIO, StmResultList, stms);
-member_imp(ProgramIO, ExprResultList, exprs);
+ProgramIO::ProgramIO(std::size_t n, StmResultList stms, ExprResultList exprs)
+  : _arity(n), _stms(stms), _exprs(exprs) {}
 
-std::ostream &operator<<(std::ostream &out, const ProgramIO &p)
+const std::size_t& ProgramIO::arity() const { return _arity; }
+
+const StmResultList& ProgramIO::stms() const { return _stms; }
+
+const ExprResultList& ProgramIO::exprs() const { return _exprs; }
+
+std::ostream& operator<<(std::ostream& out, const ProgramIO& p)
 {
   out << p.stms();
-  if (p.stms().size() != 0)
+  if (p.stms().size() != 0) {
     out << "\n";
+  }
   out << p.exprs();
 
   return out;

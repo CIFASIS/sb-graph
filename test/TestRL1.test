@@ -1,26 +1,29 @@
-/* Matching + SCC test of the following model:
+/* Model for causalization testing =============================================
+ * Description: model with N algebraic loops.
+   Ua[i] and Uc[i] must be simultaneously solved.
+--------------------------------------------------------------------------------
 
 model TestRL1
-  constant Integer N = 100000;
+  constant Integer N = 1000000;
   Real iL[N], Ua[N], Uc[N];
   parameter Real Ra = 1, Rb = 1, Rc = 1, L = 1;
 equation
-  der(iL[1]) = U0 - Ua[1]; // der(iL[1])
+  der(iL[1]) = U0 - Ua[1];
   for i in 2:N loop
-    L*der(iL[i]) = Uc[i-1] - Ua[i]; // der(iL[2:N])
+    L*der(iL[i]) = Uc[i-1] - Ua[i];
   end for;
   for i in 1:N-1 loop
-    Ua[i] = Rb*iL[i+1] + Uc[i]*Rb/Rc; // Ua[1:N-1]
+    Ua[i] = Rb*iL[i+1] + Uc[i]*Rb/Rc;
   end for;
   for i in 1:N-1 loop
-    iL[i] = Ua[i]/Ra + Uc[i]/Rc + iL[i+1]; // Uc[1:N-1]
+    iL[i] = Ua[i]/Ra + Uc[i]/Rc + iL[i+1];
   end for;
-  iL[N] = Ua[N]/Ra + Uc[N]/Rc; // Uc[N]
-  Ua[N] = Uc[N]*Rb/Rc; // Ua[N]
+  iL[N] = Ua[N]/Ra + Uc[N]/Rc;
+  Ua[N] = Uc[N]*Rb/Rc;
 end TestRL1;
-*/
+==============================================================================*/
 
-N = 100000;
+N = 1000000;
 
 F1 = 1;
 F2 = N-1+F1;
@@ -100,7 +103,7 @@ Emap: <<{[1:1:E1]} -> |0*x+1|, {[E1+1:1:E2]} -> |0*x+2|, {[E2+1:1:E3]} -> |0*x+3
 X: F
 Y: U;
 
-matchSCC(
+causalize(
   V: F \/ U
   Vmap: <<{[1:1:F1]} -> |0*x+1|, {[F1+1:1:F2]} -> |0*x+2|, {[F2+1:1:F3]} -> |0*x+3
     |, {[F3+1:1:F4]} -> |0*x+4|, {[F4+1:1:F5]} -> |0*x+5

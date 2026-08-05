@@ -5,10 +5,12 @@
  A piecewise map (pw) <<m1, ..., mj>> is a representation for functions
  using collections of domain-disjoint Maps, all sharing the same arity. Maps
  of the collection will be named "pieces" (i.e. m1, ..., mj). The domain of the
- function is the union of all domains of every map. Currently two
+ function is the union of all domains of every map. Currently three
  implementations are supported:
    - Unordered PWMaps.
-   - Ordered PWMaps, allowing different optimizations.
+   - Ordered PWMaps, that saves comparisons between maps in some operations.
+   - Domain ordered PWMaps, that have an ordered set implementation as domain,
+     and also order their collection of maps accordingly.
 
  <hr>
 
@@ -29,67 +31,84 @@
 
  ******************************************************************************/
 
-#ifndef SBG_PWMAP_HPP
-#define SBG_PWMAP_HPP
+#ifndef SBGRAPH_SBG_PW_MAP_HPP_
+#define SBGRAPH_SBG_PW_MAP_HPP_
 
-#include <forward_list>
-
+#include "sbg/dom_ord_pwmap.hpp"
 #include "sbg/map.hpp"
+#include "sbg/ord_pwmap.hpp"
+#include "sbg/set.hpp"
+#include "sbg/unord_pwmap.hpp"
+
+#include "rapidjson/document.h"
 
 namespace SBG {
 
 namespace LIB {
 
+namespace detail {
+
 ////////////////////////////////////////////////////////////////////////////////
-// PWMap Abstract Strategy -----------------------------------------------------
+// PWMaps implementations ------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-class PWMapStrategy;
+using PWMapImpl = std::variant<UnordPWMap, OrdPWMap, DomOrdPWMap>;
 
-typedef std::unique_ptr<PWMapStrategy> PWMapStratPtr;
+class PWMapAccessKey;
 
-class PWMapStrategy {
+} // namespace detail
+
+////////////////////////////////////////////////////////////////////////////////
+// PWMap -----------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+class PWMap {
+public:
+  class ConstIt {
   public:
-  virtual ~PWMapStrategy() = default;
+    const Map& operator*();
+    ConstIt operator++();
+    bool operator==(const ConstIt& other);
+    bool operator!=(const ConstIt& other);
+  
+  private: 
+    ConstIt(detail::UnordPWMap::ConstIt it);
+    ConstIt(detail::OrdPWMap::ConstIt it);
 
-  /**
-   * @brief Constructs an empty pw.
-   */
-  PWMapStrategy();
+    std::variant<detail::UnordPWMap::ConstIt
+      , detail::OrdPWMap::ConstIt> _it;
 
-  /**
-   * @brief Auxiliary function for defining the copy constructor of PWMap.
-   */
-  virtual PWMapStratPtr clone() const = 0;
-
-  class Iterator {
-    public:
-    virtual ~Iterator() = default;
-    virtual void operator++() = 0;
-    virtual bool operator!=(const Iterator& other) const = 0;
-    virtual const Map& operator*() const = 0;
+    friend class PWMap;
   };
 
-  virtual std::shared_ptr<Iterator> begin() const = 0;
-  virtual std::shared_ptr<Iterator> end() const = 0;
+  /**
+   * @brief Constructs an empty domain pw.
+   */
+  PWMap();
+  PWMap(Set s);
+  PWMap(Map m);
 
+  ConstIt begin();
+  ConstIt end();
+
+  template<typename... Args>
+  void emplace(Args&&... args);
   /**
    * @brief Adds a piece to the pw.
+   * Precondition: \p m domain should not be empty, and should have no
+   * intersection with the current domain of the PWMap.
    */
-  virtual void emplaceBack(const Map& m) = 0;
+  void insert(const Map& m);
+  void insert(Map&& m);
 
   /**
    * @brief Two pws are equal if they satisfy the function extensionality
    * principle.
    */
-  virtual bool operator==(const PWMapStrategy& other) const = 0;
-  virtual bool operator!=(const PWMapStrategy& other) const = 0;
-  virtual std::ostream& print(std::ostream& out) const = 0;
-
-  /**
-   * @brief Sum of two pws.
-   */
-  virtual PWMapStratPtr operator+(const PWMapStrategy& other) const = 0;
+  bool operator==(const PWMap& other) const;
+  bool operator!=(const PWMap& other) const;
+  PWMap operator+(const PWMap& other) const;
+  std::ostream& print(std::ostream& out) const;
 
   // Traditional maps operations -----------------------------------------------
 
@@ -97,35 +116,36 @@ class PWMapStrategy {
    * @brief Number of dimensions of the elements that compose the pw. For
    * example, arity(<<{[1:1:10] x [1:1:10]} -> 1*x+0|1*x+0>>) = 2.
    */
-  virtual std::size_t arity() const = 0;
+  std::size_t arity() const;
 
   /**
    * @brief Determines if the collection is empty or not.
    */
-  virtual bool isEmpty() const = 0;
+  bool isEmpty() const;
 
   /**
    * @brief Domain of the pw, i.e. the union of all domains of every map in the
    * collection.
    */
-  virtual Set dom() const = 0;
+  Set domain() const &;
+  Set domain() &&;
 
   /**
    * @brief Restrict the domain of the pw to \p subdom.
    */
-  virtual PWMapStratPtr restrict(const Set& subdom) const = 0;
+  PWMap restrict(const Set& subdom) const;
 
   /**
    * @brief Calculates all possible images for all elements in the domain of
    * the pw.
    */
-  virtual Set image() const = 0;
+  Set image() const;
 
   /**
    * @brief Calculates all possible images for all elements in the domain of
    * the pw restricted to \p subdom.
    */
-  virtual Set image(const Set& subdom) const = 0;
+  Set image(const Set& subdom) const;
 
   /**
    * @brief Calculates the pre image of certain elements of the image.
@@ -133,35 +153,29 @@ class PWMapStrategy {
    * @param subcodom Set of elements in the image of the map for which the pre
    * image will be calculated.
    */
-  virtual Set preImage(const Set& subcodom) const = 0;
+  Set preImage(const Set& subcodom) const;
 
   /** 
    * @brief Calculate the inverse of a bijective pw.\n  
    * Precondition: the pw must be bijective.
    */
-  virtual PWMapStratPtr inverse() const = 0;
+  PWMap inverse() const;
 
   /**
    * @brief Calculate the composition of \p this with \p other, i.e.
    * \p this(\p other).
    */
-  virtual PWMapStratPtr composition(const PWMapStrategy& pw2) const = 0;
-
-  /**
-   * @brief First compose the pw with itself \p n times, obtaining pw'. Then,
-   * compose pw' with itself up to convergence.
-   */
-  virtual PWMapStratPtr mapInf(unsigned int n) const = 0;
+  PWMap composition(const PWMap& pw2) const;
 
   /**
    * @brief Compose a map with itself up to convergence.
    */
-  virtual PWMapStratPtr mapInf() const = 0;
+  PWMap mapInf() const;
 
   /**
    * @brief Calculates the set of elements in the domain such that f(x) = x.
    */
-  virtual Set fixedPoints() const = 0;
+  Set fixedPoints() const;
 
   // Extra operations ----------------------------------------------------------
 
@@ -169,185 +183,87 @@ class PWMapStrategy {
    * @brief Concatenation of two pws.\n 
    * Precondition: pws should domain-disjoint.
    */
-  virtual PWMapStratPtr concatenation(const PWMapStrategy& other) const = 0;
+  PWMap concatenation(const PWMap& other) const &;
+  PWMap concatenation(const PWMap& other) &&;
+  PWMap concatenation(PWMap&& other) const &;
+  PWMap concatenation(PWMap&& other) &&;
 
   /**
    * @brief Extend the pw with exclusive elements in the domain of \p other.
    */
-  virtual PWMapStratPtr combine(const PWMapStrategy& other) const = 0;
-
-  /** 
-   * @brief Calculates (if possible) compactly the result of mapInf.\n  
-   *
-   * Currently, the only expressions that can be efficiently reduced are:
-   *   - x+h
-   *   - x-h
-   */
-  virtual PWMapStratPtr reduce() const = 0;
+  PWMap combine(const PWMap& other) const &;
+  PWMap combine(const PWMap& other) &&;
+  PWMap combine(PWMap&& other) const &;
+  PWMap combine(PWMap&& other) &&;
 
   /**
    * @brief For every element in both domains assign the law that returns the
    * minimum value.
    */
-  virtual PWMapStratPtr minMap(const PWMapStrategy& other) const = 0;
+  PWMap min(const PWMap& other) const;
 
   /**
    * @brief Given two maps pw1 (\p this) and pw2 (\p other), for every element y1
    * in the image of pw1 returns a pw res such that
-   * res(y1) = {min(pw2(x)) : pw1(x) = y1}. In SBG algorithms it is used to
+   * res(y1) = min{pw2(x) : pw1(x) = y1}. In SBG algorithms it is used to
    * calculate for every vertex which of its adjacent vertices returns the
-   * minimum value according to pw other.
+   * minimum value according to pw \p other.
    */
-  virtual PWMapStratPtr minAdjMap(const PWMapStrategy& other) const = 0;
+  PWMap minAdj(const PWMap& other) const;
 
   /** 
-   * @brief Pseudo-inverse of a pw restricted to \p subdom. If a value is the
-   * image of several elements of the original domain, it will mapped to any
-   * of the possible candidates. 
+   * @brief Given a map, return elements of the domain that share its image with
+   * other values of the domain.
    */
-  virtual PWMapStratPtr firstInv(const Set& subdom) const = 0;
-
-  /** 
-   * @brief Pseudo-inverse of a pw.
-   */
-  virtual PWMapStratPtr firstInv() const = 0;
-
-  /**
-   * Returns a pw that keeps pieces of the original pw that satisfy the
-   * predicate argument.
-   */
-  virtual PWMapStratPtr filterMap(bool (*f)(const Map& )) const = 0;
+  Set sharedImage() const;
 
   /** 
    * @brief Return elements in both domains, that have the same image in both
    * pws.
    */
-  virtual Set equalImage(const PWMapStrategy& other) const = 0;
+  Set equalImage(const PWMap& other) const;
 
   /**
    * @brief Returns the set of elements of the domain that have a lesser
    * image in the first argument.
    * For example: lessImage({[1:100]} -> x, {[1:100]} -> -x+100) = {[1:49]}.
    */
-  virtual Set lessImage(const PWMapStrategy& other) const = 0;
-
-  /** 
-   * @brief Given a map, return elements of the domain that share its image with
-   * other values of the domain.
-   */
-  virtual Set sharedImage() const = 0;
-
-  /**
-   * @brief Sum a constant value to every element in the domain of the pw. The
-   * law remains unchanged.
-   */
-  virtual PWMapStratPtr offsetDom(const MD_NAT& off) const = 0;
-
-  /**
-   * @brief Sum the value indicated by pw \p off for every value in the domain
-   * of the pw \p this. The law remains unchanged.
-   */
-  virtual PWMapStratPtr offsetDom(const PWMapStrategy& off) const = 0;
-
-  /**
-   * @brief Sum a constant value to every element in the image of the pw, that
-   * is, the law of the pw is modified without altering its domain.
-   */
-  virtual PWMapStratPtr offsetImage(const MD_NAT& off) const = 0;
-
-  /**
-   * @brief Sum the expression \p off to every element in the image of the pw,
-   * that is, the law is modified without altering its domain.
-   */
-  virtual PWMapStratPtr offsetImage(const Exp& off) const = 0;
-
-  /**
-   * @brief Compact in the same piece all maps that have the same expression.
-   */
-  virtual PWMapStratPtr compact() const = 0;
-};
-
-////////////////////////////////////////////////////////////////////////////////
-// PWMap Interface (context) ---------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-class PWMap {
-  public:
-  PWMap(PWMapStratPtr strat);
-  PWMap(const PWMap& other);
-
-  class Iterator {
-    public:
-    Iterator(std::shared_ptr<PWMapStrategy::Iterator> it);
-    void operator++();
-    bool operator!=(const PWMap::Iterator& other) const;
-    Map operator*() const;
-
-    private:
-    std::shared_ptr<PWMapStrategy::Iterator> it_;
-  };
-
-  Iterator begin() const;
-  Iterator end() const;
-
-  void emplaceBack(const Map& m);
-
-  bool operator==(const PWMap& other) const;
-  bool operator!=(const PWMap& other) const;
-  PWMap& operator=(const PWMap& other);
-  PWMap& operator=(PWMap&& other);
-  std::ostream& print(std::ostream& out) const;
-
-  PWMap operator+(const PWMap& other) const;
-
-  // Traditional map operations ------------------------------------------------
-
-  std::size_t arity() const;
-  bool isEmpty() const;
-  Set dom() const;
-  PWMap restrict(const Set& subdom) const;
-  Set image() const;
-  Set image(const Set& subdom) const;
-  Set preImage(const Set& subcodom) const;
-  PWMap inverse() const;
-  PWMap composition(const PWMap& other) const;
-
-  PWMap mapInf(unsigned int n) const;
-  PWMap mapInf() const;
-  Set fixedPoints() const;
-
-  // Extra operations ----------------------------------------------------------
-
-  PWMap concatenation(const PWMap& other) const;
-  PWMap combine(const PWMap& other) const;
-  PWMap reduce() const;
-
-  PWMap minMap(const PWMap& other) const;
-  PWMap minAdjMap(const PWMap& other) const;
-
-  PWMap firstInv(const Set& subdom) const;
-  PWMap firstInv() const;
-
-  PWMap filterMap(bool (*f)(const Map& )) const;
-
-  Set equalImage(const PWMap& other) const;
   Set lessImage(const PWMap& other) const;
-  Set sharedImage() const;
 
-  PWMap offsetDom(const MD_NAT& off) const;
-  PWMap offsetDom(const PWMap& off) const;
-  PWMap offsetImage(const MD_NAT& off) const;
-  PWMap offsetImage(const Exp& off) const;
+  /*
+   * @brief Given a map f : A -> B, it calculates a new map g : img(f) -> N^k
+   * such that g(x) = (n, ..., n) where n = #{y in A : f(y) = x}.
+   */
+  PWMap imageMultiplicity() const;
 
-  PWMap compact() const;
+  /**
+   * @brief Minimize internal representation cost. Heuristic guided.
+   */
+  void compact();
 
-  private:
-  PWMapStratPtr strategy_;
+  rapidjson::Value toJSON(rapidjson::Document::AllocatorType& alloc) const;
+
+private:
+  PWMap(const detail::PWMapImpl& impl);
+  PWMap(detail::PWMapImpl&& impl);
+
+  detail::PWMapImpl _impl;
+
+  friend class detail::PWMapAccessKey;
 };
+
 std::ostream& operator<<(std::ostream& out, const PWMap& pw);
+
+// Template definitions --------------------------------------------------------
+
+template<typename... Args>
+inline void PWMap::emplace(Args&&... args)
+{
+  std::visit([&](auto& a) { a.emplace(std::forward<Args>(args)...); } , _impl);
+}
 
 } // namespace LIB
 
 }  // namespace SBG
 
-#endif
+#endif // SBGRAPH_SBG_PW_MAP_HPP_

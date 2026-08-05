@@ -17,11 +17,13 @@
 
  ******************************************************************************/
 
-#include <iostream>
-
 #include "ast/sbg_program.hpp"
+#include "eval/pretty_print.hpp"
 #include "eval/visitors/program_evaluator.hpp"
 #include "parser/file_parser.hpp"
+
+#include <iostream>
+#include <string>
 
 namespace SBG {
 
@@ -31,8 +33,8 @@ ProgramIO parseEvalFile(std::string fname)
 {
   AST::SBGProgram parser_result = Parser::parseFile(fname);
 
-  Eval::ProgramEvaluator program_visit; 
-  Eval::ProgramIO visit_result = program_visit.evaluate(parser_result);
+  detail::ProgramEvaluator program_visit; 
+  ProgramIO visit_result = program_visit.evaluate(parser_result);
 
   return visit_result;
 }

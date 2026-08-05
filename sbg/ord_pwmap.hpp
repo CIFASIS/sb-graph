@@ -21,183 +21,161 @@
 
  ******************************************************************************/
 
-#ifndef SBG_ORD_PWMAP_HPP
-#define SBG_ORD_PWMAP_HPP
+#ifndef SBGRAPH_SBG_ORD_PWMAP_HPP_
+#define SBGRAPH_SBG_ORD_PWMAP_HPP_
 
+#include "sbg/map.hpp"
 #include "sbg/map_entry.hpp"
-#include "sbg/pw_map.hpp"
+#include "sbg/set.hpp"
+
+#include "rapidjson/document.h"
+
+#include <vector>
+#include <iosfwd>
 
 namespace SBG {
 
 namespace LIB {
 
+namespace detail {
+
 ////////////////////////////////////////////////////////////////////////////////
-// Ordered PWMap Implementation (concrete strategy) ----------------------------
+// Ordered PWMap Implementation ----------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-class OrdPWMap : public PWMapStrategy {
-  public:
-  using SetPerimeter = Internal::SetPerimeter;
-  using MapEntry = Internal::MapEntry;
-  using OrdMapCollection = Internal::OrdMapCollection;
+class OrdPWMap {
+public:
+  using OrdMapCollection = std::vector<MapEntry>;
+  using ConstIt = OrdMapCollection::const_iterator;
 
-  member_class(OrdMapCollection, pieces);
-
-  ~OrdPWMap() = default;
   OrdPWMap();
   OrdPWMap(const Set& s);
   OrdPWMap(const Map& m);
+  OrdPWMap(const std::vector<Map>& pieces);
   OrdPWMap(const OrdMapCollection& pieces);
+  OrdPWMap(OrdMapCollection&& pieces);
 
-  class Iterator : public PWMapStrategy::Iterator {
-    member_class(OrdMapCollection::const_iterator, it);
+  ConstIt begin() const;
+  ConstIt end() const;
 
-    Iterator(OrdMapCollection::const_iterator it);
-    void operator++() override;
-    bool operator!=(const PWMapStrategy::Iterator& other) const override;
-    const Map& operator*() const override;
-  };
+  template<typename... Args>
+  void emplace(Args&&... args);
+  void insert(const Map& m);
+  void insert(Map&& m);
 
-  std::shared_ptr<PWMapStrategy::Iterator> begin() const override;
-  std::shared_ptr<PWMapStrategy::Iterator> end() const override;
-
-  void emplaceBack(const Map& m) override;
-
-  bool operator==(const PWMapStrategy& other) const override;
-  bool operator!=(const PWMapStrategy& other) const override;
-  OrdPWMap& operator=(OrdPWMap&& other);
-  std::ostream& print(std::ostream& out) const override;
-
-  PWMapStratPtr operator+(const PWMapStrategy& other) const override;
-
-  PWMapStratPtr clone() const override;
+  bool operator==(const OrdPWMap& other) const;
+  bool operator!=(const OrdPWMap& other) const;
+  OrdPWMap operator+(const OrdPWMap& other) const;
+  std::ostream& print(std::ostream& out) const;
 
   // Traditional map operations ------------------------------------------------
 
-  std::size_t arity() const override;
-  bool isEmpty() const override;
-  Set dom() const override;
-  PWMapStratPtr restrict(const Set& subdom) const override;
-  Set image() const override;
-  Set image(const Set& subdom) const override;
-  Set preImage(const Set& subcodom) const override;
-  PWMapStratPtr inverse() const override;
-  PWMapStratPtr composition(const PWMapStrategy& pw2) const override;
+  std::size_t arity() const;
+  bool isEmpty() const;
+  Set domain() const &;
+  Set domain() &&;
+  OrdPWMap restrict(const Set& subdom) const;
+  Set image() const;
+  Set image(const Set& subdom) const;
+  Set preImage(const Set& subcodom) const;
+  OrdPWMap inverse() const;
+  OrdPWMap composition(const OrdPWMap& other) const;
 
-  PWMapStratPtr mapInf(unsigned int n) const override;
-  PWMapStratPtr mapInf() const override;
-  Set fixedPoints() const override;
+  OrdPWMap mapInf() const;
+  Set fixedPoints() const;
 
   // Extra operations ----------------------------------------------------------
 
-  PWMapStratPtr concatenation(const PWMapStrategy& other) const override;
-  PWMapStratPtr combine(const PWMapStrategy& other) const override;
-  PWMapStratPtr reduce() const override;
+  OrdPWMap concatenation(const OrdPWMap& other) const &;
+  OrdPWMap concatenation(const OrdPWMap& other) &&;
+  OrdPWMap concatenation(OrdPWMap&& other) const &;
+  OrdPWMap concatenation(OrdPWMap&& other) &&;
+  OrdPWMap combine(const OrdPWMap& other) const &;
+  OrdPWMap combine(const OrdPWMap& other) &&;
+  OrdPWMap combine(OrdPWMap&& other) const &;
+  OrdPWMap combine(OrdPWMap&& other) &&;
 
-  PWMapStratPtr minMap(const PWMapStrategy& other) const override;
-  PWMapStratPtr minAdjMap(const PWMapStrategy& other) const override;
+  OrdPWMap min(const OrdPWMap& other) const;
+  OrdPWMap minAdj(const OrdPWMap& other) const;
 
-  PWMapStratPtr firstInv(const Set& subdom) const override;
-  PWMapStratPtr firstInv() const override;
+  Set sharedImage() const;
+  Set equalImage(const OrdPWMap& other) const;
+  Set lessImage(const OrdPWMap& other) const;
 
-  PWMapStratPtr filterMap(bool (*f)(const Map&)) const override;
+  OrdPWMap imageMultiplicity() const;
 
-  Set equalImage(const PWMapStrategy& other) const override;
-  Set lessImage(const PWMapStrategy& other) const override;
-  Set sharedImage() const override;
+  void compact();
 
-  PWMapStratPtr offsetDom(const MD_NAT& off) const override;
-  PWMapStratPtr offsetDom(const PWMapStrategy& off) const override;
-  PWMapStratPtr offsetImage(const MD_NAT& off) const override;
-  PWMapStratPtr offsetImage(const Exp& off) const override;
+private:
+  template<typename... Args>
+  void emplaceBack(Args&&... args);
+  void pushBack(const Map& m);
+  void pushBack(Map&& m);
+  void pushBack(const MapEntry& entry);
+  void pushBack(MapEntry&& entry);
 
-  PWMapStratPtr compact() const override;
-  
-  private:
-  /**
-   * @brief Calculates the minAdjMap core, which contains the entire main process of the function.
-   */
-  void processMinAdjMap(
-    const Map& m1, 
-    const Map& m2, 
-    Set& set_in,
-    Set& set_out, 
-    OrdMapCollection& ord_pwmap,
-    NAT& global_pos) const;
-  
-  /**
-   * @brief Calculates the minus core, which contains the entire main process of the function.
-   */
-  void processMinus(
-    const Map& m1, 
-    const Map& m2, 
-    Set& set_in,
-    Set& set_out, 
-    OrdMapCollection& ord_pwmap,
-    NAT& global_pos) const; 
-  
-  /**
-   * @brief Calculates the add core, which contains the entire main process of the function.
-   */
-  void processAdd(
-    const Map& m1, 
-    const Map& m2, 
-    Set& set_in,
-    Set& set_out, 
-    OrdMapCollection& ord_pwmap,
-    NAT& global_pos) const; 
-  
-  /**
-   * @brief Calculates the equalImage core, which contains the entire main process of the function.
-   */
-  void processEqualImage(
-    const Map& m1, 
-    const Map& m2, 
-    Set& set_in,
-    Set& set_out,
-    OrdMapCollection& ord_pwmap,
-    NAT& global_pos) const; 
+  void insertHint(std::size_t hint, const Map& m);
+  void insertHint(std::size_t hint, Map&& m);
 
   /**
-   * @brief Calculates the lessImage core, which contains the entire main process of the function.
+   * @brief Advances the hint to point the next element that has jth_entry as
+   * its minimum in its perimeter.
    */
-  void processLessImage(
-    const Map& m1, 
-    const Map& m2, 
-    Set& set_in,
-    Set& set_out,
-    OrdMapCollection& ord_pwmap,
-    NAT& global_pos) const; 
-  
+  std::size_t advanceHint(std::size_t hint, const MapEntry& jth_entry);
+
   /**
-   * @brief Type used in the 'processMapsOrd' declaration to reduce its size.
-   * This type is the same as the process functions above.
+   * @brief Calculates (if possible) compactly the result of mapInf.\n
+   *
+   * Currently, the only expressions that can be efficiently reduced are:
+   *   - x+h
+   *   - x-h
    */
-  using ProcessFunc = void (OrdPWMap::*)(
-    const Map& , const Map& , 
-    Set& , Set& , OrdMapCollection& , 
-    NAT&
-  ) const;
-  
-  /**
-   * @brief Provides an efficient method for processing two ordered piecewise maps.
+  OrdPWMap reduce() const;
+
+  /*
+   * @brief First compose the pw with itself \p n times, obtaining pw'. Then,
+   * compose pw' with itself up to convergence.
    */
-  void processMapsOrd(
-    const PWMapStrategy& other,
-    Set& set_in,
-    Set& set_out,
-    OrdMapCollection& ord_pwmap,
-    ProcessFunc process,
-    bool order_mts
-  ) const;
+  OrdPWMap mapInf(unsigned int n) const;
+
+  template<typename Core>
+  Core traverse(const OrdPWMap& other, Core op) const;
+
+  OrdMapCollection _pieces;
+
+  friend class AddCore;
+  friend class MinAdjCore;
+  friend class PWMapAccessKey;
 };
 
-typedef const OrdPWMap& OrdPWMapCRef;
-typedef OrdPWMap& OrdPWMapRef;
-typedef std::unique_ptr<OrdPWMap> OrdPWMapPtr;
+// Template definitions --------------------------------------------------------
+
+template<typename... Args>
+inline void OrdPWMap::emplace(Args&&... args)
+{
+  auto&& domain = std::get<0>(std::forward_as_tuple(args...));
+  if (!domain.isEmpty()) {
+    insert(Map{std::forward<Args>(args)...});
+  }
+}
+
+template<typename... Args>
+inline void OrdPWMap::emplaceBack(Args&&... args)
+{
+  auto&& domain = std::get<0>(std::forward_as_tuple(args...));
+  if (!domain.isEmpty()) {
+    _pieces.emplace_back(std::forward<Args>(args)...);
+  }
+}
+
+// Non-member functions --------------------------------------------------------
+
+rapidjson::Value toJSON(OrdPWMap pw, rapidjson::Document::AllocatorType& alloc);
+
+} // namespace detail
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_SBG_ORD_PWMAP_HPP_

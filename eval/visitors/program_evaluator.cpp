@@ -19,11 +19,14 @@
 
 #include "eval/visitors/expr_evaluator.hpp"
 #include "eval/visitors/program_evaluator.hpp"
+#include "eval/visitors/stm_evaluator.hpp"
 #include "util/logger.hpp"
 
 namespace SBG {
 
 namespace Eval {
+
+namespace detail {
 
 ProgramEvaluator::ProgramEvaluator() {}
 
@@ -31,16 +34,17 @@ ProgramIO ProgramEvaluator::evaluate(AST::SBGProgram p) const
 { 
   LIB::NAT dims = 1;
 
-  EvalContext eval_ctx;
+  EvalContext eval_context;
   AST::IsConfig cfg_visit;
   if (!p.stms().empty()) {
     AST::Statement first = p.stms()[0];
-    if (boost::apply_visitor(cfg_visit, first))
-      eval_ctx.setArity(boost::get<AST::ConfigDims>(first).nmbr_dims());
+    if (boost::apply_visitor(cfg_visit, first)) {
+      eval_context.setArity(boost::get<AST::ConfigDims>(first).nmbr_dims());
+    }
   }
 
   StmResultList stms;
-  StmEvaluator stm_visit(eval_ctx);
+  StmEvaluator stm_visit{eval_context};
   for (AST::Statement s : p.stms()) {
     if (!boost::apply_visitor(cfg_visit, s)) {
       StmResult se = boost::apply_visitor(stm_visit, s);
@@ -49,14 +53,16 @@ ProgramIO ProgramEvaluator::evaluate(AST::SBGProgram p) const
   }
 
   ExprResultList exprs;
-  ExprEvaluator eval_expr(eval_ctx);
+  ExprEvaluator eval_expr{eval_context};
   for (AST::Expr e : p.exprs()) {
     ExprBaseType expr_res = boost::apply_visitor(eval_expr, e);
-    exprs.push_back(ExprResult(e, expr_res));
+    exprs.emplace_back(e, expr_res);
   }
 
-  return ProgramIO(dims, stms, exprs);
+  return ProgramIO{dims, stms, exprs};
 }
+
+} // namespace detail
 
 } // namespace Eval
 

@@ -23,8 +23,8 @@
 
  ******************************************************************************/
 
-#ifndef SBG_DEFS_HPP
-#define SBG_DEFS_HPP
+#ifndef SBGRAPH_UTIL_DEFS_HPP_
+#define SBGRAPH_UTIL_DEFS_HPP_
 
 namespace SBG {
 
@@ -67,8 +67,22 @@ constexpr bool time_profiler_enabled = true;
  */
 void time_profiler_results();
 
+/**
+ * @brief Provides in-place lambdas to visit std::variant types.
+ */
+
+template<class... Ts>
+class Overload : Ts... {
+public:
+  using Ts::operator()...;
+  Overload(Ts... ts) : Ts(ts)... {};
+};
+
+template<class... Ts>
+Overload(Ts...) -> Overload<Ts...>;
+
 } // namespace Util
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_UTIL_DEFS_HPP_

@@ -97,7 +97,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
 add_custom_target(doc
   COMMAND echo "Generating Project documentation."
   COMMAND doxygen "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
-  #COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/doc
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/doc
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   COMMENT "Generating API documentation with Doxygen"
 )

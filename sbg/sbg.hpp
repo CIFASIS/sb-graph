@@ -14,8 +14,6 @@
    share the same image conform a *Set-Vertex*.
  - A PWMap Emap_ mapping elements in E_ to some constant value. Edges that
    share the same image conform a *Set-Edge*.
- - A PWMap subEmap_ mapping elements in E_ to some constant value. Edges that
-   share the same image conform a *Subset-Edge*.\n 
  These components are added to keep track of repetitve structures in G. Note
  that a Set-Edge might be composed by several Subset-Edges.
 
@@ -38,11 +36,13 @@
 
  ******************************************************************************/
 
-#ifndef SBG_SBG_HPP
-#define SBG_SBG_HPP
+#ifndef SBGRAPH_SBG_SBG_HPP_
+#define SBGRAPH_SBG_SBG_HPP_
 
-#include "sbg/pwmap_fact.hpp"
-#include "util/debug.hpp"
+#include "sbg/pw_map.hpp"
+#include "sbg/set.hpp"
+
+#include <iosfwd>
 
 namespace SBG {
 
@@ -53,7 +53,7 @@ namespace LIB {
 ////////////////////////////////////////////////////////////////////////////////
 
 class SBG {
-  public:
+public:
   /**
    * @brief Empty SBG constructor.
    */
@@ -70,7 +70,7 @@ class SBG {
    */
   SBG(const Set& V, const PWMap& Vmap
     , const PWMap& map1, const PWMap& map2
-    , const PWMap& Emap, const PWMap& subEmap);
+    , const PWMap& Emap);
 
   const Set& V() const;
   const PWMap& Vmap() const;
@@ -78,42 +78,64 @@ class SBG {
   const PWMap& map1() const;
   const PWMap& map2() const;
   const PWMap& Emap() const;
-  const PWMap& subEmap() const;
-
-  SBG& operator=(const SBG& other);
 
   /**
    * @brief Adds a new set-vertex composed by \p vertices. \n
    * Precondition: V_.intersection(vertices) = {}
    */
-  void addSV(const Set& vertices);
+  void addSetVertex(const Set& vertices);
 
   /**
    * @brief Adds a new set-edge described by \p pw1 and \p pw2. \n 
    * Precondition: dom(pw1) = dom(pw2) and
    * E_.intersection(pw1.dom()) = {} and E_.intersection(pw2.dom()) = {} 
    */
-  void addSE(const PWMap& pw1, const PWMap& pw2);
+  void addSetEdge(const PWMap& pw1, const PWMap& pw2);
 
-  /**
-   * @brief Returns a new SBG composed by \p times copies of the original SBG,
-   * where each copy is isomorphic to the argument.
-   */
-  SBG copy(unsigned int times) const;
+  template<typename FuncT>
+  void foreachSetVertex(FuncT&& f) const;
 
-  private:
+  template<typename FuncT>
+  void foreachSetEdge(FuncT&& f) const;
+
+private:
   Set _V; ///< Vertex definitions
   PWMap _Vmap;
   Set _E; ///< Edge definitions
   PWMap _map1;
   PWMap _map2;
   PWMap _Emap;
-  PWMap _subEmap;
 };
+
 std::ostream& operator<<(std::ostream& out, const SBG& g);
+
+// Template definitions --------------------------------------------------------
+
+template<typename FuncT>
+inline void SBG::foreachSetVertex(FuncT&& f) const
+{
+  Set remaining = _Vmap.image();
+  while (!remaining.isEmpty()) {
+    const MD_NAT& x = remaining.minElem();
+    f(x);
+    remaining = remaining.difference(Set{x});
+  }
+}
+
+template<typename FuncT>
+inline void SBG::foreachSetEdge(FuncT&& f) const
+{
+  Set remaining = _Emap.image();
+  while (!remaining.isEmpty()) {
+    const MD_NAT& x = remaining.minElem();
+    f(x);
+    remaining = remaining.difference(Set{x});
+  }
+}
+
 
 } // namespace LIB
 
 }  // namespace SBG
 
-#endif
+#endif // SBGRAPH_SBG_SBG_HPP_

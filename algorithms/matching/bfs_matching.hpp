@@ -21,19 +21,24 @@
 
  ******************************************************************************/
 
-#ifndef SBG_BFS_MATCH_HPP
-#define SBG_BFS_MATCH_HPP
+#ifndef SBGRAPH_ALGORITHMS_MATCHING_BFS_MATCHING_HPP_
+#define SBGRAPH_ALGORITHMS_MATCHING_BFS_MATCHING_HPP_
 
 #include "algorithms/matching/bfs_paths.hpp"
-#include "algorithms/matching/matching.hpp"
+#include "algorithms/matching/match_data.hpp"
+#include "sbg/bipartite_sbg.hpp"
 #include "sbg/directed_sbg.hpp"
+#include "sbg/pw_map.hpp"
+#include "sbg/set.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
+namespace detail {
+
 ////////////////////////////////////////////////////////////////////////////////
-// BFS Matching Algorithm Implementation (concrete strategy) -------------------
+// BFS Matching Algorithm Implementation ---------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -47,19 +52,19 @@ namespace LIB {
  * The algorithms stops once a full match is calculated (i.e. one that saturates
  * all right vertices), or when no more augmenting paths are found.
  */
-class BFSMatching : public MatchStrategy {
-  public:
+class BFSMatching {
+public:
   BFSMatching();
 
-  MatchData calculate(const BipartiteSBG& bsbg) override;
+  MatchData calculate(const BipartiteSBG& bsbg);
 
-  private:
+private:
   /**
    * @brief Auxiliary struct to represent the exit condition of the algorithm
    * loop.
    */
   class ExitCondition {
-    public:
+  public:
     ExitCondition(bool full_match, bool found_paths_);
 
     bool full_match();
@@ -67,7 +72,7 @@ class BFSMatching : public MatchStrategy {
 
     bool isSatisfied();
   
-    private:
+  private:
     bool full_match_;
     bool found_paths_; 
   };
@@ -89,7 +94,7 @@ class BFSMatching : public MatchStrategy {
    * saturated and b) New paths weren't found. This is calculated here instead
    * of the main loop to avoid recalculation of certain values. 
    */
-  ExitCondition step(const Set& right_vertices);
+  ExitCondition step();
 
   /**
    * @brief Computes alternating paths in a certain direction.
@@ -98,7 +103,7 @@ class BFSMatching : public MatchStrategy {
    * @return Edges belonging to alternating paths that reach unmatched vertices
    * in the aforementioned direction. 
    */
-  Set directedStep(const Set& E, const Set& right_vertices);
+  Set directedStep(const Set& E);
 
   /**
    * @brief Modifies the `dsbg_` member, swapping mapB and mapD for elements of
@@ -106,25 +111,25 @@ class BFSMatching : public MatchStrategy {
    */
   void swapEdgesDirection(const Set& E);
 
+  void swapDirection(const Set& E);
+
   /**
    * @brief Separates in different subset-edges matched and unmatched edges
    * belonging to the same subset-edge in `dsbg_`.
    */
   PWMap partitionSubsetEdges() const;
 
-  /**
-   * @brief Returns edges in `E` that belong to the paths described by the
-   * successor map `smap`. 
-   */
-  Set edgesInPaths(const PWMap& smap, const Set& E) const;
-
-  DSBG dsbg_; ///< Directed graph according to matching
-  Set M_;     ///< Matched edges
-  Direction direction_;
+  DirectedSBG _dsbg; ///< Directed graph according to matching
+  Set _M; ///< Matched edges
+  Direction _direction;
+  Set _X;
+  Set _Y;
 };
+
+} // namespace detail
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_MATCHING_BFS_MATCHING_HPP_

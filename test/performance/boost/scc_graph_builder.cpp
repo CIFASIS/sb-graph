@@ -19,7 +19,16 @@
 
 #include "test/performance/boost/scc_graph_builder.hpp"
 
-namespace OG {
+#include <boost/graph/graph_traits.hpp>
+#include <boost/tuple/tuple.hpp>
+
+#include <functional>
+
+namespace SBG {
+
+namespace perf {
+
+namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Auxiliary structures --------------------------------------------------------
@@ -103,4 +112,8 @@ EdgeVector SCCGraphBuilder::getEdgeList()
   return result;
 }
 
-}  // namespace OG
+} // namespace detail
+
+} // namespace perf
+
+} // namespace SBG

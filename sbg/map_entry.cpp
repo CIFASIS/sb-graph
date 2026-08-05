@@ -23,101 +23,43 @@ namespace SBG {
 
 namespace LIB {
 
-namespace Internal {
+namespace detail {
 
-SetPerimeter calculatePerimeter(const Set& s)
+////////////////////////////////////////////////////////////////////////////////
+// Map entry -------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+MapEntry::MapEntry(const Set& s, const Expression& expr)
+  : _map(s, expr), _perimeter(s.perimeter()) {}
+
+MapEntry::MapEntry(const Map& m)
+  : _map(m), _perimeter(m.domain().perimeter()) {}
+
+const Map& MapEntry::map() const { return _map; }
+
+const Perimeter& MapEntry::perimeter() const { return _perimeter; }
+
+bool MapEntry::operator==(const MapEntry& other) const
 {
-  std::size_t ar = s.arity();
-  MD_NAT min_per(ar, Inf); 
-  MD_NAT max_per(ar, 0);
-  
-  for (const SetPiece& mdi : s) {
-    MD_NAT candidate_min = mdi.minElem();
-    MD_NAT candidate_max = mdi.maxElem();
-    for (size_t i = 0; i < ar; ++i) {
-      min_per[i] = std::min(min_per[i], candidate_min[i]);
-      max_per[i] = std::max(max_per[i], candidate_max[i]);
-    }
+  return _map == other._map;
+}
+
+bool MapEntry::operator<(const MapEntry& other) const 
+{
+  return _perimeter.min() < other._perimeter.min();
+}
+
+MaybeMapEntry MapEntry::compact(const MapEntry& other) const
+{
+  MaybeMap compacted = _map.compact(other._map);
+  if (compacted) {
+    return MaybeMapEntry{compacted.value()};
   }
-  
-  return {min_per, max_per};
+
+  return {};
 }
-
-bool doInt(const SetPerimeter& p1, const SetPerimeter& p2)
-{
-  const auto min_per_p1 = p1.first;
-  const auto max_per_p1 = p1.second;
-  const auto min_per_p2 = p2.first;
-  const auto max_per_p2 = p2.second;
-  const unsigned int arity = max_per_p1.arity();
-
-  for (unsigned int j = 0; j < arity; ++j) {
-    if (max_per_p1[j] < min_per_p2[j] || max_per_p2[j] < min_per_p1[j]) {
-      return false;  // No intersection
-    }
-  }
-  
-  return true;  // Intersection detected
-}
-
-MapEntry createMapEntry(const Map& m)
-{
-  return {m, calculatePerimeter(m.dom())}; 
-}
-
-bool operator<(const MapEntry& mpe1, const MapEntry& mpe2) 
-{
-  return mpe1.second.first < mpe2.second.first;
-}
-
-void emplaceBack(OrdMapCollection& ord_pw, const MapEntry& entry)
-{
-  if (!entry.first.isEmpty()) {
-    ord_pw.emplace_back(entry);
-  }
-}
-
-void emplaceBack(OrdMapCollection& ord_pw, const Map& m)
-{
-  if (!m.isEmpty()) {
-    ord_pw.emplace_back(createMapEntry(m));
-  }
-}
-
-void emplaceHint(OrdMapCollection& ord_pw, const Map& m, NAT hint)
-{
-  if (!m.isEmpty()) {
-    auto it = ord_pw.begin();
-    std::advance(it, hint);
-    auto end = ord_pw.end();
-    MapEntry mpe = createMapEntry(m);
-    while (it != end) {
-      if (it->second.first < mpe.second.first) {
-        ++it;
-      } else {
-        break;
-      }
-    }
-    ord_pw.emplace(it, mpe);
-  }
-}
-
-void advanceHint(OrdMapCollection& ord_pw, const MD_NAT crit, NAT& hint)
-{
-  auto it = ord_pw.begin();
-  std::advance(it, hint);
-  auto end = ord_pw.end();
-  while (it != end) {
-    if (it->second.first < crit) {
-      ++it;
-      ++hint;
-    } else {
-      break;
-    }
-  } 
-}
-
-} // namespace Internal
+	
+} // namespace detail
 
 } // namespace LIB
 

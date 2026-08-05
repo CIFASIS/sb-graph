@@ -21,101 +21,114 @@
 
  ******************************************************************************/
 
-#ifndef SBG_ORD_SET_HPP
-#define SBG_ORD_SET_HPP
+#ifndef SBGRAPH_SBG_ORD_SET_HPP_
+#define SBGRAPH_SBG_ORD_SET_HPP_
 
+#include "sbg/expression.hpp"
+#include "sbg/fixed_points.hpp"
+#include "sbg/interval.hpp"
 #include "sbg/multidim_inter.hpp"
-#include "sbg/set.hpp"
+#include "sbg/natural.hpp"
+#include "sbg/perimeter.hpp"
+
+#include "rapidjson/document.h"
+
+#include <iosfwd>
+#include <memory>
+#include <vector>
 
 namespace SBG {
 
 namespace LIB {
 
+namespace detail {
+
 ////////////////////////////////////////////////////////////////////////////////
-// Ordered Set Implementation (concrete strategy) ------------------------------
+// Ordered Set Implementation --------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-class OrderedSet : public SetStrategy {
-  using MDIOrdCollection = std::vector<SetPiece>;
+class OrderedSet {
+public:
+  using OrdMDICollection = std::vector<detail::MultiDimInter>;
+  using ConstIt = OrdMDICollection::const_iterator;
 
-  member_class(MDIOrdCollection, pieces);
-
-  ~OrderedSet();
   OrderedSet();
-  OrderedSet(MD_NAT x);
-  OrderedSet(Interval i);
-  OrderedSet(SetPiece mdi);
-  OrderedSet(MDIOrdCollection pieces);
+  OrderedSet(const MD_NAT& x);
+  OrderedSet(const detail::Interval& i);
+  OrderedSet(const detail::MultiDimInter& mdi);
+  OrderedSet(const OrdMDICollection& pieces);
+  OrderedSet(OrdMDICollection&& pieces);
+  OrderedSet(const FixedPointsInfo& info);
 
-  SetStratPtr clone() const override;
+  ConstIt begin() const;
+  ConstIt end() const;
 
-  class Iterator : public SetStrategy::Iterator {
-    member_class(MDIOrdCollection::const_iterator, it);
+  void pushBack(const MultiDimInter& mdi);
 
-    Iterator(MDIOrdCollection::const_iterator it);
-    void operator++() override;
-    bool operator!=(const SetStrategy::Iterator& other) const override;
-    bool operator==(const SetStrategy::Iterator& other) const override;
-    bool operator<(const SetStrategy::Iterator& other) const override;
-    const SetPiece& operator*() const override;
-  };
-
-  std::shared_ptr<SetStrategy::Iterator> begin() const override;
-  std::shared_ptr<SetStrategy::Iterator> end() const override;
-
-  std::size_t size() const override;
-  void emplace(const SetPiece& mdi) override;
-  void emplaceBack(const SetPiece& mdi) override;
-
-  bool operator==(const SetStrategy& other) const override;
-  bool operator!=(const SetStrategy& other) const override;
-  std::ostream& print(std::ostream& out) const override;
+  bool operator==(const OrderedSet& other) const;
+  bool operator!=(const OrderedSet& other) const;
+  std::ostream& print(std::ostream& out) const;
 
   // Traditional set operations ------------------------------------------------
 
-  unsigned int cardinal() const override;
-  bool isEmpty() const override;
-  MD_NAT minElem() const override;
-  MD_NAT maxElem() const override;
-  SetStratPtr intersection(const SetStrategy& other) const override;
-  SetStratPtr cup(const SetStrategy& other) const & override;
-  SetStratPtr cup(SetStrategy&& other) && override;
-  SetStratPtr complement() const;
-  SetStratPtr difference(const SetStrategy& other) const override;
+  unsigned int cardinal() const;
+  bool isEmpty() const;
+  MD_NAT minElem() const;
+  MD_NAT maxElem() const;
+  OrderedSet intersection(const OrderedSet& other) const;
+  OrderedSet cup(const OrderedSet& other) const &;
+  OrderedSet cup(OrderedSet&& other) const &;
+  OrderedSet cup(const OrderedSet& other) &&;
+  OrderedSet cup(OrderedSet&& other) &&;
+  OrderedSet complement() const;
+  OrderedSet difference(const OrderedSet& other) const;
+  OrderedSet cartesianProduct(const OrderedSet& other) const;
 
   // Extra operations ----------------------------------------------------------
 
-  std::size_t arity() const override;
-  SetStratPtr disjointCup(const SetStrategy& other) const & override;
-  SetStratPtr disjointCup(SetStrategy&& other) && override;
-  SetStratPtr filterSet(bool (*f)(const SetPiece& mdi)) const override;
-  SetStratPtr offset(const MD_NAT& off) const override;
-  SetStratPtr compact() const override;
+  std::size_t arity() const;
+  OrderedSet disjointCup(const OrderedSet& other) const &;
+  OrderedSet disjointCup(const OrderedSet& other) &&;
+  OrderedSet disjointCup(OrderedSet&& other) const &;
+  OrderedSet disjointCup(OrderedSet&& other) &&;
+  OrderedSet offset(const MD_NAT& off) const;
+  Perimeter perimeter() const;
+  void compact();
 
-  private:
-  void emplaceHint(NAT hint, const SetPiece& mdi);
+private:
+  NAT advanceHint(NAT hint, const MultiDimInter& mdi);
+  void insertHint(const NAT hint, const MultiDimInter& mdi);
 
-  NAT advanceHint(NAT hint, const SetPiece& mdi);
+  OrderedSet intersectionEpilogue(const OrderedSet& lhs, const OrderedSet& rhs)
+    const;
 
-  /**
-   * @brief Calculates the complement of an ordered set with a single piece.
-   */
-  SetStratPtr complementAtom() const;
-  
   /**
    * @brief Computes the accumulated complement between an ordered set (this), 
    * which represents the complement of an ordered set, and an ordered set
    * (other), which represents the complement of an atomic ordered set.
    */
-  void intersectionComp(const SetStrategy& other, const SetPiece& mdi
-    , SetStrategy& rem);
+  void intersectionComplement(const OrderedSet& other
+    , const MultiDimInter& mdi);
+
+  /**
+   * @brief Calculate the complement of an unordered set with a single piece.
+   */
+  OrderedSet complementAtom() const;
+
+  OrdMDICollection _pieces;
+
+  friend class SetAccessKey;
 };
 
-typedef const OrderedSet& OrdSetCRef;
-typedef OrderedSet& OrdSetRef;
+// Non-member functions --------------------------------------------------------
+
+rapidjson::Value toJSON(OrderedSet s
+  , rapidjson::Document::AllocatorType& alloc);
+
+} // namespace detail
 
 } // namespace LIB
 
 }  // namespace SBG
 
-#endif
+#endif // SBGRAPH_SBG_ORD_SET_HPP_

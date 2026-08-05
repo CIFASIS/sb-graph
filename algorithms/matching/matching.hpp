@@ -1,6 +1,6 @@
 /** @file matching.hpp
 
- @brief <b>SBG Matching Algorithm Abstract Interface</b>
+ @brief <b>SBG Matching Algorithm</b>
 
  <hr>
 
@@ -21,74 +21,45 @@
 
  ******************************************************************************/
 
-#ifndef SBG_MATCH_HPP
-#define SBG_MATCH_HPP
+#ifndef SBGRAPH_ALGORITHMS_MATCHING_MATCHING_HPP_
+#define SBGRAPH_ALGORITHMS_MATCHING_MATCHING_HPP_
 
+#include "algorithms/matching/bfs_matching.hpp"
+#include "algorithms/matching/match_data.hpp"
 #include "sbg/bipartite_sbg.hpp"
+
+#include <variant>
 
 namespace SBG {
 
 namespace LIB {
 
-////////////////////////////////////////////////////////////////////////////////
-// Auxiliary structures --------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-enum class Direction { kForward, kBackward };
-std::ostream& operator<<(std::ostream& out, const Direction& direction);
-
-/**
- * @brief Saves input and output data from a matching algorithm run.
- */
-struct MatchData {
-  public:
-  MatchData(BipartiteSBG bsbg, Set M, bool full_match);
-
-  const BipartiteSBG& bsbg() const;
-  const Set& M() const;
-  const bool& full_match() const;
-
-  private:
-  BipartiteSBG bsbg_; ///< Original input for the algorithm
-  Set M_; ///< Matched edges
-  bool full_match_; ///< Returns true if all right vertices are saturated
-};
-std::ostream& operator<<(std::ostream& out, const MatchData& data);
+namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Matching Algorithm Abstract Strategy ----------------------------------------
+// Matching Algorithm Implementations ------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-class MatchStrategy;
+using MatchImpl = std::variant<BFSMatching>;
 
-typedef std::unique_ptr<MatchStrategy> MatchStratPtr;
-
-class MatchStrategy {
-  public:
-  virtual ~MatchStrategy() = default;
-
-  MatchStrategy();
-
-  virtual MatchData calculate(const BipartiteSBG& bsbg) = 0;
-};
-
+} // namespace detail
 
 ////////////////////////////////////////////////////////////////////////////////
-// Matching Algorithm Interface (context) --------------------------------------
+// Matching Algorithm ----------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 class Matching {
-  public:
-  Matching(MatchStratPtr strat);
+public:
+  Matching();
 
   MatchData calculate(const BipartiteSBG& bsbg);
 
-  private:
-  MatchStratPtr strategy_;
+private:
+  detail::MatchImpl _impl;
 };
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_MATCHING_MATCHING_HPP_

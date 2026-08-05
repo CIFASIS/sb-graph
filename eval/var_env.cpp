@@ -23,27 +23,31 @@ namespace SBG {
 
 namespace Eval {
 
-VarEnv::VarEnv() : variables_() {}
+namespace detail {
+
+VarEnv::VarEnv() : _variables() {}
 
 VarEnv::VIt VarEnv::begin() const
 {
-  return variables_.begin();
+  return _variables.begin();
 }
 
 VarEnv::VIt VarEnv::end() const
 {
-  return variables_.end();
+  return _variables.end();
 }
 
 VarEnv::VIt VarEnv::find(const VarEnv::VKey& key) const
 {
-  return variables_.find(key);
+  return _variables.find(key);
 }
 
 void VarEnv::insert(VarEnv::VKey key, VarEnv::VValue value)
 {
-  variables_[key] = value;
+  _variables[key] = value;
 }
+
+} // namespace detail
 
 } // namespace Eval
 

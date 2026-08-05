@@ -45,23 +45,20 @@ void version()
 // User Input Handler ----------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-UserInputHandler::UserInputHandler() : generic_("Generic options")
-  , config_("Configuration options"), hidden_("Hidden options")
-  , cmd_line_opts_("Command line options")
-  , cfg_file_opts_("Configuration file options"), positional_()
+UserInputHandler::UserInputHandler() : _generic("Generic options")
+  , _config("Configuration options"), _hidden("Hidden options")
+  , _cmd_line_opts("Command line options")
+  , _cfg_file_opts("Configuration file options"), _positional()
 {
-  generic_.add_options()
+  _generic.add_options()
     ("help,h", "Prints all available options")
     ("version,v", "Displays version information")
     ("debug,d", "Activates debug messages")
-    ("config,c", prog_opts::value(&config_file_), "Configuration filename");
+    ("config,c", prog_opts::value(&_config_file), "Configuration filename");
 
-  hidden_.add_options()
-    ("input-file", prog_opts::value(&input_file_)
+  _hidden.add_options()
+    ("input-file", prog_opts::value(&_input_file)
       , "Input SBG program");
-
-  // First option without name is the input file
-  positional_.add("input-file", 1);
 }
 
 } // namespace Util

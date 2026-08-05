@@ -17,66 +17,40 @@
 
  ******************************************************************************/
 
-#include <chrono>
-
 #include "algorithms/matching/matching.hpp"
-#include "util/logger.hpp"
+#include "algorithms/matching/matching_impl.hpp"
+#include "util/debug.hpp"
+#include "util/time_profiler.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Auxiliary structures --------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-std::ostream& operator<<(std::ostream& out, const Direction& direction)
-{
-  switch (direction) {
-    case Direction::kForward:
-      out << "forward";
-      break;
-    case Direction::kBackward:
-      out << "backward";
-      break;
-  }
-
-  return out;
-}
-
-MatchData::MatchData(BipartiteSBG bsbg, Set M, bool full_match)
-  : bsbg_(bsbg), M_(M), full_match_(full_match) {}
-
-const BipartiteSBG& MatchData::bsbg() const { return bsbg_; }
-const Set& MatchData::M() const { return M_; }
-const bool& MatchData::full_match() const { return full_match_; }
-
-std::ostream& operator<<(std::ostream& out, const MatchData& data)
-{
-  out << data.M();
-  if (data.full_match())
-    out << " [FULLY MATCHED]";
-  else
-    out << " [UNMATCHED]";
-
-  return out;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Matching Algorithm Abstract Strategy Constructors ---------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-MatchStrategy::MatchStrategy() {}
-
-////////////////////////////////////////////////////////////////////////////////
 // Matching Algorithm Interface ------------------------------------------------ 
 ////////////////////////////////////////////////////////////////////////////////
 
-Matching::Matching(MatchStratPtr strat) : strategy_(std::move(strat)) {}
+Matching::Matching() : _impl()
+{
+  MatchKind kind = MATCH_IMPL.kind();
+  switch (kind) {
+    case MatchKind::kBFSPaths: {
+      _impl = detail::BFSMatching{};
+      break;
+    }
+
+    default: {
+      Util::ERROR("Unsupported matching algorithm implementation");
+      break;
+    }
+  }  
+}
 
 MatchData Matching::calculate(const BipartiteSBG& bsbg)
 {
-  return strategy_->calculate(bsbg);
+  Util::Internal::TimeProfiler profiler{"Total matching execution time: "};
+
+  return std::visit([&](auto& a) { return a.calculate(bsbg); }, _impl);
 }
 
 } // namespace LIB

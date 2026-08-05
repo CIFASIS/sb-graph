@@ -17,8 +17,6 @@
 
  ******************************************************************************/
 
-#include <chrono>
-
 #include "algorithms/scc/decreasing_edges_mrv.hpp"
 #include "algorithms/scc/minreach_scc.hpp"
 #include "algorithms/scc/minadj_mrv.hpp"
@@ -28,66 +26,56 @@ namespace SBG {
 
 namespace LIB {
 
+namespace detail {
+
 ////////////////////////////////////////////////////////////////////////////////
 // Minimum Reachable SCC Algorithm ---------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-MinReachSCC::MinReachSCC() : dsbg_(), E_(SET_FACT.createSet()) {}
+MinReachSCC::MinReachSCC() : _dsbg(), _E() {}
 
 void MinReachSCC::swapEdgesDirection(const Set& E)
 {
-  PWMap mapB = dsbg_.mapB();
-  PWMap mapD = dsbg_.mapD();
+  PWMap mapB = _dsbg.mapB();
+  PWMap mapD = _dsbg.mapD();
 
   PWMap temp_mapB = mapB.restrict(E);
   mapB = mapD.restrict(E);
   mapD = temp_mapB.restrict(E);
 
-  PWMap Emap = dsbg_.Emap().restrict(E);
-  PWMap subEmap = dsbg_.subEmap().restrict(E);
+  PWMap Emap = _dsbg.Emap().restrict(E);
 
-  dsbg_ = DSBG(dsbg_.V().compact(), dsbg_.Vmap().compact()
-    , mapB.compact(), mapD.compact(), Emap.compact(), subEmap.compact());
-
-  return;
+  _dsbg = DirectedSBG{_dsbg.V(), _dsbg.Vmap(), mapB, mapD, Emap};
 }
 
-void MinReachSCC::init(const DSBG& dsbg)
+void MinReachSCC::init(const DirectedSBG& dsbg)
 {
-  dsbg_ = dsbg;
-  E_ = dsbg.E();
-
-  return;
+  _dsbg = dsbg;
+  _E = dsbg.E();
 }
 
-SCCData MinReachSCC::calculate(const DSBG& dsbg)
+SCCData MinReachSCC::calculate(const DirectedSBG& dsbg)
 {
   Util::DEBUG_LOG << "MinReachSCC dsbg: \n" << dsbg << "\n\n";
 
   init(dsbg);
 
-  auto begin = std::chrono::high_resolution_clock::now();
-  PWMap rmap = PW_FACT.createPWMap();
-  Set Ediff = SET_FACT.createSet();
+  PWMap rmap = sccStep();
+  rmap.compact();
   Set oldE = dsbg.E();
-  Set deleted_edges = SET_FACT.createSet();
+  Set Ediff = oldE.difference(_dsbg.E());
+  Set deleted_edges = Ediff;
   do {
-    oldE = dsbg_.E();
+    oldE = _dsbg.E();
     rmap = sccStep();
-    Ediff = oldE.difference(dsbg_.E());
-    deleted_edges = deleted_edges.disjointCup(Ediff);
-  } while (Ediff != SET_FACT.createSet());
-  rmap = rmap.compact();
-  auto end = std::chrono::high_resolution_clock::now();
-
-  auto total = std::chrono::duration_cast<std::chrono::microseconds>(
-    end - begin
-  );
-  Util::SBG_LOG << "Total MinReachSCC exec time: " << total.count() << " [μs]\n\n"; 
+    rmap.compact();
+    Ediff = oldE.difference(_dsbg.E());
+    deleted_edges = std::move(deleted_edges).disjointCup(Ediff);
+  } while (Ediff != Set{});
 
   Util::DEBUG_LOG << "MinReachSCC result: " << rmap << "\n\n";
 
-  return SCCData(dsbg, rmap, deleted_edges);
+  return SCCData{dsbg, rmap, deleted_edges};
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -100,19 +88,19 @@ PWMap MinReachSCCV1::sccStep()
 {
   // Calculate MRV
   MinAdjMRV mrv;
-  PWMap new_rmap = mrv.calculate(dsbg_);
+  PWMap new_rmap = mrv.calculate(_dsbg);
   Util::DEBUG_LOG << "MinReachSCCV1 new_rmap: " << new_rmap << "\n";
 
   // Leave edges in the same SCC
-  PWMap rmapB = new_rmap.composition(dsbg_.mapB());
-  PWMap rmapD = new_rmap.composition(dsbg_.mapD());
+  PWMap rmapB = new_rmap.composition(_dsbg.mapB());
+  PWMap rmapD = new_rmap.composition(_dsbg.mapD());
   Set Esame = rmapB.equalImage(rmapD);
-  E_ = Esame;
+  _E = Esame;
   Util::DEBUG_LOG << "MinReachSCCV1 erased edges: "
-    << dsbg_.E().difference(E_) << "\n\n";
+    << _dsbg.E().difference(_E) << "\n\n";
 
   // Swap directions
-  swapEdgesDirection(E_);
+  swapEdgesDirection(_E);
 
   return new_rmap;
 }
@@ -127,22 +115,24 @@ PWMap MinReachSCCV2::sccStep()
 {
   // Calculate MRV
   LtEdgesMRV mrv;
-  PWMap new_rmap = mrv.calculate(dsbg_);
+  PWMap new_rmap = mrv.calculate(_dsbg);
   Util::DEBUG_LOG << "MinReachSCCV2 new_rmap: " << new_rmap << "\n";
 
   // Leave edges in the same SCC
-  PWMap rmapB = new_rmap.composition(dsbg_.mapB());
-  PWMap rmapD = new_rmap.composition(dsbg_.mapD());
+  PWMap rmapB = new_rmap.composition(_dsbg.mapB());
+  PWMap rmapD = new_rmap.composition(_dsbg.mapD());
   Set Esame = rmapB.equalImage(rmapD);
-  E_ = Esame;
+  _E = Esame;
   Util::DEBUG_LOG << "MinReachSCCV2 erased edges: "
-    << dsbg_.E().difference(E_) << "\n\n";
+    << _dsbg.E().difference(_E) << "\n\n";
 
   // Swap directions
-  swapEdgesDirection(E_);
+  swapEdgesDirection(_E);
 
   return new_rmap;
 }
+
+} // namespace detail
 
 } // namespace LIB
 

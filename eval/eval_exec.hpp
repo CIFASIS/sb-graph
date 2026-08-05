@@ -21,8 +21,8 @@
 
  ******************************************************************************/
 
-#ifndef EVAL_EXEC_HPP
-#define EVAL_EXEC_HPP
+#ifndef SBGRAPH_EVAL_EXEC_HPP_
+#define SBGRAPH_EVAL_EXEC_HPP_
 
 #include "eval/user_input.hpp"
 #include "util/user_input_handler.hpp"
@@ -32,21 +32,22 @@ namespace SBG {
 namespace Eval {
 
 class EvalExecutor : public Util::UserInputHandler {
-  public:
+public:
   EvalExecutor();
 
   void execute(int arg_count, char* args[]) override;
 
-  private:
-  EvalUserInput chooseImplementation();
+private:
+  detail::EvalUserInput chooseImplementation();
 
-  boost::optional<int> set_impl_;
-  boost::optional<int> pw_impl_;
-  boost::optional<int> scc_impl_;
+  boost::optional<int> _set_impl;
+  boost::optional<int> _pw_impl;
+  boost::optional<int> _scc_impl;
+  boost::optional<int> _mfvs_impl;
 };
 
 } // namespace Eval
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_EVAL_EVAL_EXEC_HPP_

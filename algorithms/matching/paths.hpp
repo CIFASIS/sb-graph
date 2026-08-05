@@ -23,14 +23,18 @@
 
  ******************************************************************************/
 
-#ifndef SBG_PATH_HPP
-#define SBG_PATH_HPP
+#ifndef SBGRAPH_ALGORITHMS_MATCHING_PATHS_HPP_
+#define SBGRAPH_ALGORITHMS_MATCHING_PATHS_HPP_
 
 #include "sbg/directed_sbg.hpp"
+#include "sbg/pw_map.hpp"
+#include "sbg/set.hpp"
 
 namespace SBG {
 
 namespace LIB {
+
+namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Paths Discoverer Algorithm --------------------------------------------------
@@ -44,24 +48,26 @@ namespace LIB {
  */
 template<class PathsImpl>
 class PathsContext {
-  public:
+public:
   /**
    * @brief For every vertex of `dsbg` calculates a path starting from itself
    * up to a vertex in `endings`.
    * @return The resulting pw is such that if pw(x) = y, then y is the successor
    * of x in the path.
    */
-  inline PWMap calculate(const DSBG& dsbg, const Set& endings)
+  inline PWMap calculate(const DirectedSBG& dsbg, const Set& endings)
   {
     return static_cast<PathsImpl*>(this)->calculate(dsbg, endings);
   }
 
-  protected:
+protected:
   PathsContext() = default;
 };
+
+} // namespace detail
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_MATCHING_PATHS_HPP_

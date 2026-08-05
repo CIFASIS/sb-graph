@@ -17,10 +17,10 @@
 
  ******************************************************************************/
 
-#include <chrono>
-
 #include "algorithms/cc/cc.hpp"
+#include "sbg/set.hpp"
 #include "util/logger.hpp"
+#include "util/time_profiler.hpp"
 
 namespace SBG {
 
@@ -30,29 +30,34 @@ namespace LIB {
 // Connected components --------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-PWMap connectedComponents(SBG g)
+PWMap connectedComponents(const SBG& sbg)
 {
-  auto begin = std::chrono::high_resolution_clock::now();
+  Util::Internal::TimeProfiler profiler{"Total CC execution time:"};
 
-  if (!g.V().isEmpty()) {
-    PWMap rmap = PW_FACT.createPWMap(g.V()), old_rmap = PW_FACT.createPWMap();
+  Set V = sbg.V();
+  if (!V.isEmpty()) {
+    PWMap rmap{V};
+    PWMap old_rmap;
 
-    if (g.E().isEmpty())
+    if (sbg.E().isEmpty()) {
       return rmap;
+    }
 
+    PWMap map1 = sbg.map1();
+    PWMap map2 = sbg.map2();
     do {
       old_rmap = rmap;
 
-      PWMap ermap1 = rmap.composition(g.map1());
-      PWMap ermap2 = rmap.composition(g.map2());
+      PWMap ermap1 = rmap.composition(map1);
+      PWMap ermap2 = rmap.composition(map2);
 
-      PWMap rmap1 = ermap1.minAdjMap(ermap2);
-      PWMap rmap2 = ermap2.minAdjMap(ermap1);
-      rmap1 = rmap1.combine(rmap);
-      rmap2 = rmap2.combine(rmap);
+      PWMap rmap1 = ermap1.minAdj(ermap2);
+      PWMap rmap2 = ermap2.minAdj(ermap1);
+      rmap1 = std::move(rmap1).combine(rmap);
+      rmap2 = std::move(rmap2).combine(rmap);
 
-      PWMap aux_rmap = rmap1.minMap(rmap2);
-      rmap = rmap.minMap(aux_rmap);
+      PWMap aux_rmap = rmap1.min(rmap2);
+      rmap = rmap.min(aux_rmap);
 
       if (!(rmap == old_rmap)) {
         rmap = aux_rmap;
@@ -60,14 +65,11 @@ PWMap connectedComponents(SBG g)
       }
     } while (rmap != old_rmap); 
 
-    return rmap.compact();
+    rmap.compact();
+    return rmap;
   }
-  auto end = std::chrono::high_resolution_clock::now();
-  auto total = std::chrono::duration_cast<std::chrono::microseconds>(
-    end - begin);
-  Util::SBG_LOG << "Total CC exec time: " << total.count() << "\n";
 
-  return PW_FACT.createPWMap();
+  return PWMap{};
 }
 
 } // namespace LIB

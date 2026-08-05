@@ -23,34 +23,48 @@
 
  ******************************************************************************/
 
-#ifndef SBG_MAP_ENTRY_HPP
-#define SBG_MAP_ENTRY_HPP
+#ifndef SBGRAPH_SBG_MAP_ENTRY_HPP_
+#define SBGRAPH_SBG_MAP_ENTRY_HPP_
 
+#include "sbg/expression.hpp"
 #include "sbg/map.hpp"
+#include "sbg/set.hpp"
+#include "sbg/perimeter.hpp"
+
+#include <optional>
 
 namespace SBG {
 
 namespace LIB {
 
-namespace Internal {
+namespace detail {
 
-using SetPerimeter = std::pair<MD_NAT, MD_NAT>;
-using MapEntry = std::pair<Map, SetPerimeter>;
-using OrdMapCollection = std::vector<MapEntry>;
+class MapEntry;
 
-SetPerimeter calculatePerimeter(const Set &s);
-bool doInt(const SetPerimeter& p1, const SetPerimeter& p2);
-MapEntry createMapEntry(const Map& m);
-bool operator<(const MapEntry& mpe1, const MapEntry& mpe2);
-void emplaceBack(OrdMapCollection& ord_pw, const MapEntry& entry);
-void emplaceBack(OrdMapCollection& ord_pw, const Map& m);
-void emplaceHint(OrdMapCollection& ord_pw, const Map& m, NAT hint);
-void advanceHint(OrdMapCollection& ord_pw, const MD_NAT crit, NAT& hint);
+using MaybeMapEntry = std::optional<MapEntry>;
 
-} // namespace Internal
+class MapEntry {
+public:
+  MapEntry(const Set& s, const Expression& expr);
+  MapEntry(const Map& m);
+
+  const Map& map() const;
+  const Perimeter& perimeter() const;
+
+  bool operator==(const MapEntry& other) const;
+  bool operator<(const MapEntry& other) const;
+
+  MaybeMapEntry compact(const MapEntry& other) const;
+
+private:
+  Map _map;
+  Perimeter _perimeter;
+};
+
+} // namespace detail
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_SBG_MAP_ENTRY_HPP_

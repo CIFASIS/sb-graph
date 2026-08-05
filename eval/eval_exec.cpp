@@ -17,22 +17,27 @@
 
  ******************************************************************************/
 
-#include <iostream>
-#include <fstream>
-#include <streambuf>
-
-#include "algorithms/cutvertex/cv_fact.hpp"
-#include "algorithms/matching/matching_fact.hpp"
-#include "algorithms/scc/scc_fact.hpp"
-#include "algorithms/toposort/ts_fact.hpp"
+#include "algorithms/matching/matching_impl.hpp"
+#include "algorithms/mfvs/mfvs_impl.hpp"
+#include "algorithms/scc/scc_impl.hpp"
+#include "algorithms/sorting/topological/ts_impl.hpp"
 #include "eval/eval_exec.hpp"
 #include "eval/file_evaluator.hpp"
 #include "eval/input_translator.hpp"
 #include "eval/file_evaluator.hpp"
 #include "eval/visitors/autom_impl_visitor.hpp"
 #include "parser/file_parser.hpp"
+#include "sbg/pwmap_impl.hpp"
+#include "sbg/set_impl.hpp"
 #include "util/debug.hpp"
 #include "util/logger.hpp"
+#include "util/time_profiler.hpp"
+
+#include "boost/program_options.hpp"
+
+#include <iostream>
+#include <fstream>
+#include <streambuf>
 
 namespace SBG {
 
@@ -46,14 +51,13 @@ void printHeader(Util::prog_opts::variables_map vm)
 {
   if (vm.count("debug")) {
     std::cout << "-----------------------------------\n";
-    std::cout << "Set implementation: " << LIB::SET_FACT.prettyPrint() << "\n";
-    std::cout << "PWMap implementation: " << LIB::PW_FACT.prettyPrint() << "\n";
+    std::cout << "Set implementation: " << LIB::SET_IMPL.kind() << "\n";
+    std::cout << "PWMap implementation: " << LIB::PWMAP_IMPL.kind() << "\n";
     std::cout << "-----------------------------------\n";
-    std::cout << "Matching algorithm: " << LIB::MATCH_FACT.prettyPrint()
-      << "\n";
-    std::cout << "SCC algorithm: " << LIB::SCC_FACT.prettyPrint() << "\n";
-    std::cout << "Cut vertex algorithm: " << LIB::CV_FACT.prettyPrint() << "\n";
-    std::cout << "Topological sort algorithm: " << LIB::TS_FACT.prettyPrint()
+    std::cout << "Matching algorithm: " << LIB::MATCH_IMPL.kind() << "\n";
+    std::cout << "SCC algorithm: " << LIB::SCC_IMPL.kind() << "\n";
+    std::cout << "MFVS algorithm: " << LIB::MFVS_IMPL.kind() << "\n";
+    std::cout << "Topological sorting algorithm: " << LIB::TS_IMPL.kind()
       << "\n";
   }
   std::cout << "-----------------------------------\n";
@@ -65,64 +69,74 @@ void printHeader(Util::prog_opts::variables_map vm)
 // Evaluation Executor ---------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-EvalExecutor::EvalExecutor() : scc_impl_(1)
+EvalExecutor::EvalExecutor() : _scc_impl(1), _mfvs_impl(1)
 {
-  config_.add_options()
-    ("set_impl,s", Util::prog_opts::value(&set_impl_),
+  _config.add_options()
+    ("set_impl,s", Util::prog_opts::value(&_set_impl),
      " Desired set implementation:"
      "\n  - 0 for unordered sets (default option)"
      "\n  - 1 for ordered sets"
      "\n  - 2 for unidimensional ordered dense sets")
-    ("pw_impl,p", Util::prog_opts::value(&pw_impl_),
+    ("pw_impl,p", Util::prog_opts::value(&_pw_impl),
      " Desired PWMap implementation:"
      "\n  - 0 for unordered PWMaps (default option)"
      "\n  - 1 for ordered PWMaps"
      "\n  - 2 for domain ordered PWMaps")
-    ("scc_impl", Util::prog_opts::value(&scc_impl_),
+    ("scc_impl", Util::prog_opts::value(&_scc_impl),
      "Desired SCC algorithm implementation:"
      "\n  - 0 for V1 of minimum reachable SCC"
-     "\n  - 1 for V2 of minimum reachable SCC (default option)");
+     "\n  - 1 for V2 of minimum reachable SCC (default option)")
+    ("mfvs_impl", Util::prog_opts::value(&_mfvs_impl),
+     "Desired MFVS algorithm implementation:"
+     "\n  - 0 for degree greedy MFVS"
+     "\n  - 1 for smallest set-vertex MFVS (default option)");
 
-  cmd_line_opts_.add(generic_).add(config_).add(hidden_);
-  cfg_file_opts_.add(config_).add(hidden_);
-  visible_.add(generic_).add(config_);
+  // First option without name is the input file
+  _positional.add("input-file", 1);
+  _cmd_line_opts.add(_generic).add(_config).add(_hidden);
+  _cfg_file_opts.add(_config).add(_hidden);
+  _visible.add(_generic).add(_config);
 }
 
-EvalUserInput EvalExecutor::chooseImplementation()
+detail::EvalUserInput EvalExecutor::chooseImplementation()
 {
-  EvalUserInput result;
+  detail::EvalUserInput result;
 
-  AutomImplVisitor autom_impl_visitor;
-  EvalUserInput autom_impl = autom_impl_visitor.visit(Parser::parseFile(
-    *input_file_, false));
+  detail::AutomImplVisitor autom_impl_visitor;
+  detail::EvalUserInput autom_impl = autom_impl_visitor.visit(Parser::parseFile(
+    *_input_file, false));
 
   result.set_set_impl(autom_impl.set_impl());
   result.set_pw_impl(autom_impl.pw_impl());
 
-  if (set_impl_) {
-    if (set_impl_ > autom_impl.set_impl())
+  if (_set_impl) {
+    if (_set_impl > autom_impl.set_impl()) {
       Util::ERROR("Incompatible set implementation for the SBG input\n");
+    }
 
-    result.set_set_impl(set_impl_);
+    result.set_set_impl(_set_impl);
   }
-  if (pw_impl_) {
-    if (pw_impl_ > autom_impl.pw_impl())
-      Util::ERROR("Incompatible PW implementation for the SBG input\n");
+  if (_pw_impl) {
+    if (_pw_impl > autom_impl.pw_impl()) {
+      Util::ERROR("Incompatible PWMap implementation for the SBG input\n");
+    }
 
-    result.set_pw_impl(pw_impl_);
+    result.set_pw_impl(_pw_impl);
   }
-  result.set_scc_impl(scc_impl_);
+
+  result.set_scc_impl(_scc_impl);
+  result.set_mfvs_impl(_mfvs_impl);
 
   return result;
 }
 
-void EvalExecutor::execute(int arg_count, char* args[])
+void EvalExecutor::execute(int argc, char* argv[])
 {
   // Command line options handling ---------------------------------------------
 
   Util::prog_opts::variables_map vm;
-  store(Util::prog_opts::command_line_parser(arg_count, args)
-    .options(cmd_line_opts_).positional(positional_).run(), vm);
+  store(Util::prog_opts::command_line_parser(argc, argv)
+    .options(_cmd_line_opts).positional(_positional).run(), vm);
   notify(vm);
 
   // Help handling -------------------------------------------------------------
@@ -131,7 +145,7 @@ void EvalExecutor::execute(int arg_count, char* args[])
     std::cout << "Usage: filename [options]\n";
     std::cout << "Command line options are prioritized over configuration file"
       " options.";
-    std::cout << visible_ << "\n";
+    std::cout << _visible << "\n";
     return;
   }
 
@@ -144,10 +158,10 @@ void EvalExecutor::execute(int arg_count, char* args[])
 
   // Optional configuration file handling --------------------------------------
  
-  if (config_file_) { 
-    std::ifstream config_fs((*config_file_).c_str());
+  if (_config_file) { 
+    std::ifstream config_fs{(*_config_file).c_str()};
     if (config_fs) {
-      store(parse_config_file(config_fs, cfg_file_opts_), vm);
+      store(parse_config_file(config_fs, _cfg_file_opts), vm);
       notify(vm);
     }
   }
@@ -158,13 +172,14 @@ void EvalExecutor::execute(int arg_count, char* args[])
     Util::SBGLogger::instance().setLevel(Util::LogLevel::Debug);
   }
 
-  if (input_file_) {
-    EvalUserInput input = chooseImplementation();
-    InputTranslator input_translator;
+  if (_input_file) {
+    detail::EvalUserInput input = chooseImplementation();
+    detail::InputTranslator input_translator;
     input_translator.translate(input);
-    ProgramIO eval_result = parseEvalFile(*input_file_); 
+    ProgramIO eval_result = parseEvalFile(*_input_file); 
     printHeader(vm);
     std::cout << eval_result;
+    Util::Internal::TimeProfiler::print_execution_time();
   }
   else {
     std::cout << "Usage: filename [options]\n";

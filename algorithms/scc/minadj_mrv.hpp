@@ -23,10 +23,12 @@
 
  ******************************************************************************/
 
-#ifndef SBG_MINADJ_MRV_HPP
-#define SBG_MINADJ_MRV_HPP
+#ifndef SBGRAPH_ALGORITHMS_SCC_MINADJ_MRV_HPP_
+#define SBGRAPH_ALGORITHMS_SCC_MINADJ_MRV_HPP_
 
 #include "algorithms/scc/mrv.hpp"
+#include "sbg/directed_sbg.hpp"
+#include "sbg/pw_map.hpp"
 
 namespace SBG {
 
@@ -40,21 +42,21 @@ namespace LIB {
  * @brief Minimum Adjacent implementation to calculate MRV.
  */
 class MinAdjMRV : public MRVContext<MinAdjMRV> {
-  public:
+public:
   MinAdjMRV();
  
   /**
    * @brief Concrete implementation that starts with the identity pw for every
    * vertex. Then, for every vertex it compares the current MRV with the MRVs
    * of their adjacent reachable vertices.
-   * It also handles recursive paths (i.e. paths that have a length depending
+   * It also handles repetitive paths (i.e. paths that have a length depending
    * on the size of the intervals that define the DSBG).
    */
-  PWMap calculate(const DSBG& dsbg);
+  PWMap calculate(const DirectedSBG& dsbg);
 };
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_SCC_MINADJ_MRV_HPP_

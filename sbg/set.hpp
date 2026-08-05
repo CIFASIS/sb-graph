@@ -3,8 +3,8 @@
  @brief <b>SBG Set</b>
 
  A SBG Set is a structure that represents sets of multi-dimensional naturals
- (all with the same number of dimensions), using collections of disjoint MDIs.
- Currently three implementations are supported:
+ (all with the same number of dimensions).
+ Currently three compact implementations are supported:
    - UnorderedSet that keeps no order, but supports multi-dimensional values.
    - OrderedSet that supports multi-dimensional values while also keeping an
      internal order that enhances performance.
@@ -30,179 +30,58 @@
 
  ******************************************************************************/
 
-#ifndef SBG_SET_HPP
-#define SBG_SET_HPP
+#ifndef SBGRAPH_SBG_SET_HPP_
+#define SBGRAPH_SBG_SET_HPP_
 
-#include <memory>
-
+#include "sbg/expression.hpp"
+#include "sbg/fixed_points.hpp"
+#include "sbg/interval.hpp"
 #include "sbg/multidim_inter.hpp"
+#include "sbg/natural.hpp"
+#include "sbg/ord_set.hpp"
+#include "sbg/ord_unidim_dense_set.hpp"
+#include "sbg/set.hpp"
+#include "sbg/perimeter.hpp"
+#include "sbg/unord_set.hpp"
+
+#include  "rapidjson/document.h"
+
+#include <iosfwd>
+#include <memory>
+#include <variant>
 
 namespace SBG {
 
 namespace LIB {
 
-////////////////////////////////////////////////////////////////////////////////
-// Set Abstract Strategy -------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-class SetStrategy;
-
-typedef std::unique_ptr<SetStrategy> SetStratPtr;
-
-class SetStrategy {
-  public:
-  virtual ~SetStrategy() = default;
-
-  /**
-   * @brief Constructs an empty set.
-   */
-  SetStrategy();
-
-  /**
-   * @brief Constructs a set with an unique element \p x.
-   */
-  SetStrategy(const MD_NAT& x);
-
-  /**
-   * @brief Constructs a one-dimensional set with the same elements as \p i.
-   */
-  SetStrategy(const Interval& i);
-
-  /**
-   * @brief Constructs a set with the same elements as \p mdi.
-   */
-  SetStrategy(const SetPiece& mdi);
-
-  /**
-   * @brief Auxiliary function for defining the copy constructor of Set.
-   */
-  virtual SetStratPtr clone() const = 0;
-
-  class Iterator {
-    public:
-    virtual ~Iterator() = default;
-    virtual void operator++() = 0;
-    virtual bool operator!=(const Iterator& other) const = 0;
-    virtual bool operator==(const Iterator& other) const = 0;
-    virtual bool operator<(const Iterator& other) const = 0;
-    virtual const SetPiece& operator*() const = 0;
-  };
-
-  virtual std::shared_ptr<Iterator> begin() const = 0;
-  virtual std::shared_ptr<Iterator> end() const = 0;
-
-  /**
-   * @brief Number of compact pieces in the set, i.e.
-   * size({[1:1:10], [20:3:50]}) = 2.
-   */
-  virtual std::size_t size() const = 0;
-
-  /**
-   * @brief Adds a compact piece to the set, traversing in forward order.
-   * Precondition: arguments should be disjoint.
-   */
-  virtual void emplace(const SetPiece& mdi) = 0;
-
-  /**
-   * @brief Adds a compact piece to the set, traversing in reverse order.
-   * Precondition: arguments should be disjoint.
-   */
-  virtual void emplaceBack(const SetPiece& mdi) = 0;
-
-  virtual bool operator==(const SetStrategy& other) const = 0;
-  virtual bool operator!=(const SetStrategy& other) const = 0;
-  virtual std::ostream& print(std::ostream& out) const = 0;
-
-  // Traditional set operations ------------------------------------------------
-
-  /**
-   * @brief Number of elements contained in the set, i.e.
-   * cardinal({[1:1:10]x[1:1:10], [101:1:200]x[201:1:300]}) = 10100. 
-   */
-  virtual unsigned int cardinal() const = 0;
-  virtual bool isEmpty() const = 0;
-  virtual MD_NAT minElem() const = 0;
-  virtual MD_NAT maxElem() const = 0;
-  virtual SetStratPtr intersection(const SetStrategy& other) const = 0;
-
-  /**
-   * @brief Calculates the union of two sets.
-   */
-  virtual SetStratPtr cup(const SetStrategy& other) const & = 0;
-  virtual SetStratPtr cup(SetStrategy&& other) && = 0;
-
-  /**
-   * @brief Calculates the complement of a set.\n 
-   * Precondition: set must not be empty (undetermined arity).
-   */
-  virtual SetStratPtr complement() const = 0;
-  virtual SetStratPtr difference(const SetStrategy& other) const = 0;
-
-  // Extra operations ----------------------------------------------------------
-
-  /**
-   * @brief Number of dimensions of the elements that compose the set. For
-   * example, arity([1:1:10]x[1:1:10]) = 2.
-   */
-  virtual std::size_t arity() const = 0;
-
-  /**
-   * @brief Calculates the union of two disjoint sets. \n 
-   * Precondition: this->intersection(other) = {}.
-   */
-  virtual SetStratPtr disjointCup(const SetStrategy& other) const & = 0;
-  virtual SetStratPtr disjointCup(SetStrategy&& other) && = 0;
-
-  /**
-   * @brief Returns a set that keeps pieces of the original set that satisfy
-   * the predicate argument.
-   */
-  virtual SetStratPtr filterSet(bool (*f)(const SetPiece& mdi)) const = 0;
-
-  /**
-   * @brief Sum a constant value to every element of the set.
-   */
-  virtual SetStratPtr offset(const MD_NAT& off) const = 0;
-
-  /**
-   * @brief Merge as many pieces of the set as possible. Heuristic guided.
-   */
-  virtual SetStratPtr compact() const = 0;
-};
+namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Set Interface (context) -----------------------------------------------------
+// Set implementations ---------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+using SetImpl = std::variant<detail::UnorderedSet
+  , detail::OrdUnidimDenseSet
+  , detail::OrderedSet>;
+
+class SetAccessKey;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Set -------------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 class Set {
-  public:
-  Set(SetStratPtr strat);
-  Set(const Set& other);
-
-  class Iterator {
-    public:
-    Iterator(std::shared_ptr<SetStrategy::Iterator> it);
-    void operator++();
-    bool operator!=(const Iterator& other) const;
-    bool operator==(const Iterator& other) const;
-    bool operator<(const Iterator& other) const;
-    SetPiece operator*() const;
-
-    private:
-    std::shared_ptr<SetStrategy::Iterator> it_;
-  };
-
-  Iterator begin() const;
-  Iterator end() const;
-
-  std::size_t size() const;
-  void emplace(SetPiece mdi);
-  void emplaceBack(SetPiece mdi);
+public:
+  Set();
+  Set(const MD_NAT& x);
+  Set(MD_NAT&& x);
+  Set(const NAT lo, const NAT st, const NAT hi);
+  Set(const FixedPointsInfo& info);
 
   bool operator==(const Set& other) const;
   bool operator!=(const Set& other) const;
-  Set& operator=(const Set& other);
-  Set& operator=(Set&& other);
   std::ostream& print(std::ostream& out) const;
 
   // Traditional set operations ------------------------------------------------
@@ -211,28 +90,40 @@ class Set {
   bool isEmpty() const;
   MD_NAT minElem() const;
   MD_NAT maxElem() const;
-  Set intersection(const Set& other) const;
+  Set intersection(const Set& other) const &;
   Set cup(const Set& other) const &;
+  Set cup(const Set& other) &&;
+  Set cup(Set&& other) const &;
   Set cup(Set&& other) &&;
   Set complement() const;
   Set difference(const Set& other) const;
+  Set cartesianProduct(const Set& other) const;
 
   // Extra operations ----------------------------------------------------------
 
   std::size_t arity() const;
   Set disjointCup(const Set& other) const &;
+  Set disjointCup(const Set& other) &&;
+  Set disjointCup(Set&& other) const &;
   Set disjointCup(Set&& other) &&;
-  Set filterSet(bool (*f)(const SetPiece& mdi)) const;
   Set offset(const MD_NAT& off) const;
-  Set compact() const;
+  Perimeter perimeter() const;
+  void compact();
+  rapidjson::Value toJSON(rapidjson::Document::AllocatorType& alloc) const;
 
-  private:
-  SetStratPtr strategy_;
+private:
+  Set(const detail::SetImpl& impl);
+  Set(detail::SetImpl&& impl);
+
+  detail::SetImpl _impl;
+
+  friend class detail::SetAccessKey;
 };
+
 std::ostream& operator<<(std::ostream& out, const Set& s);
 
-} // namespace LIB
+} // namespace lib
 
-}  // namespace SBG
+} // namespace sbg
 
-#endif
+#endif // SBGRAPH_SBG_SET_HPP_

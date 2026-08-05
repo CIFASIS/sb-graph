@@ -23,48 +23,56 @@ namespace SBG {
 
 namespace Util {
 
-
 void time_profiler_results()
 {
-    Internal::TimeProfiler::print_execution_time();
+  Internal::TimeProfiler::print_execution_time();
 }
 
-
-namespace Internal{
+namespace Internal {
 
 std::unordered_map<std::string, double> TimeProfiler::_execution_time = {};
 
 TimeProfiler::TimeProfiler(std::string&& function_name)
-    : _function_name(move(function_name))
+  : _function_name(move(function_name))
 {
-    if (time_profiler_enabled) {
-        _start = std::chrono::high_resolution_clock::now();
-    }
+  if (time_profiler_enabled) {
+    _start = std::chrono::high_resolution_clock::now();
+  }
 }
 
 
 TimeProfiler::~TimeProfiler()
 {
-    if (time_profiler_enabled) {
-        auto end = std::chrono::high_resolution_clock::now();
-        auto exec_time = std::chrono::duration<double, std::milli>(end - _start).count();
-        if (_execution_time.find(_function_name) == _execution_time.end()) {
-            _execution_time.insert({_function_name, 0.0});
-        }
-        _execution_time[_function_name] += exec_time;
+  if (time_profiler_enabled) {
+    auto end = std::chrono::high_resolution_clock::now();
+    auto exec_time = std::chrono::duration<double, std::milli>(end - _start).count();
+    if (_execution_time.find(_function_name) == _execution_time.end()) {
+      _execution_time.insert({_function_name, 0.0});
     }
+    _execution_time[_function_name] += exec_time;
+  }
 }
 
 
 void TimeProfiler::print_execution_time() {
-    if (time_profiler_enabled) {
-        for (auto&& pair : TimeProfiler::_execution_time) {
-            std::cout << pair.first << ": " << pair.second << " ms" << std::endl;
-        }
+  if (time_profiler_enabled) {
+    for (auto&& pair : TimeProfiler::_execution_time) {
+      std::cout << pair.first << ": " << pair.second << " ms" << std::endl;
     }
+  }
 }
 
+void TimeProfiler::print_execution_time(std::string function_name) {
+  if (time_profiler_enabled) {
+    for (auto&& pair : TimeProfiler::_execution_time) {
+      if (pair.first == function_name) {
+        std::cout << pair.first << ": " << pair.second << " ms" << std::endl;
+      }
+    }
+  }
 }
+
+} // namespace Internal
 
 } // namespace Util
 

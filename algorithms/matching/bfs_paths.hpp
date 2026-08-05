@@ -23,14 +23,19 @@
 
  ******************************************************************************/
 
-#ifndef SBG_BFS_PATH_HPP
-#define SBG_BFS_PATH_HPP
+#ifndef SBGRAPH_ALGORITHMS_MATCHING_BFS_PATHS_HPP_
+#define SBGRAPH_ALGORITHMS_MATCHING_BFS_PATHS_HPP_
 
 #include "algorithms/matching/paths.hpp"
+#include "sbg/directed_sbg.hpp"
+#include "sbg/pw_map.hpp"
+#include "sbg/set.hpp"
 
 namespace SBG {
 
 namespace LIB {
+
+namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Paths Discoverer Algorithm --------------------------------------------------
@@ -40,21 +45,23 @@ namespace LIB {
  * @brief Backward BFS implementation to calculate paths.
  */
 class BFSPaths : public PathsContext<BFSPaths> {
-  public:
+public:
   BFSPaths();
 
   /**
    * @brief Concrete implementation that starts with the identity pw for
    * vertices belonging to `endings`. In each step adds adjacent vertices to
-   * the map. It also detects recursions (i.e. if a Set-Vertex is visited more)
+   * the map. It also detects repetitions (i.e. if a set-vertex is visited more)
    * than once, replicating the same path for every element of the same
-   * Set-Vertex.
+   * set-vertex.
    */
-  PWMap calculate(const DSBG& dsbg, const Set& endings);
+  Set calculate(const DirectedSBG& dsbg, const Set& endings);
 };
+
+} // namespace detail
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_ALGORITHMS_MATCHING_BFS_PATHS_HPP_

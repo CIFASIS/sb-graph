@@ -26,11 +26,13 @@ namespace SBG {
 
 namespace Eval {
 
+namespace detail {
+
 ////////////////////////////////////////////////////////////////////////////////
 // Set Implementation single Expression Visitor --------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-SetImplExprVisitor::SetImplExprVisitor(VarEnv& venv) : venv_(venv) {}
+SetImplExprVisitor::SetImplExprVisitor(VarEnv& venv) : _venv(venv) {}
 
 int SetImplExprVisitor::operator()(AST::Natural v) const { return 2; }
 
@@ -45,7 +47,6 @@ int SetImplExprVisitor::operator()(AST::UnaryOp v) const
 
 int SetImplExprVisitor::operator()(AST::BinOp v) const 
 {
-  int impl = 2;
   int limpl = boost::apply_visitor(*this, v.left());
   int rimpl = boost::apply_visitor(*this, v.right());
 
@@ -55,15 +56,16 @@ int SetImplExprVisitor::operator()(AST::BinOp v) const
 int SetImplExprVisitor::operator()(AST::Call v) const
 {
   int impl = 2;
-  for (const AST::Expr &e : v.args())
+  for (const AST::Expr& e : v.args()) {
     impl = std::min(impl, boost::apply_visitor(*this, e));
+  }
 
   return impl;
 }
 
 int SetImplExprVisitor::operator()(AST::Interval v) const
 {
-  NatEvaluator visit_nat(venv_);
+  NatEvaluator visit_nat{_venv};
   return boost::apply_visitor(visit_nat, v.step()) == 1 ? 2 : 1;
 }
 
@@ -71,11 +73,13 @@ int SetImplExprVisitor::operator()(AST::MultiDimInter v) const
 {
   int impl = 2;
 
-  if (v.intervals().size() > 1)
+  if (v.intervals().size() > 1) {
     return 1;
+  }
 
-  for (const AST::Expr &e : v.intervals())
+  for (const AST::Expr& e : v.intervals()) {
     impl = std::min(impl, boost::apply_visitor(*this, e));
+  }
 
   return impl;
 }
@@ -83,15 +87,16 @@ int SetImplExprVisitor::operator()(AST::MultiDimInter v) const
 int SetImplExprVisitor::operator()(AST::Set v) const
 {
   int impl = 2;
-  for (const AST::Expr &e : v.pieces())
+  for (const AST::Expr& e : v.pieces()) {
     impl = std::min(impl, boost::apply_visitor(*this, e));
+  }
 
   return impl;
 }
 
 int SetImplExprVisitor::operator()(AST::LinearExp v) const
 {
-  RationalEvaluator visit_rat(venv_);
+  RationalEvaluator visit_rat{_venv};
   LIB::RATIONAL r = boost::apply_visitor(visit_rat, v.slope());
 
   return (r == 0 || r == 1) ? 2 : 1;
@@ -100,8 +105,9 @@ int SetImplExprVisitor::operator()(AST::LinearExp v) const
 int SetImplExprVisitor::operator()(AST::MDLExp v) const
 {
   int impl = 2;
-  for (const AST::Expr &e : v.exps())
+  for (const AST::Expr& e : v.exps()) {
     impl = std::min(impl, boost::apply_visitor(*this, e));
+  }
 
   return impl;
 }
@@ -117,8 +123,9 @@ int SetImplExprVisitor::operator()(AST::LinearMap v) const
 int SetImplExprVisitor::operator()(AST::PWLMap v) const
 {
   int impl = 2;
-  for (const AST::Expr &e : v.maps())
+  for (const AST::Expr& e : v.maps()) {
     impl = std::min(impl, boost::apply_visitor(*this, e));
+  }
 
   return impl; 
 }
@@ -168,6 +175,8 @@ int SetImplExprVisitor::operator()(AST::ParenExpr v) const
 {
   return boost::apply_visitor(*this, v.e());
 }
+
+} // namespace detail
 
 } // namespace Eval
 

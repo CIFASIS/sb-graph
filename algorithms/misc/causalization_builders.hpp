@@ -25,18 +25,82 @@
 
  ******************************************************************************/
 
-#ifndef MISC_CAUSALIZATION_BUILDERS_HPP
-#define MISC_CAUSALIZATION_BUILDERS_HPP
+#ifndef SBGRAPH_ALGORITHMS_MISC_CAUSALIZATION_BUILDERS_HPP_
+#define SBGRAPH_ALGORITHMS_MISC_CAUSALIZATION_BUILDERS_HPP_
 
-#include "algorithms/matching/matching.hpp"
-#include "algorithms/scc/scc.hpp"
+#include "algorithms/matching/match_data.hpp"
+#include "algorithms/scc/scc_data.hpp"
+#include "sbg/directed_sbg.hpp"
 
-namespace MISC {
+namespace misc {
 
-SBG::LIB::DSBG buildSCCFromMatching(const SBG::LIB::MatchData& data);
+////////////////////////////////////////////////////////////////////////////////
+// Algebraic loops detection builder -------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
-SBG::LIB::DSBG buildSortFromSCC(const SBG::LIB::SCCData& data);
+/**
+ * @brief Builds the directed SBG used to detect algebraic loops.
+ * 
+ * It merges the matched edges of the input SBG of \p data, adding them
+ * as vertices of the new graphs. Then, it adds an edge (u, v) if in the
+ * input bipartite SBG there was an unmatched edge between the matched edges
+ * represented by u and v. The direction of (u, v) is from right to left
+ * according to the input bipartite SBG, representing that the equation
+ * referenced by u must be solved before the equation referenced by v.
+ */
+SBG::LIB::DirectedSBG buildLoopDetectionSBG(const SBG::LIB::MatchData& data);
 
-}  // namespace MISC
+////////////////////////////////////////////////////////////////////////////////
+// Algebraic loops breaker builder ---------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
 
-#endif
+/**
+ * @brief Builds the directed SBG used to identify tearing variables.
+ */
+SBG::LIB::DirectedSBG buildTearingSBG(const SBG::LIB::SCCData& data);
+
+////////////////////////////////////////////////////////////////////////////////
+// Vertical sorting builder ----------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @class VerticalSortingBuilder
+ * @brief Builds the directed acyclic SBG used to order vertically equations.
+ */
+class VerticalSortingBuilder {
+public:
+  VerticalSortingBuilder(const SBG::LIB::SCCData& data
+    , const SBG::LIB::Set& mfvs);
+
+  void buildVerticalSorting();
+
+  const SBG::LIB::DirectedSBG& dsbg() const;
+  const SBG::LIB::PWMap& rmap() const;
+
+private:
+  void addGuessVertices();
+
+  /**
+   * @brief Adds edges between tearing variables to induce an order between
+   * them.
+   */
+  void addDependencies(const SBG::LIB::PWMap& residual_to_endpoint);
+
+  /**
+   * @brief Modify edges between different SCC so that the endings are start and
+   * end points.
+   */
+  void redirectEdiff(const SBG::LIB::PWMap& reps_to_endpoint);
+
+  SBG::LIB::DirectedSBG _input_dsbg;
+  SBG::LIB::PWMap _input_rmap;
+  SBG::LIB::Set _Ediff;
+  SBG::LIB::DirectedSBG _output_dsbg;
+  SBG::LIB::PWMap _output_rmap;
+  SBG::LIB::Set _residual_vertices;
+  SBG::LIB::PWMap _guess_offset;
+};
+
+}  // namespace misc
+
+#endif // SBGRAPH_ALGORITHMS_MISC_CAUSALIZATION_BUILDERS_HPP_

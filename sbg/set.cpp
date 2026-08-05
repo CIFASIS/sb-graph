@@ -17,91 +17,171 @@
 
  ******************************************************************************/
 
-#include <set>
-
 #include "sbg/set.hpp"
+#include "sbg/set_impl.hpp"
+#include "util/debug.hpp"
+
+#include <iostream>
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Set Abstract Strategy Constructors ------------------------------------------
+// Set  ------------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-SetStrategy::SetStrategy() {}
-SetStrategy::SetStrategy(const MD_NAT& x) {}
-SetStrategy::SetStrategy(const Interval& i) {}
-SetStrategy::SetStrategy(const SetPiece& mdi) {}
+// Constructors ----------------------------------------------------------------
 
-////////////////////////////////////////////////////////////////////////////////
-// Set Interface ---------------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-Set::Set(SetStratPtr strat) : strategy_(std::move(strat)) {}
-Set::Set(const Set& other)
-  : strategy_(other.strategy_ ? other.strategy_->clone() : nullptr) {}
-
-Set::Iterator::Iterator(std::shared_ptr<SetStrategy::Iterator> it)
-  : it_(std::move(it)) {}
-
-void Set::Iterator::operator++()
+Set::Set() : _impl()
 {
-  ++(*it_);
-  return;
+  SetKind kind = SET_IMPL.kind();
+  switch (kind) {
+    case SetKind::kUnordered: {
+      _impl = detail::UnorderedSet{};
+      break;
+    }
+
+    case SetKind::kOrdered: {
+      _impl = detail::OrderedSet{};
+      break;
+    }
+
+    case SetKind::kOrdUnidimDense: {
+      _impl = detail::OrdUnidimDenseSet{};
+      break;
+    }
+
+    default: {
+      Util::ERROR("Unsupported ", kind, " Set implementation\n");
+      break;
+    }
+  }
 }
 
-SetPiece Set::Iterator::operator*() const { return **it_; }
-
-bool Set::Iterator::operator!=(const Iterator& other) const { return *it_ != *other.it_; }
-
-bool Set::Iterator::operator==(const Iterator& other) const { return *it_ == *other.it_; }
-
-bool Set::Iterator::operator<(const Iterator& other) const { return it_ < other.it_; }
-
-Set::Iterator Set::begin() const { return strategy_->begin(); }
-Set::Iterator Set::end() const { return strategy_->end(); }
-
-std::size_t Set::size() const { return strategy_->size(); }
-
-void Set::emplace(SetPiece mdi)
+Set::Set(const MD_NAT& x) : _impl()
 {
-  strategy_->emplace(mdi);
-  return;
+  SetKind kind = SET_IMPL.kind();
+  switch (kind) {
+    case SetKind::kUnordered: {
+      _impl = detail::UnorderedSet{x};
+      break;
+    }
+
+    case SetKind::kOrdered: {
+      _impl = detail::OrderedSet{x};
+      break;
+    }
+
+    case SetKind::kOrdUnidimDense: {
+      _impl = detail::OrdUnidimDenseSet{x[0]};
+      break;
+    }
+
+    default: {
+      Util::ERROR("Unsupported ", kind, " Set implementation\n");
+      break;
+    }
+  }
 }
 
-void Set::emplaceBack(SetPiece mdi)
+Set::Set(MD_NAT&& x) : _impl()
 {
-  strategy_->emplaceBack(mdi);
-  return;
+  SetKind kind = SET_IMPL.kind();
+  switch (kind) {
+    case SetKind::kUnordered: {
+      _impl = detail::UnorderedSet{x};
+      break;
+    }
+
+    case SetKind::kOrdered: {
+      _impl = detail::OrderedSet{x};
+      break;
+    }
+
+    case SetKind::kOrdUnidimDense: {
+      _impl = detail::OrdUnidimDenseSet{x[0]};
+      break;
+    }
+
+    default: {
+      Util::ERROR("Unsupported ", kind, " Set implementation\n");
+      break;
+    }
+  }
 }
+
+Set::Set(const NAT lo, const NAT step, const NAT hi) : _impl()
+{
+  SetKind kind = SET_IMPL.kind();
+  switch (kind) {
+    case SetKind::kUnordered: {
+      _impl = detail::UnorderedSet{detail::Interval(lo, step, hi)};
+      break;
+    }
+
+    case SetKind::kOrdered: {
+      _impl = detail::OrderedSet{detail::Interval(lo, step, hi)};
+      break;
+    }
+
+    case SetKind::kOrdUnidimDense: {
+      _impl = detail::OrdUnidimDenseSet{detail::Interval(lo, step, hi)};
+      break;
+    }
+
+    default: {
+      Util::ERROR("Unsupported ", kind, " Set implementation\n");
+      break;
+    }
+  }
+}
+
+Set::Set(const FixedPointsInfo& info) : _impl()
+{
+  SetKind kind = SET_IMPL.kind();
+  switch (kind) {
+    case SetKind::kUnordered: {
+      _impl = detail::UnorderedSet{info};
+      break;
+    }
+
+    case SetKind::kOrdered: {
+      _impl = detail::OrderedSet{info};
+      break;
+    }
+
+    case SetKind::kOrdUnidimDense: {
+      _impl = detail::OrdUnidimDenseSet{info};
+      break;
+    }
+
+    default: {
+      Util::ERROR("Unsupported ", kind, " Set implementation\n");
+      break;
+    }
+  }
+}
+
+Set::Set(const detail::SetImpl& impl) : _impl(impl) {}
+
+Set::Set(detail::SetImpl&& impl) : _impl(std::move(impl)) {}
+
+// Operators -------------------------------------------------------------------
 
 bool Set::operator==(const Set& other) const
 {
-  return *strategy_ == *other.strategy_;
+  return _impl == other._impl;
 }
 
-bool Set::operator!=(const Set& other) const { return !(*this == other); }
-
-Set& Set::operator=(const Set& other)
+bool Set::operator!=(const Set& other) const
 {
-  if (this !=& other)
-    strategy_ = other.strategy_->clone();
-
-  return *this;
-}
-
-Set& Set::operator=(Set&& other)
-{
-  if (this !=& other)
-    strategy_ = std::move(other.strategy_);
-
-  return *this;
+  return !(*this == other);
 }
 
 std::ostream& Set::print(std::ostream& out) const
 {
-  strategy_->print(out);
+  std::visit([&out](const auto& a) -> void { a.print(out); } , _impl);
   return out;
 }
 
@@ -111,62 +191,171 @@ std::ostream& operator<<(std::ostream& out, const Set& s)
   return out;
 }
 
-unsigned int Set::cardinal() const { return strategy_->cardinal(); }
+// Set operations --------------------------------------------------------------
 
-bool Set::isEmpty() const { return strategy_->isEmpty(); }
-
-MD_NAT Set::minElem() const { return strategy_->minElem(); }
-
-MD_NAT Set::maxElem() const { return strategy_->maxElem(); }
-
-Set Set::intersection(const Set& other) const
+unsigned int Set::cardinal() const
 {
-  return Set(strategy_->intersection(*other.strategy_));
+  return std::visit([](const auto& a) { return a.cardinal(); }, _impl);
+}
+
+bool Set::isEmpty() const
+{
+  return std::visit([](const auto& a) { return a.isEmpty(); }, _impl);
+}
+
+MD_NAT Set::minElem() const
+{
+  return std::visit([](const auto& a) { return a.minElem(); }, _impl);
+}
+
+MD_NAT Set::maxElem() const
+{
+  return std::visit([](const auto& a) { return a.maxElem(); }, _impl);
+}
+
+Set Set::intersection(const Set& other) const &
+{
+  return std::visit([](const auto& a, const auto& b)
+    {
+      using A = std::decay_t<decltype(a)>;
+      using B = std::decay_t<decltype(b)>;
+      if constexpr (std::is_same_v<A, B>) {
+        return Set{a.intersection(b)};
+      } else {
+        Util::ERROR("Set::intersection: mismatched implementations\n");
+        return Set{};
+      }
+    }
+    , _impl, other._impl);
 }
 
 Set Set::cup(const Set& other) const &
 {
-  return Set(strategy_->cup(*other.strategy_));
+  return Set{*this}.cup(other);
+}
+
+Set Set::cup(const Set& other) &&
+{
+  return std::move(*this).cup(Set{other});
+}
+
+Set Set::cup(Set&& other) const &
+{
+  return Set{*this}.cup(std::move(other));
 }
 
 Set Set::cup(Set&& other) &&
 {
-  return Set(std::move(*strategy_).cup(std::move(*other.strategy_)));
+  return std::visit([](auto&& a, auto&& b)
+    {
+      using A = std::decay_t<decltype(a)>;
+      using B = std::decay_t<decltype(b)>;
+      if constexpr (std::is_same_v<A, B>) {
+        return Set{std::move(a).cup(std::move(b))};
+      } else {
+        Util::ERROR("Set::cup: mismatched implementations\n");
+        return Set{};
+      }
+    }
+    , std::move(_impl), std::move(other._impl));
 }
 
 Set Set::complement() const
 {
-  return Set(strategy_->complement());
+  return std::visit(
+    [](const auto& a) -> Set { return Set{a.complement()}; }
+    , _impl);
 }
 
 Set Set::difference(const Set& other) const
 {
-  return Set(strategy_->difference(*other.strategy_));
+  return std::visit([](const auto& a, const auto& b)
+    {
+      using A = std::decay_t<decltype(a)>;
+      using B = std::decay_t<decltype(b)>;
+      if constexpr (std::is_same_v<A, B>) {
+        return Set{a.difference(b)};
+      } else {
+        Util::ERROR("Set::difference: mismatched implementations\n");
+        return Set{};
+      }
+    }
+    , _impl, other._impl);
 }
 
-std::size_t Set::arity() const  { return strategy_->arity(); }
+Set Set::cartesianProduct(const Set& other) const
+{
+  return std::visit([](const auto& a, const auto& b)
+    {
+      using A = std::decay_t<decltype(a)>;
+      using B = std::decay_t<decltype(b)>;
+      if constexpr (std::is_same_v<A, B>) {
+        return Set{a.cartesianProduct(b)};
+      } else {
+        Util::ERROR("Set::cartesianProduct: mismatched implementations\n");
+        return Set{};
+      }
+    }
+    , _impl, other._impl);
+}
+
+// Extra operations ------------------------------------------------------------
+
+std::size_t Set::arity() const
+{
+  return std::visit([](const auto& a) { return a.arity(); }, _impl);
+}
 
 Set Set::disjointCup(const Set& other) const &
 {
-  return Set(strategy_->disjointCup(*other.strategy_));
+  return Set{*this}.disjointCup(other);
+}
+
+Set Set::disjointCup(const Set& other) &&
+{
+  return std::move(*this).disjointCup(Set{other});
+}
+
+Set Set::disjointCup(Set&& other) const &
+{
+  return Set{*this}.disjointCup(std::move(other));
 }
 
 Set Set::disjointCup(Set&& other) &&
 {
-  return Set(std::move(*strategy_).disjointCup(std::move(*other.strategy_)));
-}
-
-Set Set::filterSet(bool (*f)(const SetPiece& mdi)) const
-{
-  return strategy_->filterSet(f);
+  return std::visit([](auto&& a, auto&& b)
+    {
+      using A = std::decay_t<decltype(a)>;
+      using B = std::decay_t<decltype(b)>;
+      if constexpr (std::is_same_v<A, B>) {
+        return Set{std::move(a).disjointCup(std::move(b))};
+      } else {
+        Util::ERROR("Set::disjointCup: mismatched implementations\n");
+        return Set{};
+      }
+    }
+    , std::move(_impl), std::move(other._impl));
 }
 
 Set Set::offset(const MD_NAT& off) const
 {
-  return strategy_->offset(off);
+  return std::visit(
+    [&off](const auto& a) -> Set { return Set{a.offset(off)}; }
+    , _impl);
 }
 
-Set Set::compact() const { return strategy_->compact(); }
+Perimeter Set::perimeter() const
+{
+  return std::visit([](const auto& a) { return a.perimeter(); }, _impl);
+}
+
+void Set::compact() { std::visit([](auto& a) { a.compact(); }, _impl); }
+
+rapidjson::Value Set::toJSON(rapidjson::Document::AllocatorType& alloc) const
+{
+  return std::visit([&alloc](auto a) { return detail::toJSON(a, alloc); }
+    , _impl);
+}
 
 }  // namespace LIB
 

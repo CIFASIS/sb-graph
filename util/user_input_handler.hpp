@@ -43,18 +43,18 @@ class UserInputHandler {
   UserInputHandler();
   virtual ~UserInputHandler() = default;
 
-  virtual void execute(int arg_count, char* args[]) = 0;
+  virtual void execute(int argc, char* argv[]) = 0;
 
   protected:
-  prog_opts::options_description generic_; ///< Descriptive info (version, etc.) 
-  prog_opts::options_description config_;  ///< SBG Program configuration 
-  prog_opts::options_description hidden_;  ///< Options hidden to the user
-  prog_opts::options_description cmd_line_opts_; ///< Command line options
-  prog_opts::options_description cfg_file_opts_; ///< Options in config files
-  prog_opts::options_description visible_; ///< All visible options for the user
-  prog_opts::positional_options_description positional_;
-  boost::optional<std::string> config_file_;
-  boost::optional<std::string> input_file_;
+  prog_opts::options_description _generic; ///< Descriptive info (version, etc.) 
+  prog_opts::options_description _config;  ///< SBG Program configuration 
+  prog_opts::options_description _hidden;  ///< Options hidden to the user
+  prog_opts::options_description _cmd_line_opts; ///< Command line options
+  prog_opts::options_description _cfg_file_opts; ///< Options in config files
+  prog_opts::options_description _visible; ///< All visible options for the user
+  prog_opts::positional_options_description _positional;
+  boost::optional<std::string> _config_file;
+  boost::optional<std::string> _input_file;
 };
 
 } // namespace Util

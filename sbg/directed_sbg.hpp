@@ -8,14 +8,12 @@
  - A Set E_ listing elements of E(G).
  - A PWMap mapB_ mapping elements of E_ to V_ (start of each edge).
  - A PWMap mapD_ mapping elements of E_ to V_ (ending of each edge). \n 
- where map1_ and map_2 share the same domain. These elements all together keep
+ where mapB_ and mapD_ share the same domain. These elements all together keep
  the same information as G. Additionally, the SBG keeps:
  - A PWMap Vmap_ mapping elements in V_ to some constant value. Vertices that
    share the same image conform a *Set-Vertex*.
  - A PWMap Emap_ mapping elements in E_ to some constant value. Edges that
    share the same image conform a *Set-Edge*.
- - A PWMap subEmap_ mapping elements in E_ to some constant value. Edges that
-   share the same image conform a *Subset-Edge*.\n 
  These components are added to keep track of repetitve structures in G. Note
  that a Set-Edge might be composed by several Subset-Edges.
 
@@ -38,11 +36,13 @@
 
  ******************************************************************************/
 
-#ifndef SBG_DIRECTED_SBG_HPP
-#define SBG_DIRECTED_SBG_HPP
+#ifndef SBGRAPH_SBG_DIRECTED_SBG_HPP_
+#define SBGRAPH_SBG_DIRECTED_SBG_HPP_
 
-#include "sbg/pwmap_fact.hpp"
-#include "util/debug.hpp"
+#include "sbg/set.hpp"
+#include "sbg/pw_map.hpp"
+
+#include <iosfwd>
 
 namespace SBG {
 
@@ -52,58 +52,93 @@ namespace LIB {
 // Directed SBG ----------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-class DSBG {
-  public:
-  // Vertex definitions
-  member_class(Set, V);
-  member_class(PWMap, Vmap);
-
-  // Edge definitions
-  member_class(Set, E);
-  member_class(PWMap, mapB);
-  member_class(PWMap, mapD);
-  member_class(PWMap, Emap);
-  member_class(PWMap, subEmap);
-
+class DirectedSBG {
+public:
   /**
    * @brief Empty SBG constructor.
    */
-  DSBG();
+  DirectedSBG();
 
   /**
    * @brief SBG constructor that copies arguments to construct member variables.
    * A set of edges E is not needed, as it will be obtained from the domain of
    * map1_ and map2_.
    */
-  DSBG(const Set &V, const PWMap &Vmap
-   , const PWMap &mapB, const PWMap &mapD
-   , const PWMap &Emap, const PWMap &subEmap);
+  DirectedSBG(const Set& V, const PWMap& Vmap
+   , const PWMap& mapB, const PWMap& mapD
+   , const PWMap& Emap);
 
-  DSBG &operator=(const DSBG &other);
+  const Set& V() const;
+  const PWMap& Vmap() const;
+  const Set& E() const;
+  const PWMap& mapB() const;
+  const PWMap& mapD() const;
+  const PWMap& Emap() const;
 
   /**
    * @brief Adds a new set-vertex composed by \p vertices.
    * Precondition: V_.intersection(vertices) = {}
    */
-  DSBG addSV(const Set &vertices) const;
+  void addSetVertex(const Set& vertices);
 
   /**
    * @brief Adds a new set-edge described by \p pw1 and \p pw2.
    * Precondition: dom(pw1) = dom(pw2) and
    * E_.intersection(pw1.dom()) = {} and E_.intersection(pw2.dom()) = {} 
    */
-  DSBG addSE(const PWMap &pw1, const PWMap &pw2) const;
+  void addSetEdge(const PWMap& pw1, const PWMap& pw2);
 
   /**
-   * @brief Erase vertices \p vs from the DSBG, together with associated edges
-   * with \p vs.
+   * @brief Erase vertices \p vs from the DirectedSBG, together with adjacent
+   * edges of \p vs.
    */
-  DSBG eraseVertices(const Set &vs) const;
+  void eraseVertices(const Set& V);
+
+  void eraseEdges(const Set& E);
+
+  template<typename FuncT>
+  void foreachSetVertex(FuncT&& f) const;
+
+  template<typename FuncT>
+  void foreachSetEdge(FuncT&& f) const;
+
+private:
+  Set _V; ///< Vertices definitions
+  PWMap _Vmap;
+  Set _E; ///< Edges definitions
+  PWMap _mapB;
+  PWMap _mapD;
+  PWMap _Emap;
 };
-std::ostream &operator<<(std::ostream &out, const DSBG &dg);
+
+std::ostream& operator<<(std::ostream& out, const DirectedSBG& dg);
+
+// Template definitions --------------------------------------------------------
+
+template<typename FuncT>
+inline void DirectedSBG::foreachSetVertex(FuncT&& f) const
+{
+  Set remaining = _Vmap.image();
+  while (!remaining.isEmpty()) {
+    const MD_NAT& x = remaining.minElem();
+    f(x);
+    remaining = remaining.difference(Set{x});
+  }
+}
+
+template<typename FuncT>
+inline void DirectedSBG::foreachSetEdge(FuncT&& f) const
+{
+  Set remaining = _Emap.image();
+  while (!remaining.isEmpty()) {
+    const MD_NAT& x = remaining.minElem();
+    f(x);
+    remaining = remaining.difference(Set{x});
+  }
+}
 
 } // namespace LIB
 
 }  // namespace SBG
 
-#endif
+#endif // SBGRAPH_SBG_DIRECTED_SBG_HPP_

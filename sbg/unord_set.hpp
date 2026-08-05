@@ -21,88 +21,100 @@
 
  ******************************************************************************/
 
-#ifndef SBG_UNORD_SET_HPP
-#define SBG_UNORD_SET_HPP
+#ifndef SBGRAPH_SBG_UNORD_SET_HPP_
+#define SBGRAPH_SBG_UNORD_SET_HPP_
 
+#include "sbg/expression.hpp"
+#include "sbg/fixed_points.hpp"
+#include "sbg/interval.hpp"
 #include "sbg/multidim_inter.hpp"
-#include "sbg/set.hpp"
+#include "sbg/natural.hpp"
+#include "sbg/perimeter.hpp"
+
+#include "rapidjson/document.h"
+
+#include <iosfwd>
+#include <memory>
+#include <vector>
 
 namespace SBG {
 
 namespace LIB {
 
+namespace detail {
+
 ////////////////////////////////////////////////////////////////////////////////
-// Unordered Set Implementation (concrete strategy) ----------------------------
+// Unordered Set Implementation ------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-class UnorderedSet : public SetStrategy {
-  using MDIUnordCollection = std::vector<SetPiece>;
+class UnorderedSet {
+public:
+  using MDIUnordCollection = std::vector<detail::MultiDimInter>;
+  using ConstIt = MDIUnordCollection::const_iterator;
 
-  member_class(MDIUnordCollection, pieces);
-
-  ~UnorderedSet();
   UnorderedSet();
   UnorderedSet(const MD_NAT& x);
-  UnorderedSet(const Interval& i);
-  UnorderedSet(const SetPiece& mdi);
+  UnorderedSet(const detail::Interval& i);
+  UnorderedSet(const detail::MultiDimInter& mdi);
   UnorderedSet(const MDIUnordCollection& pieces);
+  UnorderedSet(MDIUnordCollection&& pieces);
+  UnorderedSet(const FixedPointsInfo& info);
 
-  SetStratPtr clone() const override;
+  ConstIt begin() const;
+  ConstIt end() const;
 
-  class Iterator : public SetStrategy::Iterator {
-    member_class(MDIUnordCollection::const_iterator, it);
+  void pushBack(const MultiDimInter& mdi);
 
-    Iterator(MDIUnordCollection::const_iterator it);
-    void operator++() override;
-    bool operator!=(const SetStrategy::Iterator& other) const override;
-    bool operator==(const SetStrategy::Iterator& other) const override;
-    bool operator<(const SetStrategy::Iterator& other) const override;
-    const SetPiece& operator*() const override;
-  };
-
-  std::shared_ptr<SetStrategy::Iterator> begin() const override;
-  std::shared_ptr<SetStrategy::Iterator> end() const override;
-
-  std::size_t size() const override;
-  void emplace(const SetPiece& mdi) override;
-  void emplaceBack(const SetPiece& mdi) override;
-
-  bool operator==(const SetStrategy& other) const override;
-  bool operator!=(const SetStrategy& other) const override;
-  std::ostream& print(std::ostream& out) const override;
+  bool operator==(const UnorderedSet& other) const;
+  bool operator!=(const UnorderedSet& other) const;
+  std::ostream& print(std::ostream& out) const;
 
   // Traditional set operations ------------------------------------------------
 
-  unsigned int cardinal() const override;
-  bool isEmpty() const override;
-  MD_NAT minElem() const override;
-  MD_NAT maxElem() const override;
-  SetStratPtr intersection(const SetStrategy& other) const override;
-  SetStratPtr cup(const SetStrategy& other) const & override;
-  SetStratPtr cup(SetStrategy&& other) && override;
-  SetStratPtr complement() const;
-  SetStratPtr difference(const SetStrategy& other) const override;
+  unsigned int cardinal() const;
+  bool isEmpty() const;
+  MD_NAT minElem() const;
+  MD_NAT maxElem() const;
+  UnorderedSet intersection(const UnorderedSet& other) const;
+  UnorderedSet cup(const UnorderedSet& other) const &;
+  UnorderedSet cup(UnorderedSet&& other) const &;
+  UnorderedSet cup(const UnorderedSet& other) &&;
+  UnorderedSet cup(UnorderedSet&& other) &&;
+  UnorderedSet complement() const;
+  UnorderedSet difference(const UnorderedSet& other) const;
+  UnorderedSet cartesianProduct(const UnorderedSet& other) const;
 
   // Extra operations ----------------------------------------------------------
 
-  std::size_t arity() const override;
-  SetStratPtr disjointCup(const SetStrategy& other) const & override;
-  SetStratPtr disjointCup(SetStrategy&& other) && override;
-  SetStratPtr filterSet(bool (*f)(const SetPiece& mdi)) const override;
-  SetStratPtr offset(const MD_NAT& off) const override;
-  SetStratPtr compact() const override;
+  std::size_t arity() const;
+  UnorderedSet disjointCup(const UnorderedSet& other) const &;
+  UnorderedSet disjointCup(const UnorderedSet& other) &&;
+  UnorderedSet disjointCup(UnorderedSet&& other) const &;
+  UnorderedSet disjointCup(UnorderedSet&& other) &&;
+  UnorderedSet offset(const MD_NAT& off) const;
+  Perimeter perimeter() const;
+  void compact();
 
-  private:
+private:
   /**
    * @brief Calculate the complement of an unordered set with a single piece.
    */
-  SetStratPtr complementAtom() const;
+  UnorderedSet complementAtom() const;
+
+  MDIUnordCollection _pieces;
+
+  friend class SetAccessKey;
 };
 
-typedef const UnorderedSet& UnordSetCRef;
+// Non-member functions --------------------------------------------------------
+
+rapidjson::Value toJSON(UnorderedSet s
+  , rapidjson::Document::AllocatorType& alloc);
+
+} // namespace detail
 
 } // namespace LIB
 
 }  // namespace SBG
 
-#endif
+#endif // SBGRAPH_SBG_UNORD_SET_HPP_

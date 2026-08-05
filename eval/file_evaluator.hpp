@@ -21,11 +21,12 @@
 
  ******************************************************************************/
 
-#ifndef EVAL_FILE_HPP
-#define EVAL_FILE_HPP
+#ifndef SBGRAPH_EVAL_FILE_EVALUATOR_HPP_
+#define SBGRAPH_EVAL_FILE_EVALUATOR_HPP_
 
 #include "eval/pretty_print.hpp"
-#include "util/user_input_handler.hpp"
+
+#include <string>
 
 namespace SBG {
 
@@ -37,4 +38,4 @@ ProgramIO parseEvalFile(std::string fname);
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_EVAL_FILE_EVALUATOR_HPP_

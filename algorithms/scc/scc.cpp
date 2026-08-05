@@ -17,42 +17,47 @@
 
  ******************************************************************************/
 
-#include <chrono>
-
 #include "algorithms/scc/mrv.hpp"
 #include "algorithms/scc/scc.hpp"
+#include "algorithms/scc/scc_impl.hpp"
+#include "util/debug.hpp"
 #include "util/logger.hpp"
+#include "util/time_profiler.hpp"
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Auxiliary structures --------------------------------------------------------
+// SCC Algorithm ---------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-SCCData::SCCData(DSBG dsbg, PWMap rmap, Set Ediff)
-  : dsbg_(dsbg), rmap_(rmap), Ediff_(Ediff) {}
-
-const DSBG& SCCData::dsbg() const { return dsbg_; }
-const PWMap& SCCData::rmap() const { return rmap_; }
-const Set& SCCData::Ediff() const { return Ediff_; }
-
-////////////////////////////////////////////////////////////////////////////////
-// SCC Algorithm Abstract Strategy Constructors --------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-SCCStrategy::SCCStrategy() {}
-
-////////////////////////////////////////////////////////////////////////////////
-// SCC Algorithm Interface -----------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-SCC::SCC(SCCStratPtr strat) : strategy_(std::move(strat)) {}
-
-SCCData SCC::calculate(const DSBG& dsbg)
+SCC::SCC() : _impl()
 {
-  return strategy_->calculate(dsbg);
+  SCCKind kind = SCC_IMPL.kind();
+  switch (kind) {
+    case SCCKind::kMinReachV1: {
+      _impl = detail::MinReachSCCV1{};
+      break;
+    }
+
+    case SCCKind::kMinReachV2: {
+      _impl = detail::MinReachSCCV2{};
+      break;
+    }
+
+    default: {
+      Util::ERROR("Unsupported SCC implementation");
+      break;
+    }
+  }
+}
+
+SCCData SCC::calculate(const DirectedSBG& dsbg)
+{
+  Util::Internal::TimeProfiler profiler{"Total SCC execution time: "};
+
+  return std::visit([&](auto& a) { return a.calculate(dsbg); }, _impl);
 }
 
 } // namespace LIB

@@ -19,81 +19,96 @@
 
 #include "sbg/natural.hpp"
 
+#include <iostream>
+
 namespace SBG {
 
 namespace LIB {
 
-member_imp(MD_NAT, VNAT, value);
+// Constructors/Destructors ----------------------------------------------------
 
-MD_NAT::MD_NAT() : value_() {}
-MD_NAT::MD_NAT(NAT x) : value_() { value_.push_back(x); }
-MD_NAT::MD_NAT(unsigned int nmbr_copies, NAT x) : value_() { 
-  for (unsigned int j = 0; j < nmbr_copies; ++j)
-    value_.push_back(x); 
+MD_NAT::MD_NAT() : _value() {}
+
+MD_NAT::MD_NAT(const NAT x) : _value() { _value.emplace_back(x); }
+
+MD_NAT::MD_NAT(const std::size_t k, const NAT x) : _value()
+{ 
+  for (unsigned int j = 0; j < k; ++j) {
+    _value.emplace_back(x);
+  }
 }
-MD_NAT::MD_NAT(MD_NAT::iterator b, MD_NAT::iterator e) : value_(b, e) {}
 
-MD_NAT::iterator MD_NAT::begin() { return value_.begin(); }
-MD_NAT::iterator MD_NAT::end() { return value_.end(); }
-MD_NAT::const_iterator MD_NAT::begin() const { return value_.begin(); }
-MD_NAT::const_iterator MD_NAT::end() const { return value_.end(); }
+MD_NAT::MD_NAT(MD_NAT::Iterator b, MD_NAT::Iterator e) : _value(b, e) {}
 
-void MD_NAT::emplaceBack(NAT x) { value_.push_back(x); }
+// Getters ---------------------------------------------------------------------
 
-NAT &MD_NAT::operator[](std::size_t n) { return value_[n]; }
-const NAT &MD_NAT::operator[](std::size_t n) const { return value_[n]; }
+MD_NAT::Iterator MD_NAT::begin() { return _value.begin(); }
 
-bool MD_NAT::operator==(const MD_NAT &other) const
+MD_NAT::Iterator MD_NAT::end() { return _value.end(); }
+
+MD_NAT::ConstIterator MD_NAT::begin() const { return _value.begin(); }
+
+MD_NAT::ConstIterator MD_NAT::end() const { return _value.end(); }
+
+// Setters ---------------------------------------------------------------------
+
+void MD_NAT::pushBack(const NAT x) { _value.push_back(x); }
+
+// Operators -------------------------------------------------------------------
+
+NAT& MD_NAT::operator[](std::size_t n) { return _value[n]; }
+
+const NAT& MD_NAT::operator[](std::size_t n) const { return _value[n]; }
+
+bool MD_NAT::operator==(const MD_NAT& other) const
 {
-  return value_ == other.value_;
+  return _value == other._value;
 }
 
-bool MD_NAT::operator!=(const MD_NAT &other) const { return !(*this == other); }
+bool MD_NAT::operator!=(const MD_NAT& other) const { return !(*this == other); }
 
-bool MD_NAT::operator<(const MD_NAT &other) const
+bool MD_NAT::operator<(const MD_NAT& other) const
 {
   for (unsigned int j = 0; j < arity(); ++j) {
-    if (operator[](j) < other[j])
+    if (operator[](j) < other[j]) {
       return true;
-
-    if (operator[](j) > other[j])
+    } else if (operator[](j) > other[j]) {
       return false;
+    }
   }
 
   return false;
 }
 
 
-bool MD_NAT::operator<=(const MD_NAT &other) const
+bool MD_NAT::operator<=(const MD_NAT& other) const
 {
   return *this == other || *this < other;
 }
 
-MD_NAT MD_NAT::operator+=(const MD_NAT &other) const
+MD_NAT MD_NAT::operator+(const MD_NAT& other) const
 {
-  MD_NAT res = *this;
-  for (unsigned int j = 0; j < arity(); ++j)
-    res[j] += other[j];
+  MD_NAT result;
 
-  return res;
+  for (auto j = 0; j < _value.size(); ++j) {
+    result.pushBack(operator[](j) + other[j]);
+  }
+
+  return result;
 }
 
-MD_NAT MD_NAT::operator+(const MD_NAT &other) const
-{
-  return *this += other;
-}
+// Extra operations ------------------------------------------------------------
 
-std::size_t MD_NAT::arity() const { return value_.size(); }
+std::size_t MD_NAT::arity() const { return _value.size(); }
 
-std::ostream &operator<<(std::ostream &out, const MD_NAT &md)
+std::ostream& operator<<(std::ostream& out, const MD_NAT& md)
 {
   MD_NAT aux = md;
   unsigned int sz = aux.arity();
 
-  if (sz == 1)  
+  if (sz == 1) {
     out << aux[0];
-
-  if (sz > 1) {
+  } else if (sz > 1) {
     out << "(";
     for (unsigned int j = 0; j < sz - 1; ++j)
       out << aux[j] << ", ";

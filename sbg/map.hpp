@@ -26,11 +26,18 @@
 
  ******************************************************************************/
 
-#ifndef SBG_MAP_HPP
-#define SBG_MAP_HPP
+#ifndef SBGRAPH_SBG_MAP_HPP_
+#define SBGRAPH_SBG_MAP_HPP_
 
-#include "sbg/set_fact.hpp"
-#include "sbg/multidim_lexp.hpp"
+#include "sbg/natural.hpp"
+#include "sbg/expression.hpp"
+#include "sbg/set.hpp"
+
+#include "rapidjson/document.h"
+
+#include <iosfwd>
+#include <optional>
+#include <vector>
 
 namespace SBG {
 
@@ -38,19 +45,10 @@ namespace LIB {
 
 class Map;
 
-typedef std::optional<Map> MaybeMap;
+using MaybeMap = std::optional<Map>;
 
-/**
- * @brief Implementation of maps. Every map has as member a SetFact that keeps
- * track of the chosen implementation for Sets.
- */
 class Map {
-  public:
-  member_class(Set, dom);
-  member_class(Exp, exp);
-
-  ~Map();
-
+public:
   /**
    * @brief Construct a map with empty domain and expression.
    */
@@ -60,28 +58,21 @@ class Map {
    * @brief Construct a map with a single element \p x in its domain, and with
    * \p exp as its law.
    */
-  Map(MD_NAT x, Exp exp);
-
-  /**
-   * @brief Construct a map with all the elements of \p i in its domain, and law
-   * \p le.
-   */
-  Map(Interval i, LExp le);
-
-  /**
-   * @brief Construct a map with all the elements of \p mdi in its domain, and
-   * law \p exp. 
-   */
-  Map(SetPiece mdi, Exp exp);
+  Map(const MD_NAT& x, const Expression& expr);
+  Map(MD_NAT&& x, Expression&& expr);
 
   /**
    * @brief Construct a map defining its domain as \p s and law as \p exp.
    */
-  Map(Set s, Exp exp);
+  Map(const Set& s, const Expression& expr);
+  Map(Set&& s, Expression&& expr);
+
+  const Set& domain() const &;
+  Set domain() &&;
+  const Expression& law() const;
 
   bool operator==(const Map& other) const;
   bool operator!=(const Map& other) const;
-  Map& operator=(const Map& other);
   
   /**
    * @brief Calculates the sum of both maps for elements that belong to both
@@ -92,8 +83,8 @@ class Map {
   // Traditional map operations ------------------------------------------------
 
   /**
-   * @brief Number of dimensions of the elements that compose the mdi. For
-   * example, arity([1:1:10]x[1:1:10]) = 2.
+   * @brief Number of dimensions of the elements that compose the domain of the
+   * map. For example, arity([1:1:10]x[1:1:10]) = 2.
    */
   std::size_t arity() const;
 
@@ -102,7 +93,9 @@ class Map {
   /**
    * @brief Restrict the domain of the map to \p subdom.
    */
-  Map restrict(const Set& subdom) const;
+  Map restrict(const Set& subdom) const &;
+  Map restrict(const Set& subdom) &&;
+  Map restrict(Set&& subdom) const &;
 
   /**
    * @brief Return all the elements that are the image of a value in the domain.
@@ -123,6 +116,12 @@ class Map {
   Set preImage(const Set& subcodom) const;
 
   /**
+   * @brief Calculates the inverse of a map.
+   * Precondition: map should be bijective.
+   */
+  Map inverse() const;
+
+  /**
    * @brief Calculate the composition of \p this with \p other, i.e.
    * \p this(\p other).
    */
@@ -135,14 +134,6 @@ class Map {
 
   // Extra operations ----------------------------------------------------------
 
-  /**
-   * @brief Calculate pseudo-inverse of a map. If the map is bijective, it
-   * returns its inverse. If it's constant, i.e. s -> 0*x+h it returns a new map
-   * {h} -> min(s), that is a map from the image to the minimum element of the
-   * domain.
-   */
-  Map minInv() const;
-
   bool isId() const;
 
   /**
@@ -153,23 +144,43 @@ class Map {
   Set lessImage(const Map& other) const;
 
   /**
+   * @brief Given two maps m1 (\p this) and m2 (\p other), for every element
+   * y in the image of m1 returns a map result such that
+   * result(y) = {min(m2(x)) : m1(x) = y}.
+   */
+  Map minAdj(const Map& other) const;
+
+  /**
    * @brief If it is convenient calculates the result of composing the map with
-   * itself until the image is out of the domain. For example,
-   * reduce({[1:1:100]} -> x+1) = {[1:1:100]} -> 101.
+   * itself until the image is out of the domain (without actually composing the
+   * map). For example, reduce({[1:1:100]} -> x+1) = {[1:1:100]} -> 101.
    */
   std::vector<Map> reduce() const;
 
   /**
-   * @brief Compact the domain of two maps if both share the same expression. If
-   * not, the result isn't a map, so no value is returned.
+   * @brief Calculates the multiplicity for each element of the image, i.e. the
+   * number of pre-images of each one.
+   */
+  std::vector<Map> imageMultiplicity() const;
+
+  /**
+   * @brief Minimize internal representation cost. Heuristic guided.
+   * Precondition: maps should domain disjoint. 
    */
   MaybeMap compact(const Map& other) const;
-  
+
+private:  
+  Set _domain;
+  Expression _law;
 };
 std::ostream& operator<<(std::ostream& out, const Map& s);
+
+// Non-member functions --------------------------------------------------------
+
+rapidjson::Value toJSON(Map m, rapidjson::Document::AllocatorType& alloc);
 
 } // namespace LIB
 
 }  // namespace SBG
 
-#endif
+#endif // SBGRAPH_SBG_MAP_HPP_

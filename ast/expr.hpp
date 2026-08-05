@@ -24,10 +24,13 @@
 #ifndef PARSER_EXPR_AST_HPP
 #define PARSER_EXPR_AST_HPP
 
+#include <iosfwd>
+
 #include <boost/variant/variant.hpp>
 #include <boost/variant/recursive_wrapper.hpp>
 
 #include "sbg/natural.hpp"
+#include "util/defs.hpp"
 
 namespace SBG {
 
@@ -187,14 +190,13 @@ std::ostream &operator<<(std::ostream &out, const PWLMap &pwl);
 class SBG {
   public:
   SBG();
-  SBG(Expr V, Expr Vmap, Expr map1, Expr map2, Expr Emap, Expr subE);
+  SBG(Expr V, Expr Vmap, Expr map1, Expr map2, Expr Emap);
 
   const Expr& V() const;
   const Expr& Vmap() const;
   const Expr& map1() const;
   const Expr& map2() const;
   const Expr& Emap() const;
-  const Expr& subE_map() const;
 
   bool operator==(const SBG &sbg) const;
 
@@ -204,7 +206,6 @@ class SBG {
   Expr _map1;
   Expr _map2;
   Expr _Emap;
-  Expr _subE_map;
 };
 std::ostream &operator<<(std::ostream &out, const SBG &g);
 
@@ -213,7 +214,7 @@ std::ostream &operator<<(std::ostream &out, const SBG &g);
 class BipartiteSBG : public SBG {
   public:
   BipartiteSBG();
-  BipartiteSBG(Expr V, Expr Vmap, Expr map1, Expr map2, Expr Emap, Expr subE
+  BipartiteSBG(Expr V, Expr Vmap, Expr map1, Expr map2, Expr Emap
     , Expr X, Expr Y);
 
   const Expr& X() const;
@@ -235,10 +236,9 @@ struct DSBG {
   member_class(Expr, mapB);
   member_class(Expr, mapD);
   member_class(Expr, Emap);
-  member_class(Expr, subE_map);
 
   DSBG();
-  DSBG(Expr V, Expr Vmap, Expr mapB, Expr mapD, Expr Emap, Expr subE);
+  DSBG(Expr V, Expr Vmap, Expr mapB, Expr mapD, Expr Emap);
 
   bool operator==(const DSBG &dsbg) const;
 };

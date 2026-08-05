@@ -1,6 +1,6 @@
 /*******************************************************************************
 
- This file is part of Set--Based Graph Library.
+ This file is part of PWMap--Based Graph Library.
 
  SBG Library is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -8,7 +8,7 @@
  (at your option) any later version.
 
  SBG Library is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
+ but WITHOUT ANY WARRANTY; without even the stratied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
@@ -18,193 +18,436 @@
  ******************************************************************************/
 
 #include "sbg/pw_map.hpp"
+#include "sbg/pwmap_impl.hpp"
+#include "util/debug.hpp"
+#include "util/defs.hpp"
+
+#include <iostream>
 
 namespace SBG {
 
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// PWMap Abstract Strategy Constructors ----------------------------------------
+// PWMap Iterator --------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-PWMapStrategy::PWMapStrategy() {}
+PWMap::ConstIt::ConstIt(detail::UnordPWMap::ConstIt it) : _it(it) {}
+
+PWMap::ConstIt::ConstIt(detail::OrdPWMap::ConstIt it) : _it(it) {}
+
+const Map& PWMap::ConstIt::operator*()
+{
+  auto it_visitor = SBG::Util::Overload {
+    [](const detail::UnordPWMap::ConstIt& i) -> const Map& { return *i; },
+    [](const detail::OrdPWMap::ConstIt& i) -> const Map& { return i->map(); }
+  };
+  return std::visit(it_visitor, _it);
+}
+
+PWMap::ConstIt PWMap::ConstIt::operator++()
+{
+  std::visit([](auto& i) { ++i; }, _it);
+  return *this;
+}
+
+bool PWMap::ConstIt::operator==(const ConstIt& other)
+{
+  return _it == other._it;
+}
+
+bool PWMap::ConstIt::operator!=(const ConstIt& other)
+{
+  return _it != other._it;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
-// PWMap Interface -------------------------------------------------------------
+// PWMap  ----------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-PWMap::PWMap(PWMapStratPtr strat) : strategy_(std::move(strat)) {}
+// Constructors ----------------------------------------------------------------
 
-PWMap::PWMap(const PWMap& other)
-  : strategy_(other.strategy_ ? other.strategy_->clone() : nullptr) {}
-
-PWMap::Iterator::Iterator(std::shared_ptr<PWMapStrategy::Iterator> it)
-  : it_(std::move(it)) {}
-
-void PWMap::Iterator::operator++()
+PWMap::PWMap() : _impl()
 {
-  ++(*it_);
-  return;
+  PWMapKind kind = PWMAP_IMPL.kind();
+  switch (kind) {
+    case PWMapKind::kUnordered: {
+      _impl = detail::UnordPWMap{};
+      break;
+    }
+
+    case PWMapKind::kOrdered: {
+      _impl = detail::OrdPWMap{};
+      break;
+    }
+
+    case PWMapKind::kDomOrdered: {
+      _impl = detail::DomOrdPWMap{};
+      break;
+    }
+
+    default: {
+      Util::ERROR("Unsupported ", kind, " PWMap implementation\n");
+      break;
+    }
+  }
 }
 
-Map PWMap::Iterator::operator*() const { return **it_; }
-
-bool PWMap::Iterator::operator!=(const Iterator& other) const
+PWMap::PWMap(Set s) : _impl()
 {
-  return *it_ != *other.it_;
+  PWMapKind kind = PWMAP_IMPL.kind();
+  switch (kind) {
+    case PWMapKind::kUnordered: {
+      _impl = detail::UnordPWMap{s};
+      break;
+    }
+
+    case PWMapKind::kOrdered: {
+      _impl = detail::OrdPWMap{s};
+      break;
+    }
+
+    case PWMapKind::kDomOrdered: {
+      _impl = detail::DomOrdPWMap{s};
+      break;
+    }
+
+    default: {
+      Util::ERROR("Unsupported ", kind, " PWMap implementation\n");
+      break;
+    }
+  }
 }
 
-PWMap::Iterator PWMap::begin() const { return strategy_->begin(); }
-PWMap::Iterator PWMap::end() const { return strategy_->end(); }
+PWMap::PWMap(Map m) : _impl()
+{ 
+  PWMapKind kind = PWMAP_IMPL.kind();
+  switch (kind) {
+    case PWMapKind::kUnordered: {
+      _impl = detail::UnordPWMap{m};
+      break;
+    }
 
-void PWMap::emplaceBack(const Map& m)
-{
-  strategy_->emplaceBack(m);
-  return;
+    case PWMapKind::kOrdered: {
+      _impl = detail::OrdPWMap{m};
+      break;
+    }
+
+    case PWMapKind::kDomOrdered: {
+      _impl = detail::DomOrdPWMap{m};
+      break;
+    }
+
+    default: {
+      Util::ERROR("Unsupported ", kind, " PWMap implementation\n");
+      break;
+    }
+  }
 }
+
+PWMap::PWMap(const detail::PWMapImpl& impl) : _impl(impl) {}
+
+PWMap::PWMap(detail::PWMapImpl&& impl) : _impl(std::move(impl)) {}
+
+// Getters ---------------------------------------------------------------------
+
+PWMap::ConstIt PWMap::begin()
+{
+  return std::visit([](const auto& a) { return PWMap::ConstIt(a.begin()); }
+    , _impl);
+}
+
+PWMap::ConstIt PWMap::end()
+{
+  return std::visit([](const auto& a) { return PWMap::ConstIt(a.end()); }
+    , _impl);
+}
+
+// Setters ---------------------------------------------------------------------
+
+void PWMap::insert(const Map& m)
+{
+  std::visit([&m](auto& a) -> void { a.insert(m); } , _impl);
+}
+
+void PWMap::insert(Map&& m)
+{
+  std::visit([move_m = std::move(m)](auto& a) { a.insert(move_m); }
+    , _impl);
+}
+
+// Operators -------------------------------------------------------------------
 
 bool PWMap::operator==(const PWMap& other) const
 {
-  return *strategy_ == *other.strategy_;
+  return _impl == other._impl;
 }
 
-bool PWMap::operator!=(const PWMap& other) const { return !(*this == other); }
-
-PWMap& PWMap::operator=(const PWMap& other)
+bool PWMap::operator!=(const PWMap& other) const
 {
-  if (this !=& other)
-    strategy_ = other.strategy_->clone();
-
-  return *this;
-}
-
-PWMap& PWMap::operator=(PWMap&& other)
-{
-  if (this !=& other)
-    strategy_ = std::move(other.strategy_);
-
-  return *this;
-}
-
-std::ostream& PWMap::print(std::ostream& out) const
-{
-  strategy_->print(out);
-  return out;
-}
-
-std::ostream& operator<<(std::ostream& out, const PWMap& pw)
-{
-  pw.print(out);
-  return out;
+  return !(*this == other);
 }
 
 PWMap PWMap::operator+(const PWMap& other) const
 {
-  return strategy_->operator+(*other.strategy_);
+  return std::visit([](const auto& a, const auto& b)
+    {
+      using A = std::decay_t<decltype(a)>;
+      using B = std::decay_t<decltype(b)>;
+      if constexpr (std::is_same_v<A, B>) {
+        return PWMap{a + b};
+      } else {
+        Util::ERROR("PWMap::operator+: mismatched implementations\n");
+        return PWMap{};
+      }
+    }
+    , _impl, other._impl);
 }
 
-std::size_t PWMap::arity() const { return strategy_->arity(); }
+std::ostream& PWMap::print(std::ostream& out) const
+{
+  std::visit([&out](const auto& a) -> void { a.print(out); } , _impl);
+  return out;
+}
 
-bool PWMap::isEmpty() const { return strategy_->isEmpty(); }
+std::ostream& operator<<(std::ostream& out, const PWMap& s)
+{
+  s.print(out);
+  return out;
+}
 
-Set PWMap::dom() const { return strategy_->dom(); }
+// PWMap operations --------------------------------------------------------------
+
+std::size_t PWMap::arity() const
+{
+  return std::visit([](const auto& a) { return a.arity(); }, _impl);
+}
+
+bool PWMap::isEmpty() const
+{
+  return std::visit([](const auto& a) { return a.isEmpty(); }, _impl);
+}
+
+Set PWMap::domain() const &
+{
+  return std::visit([](const auto& a) { return a.domain(); }, _impl);
+}
+
+Set PWMap::domain() &&
+{
+  return std::visit([](auto&& a) { return std::move(a).domain(); }, _impl);
+}
 
 PWMap PWMap::restrict(const Set& subdom) const
 {
-  return strategy_->restrict(subdom);
+  return std::visit([&](const auto& a) -> PWMap
+    {
+      return PWMap{a.restrict(subdom)};
+    }
+    , _impl);
 }
 
-Set PWMap::image() const { return strategy_->image(); }
 
-Set PWMap::image(const Set& subdom) const { return strategy_->image(subdom); }
+Set PWMap::image() const
+{
+  return std::visit([](const auto& a) { return a.image(); }, _impl);
+}
+
+Set PWMap::image(const Set& subdom) const
+{
+  return std::visit([&subdom](const auto& a) { return a.image(subdom); }
+    , _impl);
+}
 
 Set PWMap::preImage(const Set& subcodom) const
 {
-  return strategy_->preImage(subcodom);
+  return std::visit([&subcodom](const auto& a) { return a.preImage(subcodom); }
+    , _impl);
 }
 
-PWMap PWMap::inverse() const { return strategy_->inverse(); }
+PWMap PWMap::inverse() const
+{
+  return std::visit([](const auto& a) { return PWMap{a.inverse()}; }
+    , _impl);
+}
 
 PWMap PWMap::composition(const PWMap& other) const
 {
-  return strategy_->composition(*other.strategy_);
+  return std::visit([](const auto& a, const auto& b)
+    {
+      using A = std::decay_t<decltype(a)>;
+      using B = std::decay_t<decltype(b)>;
+      if constexpr (std::is_same_v<A, B>) {
+        return PWMap{a.composition(b)};
+      } else {
+        Util::ERROR("PWMap::composition: mismatched implementations\n");
+        return PWMap{};
+      }
+    }
+    , _impl, other._impl);
 }
 
-PWMap PWMap::mapInf(unsigned int n) const { return strategy_->mapInf(n); }
-
-PWMap PWMap::mapInf() const { return strategy_->mapInf(); }
-
-Set PWMap::fixedPoints() const { return strategy_->fixedPoints(); }
-
-PWMap PWMap::concatenation(const PWMap& other) const
+PWMap PWMap::mapInf() const
 {
-  return strategy_->concatenation(*other.strategy_);
+  return std::visit([](const auto& a) { return PWMap{a.mapInf()}; }
+    , _impl);
 }
 
-PWMap PWMap::combine(const PWMap& other) const
+Set PWMap::fixedPoints() const
 {
-  return strategy_->combine(*other.strategy_);
+  return std::visit([](const auto& a) { return a.fixedPoints(); }, _impl);
 }
 
-PWMap PWMap::reduce() const { return strategy_->reduce(); }
+// Extra operations ------------------------------------------------------------
 
-PWMap PWMap::minMap(const PWMap& other) const
+PWMap PWMap::concatenation(const PWMap& other) const &
 {
-  return strategy_->minMap(*other.strategy_);
+  return PWMap{*this}.concatenation(other);
 }
 
-PWMap PWMap::minAdjMap(const PWMap& other) const
+PWMap PWMap::concatenation(const PWMap& other) &&
 {
-  return strategy_->minAdjMap(*other.strategy_);
+  return std::move(*this).concatenation(PWMap{other});
 }
 
-PWMap PWMap::firstInv(const Set& subdom) const
+PWMap PWMap::concatenation(PWMap&& other) const &
 {
-  return strategy_->firstInv(subdom);
+  return PWMap{*this}.concatenation(std::move(other));
 }
 
-PWMap PWMap::firstInv() const { return strategy_->firstInv(); }
-
-PWMap PWMap::filterMap(bool (*f)(const Map&)) const
+PWMap PWMap::concatenation(PWMap&& other) &&
 {
-  return strategy_->filterMap(f);
+  return std::visit([](auto&& a, auto&& b)
+    {
+      using A = std::decay_t<decltype(a)>;
+      using B = std::decay_t<decltype(b)>;
+      if constexpr (std::is_same_v<A, B>) {
+        return PWMap{std::move(a).concatenation(std::move(b))};
+      } else {
+        Util::ERROR("PWMap::concatenation: mismatched implementations\n");
+        return PWMap{};
+      }
+    }
+    , std::move(_impl), std::move(other._impl));
+}
+
+PWMap PWMap::combine(const PWMap& other) const &
+{
+  return PWMap{*this}.combine(other);
+}
+
+PWMap PWMap::combine(const PWMap& other) &&
+{
+  return std::move(*this).combine(PWMap{other});
+}
+
+PWMap PWMap::combine(PWMap&& other) const &
+{
+  return PWMap{*this}.combine(std::move(other));
+}
+
+PWMap PWMap::combine(PWMap&& other) &&
+{
+  return std::visit([](auto&& a, auto&& b)
+    {
+      using A = std::decay_t<decltype(a)>;
+      using B = std::decay_t<decltype(b)>;
+      if constexpr (std::is_same_v<A, B>) {
+        return PWMap{std::move(a).combine(std::move(b))};
+      } else {
+        Util::ERROR("PWMap::combine: mismatched implementations\n");
+        return PWMap{};
+      }
+    }
+    , std::move(_impl), std::move(other._impl));
+}
+
+PWMap PWMap::min(const PWMap& other) const
+{
+  return std::visit([](const auto& a, const auto& b)
+    {
+      using A = std::decay_t<decltype(a)>;
+      using B = std::decay_t<decltype(b)>;
+      if constexpr (std::is_same_v<A, B>) {
+        return PWMap{a.min(b)};
+      } else {
+        Util::ERROR("PWMap::min: mismatched implementations\n");
+        return PWMap{};
+      }
+    }
+    , _impl, other._impl);
+}
+
+PWMap PWMap::minAdj(const PWMap& other) const
+{
+  return std::visit([](const auto& a, const auto& b)
+    {
+      using A = std::decay_t<decltype(a)>;
+      using B = std::decay_t<decltype(b)>;
+      if constexpr (std::is_same_v<A, B>) {
+        return PWMap{a.minAdj(b)};
+      } else {
+        Util::ERROR("PWMap::minAdj: mismatched implementations\n");
+        return PWMap{};
+      }
+    }
+    , _impl, other._impl);
+}
+
+Set PWMap::sharedImage() const
+{
+  return std::visit([](const auto& a) { return a.sharedImage(); }, _impl);
 }
 
 Set PWMap::equalImage(const PWMap& other) const
 {
-  return strategy_->equalImage(*other.strategy_);
+  return std::visit([](const auto& a, const auto& b)
+    {
+      using A = std::decay_t<decltype(a)>;
+      using B = std::decay_t<decltype(b)>;
+      if constexpr (std::is_same_v<A, B>) {
+        return a.equalImage(b);
+      } else {
+        Util::ERROR("PWMap::equalImage: mismatched implementations\n");
+        return Set{};
+      }
+    }
+    , _impl, other._impl);
 }
 
 Set PWMap::lessImage(const PWMap& other) const
 {
-  return strategy_->lessImage(*other.strategy_);
+  return std::visit([](const auto& a, const auto& b)
+    {
+      using A = std::decay_t<decltype(a)>;
+      using B = std::decay_t<decltype(b)>;
+      if constexpr (std::is_same_v<A, B>) {
+        return a.lessImage(b);
+      } else {
+        Util::ERROR("PWMap::lessImage: mismatched implementations\n");
+        return Set{};
+      }
+    }
+    , _impl, other._impl);
 }
 
-Set PWMap::sharedImage() const { return strategy_->sharedImage(); }
-
-PWMap PWMap::offsetDom(const MD_NAT& off) const
+PWMap PWMap::imageMultiplicity() const
 {
-  return strategy_->offsetDom(off);
+  return std::visit([](const auto& a) { return PWMap{a.imageMultiplicity()}; }
+    , _impl);
 }
 
-PWMap PWMap::offsetDom(const PWMap& off) const
+void PWMap::compact()
 {
-  return strategy_->offsetDom(*off.strategy_);
+  std::visit([](auto& a) { a.compact(); }, _impl);
 }
 
-PWMap PWMap::offsetImage(const MD_NAT& off) const
+rapidjson::Value PWMap::toJSON(rapidjson::Document::AllocatorType& alloc) const
 {
-  return strategy_->offsetImage(off);
+  return std::visit([&alloc](auto a) { return detail::toJSON(a, alloc); }
+    , _impl);
 }
 
-PWMap PWMap::offsetImage(const Exp& off) const
-{
-  return strategy_->offsetImage(off);
-}
+}  // namespace LIB
 
-PWMap PWMap::compact() const { return strategy_->compact(); }
-
-} // namespace LIB
-
-} // namespace SBG;
-
+}  // namespace SBG

@@ -24,11 +24,13 @@
 
  ******************************************************************************/
 
-#ifndef SBG_BIPARTITE_SBG_HPP
-#define SBG_BIPARTITE_SBG_HPP
+#ifndef SBGRAPH_SBG_BIPARTITE_SBG_HPP_
+#define SBGRAPH_SBG_BIPARTITE_SBG_HPP_
 
-#include "sbg/sbg.hpp"
-#include "util/debug.hpp"
+#include "sbg/pw_map.hpp"
+#include "sbg/set.hpp"
+
+#include <iosfwd>
 
 namespace SBG {
 
@@ -39,7 +41,7 @@ namespace LIB {
 ////////////////////////////////////////////////////////////////////////////////
 
 class BipartiteSBG {
-  public:
+public:
   /**
    * @brief Empyt Bipartite SBG.
    */
@@ -51,12 +53,12 @@ class BipartiteSBG {
    * domain of map1_ and map2_.
    * Preconditions:
    *   - \p V = dom(\p Vmap).
-   *   - dom(\p map1) = dom(\p map2) = dom(\p Emap) = dom(\p subEmap).
+   *   - dom(\p map1) = dom(\p map2) = dom(\p Emap).
    *   - \p X, \p Y is a bipartition of \p V.
    */
   BipartiteSBG(const Set& V, const PWMap& Vmap
     , const PWMap& map1, const PWMap& map2
-    , const PWMap& Emap, const PWMap& subEmap
+    , const PWMap& Emap 
     , const Set& X, const Set& Y);
 
   const Set& V() const;
@@ -65,7 +67,6 @@ class BipartiteSBG {
   const PWMap& map1() const;
   const PWMap& map2() const;
   const PWMap& Emap() const;
-  const PWMap& subEmap() const;
   const Set& X() const;
   const Set& Y() const;
 
@@ -75,37 +76,63 @@ class BipartiteSBG {
    * be added to _X, and the same goes for \p Y and _Y.
    * Precondition: \p X ∩ \p Y = {}.
    */
-  void addSV(const Set& X, const Set& Y);
+  void addSetVertex(const Set& X, const Set& Y);
 
   /**
    * @brief Adds a set-edge to the bipartite SBG.
    * Preconditions: dom(\p pw1) = dom(\p pw2).
    */
-  void addSE(const PWMap& pw1, const PWMap& pw2);
+  void addSetEdge(const PWMap& pw1, const PWMap& pw2);
 
-  BipartiteSBG& operator=(const BipartiteSBG& other);
+  template<typename FuncT>
+  void foreachSetVertex(FuncT&& f) const;
 
-  /**
-   * @brief Returns a new bipartite SBG constructed by copying \p times the
-   * the current bipartite SBG, disconnected one from each other.
-   */
-  BipartiteSBG copy(unsigned int times) const;
+  template<typename FuncT>
+  void foreachSetEdge(FuncT&& f) const;
 
-  private:
+private:
   Set _V; ///< Vertex definitions
   PWMap _Vmap;
   Set _E; ///< Edge definitions
   PWMap _map1;
   PWMap _map2;
   PWMap _Emap;
-  PWMap _subEmap;
   Set _X; ///< "Left" vertices by convention of the bipartite SBG
   Set _Y; ///< "Right" vertices by convention of the bipartite SBG
 };
+
 std::ostream& operator<<(std::ostream& out, const BipartiteSBG& g);
+
+// Template definitions --------------------------------------------------------
+
+template<typename FuncT>
+inline void BipartiteSBG::foreachSetVertex(FuncT&& f) const
+{
+  Set remaining = _Vmap.image();
+  while (!remaining.isEmpty()) {
+    const MD_NAT& x = remaining.minElem();
+    f(x);
+    remaining = remaining.difference(Set{x});
+  }
+}
+
+template<typename FuncT>
+inline void BipartiteSBG::foreachSetEdge(FuncT&& f) const
+{
+  Set remaining = _Emap.image();
+  while (!remaining.isEmpty()) {
+    const MD_NAT& x = remaining.minElem();
+    f(x);
+    remaining = remaining.difference(Set{x});
+  }
+}
+
+// Extra operations ------------------------------------------------------------
+
+BipartiteSBG copy(unsigned int copies, BipartiteSBG sbg);
 
 } // namespace LIB
 
 }  // namespace SBG
 
-#endif
+#endif // SBGRAPH_SBG_BIPARTITE_SBG_HPP_

@@ -64,13 +64,12 @@ void SBG::addSetVertex(const Set& vertices)
     Util::ERROR("SBG::addSetVertex: trying to add existing vertices: ", vertices
       , " to SBG\n");
   } else if (!vertices.isEmpty()) {
-    _V = std::move(_V).cup(vertices);
     Set set_vertices = _Vmap.image();
     std::size_t arity = vertices.arity();
     MD_NAT max = set_vertices.isEmpty() ? MD_NAT{arity, 0}
       : set_vertices.maxElem();
-    MD_NAT one_all_dims{arity, 1};
-    _Vmap.emplace(vertices, max + one_all_dims);
+    _Vmap.emplace(vertices, max + MD_NAT{arity, 1});
+    _V = std::move(_V).cup(std::move(vertices));
   }
 }
 
@@ -84,14 +83,13 @@ void SBG::addSetEdge(const PWMap& pw1, const PWMap& pw2)
   } else if (edges1.intersection(_E).isEmpty()) {
     Set edges = edges1;
     if (!edges.isEmpty()) {
-      _E = std::move(_E).cup(std::move(edges));
       Set set_edges = _Emap.image();
       std::size_t arity = edges.arity();
-      MD_NAT max = set_edges.isEmpty() ? MD_NAT(arity, 0) : set_edges.maxElem();
-      MD_NAT one_all_dims{arity, 1};
+      MD_NAT max = set_edges.isEmpty() ? MD_NAT{arity, 0} : set_edges.maxElem();
       _map1 = std::move(_map1).concatenation(pw1);
       _map2 = std::move(_map2).concatenation(pw2);
-      _Emap.emplace(edges, max + one_all_dims);
+      _Emap.emplace(edges, max + MD_NAT{arity, 1});
+      _E = std::move(_E).cup(std::move(edges));
     }
   } else {
     Util::ERROR("SBG::addSetEdge: trying to add existing edges: ", edges1

@@ -256,6 +256,8 @@ std::vector<MultiDimInter> lessImage(const ExpressionImpl& expr1
       } else {
         break;
       }
+    } else if (linear_expr1 == linear_expr2) {
+      less_image[k] = universe_one_dim;
     } else {
       break;
     }
@@ -305,8 +307,6 @@ Set MapDetail::lessImage(const Expression& expr1, const Expression& expr2)
     }
   };
   return std::visit(less_image_evaluator, key.impl(result));
-
-  return result;
 }
 
 // Reduction -------------------------------------------------------------------

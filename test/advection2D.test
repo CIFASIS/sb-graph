@@ -1,7 +1,8 @@
-/* Causalization test for the following model:
+/* Model for causalization testing =============================================
+ * Description: implicit 2D advection equation. Contains N*M algebraic loops.
+--------------------------------------------------------------------------------
+
 model Test2D
- //Implicit 2D advection equation
- //contains NxM small algebraic loops
   constant Integer N=10,M=10;
   Real a[N,M],b[N,M],x[N,M];
 equation
@@ -31,7 +32,7 @@ equation
     end for;
   end for;
 end Test2D;
-*/
+==============================================================================*/
 
 dims = 2;
 

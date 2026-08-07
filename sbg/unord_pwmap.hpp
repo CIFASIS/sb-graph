@@ -120,12 +120,6 @@ private:
    */
   UnordPWMap reduce() const;
 
-  /*
-   * @brief First compose the pw with itself \p n times, obtaining pw'. Then,
-   * compose pw' with itself up to convergence.
-   */
-  UnordPWMap mapInf(unsigned int n) const;
-
   UnordMapCollection _pieces;
 
   friend class PWMapAccessKey;

@@ -132,12 +132,6 @@ private:
    */
   OrdPWMap reduce() const;
 
-  /*
-   * @brief First compose the pw with itself \p n times, obtaining pw'. Then,
-   * compose pw' with itself up to convergence.
-   */
-  OrdPWMap mapInf(unsigned int n) const;
-
   template<typename Core>
   Core traverse(const OrdPWMap& other, Core op) const;
 

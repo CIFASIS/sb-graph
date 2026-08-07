@@ -21,8 +21,8 @@
 #include "sbg/perimeter.hpp"
 
 #include <forward_list>
-#include <set>
 #include <iostream>
+#include <set>
 
 namespace SBG {
 
@@ -454,28 +454,26 @@ OrdPWMap OrdPWMap::composition(const OrdPWMap& other) const
   return result;
 }
 
-OrdPWMap OrdPWMap::mapInf(unsigned int n) const
+OrdPWMap OrdPWMap::mapInf() const
 {
   OrdPWMap result{_pieces};
+  result = result.reduce();
+  result.compact();
 
-  if (!domain().isEmpty()) {
-    for (unsigned int j = 0; j < n; ++j) {
-      result = composition(result);
+  if (!result.domain().isEmpty()) {
+    for (const MapEntry& entry : result) {
+      result = composition(result).reduce();
     }
 
-    result = result.reduce();
     OrdPWMap old_result{result};
     do {
       old_result = result;
-
-      result = result.composition(result).reduce();
+      result = result.composition(result);
     } while (old_result != result);
   }
 
   return result;
 }
-
-OrdPWMap OrdPWMap::mapInf() const { return mapInf(0); }
 
 Set OrdPWMap::fixedPoints() const
 {

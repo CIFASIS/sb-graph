@@ -19,6 +19,8 @@
 
 #include "sbg/expression.hpp"
 
+#include <iostream>
+
 namespace SBG {
 
 namespace LIB {

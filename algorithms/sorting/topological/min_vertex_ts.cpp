@@ -148,14 +148,14 @@ void checkSort(PWMap& smap, const DirectedSBG& dsbg)
   for (const Map& m : smap) {
     Set m_image = m.image().difference(fixed_points);
     if (!visited_img.intersection(m_image).isEmpty()) {
-      Util::ERROR("checkSort: proposed result is not an order\n");
+      Util::ERROR("checkSort: proposed result ", smap, " is not an order\n");
     }
     visited_img = std::move(visited_img).disjointCup(std::move(m_image));
   }
 
   // Check if the sort is total.
   Util::ERROR_UNLESS(smap.domain() == dsbg.V()
-    , "checkSort: the order is partial\n");
+    , "checkSort: the order ", smap, " is partial\n");
 }
 
 PWMap MinVertexTS::calculate(const DirectedSBG& dsbg

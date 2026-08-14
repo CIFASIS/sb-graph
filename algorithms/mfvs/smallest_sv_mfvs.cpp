@@ -105,6 +105,7 @@ Set SmallestSVMFVS::calculate(const DirectedSBG& input_dsbg) const
   Util::DEBUG_LOG << "initial smallest set-vertex mfvs dsbg:\n" << dsbg << "\n";
 
   PWMap rmap = SCC{}.calculate(dsbg).rmap();
+  Set init_fixed = rmap.fixedPoints();
   Set fvs_result;
   Set visitedSV;
   while (rmap.fixedPoints() != rmap.domain()) {
@@ -128,6 +129,9 @@ Set SmallestSVMFVS::calculate(const DirectedSBG& input_dsbg) const
 
     // Resulting SCC from induced graph
     rmap = SCC{}.calculate(dsbg).rmap();
+
+    // Erase vertices that get isolated after removing the elements of Vj
+    dsbg.eraseVertices(rmap.fixedPoints().difference(init_fixed));
 
     Util::DEBUG_LOG << "Vj: " << Vj << "\n";
     Util::DEBUG_LOG << "new rmap: " << rmap << "\n\n";

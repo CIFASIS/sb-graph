@@ -5,7 +5,8 @@
  This module defines some functions that work both with the implementation of
  Interval, SetPiece, LinearExpr (that don't belong to the public interface),
  and also Expression, which belongs to the public interface, but exposes its
- implementations details only to these functions.
+ implementations details only to these functions to keep compact efficient
+ representation.
 
  <hr>
 
@@ -53,13 +54,14 @@ class MapDetail {
 public:
   static Set image(const Set& s, const Expression& expr);
   static Set preImage(const Set& s, const Expression& expr);
+  static Map inverse(const Set& s, const Expression& expr);
   static Set lessImage(const Expression& expr1, const Expression& expr2);
   static MapVector reduce(const Map& m);
   static MapVector imageMultiplicity(const Map& m);
 
 private:
-  template<typename SetMDIImpl>
-  static MapVector MDICollectionReduce(const SetMDIImpl& s
+  template<typename CompactSetImplT>
+  static MapVector compactReduce(const CompactSetImplT& s
     , const ExpressionImpl& expr);
   static MapVector reduce(const OrdUnidimDenseSet& s
     , const ExpressionImpl& expr);

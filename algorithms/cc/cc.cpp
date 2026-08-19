@@ -32,7 +32,7 @@ namespace LIB {
 
 PWMap connectedComponents(const SBG& sbg)
 {
-  Util::Internal::TimeProfiler profiler{"Total CC execution time:"};
+  Util::Internal::TimeProfiler profiler{"Total CC execution time"};
 
   Set V = sbg.V();
   if (!V.isEmpty()) {

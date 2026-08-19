@@ -61,7 +61,11 @@ std::tuple<Set, PWMap> MinVertexTS::detectRepetition(Set Vj
     ++n;
   } while (!repetition && n < _max_repetition_depth);
 
-  if (!repetition) {
+  if (repetition) {
+    // Take out vertices that are mapped to a value that doesn't belong to any
+    // vertex.
+    smap_plus = smap_plus.restrict(smap_plus.preImage(dsbg.V()));
+  } else {
     repetition_vertices = Set{};
     smap_plus = PWMap{};
   }
@@ -69,13 +73,50 @@ std::tuple<Set, PWMap> MinVertexTS::detectRepetition(Set Vj
   return {repetition_vertices, smap_plus};
 }
 
+PWMap sortPartial(const PWMap& smap_plus, const Set& ordered, const DirectedSBG& dsbg)
+{
+  PWMap result;
+
+  Set plus_domain = smap_plus.domain();
+  Set plus_image = smap_plus.image();
+  Set starts = plus_domain.difference(plus_image);
+  if (starts.cardinal() > 1) {
+    Set ends = plus_image.difference(plus_domain);
+    PWMap rmap = smap_plus.combine(PWMap{ends}).mapInf();
+    PWMap ends_to_starts = rmap.restrict(starts).inverse();
+
+    Set V = starts;
+    PWMap Vmap = dsbg.Vmap().restrict(V);
+    MinVertexTS ts;
+    PWMap smap = ts.calculate(DirectedSBG{V, Vmap, PWMap{}, PWMap{}, PWMap{}}
+      , PWMap{});
+    Set not_ordered = ends_to_starts.domain().difference(ordered);
+    result = smap.composition(ends_to_starts.restrict(not_ordered));
+    result = smap_plus.combine(std::move(result));
+  } else {
+    result = smap_plus;
+  }
+
+  return result;
+}
+
 PWMap MinVertexTS::repetition(const Set& init_V, const DirectedSBG& dsbg)
 {
-  // Identify repetition and extend it to vertices in the same set-vertex.
+  // Identify repetition and extend it to vertices in the same set-vertex,
+  // taking out sorted vertices in the domain, and also vertices that map to
+  // another sorted vertex, i.e, checking the successor map is injective.
   auto [repetition_vertices, smap_plus] = detectRepetition(init_V, dsbg);
-  smap_plus = smap_plus.restrict(smap_plus.domain().difference(_smap.domain()));
+  if (smap_plus.isEmpty()) {
+    return PWMap{};
+  }
 
-  // Get erased edges up to the repetition, and erase edges that belong to the
+  Set ordered = _smap.domain().cup(smap_plus.preImage(_smap.image()));
+  Set plus_domain = smap_plus.domain().difference(ordered);
+  smap_plus = smap_plus.restrict(plus_domain);
+  smap_plus = sortPartial(smap_plus, _smap.domain(), dsbg);
+  plus_domain = smap_plus.domain();
+
+  // Get erased edges of the repetition, and erase edges that belong to the
   // same set-edge. 
   Set outgoing_edges = dsbg.mapB().preImage(repetition_vertices);
   PWMap Emap = dsbg.Emap();
@@ -85,14 +126,12 @@ PWMap MinVertexTS::repetition(const Set& init_V, const DirectedSBG& dsbg)
 
   // Identify vertices with ingoing edges after the previous step. These are
   // "cut" vertices for the repetition.
-  PWMap not_independent{dsbg_copy.mapD().image()
-    .intersection(smap_plus.domain())};
-  not_independent = not_independent.combine(smap_plus);
-  not_independent = not_independent.combine(_smap); 
-  PWMap rmap = not_independent.mapInf();
+  Set dependent_vertices = dsbg_copy.mapD().image().intersection(plus_domain);
+  PWMap rmap = PWMap{dependent_vertices}.combine(smap_plus).mapInf();
 
-  Set reach_end_vertices = rmap.preImage(_start);
-  PWMap result = smap_plus.restrict(reach_end_vertices);
+  Set indep_vertices = plus_domain
+    .difference(rmap.preImage(dependent_vertices));
+  PWMap result = smap_plus.restrict(indep_vertices);
 
   return result;
 }
@@ -210,6 +249,7 @@ PWMap MinVertexTS::calculate(const DirectedSBG& dsbg
     _dsbg.eraseVertices(_smap.domain());
     old_vj = vj;
     _priority = scc_map.preImage(scc_map.image(vj_set));
+    _smap.compact();
 
     Util::DEBUG_LOG << "smap: " << _smap << "\n";
     Util::DEBUG_LOG << "dsbg: " << _dsbg << "\n\n";

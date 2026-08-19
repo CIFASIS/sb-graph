@@ -74,19 +74,19 @@ MultiDimInter image(const MultiDimInter& mdi, const ExpressionImpl& expr)
   return result;
 }
 
-template<typename CompactSetImpl, typename Piece, typename Expr>
-CompactSetImpl compactImage(const CompactSetImpl& s, const Expr& expr
+template<typename CompactSetImplT, typename PieceT, typename ExprImplT>
+CompactSetImplT compactImage(const CompactSetImplT& s, const ExprImplT& expr
   , bool is_injective)
 {
-  CompactSetImpl result;
+  CompactSetImplT result;
 
   if (is_injective) {
-    for (const Piece& p : s) {
+    for (const PieceT& p : s) {
       result.pushBack(detail::image(p, expr));
     }
   } else {
-    for (const Piece& p : s) {
-      CompactSetImpl jth_image{detail::image(p, expr)};
+    for (const PieceT& p : s) {
+      CompactSetImplT jth_image{detail::image(p, expr)};
       result = std::move(result).cup(std::move(jth_image));
     }
   }
@@ -96,22 +96,23 @@ CompactSetImpl compactImage(const CompactSetImpl& s, const Expr& expr
 
 Set MapDetail::image(const Set& s, const Expression& expr)
 {
+  bool is_injective = expr.isInjective();
   SetAccessKey key = SetAccess::key();
   auto image_evaluator = Util::Overload {
     [&](const UnorderedSet& a)
     {
       return key.createSet(detail::compactImage<UnorderedSet, MultiDimInter
-        , ExpressionImpl>(a, expr._impl, expr.isInjective()));
+        , ExpressionImpl>(a, expr._impl, is_injective));
     },
     [&](const OrdUnidimDenseSet& a)
     {
       return key.createSet(detail::compactImage<OrdUnidimDenseSet, Interval
-        , LinearExpr>(a, expr._impl[0], expr.isInjective()));
+        , LinearExpr>(a, expr._impl[0], is_injective));
     },
     [&](const OrderedSet& a)
     {
       return key.createSet(detail::compactImage<OrderedSet, MultiDimInter
-        , ExpressionImpl>(a, expr._impl, expr.isInjective()));
+        , ExpressionImpl>(a, expr._impl, is_injective));
     },
     [&](const auto& a)
     {
@@ -150,12 +151,12 @@ MultiDimInter preImage(const MultiDimInter& mdi, const ExpressionImpl& expr)
   return result;
 }
 
-template<typename CompactSetImpl, typename Piece, typename Expr>
-CompactSetImpl compactPreImage(const CompactSetImpl& s, const Expr& expr)
+template<typename CompactSetImplT, typename PieceT, typename ExprImplT>
+CompactSetImplT compactPreImage(const CompactSetImplT& s, const ExprImplT& expr)
 {
-  CompactSetImpl result;
+  CompactSetImplT result;
 
-  for (const Piece& p : s) {
+  for (const PieceT& p : s) {
     result.pushBack(detail::preImage(p, expr));
   }
 
@@ -188,6 +189,85 @@ Set MapDetail::preImage(const Set& s, const Expression& expr)
     }
   };
   return std::visit(pre_image_evaluator, key.impl(s));
+}
+
+// Inverse ---------------------------------------------------------------------
+
+AtomicMap inverse(const Interval& i, const LinearExpr& linear_expr)
+{
+  Interval img = image(i, linear_expr);
+  if (linear_expr.isConstant()) {
+    return AtomicMap{img, LinearExpr{1, i.begin() - img.begin()}};
+  } 
+
+  return AtomicMap{img, linear_expr.inverse()};
+}
+
+AtomicMDMap inverse(const MultiDimInter& mdi, const ExpressionImpl& expr)
+{
+  if (mdi.isEmpty()) {
+    return AtomicMDMap{};
+  }
+
+  MultiDimInter result_domain;
+  ExpressionImpl result_law;
+  for (unsigned int k = 0; k < mdi.arity(); ++k) {
+    AtomicMap atom_map = inverse(mdi[k], expr[k]);
+    result_domain.pushBack(atom_map.first);
+    result_law.push_back(atom_map.second);
+  }
+
+  return AtomicMDMap{result_domain, result_law};
+}
+
+template<typename CompactSetImplT, typename PieceT, typename ExprImplT>
+std::pair<CompactSetImplT, ExprImplT> compactInverse(const CompactSetImplT& s
+  , const ExprImplT& expr, bool is_injective)
+{
+  CompactSetImplT image = compactImage<CompactSetImplT, PieceT, ExprImplT>(
+     s, expr, is_injective);
+  Util::ERROR_UNLESS(s.cardinal() == image.cardinal(), "MapDetail/inverse: "
+    , "(s, expr) pair is not invertible\n");
+
+  ExprImplT result_law = detail::inverse(*(s.begin()), expr).second;
+
+  return std::pair<CompactSetImplT, ExprImplT>{image, result_law};
+}
+
+Map MapDetail::inverse(const Set& s, const Expression& expr)
+{
+  if (s.isEmpty()) {
+    return Map{};
+  }
+
+  bool is_injective = expr.isInjective();
+  SetAccessKey key = SetAccess::key();
+  auto inverse_evaluator = Util::Overload {
+    [&](const UnorderedSet& a)
+    {
+      auto [domain, law] = compactInverse<UnorderedSet, MultiDimInter
+        , ExpressionImpl>(a, expr._impl, is_injective);
+      return Map{key.createSet(domain), Expression{law}};
+    },
+    [&](const OrdUnidimDenseSet& a)
+    {
+      auto [domain, law] = compactInverse<OrdUnidimDenseSet, Interval
+        , LinearExpr>(a, expr._impl[0], is_injective);
+      return Map{key.createSet(domain), Expression{ExpressionImpl{law}}};
+    },
+    [&](const OrderedSet& a)
+    {
+      auto [domain, law] = compactInverse<OrderedSet, MultiDimInter
+        , ExpressionImpl>(a, expr._impl, is_injective);
+      return Map{key.createSet(domain), Expression{law}};
+    },
+    [&](const auto& a)
+    {
+      Util::ERROR("MapDetail::preImage: unsupported Set implementation\n");
+      return Set{SetKind::kUnordered};
+    }
+  };
+  return std::visit(inverse_evaluator, key.impl(s));
 }
 
 // Less image ------------------------------------------------------------------
@@ -266,13 +346,13 @@ std::vector<MultiDimInter> lessImage(const ExpressionImpl& expr1
   return result;
 }
 
-template<typename CompactSetImpl, typename Piece, typename Expr>
-void lessImage(const Expr& expr1
-  , const Expr& expr2, CompactSetImpl& result)
+template<typename CompactSetImplT, typename PieceT, typename ExprImplT>
+void lessImage(const ExprImplT& expr1
+  , const ExprImplT& expr2, CompactSetImplT& result)
 {
-  std::vector<Piece> less_image = detail::lessImage(expr1, expr2);
+  std::vector<PieceT> less_image = detail::lessImage(expr1, expr2);
 
-  for (const Piece& p : less_image) {
+  for (const PieceT& p : less_image) {
     result.pushBack(p);
   }
 }
@@ -405,8 +485,8 @@ AtomicMapVector reduce(const MultiDimInter& mdi, const ExpressionImpl& expr
   return reduce(reducible_interval, reducible_expr);
 }
 
-template<typename CompactSetImpl>
-MapVector MapDetail::MDICollectionReduce(const CompactSetImpl& s
+template<typename CompactSetImplT>
+MapVector MapDetail::compactReduce(const CompactSetImplT& s
   , const ExpressionImpl& expr)
 {
   MapVector result;
@@ -418,7 +498,7 @@ MapVector MapDetail::MDICollectionReduce(const CompactSetImpl& s
     MultiDimInter mdi_copy = mdi;
     ExpressionImpl expr_copy = expr;
     for (const AtomicMap& r : reduced) {
-      CompactSetImpl domain;
+      CompactSetImplT domain;
       mdi_copy[k_reduce] = r.first;
       domain.pushBack(mdi_copy);
       expr_copy[k_reduce] = r.second;
@@ -463,7 +543,7 @@ MapVector MapDetail::reduce(const Map& m)
   auto reduce_evaluator = Util::Overload {
     [&](const UnorderedSet& a)
     {
-      return MDICollectionReduce<UnorderedSet>(a, law._impl);
+      return compactReduce<UnorderedSet>(a, law._impl);
     },
     [&](const OrdUnidimDenseSet& a)
     {
@@ -471,7 +551,7 @@ MapVector MapDetail::reduce(const Map& m)
     },
     [&](const OrderedSet& a)
     {
-      return MDICollectionReduce<OrderedSet>(a, law._impl);
+      return compactReduce<OrderedSet>(a, law._impl);
     },
     [&](const auto& a)
     {
@@ -511,9 +591,9 @@ AtomicMDMap imageMultiplicity(const MultiDimInter& mdi
   return AtomicMDMap{result_mdi, result_expr};
 }
 
-template<typename CompactSetImplT, typename PieceT, typename ExprT>
+template<typename CompactSetImplT, typename PieceT, typename ExprImplT>
 MapVector MapDetail::imageMultiplicity(const CompactSetImplT& s
-  , const ExprT& expr)
+  , const ExprImplT& expr)
 {
   MapVector result;
 

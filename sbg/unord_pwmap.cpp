@@ -21,8 +21,8 @@
 
 #include <algorithm>
 #include <forward_list>
-#include <set>
 #include <iostream>
+#include <set>
 
 namespace SBG {
 
@@ -267,28 +267,40 @@ UnordPWMap UnordPWMap::composition(const UnordPWMap& other) const
   return result;
 }
 
-UnordPWMap UnordPWMap::mapInf(unsigned int n) const
+UnordPWMap UnordPWMap::reduce() const
 {
-  UnordPWMap result{_pieces};
+  UnordPWMap result;
 
-  if (!domain().isEmpty()) {
-    for (unsigned int j = 0; j < n; ++j) {
-      result = composition(result);
+  for (const Map& m : _pieces) {
+    std::vector<Map> reduced = m.reduce();
+    for (Map& reduced_map : reduced) {
+      result._pieces.push_back(std::move(reduced_map));
     }
-
-    result = result.reduce();
-    UnordPWMap old_result{result};
-    do {
-      old_result = result;
-
-      result = result.composition(result).reduce();
-    } while (old_result != result);
   }
 
   return result;
 }
 
-UnordPWMap UnordPWMap::mapInf() const { return mapInf(0); }
+UnordPWMap UnordPWMap::mapInf() const
+{
+  UnordPWMap result{_pieces};
+  result = result.reduce();
+  result.compact();
+
+  if (!result.domain().isEmpty()) {
+    for (const Map& m : result) {
+      result = composition(result).reduce();
+    }
+
+    UnordPWMap old_result{result};
+    do {
+      old_result = result;
+      result = result.composition(result);
+    } while (old_result != result);
+  }
+
+  return result;
+}
 
 Set UnordPWMap::fixedPoints() const
 {
@@ -368,20 +380,6 @@ UnordPWMap UnordPWMap::combine(UnordPWMap&& other) &&
 
   Set exclusive_other = other.domain().difference(domain());
   return std::move(*this).concatenation(other.restrict(exclusive_other));
-}
-
-UnordPWMap UnordPWMap::reduce() const
-{
-  UnordPWMap result;
-
-  for (const Map& m : _pieces) {
-    std::vector<Map> reduced = m.reduce();
-    for(Map& reduced_map : reduced) {
-      result._pieces.push_back(std::move(reduced_map));
-    }
-  }
-
-  return result;
 }
 
 UnordPWMap UnordPWMap::min(const UnordPWMap& other) const

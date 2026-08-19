@@ -130,11 +130,7 @@ Set Map::preImage(const Set& subcodom) const
 
 Map Map::inverse() const
 {
-  if (_domain.cardinal() == 1) {
-    return Map{image(), _domain.minElem()};
-  }
-
-  return Map{image(), _law.inverse()};
+  return detail::MapDetail::inverse(_domain, _law);
 }
 
 Map Map::composition(const Map& other) const

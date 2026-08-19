@@ -36,8 +36,8 @@ end Test2D;
 
 dims = 2;
 
-M = 100;
-N = 100;
+M = 1000000;
+N = 1000000;
 
 V1x = N; // a_x
 V1y = M; // a_y
@@ -282,7 +282,7 @@ X: F
 
 Y: U;
 
-matchSCC(
+causalize(
   V: F \/ U
 
   Vmap: <<{[1:1:V1x]x[1:1:V1y]} -> |0*x+1|0*x+1|, {[V1x+1:1:V2x]x[V1y+1:1:V2y]} -> |0*x+2|0*x+2|

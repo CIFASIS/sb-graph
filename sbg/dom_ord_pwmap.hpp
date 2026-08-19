@@ -136,12 +136,6 @@ private:
    */
   DomOrdPWMap reduce() const;
 
-  /*
-   * @brief First compose the pw with itself \p n times, obtaining pw'. Then,
-   * compose pw' with itself up to convergence.
-   */
-  DomOrdPWMap mapInf(unsigned int n) const;
-
   OrdMapCollection _pieces;
 
   friend class AddCore;

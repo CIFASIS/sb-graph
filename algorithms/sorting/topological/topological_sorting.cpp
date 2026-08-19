@@ -48,7 +48,7 @@ TopologicalSorting::TopologicalSorting() : _impl()
 
 PWMap TopologicalSorting::calculate(const DirectedSBG& dsbg, const PWMap& pmap)
 {
-  auto text = "Total topological sorting execution time: ";
+  auto text = "Total topological sorting execution time";
   Util::Internal::TimeProfiler profiler{text};
 
   return std::visit([&](auto& a) { return a.calculate(dsbg, pmap); }, _impl);

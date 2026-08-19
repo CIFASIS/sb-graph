@@ -29,8 +29,8 @@
 #include "util/debug.hpp"
 
 #include <forward_list>
-#include <set>
 #include <iostream>
+#include <set>
 
 namespace SBG {
 
@@ -478,28 +478,26 @@ DomOrdPWMap DomOrdPWMap::composition(const DomOrdPWMap& other) const
   return result;
 }
 
-DomOrdPWMap DomOrdPWMap::mapInf(unsigned int n) const
+DomOrdPWMap DomOrdPWMap::mapInf() const
 {
   DomOrdPWMap result{_pieces};
+  result = result.reduce();
+  result.compact();
 
-  if (!domain().isEmpty()) {
-    for (unsigned int j = 0; j < n; ++j) {
-      result = composition(result);
+  if (!result.domain().isEmpty()) {
+    for (const MapEntry& entry : result) {
+      result = composition(result).reduce();
     }
 
-    result = result.reduce();
     DomOrdPWMap old_result{result};
     do {
       old_result = result;
-
-      result = result.composition(result).reduce();
+      result = result.composition(result);
     } while (old_result != result);
   }
 
   return result;
 }
-
-DomOrdPWMap DomOrdPWMap::mapInf() const { return mapInf(0); }
 
 Set DomOrdPWMap::fixedPoints() const
 {

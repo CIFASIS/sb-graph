@@ -1,0 +1,27 @@
+/* Model for topological sorting testing =======================================
+ * Description: 2D model of a SBG with a single hyperrectangle without
+   dependencies between vertices. 
+ * Motivation: implement 2D topological sorting. Implement sorting between
+   partial sorts. SOLVED.
+============================================================================= */
+
+dims = 2;
+
+N = 1000000;
+
+V1x = 1000000;
+V1y = 2000000;
+
+V: {[1:1:V1x]x[1:1:V1y]}
+Vmap: <<{[1:1:V1x]x[1:1:V1y]} -> |1|1|>>
+mapB: <<>>
+mapD: <<>>
+Emap: <<>>;
+
+sort(
+  V: {[1:1:V1x]x[1:1:V1y]}
+  Vmap: <<{[1:1:V1x]x[1:1:V1y]} -> |1|1|>>
+  mapB: <<>>
+  mapD: <<>>
+  Emap: <<>>
+);

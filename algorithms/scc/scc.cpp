@@ -55,7 +55,7 @@ SCC::SCC() : _impl()
 
 SCCData SCC::calculate(const DirectedSBG& dsbg)
 {
-  Util::Internal::TimeProfiler profiler{"Total SCC execution time: "};
+  Util::Internal::TimeProfiler profiler{"Total SCC execution time"};
 
   return std::visit([&](auto& a) { return a.calculate(dsbg); }, _impl);
 }

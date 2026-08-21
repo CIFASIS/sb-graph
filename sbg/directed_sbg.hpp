@@ -137,6 +137,10 @@ inline void DirectedSBG::foreachSetEdge(FuncT&& f) const
   }
 }
 
+// Non-member functions --------------------------------------------------------
+
+DirectedSBG copy(unsigned int copies, DirectedSBG sbg);
+
 } // namespace LIB
 
 }  // namespace SBG

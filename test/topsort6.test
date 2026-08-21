@@ -1,29 +1,28 @@
 /* Model for topological sorting testing =======================================
- * Description: model where node i must be solved before i+1 for 2 ≤ i ≤ N, and
-   node 1 must be solved before N/2+1. If N=10, the corresponding graph is:
+ * Description: model where node i must be solved before i+1 for ≤ N, and
+   node N+1 must be solved before N/2+1. If N=10, the corresponding graph is:
 
-   2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11
-                       ↓
-                       1
+   1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
+                            ↑
+                            11
 
- * Motivation: current version of the algorithm computes the result in linear
-   time instead of constant time. SOLVED.
+ * Motivation: implement repetition correctly. SOLVED.
 ============================================================================= */
 
 N = 1000000;
 N2 = 500000;
 
-V1 = 1;
-V2 = N+V1;
+V1 = N;
+V2 = V1+1;
 
 E1 = 1;
 E2 = N-1+E1;
 
-off1b = V2-E1-N2;
-off2b = V2-E2-1;
+off1b = V2-E1;
+off2b = V2-E2-2;
 
-off1d = V1-E1;
-off2d = V2-E2;
+off1d = V2-E1-N2;
+off2d = V2-E2-1;
 
 V: {[1:1:V1], [V1+1:1:V2]}
 Vmap: <<{[1:1:V1]} -> |0*x+1|, {[V1+1:1:V2]} -> |0*x+2|>>

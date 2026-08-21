@@ -1,6 +1,9 @@
-// Tearing test, with N SCC of size 2
+/* Model for tearing testing ===================================================
+ * Description: model with N copies of a cycle of size 2, i.e. a large number
+   of small SCCs.
+==============================================================================*/
 
-N = 100000;
+N = 1000000;
 
 V1 = N;
 V2 = V1+N;

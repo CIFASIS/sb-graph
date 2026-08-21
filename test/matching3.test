@@ -1,5 +1,6 @@
-/* Matching test of a graph with a cycle,
-originated from the model:
+/* Model for matching testing ==================================================
+ * Description: electrical circuit that reducts voltage.  
+--------------------------------------------------------------------------------
 
 model buck
   parameter Real C = 1e-4, L = 1e-4, R = 10, U = 24, T = 1e-4, DC = 0.5, ROn = 1e-5, ROff = 1e5;
@@ -31,7 +32,7 @@ model buck
        diodeon:=0;
     end when;
 end buck;
-*/  
+==============================================================================*/
 
 F = {[9:1:9], [10:1:10], [11:1:11], [12:1:12]};
 U = {[2:1:2], [3:1:3], [4:1:4], [5:1:5]};

@@ -1,6 +1,8 @@
-// Test consisting of only set expressions
-// !!! If this file is modified the corresponding SBG.log file
-//     in all the gt_data directories should be modified.
+/* Test for parsing/evaluation of set expressions ==============================
+ * Simple file to test the parser and evaluator. 
+   WARNING: if this file is modified, the corresponding logs in parse/gt_data
+   and eval/gt_data must be updated.
+==============================================================================*/
 
 s1 = {[1:1:100]};
 s2 = {[1:1:100]};

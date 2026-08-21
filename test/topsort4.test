@@ -1,6 +1,10 @@
-// Topological sort test, with two "merged" simple recursions
+/* Model for sorting testing ===================================================
+ * Description: test with two simple repetitive paths "merged" of the form
+   11 -> 1 -> 12 -> 2 -> ... -> 20 -> 10
+   and 21 -> 11 -> 22 -> 12 -> ... -> 30 -> 10 when N = 10.
+==============================================================================*/
 
-N = 100000;
+N = 1000000;
 
 V1 = N;
 V2 = N+V1;

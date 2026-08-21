@@ -1,7 +1,8 @@
-// Topological sort test, with two set vertices, with a bijective
-// map from one to the other as a set-edge
+/* Model for topological sorting testing =======================================
+ * Description: model with edges i - i+10 for i \in [1:10] when N = 10.
+==============================================================================*/
 
-N = 100000;
+N = 1000000;
 
 V1 = N;
 V2 = N+V1;

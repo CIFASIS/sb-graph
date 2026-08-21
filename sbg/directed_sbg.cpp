@@ -130,6 +130,60 @@ std::ostream& operator<<(std::ostream& out, const DirectedSBG& dg)
   return out;
 }
 
+// Non-member functions --------------------------------------------------------
+
+DirectedSBG copy(unsigned int copies, DirectedSBG dsbg)
+{
+
+  if (copies == 0) {
+    Util::ERROR("DirectedSBG::copy: zeros copies is not allowed\n");
+  }
+
+  Set V = dsbg.V();
+  PWMap Vmap = dsbg.Vmap();
+  PWMap mapB = dsbg.mapB();
+  PWMap mapD = dsbg.mapD();
+  PWMap Emap = dsbg.Emap();
+  Set E = dsbg.E();
+
+  DirectedSBG result = dsbg;
+  for (unsigned int j = 1; j < copies; ++j) {
+    MD_NAT max_v = result.V().maxElem();
+    dsbg.foreachSetVertex([&](const MD_NAT& SV) {
+      Set vertices = Vmap.preImage(Set{SV});
+     result.addSetVertex(vertices.offset(max_v));
+    });
+
+    Expression offset_v;
+    for (std::size_t k = 0; k < max_v.arity(); ++k) {
+      offset_v = offset_v.cartesianProduct(Expression{RATIONAL{1}
+        , RATIONAL{max_v[k]}});
+    }
+    PWMap offset_pw_v{Map{V, offset_v}};
+
+    MD_NAT max_e = result.E().maxElem();
+    Expression offset_e;
+    for (std::size_t k = 0; k < max_e.arity(); ++k) {
+      offset_e = offset_e.cartesianProduct(Expression{RATIONAL{1}
+        , RATIONAL{max_e[k]}});
+    }
+    PWMap offset_pw_e{Map{E, offset_e}};
+    PWMap inverse_offset_pw_e = offset_pw_e.inverse();
+
+    Set set_edges = Emap.image();
+    dsbg.foreachSetEdge([&](const MD_NAT& SE) {
+      Set edges = Emap.preImage(Set{SE});
+      PWMap pwB = mapB.restrict(edges);
+      PWMap pwD = mapD.restrict(edges);
+      pwB = offset_pw_v.composition(pwB.composition(inverse_offset_pw_e));
+      pwD = offset_pw_v.composition(pwD.composition(inverse_offset_pw_e));
+      result.addSetEdge(pwB, pwD);
+    });
+  }
+
+  return result;
+}
+
 } // namespace LIB
 
 } // namespace SBG

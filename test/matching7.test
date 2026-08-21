@@ -1,9 +1,13 @@
-// SCC test, where the matching is a simple recursion with two
-// border conditions in the middle of the long path
+/* Model for matching testing ==================================================
+ * Description: model with a simple repetition + two simple edges to the first
+   and last third of the path.
+ * Description: model with a simple repetition of the form 11 - 3 - 12 - 4
+   - ... - 10 - 20, and edges 1 - 13, 2 - 16, when N=9.
+==============================================================================*/
 
-N = 90000;
-N2 = 30000;
-N3 = 60000;
+N = 9000000;
+N2 = 3000000;
+N3 = 6000000;
 
 V1 = 1;
 V2 = 1+V1;

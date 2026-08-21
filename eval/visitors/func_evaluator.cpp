@@ -21,8 +21,6 @@
 #include "algorithms/cc/cc.hpp"
 #include "algorithms/matching/matching.hpp"
 #include "algorithms/mfvs/min_feedback_vertex_set.hpp"
-#include "algorithms/misc/causalization_builders.hpp"
-#include "algorithms/misc/causalization_json.hpp"
 #include "algorithms/scc/scc.hpp"
 #include "algorithms/sorting/topological/topological_sorting.hpp"
 #include "eval/base_type.hpp"
@@ -657,21 +655,6 @@ ExprBaseType BuiltInFunctions::sccEvaluator(const EBTList& args)
   return std::visit(scc_evaluator, args[0]);
 }
 
-ExprBaseType BuiltInFunctions::matchSCCEvaluator(const EBTList& args)
-{
-  Util::ERROR_UNLESS(args.size() == 2
-    , "matchSCCEvaluator: wrong number of arguments");
-
-  const ExprBaseType match_base_type = matchingEvaluator(args);
-
-  const LIB::MatchData match_result = std::get<LIB::MatchData>(match_base_type);
-  LIB::DirectedSBG dsbg = misc::buildLoopDetectionSBG(match_result);
-  LIB::SCC scc_impl;
-  LIB::SCCData scc_result = scc_impl.calculate(dsbg);
-
-  return ExprBaseType{scc_result.rmap()};
-}
-
 ExprBaseType BuiltInFunctions::mfvsEvaluator(const EBTList& args)
 {
   Util::ERROR_UNLESS(args.size() == 1
@@ -691,23 +674,6 @@ ExprBaseType BuiltInFunctions::mfvsEvaluator(const EBTList& args)
   return std::visit(mfvs_evaluator, args[0]);
 }
 
-ExprBaseType BuiltInFunctions::matchSCCMFVSEvaluator(const EBTList& args)
-{
-  Util::ERROR_UNLESS(args.size() == 2
-    , "matchSCCMFVSEvaluator: wrong number of arguments");
-
-  const ExprBaseType match_base_type = matchingEvaluator(args);
-
-  const LIB::MatchData match_result = std::get<LIB::MatchData>(match_base_type);
-  LIB::DirectedSBG dsbg = misc::buildLoopDetectionSBG(match_result);
-  LIB::SCC scc_impl;
-  LIB::SCCData scc_result = scc_impl.calculate(dsbg);
-
-  dsbg = misc::buildTearingSBG(scc_result);
-  LIB::MinFeedbackVertexSet mfvs_impl;
-  return ExprBaseType{mfvs_impl.calculate(dsbg)};
-}
-
 ExprBaseType BuiltInFunctions::topoSortEvaluator(const EBTList& args)
 {
   Util::ERROR_UNLESS(args.size() == 1
@@ -724,35 +690,6 @@ ExprBaseType BuiltInFunctions::topoSortEvaluator(const EBTList& args)
     }
   };
   return std::visit(ts_evaluator, args[0]);
-}
-
-ExprBaseType BuiltInFunctions::causalizationEvaluator(const EBTList& args)
-{
-  Util::ERROR_UNLESS(args.size() == 2
-    , "causalizationEvaluator: wrong number of arguments");
-
-  const ExprBaseType match_base_type = matchingEvaluator(args);
-
-  const LIB::MatchData match_result = std::get<LIB::MatchData>(match_base_type);
-  LIB::DirectedSBG dsbg = misc::buildLoopDetectionSBG(match_result);
-  LIB::SCC scc_impl;
-  LIB::SCCData scc_result = scc_impl.calculate(dsbg);
-
-  dsbg = misc::buildTearingSBG(scc_result);
-  LIB::MinFeedbackVertexSet mfvs_impl;
-  LIB::Set mfvs_result = mfvs_impl.calculate(dsbg);
-
-  misc::VerticalSortingBuilder vs_builder{scc_result, mfvs_result};
-  vs_builder.buildVerticalSorting();
-  LIB::TopologicalSorting ts_impl;
-  LIB::PWMap ts_result = ts_impl
-    .calculate(vs_builder.dsbg(), vs_builder.rmap());
-
-  misc::CausalizationResult causalized{match_result.M(), scc_result.rmap()
-    , mfvs_result, ts_result};
-  misc::toJSON(causalized);
-
-  return ExprBaseType{ts_result};
 }
 
 } // namespace detail

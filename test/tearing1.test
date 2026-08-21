@@ -1,6 +1,8 @@
-// Tearing test, with a simple long cycle
+/* Model for tearing testing ===================================================
+ * Description: model with a simple long cycle, i.e. a large loop.
+==============================================================================*/
 
-N = 100000;
+N = 1000000;
 
 V1 = N;
 V2 = 1+V1;

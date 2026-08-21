@@ -1,7 +1,10 @@
-// SCC test with a single long path, with small cycles
-// between pairs of vertices
+/* Model for SCC testing =======================================================
+ * Description: model with a simple repetitve path, of the form
+   1 -> 11 -> 2 -> 12 -> ... -> 10 -> 20 with small cycles (i, i+9) for i \in
+   [2, 10] for N = 10. Meant to test the implementation of MinReach.
+==============================================================================*/
 
-N = 100000;
+N = 1000000;
 
 V1 = 1;
 V2 = N-1+V1;

@@ -42,7 +42,7 @@ static void BM_BoostMatching(benchmark::State& state, std::string filename)
 {
   int N = state.range(0);
 
-  LIB::BipartiteSBG match_sbg = generateSBG(filename, N, 1);
+  LIB::BipartiteSBG match_sbg = generateSBG<LIB::BipartiteSBG>(filename, N, 1);
   ScalarGraphBuilder graph_builder(match_sbg);
   BipartiteGraph bgraph = graph_builder.build();
   const Graph& match_graph = bgraph.graph();
@@ -61,7 +61,7 @@ static void BM_BoostSCC(benchmark::State& state
 {
   int N = state.range(0);
 
-  LIB::BipartiteSBG match_sbg = generateSBG(filename, N, 1);
+  LIB::BipartiteSBG match_sbg = generateSBG<LIB::BipartiteSBG>(filename, N, 1);
   ScalarGraphBuilder graph_builder(match_sbg);
   BipartiteGraph bgraph = graph_builder.build();
   const Graph& match_graph = bgraph.graph();
@@ -82,7 +82,7 @@ static void BM_BoostSCCWithBuilder(benchmark::State& state
 {
   int N = state.range(0);
 
-  LIB::BipartiteSBG match_sbg = generateSBG(filename, N, 1);
+  LIB::BipartiteSBG match_sbg = generateSBG<LIB::BipartiteSBG>(filename, N, 1);
   ScalarGraphBuilder graph_builder(match_sbg);
   BipartiteGraph bgraph = graph_builder.build();
   const Graph& match_graph = bgraph.graph();

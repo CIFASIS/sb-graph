@@ -1,26 +1,21 @@
 /* Model for topological sorting testing =======================================
  * Description: 2D model of a SBG with a single hyperrectangle without
-   dependencies between vertices. 
- * Motivation: implement 2D topological sorting. Implement sorting between
-   partial sorts. SOLVED.
+   dependencies.
+ * Motivation: to sort advection2D the repetition invokes MinVertexTS, and
+   doesn't sort this SBG correctly. SOLVED.
 ============================================================================= */
 
 dims = 2;
 
-N = 1000000;
-
-V1x = 1000000;
-V1y = 2000000;
-
-V: {[1:1:V1x]x[1:1:V1y]}
-Vmap: <<{[1:1:V1x]x[1:1:V1y]} -> |1|1|>>
+V: {[120:120]x[121:128], [121:121]x[120:128], [122:128]x[120:128]}
+Vmap: <<{[120:120]x[121:128]} -> |22|22|, {[121:121]x[120:128]} -> |22|22|, {[122:128]x[120:128]} -> |22|22|>>
 mapB: <<>>
 mapD: <<>>
 Emap: <<>>;
 
 sort(
-  V: {[1:1:V1x]x[1:1:V1y]}
-  Vmap: <<{[1:1:V1x]x[1:1:V1y]} -> |1|1|>>
+  V: {[120:120]x[121:128], [121:121]x[120:128], [122:128]x[120:128]}
+  Vmap: <<{[120:120]x[121:128]} -> |22|22|, {[121:121]x[120:128]} -> |22|22|, {[122:128]x[120:128]} -> |22|22|>>
   mapB: <<>>
   mapD: <<>>
   Emap: <<>>

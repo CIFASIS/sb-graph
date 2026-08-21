@@ -64,7 +64,8 @@ bool updateN(const std::string& filename, int N);
  * @param N Size of set-vertices and set-edges. 
  * @param copies Copies of the SBG, i.e. number of set-vertices and set-edges.
  */
-BipartiteSBG generateSBG(std::string filename, int N, int copies);
+template<typename SBGT>
+SBGT generateSBG(std::string filename, int N, int copies);
 
 /**
  * @brief Reads a .test file to search for an SBG that will be the input for

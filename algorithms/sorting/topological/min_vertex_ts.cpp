@@ -160,8 +160,8 @@ MD_NAT MinVertexTS::getVertex()
   // set-vertex.
   Set Vj_repeated_SV = Vj;
   Set Vj_set_vertex = _dsbg.Vmap().image(Vj);
-  for (auto rit = _visitedSV.rbegin(); rit != _visitedSV.rend(); ++rit) {
-    Set repeatedSV = (*rit).intersection(Vj_set_vertex);
+  for (auto it = _visitedSV.begin(); it != _visitedSV.end(); ++it) {
+    Set repeatedSV = (*it).intersection(Vj_set_vertex);
     if (!repeatedSV.isEmpty()) {
       Vj_repeated_SV = _dsbg.Vmap().preImage(repeatedSV).intersection(Vj);
       break;

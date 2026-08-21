@@ -3,7 +3,7 @@
 --------------------------------------------------------------------------------
 
 model Test2D
-  constant Integer N=10,M=10;
+  constant Integer N=1000000,M=1000000;
   Real a[N,M],b[N,M],x[N,M];
 equation
   a[1,1]+b[1,1]=1; // a[1, 1]
@@ -282,7 +282,7 @@ X: F
 
 Y: U;
 
-causalize(
+match(
   V: F \/ U
 
   Vmap: <<{[1:1:V1x]x[1:1:V1y]} -> |0*x+1|0*x+1|, {[V1x+1:1:V2x]x[V1y+1:1:V2y]} -> |0*x+2|0*x+2|

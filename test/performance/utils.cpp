@@ -50,6 +50,7 @@ using SBG::LIB::Set;
 using SBG::LIB::Expression;
 using SBG::LIB::PWMap;
 using SBG::LIB::BipartiteSBG;
+using SBG::LIB::DirectedSBG;
 using SBG::LIB::Matching;
 using SBG::LIB::MatchData;
 
@@ -61,7 +62,7 @@ bool updateN(const std::string& filename, int N)
 {
   std::ifstream input_file(filename);
   if (!input_file.is_open()) {
-    std::cerr << "Error>> Unable to open file " << filename << "\n";
+    Util::ERROR("Unable to open file ", filename, "\n");
     return false;
   }
 
@@ -91,7 +92,8 @@ bool updateN(const std::string& filename, int N)
   return true;
 }
 
-BipartiteSBG generateSBG(std::string filename, int N, int copies)
+template<typename SBGT>
+SBGT generateSBG(std::string filename, int N, int copies)
 {
   std::streambuf* original_buf = std::cout.rdbuf();
   std::ofstream nullStream("/dev/null");
@@ -101,12 +103,12 @@ BipartiteSBG generateSBG(std::string filename, int N, int copies)
   updateN(filename, N);
 
   // Get graph from file
-  BipartiteSBG g;
+  SBGT g;
   SBG::Eval::ProgramIO eval_result = SBG::Eval::parseEvalFile(filename); 
   for (const SBG::Eval::ExprResult& ev : eval_result.exprs()) {
     SBG::Eval::ExprBaseType e = std::get<1>(ev);
-    if (std::holds_alternative<BipartiteSBG>(e)) {
-      g = std::get<BipartiteSBG>(e);
+    if (std::holds_alternative<SBGT>(e)) {
+      g = std::get<SBGT>(e);
     }
   }
 
@@ -115,10 +117,15 @@ BipartiteSBG generateSBG(std::string filename, int N, int copies)
   return copy(copies, g);
 }
 
+template BipartiteSBG generateSBG<BipartiteSBG>(
+  std::string filename, int N, int copies);
+template DirectedSBG generateSBG<DirectedSBG>(
+  std::string filename, int N, int copies);
+
 MatchData calculateMatching(std::string filename, int N, int copies)
 {
   // Calculate matching
-  BipartiteSBG match_sbg = generateSBG(filename, N, copies);
+  BipartiteSBG match_sbg = generateSBG<BipartiteSBG>(filename, N, copies);
   Matching match_algorithm;
   MatchData match_result = match_algorithm.calculate(match_sbg);
 

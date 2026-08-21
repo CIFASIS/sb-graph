@@ -137,18 +137,16 @@ BipartiteSBG copy(unsigned int copies, BipartiteSBG sbg)
   PWMap Emap = sbg.Emap();
   Set E = sbg.E();
 
+  BipartiteSBG result = sbg;
   for (unsigned int j = 1; j < copies; ++j) {
-    MD_NAT max_v = sbg.V().maxElem();
+    MD_NAT max_v = result.V().maxElem();
     Set set_vertices = Vmap.image();
-    while (!set_vertices.isEmpty()) {
-      Set min_elem_set{set_vertices.minElem()};
-      Set vertices = Vmap.preImage(min_elem_set);
+    sbg.foreachSetVertex([&](const MD_NAT& SV) {
+      Set vertices = Vmap.preImage(Set{SV});
       Set jth_X = vertices.intersection(X);
       Set jth_Y = vertices.intersection(Y);
-      sbg.addSetVertex(jth_X.offset(max_v), jth_Y.offset(max_v));
-
-      set_vertices = set_vertices.difference(min_elem_set);
-    }
+      result.addSetVertex(jth_X.offset(max_v), jth_Y.offset(max_v));
+    });
 
     Expression offset_v;
     for (std::size_t k = 0; k < max_v.arity(); ++k) {
@@ -157,7 +155,7 @@ BipartiteSBG copy(unsigned int copies, BipartiteSBG sbg)
     }
     PWMap offset_pw_v{Map{V, offset_v}};
 
-    MD_NAT max_e = sbg.E().maxElem();
+    MD_NAT max_e = result.E().maxElem();
     Expression offset_e;
     for (std::size_t k = 0; k < max_e.arity(); ++k) {
       offset_e = offset_e.cartesianProduct(Expression{RATIONAL{1}
@@ -167,20 +165,17 @@ BipartiteSBG copy(unsigned int copies, BipartiteSBG sbg)
     PWMap inverse_offset_pw_e = offset_pw_e.inverse();
 
     Set set_edges = Emap.image();
-    while (!set_edges.isEmpty()) {
-      Set min_elem_set{set_edges.minElem()};
-      Set edges = Emap.preImage(min_elem_set);
+    sbg.foreachSetEdge([&](const MD_NAT& SE) {
+      Set edges = Emap.preImage(Set{SE});
       PWMap pw1 = map1.restrict(edges);
       PWMap pw2 = map2.restrict(edges);
       pw1 = offset_pw_v.composition(pw1.composition(inverse_offset_pw_e));
       pw2 = offset_pw_v.composition(pw2.composition(inverse_offset_pw_e));
-      sbg.addSetEdge(pw1, pw2);
-
-      set_edges = set_edges.difference(min_elem_set);
-    }
+      result.addSetEdge(pw1, pw2);
+    });
   }
 
-  return sbg;
+  return result;
 }
 
 } // namespace LIB

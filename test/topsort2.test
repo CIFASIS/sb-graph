@@ -1,6 +1,9 @@
-// Topological sort test, with a simple recursion
+/* Model for topological sorting testing =======================================
+ * Description: test with a simple repetitive path of the form
+   1 -> 11 -> 2 -> 12 -> ... -> 10 -> 20 when N = 10.
+==============================================================================*/
 
-N = 100000;
+N = 1000000;
 
 V1 = 1;
 V2 = N-1+V1;

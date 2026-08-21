@@ -1,8 +1,10 @@
-/* Matching test of a single large path,
-originated from the following model:
+/* Model for matching testing ==================================================
+ * Description: model with a simple repetition of the form 1 - 11 - 2 - 12
+   - ... - 10 - 20, when N=10.
+--------------------------------------------------------------------------------
 
 model matching1
-  constant Integer N = 100000;
+  constant Integer N = 1000000;
   Real a[N];
 equation
   a[1] = 0;
@@ -10,9 +12,9 @@ equation
     a[i-1] + a[i] = 0;
   end for;
 end matching1;
-*/
+==============================================================================*/
 
-N = 100;
+N = 1000000;
 
 V1 = 1;
 V2 = N-1+V1;

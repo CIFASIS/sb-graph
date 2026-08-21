@@ -38,8 +38,8 @@ static void BM_Matching(benchmark::State& state, std::string filename)
 {
   int N = state.range(0);
 
-  SBG::LIB::Matching match_algorithm;
-  SBG::LIB::BipartiteSBG match_sbg = generateSBG(filename, N, 1); 
+  LIB::Matching match_algorithm;
+  LIB::BipartiteSBG match_sbg = generateSBG<LIB::BipartiteSBG>(filename, N, 1); 
   for (auto _ : state) {
     benchmark::DoNotOptimize(match_algorithm.calculate(match_sbg));
   }
@@ -52,8 +52,9 @@ static void BM_MatchingCopies(benchmark::State& state, std::string filename)
   int N = state.range(0);
 
   // Calculate Matching
-  SBG::LIB::Matching match_algorithm;
-  SBG::LIB::BipartiteSBG match_sbg = generateSBG(filename, 100, N);
+  LIB::Matching match_algorithm;
+  LIB::BipartiteSBG match_sbg = generateSBG<LIB::BipartiteSBG>(
+    filename, 100, N);
 
   for (auto _ : state) {
     benchmark::DoNotOptimize(match_algorithm.calculate(match_sbg));
@@ -86,9 +87,9 @@ void registerMatchingBenchmarks(std::string filename)
 
 void registerMatchingBenchmarks()
 {
-  registerMatchingBenchmarks("../../TestRL1.test");
-  registerMatchingBenchmarks("../../TestRL2.test");
-  registerMatchingBenchmarks("../../TestRL3.test");
+  registerMatchingBenchmarks("../../matching_TestRL1.test");
+  registerMatchingBenchmarks("../../matching_TestRL2.test");
+  registerMatchingBenchmarks("../../matching_TestRL3.test");
 }
 
 } // namespace detail

@@ -1,20 +1,34 @@
-// Topological sort test corresponding to the following model:
+/* Model for topological sorting testing =======================================
+ * Description: model without algebraic loops. The corresponding matching is
+   indicated with comments. When N=10, the directed SBG is of the form:
+   11 <- 1 -> 20
+     -   |   -
+      -> v <-
+   12 <- 2 -> 21
+     -   |   -
+      -> v <-
+     ... 3 ...
+        ...
+   19 <- 9 -> 28
+     -   |   -
+      -> v <-
+         10
+--------------------------------------------------------------------------------
 
-/*
 model test
-  constant Integer N=100000;
+  constant Integer N=1000000;
   Real a[N], b[N-1], c[N-1];
 equation
   for i in 1:N-1 loop
-    a[i] = a[i+1] - (b[i] + c[i]);
-    b[i] = k1*a[i+1];
-    c[i] = k2*a[i+1];
+    a[i] = a[i+1] - (b[i] + c[i]); // a[i] 
+    b[i] = k1*a[i+1]; // b[i]
+    c[i] = k2*a[i+1]; // c[i]
   end for;
-  a[N] = 1000;
+  a[N] = 1000; // a[N]
 end test;
-*/
+==============================================================================*/
 
-N = 100000;
+N = 1000000;
 
 V1 = N;
 V2 = N-1+V1;

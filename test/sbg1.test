@@ -1,16 +1,15 @@
-// Eval test of empty SBG
+/* Test for empty SBG ==========================================================
+ * Simple file to test how an empty SBG is evaluated. Currently, it gives a
+   SEGFAULT. SOLVED. 
+==============================================================================*/
 
 N = 100000;
 
 V1 = N;
 
-matchSCC(
+scc(
   V: {[1:1:V1]}
   Vmap: <<{[1:1:V1]} -> |0*x+1|>> 
-  map1: <<>>
-  map2: <<>>
-  Emap: <<>>
-  X: {[1:1:V1]}
-  Y: {}
-, 1
-);
+  mapB: <<>>
+  mapD: <<>>
+  Emap: <<>>);

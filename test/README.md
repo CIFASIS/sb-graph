@@ -27,7 +27,10 @@ Executes system tests for the partitioner.
 ## performance
 
 Measures and outputs execution time of predefined tests. The corresponding
-binary is sb-graph/test/build/bin/sbg-benchmark (to see available options run
-the executable with --help as argument). For the algorithms benchmark it accepts
-a single test file as a positional argument. The binary also supports Google
-Benchmark options, i.e. --benchmark_filter=filter.
+binary is sb-graph/test/build/bin/sbg-benchmark. The binary must be run from
+that folder. To see available options run the executable with --help as
+argument.
+
+For the algorithms benchmark it accepts a single test file as a positional
+argument. The binary also supports Google Benchmark options
+, i.e. --benchmark_filter=filter.

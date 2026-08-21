@@ -65,12 +65,8 @@ ExprEvaluator::ExprEvaluator(EvalContext& eval_ctx) : _eval_context(eval_ctx)
   eval_ctx.insertFunction("cc", BuiltInFunctions::connectedEvaluator);
   eval_ctx.insertFunction("match", BuiltInFunctions::matchingEvaluator);
   eval_ctx.insertFunction("scc", BuiltInFunctions::sccEvaluator);
-  eval_ctx.insertFunction("matchSCC", BuiltInFunctions::matchSCCEvaluator);
   eval_ctx.insertFunction("mfvs", BuiltInFunctions::mfvsEvaluator);
-  eval_ctx.insertFunction("matchSCCMFVS"
-    , BuiltInFunctions::matchSCCMFVSEvaluator);
   eval_ctx.insertFunction("sort", BuiltInFunctions::topoSortEvaluator);
-  eval_ctx.insertFunction("causalize", BuiltInFunctions::causalizationEvaluator);
 }
 
 ExprBaseType ExprEvaluator::operator()(AST::Natural v) const

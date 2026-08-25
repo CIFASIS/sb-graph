@@ -20,8 +20,6 @@
 #include "algorithms/scc/decreasing_edges_mrv.hpp"
 #include "util/logger.hpp"
 
-#include <iostream>
-
 namespace SBG {
 
 namespace LIB {

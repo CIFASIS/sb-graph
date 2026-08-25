@@ -30,7 +30,6 @@
 #include "sbg/expression_impl.hpp"
 #include "sbg/fixed_points.hpp"
 #include "sbg/linear_expr.hpp"
-#include "sbg/multidim_inter.hpp"
 
 #include "rapidjson/document.h"
 

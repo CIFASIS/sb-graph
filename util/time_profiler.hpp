@@ -43,6 +43,7 @@ public:
   ~TimeProfiler();
 
   static void print_execution_time();
+  static void print_execution_time(std::string function_name);
 
 private:
   std::string _function_name;

@@ -42,24 +42,20 @@ GreedyMFVS::GreedyMFVS() {}
  */
 MD_NAT maxDegreeVertex(const DirectedSBG& dsbg)
 {
-  PWMap multB = dsbg.mapB().imageMultiplicity();
-  PWMap multD = dsbg.mapD().imageMultiplicity();
-  PWMap mmap = multB + multD;
+  Set V = dsbg.V();
+  PWMap mapB = dsbg.mapB();
+  PWMap mapD = dsbg.mapD();
 
-  MD_NAT max_mult{dsbg.V().arity(), 0};
-  Set remaining = mmap.image();
-  while (!remaining.isEmpty()) {
-    MD_NAT jth_mult = remaining.minElem();
-    NAT current_degree = std::accumulate(max_mult.begin(), max_mult.end(), 0);
-    NAT jth_degree = std::accumulate(jth_mult.begin(), jth_mult.end(), 0);
-    if (jth_degree > current_degree) {
-      max_mult = jth_mult;
-    }
+  Set adj_edges = mapB.preImage(V).cup(mapD.preImage(V));
+  PWMap multB = mapB.restrict(adj_edges).imageMultiplicity();
+  PWMap multD = mapD.restrict(adj_edges).imageMultiplicity();
+  PWMap mmap = (multB + multD).restrict(V);
 
-    remaining = remaining.difference(Set{jth_mult});
+  if (mmap.isEmpty()) {
+    return V.minElem();
   }
 
-  Set max_mult_set{max_mult};
+  Set max_mult_set{mmap.image().maxElem()};
   Set max_degree_vertices = mmap.preImage(max_mult_set);
 
   return max_degree_vertices.minElem();
@@ -67,6 +63,10 @@ MD_NAT maxDegreeVertex(const DirectedSBG& dsbg)
 
 Set GreedyMFVS::calculate(const DirectedSBG& input_dsbg) const
 {
+  if (input_dsbg.V().isEmpty()) {
+    return Set{};
+  }
+
   DirectedSBG dsbg = input_dsbg;
 
   Util::DEBUG_LOG << "initial mfvs dsbg:\n" << dsbg << "\n";
@@ -86,8 +86,6 @@ Set GreedyMFVS::calculate(const DirectedSBG& input_dsbg) const
     if (!repeatedSV.isEmpty()) {
       Set V_plus = Vmap.preImage(Vmap.image(Vj));
       fvs_result = std::move(fvs_result).cup(std::move(V_plus));
-
-      visitedSV = repeatedSV.difference(Vmap.image(Vj));
     } else {
       visitedSV = std::move(repeatedSV).disjointCup(Vmap.image(Vj));
     }

@@ -428,8 +428,7 @@ void GraphPartitioner::partitionUsingKaHip(Partition &partition)
 void GraphPartitioner::partitionUsingSBG(sbg_partitioner::PartitionMap &partitions)
 {
   std::cout << "GraphPartitioner::partitionUsingSBG" << std::endl;
-  partitions = sbg_partitioner::best_initial_partition(*sbg_graph, _nbr_parts,
-                                                       sbg_partitioner::InitialPartitionStrategy::DFS_GREEDY_POSTORDER, false);
+  partitions = sbg_partitioner::best_initial_partition(*sbg_graph, _nbr_parts, sbg_partitioner::InitialPartitionStrategy::ALL, false);
   //   std::cout << "chosen partition " << partitions << std::endl;
 
   sbg_partitioner::kl_sbg_imbalance_partitioner(*sbg_graph, partitions, _imbalance, false);

@@ -50,42 +50,7 @@ For example:
 
 To run an example and get the resultant partition you can run:
 
-`./bin/sbg-partitioner -f examples/air_conditioners.json -p 4 -g output.json`
-
-The output will be written in the file `output.json` in JSON format:
-
-```
-{
-    "partitions": [
-        {"nodes": [
-            [[0,24]],
-            [[100,124]],
-            [[200,224]],
-            [[300,324]]
-        ]},
-        {"nodes": [
-            [[25,49]],
-            [[125,149]],
-            [[225,249]],
-            [[325,349]]
-        ]},
-        {"nodes": [
-            [[50,74]],
-            [[150,174]],
-            [[250,274]],
-            [[350,374]]
-        ]},
-        {"nodes": [
-            [[75,99]],
-            [[175,199]],
-            [[275,299]],
-            [[375,399]]
-        ]}
-    ]
-}
-```
-
-where each `node` object is a set of intervals, that represents a set of nodes for each partition.
+`./bin/sbg-partitioner -f examples/air_conditioners.json -p 4`
 
 
 ## Test suites
@@ -118,3 +83,64 @@ in the branch `sb-graph-dev`.
 * `-e` [optional argument] imbalance epsilon, a value between 0 and 1.
 
 Output files with the metrics will be output in the directory passed as an argument.
+
+
+## External tools
+
+# Graph Partitioner (`grap_partitioner`)
+
+A command-line tool designed to partition graphs using various partitioning algorithms and balance constraints. It provides execution and computation time metrics to help benchmark and analyze partitioning performance across different algorithms.
+
+---
+
+## Usage
+
+```bash
+external_tools/install/bin/graph_partitioner -f <file_name> -n <num_partitions> -m <partition_method> -i <imbalance>
+
+```
+
+---
+
+## Command-Line Options
+
+| Flag | Argument | Description | Required |
+| --- | --- | --- | --- |
+| `-f` | `<file_name>` | Path to the SBG input JSON file or generated graph input. | Yes |
+| `-n` | `<num_partitions>` | Target number of partitions (integer). | Yes |
+| `-m` | `<partition_method>` | Partitioning algorithm to execute. | Yes |
+| `-i` | `<imbalance>` | Allowed partition imbalance ratio/threshold. | Yes |
+| `-h` | — | Display usage information and exit. | No |
+
+---
+
+## Supported Partition Methods (`-m`)
+
+* **`SBG`** — Streaming/Balanced Graph partitioner
+* **`Scotch`** — Dual/Static graph partitioner
+* **`Metis`** — Family of serial partitioning algorithms
+
+---
+
+## Examples
+
+Partition a graph file into 4 parts using Metis with an imbalance factor of 0.03:
+
+```bash
+./graph_partitioner -f input_graph.json -n 4 -m Metis -i 0.03
+
+```
+
+Run partitioning using KaHIP on a generated graph:
+
+```bash
+./graph_partitioner -f data/network.sbg.json -n 8 -m SBG -i 0.05
+
+```
+
+Display help:
+
+```bash
+./graph_partitioner -h
+
+```

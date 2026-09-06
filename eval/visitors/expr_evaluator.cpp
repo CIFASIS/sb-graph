@@ -19,8 +19,8 @@
 
 #include "eval/visitors/expr_evaluator.hpp"
 #include "eval/visitors/func_evaluator.hpp"
+#include "eval/visitors/int_evaluator.hpp"
 #include "eval/visitors/linear_expr_evaluator.hpp"
-#include "eval/visitors/nat_evaluator.hpp"
 #include "eval/visitors/rational_evaluator.hpp"
 #include "util/debug.hpp"
 
@@ -69,9 +69,9 @@ ExprEvaluator::ExprEvaluator(EvalContext& eval_ctx) : _eval_context(eval_ctx)
   eval_ctx.insertFunction("sort", BuiltInFunctions::topoSortEvaluator);
 }
 
-ExprBaseType ExprEvaluator::operator()(AST::Natural v) const
+ExprBaseType ExprEvaluator::operator()(AST::Integer v) const
 {
-  return (LIB::NAT) v;
+  return (LIB::Int) v;
 }
 
 ExprBaseType ExprEvaluator::operator()(AST::Rational v) const
@@ -131,11 +131,11 @@ ExprBaseType ExprEvaluator::operator()(AST::Call v) const
 
 ExprBaseType ExprEvaluator::operator()(AST::Interval v) const
 {
-  NatEvaluator nat_evaluator{_eval_context.venv()};
+  IntEvaluator int_evaluator{_eval_context.venv()};
 
-  LIB::NAT b = boost::apply_visitor(nat_evaluator, v.begin());
-  LIB::NAT s = boost::apply_visitor(nat_evaluator, v.step());
-  LIB::NAT e = boost::apply_visitor(nat_evaluator, v.end());
+  LIB::Int b = boost::apply_visitor(int_evaluator, v.begin());
+  LIB::Int s = boost::apply_visitor(int_evaluator, v.step());
+  LIB::Int e = boost::apply_visitor(int_evaluator, v.end());
 
   return LIB::Set{b, s, e};
 }

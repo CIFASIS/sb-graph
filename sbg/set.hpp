@@ -2,13 +2,13 @@
 
  @brief <b>SBG Set</b>
 
- A SBG Set is a structure that represents sets of multi-dimensional naturals
+ A SBG Set is a structure that represents sets of multi-dimensional integers
  (all with the same number of dimensions).
  Currently three compact implementations are supported:
    - UnorderedSet that keeps no order, but supports multi-dimensional values.
    - OrderedSet that supports multi-dimensional values while also keeping an
      internal order that enhances performance.
-   - OrdUnidimDenseSet that can represent sets of one dimensional naturals and
+   - OrdUnidimDenseSet that can represent sets of one dimensional integers and
      that is optimized by keeping an ordered collection of MDIs.
 
  <hr>
@@ -37,7 +37,7 @@
 #include "sbg/fixed_points.hpp"
 #include "sbg/interval.hpp"
 #include "sbg/multidim_inter.hpp"
-#include "sbg/natural.hpp"
+#include "sbg/integer.hpp"
 #include "sbg/ord_set.hpp"
 #include "sbg/ord_unidim_dense_set.hpp"
 #include "sbg/set.hpp"
@@ -75,9 +75,9 @@ class SetAccessKey;
 class Set {
 public:
   Set();
-  Set(const MD_NAT& x);
-  Set(MD_NAT&& x);
-  Set(const NAT lo, const NAT st, const NAT hi);
+  Set(const IntTuple& x);
+  Set(IntTuple&& x);
+  Set(const Int lo, const Int st, const Int hi);
   Set(const FixedPointsInfo& info);
 
   bool operator==(const Set& other) const;
@@ -88,8 +88,8 @@ public:
 
   unsigned int cardinal() const;
   bool isEmpty() const;
-  MD_NAT minElem() const;
-  MD_NAT maxElem() const;
+  IntTuple minElem() const;
+  IntTuple maxElem() const;
   Set intersection(const Set& other) const &;
   Set cup(const Set& other) const &;
   Set cup(const Set& other) &&;
@@ -106,7 +106,7 @@ public:
   Set disjointCup(const Set& other) &&;
   Set disjointCup(Set&& other) const &;
   Set disjointCup(Set&& other) &&;
-  Set offset(const MD_NAT& off) const;
+  Set translate(const IntTuple& t) const;
   Perimeter perimeter() const;
   void compact();
   rapidjson::Value toJSON(rapidjson::Document::AllocatorType& alloc) const;

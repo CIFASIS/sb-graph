@@ -30,12 +30,12 @@ namespace perf {
 
 namespace detail {
 
-using SBG::LIB::NAT;
-using SBG::LIB::MD_NAT;
+using SBG::LIB::Int;
+using SBG::LIB::IntTuple;
 using SBG::LIB::Set;
 using SBG::LIB::detail::SetAccessKey;
 using SBG::LIB::detail::SetAccess;
-using SBG::LIB::detail::MaybeMD_NAT;
+using SBG::LIB::detail::MaybeIntTuple;
 using SBG::LIB::PWMap;
 using SBG::LIB::BipartiteSBG;
 
@@ -54,7 +54,7 @@ BipartiteGraph ScalarGraphBuilder::build()
   return BipartiteGraph(std::move(graph), std::move(_partition));
 }
 
-BipartiteGraph ScalarGraphBuilder::build(NAT number_vertices
+BipartiteGraph ScalarGraphBuilder::build(Int number_vertices
   , EdgeVector& E, std::vector<int>&& partition)
 {
   Graph graph(E.begin(), E.end(), number_vertices);
@@ -72,10 +72,10 @@ void ScalarGraphBuilder::translateVertices()
   _partition.reserve(V.cardinal());
   Set X = _bsbg.X();
 
-  NAT count = 0;
+  Int count = 0;
   SetAccessKey key = SetAccess::key();
-  std::vector<MD_NAT> vertices = key.flatten(V);
-  for (const MD_NAT& v : vertices) { 
+  std::vector<IntTuple> vertices = key.flatten(V);
+  for (const IntTuple& v : vertices) { 
     _vertex_map[v] = count;
     _partition.emplace_back(
       SBG::LIB::Set{v}.intersection(X).isEmpty());
@@ -95,8 +95,8 @@ EdgeVector ScalarGraphBuilder::getEdgeList()
   const PWMap& map1 = _bsbg.map1();
   const PWMap& map2 = _bsbg.map2();
   SetAccessKey key = SetAccess::key();
-  std::vector<MD_NAT> edges = key.flatten(E);
-  for (const MD_NAT& e : edges) {
+  std::vector<IntTuple> edges = key.flatten(E);
+  for (const IntTuple& e : edges) {
     // Get endings of edge
     Set domain = SBG::LIB::Set{e};
     Vertex v1 = _vertex_map[map1.image(domain).minElem()];

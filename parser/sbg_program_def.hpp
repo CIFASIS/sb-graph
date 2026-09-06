@@ -20,18 +20,17 @@
 #ifndef PROGRAM_DEF_PARSER_HPP
 #define PROGRAM_DEF_PARSER_HPP
 
+#include "ast/sbg_program.hpp"
+
 #include <boost/phoenix/core.hpp>
 #include <boost/phoenix/operator.hpp>
 #include <boost/phoenix/object.hpp>
-
-#include "ast/sbg_program.hpp"
-
 
 // Adapt structures ------------------------------------------------------------
 
 BOOST_FUSION_ADAPT_STRUCT(
   SBG::AST::SBGProgram
-  , (SBG::LIB::NAT, nmbr_dims_)
+  , (std::size_t, arity_)
     (SBG::AST::StatementList, stms_)
     (SBG::AST::ExprList, exprs_)
 )

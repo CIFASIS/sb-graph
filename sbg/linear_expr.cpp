@@ -32,14 +32,14 @@ namespace detail {
 
 LinearExpr::LinearExpr() : _slope(1), _offset(0) {}
 
-LinearExpr::LinearExpr(RATIONAL slope, RATIONAL offset)
+LinearExpr::LinearExpr(Rational slope, Rational offset)
   : _slope(slope), _offset(offset) {}
 
 // Getters ---------------------------------------------------------------------
 
-const RATIONAL& LinearExpr::slope() const { return _slope; }
+const Rational& LinearExpr::slope() const { return _slope; }
 
-const RATIONAL& LinearExpr::offset() const { return _offset; }
+const Rational& LinearExpr::offset() const { return _offset; }
 
 // Operators -------------------------------------------------------------------
 
@@ -65,7 +65,7 @@ LinearExpr LinearExpr::operator-(const LinearExpr& other) const
 
 std::ostream& operator<<(std::ostream& out, const LinearExpr& le)
 {
-  RATIONAL slo = le.slope(), off = le.offset();
+  Rational slo = le.slope(), off = le.offset();
 
   if (slo != 0 && slo != 1) {
     if (slo.numerator() != 1) {
@@ -100,27 +100,24 @@ std::ostream& operator<<(std::ostream& out, const LinearExpr& le)
 
 // Linear expression functions -------------------------------------------------
 
-NAT LinearExpr::apply(const NAT& x) const
+Int LinearExpr::apply(const Int& x) const
 {
-  return (_slope*x + _offset).toNat();
+  return (_slope*x + _offset).toInt();
 }
 
 LinearExpr LinearExpr::composition(const LinearExpr& other) const
 {
-  RATIONAL new_slope = other._slope*_slope;
-  RATIONAL new_offset = _slope*other._offset + _offset;
+  Rational new_slope = other._slope*_slope;
+  Rational new_offset = _slope*other._offset + _offset;
 
   return LinearExpr{new_slope, new_offset};
 }
 
 LinearExpr LinearExpr::inverse() const
 {
-  RATIONAL zero;
-  RATIONAL one{1};
-
-  RATIONAL new_slope{0, 1};
-  RATIONAL new_offset{0, 1};
-  new_slope = RATIONAL{_slope.denominator(), _slope.numerator()};
+  Rational new_slope{0, 1};
+  Rational new_offset{0, 1};
+  new_slope = Rational{_slope.denominator(), _slope.numerator()};
   new_offset = (-_offset)/_slope;
 
   return LinearExpr{new_slope, new_offset};
@@ -132,7 +129,7 @@ bool LinearExpr::isConstant() const { return _slope == 0; }
 
 bool LinearExpr::isInjective() const { return _slope != 0; }
 
-RATIONAL LinearExpr::intersectionPoint(const LinearExpr& other) const
+Rational LinearExpr::intersectionPoint(const LinearExpr& other) const
 {
   return (other._offset - _offset)/(_slope - other._slope);
 }

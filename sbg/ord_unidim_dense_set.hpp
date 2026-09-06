@@ -27,11 +27,10 @@
 #ifndef SBGRAPH_SBG_ORD_UNIDIM_DENSE_SET_HPP_
 #define SBGRAPH_SBG_ORD_UNIDIM_DENSE_SET_HPP_
 
-#include "sbg/expression.hpp"
 #include "sbg/fixed_points.hpp"
+#include "sbg/integer.hpp"
 #include "sbg/interval.hpp"
 #include "sbg/multidim_inter.hpp"
-#include "sbg/natural.hpp"
 #include "sbg/perimeter.hpp"
 
 #include "rapidjson/document.h"
@@ -56,7 +55,7 @@ public:
   using ConstIt = OrdIntervalCollection::const_iterator;
 
   OrdUnidimDenseSet();
-  OrdUnidimDenseSet(const NAT x);
+  OrdUnidimDenseSet(const Int x);
   OrdUnidimDenseSet(const detail::Interval& i);
   OrdUnidimDenseSet(const OrdIntervalCollection& pieces);
   OrdUnidimDenseSet(OrdIntervalCollection&& pieces);
@@ -75,8 +74,8 @@ public:
 
   unsigned int cardinal() const;
   bool isEmpty() const;
-  MD_NAT minElem() const;
-  MD_NAT maxElem() const;
+  IntTuple minElem() const;
+  IntTuple maxElem() const;
   OrdUnidimDenseSet intersection(const OrdUnidimDenseSet& other) const;
   OrdUnidimDenseSet cup(const OrdUnidimDenseSet& other) const &;
   OrdUnidimDenseSet cup(const OrdUnidimDenseSet& other) &&;
@@ -93,7 +92,7 @@ public:
   OrdUnidimDenseSet disjointCup(const OrdUnidimDenseSet& other) &&;
   OrdUnidimDenseSet disjointCup(OrdUnidimDenseSet&& other) const &;
   OrdUnidimDenseSet disjointCup(OrdUnidimDenseSet&& other) &&;
-  OrdUnidimDenseSet offset(const MD_NAT& offset) const;
+  OrdUnidimDenseSet translate(const IntTuple& t) const;
   Perimeter perimeter() const;
   void compact();
 

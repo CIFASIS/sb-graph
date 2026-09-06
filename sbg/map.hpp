@@ -29,8 +29,8 @@
 #ifndef SBGRAPH_SBG_MAP_HPP_
 #define SBGRAPH_SBG_MAP_HPP_
 
-#include "sbg/natural.hpp"
 #include "sbg/expression.hpp"
+#include "sbg/integer.hpp"
 #include "sbg/set.hpp"
 
 #include "rapidjson/document.h"
@@ -58,8 +58,8 @@ public:
    * @brief Construct a map with a single element \p x in its domain, and with
    * \p exp as its law.
    */
-  Map(const MD_NAT& x, const Expression& expr);
-  Map(MD_NAT&& x, Expression&& expr);
+  Map(const IntTuple& x, const Expression& expr);
+  Map(IntTuple&& x, Expression&& expr);
 
   /**
    * @brief Construct a map defining its domain as \p s and law as \p exp.

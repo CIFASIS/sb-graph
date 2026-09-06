@@ -23,13 +23,13 @@ namespace SBG {
 
 namespace AST {
 
-SBGProgram::SBGProgram() : nmbr_dims_(1), stms_(), exprs_() {}
-SBGProgram::SBGProgram(StatementList stms, ExprList exprs) : nmbr_dims_(1)
+SBGProgram::SBGProgram() : arity_(1), stms_(), exprs_() {}
+SBGProgram::SBGProgram(StatementList stms, ExprList exprs) : arity_(1)
   , stms_(stms), exprs_(exprs) {}
-SBGProgram::SBGProgram(LIB::NAT nmbr_dims, StatementList stms, ExprList exprs) 
-  : nmbr_dims_(nmbr_dims), stms_(stms), exprs_(exprs) {}
+SBGProgram::SBGProgram(std::size_t arity, StatementList stms, ExprList exprs) 
+  : arity_(arity), stms_(stms), exprs_(exprs) {}
 
-member_imp(SBGProgram, LIB::NAT, nmbr_dims);
+member_imp(SBGProgram, std::size_t, arity);
 member_imp(SBGProgram, StatementList, stms);
 member_imp(SBGProgram, ExprList, exprs);
 

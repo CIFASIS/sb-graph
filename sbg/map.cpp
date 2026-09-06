@@ -34,7 +34,7 @@ namespace LIB {
 
 Map::Map() : _domain() {}
 
-Map::Map(const MD_NAT& x, const Expression& expr)
+Map::Map(const IntTuple& x, const Expression& expr)
   : _domain(x), _law(expr) {}
 
 Map::Map(const Set& s, const Expression& expr) : _domain(s), _law(expr) {}

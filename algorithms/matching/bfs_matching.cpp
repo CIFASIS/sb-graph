@@ -18,7 +18,7 @@
  ******************************************************************************/
 
 #include "algorithms/matching/bfs_matching.hpp"
-#include "sbg/natural.hpp"
+#include "sbg/integer.hpp"
 #include "util/logger.hpp"
 
 namespace SBG {
@@ -73,17 +73,17 @@ PWMap BFSMatching::partitionSubsetEdges() const
   PWMap result;
   Set free_edges = _dsbg.E().difference(_M);
   std::size_t arity = free_edges.arity();
-  NAT j = 1;
+  unsigned int j = 1;
   PWMap Emap = _dsbg.Emap();
-  _dsbg.foreachSetEdge([&](const MD_NAT& SE)
+  _dsbg.foreachSetEdge([&](const IntTuple& SE)
   {
     Set domain_edges = Emap.preImage(Set{SE});
 
-    Expression matched_expr{MD_NAT{arity, j}};
+    Expression matched_expr{IntTuple{arity, j}};
     result.emplace(_M.intersection(domain_edges), matched_expr);
     ++j;
 
-    Expression free_expr{MD_NAT{arity, j}};
+    Expression free_expr{IntTuple{arity, j}};
     result.emplace(free_edges.intersection(domain_edges), free_expr);
     ++j;
   });

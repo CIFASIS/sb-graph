@@ -19,7 +19,7 @@
 
 #include "algorithms/mfvs/greedy_mfvs.hpp"
 #include "algorithms/scc/scc.hpp"
-#include "sbg/natural.hpp"
+#include "sbg/integer.hpp"
 #include "sbg/pw_map.hpp"
 #include "util/logger.hpp"
 
@@ -40,7 +40,7 @@ GreedyMFVS::GreedyMFVS() {}
 /**
  * @brief It calculates the minimum vertex with maximum degree. 
  */
-MD_NAT maxDegreeVertex(const DirectedSBG& dsbg)
+IntTuple maxDegreeVertex(const DirectedSBG& dsbg)
 {
   Set V = dsbg.V();
   PWMap mapB = dsbg.mapB();
@@ -76,7 +76,7 @@ Set GreedyMFVS::calculate(const DirectedSBG& input_dsbg) const
   Set visitedSV;
   while (rmap.fixedPoints() != rmap.domain()) {
     // Get minimum vertex with maximum degree
-    MD_NAT max_degree_vertex = maxDegreeVertex(dsbg);
+    IntTuple max_degree_vertex = maxDegreeVertex(dsbg);
     Set Vj{max_degree_vertex};
     fvs_result = std::move(fvs_result).disjointCup(Vj);
 

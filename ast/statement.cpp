@@ -36,20 +36,22 @@ std::ostream &operator<<(std::ostream &out, const Assign &asgn)
   return out;
 }
 
-ConfigDims::ConfigDims() : nmbr_dims_() {}
-ConfigDims::ConfigDims(LIB::NAT nmbr_dims) : nmbr_dims_() {
-  if (nmbr_dims > 0)
-    nmbr_dims_ = nmbr_dims;
+ConfigDims::ConfigDims() : arity_(0) {}
+ConfigDims::ConfigDims(std::size_t arity) : arity_(arity) {
+  if (arity > 0) {
+    arity_ = arity;
+  }
 
-  else
-    Util::ERROR("ConfigDims: dimension should be greater than 0\n");
+  else {
+    Util::ERROR("ConfigDims::ConfigDims: dimension should be greater than 0\n");
+  }
 }
 
-member_imp(ConfigDims, LIB::NAT, nmbr_dims);
+member_imp(ConfigDims, std::size_t, arity);
 
 std::ostream &operator<<(std::ostream &out, const ConfigDims &cfg)
 {
-  out << "nmbr_dims = " << cfg.nmbr_dims();
+  out << "arity = " << cfg.arity();
 
   return out;
 }

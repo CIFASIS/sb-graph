@@ -30,8 +30,8 @@
 #include "sbg/bipartite_sbg.hpp"
 #include "sbg/directed_sbg.hpp"
 #include "sbg/expression.hpp"
+#include "sbg/integer.hpp"
 #include "sbg/map.hpp"
-#include "sbg/natural.hpp"
 #include "sbg/pw_map.hpp"
 #include "sbg/rational.hpp"
 #include "sbg/sbg.hpp"
@@ -45,9 +45,9 @@ namespace SBG {
 namespace Eval {
 
 using ExprBaseType = std::variant<bool
-  , LIB::NAT
-  , LIB::MD_NAT
-  , LIB::RATIONAL
+  , LIB::Int
+  , LIB::IntTuple
+  , LIB::Rational
   , LIB::Set
   , LIB::Expression
   , LIB::Map

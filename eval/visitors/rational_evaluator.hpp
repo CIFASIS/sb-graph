@@ -36,28 +36,28 @@ namespace Eval {
 
 namespace detail {
 
-class RationalEvaluator : public boost::static_visitor<LIB::RATIONAL> {
+class RationalEvaluator : public boost::static_visitor<LIB::Rational> {
 public:
   RationalEvaluator();
   RationalEvaluator(VarEnv &venv);
 
-  LIB::RATIONAL operator()(AST::Natural v) const;
-  LIB::RATIONAL operator()(AST::Rational v) const;
-  LIB::RATIONAL operator()(AST::Name v) const;
-  LIB::RATIONAL operator()(AST::UnaryOp v) const;
-  LIB::RATIONAL operator()(AST::BinOp v) const;
-  LIB::RATIONAL operator()(AST::Call v) const;
-  LIB::RATIONAL operator()(AST::Interval v) const;
-  LIB::RATIONAL operator()(AST::MultiDimInter v) const;
-  LIB::RATIONAL operator()(AST::Set v) const;
-  LIB::RATIONAL operator()(AST::LinearExp v) const;
-  LIB::RATIONAL operator()(AST::MDLExp v) const;
-  LIB::RATIONAL operator()(AST::LinearMap v) const;
-  LIB::RATIONAL operator()(AST::PWLMap v) const;
-  LIB::RATIONAL operator()(AST::SBG v) const;
-  LIB::RATIONAL operator()(AST::BipartiteSBG v) const;
-  LIB::RATIONAL operator()(AST::DSBG v) const;
-  LIB::RATIONAL operator()(AST::ParenExpr) const;
+  LIB::Rational operator()(AST::Integer v) const;
+  LIB::Rational operator()(AST::Rational v) const;
+  LIB::Rational operator()(AST::Name v) const;
+  LIB::Rational operator()(AST::UnaryOp v) const;
+  LIB::Rational operator()(AST::BinOp v) const;
+  LIB::Rational operator()(AST::Call v) const;
+  LIB::Rational operator()(AST::Interval v) const;
+  LIB::Rational operator()(AST::MultiDimInter v) const;
+  LIB::Rational operator()(AST::Set v) const;
+  LIB::Rational operator()(AST::LinearExp v) const;
+  LIB::Rational operator()(AST::MDLExp v) const;
+  LIB::Rational operator()(AST::LinearMap v) const;
+  LIB::Rational operator()(AST::PWLMap v) const;
+  LIB::Rational operator()(AST::SBG v) const;
+  LIB::Rational operator()(AST::BipartiteSBG v) const;
+  LIB::Rational operator()(AST::DSBG v) const;
+  LIB::Rational operator()(AST::ParenExpr) const;
 
 private:
   mutable VarEnv _venv;

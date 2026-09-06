@@ -28,7 +28,7 @@
 
 #include "algorithms/matching/match_data.hpp"
 #include "sbg/bipartite_sbg.hpp"
-#include "sbg/natural.hpp"
+#include "sbg/integer.hpp"
 #include "sbg/pw_map.hpp"
 #include "sbg/set.hpp"
 
@@ -40,7 +40,7 @@ namespace perf {
 
 namespace detail {
 
-using SBG::LIB::NAT;
+using SBG::LIB::Int;
 using SBG::LIB::Set;
 using SBG::LIB::PWMap;
 using SBG::LIB::BipartiteSBG;
@@ -89,7 +89,7 @@ MatchData calculateMatching(std::string filename, int N, int copies);
  * {[50:149]x[0:99], [150:249]x[0:99], ..., [N-49:N+50]x[0:99]}
  * where N = set_sz*100-1.
  */
-std::pair<Set, Set> nonDisjointPieces(NAT set_sz);
+std::pair<Set, Set> nonDisjointPieces(Int set_sz);
 
 /*
  * @brief Creates two dense sets, where the first one is:
@@ -98,7 +98,7 @@ std::pair<Set, Set> nonDisjointPieces(NAT set_sz);
  * {[100:199], [300:399], ..., [N-99:N]}
  * where N = set_sz*100-1.
  */
-std::pair<Set, Set> interlacedPieces(NAT set_sz);
+std::pair<Set, Set> interlacedPieces(Int set_sz);
 
 ////////////////////////////////////////////////////////////////////////////////
 // PWMap Construction ----------------------------------------------------------
@@ -111,7 +111,7 @@ std::pair<Set, Set> interlacedPieces(NAT set_sz);
  *   , ..., {[N-999:N-900], ..., [N-99:N]} -> |x|>>.
  * where N = map_sz*1e3-1.
  */
-PWMap denseDom(NAT map_sz);
+PWMap denseDom(Int map_sz);
 
 /*
  * @brief Creates two PWs with a dense domain, where the first one is:
@@ -124,7 +124,7 @@ PWMap denseDom(NAT map_sz);
  *   , ..., {[N-949:N-850], ..., [N-49:N+50]} -> |x-1|>>
  * where N = map_sz*1e3-1.
  */
-std::pair<PWMap, PWMap> minAdjMaps(NAT map_sz);
+std::pair<PWMap, PWMap> minAdjMaps(Int map_sz);
 
 /*
  * @brief Creates two PWs with a dense domain, where the first one is:
@@ -137,7 +137,7 @@ std::pair<PWMap, PWMap> minAdjMaps(NAT map_sz);
  *   , ..., {[N-899:N-800]x[0:99], ..., [N-99:N]x[0:99]} -> |x|x|>>
  * where N = map_sz*1e3-1.
  */
-std::pair<PWMap, PWMap> interlacedMaps(NAT map_sz);
+std::pair<PWMap, PWMap> interlacedMaps(Int map_sz);
 
 /*
  * @brief Creates two PWs with a dense domain, where the first one is:
@@ -150,12 +150,12 @@ std::pair<PWMap, PWMap> interlacedMaps(NAT map_sz);
  *   , ..., {[N-949:N-850]x[0:99], ..., [N-49:N+50]x[0:99]} -> |x|x|>>
  * where N = map_sz*1e3-1.
  */
-std::pair<PWMap, PWMap> nonDisjointMaps(NAT map_sz);
+std::pair<PWMap, PWMap> nonDisjointMaps(Int map_sz);
 
 /**
  * @brief TODO
  */
-PWMap reducibleMaps(NAT map_sz);
+PWMap reducibleMaps(Int map_sz);
 
 } // namespace detail
 

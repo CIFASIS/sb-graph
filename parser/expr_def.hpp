@@ -30,10 +30,12 @@
 
 // Adapt structures ------------------------------------------------------------
 
-BOOST_FUSION_ADAPT_STRUCT(SBG::LIB::MD_NAT, (SBG::LIB::MD_NAT::VNAT, value_))
+BOOST_FUSION_ADAPT_STRUCT(
+  SBG::LIB::IntTuple, (std::vector<SBG::LIB::Int>, value_)
+)
 
 BOOST_FUSION_ADAPT_STRUCT(
-  SBG::LIB::RATIONAL, (boost::rational<SBG::LIB::INT>, value_)
+  SBG::LIB::Rational, (boost::rational<SBG::LIB::Int>, value_)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -174,7 +176,8 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   identifier = qi::lexeme[qi::char_("a-zA-Z")
     >> *(qi::alnum | qi::char_('_'))];
 
-  nat = qi::lexeme[qi::ulong_long][qi::_val = phx::construct<LIB::NAT>(qi::_1)];
+  integer = qi::lexeme[qi::long_long]
+    [qi::_val = phx::construct<LIB::Int>(qi::_1)];
 
   rational_legacy = (RAT 
     >> OPAREN 
@@ -184,7 +187,7 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
     >> CPAREN)[qi::_val = phx::construct<AST::Rational>(qi::_1, qi::_2)];
 
   primary = rational_legacy[qi::_val = qi::_1]
-    | nat[qi::_val = qi::_1]
+    | integer[qi::_val = qi::_1]
     | identifier[qi::_val = qi::_1]
     | (OPAREN >> arithmetic_expr >> CPAREN)
       [qi::_val = phx::construct<AST::ParenExpr>(qi::_1)];

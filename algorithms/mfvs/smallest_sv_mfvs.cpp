@@ -19,7 +19,7 @@
 
 #include "algorithms/mfvs/smallest_sv_mfvs.hpp"
 #include "algorithms/scc/scc.hpp"
-#include "sbg/natural.hpp"
+#include "sbg/integer.hpp"
 #include "sbg/pw_map.hpp"
 #include "util/logger.hpp"
 
@@ -45,11 +45,11 @@ SmallestSVMFVS::SmallestSVMFVS() {}
 Set getVerticesFromSmallestSV(const PWMap& Vmap)
 {
   Set Vmap_image = Vmap.image();
-  NAT min_sz = Inf;
+  std::size_t min_sz = std::numeric_limits<std::size_t>::min();
   Set remaining = Vmap_image;
   while (!remaining.isEmpty()) {
     Set jth_sv{remaining.minElem()};
-    NAT jth_sz = Vmap.preImage(jth_sv).cardinal(); 
+    std::size_t jth_sz = Vmap.preImage(jth_sv).cardinal(); 
     if (jth_sz < min_sz) {
       min_sz = jth_sz;
     }
@@ -75,7 +75,7 @@ Set getVerticesFromSmallestSV(const PWMap& Vmap)
 /**
  * @brief It calculates the minimum vertex of maximum degree of V. 
  */
-MD_NAT getMaxDegreeVertex(const Set& V, const DirectedSBG& dsbg)
+IntTuple getMaxDegreeVertex(const Set& V, const DirectedSBG& dsbg)
 {
   PWMap mapB = dsbg.mapB();
   PWMap mapD = dsbg.mapD();

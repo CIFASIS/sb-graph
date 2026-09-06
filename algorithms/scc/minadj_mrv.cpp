@@ -18,6 +18,7 @@
  ******************************************************************************/
 
 #include "algorithms/scc/minadj_mrv.hpp"
+#include "sbg/integer.hpp"
 #include "util/logger.hpp"
 
 namespace SBG {
@@ -88,11 +89,11 @@ PWMap MinAdjMRV::calculate(const DirectedSBG& dsbg)
                 // Distance map
                 PWMap dmap;
                 Set ith = end;
-                NAT dist = 0;
+                unsigned int dist = 0;
                 // Calculate distance for vertices in same_rep that reach reps
                 for (; dmap.domain().intersection(Vc.intersection(VR)).isEmpty();) {
                   Set domain = ith.difference(dmap.domain());
-                  Expression expr(MD_NAT{arity, dist});
+                  Expression expr(IntTuple{arity, dist});
                   dmap.emplace(domain, expr);
                   // Update ith to vertices that have outgoing edges entering ith
                   ith = mapB.image(mapD.preImage(ith));

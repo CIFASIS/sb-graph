@@ -27,7 +27,7 @@
 #ifndef SBGRAPH_SBG_FIXED_POINTS_HPP_
 #define SBGRAPH_SBG_FIXED_POINTS_HPP_
 
-#include "sbg/natural.hpp"
+#include "sbg/integer.hpp"
 
 #include <optional>
 
@@ -40,13 +40,13 @@ enum class SolutionKind { kFree, kFixed };
 class Solution {
 public:
   Solution(const SolutionKind kind);
-  Solution(const SolutionKind kind, const NAT value);
+  Solution(const SolutionKind kind, const Int value);
 
   const SolutionKind& kind() const;
-  const std::optional<NAT>& value() const;
+  const std::optional<Int>& value() const;
 
 private:
-  std::optional<NAT> _value;
+  std::optional<Int> _value;
   SolutionKind _kind;
 };
 

@@ -52,7 +52,7 @@ class SetImplExprVisitor : public boost::static_visitor<int> {
 public:
   SetImplExprVisitor(VarEnv& venv);
 
-  int operator()(AST::Natural v) const;
+  int operator()(AST::Integer v) const;
   int operator()(AST::Rational v) const;
   int operator()(AST::Name v) const;
   int operator()(AST::UnaryOp v) const;

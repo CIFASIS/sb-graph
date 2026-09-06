@@ -26,7 +26,7 @@
 #ifndef SBGRAPH_TEST_PERFORMANCE_BOOST_SCALAR_GRAPH_HPP_
 #define SBGRAPH_TEST_PERFORMANCE_BOOST_SCALAR_GRAPH_HPP_
 
-#include "sbg/natural.hpp"
+#include "sbg/integer.hpp"
 
 #include <boost/graph/adjacency_list.hpp>
 
@@ -36,9 +36,9 @@ namespace perf {
 
 namespace detail {
 
-using Vertex = SBG::LIB::NAT;
+using Vertex = SBG::LIB::Int;
 using VertexVector = std::vector<Vertex>;
-using Edge = std::pair<SBG::LIB::NAT, SBG::LIB::NAT>;
+using Edge = std::pair<SBG::LIB::Int, SBG::LIB::Int>;
 using EdgeVector = std::vector<Edge>;
 
 using Graph = boost::adjacency_list<boost::vecS, boost::vecS

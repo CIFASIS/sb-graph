@@ -85,7 +85,7 @@ OrdUnidimDenseSet::OrdIntervalCollection
 
 OrdUnidimDenseSet::OrdUnidimDenseSet() : _pieces() {}
 
-OrdUnidimDenseSet::OrdUnidimDenseSet(const NAT x) : _pieces()
+OrdUnidimDenseSet::OrdUnidimDenseSet(const Int x) : _pieces()
 {
   _pieces.emplace_back(x);
 }
@@ -113,7 +113,7 @@ OrdUnidimDenseSet::OrdUnidimDenseSet(const FixedPointsInfo& info)
       if (jth_solution.kind() == SolutionKind::kFixed) {
         _pieces.emplace_back(jth_solution.value().value());
       } else {
-        _pieces.emplace_back(0, 1, Inf);
+        _pieces.emplace_back(kOneDimUniverse);
       }
     }
   }
@@ -220,14 +220,14 @@ unsigned int OrdUnidimDenseSet::cardinal() const
 
 bool OrdUnidimDenseSet::isEmpty() const { return _pieces.empty(); }
 
-MD_NAT OrdUnidimDenseSet::minElem() const
+IntTuple OrdUnidimDenseSet::minElem() const
 {
-  return MD_NAT(_pieces.front().begin());
+  return IntTuple(_pieces.front().begin());
 }
 
-MD_NAT OrdUnidimDenseSet::maxElem() const
+IntTuple OrdUnidimDenseSet::maxElem() const
 {
-  return MD_NAT(_pieces.back().end());
+  return IntTuple(_pieces.back().end());
 }
 
 OrdUnidimDenseSet OrdUnidimDenseSet::intersection(const OrdUnidimDenseSet&
@@ -290,7 +290,7 @@ OrdUnidimDenseSet OrdUnidimDenseSet::complement() const
   OrdUnidimDenseSet result;
 
   if (isEmpty()) {
-    result._pieces.emplace_back(0, 1, Inf); 
+    result._pieces.emplace_back(kOneDimUniverse); 
     return result;
   }
 
@@ -298,7 +298,7 @@ OrdUnidimDenseSet OrdUnidimDenseSet::complement() const
   result._pieces.emplace_back(0, 1, _pieces.front().minElem() - 1);
 
   // Complement between pieces of the set
-  NAT last_interval_end = _pieces.front().maxElem();
+  Int last_interval_end = _pieces.front().maxElem();
   unsigned int j = 0;
   for (const Interval& i : _pieces) {
     if (j != 0) {
@@ -311,7 +311,7 @@ OrdUnidimDenseSet OrdUnidimDenseSet::complement() const
   }
 
   // Complement after maximum element of the set
-  result._pieces.emplace_back(last_interval_end + 1, 1, Inf);
+  result._pieces.emplace_back(last_interval_end + 1, 1, kPosInf);
 
   return result;
 }
@@ -394,12 +394,12 @@ OrdUnidimDenseSet OrdUnidimDenseSet::disjointCup(OrdUnidimDenseSet&& other) &&
   return traverse(least, other);
 }
 
-OrdUnidimDenseSet OrdUnidimDenseSet::offset(const MD_NAT& offset) const
+OrdUnidimDenseSet OrdUnidimDenseSet::translate(const IntTuple& t) const
 {
   OrdUnidimDenseSet result;
 
   for (const Interval& i : _pieces) {
-    result.pushBack(i.offset(offset[0]));
+    result.pushBack(i.translate(t[0]));
   }
 
   return result;

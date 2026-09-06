@@ -2,7 +2,6 @@
 
  @brief <b>Multi-dimensional Expression implementation</b>
 
-
  <hr>
 
  This file is part of Set--Based Graph Library.
@@ -26,6 +25,8 @@
 #define SBGRAPH_SBG_EXPRESSION_IMPL_HPP_
 
 #include "sbg/linear_expr.hpp"
+
+#include <vector>
 
 namespace SBG {
 

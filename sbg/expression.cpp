@@ -29,20 +29,20 @@ namespace LIB {
 
 Expression::Expression() : _impl() {}
 
-Expression::Expression(const MD_NAT& x)
+Expression::Expression(const IntTuple& x)
 {
-  for (const NAT xj : x) {
-    _impl.emplace_back(detail::LinearExpr{0, RATIONAL{static_cast<INT>(xj)}});
+  for (const Int xj : x) {
+    _impl.emplace_back(detail::LinearExpr{0, Rational{xj}});
   }
 }
 
-Expression::Expression(const RATIONAL& slope, const RATIONAL& offset) : _impl()
+Expression::Expression(const Rational& slope, const Rational& offset) : _impl()
 {
   _impl.emplace_back(detail::LinearExpr{slope, offset});
 }
 
-Expression::Expression(std::size_t n, const RATIONAL& slope
-  , const RATIONAL& offset)
+Expression::Expression(std::size_t n, const Rational& slope
+  , const Rational& offset)
   : _impl()
 { 
   detail::LinearExpr linear_expr{slope, offset};
@@ -51,7 +51,7 @@ Expression::Expression(std::size_t n, const RATIONAL& slope
   }
 }
 
-Expression::Expression(const MD_NAT& from, const MD_NAT& to)
+Expression::Expression(const IntTuple& from, const IntTuple& to)
 {
   for (unsigned int k = 0; k < from.arity(); ++k) {
     _impl.emplace_back(1, to[k] - from[k]);
@@ -132,9 +132,9 @@ std::ostream& operator<<(std::ostream& out, const Expression& expr)
 
 std::size_t Expression::arity() const { return _impl.size(); }
 
-MD_NAT Expression::apply(const MD_NAT& x) const
+IntTuple Expression::apply(const IntTuple& x) const
 {
-  MD_NAT result;
+  IntTuple result;
 
   for (unsigned int k = 0; k < _impl.size(); ++k) {
     result.pushBack(_impl[k].apply(x[k]));
@@ -207,7 +207,7 @@ FixedPointsInfo Expression::fixedPoints() const
     if (kth.isId()) {
       result.emplace_back(Solution{SolutionKind::kFree});
     } else if (kth.isConstant()) {
-      result.emplace_back(Solution{SolutionKind::kFixed, kth.offset().toNat()});
+      result.emplace_back(Solution{SolutionKind::kFixed, kth.offset().toInt()});
     } else {
       return {};
     }

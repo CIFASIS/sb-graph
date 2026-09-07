@@ -17,8 +17,10 @@
 
  ******************************************************************************/
 
-#include "sbg/natural.hpp"
 #include "sbg/directed_sbg.hpp"
+#include "sbg/integer.hpp"
+#include "sbg/map.hpp"
+#include "sbg/rational.hpp"
 #include "util/debug.hpp"
 
 #include <iostream>
@@ -66,9 +68,9 @@ void DirectedSBG::addSetVertex(const Set& vertices)
   } else if (!vertices.isEmpty()) {
     Set set_vertices = _Vmap.image();
     std::size_t arity = vertices.arity();
-    MD_NAT max = set_vertices.isEmpty() ? MD_NAT{arity, 0}
+    IntTuple max = set_vertices.isEmpty() ? IntTuple{arity, 0}
       : set_vertices.maxElem();
-    _Vmap.emplace(vertices, max + MD_NAT{arity, 1});
+    _Vmap.emplace(vertices, max + IntTuple{arity, 1});
     _V = std::move(_V).cup(std::move(vertices));
   }
 }
@@ -85,10 +87,10 @@ void DirectedSBG::addSetEdge(const PWMap& pwB, const PWMap& pwD)
     if (!edges.isEmpty()) {
       Set set_edges = _Emap.image();
       std::size_t arity = edges.arity();
-      MD_NAT max = set_edges.isEmpty() ? MD_NAT{arity, 0} : set_edges.maxElem();
+      IntTuple max = set_edges.isEmpty() ? IntTuple{arity, 0} : set_edges.maxElem();
       _mapB = std::move(_mapB).concatenation(pwB);
       _mapD = std::move(_mapD).concatenation(pwD);
-      _Emap.emplace(edges, max + MD_NAT{arity, 1});
+      _Emap.emplace(edges, max + IntTuple{arity, 1});
       _E = std::move(_E).cup(std::move(edges));
     }
   } else {
@@ -148,30 +150,30 @@ DirectedSBG copy(unsigned int copies, DirectedSBG dsbg)
 
   DirectedSBG result = dsbg;
   for (unsigned int j = 1; j < copies; ++j) {
-    MD_NAT max_v = result.V().maxElem();
-    dsbg.foreachSetVertex([&](const MD_NAT& SV) {
+    IntTuple max_v = result.V().maxElem();
+    dsbg.foreachSetVertex([&](const IntTuple& SV) {
       Set vertices = Vmap.preImage(Set{SV});
-     result.addSetVertex(vertices.offset(max_v));
+     result.addSetVertex(vertices.translate(max_v));
     });
 
     Expression offset_v;
     for (std::size_t k = 0; k < max_v.arity(); ++k) {
-      offset_v = offset_v.cartesianProduct(Expression{RATIONAL{1}
-        , RATIONAL{max_v[k]}});
+      offset_v = offset_v.cartesianProduct(Expression{Rational{1}
+        , Rational{max_v[k]}});
     }
     PWMap offset_pw_v{Map{V, offset_v}};
 
-    MD_NAT max_e = result.E().maxElem();
+    IntTuple max_e = result.E().maxElem();
     Expression offset_e;
     for (std::size_t k = 0; k < max_e.arity(); ++k) {
-      offset_e = offset_e.cartesianProduct(Expression{RATIONAL{1}
-        , RATIONAL{max_e[k]}});
+      offset_e = offset_e.cartesianProduct(Expression{Rational{1}
+        , Rational{max_e[k]}});
     }
     PWMap offset_pw_e{Map{E, offset_e}};
     PWMap inverse_offset_pw_e = offset_pw_e.inverse();
 
     Set set_edges = Emap.image();
-    dsbg.foreachSetEdge([&](const MD_NAT& SE) {
+    dsbg.foreachSetEdge([&](const IntTuple& SE) {
       Set edges = Emap.preImage(Set{SE});
       PWMap pwB = mapB.restrict(edges);
       PWMap pwD = mapD.restrict(edges);

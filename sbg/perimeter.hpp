@@ -28,7 +28,7 @@
 #ifndef SBGRAPH_SBG_PERIMETER_HPP_
 #define SBGRAPH_SBG_PERIMETER_HPP_
 
-#include "sbg/natural.hpp"
+#include "sbg/integer.hpp"
 
 namespace SBG {
 
@@ -36,16 +36,16 @@ namespace LIB {
 
 class Perimeter {
 public:
-  Perimeter(const MD_NAT& min, const MD_NAT& max);
+  Perimeter(const IntTuple& min, const IntTuple& max);
 
-  const MD_NAT& min() const;
-  const MD_NAT& max() const;
+  const IntTuple& min() const;
+  const IntTuple& max() const;
 
   bool overlap(const Perimeter& other) const;
 
 private:
-  MD_NAT _min;
-  MD_NAT _max;
+  IntTuple _min;
+  IntTuple _max;
 };
 
 } // namespace LIB

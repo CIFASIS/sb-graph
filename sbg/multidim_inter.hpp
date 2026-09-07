@@ -28,8 +28,8 @@
 #ifndef SBGRAPH_SBG_MULTIDIM_INTER_HPP_
 #define SBGRAPH_SBG_MULTIDIM_INTER_HPP_
 
+#include "sbg/integer.hpp"
 #include "sbg/interval.hpp"
-#include "sbg/natural.hpp"
 #include "sbg/perimeter.hpp"
 
 #include "rapidjson/document.h"
@@ -60,7 +60,7 @@ public:
   /**
    * @brief Construct a mdi with a single element \p x. 
    */
-  MultiDimInter(const MD_NAT& x);
+  MultiDimInter(const IntTuple& x);
 
   /**
    * @brief Construct a one-dimensional mdi with the same elements as \p i.
@@ -101,8 +101,8 @@ public:
    */
   unsigned int cardinal() const;
   bool isEmpty() const;
-  MD_NAT minElem() const;
-  MD_NAT maxElem() const;
+  IntTuple minElem() const;
+  IntTuple maxElem() const;
   MultiDimInter intersection(const MultiDimInter& other) const;
   MultiDimInter cartesianProduct(const MultiDimInter& other) const;
 
@@ -117,7 +117,7 @@ public:
   /**
    * @brief Sum a constant value to every element of the mdi.
    */
-  MultiDimInter offset(const MD_NAT& off) const;
+  MultiDimInter translate(const IntTuple& t) const;
 
   /**
    * @brief Operation that given two disjoint mdis returns the lesser one.

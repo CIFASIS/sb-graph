@@ -63,7 +63,7 @@ bool overlap(const MultiDimInter& mdi1, const MultiDimInter& mdi2)
 
 OrderedSet::OrderedSet() : _pieces() {}
 
-OrderedSet::OrderedSet(const MD_NAT& x) : _pieces()
+OrderedSet::OrderedSet(const IntTuple& x) : _pieces()
 {
   _pieces.push_back(MultiDimInter{x});
 }
@@ -92,13 +92,12 @@ OrderedSet::OrderedSet(const FixedPointsInfo& info) : _pieces()
 {
   if (info) {
     std::vector<Solution> solutions = info.value();
-    Interval universe_one_dim{0, 1, Inf};
     MultiDimInter result_mdi;
     for (const Solution& jth_solution : solutions) {
       if (jth_solution.kind() == SolutionKind::kFixed) {
         result_mdi.pushBack(jth_solution.value().value());
       } else if (jth_solution.kind() == SolutionKind::kFree) {
-        result_mdi.pushBack(universe_one_dim);
+        result_mdi.pushBack(kOneDimUniverse);
       }
     }
     pushBack(result_mdi);
@@ -133,7 +132,7 @@ void OrderedSet::pushBack(const MultiDimInter& mdi)
   _pieces.insert(it.base(), mdi);
 }
 
-NAT OrderedSet::advanceHint(NAT hint, const MultiDimInter& mdi)
+Int OrderedSet::advanceHint(Int hint, const MultiDimInter& mdi)
 {
   auto it = _pieces.begin();
   auto end = _pieces.end();
@@ -148,7 +147,7 @@ NAT OrderedSet::advanceHint(NAT hint, const MultiDimInter& mdi)
   return hint;
 }
 
-void OrderedSet::insertHint(const NAT hint, const MultiDimInter& mdi)
+void OrderedSet::insertHint(const Int hint, const MultiDimInter& mdi)
 {
   if (mdi.isEmpty()) {
     return;
@@ -231,14 +230,14 @@ unsigned int OrderedSet::cardinal() const
 
 bool OrderedSet::isEmpty() const { return _pieces.empty(); }
 
-MD_NAT OrderedSet::minElem() const
+IntTuple OrderedSet::minElem() const
 {
   return _pieces.begin()->minElem();
 }
 
-MD_NAT OrderedSet::maxElem() const
+IntTuple OrderedSet::maxElem() const
 {
-  MD_NAT result = _pieces.begin()->maxElem();
+  IntTuple result = _pieces.begin()->maxElem();
 
   for (const MultiDimInter& mdi : _pieces) {
     result = std::max(result, mdi.maxElem());
@@ -267,11 +266,11 @@ OrderedSet OrderedSet::intersectionEpilogue(const OrderedSet& lhs
     indexes.push_front(i);
   }
 
-  NAT global_position = 0;
+  Int global_position = 0;
   auto short_begin = short_set.begin();
   for (const MultiDimInter& long_elem : long_set) {
-    const MD_NAT long_min = long_elem.minElem();
-    const MD_NAT long_max = long_elem.maxElem();
+    const IntTuple long_min = long_elem.minElem();
+    const IntTuple long_max = long_elem.maxElem();
 
     auto prev_index = indexes.before_begin();
     auto curr_index = indexes.begin();
@@ -380,27 +379,26 @@ OrderedSet OrderedSet::complementAtom() const
   }
   MultiDimInter during_mdi = dense_mdi;
 
-  Interval universe_one_dim{0, 1, Inf};
-  MultiDimInter univ{mdi.arity(), universe_one_dim};
+  MultiDimInter univ{mdi.arity(), kOneDimUniverse};
 
   std::size_t dim = 0;
   std::size_t global_position = 0;
   for (const Interval& i : mdi) {
     std::size_t local_pos = global_position; 
     // Before interval
-    if (i.begin() != 0) {
+    if (i.begin() != kNegInf) {
       Interval i_res{0, 1, i.begin() - 1};
       if (!i_res.isEmpty()) {
         univ[dim] = i_res;
         result.insert(result.begin() + local_pos, univ);
         ++local_pos;
         ++global_position;
-        univ[dim] = universe_one_dim;
+        univ[dim] = kOneDimUniverse;
       }
     }
 
     // "During" interval
-    if (i.begin() < Inf && i.step() > 1) {
+    if (i.begin() < kPosInf && i.step() > 1) {
       for (unsigned int j = 0; j < i.step() - 1; ++j) {
         Interval i_res{i.begin() + j + 1, i.step(), i.end()};
         if (!i_res.isEmpty()) {
@@ -412,13 +410,13 @@ OrderedSet OrderedSet::complementAtom() const
     }
 
     // After interval
-    if (i.end() < Inf) {
-      Interval i_res{i.end() + 1, 1, Inf};
+    if (i.end() < kPosInf) {
+      Interval i_res{i.end() + 1, 1, kPosInf};
       if (!i_res.isEmpty()) {
         univ[dim] = i_res;
         result.insert(result.begin() + local_pos, univ);
         ++local_pos;
-        univ[dim] = universe_one_dim;
+        univ[dim] = kOneDimUniverse;
       }
     }
     univ[dim] = dense_mdi[dim];
@@ -453,7 +451,7 @@ void OrderedSet::intersectionComplement(const OrderedSet&
   result._pieces.insert(result.end(), std::make_move_iterator(_pieces.begin())
     , std::make_move_iterator(it));
 
-  NAT global_position = 0;
+  Int global_position = 0;
   for (; it != _pieces.end(); ++it) {
     const MultiDimInter& elem = *it;
     global_position = result.advanceHint(global_position, elem);
@@ -600,12 +598,12 @@ OrderedSet OrderedSet::disjointCup(OrderedSet&& other) &&
   return OrderedSet{std::move(result)};
 }
 
-OrderedSet OrderedSet::offset(const MD_NAT& off) const
+OrderedSet OrderedSet::translate(const IntTuple& t) const
 {
   OrderedSet result;
 
   for (const MultiDimInter& mdi : _pieces) {
-    result.pushBack(mdi.offset(off));
+    result.pushBack(mdi.translate(t));
   }
 
   return result;
@@ -613,16 +611,16 @@ OrderedSet OrderedSet::offset(const MD_NAT& off) const
 
 Perimeter OrderedSet::perimeter() const
 {
-  MD_NAT min;
-  MD_NAT max;
+  IntTuple min;
+  IntTuple max;
 
   if (!isEmpty()) {
     std::size_t arity = this->arity();
-    min = MD_NAT{arity, Inf};
-    max = MD_NAT{arity, 0};
+    min = IntTuple{arity, kPosInf};
+    max = IntTuple{arity, kNegInf};
     for (const MultiDimInter& mdi : _pieces) {
-      MD_NAT candidate_min = mdi.minElem();
-      MD_NAT candidate_max = mdi.maxElem();
+      IntTuple candidate_min = mdi.minElem();
+      IntTuple candidate_max = mdi.maxElem();
       for (size_t i = 0; i < arity; ++i) {
         min[i] = std::min(min[i], candidate_min[i]);
         max[i] = std::max(max[i], candidate_max[i]);

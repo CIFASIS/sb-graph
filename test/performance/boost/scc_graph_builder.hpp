@@ -28,7 +28,7 @@
 #ifndef SBGRAPH_TEST_PERFORMANCE_BOOST_SCC_GRAPH_BUILDER_HPP_
 #define SBGRAPH_TEST_PERFORMANCE_BOOST_SCC_GRAPH_BUILDER_HPP_
 
-#include "sbg/natural.hpp"
+#include "sbg/integer.hpp"
 #include "test/performance/boost/scalar_graph.hpp"
 
 #include <unordered_map>
@@ -65,8 +65,8 @@ public:
   SCCGraphBuilder(BipartiteGraph&& g, VertexVector&& matching);
 
   DirectedGraph build();
-  DirectedGraph build(SBG::LIB::NAT number_vertices, EdgeVector& edges);
-  SBG::LIB::NAT translateVertices();
+  DirectedGraph build(SBG::LIB::Int number_vertices, EdgeVector& edges);
+  SBG::LIB::Int translateVertices();
   EdgeVector getEdgeList();
 
 private:

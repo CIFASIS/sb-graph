@@ -41,7 +41,7 @@ class LinearExprEvaluator
 public:
   LinearExprEvaluator(VarEnv &venv);
 
-  LIB::detail::LinearExpr operator()(AST::Natural v) const;
+  LIB::detail::LinearExpr operator()(AST::Integer v) const;
   LIB::detail::LinearExpr operator()(AST::Rational v) const;
   LIB::detail::LinearExpr operator()(AST::Name v) const;
   LIB::detail::LinearExpr operator()(AST::UnaryOp v) const;

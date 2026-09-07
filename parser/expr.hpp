@@ -28,6 +28,7 @@
 
 #include "ast/expr.hpp"
 #include "parser/skipper.hpp"
+#include "sbg/integer.hpp"
 
 namespace SBG {
 
@@ -51,7 +52,7 @@ public:
     , SEMI, V, VMAP, MAP1, MAP2, EMAP, MAPB, MAPD, X, Y;
 
   // Other rules
-  qi::rule<Iterator, Skipper<Iterator>, LIB::NAT()> nat;
+  qi::rule<Iterator, Skipper<Iterator>, LIB::Int> integer;
   qi::rule<Iterator, Skipper<Iterator>, AST::Rational> rational_legacy;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> primary;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> factor;

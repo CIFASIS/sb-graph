@@ -35,16 +35,16 @@ SetImpl SetAccessKey::impl(Set s) const { return s._impl; }
 Set SetAccessKey::createSet(SetImpl s_impl) const { return Set{s_impl}; }
 
 template<typename SetImplT>
-std::vector<MD_NAT> SetAccessKey::flatten(const SetImplT& s) const
+std::vector<IntTuple> SetAccessKey::flatten(const SetImplT& s) const
 {
-  std::vector<MD_NAT> result;
+  std::vector<IntTuple> result;
   auto pieces = s._pieces;
   result.reserve(pieces.size());
 
   std::size_t arity = s.arity();
   for (const MultiDimInter& mdi : pieces) {
-    MD_NAT min_elem = mdi.minElem();
-    MD_NAT x = min_elem;
+    IntTuple min_elem = mdi.minElem();
+    IntTuple x = min_elem;
     unsigned int mdi_sz = mdi.cardinal();
     unsigned int div = mdi_sz; 
     for (unsigned int j = 0; j < mdi_sz; ++j) {
@@ -61,12 +61,12 @@ std::vector<MD_NAT> SetAccessKey::flatten(const SetImplT& s) const
   return result;
 }
 
-std::vector<MD_NAT> SetAccessKey::flatten(const OrdUnidimDenseSet& s) const
+std::vector<IntTuple> SetAccessKey::flatten(const OrdUnidimDenseSet& s) const
 {
-  std::vector<MD_NAT> result;
+  std::vector<IntTuple> result;
 
   for (const Interval& i : s._pieces) {
-    for (NAT j = i.begin(); j <= i.end(); j += i.step()) {
+    for (Int j = i.begin(); j <= i.end(); j += i.step()) {
       result.emplace_back(j);
     }
   }
@@ -74,7 +74,7 @@ std::vector<MD_NAT> SetAccessKey::flatten(const OrdUnidimDenseSet& s) const
   return result;
 }
 
-std::vector<MD_NAT> SetAccessKey::flatten(const Set& s) const
+std::vector<IntTuple> SetAccessKey::flatten(const Set& s) const
 {
   auto flatten_evaluator = Util::Overload {
     [&](const UnorderedSet& a)
@@ -89,7 +89,7 @@ std::vector<MD_NAT> SetAccessKey::flatten(const Set& s) const
     {
       return flatten<OrderedSet>(a);
     },
-    [&](const auto& a) { return std::vector<NAT>{}; }
+    [&](const auto& a) { return std::vector<Int>{}; }
   };
   return std::visit(flatten_evaluator, s._impl);
 }

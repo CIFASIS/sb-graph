@@ -31,9 +31,9 @@ namespace detail {
 
 MultiDimInter::MultiDimInter() : _intervals() {}
 
-MultiDimInter::MultiDimInter(const MD_NAT& x) : _intervals()
+MultiDimInter::MultiDimInter(const IntTuple& x) : _intervals()
 {
-  for (const NAT xi : x) {
+  for (const Int xi : x) {
     _intervals.emplace_back(Interval{xi, 1, xi});
   }
 }
@@ -143,9 +143,9 @@ unsigned int MultiDimInter::cardinal() const
 
 bool MultiDimInter::isEmpty() const { return _intervals.empty(); }
 
-MD_NAT MultiDimInter::minElem() const
+IntTuple MultiDimInter::minElem() const
 {
-  MD_NAT result;
+  IntTuple result;
 
   for (const Interval& i : _intervals) {
     result.pushBack(i.begin());
@@ -154,9 +154,9 @@ MD_NAT MultiDimInter::minElem() const
   return result;
 }
 
-MD_NAT MultiDimInter::maxElem() const
+IntTuple MultiDimInter::maxElem() const
 {
-  MD_NAT result;
+  IntTuple result;
 
   for (const Interval& i : _intervals) {
     result.pushBack(i.end());
@@ -200,12 +200,12 @@ MultiDimInter MultiDimInter::cartesianProduct(const MultiDimInter& other) const
 
 std::size_t MultiDimInter::arity() const { return _intervals.size(); }
 
-MultiDimInter MultiDimInter::offset(const MD_NAT& off) const
+MultiDimInter MultiDimInter::translate(const IntTuple& t) const
 {
   MultiDimInter result;
 
   for (unsigned int j = 0; j < arity(); ++j) {
-    result.pushBack(operator[](j).offset(off[j]));
+    result.pushBack(operator[](j).translate(t[j]));
   }
 
   return result;

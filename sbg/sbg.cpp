@@ -17,8 +17,8 @@
 
  ******************************************************************************/
 
-#include "sbg/natural.hpp"
 #include "sbg/sbg.hpp"
+#include "sbg/integer.hpp"
 #include "util/debug.hpp"
 
 #include <iostream>
@@ -66,9 +66,9 @@ void SBG::addSetVertex(const Set& vertices)
   } else if (!vertices.isEmpty()) {
     Set set_vertices = _Vmap.image();
     std::size_t arity = vertices.arity();
-    MD_NAT max = set_vertices.isEmpty() ? MD_NAT{arity, 0}
+    IntTuple max = set_vertices.isEmpty() ? IntTuple{arity, 0}
       : set_vertices.maxElem();
-    _Vmap.emplace(vertices, max + MD_NAT{arity, 1});
+    _Vmap.emplace(vertices, max + IntTuple{arity, 1});
     _V = std::move(_V).cup(std::move(vertices));
   }
 }
@@ -85,10 +85,11 @@ void SBG::addSetEdge(const PWMap& pw1, const PWMap& pw2)
     if (!edges.isEmpty()) {
       Set set_edges = _Emap.image();
       std::size_t arity = edges.arity();
-      MD_NAT max = set_edges.isEmpty() ? MD_NAT{arity, 0} : set_edges.maxElem();
+      IntTuple max = set_edges.isEmpty() ? IntTuple{arity, 0}
+        : set_edges.maxElem();
       _map1 = std::move(_map1).concatenation(pw1);
       _map2 = std::move(_map2).concatenation(pw2);
-      _Emap.emplace(edges, max + MD_NAT{arity, 1});
+      _Emap.emplace(edges, max + IntTuple{arity, 1});
       _E = std::move(_E).cup(std::move(edges));
     }
   } else {

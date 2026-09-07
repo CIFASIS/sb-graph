@@ -21,16 +21,16 @@
 
  ******************************************************************************/
 
-#ifndef PARSER_EXPR_AST_HPP
-#define PARSER_EXPR_AST_HPP
+#ifndef SBGRAPH_AST_EXPR_HPP_
+#define SBGRAPH_AST_EXPR_HPP_
+
+#include "sbg/integer.hpp"
+#include "util/defs.hpp"
+
+#include <boost/variant/recursive_wrapper.hpp>
+#include <boost/variant/variant.hpp>
 
 #include <iosfwd>
-
-#include <boost/variant/variant.hpp>
-#include <boost/variant/recursive_wrapper.hpp>
-
-#include "sbg/natural.hpp"
-#include "util/defs.hpp"
 
 namespace SBG {
 
@@ -39,7 +39,7 @@ namespace AST {
 // Arithmetic and call structures ----------------------------------------------
 
 using Name = std::string;
-using Natural = LIB::NAT;
+using Integer = LIB::Int;
 struct Rational;
 struct UnaryOp;
 struct BinOp;
@@ -56,7 +56,7 @@ class BipartiteSBG;
 struct DSBG;
 struct ParenExpr;
 
-using Expr = boost::variant<Natural, Name,
+using Expr = boost::variant<Integer, Name,
   boost::recursive_wrapper<Rational>,
   boost::recursive_wrapper<UnaryOp>, 
   boost::recursive_wrapper<BinOp>, 
@@ -303,4 +303,4 @@ std::ostream &operator<<(std::ostream &out, const ParenExpr &pe);
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_AST_EXPR_HPP_

@@ -26,10 +26,10 @@
 #include "eval/base_type.hpp"
 #include "sbg/bipartite_sbg.hpp"
 #include "sbg/expression.hpp"
+#include "sbg/integer.hpp"
 #include "sbg/interval.hpp"
 #include "sbg/map.hpp"
 #include "sbg/multidim_inter.hpp"
-#include "sbg/natural.hpp"
 #include "sbg/rational.hpp"
 #include "sbg/set.hpp"
 #include "sbg/pw_map.hpp"
@@ -52,16 +52,13 @@ ExprBaseType BuiltInOperators::oppositeEvaluator(const EBTList& args)
     , "oppositeEvaluator: wrong number of arguments\n");
 
   auto opposite_evaluator = Util::Overload {
-    [](LIB::NAT a)
-    {
-      return ExprBaseType{LIB::RATIONAL{static_cast<LIB::INT>(a), -1}};
-    },
-    [](LIB::RATIONAL a) { return ExprBaseType{LIB::RATIONAL{-1}*a}; },
+    [](LIB::Int a) { return ExprBaseType{-a}; },
+    [](LIB::Rational a) { return ExprBaseType{LIB::Rational{-1}*a}; },
     [](LIB::Set a) { return ExprBaseType{a.complement()}; },
     [](auto a) { 
       Util::ERROR("oppositeEvaluator: wrong type argument ", a
         , " for - (opposite)\n");
-      return ExprBaseType{LIB::RATIONAL{0}};
+      return ExprBaseType{LIB::Rational{0}};
     }
   };
   return std::visit(opposite_evaluator, args[0]);
@@ -73,10 +70,10 @@ ExprBaseType BuiltInOperators::cardinalEvaluator(const EBTList& args)
     , "cardinalEvaluator: wrong number of arguments\n");
 
   const auto cardinal_evaluator = Util::Overload {
-    [](LIB::Set a) { return (LIB::NAT) a.cardinal(); },
+    [](LIB::Set a) { return (LIB::Int) a.cardinal(); },
     [](auto a) { 
       Util::ERROR("cardinalEvaluator: wrong argument ", a, " for #\n");
-      return (LIB::NAT) 0;
+      return (LIB::Int) 0;
     }
   };
   return std::visit(cardinal_evaluator, args[0]);
@@ -104,14 +101,14 @@ ExprBaseType BuiltInOperators::addEvaluator(const EBTList& args)
     , "addEvaluator: wrong number of arguments\n");
 
   const auto add_evaluator = Util::Overload {
-    [](LIB::NAT a, LIB::NAT b) { return ExprBaseType{a + b}; },
-    [](LIB::MD_NAT a, LIB::MD_NAT b) { return ExprBaseType{a + b}; },
-    [](LIB::RATIONAL a, LIB::RATIONAL b) { return ExprBaseType{a + b}; },
-    [](LIB::NAT a, LIB::RATIONAL b) {
-      return ExprBaseType{LIB::RATIONAL{static_cast<LIB::INT>(a)} + b};
+    [](LIB::Int a, LIB::Int b) { return ExprBaseType{a + b}; },
+    [](LIB::IntTuple a, LIB::IntTuple b) { return ExprBaseType{a + b}; },
+    [](LIB::Rational a, LIB::Rational b) { return ExprBaseType{a + b}; },
+    [](LIB::Int a, LIB::Rational b) {
+      return ExprBaseType{LIB::Rational{a} + b};
     },
-    [](LIB::RATIONAL a, LIB::NAT b) {
-      return ExprBaseType{a + LIB::RATIONAL{static_cast<LIB::INT>(b)}};
+    [](LIB::Rational a, LIB::Int b) {
+      return ExprBaseType{a + LIB::Rational{b}};
     },
     [](LIB::Expression a, LIB::Expression b) { return ExprBaseType{a + b}; },
     [](LIB::Map a, LIB::Map b) { return ExprBaseType{a + b}; },
@@ -131,20 +128,13 @@ ExprBaseType BuiltInOperators::subEvaluator(const EBTList& args)
     , "subEvaluator: wrong number of arguments\n");
   
   const auto sub_evaluator = Util::Overload {
-    [](LIB::NAT a, LIB::NAT b) {
-      if (a > b) {
-        return ExprBaseType{LIB::NAT{a - b}};
-      } else {
-        return ExprBaseType{LIB::RATIONAL{static_cast<LIB::INT>(a)}
-          - LIB::RATIONAL{static_cast<LIB::INT>(b)}};
-      }
+    [](LIB::Int a, LIB::Int b) { return ExprBaseType{a - b}; },
+    [](LIB::Rational a, LIB::Rational b) { return ExprBaseType{a - b}; },
+    [](LIB::Int a, LIB::Rational b) {
+      return ExprBaseType{LIB::Rational{a} - b};
     },
-    [](LIB::RATIONAL a, LIB::RATIONAL b) { return ExprBaseType{a - b}; },
-    [](LIB::NAT a, LIB::RATIONAL b) {
-      return ExprBaseType{LIB::RATIONAL{static_cast<LIB::INT>(a)} - b};
-    },
-    [](LIB::RATIONAL a, LIB::NAT b) {
-      return ExprBaseType{a - LIB::RATIONAL{static_cast<LIB::INT>(b)}};
+    [](LIB::Rational a, LIB::Int b) {
+      return ExprBaseType{a - LIB::Rational{b}};
     },
     [](LIB::Expression a, LIB::Expression b) { return ExprBaseType{a - b}; },
     [](auto a, auto b) { 
@@ -162,18 +152,14 @@ ExprBaseType BuiltInOperators::multEvaluator(const EBTList& args)
     , "multEvaluator: wrong number of arguments\n");
 
   const auto mult_evaluator = Util::Overload {
-    [](LIB::NAT a, LIB::NAT b)
+    [](LIB::Int a, LIB::Int b) { return ExprBaseType{a*b}; },
+    [](LIB::Int a, LIB::Rational b)
     {
-      return ExprBaseType{LIB::RATIONAL{static_cast<LIB::INT>(a*b)}};
+      return ExprBaseType{LIB::Rational{a}*b};
     },
-    [](LIB::RATIONAL a, LIB::RATIONAL b) { return ExprBaseType{a*b}; },
-    [](LIB::NAT a, LIB::RATIONAL b)
+    [](LIB::Rational a, LIB::Int b)
     {
-      return ExprBaseType{LIB::RATIONAL{static_cast<LIB::INT>(a)}*b};
-    },
-    [](LIB::RATIONAL a, LIB::NAT b)
-    {
-      return ExprBaseType{a*LIB::RATIONAL{static_cast<LIB::INT>(b)}};
+      return ExprBaseType{a*LIB::Rational{b}};
     },
     [](auto a, auto b) { 
       Util::ERROR("multEvaluator: wrong arguments ", a, ", ", b
@@ -190,8 +176,8 @@ ExprBaseType BuiltInOperators::eqEvaluator(const EBTList& args)
     , "eqEvaluator: wrong number of arguments\n");
 
   const auto eq_evaluator = Util::Overload {
-    [](LIB::MD_NAT a, LIB::MD_NAT b) { return a == b; },
-    [](LIB::RATIONAL a, LIB::RATIONAL b) { return a == b; },
+    [](LIB::IntTuple a, LIB::IntTuple b) { return a == b; },
+    [](LIB::Rational a, LIB::Rational b) { return a == b; },
     [](LIB::Set a, LIB::Set b) { return a == b; },
     [](LIB::Expression a, LIB::Expression b) { return a == b; },
     [](LIB::Map a, LIB::Map b) { return a == b; },
@@ -211,8 +197,8 @@ ExprBaseType BuiltInOperators::lessEvaluator(const EBTList& args)
     , "lessEvaluator: wrong number of arguments\n");
 
   const auto less_evaluator = Util::Overload {
-    [](LIB::MD_NAT a, LIB::MD_NAT b) { return a < b; },
-    [](LIB::RATIONAL a, LIB::RATIONAL b) { return a < b; },
+    [](LIB::IntTuple a, LIB::IntTuple b) { return a < b; },
+    [](LIB::Rational a, LIB::Rational b) { return a < b; },
     [](auto a, auto b) { 
       Util::ERROR("lessEvaluator: wrong arguments ", a, ", ", b
         , " for operator<\n"); 
@@ -382,7 +368,7 @@ ExprBaseType BuiltInFunctions::minEvaluator(const EBTList& args)
     [](LIB::Set a) { return a.minElem(); },
     [](auto a) { 
       Util::ERROR("minEvaluator: wrong argument ", a, " for minElem\n"); 
-      return LIB::MD_NAT{};
+      return LIB::IntTuple{};
     }
   };
   return std::visit(min_evaluator, args[0]);
@@ -397,7 +383,7 @@ ExprBaseType BuiltInFunctions::maxEvaluator(const EBTList& args)
     [](LIB::Set a) { return a.maxElem(); },
     [](auto a) { 
       Util::ERROR("maxEvaluator: wrong argument ", a, " for maxElem\n"); 
-      return LIB::MD_NAT{}; 
+      return LIB::IntTuple{}; 
     }
   };
   return std::visit(max_evaluator, args[0]);
@@ -622,10 +608,10 @@ ExprBaseType BuiltInFunctions::matchingEvaluator(const EBTList& args)
 
   LIB::Matching match_impl;
   const auto matching_evaluator = Util::Overload {
-    [&match_impl](LIB::BipartiteSBG a, LIB::NAT b) { 
+    [&match_impl](LIB::BipartiteSBG a, LIB::Int b) { 
       return ExprBaseType{match_impl.calculate(copy(b, a))};
     },
-    [&match_impl](LIB::BipartiteSBG a, LIB::MD_NAT b) { 
+    [&match_impl](LIB::BipartiteSBG a, LIB::IntTuple b) { 
       return ExprBaseType{match_impl.calculate(copy(b[0], a))};
     },
     [](auto a, auto b) {

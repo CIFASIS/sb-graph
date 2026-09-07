@@ -32,14 +32,14 @@ ProgramEvaluator::ProgramEvaluator() {}
 
 ProgramIO ProgramEvaluator::evaluate(AST::SBGProgram p) const 
 { 
-  LIB::NAT dims = 1;
+  std::size_t arity = 1;
 
   EvalContext eval_context;
   AST::IsConfig cfg_visit;
   if (!p.stms().empty()) {
     AST::Statement first = p.stms()[0];
     if (boost::apply_visitor(cfg_visit, first)) {
-      eval_context.setArity(boost::get<AST::ConfigDims>(first).nmbr_dims());
+      eval_context.setArity(boost::get<AST::ConfigDims>(first).arity());
     }
   }
 
@@ -59,7 +59,7 @@ ProgramIO ProgramEvaluator::evaluate(AST::SBGProgram p) const
     exprs.emplace_back(e, expr_res);
   }
 
-  return ProgramIO{dims, stms, exprs};
+  return ProgramIO{arity, stms, exprs};
 }
 
 } // namespace detail

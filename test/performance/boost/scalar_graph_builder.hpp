@@ -29,7 +29,7 @@
 #define SBGRAPH_TEST_PERFORMANCE_BOOST_SCALAR_GRAPH_BUILDER_HPP_
 
 #include "sbg/bipartite_sbg.hpp"
-#include "sbg/natural.hpp"
+#include "sbg/integer.hpp"
 #include "test/performance/boost/scalar_graph.hpp"
 #include "util/logger.hpp"
 
@@ -47,14 +47,14 @@ public:
   ScalarGraphBuilder(SBG::LIB::BipartiteSBG bsbg);
 
   BipartiteGraph build();
-  BipartiteGraph build(SBG::LIB::NAT number_vertices, EdgeVector& edges
+  BipartiteGraph build(SBG::LIB::Int number_vertices, EdgeVector& edges
     , std::vector<int>&& partition);
   void translateVertices();
   EdgeVector getEdgeList();
 
 private:
   const SBG::LIB::BipartiteSBG _bsbg; ///< Input bipartite SBG to convert
-  std::map<SBG::LIB::MD_NAT, Vertex> _vertex_map;
+  std::map<SBG::LIB::IntTuple, Vertex> _vertex_map;
     ///< Map from SBG vertex identifier to Graph element
   std::vector<int> _partition;
 };

@@ -44,7 +44,7 @@ StmResult StmEvaluator::operator()(AST::Assign assgn) const
 
 StmResult StmEvaluator::operator()(AST::ConfigDims cfg) const
 {
-  return StmResult("", cfg.nmbr_dims());
+  return StmResult("", static_cast<LIB::Int>(cfg.arity()));
 }
 
 } // namespace detail

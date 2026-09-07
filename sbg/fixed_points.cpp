@@ -25,12 +25,12 @@ namespace LIB {
 
 Solution::Solution(const SolutionKind kind) : _kind(kind), _value() {}
 
-Solution::Solution(const SolutionKind kind, const NAT value)
+Solution::Solution(const SolutionKind kind, const Int value)
   : _kind(kind), _value(value) {}
 
 const SolutionKind& Solution::kind() const { return _kind; }
 
-const std::optional<NAT>& Solution::value() const { return _value; }
+const std::optional<Int>& Solution::value() const { return _value; }
 
 } // namespace LIB
 

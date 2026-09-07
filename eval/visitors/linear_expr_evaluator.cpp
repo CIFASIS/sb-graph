@@ -30,17 +30,17 @@ namespace detail {
 
 LinearExprEvaluator::LinearExprEvaluator(VarEnv &venv) : _venv(venv) {}
 
-LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::Natural v) const
+LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::Integer v) const
 {
-  return LIB::detail::LinearExpr{0, LIB::RATIONAL{static_cast<LIB::INT>(v)}}; 
+  return LIB::detail::LinearExpr{0, LIB::Rational{v}}; 
 }
 
 LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::Rational v) const
 {
   IntEvaluator visit_int{_venv};
-  LIB::INT p = boost::apply_visitor(visit_int, v.num());
-  LIB::INT q = boost::apply_visitor(visit_int, v.den());
-  return LIB::detail::LinearExpr{0, LIB::RATIONAL{p, q}};
+  LIB::Int p = boost::apply_visitor(visit_int, v.num());
+  LIB::Int q = boost::apply_visitor(visit_int, v.den());
+  return LIB::detail::LinearExpr{0, LIB::Rational{p, q}};
 }
 
 LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::Name v) const
@@ -49,7 +49,7 @@ LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::Name v) const
     return LIB::detail::LinearExpr{1, 0};
   }
 
-  LIB::RATIONAL off = boost::apply_visitor(RationalEvaluator{_venv}
+  LIB::Rational off = boost::apply_visitor(RationalEvaluator{_venv}
     , AST::Expr{v});
   return LIB::detail::LinearExpr{0, off};
 }

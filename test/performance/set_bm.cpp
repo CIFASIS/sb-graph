@@ -19,7 +19,6 @@
 
 #include "sbg/interval.hpp"
 #include "sbg/multidim_inter.hpp"
-#include "sbg/natural.hpp"
 #include "sbg/set.hpp"
 #include "test/performance/utils.hpp"
 
@@ -34,7 +33,6 @@ namespace perf {
 
 namespace detail {
 
-using SBG::LIB::NAT;
 using SBG::LIB::detail::Interval;
 using SBG::LIB::Set;
 

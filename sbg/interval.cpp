@@ -18,6 +18,7 @@
  ******************************************************************************/
 
 #include "sbg/interval.hpp"
+#include "util/debug.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -31,28 +32,29 @@ namespace detail {
 
 // Auxiliary functions ---------------------------------------------------------
 
-bool isMember(const SBG::LIB::NAT x, const SBG::LIB::detail::Interval& i)
+bool isMember(const SBG::LIB::Int x, const SBG::LIB::detail::Interval& i)
 {
   if (x < i.begin() || x > i.end()) {
     return false;
   }
 
-  int rem = fmod(x - i.begin(), i.step());
-  return rem == 0;
+  return ((x - i.begin()) % i.step()) == 0;
 }
 
 // Constructors/Destructors ----------------------------------------------------
 
 Interval::Interval() : _begin(1), _step(1), _end(0) {}
 
-Interval::Interval(const NAT x) : _begin(x), _step(1), _end(x) {}
+Interval::Interval(const Int x) : _begin(x), _step(1), _end(x) {}
 
-Interval::Interval(const NAT begin, const NAT step, const NAT end) 
+Interval::Interval(const Int begin, const Int step, const Int end) 
   : _begin(begin), _step(step), _end(end) 
 {
+  Util::ERROR_UNLESS(step >= 0
+    , "Interval::Interval: step must be non-negative\n");
+
   if (end >= begin) {
-    int rem = fmod(end - begin, step);
-    _end = end - rem;
+    _end = end - ((end - begin) % step);
     _step = _begin == _end ? 1 : _step;
   } else {
     _begin = 1;
@@ -63,17 +65,17 @@ Interval::Interval(const NAT begin, const NAT step, const NAT end)
 
 // Getters ---------------------------------------------------------------------
 
-const NAT& Interval::begin() const
+const Int& Interval::begin() const
 {
   return _begin;
 }
 
-const NAT& Interval::step() const
+const Int& Interval::step() const
 {
   return _step;
 }
 
-const NAT& Interval::end() const
+const Int& Interval::end() const
 {
   return _end;
 }
@@ -123,14 +125,14 @@ std::ostream& operator<<(std::ostream& out, const Interval& i)
 
 unsigned int Interval::cardinal() const
 {
-  return (_end - _begin) / _step + 1;
+  return std::abs(_end - _begin) / _step + 1;
 }
 
 bool Interval::isEmpty() const { return _end < _begin; }
 
-NAT Interval::minElem() const { return _begin; }
+Int Interval::minElem() const { return _begin; }
 
-NAT Interval::maxElem() const { return _end; }
+Int Interval::maxElem() const { return _end; }
 
 Interval Interval::intersection(const Interval& other) const
 {
@@ -142,18 +144,18 @@ Interval Interval::intersection(const Interval& other) const
     return Interval{};
   }
 
-  // Two non overlapping intervals with the same step
+  // Two non overlapping intervals with the same step.
   if (_step == other._step && !isMember(_begin, other)
     && !isMember(other._begin, *this)) {
     return Interval{};
   }
 
-  NAT max_begin = std::max(_begin, other._begin);
-  NAT new_step = std::lcm(_step, other._step);
-  NAT new_begin = max_begin;
-  NAT new_end = std::min(_end, other._end);
+  Int max_begin = std::max(_begin, other._begin);
+  Int new_step = std::lcm(_step, other._step);
+  Int new_begin = max_begin;
+  Int new_end = std::min(_end, other._end);
   bool found_member = false;
-  for (NAT x = max_begin; x < max_begin + new_step; ++x) {
+  for (Int x = max_begin; x < max_begin + new_step; ++x) {
     if (isMember(x, *this) && isMember(x, other)) {
       new_begin = x;
       found_member = true;
@@ -167,11 +169,11 @@ Interval Interval::intersection(const Interval& other) const
   return Interval{};
 }
 
-// Extra operations ------------------------------------------------------------
+// Member functions ------------------------------------------------------------
 
-Interval Interval::offset(const NAT off) const
+Interval Interval::translate(const Int t) const
 {
-  return Interval{_begin + off, _step, _end + off};
+  return Interval{_begin + t, _step, _end + t};
 }
 
 Perimeter Interval::perimeter() const { return Perimeter(_begin, _end); }
@@ -198,11 +200,11 @@ rapidjson::Value toJSON(Interval i, rapidjson::Document::AllocatorType& alloc)
 {
   rapidjson::Value result{rapidjson::kArrayType};
 
-  rapidjson::Value begin{static_cast<uint64_t>(i.begin())};
+  rapidjson::Value begin{static_cast<int64_t>(i.begin())};
   result.PushBack(begin, alloc);
-  rapidjson::Value step{static_cast<uint64_t>(i.step())};
+  rapidjson::Value step{static_cast<int64_t>(i.step())};
   result.PushBack(step, alloc);
-  rapidjson::Value end{static_cast<uint64_t>(i.end())};
+  rapidjson::Value end{static_cast<int64_t>(i.end())};
   result.PushBack(end, alloc);
 
   return result;

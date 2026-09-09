@@ -45,7 +45,7 @@ SmallestSVMFVS::SmallestSVMFVS() {}
 Set getVerticesFromSmallestSV(const PWMap& Vmap)
 {
   Set Vmap_image = Vmap.image();
-  std::size_t min_sz = std::numeric_limits<std::size_t>::min();
+  std::size_t min_sz = std::numeric_limits<std::size_t>::max();
   Set remaining = Vmap_image;
   while (!remaining.isEmpty()) {
     Set jth_sv{remaining.minElem()};

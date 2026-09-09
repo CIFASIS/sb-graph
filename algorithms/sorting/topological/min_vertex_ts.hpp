@@ -55,7 +55,7 @@ public:
   PWMap calculate(const DirectedSBG& dsbg, const PWMap& pmap);
 
 private:
-  IntTuple getVertex();
+  IntTuple getVertex(Set old_Vj);
 
   /**
    * @brief Identifies the "path" that leads to the repetition in _smap and
@@ -70,7 +70,6 @@ private:
   PWMap repetition(const Set& init_V, const DirectedSBG& dsbg);
 
   DirectedSBG _dsbg;
-  Set _start;
   PWMap _smap;
   Set _priority;
   Set _independent;

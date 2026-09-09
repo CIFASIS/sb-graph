@@ -64,39 +64,17 @@ std::tuple<Set, PWMap> MinVertexTS::detectRepetition(Set Vj
     // Take out vertices that are mapped to a value that doesn't belong to any
     // vertex.
     smap_plus = smap_plus.restrict(smap_plus.preImage(dsbg.V()));
+
+    // Take out already sorted elements.
+    Set sorted = _smap.domain().cup(smap_plus.preImage(_smap.image()));
+    Set plus_domain = smap_plus.domain().difference(sorted);
+    smap_plus = smap_plus.restrict(plus_domain);
   } else {
     repetition_vertices = Set{};
     smap_plus = PWMap{};
   }
 
   return {repetition_vertices, smap_plus};
-}
-
-PWMap sortPartial(const PWMap& smap_plus, const Set& ordered, const DirectedSBG& dsbg)
-{
-  PWMap result;
-
-  Set plus_domain = smap_plus.domain();
-  Set plus_image = smap_plus.image();
-  Set starts = plus_domain.difference(plus_image);
-  if (starts.cardinal() > 1) {
-    Set ends = plus_image.difference(plus_domain);
-    PWMap rmap = smap_plus.combine(PWMap{ends}).mapInf();
-    PWMap ends_to_starts = rmap.restrict(starts).inverse();
-
-    Set V = starts;
-    PWMap Vmap = dsbg.Vmap().restrict(V);
-    MinVertexTS ts;
-    PWMap smap = ts.calculate(DirectedSBG{V, Vmap, PWMap{}, PWMap{}, PWMap{}}
-      , PWMap{});
-    Set not_ordered = ends_to_starts.domain().difference(ordered);
-    result = smap.composition(ends_to_starts.restrict(not_ordered));
-    result = smap_plus.combine(std::move(result));
-  } else {
-    result = smap_plus;
-  }
-
-  return result;
 }
 
 PWMap MinVertexTS::repetition(const Set& init_V, const DirectedSBG& dsbg)
@@ -108,12 +86,7 @@ PWMap MinVertexTS::repetition(const Set& init_V, const DirectedSBG& dsbg)
   if (smap_plus.isEmpty()) {
     return PWMap{};
   }
-
-  Set ordered = _smap.domain().cup(smap_plus.preImage(_smap.image()));
-  Set plus_domain = smap_plus.domain().difference(ordered);
-  smap_plus = smap_plus.restrict(plus_domain);
-  smap_plus = sortPartial(smap_plus, _smap.domain(), dsbg);
-  plus_domain = smap_plus.domain();
+  Set plus_domain = smap_plus.domain();
 
   // Get erased edges of the repetition, and erase edges that belong to the
   // same set-edge. 
@@ -137,7 +110,7 @@ PWMap MinVertexTS::repetition(const Set& init_V, const DirectedSBG& dsbg)
 
 // getVertex -------------------------------------------------------------------
 
-IntTuple MinVertexTS::getVertex()
+IntTuple MinVertexTS::getVertex(Set old_Vj)
 {
   Set V = _dsbg.V(); 
   PWMap mapD = _dsbg.mapD();
@@ -148,6 +121,7 @@ IntTuple MinVertexTS::getVertex()
   if (Vj.isEmpty()) {
     Util::ERROR("MinVertexTS::getVertex: the SBG is not acyclic\n");
   }
+  Vj = Vj.difference(old_Vj);
 
   // Independent vertices with priority treatment.
   Set independent_priority = Vj.intersection(_priority);
@@ -202,27 +176,22 @@ PWMap MinVertexTS::calculate(const DirectedSBG& dsbg
   Util::DEBUG_LOG << "Topological sort dsbg:\n" << dsbg << "\n\n";
 
   Set V = dsbg.V();
+  if (V.isEmpty()) {
+    return PWMap{};
+  }
   _dsbg = dsbg;
-
-  _smap = PWMap{};
   _priority = V;
 
-  if (V.isEmpty()) {
-    return _smap;
-  }
-
-  std::size_t arity = V.arity();
-  Expression successor_expr{arity, 1, 0};
   IntTuple vj;
   IntTuple old_vj = V.difference(_dsbg.mapD().image()).minElem();
-  _start = old_vj;
+  _smap = PWMap{Set{old_vj}};
+  _dsbg.eraseVertices(_smap.domain());
   do {
     // Find new vertex without dependencies, and add it to the sorting.
-    vj = getVertex();
+    vj = getVertex(Set{old_vj});
     Set vj_set{vj};
     Util::DEBUG_LOG << "vj_set: " << vj_set << "\n";
-    successor_expr = Expression{vj, old_vj};
-    _smap.emplace(vj_set, successor_expr);
+    _smap.emplace(vj_set, Expression{vj, old_vj});
 
     // Handle repetition.
     PWMap Vmap = _dsbg.Vmap();
@@ -245,7 +214,12 @@ PWMap MinVertexTS::calculate(const DirectedSBG& dsbg
     } 
 
     // Update values for new iteration.
-    _dsbg.eraseVertices(_smap.domain());
+    Set starts = _smap.domain().difference(_smap.image());
+    if (starts.cardinal() == 1) {
+      _dsbg.eraseVertices(_smap.domain());
+    } else {
+      _dsbg.eraseVertices(_smap.domain().intersection(_smap.image()));
+    }
     old_vj = vj;
     _priority = scc_map.preImage(scc_map.image(vj_set));
     _smap.compact();

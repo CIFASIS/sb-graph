@@ -36,28 +36,28 @@ namespace Eval {
 
 namespace detail {
 
-class IntEvaluator : public boost::static_visitor<LIB::INT> {
+class IntEvaluator : public boost::static_visitor<LIB::Int> {
 public:
   IntEvaluator();
   IntEvaluator(VarEnv& venv);
 
-  LIB::INT operator()(AST::Natural v) const;
-  LIB::INT operator()(AST::Rational v) const;
-  LIB::INT operator()(AST::Name v) const;
-  LIB::INT operator()(AST::UnaryOp v) const;
-  LIB::INT operator()(AST::BinOp v) const;
-  LIB::INT operator()(AST::Call v) const;
-  LIB::INT operator()(AST::Interval v) const;
-  LIB::INT operator()(AST::MultiDimInter v) const;
-  LIB::INT operator()(AST::Set v) const;
-  LIB::INT operator()(AST::LinearExp v) const;
-  LIB::INT operator()(AST::MDLExp v) const;
-  LIB::INT operator()(AST::LinearMap v) const;
-  LIB::INT operator()(AST::PWLMap v) const;
-  LIB::INT operator()(AST::SBG v) const;
-  LIB::INT operator()(AST::BipartiteSBG v) const;
-  LIB::INT operator()(AST::DSBG v) const;
-  LIB::INT operator()(AST::ParenExpr v) const;
+  LIB::Int operator()(AST::Integer v) const;
+  LIB::Int operator()(AST::Rational v) const;
+  LIB::Int operator()(AST::Name v) const;
+  LIB::Int operator()(AST::UnaryOp v) const;
+  LIB::Int operator()(AST::BinOp v) const;
+  LIB::Int operator()(AST::Call v) const;
+  LIB::Int operator()(AST::Interval v) const;
+  LIB::Int operator()(AST::MultiDimInter v) const;
+  LIB::Int operator()(AST::Set v) const;
+  LIB::Int operator()(AST::LinearExp v) const;
+  LIB::Int operator()(AST::MDLExp v) const;
+  LIB::Int operator()(AST::LinearMap v) const;
+  LIB::Int operator()(AST::PWLMap v) const;
+  LIB::Int operator()(AST::SBG v) const;
+  LIB::Int operator()(AST::BipartiteSBG v) const;
+  LIB::Int operator()(AST::DSBG v) const;
+  LIB::Int operator()(AST::ParenExpr v) const;
 
 private:
   mutable VarEnv _venv;

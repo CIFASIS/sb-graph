@@ -27,12 +27,12 @@ namespace LIB {
 // Set perimeter ---------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-Perimeter::Perimeter(const MD_NAT& min, const MD_NAT& max)
+Perimeter::Perimeter(const IntTuple& min, const IntTuple& max)
   : _min(min), _max(max) {}
 
-const MD_NAT& Perimeter::min() const { return _min; }
+const IntTuple& Perimeter::min() const { return _min; }
 
-const MD_NAT& Perimeter::max() const { return _max; }
+const IntTuple& Perimeter::max() const { return _max; }
 
 bool Perimeter::overlap(const Perimeter& other) const
 {

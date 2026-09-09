@@ -27,13 +27,13 @@ namespace LIB {
 
 // Constructors/Destructors ----------------------------------------------------
 
-RATIONAL::RATIONAL() : _value() {}
+Rational::Rational() : _value() {}
 
-RATIONAL::RATIONAL(INT n) : _value(RATIONAL::RATIONALT{n, 1}) {}
+Rational::Rational(Int n) : _value(Rational::RationalT{n, 1}) {}
 
-RATIONAL::RATIONAL(const RATIONAL::RATIONALT& value) : _value(value) {}
+Rational::Rational(const Rational::RationalT& value) : _value(value) {}
 
-RATIONAL::RATIONAL(INT n, INT d) : _value()
+Rational::Rational(Int n, Int d) : _value()
 {
   boost::rational<long long int> v{n, d};
   _value = v;
@@ -41,80 +41,72 @@ RATIONAL::RATIONAL(INT n, INT d) : _value()
 
 // Getters ---------------------------------------------------------------------
 
-const RATIONAL::RATIONALT& RATIONAL::value() const  { return _value; }
+const Rational::RationalT& Rational::value() const  { return _value; }
 
-INT RATIONAL::numerator() const { return _value.numerator(); }
+Int Rational::numerator() const { return _value.numerator(); }
 
-INT RATIONAL::denominator() const { return _value.denominator(); }
+Int Rational::denominator() const { return _value.denominator(); }
 
 // Operators -------------------------------------------------------------------
 
-bool RATIONAL::operator==(const RATIONAL& r) const
+bool Rational::operator==(const Rational& r) const
 {
   return _value == r._value;
 }
 
-bool RATIONAL::operator!=(const RATIONAL& r) const
+bool Rational::operator!=(const Rational& r) const
 {
   return _value != r._value;
 }
 
-bool RATIONAL::operator<(const RATIONAL& r) const
+bool Rational::operator<(const Rational& r) const
 {
   return _value < r._value;
 }
 
-bool RATIONAL::operator>(const RATIONAL& r) const
+bool Rational::operator>(const Rational& r) const
 {
   return _value > r._value;
 }
 
-bool RATIONAL::operator>=(const RATIONAL& r) const
+bool Rational::operator>=(const Rational& r) const
 {
   return _value >= r._value;
 }
 
-bool RATIONAL::operator==(const INT& other) const
+bool Rational::operator==(const Int& other) const
 {
   return numerator() == other && denominator() == 1;
 }
 
-RATIONAL RATIONAL::operator-() const
+Rational Rational::operator-() const
 {
-  return RATIONAL{-_value};
+  return Rational{-_value};
 }
 
-RATIONAL RATIONAL::operator+(const RATIONAL& other) const
+Rational Rational::operator+(const Rational& other) const
 {
-  return RATIONAL{_value + other._value};
+  return Rational{_value + other._value};
 }
 
-RATIONAL RATIONAL::operator-(const RATIONAL& other) const
+Rational Rational::operator-(const Rational& other) const
 {
-  return RATIONAL{_value - other._value};
+  return Rational{_value - other._value};
 }
 
-RATIONAL RATIONAL::operator*(const RATIONAL& other) const
+Rational Rational::operator*(const Rational& other) const
 {
-  return RATIONAL{_value*other._value};
+  return Rational{_value*other._value};
 }
 
-RATIONAL RATIONAL::operator/(const RATIONAL& other) const
+Rational Rational::operator/(const Rational& other) const
 {
-  return RATIONAL{_value/other._value};
+  return Rational{_value/other._value};
 }
 
-// Extra operations ------------------------------------------------------------
+// Member functions ------------------------------------------------------------
 
-NAT RATIONAL::toNat() const
-{
-  if (denominator() == 1 && 0 <= _value) {
-    return numerator();
-  }
-  return 0;
-}
-
-INT RATIONAL::toInt() const
+Int Rational::toInt() const
 {
   if (denominator() == 1) {
     return numerator();
@@ -122,21 +114,21 @@ INT RATIONAL::toInt() const
   return 0;
 }
 
-INT RATIONAL::floor() const
+Int Rational::floor() const
 {
-  return boost::rational_cast<INT>(_value);
+  return boost::rational_cast<Int>(_value);
 }
 
-INT RATIONAL::ceiling() const
+Int Rational::ceiling() const
 {
-  INT trunc = boost::rational_cast<INT>(_value);
+  Int trunc = boost::rational_cast<Int>(_value);
   return _value == trunc ? trunc : trunc + 1;
 }
 
-std::ostream& operator<<(std::ostream& out, const RATIONAL& r)
+std::ostream& operator<<(std::ostream& out, const Rational& r)
 {
-  RATIONAL::RATIONALT rv = r.value();
-  INT num = rv.numerator(), den = rv.denominator();
+  Rational::RationalT rv = r.value();
+  Int num = rv.numerator(), den = rv.denominator();
 
   if (num == 0) {
     out << "0";

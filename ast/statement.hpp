@@ -21,8 +21,8 @@
 
  ******************************************************************************/
 
-#ifndef PARSER_STATEMENT_AST_HPP
-#define PARSER_STATEMENT_AST_HPP
+#ifndef SBGRAPH_AST_STATEMENT_HPP_ 
+#define SBGRAPH_AST_STATEMENT_HPP_
 
 #include "ast/expr.hpp"
 #include "util/debug.hpp"
@@ -41,10 +41,10 @@ struct Assign {
 std::ostream &operator<<(std::ostream &out, const Assign &asgn);
 
 struct ConfigDims {
-  member_class(LIB::NAT, nmbr_dims);
+  member_class(std::size_t, arity);
   
   ConfigDims();
-  ConfigDims(LIB::NAT nmbr_dims);
+  ConfigDims(std::size_t arity);
 };
 std::ostream &operator<<(std::ostream &out, const ConfigDims &cfg);
 
@@ -64,4 +64,4 @@ std::ostream &operator<<(std::ostream &out, const StatementList &stm);
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_AST_STATEMENT_HPP_

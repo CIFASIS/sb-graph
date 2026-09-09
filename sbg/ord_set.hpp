@@ -24,11 +24,10 @@
 #ifndef SBGRAPH_SBG_ORD_SET_HPP_
 #define SBGRAPH_SBG_ORD_SET_HPP_
 
-#include "sbg/expression.hpp"
 #include "sbg/fixed_points.hpp"
+#include "sbg/integer.hpp"
 #include "sbg/interval.hpp"
 #include "sbg/multidim_inter.hpp"
-#include "sbg/natural.hpp"
 #include "sbg/perimeter.hpp"
 
 #include "rapidjson/document.h"
@@ -53,7 +52,7 @@ public:
   using ConstIt = OrdMDICollection::const_iterator;
 
   OrderedSet();
-  OrderedSet(const MD_NAT& x);
+  OrderedSet(const IntTuple& x);
   OrderedSet(const detail::Interval& i);
   OrderedSet(const detail::MultiDimInter& mdi);
   OrderedSet(const OrdMDICollection& pieces);
@@ -73,8 +72,8 @@ public:
 
   unsigned int cardinal() const;
   bool isEmpty() const;
-  MD_NAT minElem() const;
-  MD_NAT maxElem() const;
+  IntTuple minElem() const;
+  IntTuple maxElem() const;
   OrderedSet intersection(const OrderedSet& other) const;
   OrderedSet cup(const OrderedSet& other) const &;
   OrderedSet cup(OrderedSet&& other) const &;
@@ -91,13 +90,13 @@ public:
   OrderedSet disjointCup(const OrderedSet& other) &&;
   OrderedSet disjointCup(OrderedSet&& other) const &;
   OrderedSet disjointCup(OrderedSet&& other) &&;
-  OrderedSet offset(const MD_NAT& off) const;
+  OrderedSet translate(const IntTuple& t) const;
   Perimeter perimeter() const;
   void compact();
 
 private:
-  NAT advanceHint(NAT hint, const MultiDimInter& mdi);
-  void insertHint(const NAT hint, const MultiDimInter& mdi);
+  Int advanceHint(Int hint, const MultiDimInter& mdi);
+  void insertHint(const Int hint, const MultiDimInter& mdi);
 
   OrderedSet intersectionEpilogue(const OrderedSet& lhs, const OrderedSet& rhs)
     const;

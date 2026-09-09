@@ -5,7 +5,6 @@ target_sources(
         expr_evaluator.cpp
         func_evaluator.cpp
         int_evaluator.cpp
-        nat_evaluator.cpp
         linear_expr_evaluator.cpp
         program_evaluator.cpp
         rational_evaluator.cpp

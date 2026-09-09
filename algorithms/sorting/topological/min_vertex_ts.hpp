@@ -27,6 +27,7 @@
 
 #include "sbg/directed_sbg.hpp"
 #include "sbg/expression.hpp"
+#include "sbg/integer.hpp"
 #include "sbg/pw_map.hpp"
 #include "sbg/set.hpp"
 
@@ -54,7 +55,7 @@ public:
   PWMap calculate(const DirectedSBG& dsbg, const PWMap& pmap);
 
 private:
-  MD_NAT getVertex();
+  IntTuple getVertex();
 
   /**
    * @brief Identifies the "path" that leads to the repetition in _smap and

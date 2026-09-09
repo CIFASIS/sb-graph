@@ -20,12 +20,12 @@
 #ifndef STATEMENT_DEF_PARSER_HPP
 #define STATEMENT_DEF_PARSER_HPP
 
+#include "ast/statement.hpp"
+
 #include <boost/phoenix/stl/container.hpp>
 #include <boost/phoenix/core.hpp>
 #include <boost/phoenix/operator.hpp>
 #include <boost/phoenix/object.hpp>
-
-#include "ast/statement.hpp"
 
 // Adapt structures ------------------------------------------------------------
 
@@ -33,7 +33,7 @@ BOOST_FUSION_ADAPT_STRUCT(
   SBG::AST::Assign, (SBG::AST::Name, l_)(SBG::AST::Expr, r_)
 )
 
-BOOST_FUSION_ADAPT_STRUCT(SBG::AST::ConfigDims, (SBG::LIB::NAT, nmbr_dims_))
+BOOST_FUSION_ADAPT_STRUCT(SBG::AST::ConfigDims, (std::size_t, arity))
 
 // Statement parser ------------------------------------------------------------
 

@@ -24,11 +24,10 @@
 #ifndef SBGRAPH_SBG_UNORD_SET_HPP_
 #define SBGRAPH_SBG_UNORD_SET_HPP_
 
-#include "sbg/expression.hpp"
 #include "sbg/fixed_points.hpp"
+#include "sbg/integer.hpp"
 #include "sbg/interval.hpp"
 #include "sbg/multidim_inter.hpp"
-#include "sbg/natural.hpp"
 #include "sbg/perimeter.hpp"
 
 #include "rapidjson/document.h"
@@ -53,7 +52,7 @@ public:
   using ConstIt = MDIUnordCollection::const_iterator;
 
   UnorderedSet();
-  UnorderedSet(const MD_NAT& x);
+  UnorderedSet(const IntTuple& x);
   UnorderedSet(const detail::Interval& i);
   UnorderedSet(const detail::MultiDimInter& mdi);
   UnorderedSet(const MDIUnordCollection& pieces);
@@ -73,8 +72,8 @@ public:
 
   unsigned int cardinal() const;
   bool isEmpty() const;
-  MD_NAT minElem() const;
-  MD_NAT maxElem() const;
+  IntTuple minElem() const;
+  IntTuple maxElem() const;
   UnorderedSet intersection(const UnorderedSet& other) const;
   UnorderedSet cup(const UnorderedSet& other) const &;
   UnorderedSet cup(UnorderedSet&& other) const &;
@@ -91,7 +90,7 @@ public:
   UnorderedSet disjointCup(const UnorderedSet& other) &&;
   UnorderedSet disjointCup(UnorderedSet&& other) const &;
   UnorderedSet disjointCup(UnorderedSet&& other) &&;
-  UnorderedSet offset(const MD_NAT& off) const;
+  UnorderedSet translate(const IntTuple& off) const;
   Perimeter perimeter() const;
   void compact();
 

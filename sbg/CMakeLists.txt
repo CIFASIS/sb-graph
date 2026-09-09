@@ -12,13 +12,13 @@ target_sources(
     dom_ord_pwmap.cpp
     expression.cpp
     fixed_points.cpp
+    integer.cpp
     interval.cpp
     linear_expr.cpp
     map.cpp
     map_detail.cpp
     map_entry.cpp
     multidim_inter.cpp
-    natural.cpp
     ord_pwmap.cpp
     ord_set.cpp
     ord_unidim_dense_set.cpp

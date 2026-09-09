@@ -120,7 +120,7 @@ inline void DirectedSBG::foreachSetVertex(FuncT&& f) const
 {
   Set remaining = _Vmap.image();
   while (!remaining.isEmpty()) {
-    const MD_NAT& x = remaining.minElem();
+    const IntTuple& x = remaining.minElem();
     f(x);
     remaining = remaining.difference(Set{x});
   }
@@ -131,7 +131,7 @@ inline void DirectedSBG::foreachSetEdge(FuncT&& f) const
 {
   Set remaining = _Emap.image();
   while (!remaining.isEmpty()) {
-    const MD_NAT& x = remaining.minElem();
+    const IntTuple& x = remaining.minElem();
     f(x);
     remaining = remaining.difference(Set{x});
   }

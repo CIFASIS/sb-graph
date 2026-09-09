@@ -2,8 +2,8 @@
 
  @brief <b>Interval implementation</b>
 
- An interval [lo:st:hi] is the set of natural numbers 
- {x : lo ≤ x ≤ hi ∧ x = lo + st * k, k ∈ ℕ}. Notice that an interval
+ An interval [lo:st:hi] is the set of integer numbers 
+ {x : lo ≤ x ≤ hi ∧ x = lo + st * k, k ∈ ℤ}. Notice that an interval
  represents an unique set, but a set can have multiple representants.
  As such, in the implementation we will use the interval with the minimum
  hi existing. To ensure this, operations will be defined to create a new
@@ -31,7 +31,7 @@
 #ifndef SBGRAPH_SBG_INTERVAL_HPP_
 #define SBGRAPH_SBG_INTERVAL_HPP_
 
-#include "sbg/natural.hpp"
+#include "sbg/integer.hpp"
 #include "sbg/perimeter.hpp"
 
 #include "rapidjson/document.h"
@@ -59,16 +59,16 @@ public:
   /**
    * @brief Construct an interval only containing \p x.
    */
-  Interval(const NAT x);
+  Interval(const Int x);
 
   /**
    * @brief Construct an interval with \p begin, \p step and \p end.
    */
-  Interval(const NAT begin, const NAT step, const NAT end);
+  Interval(const Int begin, const Int step, const Int end);
 
-  const NAT& begin() const;
-  const NAT& step() const;
-  const NAT& end() const;
+  const Int& begin() const;
+  const Int& step() const;
+  const Int& end() const;
 
   bool operator<(const Interval& other) const;
 
@@ -78,14 +78,14 @@ public:
    */
   unsigned int cardinal() const;
   bool isEmpty() const;
-  NAT minElem() const;
-  NAT maxElem() const;
+  Int minElem() const;
+  Int maxElem() const;
   Interval intersection(const Interval& other) const;
 
   /**
    * @brief Sum a constant value to every element of the interval.
    */
-  Interval offset(const NAT off) const;
+  Interval translate(const Int off) const;
 
   Perimeter perimeter() const;
 
@@ -96,9 +96,9 @@ public:
   MaybeInterval compact(const Interval& other) const;
 
 private:
-  NAT _begin;
-  NAT _step;
-  NAT _end;
+  Int _begin;
+  Int _step;
+  Int _end;
 };
 
 bool operator==(const Interval& lhs, const Interval& rhs);
@@ -110,6 +110,10 @@ std::ostream& operator<<(std::ostream& out, const Interval& i);
 // Non-member functions --------------------------------------------------------
 
 rapidjson::Value toJSON(Interval i, rapidjson::Document::AllocatorType& alloc);
+
+// Interval constans -----------------------------------------------------------
+
+const Interval kOneDimUniverse = Interval{kNegInf, 1, kPosInf};
 
 } // namespace detail
 

@@ -43,7 +43,7 @@ EvalUserInput AutomImplVisitor::visit(AST::SBGProgram p) const
   if (!p.stms().empty()) {
     AST::Statement first = p.stms()[0];
     if (boost::apply_visitor(cfg_visit, first)) {
-      eval_context.setArity(boost::get<AST::ConfigDims>(first).nmbr_dims());
+      eval_context.setArity(boost::get<AST::ConfigDims>(first).arity());
     }
   }
 

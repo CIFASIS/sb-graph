@@ -29,7 +29,9 @@
 
 #include "sbg/expression_impl.hpp"
 #include "sbg/fixed_points.hpp"
+#include "sbg/integer.hpp"
 #include "sbg/linear_expr.hpp"
+#include "sbg/rational.hpp"
 
 #include "rapidjson/document.h"
 
@@ -55,24 +57,24 @@ public:
   /**
    * @brief Constructs a constant mdle in all dimensions that maps to \p x.
    */
-  Expression(const MD_NAT& x);
+  Expression(const IntTuple& x);
 
   /**
    * @brief Constructs a one-dimensional linear expression.
    */
-  Expression(const RATIONAL& slope, const RATIONAL& offset);
+  Expression(const Rational& slope, const Rational& offset);
 
   /**
    * @brief Constructs a multi-dimensional expression of arity \p nmbr_copies
    * with \p the same linear expression in each dimension.
    */
-  Expression(std::size_t n, const RATIONAL& slope, const RATIONAL& offset);
+  Expression(std::size_t n, const Rational& slope, const Rational& offset);
 
   /**
    * @brief Creates an injective expression that maps the first argument to the
    * second one.
    */
-  Expression(const MD_NAT& from, const MD_NAT& to);
+  Expression(const IntTuple& from, const IntTuple& to);
 
   bool operator==(const Expression& other) const;
   bool operator!=(const Expression& other) const;
@@ -87,7 +89,7 @@ public:
    */
   std::size_t arity() const;
 
-  MD_NAT apply(const MD_NAT& x) const;
+  IntTuple apply(const IntTuple& x) const;
 
   /**
    * @brief Calculate the composition of \p this with \p other, i.e.

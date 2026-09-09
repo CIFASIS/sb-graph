@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "eval/visitors/nat_evaluator.hpp"
+#include "eval/visitors/int_evaluator.hpp"
 #include "eval/visitors/rational_evaluator.hpp"
 #include "eval/visitors/set_impl_visitor.hpp"
 #include "eval/visitors/stm_evaluator.hpp"
@@ -34,7 +34,7 @@ namespace detail {
 
 SetImplExprVisitor::SetImplExprVisitor(VarEnv& venv) : _venv(venv) {}
 
-int SetImplExprVisitor::operator()(AST::Natural v) const { return 2; }
+int SetImplExprVisitor::operator()(AST::Integer v) const { return 2; }
 
 int SetImplExprVisitor::operator()(AST::Rational v) const { return 2; }
 
@@ -65,7 +65,7 @@ int SetImplExprVisitor::operator()(AST::Call v) const
 
 int SetImplExprVisitor::operator()(AST::Interval v) const
 {
-  NatEvaluator visit_nat{_venv};
+  IntEvaluator visit_nat{_venv};
   return boost::apply_visitor(visit_nat, v.step()) == 1 ? 2 : 1;
 }
 
@@ -97,7 +97,7 @@ int SetImplExprVisitor::operator()(AST::Set v) const
 int SetImplExprVisitor::operator()(AST::LinearExp v) const
 {
   RationalEvaluator visit_rat{_venv};
-  LIB::RATIONAL r = boost::apply_visitor(visit_rat, v.slope());
+  LIB::Rational r = boost::apply_visitor(visit_rat, v.slope());
 
   return (r == 0 || r == 1) ? 2 : 1;
 }

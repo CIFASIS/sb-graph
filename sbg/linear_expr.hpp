@@ -27,6 +27,7 @@
 #ifndef SBGRAPH_SBG_LINEAR_EXPR_HPP_
 #define SBGRAPH_SBG_LINEAR_EXPR_HPP_
 
+#include "sbg/integer.hpp"
 #include "sbg/rational.hpp"
 
 #include "rapidjson/document.h"
@@ -49,10 +50,10 @@ public:
   /**
    * @brief Construct a linear expression defining the \p slope and \p offset.
    */
-  LinearExpr(RATIONAL slope, RATIONAL offset);
+  LinearExpr(Rational slope, Rational offset);
 
-  const RATIONAL& slope() const;
-  const RATIONAL& offset() const;
+  const Rational& slope() const;
+  const Rational& offset() const;
 
   bool operator==(const LinearExpr &other) const;
   bool operator!=(const LinearExpr &other) const;
@@ -63,9 +64,8 @@ public:
 
   /**
    * @brief Calculates the result of applying the linear expression to \p x.
-   * Precondition: result is >= 0.
    */
-  NAT apply(const NAT& x) const;
+  Int apply(const Int& x) const;
 
   /**
    * @brief Calculate the composition of \p this with \p other, i.e.
@@ -92,11 +92,11 @@ public:
   /**
    * Precondition: both slopes should be different.
    */
-  RATIONAL intersectionPoint(const LinearExpr& other) const;
+  Rational intersectionPoint(const LinearExpr& other) const;
 
 private:
-  RATIONAL _slope;
-  RATIONAL _offset;
+  Rational _slope;
+  Rational _offset;
 };
 std::ostream &operator<<(std::ostream &out, const LinearExpr& le);
 

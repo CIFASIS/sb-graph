@@ -51,18 +51,18 @@ SCCGraphBuilder::SCCGraphBuilder(BipartiteGraph&& bgraph
 
 DirectedGraph SCCGraphBuilder::build()
 {
-  SBG::LIB::NAT number_vertices = translateVertices();
+  SBG::LIB::Int number_vertices = translateVertices();
   EdgeVector edges = getEdgeList();
   return build(number_vertices, edges);
 }
 
-DirectedGraph SCCGraphBuilder::build(SBG::LIB::NAT number_vertices
+DirectedGraph SCCGraphBuilder::build(SBG::LIB::Int number_vertices
   , EdgeVector& E)
 {
   return DirectedGraph(E.begin(), E.end(), number_vertices);
 }
 
-SBG::LIB::NAT SCCGraphBuilder::translateVertices()
+SBG::LIB::Int SCCGraphBuilder::translateVertices()
 {
   _vertex_map.reserve(boost::num_edges(_bgraph.graph()));
 

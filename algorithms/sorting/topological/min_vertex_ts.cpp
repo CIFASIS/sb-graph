@@ -18,7 +18,6 @@
  ******************************************************************************/
 
 #include "algorithms/sorting/topological/min_vertex_ts.hpp"
-#include "sbg/natural.hpp"
 #include "util/debug.hpp"
 #include "util/logger.hpp"
 
@@ -138,7 +137,7 @@ PWMap MinVertexTS::repetition(const Set& init_V, const DirectedSBG& dsbg)
 
 // getVertex -------------------------------------------------------------------
 
-MD_NAT MinVertexTS::getVertex()
+IntTuple MinVertexTS::getVertex()
 {
   Set V = _dsbg.V(); 
   PWMap mapD = _dsbg.mapD();
@@ -214,8 +213,8 @@ PWMap MinVertexTS::calculate(const DirectedSBG& dsbg
 
   std::size_t arity = V.arity();
   Expression successor_expr{arity, 1, 0};
-  MD_NAT vj;
-  MD_NAT old_vj = V.difference(_dsbg.mapD().image()).minElem();
+  IntTuple vj;
+  IntTuple old_vj = V.difference(_dsbg.mapD().image()).minElem();
   _start = old_vj;
   do {
     // Find new vertex without dependencies, and add it to the sorting.

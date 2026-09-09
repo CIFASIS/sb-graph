@@ -450,14 +450,14 @@ DomOrdPWMap DomOrdPWMap::composition(const DomOrdPWMap& other) const
 {
   DomOrdPWMap result;
 
-  NAT global_pos = 0;
+  std::size_t global_pos = 0;
   for (const MapEntry& other_entry : other._pieces) {
     Map other_map = other_entry.map();
     Set img = other_map.image();
     
     Perimeter img_perimeter = img.perimeter();
     result.advanceHint(global_pos, other_entry);
-    MD_NAT img_max_perimeter = img_perimeter.max();
+    IntTuple img_max_perimeter = img_perimeter.max();
 
     for (const MapEntry& entry : _pieces) {
       const Perimeter& entry_perimeter = entry.perimeter();

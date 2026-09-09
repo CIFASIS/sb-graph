@@ -363,9 +363,9 @@ OrdPWMap OrdPWMap::restrict(const Set& subdom) const
   }
 
   OrdPWMap result;
-  NAT global_pos = 0;
+  unsigned int global_pos = 0;
   Perimeter subdom_perimeter = subdom.perimeter();
-  const MD_NAT subdom_max_perimeter = subdom_perimeter.max();
+  const IntTuple subdom_max_perimeter = subdom_perimeter.max();
   for (const MapEntry& entry : _pieces) {
     const Perimeter& entry_perimeter = entry.perimeter();
     if (subdom_perimeter.overlap(entry_perimeter)) {
@@ -426,14 +426,14 @@ OrdPWMap OrdPWMap::composition(const OrdPWMap& other) const
 {
   OrdPWMap result;
 
-  NAT global_pos = 0;
+  unsigned int global_pos = 0;
   for (const MapEntry& other_entry : other._pieces) {
     Map other_map = other_entry.map();
     Set img = other_map.image();
     
     Perimeter img_perimeter = img.perimeter();
     result.advanceHint(global_pos, other_entry);
-    MD_NAT img_max_perimeter = img_perimeter.max();
+    IntTuple img_max_perimeter = img_perimeter.max();
 
     for (const MapEntry& entry : _pieces) {
       const Perimeter& entry_perimeter = entry.perimeter();

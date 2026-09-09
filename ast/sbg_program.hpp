@@ -21,8 +21,8 @@
 
  ******************************************************************************/
 
-#ifndef PARSER_PROGRAM_AST_HPP
-#define PARSER_PROGRAM_AST_HPP
+#ifndef SBGRAPH_AST_SBG_PROGRAM_HPP_
+#define SBGRAPH_AST_SBG_PROGRAM_HPP_
 
 #include "ast/statement.hpp"
 
@@ -31,13 +31,13 @@ namespace SBG {
 namespace AST {
 
 struct SBGProgram {
-  member_class(LIB::NAT, nmbr_dims);
+  member_class(std::size_t, arity);
   member_class(StatementList, stms);
   member_class(ExprList, exprs);
 
   SBGProgram();
   SBGProgram(StatementList stms, ExprList exprs);
-  SBGProgram(LIB::NAT nmbr_dims, StatementList stms, ExprList exprs);
+  SBGProgram(std::size_t arity, StatementList stms, ExprList exprs);
 };
 std::ostream &operator<<(std::ostream &out, const SBGProgram &prog);
 
@@ -45,4 +45,4 @@ std::ostream &operator<<(std::ostream &out, const SBGProgram &prog);
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_AST_SBG_PROGRAM_HPP_

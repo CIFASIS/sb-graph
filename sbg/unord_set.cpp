@@ -46,7 +46,7 @@ bool overlap(const UnorderedSet& lhs, const UnorderedSet& rhs)
 
 UnorderedSet::UnorderedSet() : _pieces() {}
 
-UnorderedSet::UnorderedSet(const MD_NAT& x) : _pieces()
+UnorderedSet::UnorderedSet(const IntTuple& x) : _pieces()
 {
   _pieces.emplace_back(MultiDimInter{x});
 }
@@ -75,13 +75,12 @@ UnorderedSet::UnorderedSet(const FixedPointsInfo& info) : _pieces()
 {
   if (info) {
     std::vector<Solution> solutions = info.value();
-    Interval universe_one_dim{0, 1, Inf};
     MultiDimInter result_mdi;
     for (const Solution& jth_solution : solutions) {
       if (jth_solution.kind() == SolutionKind::kFixed) {
         result_mdi.pushBack(jth_solution.value().value());
       } else if (jth_solution.kind() == SolutionKind::kFree) {
-        result_mdi.pushBack(universe_one_dim);
+        result_mdi.pushBack(kOneDimUniverse);
       }
     }
     pushBack(result_mdi);
@@ -166,9 +165,9 @@ unsigned int UnorderedSet::cardinal() const
 
 bool UnorderedSet::isEmpty() const { return _pieces.empty(); }
 
-MD_NAT UnorderedSet::minElem() const
+IntTuple UnorderedSet::minElem() const
 {
-  MD_NAT result = _pieces.begin()->minElem();
+  IntTuple result = _pieces.begin()->minElem();
 
   for (const MultiDimInter& mdi : _pieces) {
     result = std::min(result, mdi.minElem());
@@ -177,9 +176,9 @@ MD_NAT UnorderedSet::minElem() const
   return result;
 }
 
-MD_NAT UnorderedSet::maxElem() const
+IntTuple UnorderedSet::maxElem() const
 {
-  MD_NAT result = _pieces.begin()->maxElem();
+  IntTuple result = _pieces.begin()->maxElem();
 
   for (const MultiDimInter& mdi : _pieces) {
     result = std::max(result, mdi.maxElem());
@@ -262,23 +261,22 @@ UnorderedSet UnorderedSet::complementAtom() const
   }
   MultiDimInter during_mdi = dense_mdi;
 
-  Interval universe_one_dim{0, 1, Inf};
-  MultiDimInter univ{mdi.arity(), universe_one_dim};
+  MultiDimInter univ{mdi.arity(), kOneDimUniverse};
 
   std::size_t dim = 0;
   for (const Interval& i : mdi) {
     // Before interval
-    if (i.begin() != 0) {
+    if (i.begin() != kNegInf) {
       Interval i_res{0, 1, i.begin() - 1};
       if (!i_res.isEmpty()) {
         univ[dim] = i_res;
         result.push_back(univ);
-        univ[dim] = universe_one_dim;
+        univ[dim] = kOneDimUniverse;
       }
     }
 
     // "During" interval
-    if (i.begin() < Inf && i.step() > 1) {
+    if (i.begin() < kPosInf && i.step() > 1) {
       for (unsigned int j = 0; j < i.step() - 1; ++j) {
         Interval i_res{i.begin() + j + 1, i.step(), i.end()};
         if (!i_res.isEmpty()) {
@@ -289,12 +287,12 @@ UnorderedSet UnorderedSet::complementAtom() const
     }
 
     // After interval
-    if (i.end() < Inf) {
-      Interval i_res{i.end() + 1, 1, Inf};
+    if (i.end() < kPosInf) {
+      Interval i_res{i.end() + 1, 1, kPosInf};
       if (!i_res.isEmpty()) {
         univ[dim] = i_res;
         result.push_back(univ);
-        univ[dim] = universe_one_dim;
+        univ[dim] = kOneDimUniverse;
       }
     }
     univ[dim] = dense_mdi[dim];
@@ -402,12 +400,12 @@ UnorderedSet UnorderedSet::disjointCup(UnorderedSet&& other) &&
   return UnorderedSet{std::move(result)};
 }
 
-UnorderedSet UnorderedSet::offset(const MD_NAT& off) const
+UnorderedSet UnorderedSet::translate(const IntTuple& t) const
 {
   UnorderedSet result;
 
   for (const MultiDimInter& mdi : _pieces) {
-    result.pushBack(mdi.offset(off));
+    result.pushBack(mdi.translate(t));
   }
 
   return result;
@@ -415,16 +413,16 @@ UnorderedSet UnorderedSet::offset(const MD_NAT& off) const
 
 Perimeter UnorderedSet::perimeter() const
 {
-  MD_NAT min;
-  MD_NAT max;
+  IntTuple min;
+  IntTuple max;
 
   if (!isEmpty()) {
     std::size_t arity = this->arity();
-    min = MD_NAT{arity, Inf};
-    max = MD_NAT{arity, 0};
+    min = IntTuple{arity, kPosInf};
+    max = IntTuple{arity, kNegInf};
     for (const MultiDimInter& mdi : _pieces) {
-      MD_NAT candidate_min = mdi.minElem();
-      MD_NAT candidate_max = mdi.maxElem();
+      IntTuple candidate_min = mdi.minElem();
+      IntTuple candidate_max = mdi.maxElem();
       for (size_t i = 0; i < arity; ++i) {
         min[i] = std::min(min[i], candidate_min[i]);
         max[i] = std::max(max[i], candidate_max[i]);

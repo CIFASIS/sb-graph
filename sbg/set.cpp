@@ -59,7 +59,7 @@ Set::Set() : _impl()
   }
 }
 
-Set::Set(const MD_NAT& x) : _impl()
+Set::Set(const IntTuple& x) : _impl()
 {
   SetKind kind = SET_IMPL.kind();
   switch (kind) {
@@ -85,7 +85,7 @@ Set::Set(const MD_NAT& x) : _impl()
   }
 }
 
-Set::Set(MD_NAT&& x) : _impl()
+Set::Set(IntTuple&& x) : _impl()
 {
   SetKind kind = SET_IMPL.kind();
   switch (kind) {
@@ -111,7 +111,7 @@ Set::Set(MD_NAT&& x) : _impl()
   }
 }
 
-Set::Set(const NAT lo, const NAT step, const NAT hi) : _impl()
+Set::Set(const Int lo, const Int step, const Int hi) : _impl()
 {
   SetKind kind = SET_IMPL.kind();
   switch (kind) {
@@ -203,12 +203,12 @@ bool Set::isEmpty() const
   return std::visit([](const auto& a) { return a.isEmpty(); }, _impl);
 }
 
-MD_NAT Set::minElem() const
+IntTuple Set::minElem() const
 {
   return std::visit([](const auto& a) { return a.minElem(); }, _impl);
 }
 
-MD_NAT Set::maxElem() const
+IntTuple Set::maxElem() const
 {
   return std::visit([](const auto& a) { return a.maxElem(); }, _impl);
 }
@@ -337,10 +337,10 @@ Set Set::disjointCup(Set&& other) &&
     , std::move(_impl), std::move(other._impl));
 }
 
-Set Set::offset(const MD_NAT& off) const
+Set Set::translate(const IntTuple& t) const
 {
   return std::visit(
-    [&off](const auto& a) -> Set { return Set{a.offset(off)}; }
+    [&t](const auto& a) -> Set { return Set{a.translate(t)}; }
     , _impl);
 }
 

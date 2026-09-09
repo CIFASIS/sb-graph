@@ -18,7 +18,7 @@
  ******************************************************************************/
 
 #include "sbg/map_detail.hpp"
-#include "sbg/natural.hpp"
+#include "sbg/integer.hpp"
 #include "sbg/ord_unidim_dense_set.hpp"
 #include "sbg/rational.hpp"
 #include "sbg/set_detail.hpp"
@@ -48,15 +48,15 @@ Interval image(const Interval& i, const LinearExpr& linear_expr)
   }
 
   if (linear_expr.isConstant()) {
-    NAT value = linear_expr.apply(i.begin());
+    Int value = linear_expr.apply(i.begin());
     return Interval{value, 1, value};
   }
 
-  NAT new_begin = linear_expr.apply(i.begin());
-  RATIONAL m = linear_expr.slope();
-  NAT step = i.step();
-  NAT new_step = m >= 0 ? (m*step).toNat() : (-m*step).toNat();
-  NAT new_end = linear_expr.apply(i.end());
+  Int new_begin = linear_expr.apply(i.begin());
+  Rational m = linear_expr.slope();
+  Int step = i.step();
+  Int new_step = m >= 0 ? (m*step).toInt() : (-m*step).toInt();
+  Int new_end = linear_expr.apply(i.end());
 
   return Interval{new_begin, new_step, new_end};
 }
@@ -132,7 +132,7 @@ Interval preImage(const Interval& i, const LinearExpr& linear_expr)
   }
 
   if (linear_expr.isConstant()) {
-    return Interval{0, 1, Inf};
+    return kOneDimUniverse;
   }
 
   return image(i, linear_expr.inverse());
@@ -275,33 +275,33 @@ Map MapDetail::inverse(const Set& s, const Expression& expr)
 Interval lessImage(const LinearExpr& linear_expr1
   , const LinearExpr& linear_expr2)
 {
-  RATIONAL m1 = linear_expr1.slope();
-  RATIONAL m2 = linear_expr2.slope();
+  Rational m1 = linear_expr1.slope();
+  Rational m2 = linear_expr2.slope();
   if (m1 == m2) {
-    RATIONAL h1 = linear_expr1.offset();
-    RATIONAL h2 = linear_expr2.offset();
+    Rational h1 = linear_expr1.offset();
+    Rational h2 = linear_expr2.offset();
     if (h1 < h2) {
-      return Interval{0, 1, Inf};
+      return kOneDimUniverse;
     }
   } else {
-    RATIONAL point = linear_expr1.intersectionPoint(linear_expr2);
+    Rational point = linear_expr1.intersectionPoint(linear_expr2);
     if (point >= 0) {
-      NAT floor = point.floor();
-      NAT ceil = point.ceiling();
+      Int floor = point.floor();
+      Int ceil = point.ceiling();
       if (ceil == floor) {
-        NAT floor_minus = floor == 0 ? 0 : floor - 1;
-        NAT ceil_plus = ceil == Inf ? Inf : ceil + 1;
-        Interval kth = m1 < m2 ? Interval{ceil_plus, 1, Inf}
-          : Interval {0, 1, floor_minus};
+        Int floor_minus = floor == kNegInf ? kNegInf : floor - 1;
+        Int ceil_plus = ceil == kPosInf ? kPosInf : ceil + 1;
+        Interval kth = m1 < m2 ? Interval{ceil_plus, 1, kPosInf}
+          : Interval {kNegInf, 1, floor_minus};
         return kth;
       } else {
-        Interval kth = m1 < m2 ? Interval{ceil, 1, Inf}
-          : Interval {0, 1, floor};
+        Interval kth = m1 < m2 ? Interval{ceil, 1, kPosInf}
+          : Interval {kNegInf, 1, floor};
         return kth;
       }
     } else {
       if (m1 < m2) {
-        return Interval{0, 1, Inf};
+        return kOneDimUniverse;
       }
     }
   }
@@ -315,8 +315,7 @@ std::vector<MultiDimInter> lessImage(const ExpressionImpl& expr1
   std::vector<MultiDimInter> result;
 
   unsigned int arity = expr1.size();
-  Interval universe_one_dim{0, 1, Inf};
-  MultiDimInter less_image{arity, universe_one_dim};
+  MultiDimInter less_image{arity, kOneDimUniverse};
   for (unsigned int k = 0; k < arity; ++k) {
     LinearExpr linear_expr1 = expr1[k];
     LinearExpr linear_expr2 = expr2[k];
@@ -330,14 +329,14 @@ std::vector<MultiDimInter> lessImage(const ExpressionImpl& expr1
         }
       }
 
-      RATIONAL cross = linear_expr1.intersectionPoint(linear_expr2);
+      Rational cross = linear_expr1.intersectionPoint(linear_expr2);
       if (cross.floor() == cross.ceiling()) {
-        less_image[k] = Interval{cross.toNat(), 1, cross.toNat()};
+        less_image[k] = Interval{cross.toInt(), 1, cross.toInt()};
       } else {
         break;
       }
     } else if (linear_expr1 == linear_expr2) {
-      less_image[k] = universe_one_dim;
+      less_image[k] = kOneDimUniverse;
     } else {
       break;
     }
@@ -394,12 +393,12 @@ Set MapDetail::lessImage(const Expression& expr1, const Expression& expr2)
 void partition(const Interval& i, const LinearExpr& linear_expr
   , AtomicMapVector& result)
 {
-  INT h = linear_expr.offset().toInt();
-  INT absh = std::abs(h);
+  Int h = linear_expr.offset().toInt();
+  Int absh = std::abs(h);
   for (int j = 1; j <= absh; ++j) {
-    NAT new_begin = i.begin() + j - 1;
-    Interval jth_piece{new_begin, (NAT) absh, i.end()};
-    RATIONAL jth_off;
+    Int new_begin = i.begin() + j - 1;
+    Interval jth_piece{new_begin, absh, i.end()};
+    Rational jth_off;
     if (h > 0) {
       jth_off = jth_piece.end() + h;
     } else {
@@ -415,29 +414,28 @@ AtomicMapVector reduce(const Interval& i, const LinearExpr& linear_expr)
   AtomicMapVector result;
 
   // No partition of the piece is needed
-  RATIONAL zero(0, 1);
-  INT h = linear_expr.offset().toInt();
-  NAT st = i.step();
-  if (h == (INT) st) {
-    NAT hi = i.end();
-    if (st < Inf - hi) {
-      LinearExpr convergence_value{zero, static_cast<INT>(hi + st)};
+  Int h = linear_expr.offset().toInt();
+  Int st = i.step();
+  if (h == st) {
+    Int hi = i.end();
+    if (st < kPosInf - hi) {
+      LinearExpr convergence_value{Rational{0}, hi + st};
       result.emplace_back(i, convergence_value);
       return result;
     }
-  } else if (h == (INT) -st) {
-    NAT lo = i.begin();
+  } else if (h == -st) {
+    Int lo = i.begin();
     if (lo >= st) {
-      LinearExpr convergence_value{zero, static_cast<INT>(lo - st)};
+      LinearExpr convergence_value{Rational{0}, lo - st};
       result.emplace_back(i, convergence_value);
       return result;
     }
   }
 
   // Partition of the piece needed
-  if (h % (INT) st == 0) {
+  if (h % st == 0) {
     // Is convenient the partition of the piece?
-    if ((INT) i.cardinal() > h*h) {
+    if ((Int) i.cardinal() > h*h) {
       partition(i, linear_expr, result);
     } else {
       result.emplace_back(i, linear_expr);
@@ -638,13 +636,13 @@ MapVector MapDetail::imageMultiplicity(const Map& m)
 
   if (law.isInjective()) {
     Set result_domain = m.image();
-    Expression result_expr{MD_NAT{domain.arity(), 1}};
+    Expression result_expr{IntTuple{domain.arity(), 1}};
     result.emplace_back(result_domain, result_expr);
     return result;
   }
 
   if (law.isConstant()) {
-    result.emplace_back(m.image(), Expression{MD_NAT{domain.arity()
+    result.emplace_back(m.image(), Expression{IntTuple{domain.arity()
       , m.domain().cardinal()}});
     return result;
   }

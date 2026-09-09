@@ -40,7 +40,7 @@ class ExprEvaluator : public boost::static_visitor<ExprBaseType> {
 public:
   ExprEvaluator(EvalContext& eval_ctx);
 
-  ExprBaseType operator()(AST::Natural v) const;
+  ExprBaseType operator()(AST::Integer v) const;
   ExprBaseType operator()(AST::Rational v) const;
   ExprBaseType operator()(AST::Name v) const;
   ExprBaseType operator()(AST::UnaryOp v) const;

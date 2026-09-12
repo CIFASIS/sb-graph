@@ -73,7 +73,7 @@ private:
   PWMap _smap;
   Set _priority;
   Set _independent;
-  std::vector<Set> _visitedSV;
+  Set _visitedSV;
   unsigned int _max_repetition_depth;
 };
 

@@ -31,9 +31,7 @@ namespace detail {
 // Minimum Vertex Topological Sort Algorithm -----------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-MinVertexTS::MinVertexTS()
-  : _smap(), _dsbg(), _visitedSV(), _priority(), _independent()
-    , _max_repetition_depth(0) {}
+MinVertexTS::MinVertexTS() : _max_repetition_depth(0) {}
 
 // Repetition ------------------------------------------------------------------
 
@@ -58,7 +56,7 @@ std::tuple<Set, PWMap> MinVertexTS::detectRepetition(Set Vj
     Vj = _smap.image(Vj);
     repetition = !Vmap.image(Vj).intersection(init_SV).isEmpty();
     ++n;
-  } while (!repetition && n < _max_repetition_depth);
+  } while (!repetition);
 
   if (repetition) {
     // Take out vertices that are mapped to a value that doesn't belong to any
@@ -131,17 +129,9 @@ IntTuple MinVertexTS::getVertex(Set old_Vj)
 
   // Independent vertices with priority treatment, that belong to a visited
   // set-vertex.
-  Set Vj_repeated_SV = Vj;
-  Set Vj_set_vertex = _dsbg.Vmap().image(Vj);
-  for (auto it = _visitedSV.begin(); it != _visitedSV.end(); ++it) {
-    Set repeatedSV = (*it).intersection(Vj_set_vertex);
-    if (!repeatedSV.isEmpty()) {
-      Vj_repeated_SV = _dsbg.Vmap().preImage(repeatedSV).intersection(Vj);
-      break;
-    }
-  }
+  Set Vj_repeated_SV = _visitedSV.intersection(_dsbg.Vmap().image(Vj));
   if (!Vj_repeated_SV.isEmpty()) {
-    Vj = Vj_repeated_SV;
+    Vj = _dsbg.Vmap().preImage(Vj_repeated_SV).intersection(Vj);
   }
 
   return Vj.minElem();
@@ -180,11 +170,12 @@ PWMap MinVertexTS::calculate(const DirectedSBG& dsbg
     return PWMap{};
   }
   _dsbg = dsbg;
-  _priority = V;
 
   IntTuple vj;
   IntTuple old_vj = V.difference(_dsbg.mapD().image()).minElem();
   _smap = PWMap{Set{old_vj}};
+  _visitedSV = dsbg.Vmap().image(Set{old_vj});
+  _priority = scc_map.preImage(scc_map.image(Set{old_vj}));
   _dsbg.eraseVertices(_smap.domain());
   do {
     // Find new vertex without dependencies, and add it to the sorting.
@@ -194,23 +185,13 @@ PWMap MinVertexTS::calculate(const DirectedSBG& dsbg
     _smap.emplace(vj_set, Expression{vj, old_vj});
 
     // Handle repetition.
-    PWMap Vmap = _dsbg.Vmap();
-    Set vj_set_vertex = Vmap.image(vj_set);
-    Set repeatedSV;
-    for (auto rit = _visitedSV.rbegin(); rit != _visitedSV.rend(); ++rit) {
-      repeatedSV = (*rit).intersection(vj_set_vertex);
-      if (!repeatedSV.isEmpty()) {
-        break;
-      }
-    }
+    Set repeatedSV = _visitedSV.intersection(_dsbg.Vmap().image(vj_set));
     if (!repeatedSV.isEmpty()) {
       PWMap smap_plus = repetition(vj_set, dsbg);
       _smap = std::move(smap_plus).concatenation(std::move(_smap));
       vj = _smap.domain().difference(_smap.image()).minElem();
-      _max_repetition_depth = 0;
     } else {
-      _visitedSV.push_back(Vmap.image(vj_set));
-      _max_repetition_depth++;
+      _visitedSV = _visitedSV.cup(_dsbg.Vmap().image(vj_set));
     } 
 
     // Update values for new iteration.

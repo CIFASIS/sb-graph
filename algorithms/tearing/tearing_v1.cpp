@@ -47,6 +47,28 @@ void TearingV1::init(const DirectedSBG& dsbg)
   return;
 }
 
+/**
+ * @brief It calculates the minimum vertex of maximum degree of V. 
+ */
+Set TearingV1::getMaxDegreeSetVertex(const Set& V, const DirectedSBG& dsbg)
+{
+  PWMap mapB = dsbg.mapB();
+  PWMap mapD = dsbg.mapD();
+  Set adj_edges = mapB.preImage(V).cup(mapD.preImage(V));
+  PWMap multB = mapB.restrict(adj_edges).imageMultiplicity();
+  PWMap multD = mapD.restrict(adj_edges).imageMultiplicity();
+  PWMap mmap = (multB + multD).restrict(V);
+
+  if (mmap.isEmpty()) {
+    return V.minElem();
+  }
+
+  Set max_mult_set{mmap.image().maxElem()};
+  Set max_degree_vertices = mmap.preImage(max_mult_set);
+
+  return max_degree_vertices;
+}
+
 Set TearingV1::getTearingSV(const PWMap rmap)  {
   return rmap.image(rmap.domain().difference(rmap.fixedPoints()));
 }

@@ -630,6 +630,17 @@ DomOrdPWMap DomOrdPWMap::min(const DomOrdPWMap& other) const
   return restrict(min_in_pw1).combine(other.restrict(domain())); 
 }
 
+DomOrdPWMap DomOrdPWMap::max(const DomOrdPWMap& other) const
+{
+  if (isEmpty() || other.isEmpty()) {
+    return DomOrdPWMap{};
+  }
+
+  Set min_in_pw1 = lessImage(other);
+  Set less_eq_in_pw1 = min_in_pw1.disjointCup(equalImage(other));
+  return other.restrict(less_eq_in_pw1).combine(restrict(other.domain()));
+}
+
 class MinAdjCore {
 public:
   bool operator()(const MapEntry& entry1, const MapEntry& entry2) {
@@ -661,7 +672,7 @@ public:
 
 private:
   DomOrdPWMap _result;
-  Set _visited; 
+  Set _visited;
 };
 
 DomOrdPWMap DomOrdPWMap::minAdj(const DomOrdPWMap& other) const
@@ -671,6 +682,49 @@ DomOrdPWMap DomOrdPWMap::minAdj(const DomOrdPWMap& other) const
   }
 
   return traverse(_pieces, other._pieces, MinAdjCore{}).result();
+}
+
+class MaxAdjCore {
+public:
+  bool operator()(const MapEntry& entry1, const MapEntry& entry2) {
+    Map max_adj = entry1.map().maxAdj(entry2.map());
+    if (!max_adj.isEmpty()) {
+      Set max_adj_domain = max_adj.domain();
+      Set repeated = max_adj_domain.intersection(_visited);
+      if (!repeated.isEmpty()) {
+        DomOrdPWMap max_adj_pw{std::move(max_adj)};
+        DomOrdPWMap max_adj_repeated = max_adj_pw.restrict(repeated);
+        DomOrdPWMap result_repeated = _result.restrict(repeated);
+        DomOrdPWMap max_map = max_adj_repeated.max(result_repeated);
+        DomOrdPWMap max_adj_result = std::move(max_map).combine(
+          std::move(max_adj_pw));
+        _result = std::move(max_adj_result).combine(std::move(_result));
+        _visited = std::move(_visited).cup(std::move(max_adj_domain));
+      } else {
+        _result.insert(std::move(max_adj));
+        _visited = std::move(_visited).disjointCup(std::move(max_adj_domain));
+      }
+    }
+
+    return true;
+  }
+
+  bool orderMatters() const { return true; }
+
+  DomOrdPWMap result() const { return _result; }
+
+private:
+  DomOrdPWMap _result;
+  Set _visited;
+};
+
+DomOrdPWMap DomOrdPWMap::maxAdj(const DomOrdPWMap& other) const
+{
+  if (isEmpty() || other.isEmpty()) {
+    return DomOrdPWMap{};
+  }
+
+  return traverse(_pieces, other._pieces, MaxAdjCore{}).result();
 }
 
 class EqualImageCore {

@@ -100,7 +100,9 @@ public:
   DomOrdPWMap combine(DomOrdPWMap&& other) &&;
 
   DomOrdPWMap min(const DomOrdPWMap& other) const;
+  DomOrdPWMap max(const DomOrdPWMap& other) const;
   DomOrdPWMap minAdj(const DomOrdPWMap& other) const;
+  DomOrdPWMap maxAdj(const DomOrdPWMap& other) const;
 
   Set equalImage(const DomOrdPWMap& other) const;
   Set lessImage(const DomOrdPWMap& other) const;

@@ -422,22 +422,6 @@ UnordPWMap UnordPWMap::minAdj(const UnordPWMap& other) const
   return result;
 }
 
-Set UnordPWMap::sharedImage() const
-{
-  Set repeated_image;
-  Set visited;
-  for (const Map& m : _pieces) {
-    Set image_in_visited = m.image().intersection(visited);
-    if (!image_in_visited.isEmpty()) {
-      repeated_image = std::move(repeated_image).cup(std::move(
-        image_in_visited));
-    }
-    visited = std::move(visited).cup(m.image());
-  }
-
-  return preImage(repeated_image);
-}
-
 Set UnordPWMap::equalImage(const UnordPWMap& other) const
 {
   Set result;

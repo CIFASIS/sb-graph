@@ -394,11 +394,6 @@ PWMap PWMap::minAdj(const PWMap& other) const
     , _impl, other._impl);
 }
 
-Set PWMap::sharedImage() const
-{
-  return std::visit([](const auto& a) { return a.sharedImage(); }, _impl);
-}
-
 Set PWMap::equalImage(const PWMap& other) const
 {
   return std::visit([](const auto& a, const auto& b)

@@ -212,12 +212,6 @@ public:
   PWMap minAdj(const PWMap& other) const;
 
   /** 
-   * @brief Given a map, return elements of the domain that share its image with
-   * other values of the domain.
-   */
-  Set sharedImage() const;
-
-  /** 
    * @brief Return elements in both domains, that have the same image in both
    * pws.
    */

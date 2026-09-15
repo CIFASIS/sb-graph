@@ -673,23 +673,6 @@ DomOrdPWMap DomOrdPWMap::minAdj(const DomOrdPWMap& other) const
   return traverse(_pieces, other._pieces, MinAdjCore{}).result();
 }
 
-Set DomOrdPWMap::sharedImage() const
-{
-  Set repeated_image;
-  Set visited;
-  for (const MapEntry& entry : _pieces) {
-    Set m_image = entry.map().image();
-    Set image_in_visited = m_image.intersection(visited);
-    if (!image_in_visited.isEmpty()) {
-      repeated_image = std::move(repeated_image).cup(std::move(
-        image_in_visited));
-    }
-    visited = std::move(visited).cup(m_image);
-  }
-
-  return preImage(repeated_image);
-}
-
 class EqualImageCore {
 public:
   bool operator()(const MapEntry& entry1, const MapEntry& entry2) {

@@ -102,7 +102,6 @@ public:
   DomOrdPWMap min(const DomOrdPWMap& other) const;
   DomOrdPWMap minAdj(const DomOrdPWMap& other) const;
 
-  Set sharedImage() const;
   Set equalImage(const DomOrdPWMap& other) const;
   Set lessImage(const DomOrdPWMap& other) const;
 

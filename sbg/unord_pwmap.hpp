@@ -97,7 +97,6 @@ public:
   UnordPWMap min(const UnordPWMap& other) const;
   UnordPWMap minAdj(const UnordPWMap& other) const;
 
-  Set sharedImage() const;
   Set equalImage(const UnordPWMap& other) const;
   Set lessImage(const UnordPWMap& other) const;
 

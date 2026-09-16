@@ -28,7 +28,7 @@ namespace LIB {
 // Minimum Adjacent MRV Implementation -----------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-LtEdgesMRV::LtEdgesMRV() : _dsbg(), _smap(), _visitedSE(), _n(0) {}
+LtEdgesMRV::LtEdgesMRV() : _n(0) {}
 
 Set LtEdgesMRV::decreasingRepresentative(const PWMap& rmap) const
 {
@@ -46,51 +46,48 @@ Set LtEdgesMRV::decreasingRepresentative(const PWMap& rmap) const
   return result;
 }
 
-PWMap LtEdgesMRV::repetitivePaths(const PWMap& rmap
-  , const PWMap& decreasing_smap)
+PWMap LtEdgesMRV::detectRepetition(const PWMap& decreasing_smap) const
 {
-  PWMap result;
-
-  // Calculate edges in paths described by decreasing_smap
-  const PWMap& mapB = _dsbg.mapB();
-  const PWMap& mapD = _dsbg.mapD();
-  Set Pj = decreasing_smap.composition(mapB).equalImage(mapD);
-
-  // Check if there is a repetition
-  PWMap Emap = _dsbg.Emap();
-  Set repeatedSE = _visitedSE.intersection(Emap.image(Pj));
-  if (!repeatedSE.isEmpty()) {
-    Set Vi = decreasing_smap.domain().difference(decreasing_smap.image());
-    Set V = Vi;
-    for (unsigned int j = 0; j < _n; ++j) {
-      Vi = _smap.image(Vi);
-      V = V.disjointCup(Vi);
-    }
-    PWMap smap_rep = _smap.restrict(V);
-    Set E_repetition = smap_rep.composition(mapB).equalImage(mapD);
-    
-    Set E_plus = Emap.preImage(Emap.image(E_repetition));
-    // In the presence of a cycle, if the minimum vertex belongs to the
-    // repetition, it will be assigned a successor. This results in a cycling
-    // smap, which is an error. For example, if there's a cycle
-    // 1 -> 2 -> ... -> 10 -> 1, this function calculates smap(1) = 2,
-    // when it should be smap(1) = 1. To avoid this, we erase outgoing edges
-    // from the MRVs of the repetition.
-    Set outgoing = mapB.preImage(rmap.image(V));
-    E_plus = E_plus.difference(outgoing);
-
-    PWMap mapB_plus = _dsbg.mapB().restrict(E_plus);
-    PWMap mapD_plus = _dsbg.mapD().restrict(E_plus);
-    result = mapB_plus.minAdj(mapD_plus);
-
-    _visitedSE = _visitedSE.difference(Emap.image(E_repetition));
-    _n = 0;
-  } else {
-    _visitedSE = std::move(_visitedSE).disjointCup(Emap.image(Pj));
-    ++_n;
+  // Get repetitive paths.
+  Set Vj = decreasing_smap.domain().difference(decreasing_smap.image());
+  Set repetitive_vertices = Vj; ///< Vertices traversed by the repetition.
+  for (unsigned int j = 0; j < _n; ++j) {
+    Vj = _smap.image(Vj);
+    repetitive_vertices = repetitive_vertices.disjointCup(repetitive_vertices);
   }
+  
+  return decreasing_smap.combine(_smap).restrict(repetitive_vertices);
+}
 
-  return result;
+PWMap LtEdgesMRV::repetition(const PWMap& decreasing_smap) const
+{
+  // Calculate edges of the repetition.
+  PWMap smap_repetition = detectRepetition(decreasing_smap);
+  PWMap mapB = _dsbg.mapB();
+  PWMap mapD = _dsbg.mapD();
+  Set E_repetition = smap_repetition.composition(mapB).equalImage(mapD);
+
+  // Extend edges of the repetition.
+  PWMap Emap = _dsbg.Emap();
+  Set E_plus = Emap.preImage(Emap.image(E_repetition));
+
+  // Delete cycle generating edges.
+  Set decreasing_reps = _rmap.image(decreasing_smap.image());
+  E_plus = E_plus.difference(mapB.preImage(decreasing_reps));
+
+  // Calculate a guess path using edges in the repetition.
+  PWMap mapB_plus = mapB.restrict(E_plus);
+  PWMap mapD_plus = mapD.restrict(E_plus);
+  PWMap smap_plus = mapB_plus.minAdj(mapD_plus);
+
+  // Avoid using repetitive paths for vertices that found a minimum through
+  // the main iteration of the algorithm.
+  Set decreasing_repd = _rmap.preImage(decreasing_reps);
+  smap_plus = smap_plus.restrict(
+    smap_plus.domain().difference(decreasing_repd)
+  );
+
+  return smap_plus;
 }
 
 
@@ -99,38 +96,50 @@ PWMap LtEdgesMRV::calculate(const DirectedSBG& dsbg)
   Util::DEBUG_LOG << "LtEdgesMRV dsbg:\n" << dsbg << "\n\n";
 
   _dsbg = dsbg;
-  PWMap mapB = _dsbg.mapB();
-  PWMap mapD = _dsbg.mapD();
-  _visitedSE;
-
-  _smap = PWMap{dsbg.V()};
-  PWMap rmap = _smap;
-
-  if (!_dsbg.V().isEmpty() && !_dsbg.E().isEmpty()) {
-    _n = 0;
-    PWMap old_rmap;
-    Set E;
-    do {
-      old_rmap = rmap;
-
-      // Calculate successor map using edges that lead to a minor representative
-      E = decreasingRepresentative(rmap);
-      PWMap decreasingB = mapB.restrict(E);
-      PWMap decreasingD = mapD.restrict(E);
-      PWMap decreasing_smap = decreasingB.minAdj(decreasingD); 
-      _smap = decreasing_smap.combine(std::move(_smap));
-
-      // Repetitive paths
-      _smap = repetitivePaths(rmap, decreasing_smap).combine(std::move(_smap));
-
-      // Calculate representatives map
-      rmap = _smap.mapInf();
-      rmap = rmap.min(old_rmap).combine(std::move(rmap));
-      rmap.compact();
-    } while (!E.isEmpty());
+  if (dsbg.V().isEmpty() || dsbg.E().isEmpty()) {
+    return PWMap{dsbg.V()};
   }
 
-  return rmap;
+  PWMap mapB = _dsbg.mapB();
+  PWMap mapD = _dsbg.mapD();
+  PWMap Emap = _dsbg.Emap();
+
+  _smap = PWMap{dsbg.V()};
+  _rmap = PWMap{dsbg.V()};
+
+  _n = 0;
+  Set E;
+  Set visitedSE;
+  do {
+    _old_rmap = _rmap;
+
+    // Calculate successor map using edges that lead to a minor representative.
+    E = decreasingRepresentative(_rmap);
+    PWMap decreasingB = mapB.restrict(E);
+    PWMap decreasingD = mapD.restrict(E);
+    PWMap decreasing_smap = decreasingB.minAdj(decreasingD);
+
+    // Handle repetition.
+    PWMap smap_plus;
+    Set Pj = decreasing_smap.composition(mapB).equalImage(mapD);
+    Set repeatedSE = visitedSE.intersection(Emap.image(Pj));
+    if (!repeatedSE.isEmpty()) {
+      smap_plus = repetition(decreasing_smap);
+      //visitedSE = visitedSE.difference(Emap.image(E_repetition));
+      _n = 0;
+    } else {
+      visitedSE = std::move(visitedSE).disjointCup(Emap.image(Pj));
+      ++_n;
+    }
+    _smap = decreasing_smap.combine(smap_plus).combine(std::move(_smap));
+
+    // Calculate new MRV with the proposed paths.
+    _rmap = _smap.mapInf();
+    _rmap = _rmap.min(_old_rmap).combine(std::move(_rmap));
+    _rmap.compact();
+  } while (!E.isEmpty());
+
+  return _rmap;
 }
 
 } // namespace LIB

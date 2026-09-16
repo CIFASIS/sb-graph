@@ -64,15 +64,18 @@ private:
    */
   Set decreasingRepresentative(const PWMap& rmap) const;
 
+  PWMap detectRepetition(const PWMap& decreasing_smap) const;
+
   /*
    * @brief Calculates the MRV for repetitive paths.
    */
-  PWMap repetitivePaths(const PWMap& rmap, const PWMap& decreasing_smap);
+  PWMap repetition(const PWMap& decreasing_smap) const;
 
   DirectedSBG _dsbg;
-  PWMap _smap;
-  Set _visitedSE;
-  unsigned int _n;
+  PWMap _smap; ///< Path to MRV map.
+  PWMap _old_rmap; ///< MRV map in the previous iteration.
+  PWMap _rmap; ///< MRV map.
+  unsigned int _n; ///< Maximum repetition depth.
 };
 
 } // namespace LIB

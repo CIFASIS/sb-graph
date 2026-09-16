@@ -1,0 +1,17 @@
+/* Example for SCC testing =====================================================
+ * Description: the SBG defined in this file is obtained by executing the
+   tearing_TestRL3.test file. It is the result of deleting vertex 301 of the SBG
+   defined in that file, and inverting the direction of edges.
+ * Motivation: currently the execution gets stuck, because the repetition
+   overwrites the successor of 499 to 498 instead of 302. See iss-142 for a
+   detailed description of the problem. SOLVED.
+==============================================================================*/
+
+scc(
+  V: {[300:300], [302:398], [498:596], [697:698]}
+  Vmap: <<{[300:300], [302:398]} -> |4|, {[498:596]} -> |6|, {[697:697]} -> |9|, {[698:698]} -> |10|>>
+  
+  mapB: <<{[203:203], [204:298], [299:299], [400:400], [401:496], [497:497]} -> |x+99|, {[597:597], [598:695]} -> |x-99|, {[699:699]} -> |x-1|>>
+  mapD: <<{[203:203], [204:298], [597:597]} -> |x+100|, {[299:299]} -> |x+399|, {[400:400], [401:496]} -> |x-98|, {[497:497]} -> |x+201|, {[598:695]} -> |x-100|, {[699:699]} -> |596|>>
+  Emap: <<{[203:203], [204:298]} -> |3|, {[299:299]} -> |4|, {[400:400], [401:496]} -> |5|, {[497:497]} -> |6|, {[598:695]} -> |7|, {[597:597]} -> |8|, {[699:699]} -> |10|>>
+);

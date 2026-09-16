@@ -392,6 +392,17 @@ UnordPWMap UnordPWMap::min(const UnordPWMap& other) const
   return restrict(min_in_pw1).combine(other.restrict(domain())); 
 }
 
+UnordPWMap UnordPWMap::max(const UnordPWMap& other) const
+{
+  if (isEmpty() || other.isEmpty()) {
+    return UnordPWMap{};
+  }
+
+  Set min_in_pw1 = lessImage(other);
+  Set less_eq_in_pw1 = min_in_pw1.disjointCup(equalImage(other));
+  return other.restrict(less_eq_in_pw1).combine(restrict(other.domain())); 
+}
+
 UnordPWMap UnordPWMap::minAdj(const UnordPWMap& other) const
 {
   UnordPWMap result;
@@ -422,20 +433,34 @@ UnordPWMap UnordPWMap::minAdj(const UnordPWMap& other) const
   return result;
 }
 
-Set UnordPWMap::sharedImage() const
+UnordPWMap UnordPWMap::maxAdj(const UnordPWMap& other) const
 {
-  Set repeated_image;
+  UnordPWMap result;
+
   Set visited;
-  for (const Map& m : _pieces) {
-    Set image_in_visited = m.image().intersection(visited);
-    if (!image_in_visited.isEmpty()) {
-      repeated_image = std::move(repeated_image).cup(std::move(
-        image_in_visited));
+  for (const Map& m1 : _pieces) {
+    for (const Map& m2 : other._pieces) {
+      Map max_adj = m1.maxAdj(m2);
+      if (!max_adj.isEmpty()) {
+        Set max_adj_domain = max_adj.domain();
+        Set repeated = max_adj_domain.intersection(visited);
+        if (!repeated.isEmpty()) {
+          UnordPWMap max_adj_pw{std::move(max_adj)};
+          UnordPWMap max_adj_repeated = max_adj_pw.restrict(repeated); 
+          UnordPWMap result_repeated = result.restrict(repeated);
+          UnordPWMap max_map = max_adj_repeated.max(result_repeated);
+          UnordPWMap max_adj_result = max_map.combine(std::move(max_adj_pw));
+          result = max_adj_result.combine(std::move(result));
+          visited = visited.cup(max_adj_domain);
+        } else {
+          result.pushBack(std::move(max_adj));
+          visited = std::move(visited).disjointCup(std::move(max_adj_domain));
+        }
+      }
     }
-    visited = std::move(visited).cup(m.image());
   }
 
-  return preImage(repeated_image);
+  return result;
 }
 
 Set UnordPWMap::equalImage(const UnordPWMap& other) const

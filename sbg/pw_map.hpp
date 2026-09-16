@@ -203,19 +203,32 @@ public:
   PWMap min(const PWMap& other) const;
 
   /**
+   * @brief For every element in both domains assign the law that returns the
+   * maximum value.
+   */
+  PWMap max(const PWMap& other) const;
+
+  /**
    * @brief Given two maps pw1 (\p this) and pw2 (\p other), for every element y1
    * in the image of pw1 returns a pw res such that
-   * res(y1) = min{pw2(x) : pw1(x) = y1}. In SBG algorithms it is used to
-   * calculate for every vertex which of its adjacent vertices returns the
-   * minimum value according to pw \p other.
+   * res(y1) = min{pw2(x) : pw1(x) = y1}.
+   *
+   * In SBG algorithms it is used to calculate for every vertex which of its
+   * adjacent vertices returns the minimum value according to pw \p other.
    */
   PWMap minAdj(const PWMap& other) const;
 
-  /** 
-   * @brief Given a map, return elements of the domain that share its image with
-   * other values of the domain.
+  /**
+   * @brief Given two maps pw1 (\p this) and pw2 (\p other), for every element y1
+   * in the image of pw1 returns a pw res such that
+   * res(y1) = max{pw2(x) : pw1(x) = y1}.
+   *
+   * In SBG algorithms it is used to calculate for every vertex which of its
+   * adjacent vertices returns the maximum value according to pw \p other.
+   * For example, to calculate the maximum degree of vertices belonging to
+   * the same SCC. 
    */
-  Set sharedImage() const;
+  PWMap maxAdj(const PWMap& other) const;
 
   /** 
    * @brief Return elements in both domains, that have the same image in both

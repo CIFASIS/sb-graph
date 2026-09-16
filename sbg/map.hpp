@@ -151,6 +151,13 @@ public:
   Map minAdj(const Map& other) const;
 
   /**
+   * @brief Given two maps m1 (\p this) and m2 (\p other), for every element
+   * y in the image of m1 returns a map result such that
+   * result(y) = {max(m2(x)) : m1(x) = y}.
+   */
+  Map maxAdj(const Map& other) const;
+
+  /**
    * @brief If it is convenient calculates the result of composing the map with
    * itself until the image is out of the domain (without actually composing the
    * map). For example, reduce({[1:1:100]} -> x+1) = {[1:1:100]} -> 101.

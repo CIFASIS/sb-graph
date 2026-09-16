@@ -26,6 +26,7 @@
 
 #include "algorithms/mfvs/greedy_mfvs.hpp"
 #include "algorithms/mfvs/smallest_sv_mfvs.hpp"
+#include "algorithms/mfvs/parallel_scc.hpp"
 #include "sbg/directed_sbg.hpp"
 
 #include <iosfwd>
@@ -41,7 +42,7 @@ namespace detail {
 // Minimum Feedback Vertex Set Implementations --------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
-using MFVSImpl = std::variant<GreedyMFVS, SmallestSVMFVS>;
+using MFVSImpl = std::variant<GreedyMFVS, SmallestSVMFVS, ParallelSCCMFVS>;
 
 }
 

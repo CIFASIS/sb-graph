@@ -96,9 +96,10 @@ public:
   OrdPWMap combine(OrdPWMap&& other) &&;
 
   OrdPWMap min(const OrdPWMap& other) const;
+  OrdPWMap max(const OrdPWMap& other) const;
   OrdPWMap minAdj(const OrdPWMap& other) const;
+  OrdPWMap maxAdj(const OrdPWMap& other) const;
 
-  Set sharedImage() const;
   Set equalImage(const OrdPWMap& other) const;
   Set lessImage(const OrdPWMap& other) const;
 

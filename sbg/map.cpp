@@ -192,6 +192,25 @@ Map Map::minAdj(const Map& other) const
   return Map{result_domain, result_expr};
 }
 
+Map Map::maxAdj(const Map& other) const
+{
+  Set this_other_dom = _domain.intersection(other._domain);
+  if (this_other_dom.isEmpty()) {
+    return Map{};
+  }
+
+  Set result_domain = image(this_other_dom);
+  Expression result_expr;
+  if (_law.isInjective()) {
+    result_expr = other._law.composition(_law.inverse());
+  } else {
+    Set image2 = other.image(this_other_dom);
+    result_expr = Expression{image2.maxElem()};
+  }
+
+  return Map{result_domain, result_expr};
+}
+
 std::vector<Map> Map::reduce() const
 {
   return detail::MapDetail::reduce(*this);

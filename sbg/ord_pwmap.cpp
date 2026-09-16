@@ -606,6 +606,17 @@ OrdPWMap OrdPWMap::min(const OrdPWMap& other) const
   return restrict(min_in_pw1).combine(other.restrict(domain())); 
 }
 
+OrdPWMap OrdPWMap::max(const OrdPWMap& other) const
+{
+  if (isEmpty() || other.isEmpty()) {
+    return OrdPWMap{};
+  }
+
+  Set min_in_pw1 = lessImage(other);
+  Set less_eq_in_pw1 = min_in_pw1.disjointCup(equalImage(other));
+  return other.restrict(less_eq_in_pw1).combine(restrict(other.domain()));
+}
+
 class MinAdjCore {
 public:
   bool operator()(const MapEntry& entry1, const MapEntry& entry2) {
@@ -637,7 +648,7 @@ public:
 
 private:
   OrdPWMap _result;
-  Set _visited; 
+  Set _visited;
 };
 
 OrdPWMap OrdPWMap::minAdj(const OrdPWMap& other) const
@@ -649,21 +660,47 @@ OrdPWMap OrdPWMap::minAdj(const OrdPWMap& other) const
   return traverse(other, MinAdjCore{}).result();
 }
 
-Set OrdPWMap::sharedImage() const
-{
-  Set repeated_image;
-  Set visited;
-  for (const MapEntry& entry : _pieces) {
-    Set m_image = entry.map().image();
-    Set image_in_visited = m_image.intersection(visited);
-    if (!image_in_visited.isEmpty()) {
-      repeated_image = std::move(repeated_image).cup(std::move(
-        image_in_visited));
+class MaxAdjCore {
+public:
+  bool operator()(const MapEntry& entry1, const MapEntry& entry2) {
+    Map max_adj = entry1.map().maxAdj(entry2.map());
+    if (!max_adj.isEmpty()) {
+      Set max_adj_domain = max_adj.domain();
+      Set repeated = max_adj_domain.intersection(_visited);
+      if (!repeated.isEmpty()) {
+        OrdPWMap max_adj_pw{std::move(max_adj)};
+        OrdPWMap max_adj_repeated = max_adj_pw.restrict(repeated); 
+        OrdPWMap result_repeated = _result.restrict(repeated);
+        OrdPWMap max_map = max_adj_repeated.max(result_repeated);
+        OrdPWMap max_adj_result = std::move(max_map).combine(
+          std::move(max_adj_pw));
+        _result = std::move(max_adj_result).combine(std::move(_result));
+        _visited = std::move(_visited).cup(std::move(max_adj_domain));
+      } else {
+        _result.insert(std::move(max_adj));
+        _visited = std::move(_visited).disjointCup(std::move(max_adj_domain));
+      }
     }
-    visited = std::move(visited).cup(m_image);
+
+    return true;
   }
 
-  return preImage(repeated_image);
+  bool orderMatters() const { return true; }
+
+  OrdPWMap result() const { return _result; }
+
+private:
+  OrdPWMap _result;
+  Set _visited;
+};
+
+OrdPWMap OrdPWMap::maxAdj(const OrdPWMap& other) const
+{
+  if (isEmpty() || other.isEmpty()) {
+    return OrdPWMap{};
+  }
+
+  return traverse(other, MaxAdjCore{}).result();
 }
 
 class EqualImageCore {

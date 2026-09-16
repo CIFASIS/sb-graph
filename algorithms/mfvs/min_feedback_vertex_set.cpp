@@ -44,6 +44,11 @@ MinFeedbackVertexSet::MinFeedbackVertexSet() : _impl()
       break;
     }
 
+    case MFVSKind::kParallelSCC: {
+      _impl = detail::ParallelSCCMFVS{};
+      break;
+    }
+
     default: {
       Util::ERROR("MinFeedbackVertexSet: unsupported MFVS implementation");
       break;

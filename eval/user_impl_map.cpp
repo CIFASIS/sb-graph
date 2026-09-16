@@ -97,6 +97,7 @@ UserImplMap::StructImplMap mfvsMap()
   UserImplMap::StructImplMap mfvs_mapping;
   mfvs_mapping[0] = LIB::MFVSKind::kGreedy;
   mfvs_mapping[1] = LIB::MFVSKind::kSmallSV;
+  mfvs_mapping[2] = LIB::MFVSKind::kParallelSCC;
   mfvs_mapping.freeze();
   return mfvs_mapping;
 }

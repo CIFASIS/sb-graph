@@ -47,6 +47,11 @@ PWMap MinAdjMRV::calculate(const DirectedSBG& dsbg)
       return rmap;
     }
 
+    Set greater_one{2, 1, kPosInf};
+    for (std::size_t k = 1; k < arity; ++k) {
+      greater_one = greater_one.cartesianProduct(Set{2, 1, kPosInf});
+    }
+
     Set Vc;
     do {
       old_rmap = rmap;
@@ -73,7 +78,9 @@ PWMap MinAdjMRV::calculate(const DirectedSBG& dsbg)
           if (!vs.intersection(Vc).isEmpty()) {
             // Vertices in the set-vertex that share its rep with other vertex
             // in the set-vertex
-            Set VR = rmap.restrict(vs.intersection(other_rep)).sharedImage();
+            PWMap rmap_other = rmap.restrict(vs.intersection(other_rep));
+            Set repeated = rmap_other.imageMultiplicity().preImage(greater_one);
+            Set VR = rmap.preImage(repeated);
             // There is a repeated vertex that changed its rep in the last step
             // (to avoid computing again an already found repetition).
             if (!VR.intersection(Vc).isEmpty()) {

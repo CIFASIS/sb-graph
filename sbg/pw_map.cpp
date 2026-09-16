@@ -378,6 +378,22 @@ PWMap PWMap::min(const PWMap& other) const
     , _impl, other._impl);
 }
 
+PWMap PWMap::max(const PWMap& other) const
+{
+  return std::visit([](const auto& a, const auto& b)
+    {
+      using A = std::decay_t<decltype(a)>;
+      using B = std::decay_t<decltype(b)>;
+      if constexpr (std::is_same_v<A, B>) {
+        return PWMap{a.max(b)};
+      } else {
+        Util::ERROR("PWMap::max: mismatched implementations\n");
+        return PWMap{};
+      }
+    }
+    , _impl, other._impl);
+}
+
 PWMap PWMap::minAdj(const PWMap& other) const
 {
   return std::visit([](const auto& a, const auto& b)
@@ -394,9 +410,20 @@ PWMap PWMap::minAdj(const PWMap& other) const
     , _impl, other._impl);
 }
 
-Set PWMap::sharedImage() const
+PWMap PWMap::maxAdj(const PWMap& other) const
 {
-  return std::visit([](const auto& a) { return a.sharedImage(); }, _impl);
+  return std::visit([](const auto& a, const auto& b)
+    {
+      using A = std::decay_t<decltype(a)>;
+      using B = std::decay_t<decltype(b)>;
+      if constexpr (std::is_same_v<A, B>) {
+        return PWMap{a.maxAdj(b)};
+      } else {
+        Util::ERROR("PWMap::maxAdj: mismatched implementations\n");
+        return PWMap{};
+      }
+    }
+    , _impl, other._impl);
 }
 
 Set PWMap::equalImage(const PWMap& other) const

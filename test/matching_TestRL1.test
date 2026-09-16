@@ -1,10 +1,10 @@
-/* Model for causalization testing =============================================
+/* Example for matching testing ================================================
  * Description: model with N algebraic loops.
    Ua[i] and Uc[i] must be simultaneously solved.
 --------------------------------------------------------------------------------
 
 model TestRL1
-  constant Integer N = 1000000;
+  constant Integer N = 10000;
   Real iL[N], Ua[N], Uc[N];
   parameter Real Ra = 1, Rb = 1, Rc = 1, L = 1;
 equation
@@ -23,7 +23,7 @@ equation
 end TestRL1;
 ==============================================================================*/
 
-N = 100;
+N = 10000;
 
 F1 = 1;
 F2 = N-1+F1;

@@ -1,11 +1,11 @@
-/* Model for causalization testing =============================================
+/* Example for matching testing ================================================
  * Description: model with a large algebraic loop of size k*N.
    iR[i] and iR[i+1] can be computed out of each other.
    uL[i] and uL[i+1] can be computed out of each other.
 --------------------------------------------------------------------------------
 
 model TestRL3
-  constant Integer N=1000000;
+  constant Integer N=10000;
   Real iL[N],iR[N],uL[N];
   parameter Real L=1,R=1,L1=1,U=1,R0=1;
 equation
@@ -21,7 +21,7 @@ equation
 end TestRL3;
 ==============================================================================*/
 
-N = 100;
+N = 10000;
 
 F1 = N;
 F2 = N-1+F1;

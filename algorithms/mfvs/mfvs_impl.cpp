@@ -41,6 +41,11 @@ std::ostream& operator<<(std::ostream& out, const MFVSKind kind)
       break;
     }
 
+    case MFVSKind::kParallelSCC: {
+      out << "maximum degree from smallest set-vertex of each SCC";
+      break;
+    }
+
     default: {
       Util::ERROR("MFVSKind::operator<<: unsupported MFVS implementation");
       break;

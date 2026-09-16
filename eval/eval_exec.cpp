@@ -69,7 +69,7 @@ void printHeader(Util::prog_opts::variables_map vm)
 // Evaluation Executor ---------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-EvalExecutor::EvalExecutor() : _scc_impl(1), _mfvs_impl(1)
+EvalExecutor::EvalExecutor() : _scc_impl(1), _mfvs_impl(2)
 {
   _config.add_options()
     ("set_impl,s", Util::prog_opts::value(&_set_impl),
@@ -89,7 +89,8 @@ EvalExecutor::EvalExecutor() : _scc_impl(1), _mfvs_impl(1)
     ("mfvs_impl", Util::prog_opts::value(&_mfvs_impl),
      "Desired MFVS algorithm implementation:"
      "\n  - 0 for degree greedy MFVS"
-     "\n  - 1 for smallest set-vertex MFVS (default option)");
+     "\n  - 1 for smallest set-vertex MFVS"
+     "\n  - 2 for parallel SCC (default option)");
 
   // First option without name is the input file
   _positional.add("input-file", 1);

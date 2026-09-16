@@ -34,7 +34,7 @@ namespace LIB {
 // MFVS implementations --------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-enum class MFVSKind { kGreedy, kSmallSV };
+enum class MFVSKind { kGreedy, kSmallSV, kParallelSCC };
 
 std::ostream& operator<<(std::ostream& out, const MFVSKind kind);
 

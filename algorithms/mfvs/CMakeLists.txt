@@ -4,5 +4,6 @@ target_sources(
         greedy_mfvs.cpp
         min_feedback_vertex_set.cpp
         mfvs_impl.cpp
+        parallel_scc.cpp
         smallest_sv_mfvs.cpp
 )

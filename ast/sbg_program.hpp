@@ -30,14 +30,20 @@ namespace SBG {
 
 namespace AST {
 
-struct SBGProgram {
-  member_class(std::size_t, arity);
-  member_class(StatementList, stms);
-  member_class(ExprList, exprs);
-
+class SBGProgram {
+public:
   SBGProgram();
   SBGProgram(StatementList stms, ExprList exprs);
   SBGProgram(std::size_t arity, StatementList stms, ExprList exprs);
+
+  const std::size_t arity() const;
+  const StatementList& stms() const;
+  const ExprList& exprs() const;
+
+private:
+  std::size_t _arity;
+  StatementList _stms;
+  ExprList _exprs;
 };
 std::ostream &operator<<(std::ostream &out, const SBGProgram &prog);
 

@@ -24,7 +24,7 @@
 #ifndef SBGRAPH_EVAL_VAR_ENV_HPP_
 #define SBGRAPH_EVAL_VAR_ENV_HPP_
 
-#include "ast/expr.hpp"
+#include "ast/expression.hpp"
 #include "eval/base_type.hpp"
 
 #include <unordered_map>

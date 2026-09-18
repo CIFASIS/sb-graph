@@ -179,7 +179,7 @@ ExprBaseType ExprEvaluator::operator()(AST::Set v) const
   return result;
 }
 
-ExprBaseType ExprEvaluator::operator()(AST::LinearExp v) const
+ExprBaseType ExprEvaluator::operator()(AST::LinearExpr v) const
 {
   LinearExprEvaluator linear_expr_evaluator{_eval_context.venv()};
   LIB::detail::LinearExpr linear_expr
@@ -208,8 +208,8 @@ ExprBaseType ExprEvaluator::operator()(AST::MDLExp v) const
 
 ExprBaseType ExprEvaluator::operator()(AST::LinearMap v) const
 {
-  LIB::Set domain = eval<LIB::Set>(*this, v.dom(), "Set");
-  LIB::Expression law = eval<LIB::Expression>(*this, v.lexp(), "Expression");
+  LIB::Set domain = eval<LIB::Set>(*this, v.domain(), "Set");
+  LIB::Expression law = eval<LIB::Expression>(*this, v.law(), "Expression");
 
   LIB::Map result{domain, law};
 
@@ -272,7 +272,7 @@ ExprBaseType ExprEvaluator::operator()(AST::DSBG v) const
 
 ExprBaseType ExprEvaluator::operator()(AST::ParenExpr v) const
 {
-  return boost::apply_visitor(*this, v.e());
+  return boost::apply_visitor(*this, v.pexpr());
 }
 
 } // namespace detail

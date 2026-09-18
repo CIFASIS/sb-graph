@@ -24,7 +24,7 @@
 #ifndef SBGRAPH_EVAL_VISITORS_RATIONAL_EVALUATOR_HPP_ 
 #define SBGRAPH_EVAL_VISITORS_RATIONAL_EVALUATOR_HPP_
 
-#include "ast/expr.hpp"
+#include "ast/expression.hpp"
 #include "eval/var_env.hpp"
 #include "sbg/rational.hpp"
 
@@ -50,7 +50,7 @@ public:
   LIB::Rational operator()(AST::Interval v) const;
   LIB::Rational operator()(AST::MultiDimInter v) const;
   LIB::Rational operator()(AST::Set v) const;
-  LIB::Rational operator()(AST::LinearExp v) const;
+  LIB::Rational operator()(AST::LinearExpr v) const;
   LIB::Rational operator()(AST::MDLExp v) const;
   LIB::Rational operator()(AST::LinearMap v) const;
   LIB::Rational operator()(AST::PWLMap v) const;

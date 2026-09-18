@@ -94,7 +94,7 @@ int SetImplExprVisitor::operator()(AST::Set v) const
   return impl;
 }
 
-int SetImplExprVisitor::operator()(AST::LinearExp v) const
+int SetImplExprVisitor::operator()(AST::LinearExpr v) const
 {
   RationalEvaluator visit_rat{_venv};
   LIB::Rational r = boost::apply_visitor(visit_rat, v.slope());
@@ -114,8 +114,8 @@ int SetImplExprVisitor::operator()(AST::MDLExp v) const
 
 int SetImplExprVisitor::operator()(AST::LinearMap v) const
 {
-  int dom_impl = boost::apply_visitor(*this, v.dom());
-  int lexp_impl = boost::apply_visitor(*this, v.lexp());
+  int dom_impl = boost::apply_visitor(*this, v.domain());
+  int lexp_impl = boost::apply_visitor(*this, v.law());
 
   return std::min(dom_impl, lexp_impl);
 }
@@ -173,7 +173,7 @@ int SetImplExprVisitor::operator()(AST::DSBG v) const
 
 int SetImplExprVisitor::operator()(AST::ParenExpr v) const
 {
-  return boost::apply_visitor(*this, v.e());
+  return boost::apply_visitor(*this, v.pexpr());
 }
 
 } // namespace detail

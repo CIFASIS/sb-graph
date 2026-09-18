@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "ast/expr.hpp"
+#include "ast/expression.hpp"
 
 #include <iostream>
 
@@ -29,20 +29,24 @@ namespace AST {
 // Arithmetic expressions ------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-Rational::Rational() : num_(), den_() {}
-Rational::Rational(Expr num, Expr den) : num_(num), den_(den) {}
+Rational::Rational() : _numerator(0), _denominator(1) {}
 
-member_imp(Rational, Expr, num);
-member_imp(Rational, Expr, den);
+Rational::Rational(Expr numerator, Expr denominator)
+  : _numerator(numerator), _denominator(denominator) {}
 
-bool Rational::operator==(const Rational &other) const
+const Expr& Rational::numerator() const { return _numerator; }
+
+const Expr& Rational::denominator() const { return _denominator; }
+
+bool Rational::operator==(const Rational& other) const
 {
-  return num() == other.num() && den() == other.den();
+  return _numerator == other._numerator
+    && _denominator == other._denominator;
 }
 
-std::ostream &operator<<(std::ostream &out, const Rational &r)
+std::ostream& operator<<(std::ostream& out, const Rational& r)
 {
-  out << "(" << r.num() << "/" << r.den() << ")";
+  out << "(" << r.numerator() << "/" << r.denominator() << ")";
 
   return out;
 }
@@ -53,21 +57,22 @@ std::ostream &operator<<(std::ostream &out, const Rational &r)
 
 // Interval --------------------------------------------------------------------
 
-Interval::Interval() : begin_(), step_(), end_() {}
-Interval::Interval(Expr begin, Expr step, Expr end) : begin_(begin), step_(step)
-  , end_(end) {}
+Interval::Interval(Expr begin, Expr step, Expr end)
+  : _begin(begin), _step(step), _end(end) {}
 
-member_imp(Interval, Expr, begin);
-member_imp(Interval, Expr, step);
-member_imp(Interval, Expr, end);
+const Expr& Interval::begin() const { return _begin; }
 
-bool Interval::operator==(const Interval &other) const
+const Expr& Interval::step() const { return _step; }
+
+const Expr& Interval::end() const { return _end; }
+
+bool Interval::operator==(const Interval& other) const
 {
-  return begin() == other.begin() && step() == other.step()
-    && step() == other.step();
+  return _begin == other._begin && _step == other._step
+   && _step == other._step;
 }
 
-std::ostream &operator<<(std::ostream &out, const Interval &i)
+std::ostream& operator<<(std::ostream& out, const Interval& i)
 { 
   out << "[" << i.begin() << ":" << i.step() << ":" << i.end() << "]";
 
@@ -76,17 +81,16 @@ std::ostream &operator<<(std::ostream &out, const Interval &i)
 
 // Multi-dimensional interval --------------------------------------------------
 
-MultiDimInter::MultiDimInter() : intervals_() {}
-MultiDimInter::MultiDimInter(ExprList intervals) : intervals_(intervals) {}
+MultiDimInter::MultiDimInter(ExprList intervals) : _intervals(intervals) {}
 
-member_imp(MultiDimInter, ExprList, intervals);
+const ExprList& MultiDimInter::intervals() const { return _intervals; }
 
-bool MultiDimInter::operator==(const MultiDimInter &other) const
+bool MultiDimInter::operator==(const MultiDimInter& other) const
 {
-  return intervals() == other.intervals();
+  return _intervals == other._intervals;
 }
 
-std::ostream &operator<<(std::ostream &out, const MultiDimInter &mdi)
+std::ostream& operator<<(std::ostream& out, const MultiDimInter& mdi)
 {
   MultiDimInter aux = mdi;
   int sz = aux.intervals().size();
@@ -105,17 +109,16 @@ std::ostream &operator<<(std::ostream &out, const MultiDimInter &mdi)
 
 // Set -------------------------------------------------------------------------
 
-Set::Set() : pieces_() {}
-Set::Set(ExprList pieces) : pieces_(pieces) {}
+Set::Set(ExprList pieces) : _pieces(pieces) {}
 
-member_imp(Set, ExprList, pieces);
+const ExprList& Set::pieces() const { return _pieces; }
 
-bool Set::operator==(const Set &other) const
+bool Set::operator==(const Set& other) const
 {
-  return pieces() == other.pieces();
+  return _pieces == other._pieces;
 }
 
-std::ostream &operator<<(std::ostream &out, const Set &s)
+std::ostream& operator<<(std::ostream& out, const Set& s)
 {
   Set aux = s;
   int sz = aux.pieces().size();
@@ -136,19 +139,19 @@ std::ostream &operator<<(std::ostream &out, const Set &s)
 
 // Linear expression -----------------------------------------------------------
 
-LinearExp::LinearExp() : slope_(), offset_() {}
-LinearExp::LinearExp(Expr slope, Expr offset) : slope_(slope), offset_(offset)
-  {}
+LinearExpr::LinearExpr(Expr slope, Expr offset)
+  : _slope(slope), _offset(offset) {}
 
-member_imp(LinearExp, Expr, slope);
-member_imp(LinearExp, Expr, offset);
+const Expr& LinearExpr::slope() const { return _slope; }
 
-bool LinearExp::operator==(const LinearExp &other) const
+const Expr& LinearExpr::offset() const { return _offset; }
+
+bool LinearExpr::operator==(const LinearExpr& other) const
 {
-  return slope() == other.slope() && offset() == other.offset();
+  return _slope == other._slope && _offset == other._offset;
 }
 
-std::ostream &operator<<(std::ostream &out, const LinearExp &le)
+std::ostream& operator<<(std::ostream& out, const LinearExpr& le)
 {
   out << "(" << le.slope() << ")x+" << le.offset();
 
@@ -157,17 +160,16 @@ std::ostream &operator<<(std::ostream &out, const LinearExp &le)
 
 // Multi-dimensional linear expression -----------------------------------------
 
-MDLExp::MDLExp() : exps_() {}
-MDLExp::MDLExp(ExprList exps) : exps_(exps) {}
+MDLExp::MDLExp(ExprList exps) : _exps(exps) {}
 
-member_imp(MDLExp, ExprList, exps);
+const ExprList& MDLExp::exps() const { return _exps; }
 
-bool MDLExp::operator==(const MDLExp &other) const
+bool MDLExp::operator==(const MDLExp& other) const
 {
-  return exps() == other.exps();
+  return _exps == other._exps;
 }
 
-std::ostream &operator<<(std::ostream &out, const MDLExp &le)
+std::ostream& operator<<(std::ostream& out, const MDLExp& le)
 {
   MDLExp aux = le;
   int sz = aux.exps().size();
@@ -186,37 +188,36 @@ std::ostream &operator<<(std::ostream &out, const MDLExp &le)
 
 // SBG map ---------------------------------------------------------------------
 
-LinearMap::LinearMap() : dom_(), lexp_() {}
-LinearMap::LinearMap(Expr dom, Expr lexp) : dom_(dom), lexp_(lexp) {}
+LinearMap::LinearMap(Expr domain, Expr law) : _domain(domain), _law(law) {}
 
-member_imp(LinearMap, Expr, dom);
-member_imp(LinearMap, Expr, lexp);
+const Expr& LinearMap::domain() const { return _domain; }
 
-bool LinearMap::operator==(const LinearMap &other) const
+const Expr& LinearMap::law() const { return _law; }
+
+bool LinearMap::operator==(const LinearMap& other) const
 {
-  return dom() == other.dom() && lexp() == other.lexp();
+  return _domain == other._domain && _law == other._law;
 }
 
-std::ostream &operator<<(std::ostream &out, const LinearMap &lmap)
+std::ostream& operator<<(std::ostream& out, const LinearMap& lmap)
 {
-  out << lmap.dom() << " ↦ " << lmap.lexp();
+  out << lmap.domain() << " ↦ " << lmap.law();
 
   return out;
 }
 
 // Piecewise linear map --------------------------------------------------------
 
-PWLMap::PWLMap() : maps_() {}
-PWLMap::PWLMap(ExprList maps) : maps_(maps) {}
+PWLMap::PWLMap(ExprList maps) : _maps(maps) {}
 
-member_imp(PWLMap, ExprList, maps);
+const ExprList& PWLMap::maps() const { return _maps; }
 
-bool PWLMap::operator==(const PWLMap &other) const
+bool PWLMap::operator==(const PWLMap& other) const
 {
-  return maps() == other.maps();
+  return _maps == other._maps;
 }
 
-std::ostream &operator<<(std::ostream &out, const PWLMap &pwl)
+std::ostream& operator<<(std::ostream& out, const PWLMap& pwl)
 {
   PWLMap aux = pwl;
   unsigned int sz = aux.maps().size();
@@ -237,8 +238,6 @@ std::ostream &operator<<(std::ostream &out, const PWLMap &pwl)
 
 // SBG -------------------------------------------------------------------------
 
-SBG::SBG() : _V(), _Vmap(), _map1(), _map2(), _Emap() {}
-
 SBG::SBG(Expr V, Expr Vmap, Expr map1, Expr map2, Expr Emap) : _V(V)
   , _Vmap(Vmap), _map1(map1), _map2(map2), _Emap(Emap) {}
 
@@ -252,13 +251,13 @@ const Expr& SBG::map2() const { return _map2; }
 
 const Expr& SBG::Emap() const { return _Emap; }
 
-bool SBG::operator==(const SBG &other) const 
+bool SBG::operator==(const SBG& other) const 
 { 
   return _V == other._V && _Vmap == other._Vmap && _map1 == other._map1
-    && _map2 == other._map2 && _Emap == other._Emap;
+   && _map2 == other._map2 && _Emap == other._Emap;
 }
 
-std::ostream &operator<<(std::ostream &out, const SBG &g)
+std::ostream& operator<<(std::ostream& out, const SBG& g)
 {
   out << "V: " << g.V() << "\n";
   out << "Vmap: " << g.Vmap() << "\n\n";
@@ -271,8 +270,6 @@ std::ostream &operator<<(std::ostream &out, const SBG &g)
 
 // Bipartite SBG ---------------------------------------------------------------
 
-BipartiteSBG::BipartiteSBG() : _X(), _Y() {}
-
 BipartiteSBG::BipartiteSBG(Expr V, Expr Vmap, Expr map1, Expr map2, Expr Emap
   , Expr X, Expr Y)
   : SBG(V, Vmap, map1, map2, Emap), _X(X), _Y(Y) {}
@@ -281,14 +278,14 @@ const Expr& BipartiteSBG::X() const { return _X; }
 
 const Expr& BipartiteSBG::Y() const { return _Y; }
 
-bool BipartiteSBG::operator==(const BipartiteSBG &other) const 
+bool BipartiteSBG::operator==(const BipartiteSBG& other) const 
 { 
   return _V == other._V && _Vmap == other._Vmap && _map1 == other._map1
-    && _map2 == other._map2 && _Emap == other._Emap
-    && _X == other._X && _Y == other._Y;
+   && _map2 == other._map2 && _Emap == other._Emap
+   && _X == other._X && _Y == other._Y;
 }
 
-std::ostream &operator<<(std::ostream &out, const BipartiteSBG &g)
+std::ostream& operator<<(std::ostream& out, const BipartiteSBG& g)
 {
   out << "V: " << g.V() << "\n";
   out << "Vmap: " << g.Vmap() << "\n\n";
@@ -303,24 +300,26 @@ std::ostream &operator<<(std::ostream &out, const BipartiteSBG &g)
 
 // DSBG ------------------------------------------------------------------------
 
-DSBG::DSBG() : V_(), Vmap_(), mapB_(), mapD_(), Emap_() {}
-
 DSBG::DSBG(Expr V, Expr Vmap, Expr mapB, Expr mapD, Expr Emap)
-  : V_(V), Vmap_(Vmap), mapB_(mapB), mapD_(mapD), Emap_(Emap) {}
+  : _V(V), _Vmap(Vmap), _mapB(mapB), _mapD(mapD), _Emap(Emap) {}
 
-member_imp(DSBG, Expr, V);
-member_imp(DSBG, Expr, Vmap);
-member_imp(DSBG, Expr, mapB);
-member_imp(DSBG, Expr, mapD);
-member_imp(DSBG, Expr, Emap);
+const Expr& DSBG::V() const { return _V; }
 
-bool DSBG::operator==(const DSBG &other) const 
+const Expr& DSBG::Vmap() const { return _Vmap; }
+
+const Expr& DSBG::mapB() const { return _mapB; }
+
+const Expr& DSBG::mapD() const { return _mapD; }
+
+const Expr& DSBG::Emap() const { return _Emap; }
+
+bool DSBG::operator==(const DSBG& other) const 
 { 
-  return V() == other.V() && Vmap() == other.Vmap() && mapB() == other.mapB()
-    && mapD() == other.mapD() && Emap() == other.Emap();
+  return _V == other._V && _Vmap == other._Vmap  && _mapB == other._mapB
+   && _mapD == other._mapD && _Emap == other._Emap;
 }
 
-std::ostream &operator<<(std::ostream &out, const DSBG &dg)
+std::ostream& operator<<(std::ostream& out, const DSBG& dg)
 {
   out << "V: " << dg.V() << "\n";
   out << "Vmap: " << dg.Vmap() << "\n\n";
@@ -335,7 +334,7 @@ std::ostream &operator<<(std::ostream &out, const DSBG &dg)
 // Composite expressions -------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-std::ostream &operator<<(std::ostream &out, const UnOp &op)
+std::ostream& operator<<(std::ostream& out, const UnOp& op)
 {
   switch (op) {
     case UnOp::oppo:
@@ -357,7 +356,7 @@ std::ostream &operator<<(std::ostream &out, const UnOp &op)
   return out;
 }
 
-std::ostream &operator<<(std::ostream &out, const Op &op)
+std::ostream& operator<<(std::ostream& out, const Op& op)
 {
   switch (op) {
     case Op::add:
@@ -403,18 +402,20 @@ std::ostream &operator<<(std::ostream &out, const Op &op)
   return out;
 }
 
-UnaryOp::UnaryOp() : op_(), expr_() {}
-UnaryOp::UnaryOp(UnOp op, Expr expr) : op_(op), expr_(expr) {}
+// Unary operations ------------------------------------------------------------
 
-member_imp(UnaryOp, UnOp, op);
-member_imp(UnaryOp, Expr, expr);
+UnaryOp::UnaryOp(UnOp op, Expr expr) : _op(op), _expr(expr) {}
 
-bool UnaryOp::operator==(const UnaryOp &other) const
+const UnOp& UnaryOp::op() const { return _op; }
+
+const Expr& UnaryOp::expr() const { return _expr;}
+
+bool UnaryOp::operator==(const UnaryOp& other) const
 {
-  return op() == other.op() && expr() == other.expr();
+  return _op == other._op && _expr == other._expr;
 }
 
-std::ostream &operator<<(std::ostream &out, const UnaryOp &uop)
+std::ostream& operator<<(std::ostream& out, const UnaryOp& uop)
 { 
   switch (uop.op()) {
     case UnOp::comp:
@@ -429,50 +430,58 @@ std::ostream &operator<<(std::ostream &out, const UnaryOp &uop)
   return out;
 }
 
-BinOp::BinOp() : left_(), op_(), right_() {}
-BinOp::BinOp(Expr left, Op op, Expr right) : left_(left), op_(op)
-  , right_(right) {}
+// Binary operations -----------------------------------------------------------
 
-member_imp(BinOp, Expr, left);
-member_imp(BinOp, Op, op);
-member_imp(BinOp, Expr, right);
+BinOp::BinOp(Expr left, Op op, Expr right)
+  : _left(left), _op(op), _right(right) {}
 
-bool BinOp::operator==(const BinOp &other) const
+const Expr& BinOp::left() const { return _left; }
+
+const Op& BinOp::op() const { return _op; }
+
+const Expr& BinOp::right() const { return _right; }
+
+bool BinOp::operator==(const BinOp& other) const
 {
-  return left() == other.left() && op() == other.op() 
-    && right() == other.right();
+  return _left == other._left && _op == other._op 
+   && _right == other._right;
 }
 
-std::ostream &operator<<(std::ostream &out, const BinOp &bop)
+std::ostream& operator<<(std::ostream& out, const BinOp& bop)
 { 
   out << bop.left() << bop.op() << bop.right();
 
   return out;
 }
 
-Call::Call() : name_(), args_() {}
-Call::Call(Name name, ExprList args) : name_(name), args_(args) {}
-Call::Call(Name name, Expr args) : name_(name), args_() {
-  args_.push_back(args);
-}
+// Call ------------------------------------------------------------------------
 
-member_imp(Call, Name, name);
-member_imp(Call, ExprList, args);
-
-bool Call::operator==(const Call &other) const
+Call::Call(Name name, Expr arg) : _name(name)
 {
-  return name() == other.name() && args() == other.args();
+  _args.push_back(arg);
 }
 
-std::ostream &operator<<(std::ostream &out, const Call &c)
+Call::Call(Name name, ExprList args) : _name(name), _args(args) {}
+
+const Name& Call::name() const { return _name; }
+
+const ExprList& Call::args() const { return _args; }
+
+bool Call::operator==(const Call& other) const
+{
+  return _name == other._name && _args == other._args;
+}
+
+std::ostream& operator<<(std::ostream& out, const Call& c)
 {
   unsigned int sz = c.args().size();
 
   out << c.name() << "(";
   if (sz > 0) {
     unsigned int i = 0;
-    for (; i < sz - 1; ++i)
+    for (; i < sz - 1; ++i) {
       out << c.args()[i] << ", ";
+    }
     out << c.args()[i];
   }
   out << ")"; 
@@ -480,24 +489,29 @@ std::ostream &operator<<(std::ostream &out, const Call &c)
   return out;
 }
 
-ParenExpr::ParenExpr() : e_() {}
-ParenExpr::ParenExpr(Expr e) : e_(e) {}
+// Parenthesis expression ------------------------------------------------------
 
-member_imp(ParenExpr, Expr, e);
+ParenExpr::ParenExpr(Expr e) : _pexpr(e) {}
 
-bool ParenExpr::operator==(const ParenExpr &pe) const { return e_ == pe.e_; }
+const Expr& ParenExpr::pexpr() const { return _pexpr; }
 
-std::ostream &operator<<(std::ostream &out, const ParenExpr &pe)
+bool ParenExpr::operator==(const ParenExpr& pe) const
 {
-  out << "(" << pe.e() << ")";
+  return _pexpr == pe._pexpr;
+}
+
+std::ostream& operator<<(std::ostream& out, const ParenExpr& pe)
+{
+  out << "(" << pe.pexpr() << ")";
 
   return out;
 }
 
-std::ostream &operator<<(std::ostream &out, const ExprList &el)
+std::ostream& operator<<(std::ostream& out, const ExprList& el)
 {
-  for (Expr e : el)
+  for (const Expr& e : el) {
     out << e << ";\n";
+  }
 
   return out;
 }

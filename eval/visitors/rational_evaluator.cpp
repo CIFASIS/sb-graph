@@ -39,8 +39,8 @@ LIB::Rational RationalEvaluator::operator()(AST::Integer v) const
 LIB::Rational RationalEvaluator::operator()(AST::Rational v) const
 {
   IntEvaluator visit_int{_venv};
-  return LIB::Rational(boost::apply_visitor(visit_int, v.num())
-                        , boost::apply_visitor(visit_int, v.den()));
+  return LIB::Rational(boost::apply_visitor(visit_int, v.numerator())
+                        , boost::apply_visitor(visit_int, v.denominator()));
 }
 
 LIB::Rational RationalEvaluator::operator()(AST::Name v) const 
@@ -137,7 +137,7 @@ LIB::Rational RationalEvaluator::operator()(AST::Set v) const
   return 0;
 }
 
-LIB::Rational RationalEvaluator::operator()(AST::LinearExp v) const
+LIB::Rational RationalEvaluator::operator()(AST::LinearExpr v) const
 {
   Util::ERROR("RationalEvaluator: trying to evaluate LinearExp ", v, "\n");
   return 0;
@@ -181,7 +181,7 @@ LIB::Rational RationalEvaluator::operator()(AST::DSBG v) const
 
 LIB::Rational RationalEvaluator::operator()(AST::ParenExpr v) const
 {
-  return boost::apply_visitor(*this, v.e());
+  return boost::apply_visitor(*this, v.pexpr());
 }
 
 } // namespace detail

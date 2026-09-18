@@ -1,7 +1,7 @@
 target_sources(
     sbg-parser-lib
     PRIVATE
-    expr.cpp
+    expression.cpp
     sbg_program.cpp
     statement.cpp
 )

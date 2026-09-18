@@ -26,7 +26,7 @@
 #ifndef SBGRAPH_PARSER_EXPR_HPP_
 #define SBGRAPH_PARSER_EXPR_HPP_
 
-#include "ast/expr.hpp"
+#include "ast/expression.hpp"
 #include "parser/skipper.hpp"
 #include "sbg/integer.hpp"
 

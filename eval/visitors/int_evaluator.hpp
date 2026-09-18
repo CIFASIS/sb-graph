@@ -24,7 +24,7 @@
 #ifndef SBGRAPH_EVAL_VISITORS_INT_EVALUATOR_HPP_
 #define SBGRAPH_EVAL_VISITORS_INT_EVALUATOR_HPP_
 
-#include "ast/expr.hpp"
+#include "ast/expression.hpp"
 #include "eval/var_env.hpp"
 #include "sbg/rational.hpp"
 
@@ -50,7 +50,7 @@ public:
   LIB::Int operator()(AST::Interval v) const;
   LIB::Int operator()(AST::MultiDimInter v) const;
   LIB::Int operator()(AST::Set v) const;
-  LIB::Int operator()(AST::LinearExp v) const;
+  LIB::Int operator()(AST::LinearExpr v) const;
   LIB::Int operator()(AST::MDLExp v) const;
   LIB::Int operator()(AST::LinearMap v) const;
   LIB::Int operator()(AST::PWLMap v) const;

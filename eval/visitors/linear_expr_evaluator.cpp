@@ -38,8 +38,8 @@ LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::Integer v) const
 LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::Rational v) const
 {
   IntEvaluator visit_int{_venv};
-  LIB::Int p = boost::apply_visitor(visit_int, v.num());
-  LIB::Int q = boost::apply_visitor(visit_int, v.den());
+  LIB::Int p = boost::apply_visitor(visit_int, v.numerator());
+  LIB::Int q = boost::apply_visitor(visit_int, v.denominator());
   return LIB::detail::LinearExpr{0, LIB::Rational{p, q}};
 }
 
@@ -140,7 +140,7 @@ LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::Set v) const
   return LIB::detail::LinearExpr{}; 
 }
 
-LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::LinearExp v) const
+LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::LinearExpr v) const
 { 
   RationalEvaluator visit_rat{_venv};
   AST::Expr m = v.slope();
@@ -190,7 +190,7 @@ LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::DSBG v) const
 
 LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::ParenExpr v) const
 {
-  return boost::apply_visitor(*this, v.e());
+  return boost::apply_visitor(*this, v.pexpr());
 }
 
 } // namespace detail

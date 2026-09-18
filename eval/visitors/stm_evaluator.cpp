@@ -36,10 +36,10 @@ EvalContext& StmEvaluator::eval_context() const
 StmResult StmEvaluator::operator()(AST::Assign assgn) const 
 {
   ExprEvaluator eval_expr(_eval_context);
-  ExprBaseType e = boost::apply_visitor(eval_expr, assgn.r());
-  _eval_context.insertVariable(assgn.l(), e);
+  ExprBaseType e = boost::apply_visitor(eval_expr, assgn.right());
+  _eval_context.insertVariable(assgn.left(), e);
 
-  return StmResult(assgn.l(), e);
+  return StmResult(assgn.left(), e);
 }
 
 StmResult StmEvaluator::operator()(AST::ConfigDims cfg) const

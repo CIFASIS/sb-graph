@@ -24,7 +24,7 @@
 #ifndef SBGRAPH_EVAL_VISITORS_LINEAR_EXPR_EVALUTOR_HPP_
 #define SBGRAPH_EVAL_VISITORS_LINEAR_EXPR_EVALUTOR_HPP_
 
-#include "ast/expr.hpp"
+#include "ast/expression.hpp"
 #include "eval/var_env.hpp"
 #include "sbg/linear_expr.hpp"
 
@@ -50,7 +50,7 @@ public:
   LIB::detail::LinearExpr operator()(AST::Interval v) const;
   LIB::detail::LinearExpr operator()(AST::MultiDimInter v) const;
   LIB::detail::LinearExpr operator()(AST::Set v) const;
-  LIB::detail::LinearExpr operator()(AST::LinearExp v) const;
+  LIB::detail::LinearExpr operator()(AST::LinearExpr v) const;
   LIB::detail::LinearExpr operator()(AST::MDLExp v) const;
   LIB::detail::LinearExpr operator()(AST::LinearMap v) const;
   LIB::detail::LinearExpr operator()(AST::PWLMap v) const;

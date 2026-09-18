@@ -24,7 +24,7 @@
 #ifndef SBGRAPH_EVAL_VISITORS_EXPR_EVALUATOR_HPP_ 
 #define SBGRAPH_EVAL_VISITORS_EXPR_EVALUATOR_HPP_
 
-#include "ast/expr.hpp"
+#include "ast/expression.hpp"
 #include "eval/base_type.hpp"
 #include "eval/eval_context.hpp"
 
@@ -49,7 +49,7 @@ public:
   ExprBaseType operator()(AST::Interval v) const;
   ExprBaseType operator()(AST::MultiDimInter v) const;
   ExprBaseType operator()(AST::Set v) const;
-  ExprBaseType operator()(AST::LinearExp v) const;
+  ExprBaseType operator()(AST::LinearExpr v) const;
   ExprBaseType operator()(AST::MDLExp v) const;
   ExprBaseType operator()(AST::LinearMap v) const;
   ExprBaseType operator()(AST::PWLMap v) const;

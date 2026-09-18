@@ -24,33 +24,42 @@
 #ifndef SBGRAPH_AST_STATEMENT_HPP_ 
 #define SBGRAPH_AST_STATEMENT_HPP_
 
-#include "ast/expr.hpp"
+#include "ast/expression.hpp"
 #include "util/debug.hpp"
 
 namespace SBG {
 
 namespace AST {
 
-struct Assign {
-  member_class(Name, l);
-  member_class(Expr, r);
+class Assign {
+public:
+  Assign() = default;
+  Assign(Name left, Expr right);
 
-  Assign();
-  Assign(Name l, Expr r);
+  const Name& left() const;
+  const Expr& right() const;
+
+private:
+  Name _left;
+  Expr _right;
 };
 std::ostream &operator<<(std::ostream &out, const Assign &asgn);
 
-struct ConfigDims {
-  member_class(std::size_t, arity);
-  
-  ConfigDims();
+class ConfigDims {
+public:
+  ConfigDims() = default;
   ConfigDims(std::size_t arity);
+
+  const std::size_t arity() const;
+
+private:
+  std::size_t _arity;
 };
 std::ostream &operator<<(std::ostream &out, const ConfigDims &cfg);
 
-struct IsConfig : public boost::static_visitor<bool> {
-  public:
-  IsConfig();
+class IsConfig : public boost::static_visitor<bool> {
+public:
+  IsConfig() = default;
 
   bool operator()(Assign v) const;
   bool operator()(ConfigDims v) const;

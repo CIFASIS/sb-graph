@@ -61,7 +61,7 @@ public:
   int operator()(AST::Interval v) const;
   int operator()(AST::MultiDimInter v) const;
   int operator()(AST::Set v) const;
-  int operator()(AST::LinearExp v) const;
+  int operator()(AST::LinearExpr v) const;
   int operator()(AST::MDLExp v) const;
   int operator()(AST::LinearMap v) const;
   int operator()(AST::PWLMap v) const;

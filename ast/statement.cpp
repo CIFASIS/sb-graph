@@ -23,23 +23,22 @@ namespace SBG {
 
 namespace AST {
 
-Assign::Assign() : l_(), r_() {}
-Assign::Assign(Name l, Expr r) : l_(l), r_(r) {}
+Assign::Assign(Name left, Expr right) : _left(left), _right(right) {}
 
-member_imp(Assign, Name, l);
-member_imp(Assign, Expr, r);
+const Name& Assign::left() const { return _left; }
+
+const Expr& Assign::right() const { return _right; }
 
 std::ostream &operator<<(std::ostream &out, const Assign &asgn)
 {
-  out << asgn.l() << " = " << asgn.r();
+  out << asgn.left() << " = " << asgn.right();
 
   return out;
 }
 
-ConfigDims::ConfigDims() : arity_(0) {}
-ConfigDims::ConfigDims(std::size_t arity) : arity_(arity) {
+ConfigDims::ConfigDims(std::size_t arity) : _arity(arity) {
   if (arity > 0) {
-    arity_ = arity;
+    _arity = arity;
   }
 
   else {
@@ -47,7 +46,7 @@ ConfigDims::ConfigDims(std::size_t arity) : arity_(arity) {
   }
 }
 
-member_imp(ConfigDims, std::size_t, arity);
+const std::size_t ConfigDims::arity() const { return _arity; }
 
 std::ostream &operator<<(std::ostream &out, const ConfigDims &cfg)
 {
@@ -56,15 +55,15 @@ std::ostream &operator<<(std::ostream &out, const ConfigDims &cfg)
   return out;
 }
 
-IsConfig::IsConfig() {}
-
 bool IsConfig::operator()(Assign v) const { return false; }
+
 bool IsConfig::operator()(ConfigDims v) const { return true; }
 
 std::ostream &operator<<(std::ostream &out, const StatementList &stml)
 {
-  for (Statement s : stml)
+  for (Statement s : stml) {
     out << s << ";\n";
+  }
 
   return out;
 }

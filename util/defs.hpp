@@ -35,27 +35,6 @@ namespace Util {
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * @brief Define a variable member of a class and the getters and setters.
- *
- * The macro takes two parameters:
- *  + The variable type @c X.
- *  + The name of the variable @c Y.
- *
- * It will define the following:
- *  + A member variable called: @c Y_
- *  + A constant ref getter method: @c Y()
- *
- */
-#define member_class(X, Y) \
-  private:                 \
-  X Y##_;                  \
-  public:                  \
-  const X &Y() const;
-
-#define member_imp(C, X, Y)          \
-  const X &C::Y() const { return Y##_; }
-
-/**
  * @brief Execution time of selected functions will be printed if it's true.
  */
 constexpr bool time_profiler_enabled = true;

@@ -20,7 +20,7 @@
 #ifndef SBGRAPH_PARSER_EXPR_DEF_HPP_
 #define SBGRAPH_PARSER_EXPR_DEF_HPP_
 
-#include "ast/expr.hpp"
+#include "ast/expression.hpp"
 #include "sbg/rational.hpp"
 
 #include <boost/phoenix/core.hpp>
@@ -63,7 +63,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::Set, (SBG::AST::ExprList, pieces_))
 
 BOOST_FUSION_ADAPT_STRUCT(
-  SBG::AST::LinearExp, (SBG::AST::Expr, slope_)(SBG::AST::Expr, offset_)
+  SBG::AST::LinearExpr, (SBG::AST::Expr, slope_)(SBG::AST::Expr, offset_)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::MDLExp, (SBG::AST::ExprList, exps_))

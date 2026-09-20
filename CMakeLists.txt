@@ -1,19 +1,34 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(SBG)
+# ------------------------------------------------------------------------------
+# Project configuration
+# ------------------------------------------------------------------------------
 
-set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/install)
+project(
+  SBGraph
+  VERSION 5.0.0
+  LANGUAGES CXX
+)
 
-# Set default build type to Release if not specified
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# ------------------------------------------------------------------------------
+# Build modes: Debug, Release
+# ------------------------------------------------------------------------------
+
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 
-# Set C++ standard
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# ------------------------------------------------------------------------------
+# Compilation flags
+# ------------------------------------------------------------------------------
 
-# Build mode flags
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   add_compile_definitions(SBG_PARTITIONER_LOGGING)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -Wall ") # -Werror
@@ -21,67 +36,132 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-reorder -fconcepts -O3")
 endif()
 
+# ------------------------------------------------------------------------------
 # Output directories
+# ------------------------------------------------------------------------------
+
 set(BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin)
 set(LIB_DIR ${CMAKE_INSTALL_PREFIX}/lib)
 
-# Create output directories
 file(MAKE_DIRECTORY
   ${BIN_DIR}
   ${LIB_DIR}
 )
 
-# Define install rules for library headers.
-function(install_lib_headers headers_dir)
-  file(GLOB_RECURSE PROJECT_HEADERS
-    "${headers_dir}/*.hpp"
-  )
+# ------------------------------------------------------------------------------
+# Dependencies
+# ------------------------------------------------------------------------------
 
-  get_filename_component(CURRENT_DIR_BASENAME "${headers_dir}" NAME)
+find_package(Boost REQUIRED COMPONENTS program_options)
 
-  install(FILES
-    ${PROJECT_HEADERS}
-    DESTINATION "include/${CURRENT_DIR_BASENAME}"
-  )
-endfunction()
+# ------------------------------------------------------------------------------
+# SBGraph library
+# ------------------------------------------------------------------------------
 
-# sbgraph-library
 add_library(sbgraph STATIC)
+add_library(SBG::sbgraph ALIAS sbgraph)
 
-# Add subdirectories
-add_subdirectory(3rd-party)
-add_subdirectory(algorithms)
-add_subdirectory(eval)
-add_subdirectory(parser)
-add_subdirectory(ast)
-add_subdirectory(sbg)
-add_subdirectory(test)
-add_subdirectory(util)
+target_compile_features(sbgraph PUBLIC cxx_std_17)
 
-set_target_properties(sbgraph PROPERTIES DEBUG_POSTFIX "d")
-target_include_directories(sbgraph PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(sbgraph sbg-dev)
-add_dependencies(sbgraph sbg-dev)
-
-# install
-install(
-  TARGETS sbgraph
-  RUNTIME DESTINATION lib
-  COMPONENT sbgraph
-  LIBRARY
-  DESTINATION lib
-  PERMISSIONS
-  OWNER_READ
-  OWNER_WRITE
-  OWNER_EXECUTE
-  GROUP_READ
-  GROUP_EXECUTE
-  WORLD_READ
-  WORLD_EXECUTE
-  COMPONENT sbgraph
+target_include_directories(sbgraph
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
+target_link_libraries(sbgraph
+  PUBLIC
+    Boost::program_options
+)
+
+set_target_properties(sbgraph PROPERTIES
+  EXPORT_NAME sbgraph
+  OUTPUT_NAME sbgraph
+)
+
+# ------------------------------------------------------------------------------
+# Internal components of the library
+# ------------------------------------------------------------------------------
+
+add_subdirectory(util)
+add_subdirectory(sbg)
+add_subdirectory(parser)
+add_subdirectory(eval)
+add_subdirectory(algorithms)
+
+option(SBG_BUILD_TESTS "Build SBGraph tests" OFF)
+if(SBG_BUILD_TESTS)
+  add_subdirectory(3rd-party)
+  add_subdirectory(test)
+endif()
+
+target_sources(sbgraph
+  PRIVATE
+    # Objetos de los componentes internos.
+    $<TARGET_OBJECTS:sbg-dev>
+    $<TARGET_OBJECTS:sbg-util-lib>
+    $<TARGET_OBJECTS:sbg-parser-lib>
+    $<TARGET_OBJECTS:sbg-eval-lib>
+)
+
+# ------------------------------------------------------------------------------
+# Library installation
+# ------------------------------------------------------------------------------
+
+install(
+  TARGETS sbgraph
+  EXPORT SBGraphTargets
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(
+  DIRECTORY
+    algorithms
+    ast
+    eval
+    parser
+    sbg
+    util
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  FILES_MATCHING
+    PATTERN "*.hpp"
+)
+
+install(
+  EXPORT SBGraphTargets
+  FILE SBGraphTargets.cmake
+  NAMESPACE SBG::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SBGraph
+)
+
+configure_package_config_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/SBGraphConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/SBGraphConfig.cmake
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SBGraph
+)
+
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/SBGraphConfigVersion.cmake
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+
+install(
+  FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/SBGraphConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/SBGraphConfigVersion.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SBGraph
+)
+
+# ------------------------------------------------------------------------------
 # Documentation
+# ------------------------------------------------------------------------------
+
+option(SBG_BUILD_DOCS "Build SBGraph documentation" OFF)
+
 set(DOC_PATHS "${CMAKE_CURRENT_SOURCE_DIR}")
 string(REPLACE ";" " " DOXYGEN_INPUT_DIR "${DOC_PATHS}")
 

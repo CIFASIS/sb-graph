@@ -5,5 +5,3 @@ add_subdirectory(mfvs)
 #add_subdirectory(partitioner)
 add_subdirectory(scc)
 add_subdirectory(sorting)
-
-install_lib_headers("${CMAKE_CURRENT_SOURCE_DIR}")

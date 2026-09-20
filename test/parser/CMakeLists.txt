@@ -16,11 +16,13 @@ target_sources(
 target_compile_options(parser-test PRIVATE "-Wall")
 
 # Link the library
-target_link_libraries(parser-test
-                      PRIVATE 
-                      ${GOOGLE_TEST_LIB}
-                      ${GOOGLE_MOCK_LIB}
-                      pthread
+target_link_libraries(
+    parser-test
+    PRIVATE
+    GTest::gtest
+    GTest::gmock
+    GTest::gtest_main
+    pthread
 )
 
 target_include_directories(parser-test PRIVATE ${GOOGLE_TEST_INCLUDE})

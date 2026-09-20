@@ -1,4 +1,3 @@
-# SBG Benchmark for different Set, PWMap, and SBG algorithms implementations
 add_executable(sbg-benchmark main.cpp)
 
 target_sources(sbg-benchmark
@@ -25,9 +24,10 @@ add_custom_target(run-benchmark
       COMMAND cd ${BIN_DIR} && ./sbg-benchmark
 )
 
-target_link_libraries(sbg-benchmark
-                      PUBLIC
-                      benchmark::benchmark
-                      PRIVATE
-                      sbg-dev
-                      sbg-eval-lib)
+target_link_libraries(
+    sbg-benchmark
+    PUBLIC
+    benchmark::benchmark
+    PRIVATE
+    sbgraph
+)

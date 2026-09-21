@@ -17,8 +17,8 @@
 
  ******************************************************************************/
 
-#include "algorithms/matching/bfs_paths.hpp"
-#include "util/logger.hpp"
+#include <sbgraph/algorithms/matching/bfs_paths.hpp>
+#include <sbgraph/util/logger.hpp>
 
 namespace SBG {
 

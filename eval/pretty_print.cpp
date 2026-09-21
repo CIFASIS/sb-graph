@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "eval/pretty_print.hpp"
+#include <sbgraph/eval/pretty_print.hpp>
 
 #include <iostream>
 

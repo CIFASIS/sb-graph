@@ -28,10 +28,10 @@
 #ifndef SBGRAPH_TEST_PERFORMANCE_BOOST_SCALAR_GRAPH_BUILDER_HPP_
 #define SBGRAPH_TEST_PERFORMANCE_BOOST_SCALAR_GRAPH_BUILDER_HPP_
 
-#include "sbg/bipartite_sbg.hpp"
-#include "sbg/integer.hpp"
+#include <sbgraph/sbg/bipartite_sbg.hpp>
+#include <sbgraph/sbg/integer.hpp>
 #include "test/performance/boost/scalar_graph.hpp"
-#include "util/logger.hpp"
+#include <sbgraph/util/logger.hpp>
 
 #include <map>
 #include <vector>

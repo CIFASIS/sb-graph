@@ -22,9 +22,9 @@
 
 #include "boost/optional.hpp"
 
-#include "parser/file_parser.hpp"
-#include "parser/parser_exec.hpp"
-#include "util/debug.hpp"
+#include <sbgraph/parser/file_parser.hpp>
+#include <sbgraph/parser/parser_exec.hpp>
+#include <sbgraph/util/debug.hpp>
 
 namespace SBG {
 

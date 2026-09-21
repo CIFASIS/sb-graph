@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "util/logger.hpp"
+#include <sbgraph/util/logger.hpp>
 
 namespace SBG {
 

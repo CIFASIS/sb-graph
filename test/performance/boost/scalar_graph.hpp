@@ -26,7 +26,7 @@
 #ifndef SBGRAPH_TEST_PERFORMANCE_BOOST_SCALAR_GRAPH_HPP_
 #define SBGRAPH_TEST_PERFORMANCE_BOOST_SCALAR_GRAPH_HPP_
 
-#include "sbg/integer.hpp"
+#include <sbgraph/sbg/integer.hpp>
 
 #include <boost/graph/adjacency_list.hpp>
 

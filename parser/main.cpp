@@ -19,7 +19,7 @@
 
 #include <iostream>
 
-#include "parser/parser_exec.hpp"
+#include <sbgraph/parser/parser_exec.hpp>
 
 int main(int argc, char** argv) 
 {

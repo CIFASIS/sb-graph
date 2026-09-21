@@ -17,18 +17,18 @@
 
  ******************************************************************************/
 
-#include "algorithms/matching/matching.hpp"
-#include "algorithms/matching/match_data.hpp"
-#include "eval/base_type.hpp"
-#include "eval/file_evaluator.cpp"
-#include "eval/pretty_print.hpp"
-#include "sbg/bipartite_sbg.hpp"
-#include "sbg/expression.hpp"
-#include "sbg/integer.hpp"
-#include "sbg/interval.hpp"
-#include "sbg/pw_map.hpp"
-#include "sbg/rational.hpp"
-#include "sbg/set.hpp"
+#include <sbgraph/algorithms/matching/matching.hpp>
+#include <sbgraph/algorithms/matching/match_data.hpp>
+#include <sbgraph/eval/base_type.hpp>
+#include <sbgraph/eval/file_evaluator.cpp>
+#include <sbgraph/eval/pretty_print.hpp>
+#include <sbgraph/sbg/bipartite_sbg.hpp>
+#include <sbgraph/sbg/expression.hpp>
+#include <sbgraph/sbg/integer.hpp>
+#include <sbgraph/sbg/interval.hpp>
+#include <sbgraph/sbg/pw_map.hpp>
+#include <sbgraph/sbg/rational.hpp>
+#include <sbgraph/sbg/set.hpp>
 
 #include <fstream>
 #include <iostream>

@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "sbg/fixed_points.hpp"
+#include <sbgraph/sbg/fixed_points.hpp>
 
 namespace SBG {
 

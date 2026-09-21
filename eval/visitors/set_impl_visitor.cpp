@@ -17,10 +17,10 @@
 
  ******************************************************************************/
 
-#include "eval/visitors/int_evaluator.hpp"
-#include "eval/visitors/rational_evaluator.hpp"
-#include "eval/visitors/set_impl_visitor.hpp"
-#include "eval/visitors/stm_evaluator.hpp"
+#include <sbgraph/eval/visitors/int_evaluator.hpp>
+#include <sbgraph/eval/visitors/rational_evaluator.hpp>
+#include <sbgraph/eval/visitors/set_impl_visitor.hpp>
+#include <sbgraph/eval/visitors/stm_evaluator.hpp>
 
 namespace SBG {
 

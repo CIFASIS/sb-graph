@@ -17,14 +17,14 @@
 
  ******************************************************************************/
 
-#include "sbg/map_detail.hpp"
-#include "sbg/integer.hpp"
-#include "sbg/ord_unidim_dense_set.hpp"
-#include "sbg/rational.hpp"
-#include "sbg/set_detail.hpp"
-#include "sbg/set_impl.hpp"
-#include "sbg/unord_set.hpp"
-#include "util/debug.hpp"
+#include <sbgraph/sbg/map_detail.hpp>
+#include <sbgraph/sbg/integer.hpp>
+#include <sbgraph/sbg/ord_unidim_dense_set.hpp>
+#include <sbgraph/sbg/rational.hpp>
+#include <sbgraph/sbg/set_detail.hpp>
+#include <sbgraph/sbg/set_impl.hpp>
+#include <sbgraph/sbg/unord_set.hpp>
+#include <sbgraph/util/debug.hpp>
 
 #include <tuple>
 #include <utility>

@@ -17,12 +17,12 @@
 
  ******************************************************************************/
 
-#include "algorithms/scc/mrv.hpp"
-#include "algorithms/scc/scc.hpp"
-#include "algorithms/scc/scc_impl.hpp"
-#include "util/debug.hpp"
-#include "util/logger.hpp"
-#include "util/time_profiler.hpp"
+#include <sbgraph/algorithms/scc/mrv.hpp>
+#include <sbgraph/algorithms/scc/scc.hpp>
+#include <sbgraph/algorithms/scc/scc_impl.hpp>
+#include <sbgraph/util/debug.hpp>
+#include <sbgraph/util/logger.hpp>
+#include <sbgraph/util/time_profiler.hpp>
 
 namespace SBG {
 

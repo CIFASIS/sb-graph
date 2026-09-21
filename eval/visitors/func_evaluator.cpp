@@ -17,24 +17,24 @@
 
  ******************************************************************************/
 
-#include "eval/visitors/func_evaluator.hpp"
-#include "algorithms/cc/cc.hpp"
-#include "algorithms/matching/matching.hpp"
-#include "algorithms/mfvs/min_feedback_vertex_set.hpp"
-#include "algorithms/scc/scc.hpp"
-#include "algorithms/sorting/topological/topological_sorting.hpp"
-#include "eval/base_type.hpp"
-#include "sbg/bipartite_sbg.hpp"
-#include "sbg/expression.hpp"
-#include "sbg/integer.hpp"
-#include "sbg/interval.hpp"
-#include "sbg/map.hpp"
-#include "sbg/multidim_inter.hpp"
-#include "sbg/rational.hpp"
-#include "sbg/set.hpp"
-#include "sbg/pw_map.hpp"
-#include "util/debug.hpp"
-#include "util/defs.hpp"
+#include <sbgraph/eval/visitors/func_evaluator.hpp>
+#include <sbgraph/algorithms/cc/cc.hpp>
+#include <sbgraph/algorithms/matching/matching.hpp>
+#include <sbgraph/algorithms/mfvs/min_feedback_vertex_set.hpp>
+#include <sbgraph/algorithms/scc/scc.hpp>
+#include <sbgraph/algorithms/sorting/topological/topological_sorting.hpp>
+#include <sbgraph/eval/base_type.hpp>
+#include <sbgraph/sbg/bipartite_sbg.hpp>
+#include <sbgraph/sbg/expression.hpp>
+#include <sbgraph/sbg/integer.hpp>
+#include <sbgraph/sbg/interval.hpp>
+#include <sbgraph/sbg/map.hpp>
+#include <sbgraph/sbg/multidim_inter.hpp>
+#include <sbgraph/sbg/rational.hpp>
+#include <sbgraph/sbg/set.hpp>
+#include <sbgraph/sbg/pw_map.hpp>
+#include <sbgraph/util/debug.hpp>
+#include <sbgraph/util/defs.hpp>
 
 namespace SBG {
 

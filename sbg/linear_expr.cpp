@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "sbg/linear_expr.hpp"
+#include <sbgraph/sbg/linear_expr.hpp>
 
 #include <iostream>
 #include <sstream>

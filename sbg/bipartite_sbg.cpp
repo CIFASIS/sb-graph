@@ -17,11 +17,11 @@
 
  ******************************************************************************/
 
-#include "sbg/bipartite_sbg.hpp"
-#include "sbg/integer.hpp"
-#include "sbg/map.hpp"
-#include "sbg/rational.hpp"
-#include "util/debug.hpp"
+#include <sbgraph/sbg/bipartite_sbg.hpp>
+#include <sbgraph/sbg/integer.hpp>
+#include <sbgraph/sbg/map.hpp>
+#include <sbgraph/sbg/rational.hpp>
+#include <sbgraph/util/debug.hpp>
 
 #include <iostream>
 

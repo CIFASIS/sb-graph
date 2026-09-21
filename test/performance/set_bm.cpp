@@ -17,9 +17,9 @@
 
  ******************************************************************************/
 
-#include "sbg/interval.hpp"
-#include "sbg/multidim_inter.hpp"
-#include "sbg/set.hpp"
+#include <sbgraph/sbg/interval.hpp>
+#include <sbgraph/sbg/multidim_inter.hpp>
+#include <sbgraph/sbg/set.hpp>
 #include "test/performance/utils.hpp"
 
 #include <benchmark/benchmark.h>

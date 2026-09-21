@@ -17,9 +17,9 @@
 
  ******************************************************************************/
 
-#include "sbg/sbg.hpp"
-#include "sbg/integer.hpp"
-#include "util/debug.hpp"
+#include <sbgraph/sbg/sbg.hpp>
+#include <sbgraph/sbg/integer.hpp>
+#include <sbgraph/util/debug.hpp>
 
 #include <iostream>
 

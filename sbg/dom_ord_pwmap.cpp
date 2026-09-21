@@ -17,16 +17,16 @@
 
  ******************************************************************************/
 
-#include "sbg/dom_ord_pwmap.hpp"
-#include "sbg/interval.hpp"
-#include "sbg/ord_set.hpp"
-#include "sbg/ord_unidim_dense_set.hpp"
-#include "sbg/perimeter.hpp"
-#include "sbg/pwmap_detail.hpp"
-#include "sbg/set_detail.hpp"
-#include "sbg/set_impl.hpp"
-#include "util/defs.hpp"
-#include "util/debug.hpp"
+#include <sbgraph/sbg/dom_ord_pwmap.hpp>
+#include <sbgraph/sbg/interval.hpp>
+#include <sbgraph/sbg/ord_set.hpp>
+#include <sbgraph/sbg/ord_unidim_dense_set.hpp>
+#include <sbgraph/sbg/perimeter.hpp>
+#include <sbgraph/sbg/pwmap_detail.hpp>
+#include <sbgraph/sbg/set_detail.hpp>
+#include <sbgraph/sbg/set_impl.hpp>
+#include <sbgraph/util/defs.hpp>
+#include <sbgraph/util/debug.hpp>
 
 #include <forward_list>
 #include <iostream>

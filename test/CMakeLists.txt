@@ -9,7 +9,6 @@ file(MAKE_DIRECTORY
 )
 
 add_subdirectory(eval)
-add_subdirectory(install_consumer)
 add_subdirectory(parser)
 #add_subdirectory(partitioner)
 add_subdirectory(performance)
@@ -18,5 +17,5 @@ add_custom_target(test
       COMMAND echo "Running Tests."
 )
 
-add_dependencies(test run-eval-test run-install-consumer-test run-parser-test)
+add_dependencies(test run-eval-test run-parser-test)
 #add_dependencies(test run-eval-test run-parser-test run-partitioner-test)

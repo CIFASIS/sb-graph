@@ -65,7 +65,7 @@ target_compile_features(sbgraph PUBLIC cxx_std_17)
 
 target_include_directories(sbgraph
   PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
@@ -119,12 +119,7 @@ install(
 
 install(
   DIRECTORY
-    algorithms
-    ast
-    eval
-    parser
-    sbg
-    util
+    include/sbgraph
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
   FILES_MATCHING
     PATTERN "*.hpp"

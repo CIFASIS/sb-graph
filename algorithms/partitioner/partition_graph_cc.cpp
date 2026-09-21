@@ -19,7 +19,7 @@
 #include <bits/stdc++.h>
 #include <set>
 #include <utility>
-#include <util/logger.hpp>
+#include <sbgraph/util/logger.hpp>
 
 #include "build_sb_graph.hpp"
 #include "dfs_on_sbg.hpp"

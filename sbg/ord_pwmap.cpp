@@ -17,8 +17,8 @@
 
  ******************************************************************************/
 
-#include "sbg/ord_pwmap.hpp"
-#include "sbg/perimeter.hpp"
+#include <sbgraph/sbg/ord_pwmap.hpp>
+#include <sbgraph/sbg/perimeter.hpp>
 
 #include <forward_list>
 #include <iostream>

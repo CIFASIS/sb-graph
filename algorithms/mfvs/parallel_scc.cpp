@@ -17,11 +17,11 @@
 
  ******************************************************************************/
 
-#include "algorithms/mfvs/parallel_scc.hpp"
-#include "algorithms/scc/scc.hpp"
-#include "algorithms/scc/scc_data.hpp"
-#include "sbg/integer.hpp"
-#include "util/logger.hpp"
+#include <sbgraph/algorithms/mfvs/parallel_scc.hpp>
+#include <sbgraph/algorithms/scc/scc.hpp>
+#include <sbgraph/algorithms/scc/scc_data.hpp>
+#include <sbgraph/sbg/integer.hpp>
+#include <sbgraph/util/logger.hpp>
 
 namespace SBG {
 

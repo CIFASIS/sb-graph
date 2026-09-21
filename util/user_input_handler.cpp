@@ -21,7 +21,7 @@
 
 #include "boost/optional.hpp"
 
-#include "util/user_input_handler.hpp"
+#include <sbgraph/util/user_input_handler.hpp>
 
 namespace SBG {
 

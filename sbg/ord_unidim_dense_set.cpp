@@ -17,8 +17,8 @@
 
  ******************************************************************************/
 
-#include "sbg/ord_unidim_dense_set.hpp"
-#include "util/debug.hpp"
+#include <sbgraph/sbg/ord_unidim_dense_set.hpp>
+#include <sbgraph/util/debug.hpp>
 
 #include <iostream>
 

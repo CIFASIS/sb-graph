@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "sbg/unord_set.hpp"
+#include <sbgraph/sbg/unord_set.hpp>
 
 #include <iostream>
 #include <optional>

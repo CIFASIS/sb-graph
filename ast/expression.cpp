@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "ast/expression.hpp"
+#include <sbgraph/ast/expression.hpp>
 
 #include <iostream>
 

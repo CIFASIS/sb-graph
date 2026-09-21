@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "eval/var_env.hpp"
+#include <sbgraph/eval/var_env.hpp>
 
 namespace SBG {
 

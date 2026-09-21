@@ -26,11 +26,11 @@
 #ifndef SBGRAPH_TEST_PERFORMANCE_UTILS_HPP_
 #define SBGRAPH_TEST_PERFORMANCE_UTILS_HPP_
 
-#include "algorithms/matching/match_data.hpp"
-#include "sbg/bipartite_sbg.hpp"
-#include "sbg/integer.hpp"
-#include "sbg/pw_map.hpp"
-#include "sbg/set.hpp"
+#include <sbgraph/algorithms/matching/match_data.hpp>
+#include <sbgraph/sbg/bipartite_sbg.hpp>
+#include <sbgraph/sbg/integer.hpp>
+#include <sbgraph/sbg/pw_map.hpp>
+#include <sbgraph/sbg/set.hpp>
 
 #include <string>
 

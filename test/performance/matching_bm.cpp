@@ -18,8 +18,8 @@
  ******************************************************************************/
 
 #include "test/performance/matching_bm.hpp"
-#include "algorithms/matching/matching.hpp"
-#include "sbg/bipartite_sbg.hpp"
+#include <sbgraph/algorithms/matching/matching.hpp>
+#include <sbgraph/sbg/bipartite_sbg.hpp>
 #include "test/performance/utils.hpp"
 
 #include <benchmark/benchmark.h>

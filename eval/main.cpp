@@ -27,7 +27,7 @@
 
 #include <iostream>
 
-#include "eval/eval_exec.hpp"
+#include <sbgraph/eval/eval_exec.hpp>
 
 int main(int argc, char* argv[])
 {

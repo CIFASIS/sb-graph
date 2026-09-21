@@ -28,7 +28,7 @@
 #ifndef SBGRAPH_TEST_PERFORMANCE_BOOST_SCC_GRAPH_BUILDER_HPP_
 #define SBGRAPH_TEST_PERFORMANCE_BOOST_SCC_GRAPH_BUILDER_HPP_
 
-#include "sbg/integer.hpp"
+#include <sbgraph/sbg/integer.hpp>
 #include "test/performance/boost/scalar_graph.hpp"
 
 #include <unordered_map>

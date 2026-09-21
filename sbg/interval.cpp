@@ -17,8 +17,8 @@
 
  ******************************************************************************/
 
-#include "sbg/interval.hpp"
-#include "util/debug.hpp"
+#include <sbgraph/sbg/interval.hpp>
+#include <sbgraph/util/debug.hpp>
 
 #include <cmath>
 #include <iostream>

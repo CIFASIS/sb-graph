@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "ast/statement.hpp"
+#include <sbgraph/ast/statement.hpp>
 
 namespace SBG {
 

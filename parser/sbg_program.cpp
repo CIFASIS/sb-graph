@@ -17,8 +17,8 @@
 
  ******************************************************************************/
 
-#include "parser/sbg_program.hpp"
-#include "parser/sbg_program_def.hpp"
+#include <sbgraph/parser/sbg_program.hpp>
+#include <sbgraph/parser/sbg_program_def.hpp>
 
 namespace SBG {
 

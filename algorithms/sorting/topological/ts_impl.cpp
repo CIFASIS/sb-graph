@@ -17,8 +17,8 @@
 
  ******************************************************************************/
 
-#include "algorithms/sorting/topological/ts_impl.hpp"
-#include "util/debug.hpp"
+#include <sbgraph/algorithms/sorting/topological/ts_impl.hpp>
+#include <sbgraph/util/debug.hpp>
 
 namespace SBG {
 

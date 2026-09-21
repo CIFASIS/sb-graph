@@ -19,7 +19,7 @@
 
 #include <fstream>
 
-#include "parser/file_parser.hpp"
+#include <sbgraph/parser/file_parser.hpp>
 
 namespace SBG {
 

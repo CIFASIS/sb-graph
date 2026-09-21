@@ -17,10 +17,10 @@
 
  ******************************************************************************/
 
-#include "algorithms/scc/decreasing_edges_mrv.hpp"
-#include "algorithms/scc/minreach_scc.hpp"
-#include "algorithms/scc/minadj_mrv.hpp"
-#include "util/logger.hpp"
+#include <sbgraph/algorithms/scc/decreasing_edges_mrv.hpp>
+#include <sbgraph/algorithms/scc/minreach_scc.hpp>
+#include <sbgraph/algorithms/scc/minadj_mrv.hpp>
+#include <sbgraph/util/logger.hpp>
 
 namespace SBG {
 

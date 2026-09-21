@@ -1,6 +1,11 @@
 add_library(sbg-parser-lib OBJECT)
 
-target_include_directories(sbg-parser-lib PUBLIC ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(sbg-parser-lib
+    PUBLIC
+      ${PROJECT_SOURCE_DIR}/include
+    PRIVATE
+      ${PROJECT_SOURCE_DIR}
+)
 
 target_sources(
     sbg-parser-lib

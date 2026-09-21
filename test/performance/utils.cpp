@@ -20,7 +20,7 @@
 #include <sbgraph/algorithms/matching/matching.hpp>
 #include <sbgraph/algorithms/matching/match_data.hpp>
 #include <sbgraph/eval/base_type.hpp>
-#include <sbgraph/eval/file_evaluator.cpp>
+#include <sbgraph/eval/file_evaluator.hpp>
 #include <sbgraph/eval/pretty_print.hpp>
 #include <sbgraph/sbg/bipartite_sbg.hpp>
 #include <sbgraph/sbg/expression.hpp>

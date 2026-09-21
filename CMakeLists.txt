@@ -10,6 +10,16 @@ project(
   LANGUAGES CXX
 )
 
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(
+    CMAKE_INSTALL_PREFIX
+    "$ENV{HOME}/.local/sbgraph"
+    CACHE PATH
+    "Installation prefix"
+    FORCE
+  )
+endif()
+
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
@@ -89,7 +99,7 @@ add_subdirectory(parser)
 add_subdirectory(eval)
 add_subdirectory(algorithms)
 
-option(SBG_BUILD_TESTS "Build SBGraph tests" OFF)
+option(SBG_BUILD_TESTS "Build SBGraph tests" ON)
 if(SBG_BUILD_TESTS)
   add_subdirectory(3rd-party)
   add_subdirectory(test)
@@ -169,12 +179,14 @@ set(DOXYGEN_MAINPAGE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
                ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
 
-add_custom_target(doc
-  COMMAND echo "Generating Project documentation."
-  COMMAND doxygen "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/doc
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  COMMENT "Generating API documentation with Doxygen"
-)
+if(SBG_BUILD_DOCS)
+  add_custom_target(doc
+    COMMAND echo "Generating Project documentation."
+    COMMAND doxygen "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/doc
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Generating API documentation with Doxygen"
+  )
 
-set_target_properties(doc PROPERTIES EXCLUDE_FROM_ALL ON)
+  set_target_properties(doc PROPERTIES EXCLUDE_FROM_ALL ON)
+endif()

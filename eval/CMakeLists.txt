@@ -1,6 +1,10 @@
 add_library(sbg-eval-lib OBJECT)
 
-target_include_directories(sbg-eval-lib PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(sbg-eval-lib
+    PRIVATE
+      ${PROJECT_SOURCE_DIR}/include
+      ${PROJECT_SOURCE_DIR}
+)
 
 target_sources(
     sbg-eval-lib

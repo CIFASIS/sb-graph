@@ -1,6 +1,10 @@
 add_library(sbg-util-lib STATIC)
 
-target_include_directories(sbg-util-lib PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(sbg-util-lib
+    PRIVATE
+      ${PROJECT_SOURCE_DIR}/include
+      ${PROJECT_SOURCE_DIR}
+)
 
 target_sources(
     sbg-util-lib

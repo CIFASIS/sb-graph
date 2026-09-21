@@ -1,6 +1,10 @@
 add_library(sbg-dev OBJECT)
 
-target_include_directories(sbg-dev PRIVATE ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(sbg-dev
+    PRIVATE
+      ${PROJECT_SOURCE_DIR}/include
+      ${PROJECT_SOURCE_DIR}
+)
 
 target_sources(
     sbg-dev

@@ -29,6 +29,7 @@
 #include <sbgraph/sbg/pw_map.hpp>
 #include <sbgraph/sbg/rational.hpp>
 #include <sbgraph/sbg/set.hpp>
+#include <sbgraph/util/debug.hpp>
 
 #include <fstream>
 #include <iostream>

@@ -20,7 +20,7 @@
 #include "test/performance/bm_exec.hpp"
 #include <sbgraph/algorithms/matching/matching_impl.hpp>
 #include <sbgraph/algorithms/scc/scc_impl.hpp>
-#include <sbgraph/eval/user_impl_map.hpp>
+#include "eval/user_impl_map.hpp"
 #include <sbgraph/sbg/pwmap_impl.hpp>
 #include <sbgraph/sbg/set_impl.hpp>
 #include "test/performance/boost/boost_bm.hpp"
@@ -28,8 +28,7 @@
 #include "test/performance/pwmap_bm.hpp"
 #include "test/performance/scc_bm.hpp"
 #include "test/performance/set_bm.hpp"
-#include <sbgraph/util/debug.hpp>
-#include <sbgraph/util/user_input_handler.hpp>
+#include "util/debug.hpp"
 
 #include <benchmark/benchmark.h>
 

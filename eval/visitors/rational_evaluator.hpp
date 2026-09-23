@@ -24,8 +24,8 @@
 #ifndef SBGRAPH_EVAL_VISITORS_RATIONAL_EVALUATOR_HPP_ 
 #define SBGRAPH_EVAL_VISITORS_RATIONAL_EVALUATOR_HPP_
 
-#include <sbgraph/ast/expression.hpp>
-#include <sbgraph/eval/var_env.hpp>
+#include <sbgraph/detail/ast/expression.hpp>
+#include "eval/var_env.hpp"
 #include <sbgraph/sbg/rational.hpp>
 
 #include "boost/variant.hpp"

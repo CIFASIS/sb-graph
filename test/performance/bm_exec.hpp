@@ -24,7 +24,7 @@
 #ifndef SBGRAPH_TEST_PERFORMANCE_BM_EXEC_HPP_
 #define SBGRAPH_TEST_PERFORMANCE_BM_EXEC_HPP_
 
-#include <sbgraph/util/user_input_handler.hpp>
+#include "util/user_input_handler.hpp"
 
 namespace SBG {
 

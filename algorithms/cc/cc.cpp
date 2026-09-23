@@ -19,8 +19,8 @@
 
 #include <sbgraph/algorithms/cc/cc.hpp>
 #include <sbgraph/sbg/set.hpp>
-#include <sbgraph/util/logger.hpp>
-#include <sbgraph/util/time_profiler.hpp>
+#include "util/logger.hpp"
+#include "util/time_profiler.hpp"
 
 namespace SBG {
 

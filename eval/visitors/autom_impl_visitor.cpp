@@ -17,10 +17,10 @@
 
  ******************************************************************************/
 
-#include <sbgraph/eval/user_impl_map.hpp>
-#include <sbgraph/eval/visitors/autom_impl_visitor.hpp>
-#include <sbgraph/eval/visitors/stm_evaluator.hpp>
-#include <sbgraph/eval/visitors/set_impl_visitor.hpp>
+#include "eval/user_impl_map.hpp"
+#include "eval/visitors/autom_impl_visitor.hpp"
+#include "eval/visitors/stm_evaluator.hpp"
+#include "eval/visitors/set_impl_visitor.hpp"
 
 namespace SBG {
 

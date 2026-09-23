@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <sbgraph/eval/func_env.hpp>
+#include "eval/func_env.hpp"
 
 namespace SBG {
 

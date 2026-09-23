@@ -28,8 +28,8 @@
 #ifndef SBGRAPH_EVAL_VISITORS_AUTOM_IMPL_VISITOR_HPP_ 
 #define SBGRAPH_EVAL_VISITORS_AUTOM_IMPL_VISITOR_HPP_
 
-#include <sbgraph/ast/sbg_program.hpp>
-#include <sbgraph/eval/user_input.hpp>
+#include "ast/sbg_program.hpp"
+#include "eval/user_input.hpp"
 
 namespace SBG {
 

@@ -34,11 +34,11 @@
 #ifndef SBGRAPH_SBG_PW_MAP_HPP_
 #define SBGRAPH_SBG_PW_MAP_HPP_
 
-#include <sbgraph/sbg/dom_ord_pwmap.hpp>
+#include <sbgraph/detail/sbg/dom_ord_pwmap.hpp>
 #include <sbgraph/sbg/map.hpp>
-#include <sbgraph/sbg/ord_pwmap.hpp>
+#include <sbgraph/detail/sbg/ord_pwmap.hpp>
 #include <sbgraph/sbg/set.hpp>
-#include <sbgraph/sbg/unord_pwmap.hpp>
+#include <sbgraph/detail/sbg/unord_pwmap.hpp>
 
 #include "rapidjson/document.h"
 

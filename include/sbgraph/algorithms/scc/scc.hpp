@@ -24,7 +24,7 @@
 #ifndef SBGRAPH_ALGORITHMS_SCC_SCC_HPP_
 #define SBGRAPH_ALGORITHMS_SCC_SCC_HPP_
 
-#include <sbgraph/algorithms/scc/minreach_scc.hpp>
+#include <sbgraph/detail/algorithms/scc/minreach_scc.hpp>
 #include <sbgraph/algorithms/scc/scc_data.hpp>
 #include <sbgraph/sbg/directed_sbg.hpp>
 #include <sbgraph/sbg/pw_map.hpp>

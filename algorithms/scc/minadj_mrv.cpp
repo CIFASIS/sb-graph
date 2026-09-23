@@ -17,9 +17,9 @@
 
  ******************************************************************************/
 
-#include <sbgraph/algorithms/scc/minadj_mrv.hpp>
+#include <sbgraph/detail/algorithms/scc/minadj_mrv.hpp>
 #include <sbgraph/sbg/integer.hpp>
-#include <sbgraph/util/logger.hpp>
+#include "util/logger.hpp"
 
 namespace SBG {
 

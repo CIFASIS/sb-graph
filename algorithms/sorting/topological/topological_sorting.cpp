@@ -19,8 +19,8 @@
 
 #include <sbgraph/algorithms/sorting/topological/topological_sorting.hpp>
 #include <sbgraph/algorithms/sorting/topological/ts_impl.hpp>
-#include <sbgraph/util/debug.hpp>
-#include <sbgraph/util/time_profiler.hpp>
+#include "util/debug.hpp"
+#include "util/time_profiler.hpp"
 
 namespace SBG {
 

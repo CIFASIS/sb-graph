@@ -20,7 +20,7 @@
 #ifndef SBGRAPH_PARSER_EXPR_DEF_HPP_
 #define SBGRAPH_PARSER_EXPR_DEF_HPP_
 
-#include <sbgraph/ast/expression.hpp>
+#include <sbgraph/detail/ast/expression.hpp>
 #include <sbgraph/sbg/rational.hpp>
 
 #include <boost/phoenix/core.hpp>

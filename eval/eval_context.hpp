@@ -24,8 +24,8 @@
 #ifndef SBGRAPH_EVAL_EVAL_CONTEXT_HPP_
 #define SBGRAPH_EVAL_EVAL_CONTEXT_HPP_
 
-#include <sbgraph/eval/func_env.hpp>
-#include <sbgraph/eval/var_env.hpp>
+#include "eval/func_env.hpp"
+#include "eval/var_env.hpp"
 
 namespace SBG {
 

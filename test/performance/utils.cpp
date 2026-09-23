@@ -25,11 +25,11 @@
 #include <sbgraph/sbg/bipartite_sbg.hpp>
 #include <sbgraph/sbg/expression.hpp>
 #include <sbgraph/sbg/integer.hpp>
-#include <sbgraph/sbg/interval.hpp>
+#include <sbgraph/detail/sbg/interval.hpp>
 #include <sbgraph/sbg/pw_map.hpp>
 #include <sbgraph/sbg/rational.hpp>
 #include <sbgraph/sbg/set.hpp>
-#include <sbgraph/util/debug.hpp>
+#include "util/debug.hpp"
 
 #include <fstream>
 #include <iostream>

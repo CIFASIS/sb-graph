@@ -26,8 +26,8 @@
 #ifndef PROGRAM_PARSER_HPP
 #define PROGRAM_PARSER_HPP
 
-#include <sbgraph/ast/sbg_program.hpp>
-#include <sbgraph/parser/statement.hpp>
+#include "ast/sbg_program.hpp"
+#include "parser/statement.hpp"
 
 namespace SBG {
 

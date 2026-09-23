@@ -24,7 +24,7 @@
 #ifndef SBGRAPH_EVAL_FUNC_ENV_HPP_
 #define SBGRAPH_EVAL_FUNC_ENV_HPP_
 
-#include <sbgraph/ast/expression.hpp>
+#include <sbgraph/detail/ast/expression.hpp>
 #include <sbgraph/eval/base_type.hpp>
 
 #include <functional>

@@ -17,8 +17,8 @@
 
  ******************************************************************************/
 
-#include <sbgraph/parser/expr.hpp>
-#include <sbgraph/parser/expr_def.hpp>
+#include "parser/expr.hpp"
+#include "parser/expr_def.hpp"
 
 namespace SBG {
 

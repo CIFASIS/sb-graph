@@ -24,7 +24,7 @@
 #ifndef SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_TOPOLOGICAL_SORTING_HPP_
 #define SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_TOPOLOGICAL_SORTING_HPP_
 
-#include <sbgraph/algorithms/sorting/topological/min_vertex_ts.hpp>
+#include <sbgraph/detail/algorithms/sorting/topological/min_vertex_ts.hpp>
 #include <sbgraph/sbg/directed_sbg.hpp>
 
 namespace SBG {

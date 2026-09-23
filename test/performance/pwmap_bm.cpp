@@ -19,7 +19,7 @@
 
 #include <sbgraph/sbg/set.hpp>
 #include <sbgraph/sbg/pw_map.hpp>
-#include <sbgraph/sbg/pwmap_detail.hpp>
+#include "sbg/pwmap_detail.hpp"
 #include "test/performance/utils.hpp"
 
 #include <benchmark/benchmark.h>

@@ -28,8 +28,8 @@
 #ifndef SBGRAPH_EVAL_VISITORS_SET_IMPL_VISITOR_HPP_
 #define SBGRAPH_EVAL_VISITORS_SET_IMPL_VISITOR_HPP_
 
-#include <sbgraph/ast/sbg_program.hpp>
-#include <sbgraph/eval/var_env.hpp>
+#include "ast/sbg_program.hpp"
+#include "eval/var_env.hpp"
 
 #include <boost/variant.hpp>
 

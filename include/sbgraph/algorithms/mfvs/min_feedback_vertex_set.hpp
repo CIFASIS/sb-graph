@@ -24,9 +24,9 @@
 #ifndef SBGRAPH_ALGORITHMS_MFVS_MIN_FEEDBACK_VERTEX_SET_HPP_
 #define SBGRAPH_ALGORITHMS_MFVS_MIN_FEEDBACK_VERTEX_SET_HPP_
 
-#include <sbgraph/algorithms/mfvs/greedy_mfvs.hpp>
-#include <sbgraph/algorithms/mfvs/smallest_sv_mfvs.hpp>
-#include <sbgraph/algorithms/mfvs/parallel_scc.hpp>
+#include <sbgraph/detail/algorithms/mfvs/greedy_mfvs.hpp>
+#include <sbgraph/detail/algorithms/mfvs/smallest_sv_mfvs.hpp>
+#include <sbgraph/detail/algorithms/mfvs/parallel_scc.hpp>
 #include <sbgraph/sbg/directed_sbg.hpp>
 
 #include <iosfwd>

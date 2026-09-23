@@ -21,7 +21,7 @@
 #include <sbgraph/sbg/integer.hpp>
 #include <sbgraph/sbg/map.hpp>
 #include <sbgraph/sbg/rational.hpp>
-#include <sbgraph/util/debug.hpp>
+#include "util/debug.hpp"
 
 #include <iostream>
 

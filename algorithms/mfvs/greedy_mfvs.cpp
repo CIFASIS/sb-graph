@@ -17,11 +17,11 @@
 
  ******************************************************************************/
 
-#include <sbgraph/algorithms/mfvs/greedy_mfvs.hpp>
+#include <sbgraph/detail/algorithms/mfvs/greedy_mfvs.hpp>
 #include <sbgraph/algorithms/scc/scc.hpp>
 #include <sbgraph/sbg/integer.hpp>
 #include <sbgraph/sbg/pw_map.hpp>
-#include <sbgraph/util/logger.hpp>
+#include "util/logger.hpp"
 
 #include <numeric>
 

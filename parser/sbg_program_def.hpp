@@ -20,7 +20,7 @@
 #ifndef PROGRAM_DEF_PARSER_HPP
 #define PROGRAM_DEF_PARSER_HPP
 
-#include <sbgraph/ast/sbg_program.hpp>
+#include "ast/sbg_program.hpp"
 
 #include <boost/phoenix/core.hpp>
 #include <boost/phoenix/operator.hpp>

@@ -24,9 +24,9 @@
 #ifndef SBGRAPH_EVAL_VISITORS_LINEAR_EXPR_EVALUTOR_HPP_
 #define SBGRAPH_EVAL_VISITORS_LINEAR_EXPR_EVALUTOR_HPP_
 
-#include <sbgraph/ast/expression.hpp>
-#include <sbgraph/eval/var_env.hpp>
-#include <sbgraph/sbg/linear_expr.hpp>
+#include <sbgraph/detail/ast/expression.hpp>
+#include "eval/var_env.hpp"
+#include <sbgraph/detail/sbg/linear_expr.hpp>
 
 #include "boost/variant.hpp"
 

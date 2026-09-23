@@ -17,9 +17,9 @@
 
  ******************************************************************************/
 
-#include <sbgraph/eval/input_translator.hpp>
-#include <sbgraph/eval/user_impl_map.hpp>
-#include <sbgraph/util/debug.hpp>
+#include "eval/input_translator.hpp"
+#include "eval/user_impl_map.hpp"
+#include "util/debug.hpp"
 
 namespace SBG {
 

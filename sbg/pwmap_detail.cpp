@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <sbgraph/sbg/pwmap_detail.hpp>
+#include "sbg/pwmap_detail.hpp"
 
 namespace SBG {
 

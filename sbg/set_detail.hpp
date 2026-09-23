@@ -28,8 +28,8 @@
 #define SBGRAPH_SBG_SET_DETAIL_HPP_
 
 #include <sbgraph/sbg/integer.hpp>
-#include <sbgraph/sbg/ord_set.hpp>
-#include <sbgraph/sbg/ord_unidim_dense_set.hpp>
+#include <sbgraph/detail/sbg/ord_set.hpp>
+#include <sbgraph/detail/sbg/ord_unidim_dense_set.hpp>
 #include <sbgraph/sbg/set.hpp>
 
 #include <optional>

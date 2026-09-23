@@ -26,7 +26,7 @@
 
 #include <string>
 
-#include <sbgraph/parser/sbg_program.hpp>
+#include "parser/sbg_program.hpp"
 
 namespace SBG {
 

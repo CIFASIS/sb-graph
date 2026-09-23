@@ -16,8 +16,8 @@
 
  ******************************************************************************/
 
-#include <sbgraph/util/defs.hpp>
-#include <sbgraph/util/time_profiler.hpp>
+#include "util/time_profiler.hpp"
+#include <sbgraph/detail/util/defs.hpp>
 
 namespace SBG {
 

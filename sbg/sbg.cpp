@@ -19,7 +19,7 @@
 
 #include <sbgraph/sbg/sbg.hpp>
 #include <sbgraph/sbg/integer.hpp>
-#include <sbgraph/util/debug.hpp>
+#include "util/debug.hpp"
 
 #include <iostream>
 
@@ -96,6 +96,18 @@ void SBG::addSetEdge(const PWMap& pw1, const PWMap& pw2)
     Util::ERROR("SBG::addSetEdge: trying to add existing edges: ", edges1
       , " to SBG\n");
   }
+}
+
+void SBG::eraseVertices(const Set& V)
+{
+  _V = _V.difference(V);
+  _Vmap = _Vmap.restrict(_V);
+
+  Set eraseE = _map1.preImage(V).cup(_map2.preImage(V));
+  _E = _E.difference(eraseE);
+  _map1 = _map1.restrict(_E);
+  _map2 = _map2.restrict(_E);
+  _Emap = _Emap.restrict(_E);
 }
 
 // Operators -------------------------------------------------------------------

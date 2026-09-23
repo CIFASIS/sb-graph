@@ -17,11 +17,11 @@
 
  ******************************************************************************/
 
-#include <iostream>
+#include "util/user_input_handler.hpp"
 
 #include "boost/optional.hpp"
 
-#include <sbgraph/util/user_input_handler.hpp>
+#include <iostream>
 
 namespace SBG {
 

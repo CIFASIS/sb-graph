@@ -18,7 +18,7 @@
  ******************************************************************************/
 
 #include <sbgraph/sbg/map.hpp>
-#include <sbgraph/sbg/map_detail.hpp>
+#include <sbgraph/detail/sbg/map_detail.hpp>
 
 #include <iostream>
 

@@ -17,10 +17,9 @@
 
  ******************************************************************************/
 
-#include <sbgraph/ast/sbg_program.hpp>
-#include <sbgraph/eval/pretty_print.hpp>
-#include <sbgraph/eval/visitors/program_evaluator.hpp>
-#include <sbgraph/parser/file_parser.hpp>
+#include "ast/sbg_program.hpp"
+#include "eval/visitors/program_evaluator.hpp"
+#include "parser/file_parser.hpp"
 
 #include <iostream>
 #include <string>

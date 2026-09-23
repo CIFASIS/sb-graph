@@ -24,7 +24,7 @@
 #ifndef SBGRAPH_ALGORITHMS_MATCHING_MATCHING_HPP_
 #define SBGRAPH_ALGORITHMS_MATCHING_MATCHING_HPP_
 
-#include <sbgraph/algorithms/matching/bfs_matching.hpp>
+#include <sbgraph/detail/algorithms/matching/bfs_matching.hpp>
 #include <sbgraph/algorithms/matching/match_data.hpp>
 #include <sbgraph/sbg/bipartite_sbg.hpp>
 

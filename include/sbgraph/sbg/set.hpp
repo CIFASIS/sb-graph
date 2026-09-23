@@ -34,15 +34,15 @@
 #define SBGRAPH_SBG_SET_HPP_
 
 #include <sbgraph/sbg/expression.hpp>
-#include <sbgraph/sbg/fixed_points.hpp>
-#include <sbgraph/sbg/interval.hpp>
-#include <sbgraph/sbg/multidim_inter.hpp>
+#include <sbgraph/detail/sbg/fixed_points.hpp>
+#include <sbgraph/detail/sbg/interval.hpp>
+#include <sbgraph/detail/sbg/multidim_inter.hpp>
 #include <sbgraph/sbg/integer.hpp>
-#include <sbgraph/sbg/ord_set.hpp>
-#include <sbgraph/sbg/ord_unidim_dense_set.hpp>
+#include <sbgraph/detail/sbg/ord_set.hpp>
+#include <sbgraph/detail/sbg/ord_unidim_dense_set.hpp>
 #include <sbgraph/sbg/set.hpp>
 #include <sbgraph/sbg/perimeter.hpp>
-#include <sbgraph/sbg/unord_set.hpp>
+#include <sbgraph/detail/sbg/unord_set.hpp>
 
 #include  "rapidjson/document.h"
 

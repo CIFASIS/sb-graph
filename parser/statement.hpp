@@ -26,8 +26,8 @@
 #ifndef STATEMENT_PARSER_HPP
 #define STATEMENT_PARSER_HPP
 
-#include <sbgraph/ast/statement.hpp>
-#include <sbgraph/parser/expr.hpp>
+#include "ast/statement.hpp"
+#include "parser/expr.hpp"
 
 namespace SBG {
 

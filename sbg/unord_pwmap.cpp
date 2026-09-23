@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <sbgraph/sbg/unord_pwmap.hpp>
+#include <sbgraph/detail/sbg/unord_pwmap.hpp>
 
 #include <algorithm>
 #include <forward_list>

@@ -24,9 +24,9 @@
 #ifndef SBGRAPH_EVAL_VISITORS_EXPR_EVALUATOR_HPP_ 
 #define SBGRAPH_EVAL_VISITORS_EXPR_EVALUATOR_HPP_
 
-#include <sbgraph/ast/expression.hpp>
+#include <sbgraph/detail/ast/expression.hpp>
 #include <sbgraph/eval/base_type.hpp>
-#include <sbgraph/eval/eval_context.hpp>
+#include "eval/eval_context.hpp"
 
 #include <boost/variant.hpp>
 

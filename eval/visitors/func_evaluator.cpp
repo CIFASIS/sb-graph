@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <sbgraph/eval/visitors/func_evaluator.hpp>
+#include "eval/visitors/func_evaluator.hpp"
 #include <sbgraph/algorithms/cc/cc.hpp>
 #include <sbgraph/algorithms/matching/matching.hpp>
 #include <sbgraph/algorithms/mfvs/min_feedback_vertex_set.hpp>
@@ -27,14 +27,14 @@
 #include <sbgraph/sbg/bipartite_sbg.hpp>
 #include <sbgraph/sbg/expression.hpp>
 #include <sbgraph/sbg/integer.hpp>
-#include <sbgraph/sbg/interval.hpp>
+#include <sbgraph/detail/sbg/interval.hpp>
 #include <sbgraph/sbg/map.hpp>
-#include <sbgraph/sbg/multidim_inter.hpp>
+#include <sbgraph/detail/sbg/multidim_inter.hpp>
 #include <sbgraph/sbg/rational.hpp>
 #include <sbgraph/sbg/set.hpp>
 #include <sbgraph/sbg/pw_map.hpp>
-#include <sbgraph/util/debug.hpp>
-#include <sbgraph/util/defs.hpp>
+#include "util/debug.hpp"
+#include <sbgraph/detail/util/defs.hpp>
 
 namespace SBG {
 

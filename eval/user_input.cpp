@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <sbgraph/eval/user_input.hpp>
+#include "eval/user_input.hpp"
 
 namespace SBG {
 

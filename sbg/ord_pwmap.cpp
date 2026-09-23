@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <sbgraph/sbg/ord_pwmap.hpp>
+#include <sbgraph/detail/sbg/ord_pwmap.hpp>
 #include <sbgraph/sbg/perimeter.hpp>
 
 #include <forward_list>

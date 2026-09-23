@@ -28,8 +28,8 @@
 #ifndef SBGRAPH_EVAL_STM_EVALUATOR_HPP_ 
 #define SBGRAPH_EVAL_STM_EVALUATOR_HPP_ 
 
-#include <sbgraph/ast/statement.hpp>
-#include <sbgraph/eval/eval_context.hpp>
+#include "ast/statement.hpp"
+#include "eval/eval_context.hpp"
 #include <sbgraph/eval/pretty_print.hpp>
 
 namespace SBG {

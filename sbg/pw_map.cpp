@@ -19,8 +19,8 @@
 
 #include <sbgraph/sbg/pw_map.hpp>
 #include <sbgraph/sbg/pwmap_impl.hpp>
-#include <sbgraph/util/debug.hpp>
-#include <sbgraph/util/defs.hpp>
+#include "util/debug.hpp"
+#include <sbgraph/detail/util/defs.hpp>
 
 #include <iostream>
 

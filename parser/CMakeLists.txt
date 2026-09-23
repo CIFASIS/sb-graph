@@ -26,4 +26,9 @@ add_executable(
     main.cpp
 )
 
+target_include_directories(sbg-parser
+    PRIVATE
+      ${PROJECT_SOURCE_DIR}
+)
+
 target_link_libraries(sbg-parser PRIVATE sbgraph)

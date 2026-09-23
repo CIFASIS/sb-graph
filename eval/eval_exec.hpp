@@ -24,8 +24,8 @@
 #ifndef SBGRAPH_EVAL_EXEC_HPP_
 #define SBGRAPH_EVAL_EXEC_HPP_
 
-#include <sbgraph/eval/user_input.hpp>
-#include <sbgraph/util/user_input_handler.hpp>
+#include "eval/user_input.hpp"
+#include "util/user_input_handler.hpp"
 
 namespace SBG {
 

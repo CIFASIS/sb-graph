@@ -17,11 +17,11 @@
 
  ******************************************************************************/
 
-#include <sbgraph/algorithms/mfvs/smallest_sv_mfvs.hpp>
+#include <sbgraph/detail/algorithms/mfvs/smallest_sv_mfvs.hpp>
 #include <sbgraph/algorithms/scc/scc.hpp>
 #include <sbgraph/sbg/integer.hpp>
 #include <sbgraph/sbg/pw_map.hpp>
-#include <sbgraph/util/logger.hpp>
+#include "util/logger.hpp"
 
 #include <functional>
 #include <numeric>

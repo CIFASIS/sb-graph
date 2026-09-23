@@ -17,10 +17,10 @@
 
  ******************************************************************************/
 
-#include <sbgraph/eval/user_impl_map.hpp>
+#include "eval/user_impl_map.hpp"
 #include <sbgraph/sbg/pw_map.hpp>
 #include <sbgraph/sbg/set.hpp>
-#include <sbgraph/util/debug.hpp>
+#include "util/debug.hpp"
 
 namespace SBG {
 

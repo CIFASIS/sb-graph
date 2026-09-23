@@ -17,8 +17,8 @@
 
  ******************************************************************************/
 
-#include <sbgraph/eval/visitors/expr_evaluator.hpp>
-#include <sbgraph/eval/visitors/stm_evaluator.hpp>
+#include "eval/visitors/expr_evaluator.hpp"
+#include "eval/visitors/stm_evaluator.hpp"
 
 namespace SBG {
 

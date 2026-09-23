@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <sbgraph/eval/eval_context.hpp>
+#include "eval/eval_context.hpp"
 
 namespace SBG {
 

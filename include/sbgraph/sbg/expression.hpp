@@ -27,10 +27,10 @@
 #ifndef SBGRAPH_SBG_EXPRESSION_HPP_
 #define SBGRAPH_SBG_EXPRESSION_HPP_
 
-#include <sbgraph/sbg/expression_impl.hpp>
-#include <sbgraph/sbg/fixed_points.hpp>
+#include <sbgraph/detail/sbg/expression_impl.hpp>
+#include <sbgraph/detail/sbg/fixed_points.hpp>
 #include <sbgraph/sbg/integer.hpp>
-#include <sbgraph/sbg/linear_expr.hpp>
+#include <sbgraph/detail/sbg/linear_expr.hpp>
 #include <sbgraph/sbg/rational.hpp>
 
 #include "rapidjson/document.h"

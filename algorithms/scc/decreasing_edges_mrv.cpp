@@ -17,8 +17,8 @@
 
  ******************************************************************************/
 
-#include <sbgraph/algorithms/scc/decreasing_edges_mrv.hpp>
-#include <sbgraph/util/logger.hpp>
+#include <sbgraph/detail/algorithms/scc/decreasing_edges_mrv.hpp>
+#include "util/logger.hpp"
 
 namespace SBG {
 

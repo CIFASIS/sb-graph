@@ -29,6 +29,11 @@ add_executable(
     main.cpp
 )
 
+target_include_directories(sbg-eval
+    PRIVATE
+      ${PROJECT_SOURCE_DIR}
+)
+
 target_link_libraries(
     sbg-eval PRIVATE sbgraph
 )

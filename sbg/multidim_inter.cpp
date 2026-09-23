@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <sbgraph/sbg/multidim_inter.hpp>
+#include <sbgraph/detail/sbg/multidim_inter.hpp>
 
 #include <iostream>
 

@@ -17,8 +17,8 @@
 
  ******************************************************************************/
 
-#include <sbgraph/sbg/set_detail.hpp>
-#include <sbgraph/util/defs.hpp>
+#include "sbg/set_detail.hpp"
+#include <sbgraph/detail/util/defs.hpp>
 
 #include <cmath>
 

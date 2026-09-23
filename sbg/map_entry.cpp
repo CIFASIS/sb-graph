@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <sbgraph/sbg/map_entry.hpp>
+#include <sbgraph/detail/sbg/map_entry.hpp>
 
 namespace SBG {
 

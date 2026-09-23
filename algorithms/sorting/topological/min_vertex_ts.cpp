@@ -17,9 +17,9 @@
 
  ******************************************************************************/
 
-#include <sbgraph/algorithms/sorting/topological/min_vertex_ts.hpp>
-#include <sbgraph/util/debug.hpp>
-#include <sbgraph/util/logger.hpp>
+#include <sbgraph/detail/algorithms/sorting/topological/min_vertex_ts.hpp>
+#include "util/debug.hpp"
+#include "util/logger.hpp"
 
 namespace SBG {
 

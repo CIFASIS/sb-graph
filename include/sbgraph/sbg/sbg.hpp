@@ -79,6 +79,12 @@ public:
   const PWMap& map2() const;
   const PWMap& Emap() const;
 
+  template<typename FuncT>
+  void foreachSetVertex(FuncT&& f) const;
+
+  template<typename FuncT>
+  void foreachSetEdge(FuncT&& f) const;
+
   /**
    * @brief Adds a new set-vertex composed by \p vertices. \n
    * Precondition: V_.intersection(vertices) = {}
@@ -92,11 +98,11 @@ public:
    */
   void addSetEdge(const PWMap& pw1, const PWMap& pw2);
 
-  template<typename FuncT>
-  void foreachSetVertex(FuncT&& f) const;
-
-  template<typename FuncT>
-  void foreachSetEdge(FuncT&& f) const;
+  /**
+   * @brief Erase vertices \p vs from the SBG, together with adjacent edges of
+   * \p vs.
+   */
+  void eraseVertices(const Set& V);
 
 private:
   Set _V; ///< Vertex definitions

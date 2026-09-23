@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <sbgraph/parser/skipper.hpp>
+#include "parser/skipper.hpp"
 
 namespace SBG {
 

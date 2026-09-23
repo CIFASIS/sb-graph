@@ -31,7 +31,7 @@
 #include <sbgraph/sbg/bipartite_sbg.hpp>
 #include <sbgraph/sbg/integer.hpp>
 #include "test/performance/boost/scalar_graph.hpp"
-#include <sbgraph/util/logger.hpp>
+#include "util/logger.hpp"
 
 #include <map>
 #include <vector>

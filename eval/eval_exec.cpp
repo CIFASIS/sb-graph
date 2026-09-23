@@ -17,21 +17,20 @@
 
  ******************************************************************************/
 
+#include "eval/eval_exec.hpp"
 #include <sbgraph/algorithms/matching/matching_impl.hpp>
 #include <sbgraph/algorithms/mfvs/mfvs_impl.hpp>
 #include <sbgraph/algorithms/scc/scc_impl.hpp>
 #include <sbgraph/algorithms/sorting/topological/ts_impl.hpp>
-#include <sbgraph/eval/eval_exec.hpp>
 #include <sbgraph/eval/file_evaluator.hpp>
-#include <sbgraph/eval/input_translator.hpp>
-#include <sbgraph/eval/file_evaluator.hpp>
-#include <sbgraph/eval/visitors/autom_impl_visitor.hpp>
-#include <sbgraph/parser/file_parser.hpp>
+#include "eval/input_translator.hpp"
+#include "eval/visitors/autom_impl_visitor.hpp"
+#include "parser/file_parser.hpp"
 #include <sbgraph/sbg/pwmap_impl.hpp>
 #include <sbgraph/sbg/set_impl.hpp>
-#include <sbgraph/util/debug.hpp>
-#include <sbgraph/util/logger.hpp>
-#include <sbgraph/util/time_profiler.hpp>
+#include "util/debug.hpp"
+#include "util/logger.hpp"
+#include "util/time_profiler.hpp"
 
 #include "boost/program_options.hpp"
 

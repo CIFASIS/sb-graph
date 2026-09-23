@@ -17,8 +17,8 @@
 
  ******************************************************************************/
 
-#include <sbgraph/eval/visitors/int_evaluator.hpp>
-#include <sbgraph/util/debug.hpp>
+#include "eval/visitors/int_evaluator.hpp"
+#include "util/debug.hpp"
 
 #include <cmath>
 

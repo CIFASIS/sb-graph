@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "sbg/multidim_inter.hpp"
+#include <sbgraph/detail/sbg/multidim_inter.hpp>
 #include "sbg/set_detail.hpp"
 #include "test/performance/boost/scalar_graph_builder.hpp"
 #include "util/time_profiler.hpp"

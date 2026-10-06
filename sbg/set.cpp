@@ -17,8 +17,8 @@
 
  ******************************************************************************/
 
-#include "sbg/set.hpp"
-#include "sbg/set_impl.hpp"
+#include <sbgraph/sbg/set.hpp>
+#include <sbgraph/sbg/set_impl.hpp>
 #include "util/debug.hpp"
 
 #include <iostream>

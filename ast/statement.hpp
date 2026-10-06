@@ -24,7 +24,7 @@
 #ifndef SBGRAPH_AST_STATEMENT_HPP_ 
 #define SBGRAPH_AST_STATEMENT_HPP_
 
-#include "ast/expression.hpp"
+#include <sbgraph/detail/ast/expression.hpp>
 #include "util/debug.hpp"
 
 namespace SBG {

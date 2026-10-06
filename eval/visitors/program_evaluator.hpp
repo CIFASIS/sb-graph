@@ -28,7 +28,7 @@
 #define SBGRAPH_EVAL_VISITORS_PROGRAM_EVALUATOR_HPP_
 
 #include "ast/sbg_program.hpp"
-#include "eval/pretty_print.hpp"
+#include <sbgraph/eval/pretty_print.hpp>
 
 #include <boost/variant.hpp>
 

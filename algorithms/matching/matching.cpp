@@ -17,8 +17,8 @@
 
  ******************************************************************************/
 
-#include "algorithms/matching/matching.hpp"
-#include "algorithms/matching/matching_impl.hpp"
+#include <sbgraph/algorithms/matching/matching.hpp>
+#include <sbgraph/algorithms/matching/matching_impl.hpp>
 #include "util/debug.hpp"
 #include "util/time_profiler.hpp"
 

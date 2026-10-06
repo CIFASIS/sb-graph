@@ -29,14 +29,14 @@
 #ifndef SBGRAPH_EVAL_USER_IMPL_MAP_HPP_
 #define SBGRAPH_EVAL_USER_IMPL_MAP_HPP_
 
-#include "algorithms/matching/matching_impl.hpp"
-#include "algorithms/mfvs/mfvs_impl.hpp"
-#include "algorithms/scc/scc_impl.hpp"
-#include "algorithms/sorting/topological/ts_impl.hpp"
-#include "sbg/pw_map.hpp"
-#include "sbg/pwmap_impl.hpp"
-#include "sbg/set.hpp"
-#include "sbg/set_impl.hpp"
+#include <sbgraph/algorithms/matching/matching_impl.hpp>
+#include <sbgraph/algorithms/mfvs/mfvs_impl.hpp>
+#include <sbgraph/algorithms/scc/scc_impl.hpp>
+#include <sbgraph/algorithms/sorting/topological/ts_impl.hpp>
+#include <sbgraph/sbg/pw_map.hpp>
+#include <sbgraph/sbg/pwmap_impl.hpp>
+#include <sbgraph/sbg/set.hpp>
+#include <sbgraph/sbg/set_impl.hpp>
 
 #include <functional>
 #include <unordered_map>

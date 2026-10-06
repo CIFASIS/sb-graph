@@ -18,7 +18,6 @@
  ******************************************************************************/
 
 #include "ast/sbg_program.hpp"
-#include "eval/pretty_print.hpp"
 #include "eval/visitors/program_evaluator.hpp"
 #include "parser/file_parser.hpp"
 

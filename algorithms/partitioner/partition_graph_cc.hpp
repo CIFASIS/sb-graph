@@ -21,8 +21,8 @@
 #include <unordered_set>
 #include <vector>
 
-#include <sbg/interval.hpp>
-#include <sbg/sbg.hpp>
+#include <sbgraph/sbg/interval.hpp>
+#include <sbgraph/sbg/sbg.hpp>
 
 #include "communication_cost.hpp"
 #include "partitioner_params.hpp"

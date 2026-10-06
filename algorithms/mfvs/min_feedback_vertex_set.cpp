@@ -17,8 +17,8 @@
 
  ******************************************************************************/
 
-#include "algorithms/mfvs/min_feedback_vertex_set.hpp"
-#include "algorithms/mfvs/mfvs_impl.hpp"
+#include <sbgraph/algorithms/mfvs/min_feedback_vertex_set.hpp>
+#include <sbgraph/algorithms/mfvs/mfvs_impl.hpp>
 #include "util/debug.hpp"
 #include "util/time_profiler.hpp"
 

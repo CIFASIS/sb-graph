@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "algorithms/scc/scc_impl.hpp"
+#include <sbgraph/algorithms/scc/scc_impl.hpp>
 #include "util/debug.hpp"
 
 namespace SBG {

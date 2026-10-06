@@ -18,7 +18,7 @@
 
 #include <fstream>
 
-#include <sbg/sbg.hpp>
+#include <sbgraph/sbg/sbg.hpp>
 
 #include "build_sb_graph.hpp"
 #include "partition_metrics_api.hpp"

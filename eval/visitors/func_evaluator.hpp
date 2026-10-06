@@ -27,8 +27,8 @@
 #ifndef SBGRAPH_EVAL_VISITORS_FUNC_EVALUATOR_HPP_ 
 #define SBGRAPH_EVAL_VISITORS_FUNC_EVALUATOR_HPP_
 
-#include "ast/expression.hpp"
-#include "eval/base_type.hpp"
+#include <sbgraph/detail/ast/expression.hpp>
+#include <sbgraph/eval/base_type.hpp>
 
 namespace SBG {
 

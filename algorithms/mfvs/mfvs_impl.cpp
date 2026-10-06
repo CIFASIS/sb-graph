@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "algorithms/mfvs/mfvs_impl.hpp"
+#include <sbgraph/algorithms/mfvs/mfvs_impl.hpp>
 #include "util/debug.hpp"
 
 namespace SBG {

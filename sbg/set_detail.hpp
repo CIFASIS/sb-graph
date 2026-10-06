@@ -27,10 +27,10 @@
 #ifndef SBGRAPH_SBG_SET_DETAIL_HPP_
 #define SBGRAPH_SBG_SET_DETAIL_HPP_
 
-#include "sbg/integer.hpp"
-#include "sbg/ord_set.hpp"
-#include "sbg/ord_unidim_dense_set.hpp"
-#include "sbg/set.hpp"
+#include <sbgraph/sbg/integer.hpp>
+#include <sbgraph/detail/sbg/ord_set.hpp>
+#include <sbgraph/detail/sbg/ord_unidim_dense_set.hpp>
+#include <sbgraph/sbg/set.hpp>
 
 #include <optional>
 

@@ -22,11 +22,11 @@
 #include <fstream>
 #include <iostream>
 
-#include <algorithms/partitioner/build_sb_graph.hpp>
-#include <algorithms/partitioner/communication_cost.hpp>
-#include <algorithms/partitioner/kernighan_lin_partitioner.hpp>
-#include <algorithms/partitioner/partition_graph.hpp>
-#include <algorithms/partitioner/partition_graph_cc.hpp>
+#include <sbgraph/algorithms/partitioner/build_sb_graph.hpp>
+#include <sbgraph/algorithms/partitioner/communication_cost.hpp>
+#include <sbgraph/algorithms/partitioner/kernighan_lin_partitioner.hpp>
+#include <sbgraph/algorithms/partitioner/partition_graph.hpp>
+#include <sbgraph/algorithms/partitioner/partition_graph_cc.hpp>
 
 /// @file parser_test.cpp
 ///

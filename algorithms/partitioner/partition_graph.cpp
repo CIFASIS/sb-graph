@@ -22,7 +22,7 @@
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/writer.h>
 #include <set>
-#include <util/logger.hpp>
+#include <sbgraph/util/logger.hpp>
 
 #include "build_sb_graph.hpp"
 #include "communication_cost.hpp"

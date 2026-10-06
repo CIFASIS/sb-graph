@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "sbg/set_impl.hpp"
+#include <sbgraph/sbg/set_impl.hpp>
 #include "util/debug.hpp"
 
 namespace SBG {

@@ -18,8 +18,8 @@
  ******************************************************************************/
 
 #include "eval/user_impl_map.hpp"
-#include "sbg/pw_map.hpp"
-#include "sbg/set.hpp"
+#include <sbgraph/sbg/pw_map.hpp>
+#include <sbgraph/sbg/set.hpp>
 #include "util/debug.hpp"
 
 namespace SBG {

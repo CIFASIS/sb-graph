@@ -16,8 +16,8 @@
 
 ******************************************************************************/
 
-#include <algorithms/cc/cc.hpp>
-#include <sbg/sbg.hpp>
+#include <sbgraph/algorithms/cc/cc.hpp>
+#include <sbgraph/sbg/sbg.hpp>
 #include <unordered_map>
 
 #include "communication_cost.hpp"

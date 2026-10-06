@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "sbg/ord_set.hpp"
+#include <sbgraph/detail/sbg/ord_set.hpp>
 
 #include <forward_list>
 #include <iostream>

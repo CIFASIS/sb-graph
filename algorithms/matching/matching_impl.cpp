@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "algorithms/matching/matching_impl.hpp"
+#include <sbgraph/algorithms/matching/matching_impl.hpp>
 #include "util/debug.hpp"
 
 namespace SBG {

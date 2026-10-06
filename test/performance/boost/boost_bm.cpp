@@ -18,7 +18,7 @@
  ******************************************************************************/
 
 #include "test/performance/boost/boost_bm.hpp"
-#include "sbg/bipartite_sbg.hpp"
+#include <sbgraph/sbg/bipartite_sbg.hpp>
 #include "test/performance/boost/scalar_graph.hpp"
 #include "test/performance/boost/scalar_graph_builder.hpp"
 #include "test/performance/boost/scc_graph_builder.hpp"

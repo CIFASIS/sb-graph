@@ -1,5 +1,7 @@
 add_executable(sbg-benchmark main.cpp)
 
+target_include_directories(sbg-benchmark PRIVATE ${PROJECT_SOURCE_DIR})
+
 target_sources(sbg-benchmark
                PRIVATE
                boost/boost_bm.cpp

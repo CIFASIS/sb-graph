@@ -50,17 +50,13 @@ The simplest way to compile this package is to run the following commands from t
       
   3. `cmake ..`
 
-      Note that by default the biuld type is set to `Release`, to make a debug build, add `-DCMAKE_BUILD_TYPE=Debug`
+      Note that by default the build type is set to `Release`, to make a debug build, add `-DCMAKE_BUILD_TYPE=Debug`
 
   4. `make` 
   
   5. `make install`
 
-      The default installation folders are:
-        * `${SBG_ROOT_DIR}`/install/bin
-        * `${SBG_ROOT_DIR}`/install/include
-        * `${SBG_ROOT_DIR}`/install/lib
-      to modify the default installation directory, set `-DCMAKE_INSTALL_PREFIX={install-prefix}`.
+      The default installation folder is `$ENV{HOME}/.local/sbgraph`. To modify the default installation directory, set `-DCMAKE_INSTALL_PREFIX={install-prefix}`.
   
   6. You can remove the generated library and object files from the
      source code directory by typing `make clean`.  

@@ -25,7 +25,7 @@
 #include <stack>
 #include <vector>
 
-#include <sbg/sbg.hpp>
+#include <sbgraph/sbg/sbg.hpp>
 
 #include "partition_strategy.hpp"
 #include "weighted_sb_graph.hpp"

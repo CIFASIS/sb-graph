@@ -17,8 +17,8 @@
 
  ******************************************************************************/
 
-#include "algorithms/cc/cc.hpp"
-#include "sbg/set.hpp"
+#include <sbgraph/algorithms/cc/cc.hpp>
+#include <sbgraph/sbg/set.hpp>
 #include "util/logger.hpp"
 #include "util/time_profiler.hpp"
 

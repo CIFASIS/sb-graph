@@ -26,9 +26,9 @@
 #ifndef SBGRAPH_PARSER_EXPR_HPP_
 #define SBGRAPH_PARSER_EXPR_HPP_
 
-#include "ast/expression.hpp"
+#include <sbgraph/detail/ast/expression.hpp>
 #include "parser/skipper.hpp"
-#include "sbg/integer.hpp"
+#include <sbgraph/sbg/integer.hpp>
 
 namespace SBG {
 

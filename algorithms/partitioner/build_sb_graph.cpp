@@ -27,8 +27,8 @@
 #include <rapidjson/pointer.h>
 #include <rapidjson/istreamwrapper.h>
 #include <vector>
-#include <util/defs.hpp>
-#include <util/logger.hpp>
+#include <sbgraph/util/defs.hpp>
+#include <sbgraph/util/logger.hpp>
 
 #include "build_sb_graph.hpp"
 #include "partition_graph.hpp"

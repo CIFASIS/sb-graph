@@ -21,7 +21,7 @@
 #include <rapidjson/writer.h>
 #include <unordered_map>
 
-#include <util/time_profiler.hpp>
+#include <sbgraph/util/time_profiler.hpp>
 
 #include "build_sb_graph.hpp"
 #include "communication_cost.hpp"

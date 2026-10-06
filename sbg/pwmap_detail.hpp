@@ -27,7 +27,7 @@
 #ifndef SBGRAPH_SBG_PWMAP_DETAIL_HPP_
 #define SBGRAPH_SBG_PWMAP_DETAIL_HPP_
 
-#include "sbg/pw_map.hpp"
+#include <sbgraph/sbg/pw_map.hpp>
 
 namespace SBG {
 

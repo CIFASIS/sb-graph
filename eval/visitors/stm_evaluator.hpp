@@ -30,7 +30,7 @@
 
 #include "ast/statement.hpp"
 #include "eval/eval_context.hpp"
-#include "eval/pretty_print.hpp"
+#include <sbgraph/eval/pretty_print.hpp>
 
 namespace SBG {
 

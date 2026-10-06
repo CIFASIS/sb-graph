@@ -17,8 +17,8 @@
 
  ******************************************************************************/
 
-#include "algorithms/matching/bfs_matching.hpp"
-#include "sbg/integer.hpp"
+#include <sbgraph/detail/algorithms/matching/bfs_matching.hpp>
+#include <sbgraph/sbg/integer.hpp>
 #include "util/logger.hpp"
 
 namespace SBG {

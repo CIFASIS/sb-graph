@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "sbg/expression.hpp"
+#include <sbgraph/sbg/expression.hpp>
 
 #include <iostream>
 

@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "sbg/rational.hpp"
+#include <sbgraph/sbg/rational.hpp>
 
 #include <iostream>
 

@@ -26,9 +26,9 @@
 #include <set>
 #include <string>
 
-#include <algorithms/cc/cc.hpp>
-#include <sbg/set_fact.hpp>
-#include <util/time_profiler.hpp>
+#include <sbgraph/algorithms/cc/cc.hpp>
+#include <sbgraph/sbg/set_fact.hpp>
+#include <sbgraph/util/time_profiler.hpp>
 
 #include "build_sb_graph.hpp"
 #include "communication_cost.hpp"

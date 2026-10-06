@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "algorithms/scc/scc_data.hpp"
+#include <sbgraph/algorithms/scc/scc_data.hpp>
 
 namespace SBG {
 

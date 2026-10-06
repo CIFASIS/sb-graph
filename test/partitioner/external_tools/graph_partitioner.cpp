@@ -36,8 +36,8 @@
 #include <kaHIP_interface.h>
 
 #include "graph_partitioner.hpp"
-#include <algorithms/partitioner/build_sb_graph.hpp>
-#include <algorithms/partitioner/weighted_sb_graph.hpp>
+#include <sbgraph/algorithms/partitioner/build_sb_graph.hpp>
+#include <sbgraph/algorithms/partitioner/weighted_sb_graph.hpp>
 
 constexpr const char *VALID_PARTITION_METHODS = "{ Scotch, Metis, HMetis, Kahip}";
 

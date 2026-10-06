@@ -22,8 +22,8 @@
 #include <unordered_set>
 #include <vector>
 
-#include <sbg/interval.hpp>
-#include <sbg/sbg.hpp>
+#include <sbgraph/sbg/interval.hpp>
+#include <sbgraph/sbg/sbg.hpp>
 
 #include "partitioner_params.hpp"
 #include "sbg_partitioner_types.hpp"

@@ -19,7 +19,7 @@
 
 #include <vector>
 
-#include <sbg/sbg.hpp>
+#include <sbgraph/sbg/sbg.hpp>
 
 #pragma once
 

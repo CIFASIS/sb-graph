@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "sbg/perimeter.hpp"
+#include <sbgraph/sbg/perimeter.hpp>
 
 namespace SBG {
 

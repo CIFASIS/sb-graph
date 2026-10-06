@@ -21,8 +21,8 @@
 #include <map>
 #include <iostream>
 
-#include "sbg/sbg.hpp"
-#include "sbg/set.hpp"
+#include <sbgraph/sbg/sbg.hpp>
+#include <sbgraph/sbg/set.hpp>
 
 namespace SBG {
 

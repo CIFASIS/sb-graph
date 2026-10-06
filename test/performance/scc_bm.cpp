@@ -17,9 +17,9 @@
 
  ******************************************************************************/
 
-#include "algorithms/matching/match_data.hpp"
-#include "algorithms/scc/scc.hpp"
-#include "sbg/directed_sbg.hpp"
+#include <sbgraph/algorithms/matching/match_data.hpp>
+#include <sbgraph/algorithms/scc/scc.hpp>
+#include <sbgraph/sbg/directed_sbg.hpp>
 #include "test/performance/scc_bm.hpp"
 #include "test/performance/utils.hpp"
 

@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include <sbg/sbg.hpp>
+#include <sbgraph/sbg/sbg.hpp>
 
 #include "weighted_sb_graph.hpp"
 

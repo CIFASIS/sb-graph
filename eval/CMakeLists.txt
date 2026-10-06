@@ -1,6 +1,10 @@
 add_library(sbg-eval-lib OBJECT)
 
-target_include_directories(sbg-eval-lib PRIVATE ${PROJECT_SOURCE_DIR})
+target_include_directories(sbg-eval-lib
+    PRIVATE
+      ${PROJECT_SOURCE_DIR}/include
+      ${PROJECT_SOURCE_DIR}
+)
 
 target_sources(
     sbg-eval-lib
@@ -23,6 +27,11 @@ add_dependencies(sbg-eval-lib sbg-dev sbg-parser-lib)
 add_executable(
     sbg-eval
     main.cpp
+)
+
+target_include_directories(sbg-eval
+    PRIVATE
+      ${PROJECT_SOURCE_DIR}
 )
 
 target_link_libraries(

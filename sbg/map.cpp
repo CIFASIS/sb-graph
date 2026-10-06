@@ -235,6 +235,11 @@ MaybeMap Map::compact(const Map& other) const
 
 // Non-member functions --------------------------------------------------------
 
+std::vector<Map> sort(const Set& s)
+{
+  return detail::MapDetail::sort(s);
+}
+
 rapidjson::Value toJSON(Map m, rapidjson::Document::AllocatorType& alloc)
 {
   rapidjson::Value result{rapidjson::kObjectType};

@@ -97,6 +97,17 @@ IntTuple IntTuple::operator+(const IntTuple& other) const
   return result;
 }
 
+IntTuple IntTuple::operator-(const IntTuple& other) const
+{
+  IntTuple result;
+
+  for (auto j = 0; j < _value.size(); ++j) {
+    result.pushBack(operator[](j) - other[j]);
+  }
+
+  return result;
+}
+
 // Member functions ------------------------------------------------------------
 
 std::size_t IntTuple::arity() const { return _value.size(); }

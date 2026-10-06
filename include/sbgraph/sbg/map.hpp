@@ -184,6 +184,8 @@ std::ostream& operator<<(std::ostream& out, const Map& s);
 
 // Non-member functions --------------------------------------------------------
 
+std::vector<Map> sort(const Set& s);
+
 rapidjson::Value toJSON(Map m, rapidjson::Document::AllocatorType& alloc);
 
 } // namespace LIB

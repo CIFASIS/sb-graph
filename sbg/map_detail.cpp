@@ -389,6 +389,108 @@ Set MapDetail::lessImage(const Expression& expr1, const Expression& expr2)
   return std::visit(less_image_evaluator, key.impl(result));
 }
 
+// Order set -------------------------------------------------------------------
+
+AtomicMapVector sort(const Interval& i)
+{
+  AtomicMapVector result;
+
+  Int begin = i.begin();
+  Int step = i.step();
+  Int end = i.end();
+  if (i.cardinal() > 1) {
+    result.emplace_back(Interval{begin + step, step, end}, LinearExpr{1, -step});
+  }
+  result.emplace_back(Interval{begin, 1, begin}, LinearExpr{1, 0});
+
+  return result;
+}
+
+AtomicMDMapVector sort(const MultiDimInter& mdi)
+{
+  AtomicMDMapVector result;
+
+  std::size_t arity = mdi.arity();
+  MultiDimInter copy = mdi;
+  ExpressionImpl expr{arity, LinearExpr{1, 0}};
+  for (std::size_t k = 0; k < arity; ++k) {
+    AtomicMapVector kth_result = sort(mdi[k]);
+    copy[k] = kth_result[0].first;
+    expr[k] = kth_result[0].second;
+    result.emplace_back(copy, expr);
+    copy[k] = kth_result[1].first;
+    expr[k] = LinearExpr{1, mdi[k].end() - mdi[k].begin()};
+  }
+  result.emplace_back(
+    MultiDimInter{mdi.minElem()}, ExpressionImpl{arity, LinearExpr{1, 0}}
+  );
+
+  return result;
+}
+
+template<typename CompactSetImplT, typename PieceT>
+MapVector MapDetail::sort(const CompactSetImplT& s)
+{
+  MapVector result;
+
+  unsigned int j = 0;
+  SetAccessKey key = SetAccess::key();
+  std::size_t arity = s.arity();
+  IntTuple last_max{s.arity(), 0};
+  for (const PieceT& p : s) {
+    unsigned int h = 0;
+    auto sorted = detail::sort(p);
+    for (const auto& m : sorted) {
+      CompactSetImplT domain;
+      domain.pushBack(m.first);
+      if (j == 0 || h + 1 < sorted.size()) {
+        result.emplace_back(
+          key.createSet(domain), Expression{ExpressionImpl{m.second}}
+        );
+      } else {
+        IntTuple minimum = p.minElem();
+        Expression expr;
+        for (std::size_t k = 0; k < arity; ++k) {
+          expr = expr.cartesianProduct(Expression{Rational{1}, last_max[k] - minimum[k]});
+        }
+        result.emplace_back(key.createSet(domain), expr);
+      }
+      ++h;
+    }
+    ++j;
+    last_max = p.maxElem();
+  }
+
+  return result;
+}
+
+MapVector MapDetail::sort(const Set& s)
+{
+  MapVector result;
+
+  SetAccessKey key = SetAccess::key();
+  auto sort_evaluator = Util::Overload {
+    [&](const UnorderedSet& a)
+    {
+      return sort<UnorderedSet, MultiDimInter>(a);
+    },
+    [&](const OrdUnidimDenseSet& a)
+    {
+      return sort<OrdUnidimDenseSet, Interval>(a);
+    },
+    [&](const OrderedSet& a)
+    {
+      return sort<OrderedSet, MultiDimInter>(a);
+    },
+    [&](const auto& a)
+    {
+      Util::ERROR("MapDetail::sort: unsupported Set implementation\n");
+      return MapVector{};
+    }
+  };
+  return std::visit(sort_evaluator, key.impl(s));
+}
+
 // Reduction -------------------------------------------------------------------
 
 void partition(const Interval& i, const LinearExpr& linear_expr

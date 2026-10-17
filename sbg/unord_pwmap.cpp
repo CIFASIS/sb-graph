@@ -21,7 +21,6 @@
 
 #include <algorithm>
 #include <forward_list>
-#include <iostream>
 #include <set>
 
 namespace SBG {

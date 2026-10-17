@@ -25,7 +25,7 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Minimum Adjacent MRV Implementation -----------------------------------------
+// Decreasing edges MRV Implementation -----------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 LtEdgesMRV::LtEdgesMRV() : _n(0) {}
@@ -41,9 +41,7 @@ Set LtEdgesMRV::decreasingRepresentative(const PWMap& rmap) const
 
   PWMap rmapB = rmap.composition(mapB);
   PWMap rmapD = rmap.composition(mapD);
-
-  Set result = rmapD.lessImage(rmapB);
-  return result;
+  return rmapD.lessImage(rmapB);
 }
 
 PWMap LtEdgesMRV::detectRepetition(const PWMap& decreasing_smap) const
@@ -125,7 +123,6 @@ PWMap LtEdgesMRV::calculate(const DirectedSBG& dsbg)
     Set repeatedSE = visitedSE.intersection(Emap.image(Pj));
     if (!repeatedSE.isEmpty()) {
       smap_plus = repetition(decreasing_smap);
-      //visitedSE = visitedSE.difference(Emap.image(E_repetition));
       _n = 0;
     } else {
       visitedSE = std::move(visitedSE).disjointCup(Emap.image(Pj));

@@ -84,7 +84,8 @@ EvalExecutor::EvalExecutor() : _scc_impl(1), _mfvs_impl(2)
     ("scc_impl", Util::prog_opts::value(&_scc_impl),
      "Desired SCC algorithm implementation:"
      "\n  - 0 for V1 of minimum reachable SCC"
-     "\n  - 1 for V2 of minimum reachable SCC (default option)")
+     "\n  - 1 for V2 of minimum reachable SCC (default option)"
+     "\n  - 2 for V3 of minimum reachable SCC")
     ("mfvs_impl", Util::prog_opts::value(&_mfvs_impl),
      "Desired MFVS algorithm implementation:"
      "\n  - 0 for degree greedy MFVS"

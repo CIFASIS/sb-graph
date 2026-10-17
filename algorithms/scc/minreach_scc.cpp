@@ -17,8 +17,9 @@
 
  ******************************************************************************/
 
-#include <sbgraph/detail/algorithms/scc/decreasing_edges_mrv.hpp>
 #include <sbgraph/detail/algorithms/scc/minreach_scc.hpp>
+#include <sbgraph/detail/algorithms/scc/decreasing_edges_mrv.hpp>
+#include <sbgraph/detail/algorithms/scc/decreasing_rmap_mrv.hpp>
 #include <sbgraph/detail/algorithms/scc/minadj_mrv.hpp>
 #include "util/logger.hpp"
 
@@ -124,6 +125,33 @@ PWMap MinReachSCCV2::sccStep()
   Set Esame = rmapB.equalImage(rmapD);
   _E = Esame;
   Util::DEBUG_LOG << "MinReachSCCV2 erased edges: "
+    << _dsbg.E().difference(_E) << "\n\n";
+
+  // Swap directions
+  swapEdgesDirection(_E);
+
+  return new_rmap;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Third version --------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+MinReachSCCV3::MinReachSCCV3() {}
+
+PWMap MinReachSCCV3::sccStep()
+{
+  // Calculate MRV
+  LtRmapMRV mrv;
+  PWMap new_rmap = mrv.calculate(_dsbg);
+  Util::DEBUG_LOG << "MinReachSCCV3 new_rmap: " << new_rmap << "\n";
+
+  // Leave edges in the same SCC
+  PWMap rmapB = new_rmap.composition(_dsbg.mapB());
+  PWMap rmapD = new_rmap.composition(_dsbg.mapD());
+  Set Esame = rmapB.equalImage(rmapD);
+  _E = Esame;
+  Util::DEBUG_LOG << "MinReachSCCV3 erased edges: "
     << _dsbg.E().difference(_E) << "\n\n";
 
   // Swap directions

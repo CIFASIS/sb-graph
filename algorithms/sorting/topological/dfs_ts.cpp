@@ -68,53 +68,85 @@ void checkSort(PWMap& smap, const DirectedSBG& dsbg)
     , "checkSort: the order is partial\n");
 }
 
-Set DFS_TS::checkRepetition(MD_NAT from, MD_NAT to, Expression expr) {
+void DFS_TS::addSV(MD_NAT from_sv, MD_NAT from, MD_NAT to_sv, MD_NAT to, Expression expr) {
+  // Set last_v
+  Set d_to = _Vmap.preImage(to_sv);
+  Set last = Set{d_to.maxElem()};
+  d_to = d_to.difference(last).difference(_visitedSV);
+  if (d_to.isEmpty()) {
+    d_to = Set{to};
+  }
+  _last_v = d_to.maxElem();
+  //
+  Set sv{from_sv};
+  Set d = _Vmap.preImage(sv);
+  MD_NAT max_v = d.maxElem();
+  if (max_v == from) {
+    d = Set{from};
+  }
+  else {
+    d = d.difference(Set{max_v});
+  }
+  _visitedSV = _visitedSV.cup(d);
+  _smap.emplace(d, expr);
+}
+
+void DFS_TS::checkRepetitionAndAdd(MD_NAT from, MD_NAT to, bool isSucc) {
+  Expression expr{from, to};
   MD_NAT from_sv = _Vmap.image(from).minElem();
   MD_NAT to_sv = _Vmap.image(to).minElem();
   SVExprTuple tuple = std::make_tuple(from_sv, to_sv, expr);
 
-  if (!_SVExprSet.count(tuple)) {
-    _SVExprSet.insert(tuple);
-    return Set{from};
-  }
-  Set sv{std::get<From>(tuple)};
-  Set d = _Vmap.preImage(sv);
-  Set last = Set{d.maxElem()};
-  d = d.difference(last).difference(_visitedSV);
-  _visitedSV.cup(d);
-  return d;
-}
-
-void DFS_TS::dfs(MD_NAT v) {
-
-  Set sv{v};
-  Set prev = _mapB.image(_mapD.preImage(sv));
-
-  if (prev.isEmpty()) {
-    Expression e{v, v};
-    MD_NAT sv_id = _Vmap.image(sv).minElem();
-    Set d = checkRepetition(v, v, e);
-    _smap.emplace(d, e);
+  if (std::find(_SVExprVector.begin(), _SVExprVector.end(), tuple) == _SVExprVector.end()) {
+    _SVExprVector.push_back(tuple);
+    Set sv{from};
+    _visitedSV = _visitedSV.cup(sv);
+    _last_v = to;
+    _smap.emplace(sv, expr);
     return;
   }
 
-  MD_NAT _v = v;
-  do {
-    MD_NAT prev_v = prev.minElem();
-    Expression e{_v, prev_v};
-    Set prev_sv{prev_v};
-    MD_NAT prev_sv_id = _Vmap.image(sv).minElem();
-    
-    Set d = checkRepetition(v, prev_v, e);
-    _smap.emplace(d, e);
+  addSV(from_sv, from, to_sv, to, expr);
 
-    if (_visitedSV.intersection(prev_sv).isEmpty()) {
-      dfs(prev_v);
+  if (!isSucc) {
+    return;
+  }
+  for (auto it = _SVExprVector.begin(); it != _SVExprVector.end(); ++it) {
+    SVExprTuple t = *it;
+    if (std::get<To>(t) == from_sv) {
+      addSV(std::get<From>(t), std::get<From>(t), std::get<To>(t), std::get<To>(t),std::get<Expr>(t));
     }
-    _v = prev_v;
-    sv = prev_sv;
-    prev = prev.difference(_visitedSV);
-  } while (!prev.isEmpty());
+  }
+}
+
+MD_NAT DFS_TS::dfs(MD_NAT v, bool isRec) {
+  Set sv{v};
+  Set succ = _mapD.image(_mapB.preImage(sv));
+  if (!isRec) {
+    succ = succ.difference(_visitedSV);
+  }
+  if (succ.isEmpty()) {
+    _visitedSV = _visitedSV.cup(sv);
+    return v;
+  }
+
+  MD_NAT _v = v;
+  MD_NAT last_v;
+  do {
+    MD_NAT succ_v = succ.minElem();
+    Set succ_sv{succ_v};
+    last_v = succ_v;
+
+    checkRepetitionAndAdd(_v, succ_v, true);
+
+    dfs(succ_v, true);
+    
+    _v = succ_v;
+    sv = succ_sv;
+    succ = succ.difference(_visitedSV);
+  } while (!succ.isEmpty());
+
+  return last_v;
 }
 
 PWMap DFS_TS::calculate(const DirectedSBG& dsbg
@@ -128,15 +160,21 @@ PWMap DFS_TS::calculate(const DirectedSBG& dsbg
     return _smap;
   }
 
-  do {
-    MD_NAT v = _V.minElem();
+  MD_NAT v = _V.minElem();
+  _last_v = v;
+  dfs(v, false);
+  _V = _V.difference(_visitedSV);
+  
+  while (!_V.isEmpty()) {
+    v = _V.minElem();
     Set v_sv{v};
-    if (_visitedSV.intersection(v_sv).isEmpty()) {
-      dfs(v);
-    }
+    dfs(v, false);
+    checkRepetitionAndAdd(_last_v, v, false);
     _V = _V.difference(_visitedSV);
-  } while (!_V.isEmpty());
+  } 
 
+  Expression e{_last_v, _last_v};
+  _smap.emplace(Set{_last_v}, e);
   _smap.compact();
 
   Util::DEBUG_LOG << "Topological sort result:\n" << _smap << "\n\n";

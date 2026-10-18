@@ -29,9 +29,7 @@
 #include "sbg/expression.hpp"
 #include "sbg/pw_map.hpp"
 #include "sbg/set.hpp"
-
-#include <iostream>
-#include <set>
+#include <vector>
 #include <tuple>
 
 namespace SBG {
@@ -66,11 +64,13 @@ private:
    */
   void init(const DirectedSBG& dsbg);
 
-  Set checkRepetition(MD_NAT from, MD_NAT to, Expression expr);
+  void addSV(MD_NAT from_sv, MD_NAT from, MD_NAT to_sv, MD_NAT to, Expression expr);
+
+  void checkRepetitionAndAdd(MD_NAT from, MD_NAT to, bool isSucc);
 
   MD_NAT getVertex();
 
-  void dfs(MD_NAT v);
+  MD_NAT dfs(MD_NAT v, bool isRec);
 
   DirectedSBG _dsbg;
   PWMap _smap;
@@ -79,7 +79,8 @@ private:
   PWMap _mapD;
   Set _V;
   Set _visitedSV;
-  std::set<SVExprTuple> _SVExprSet;
+  MD_NAT _last_v;
+  std::vector<SVExprTuple> _SVExprVector;
 };
 
 } // namespace detail

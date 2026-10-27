@@ -17,11 +17,11 @@
 
  ******************************************************************************/
 
-#include "util/user_input_handler.hpp"
+#include <iostream>
 
 #include "boost/optional.hpp"
 
-#include <iostream>
+#include "util/user_input_handler.hpp"
 
 namespace SBG {
 
@@ -34,8 +34,10 @@ namespace Util {
 void version()
 {
   std::cout << "SBG library v4.0.0" << std::endl;
-  std::cout << "License GPLv3+: GNU GPL version 3 or later" << " <http://gnu.org/licenses/gpl.html>\n";
-  std::cout << "This is free software: you are free to change and redistribute" << "it.\n";
+  std::cout << "License GPLv3+: GNU GPL version 3 or later"
+    << " <http://gnu.org/licenses/gpl.html>\n";
+  std::cout << "This is free software: you are free to change and redistribute" 
+    << "it.\n";
   std::cout << "There is NO WARRANTY, to the extent permitted by law.\n";
 }
 
@@ -43,20 +45,25 @@ void version()
 // User Input Handler ----------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-UserInputHandler::UserInputHandler()
-    : _generic("Generic options"),
-      _config("Configuration options"),
-      _hidden("Hidden options"),
-      _cmd_line_opts("Command line options"),
-      _cfg_file_opts("Configuration file options"),
-      _positional()
+UserInputHandler::UserInputHandler() : generic_("Generic options")
+  , config_("Configuration options"), hidden_("Hidden options")
+  , cmd_line_opts_("Command line options")
+  , cfg_file_opts_("Configuration file options"), positional_()
 {
-  _generic.add_options()("help,h", "Prints all available options")("version,v", "Displays version information")(
-      "debug,d", "Activates debug messages")("config,c", prog_opts::value(&_config_file), "Configuration filename");
+  generic_.add_options()
+    ("help,h", "Prints all available options")
+    ("version,v", "Displays version information")
+    ("debug,d", "Activates debug messages")
+    ("config,c", prog_opts::value(&config_file_), "Configuration filename");
 
-  _hidden.add_options()("input-file", prog_opts::value(&_input_file), "Input SBG program");
+  hidden_.add_options()
+    ("input-file", prog_opts::value(&input_file_)
+      , "Input SBG program");
+
+  // First option without name is the input file
+  positional_.add("input-file", 1);
 }
 
-}  // namespace Util
+} // namespace Util
 
-}  // namespace SBG
+} // namespace SBG

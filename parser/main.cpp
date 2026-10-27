@@ -17,16 +17,16 @@
 
  ******************************************************************************/
 
-#include "parser/parser_exec.hpp"
-
 #include <iostream>
 
-int main(int argc, char** argv)
+#include "parser/parser_exec.hpp"
+
+int main(int argc, char** argv) 
 {
   std::cout << std::boolalpha;
 
   SBG::Parser::ParserExecutor parser_exec;
-  parser_exec.execute(argc, argv);
+  parser_exec.execute(argc, argv); 
 
   return 0;
 }

@@ -21,8 +21,8 @@
 
  ******************************************************************************/
 
-#ifndef SBGRAPH_EVAL_INPUT_TRANSLATOR_HPP_
-#define SBGRAPH_EVAL_INPUT_TRANSLATOR_HPP_
+#ifndef EVAL_INPUT_TRANSLATOR_HPP
+#define EVAL_INPUT_TRANSLATOR_HPP
 
 #include "eval/user_input.hpp"
 
@@ -30,19 +30,15 @@ namespace SBG {
 
 namespace Eval {
 
-namespace detail {
-
 class InputTranslator {
-public:
+  public:
   InputTranslator();
 
-  static void translate(EvalUserInput& input);
+  void translate(EvalUserInput& input);
 };
-
-} // namespace detail
 
 } // namespace Eval
 
 } // namespace SBG
 
-#endif // SBGRAPH_EVAL_INPUT_TRANSLATOR_HPP_
+#endif

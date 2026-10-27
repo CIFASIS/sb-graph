@@ -17,14 +17,12 @@
 
  ******************************************************************************/
 
-#include <sbgraph/detail/algorithms/matching/bfs_paths.hpp>
+#include "algorithms/matching/bfs_paths.hpp"
 #include "util/logger.hpp"
 
 namespace SBG {
 
 namespace LIB {
-
-namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Path Finder BFS Implementation ----------------------------------------------
@@ -32,75 +30,61 @@ namespace detail {
 
 BFSPaths::BFSPaths() {}
 
-Set BFSPaths::calculate(const DirectedSBG& dsbg, const Set& endings)
+PWMap BFSPaths::calculate(const DSBG& dsbg, const Set& endings)
 {
-  Set V = dsbg.V();
-  PWMap mapB = dsbg.mapB();
-  PWMap auxB = mapB;
-  PWMap mapD = dsbg.mapD();
-  PWMap auxD = mapD;
-  PWMap Emap = dsbg.Emap();
+  Set dsbgV = dsbg.V();
+  PWMap dsbgB = dsbg.mapB();
+  PWMap dsbgD = dsbg.mapD();
+  PWMap subEmap = dsbg.subEmap();
 
-  // Successor map to unmatched vertices
-  PWMap smap{endings};
+  // Unmatched vertices in forward direction
+  PWMap res = PW_FACT.createPWMap(endings);
 
   // A record of allowed edges to keep out cycle edges
-  Set E = dsbg.E();
-  // Ingoing edges to vertices that reach endings
-  Set ingoing = mapD.preImage(endings);
+  Set allowed_edges = dsbg.E();
+  // Ingoing edges to vertices that reach unmatched_D
+  Set ingoing = dsbgD.preImage(endings); 
   // A record of visited set-edges
-  Set visitedSE;
+  Set visitedE = SET_FACT.createSet();
   do {
     // Calculate successor for ith vertices
-    PWMap ingoingB = auxB.restrict(ingoing);
-    PWMap ingoingD = auxD.restrict(ingoing);
-    PWMap ith_smap = ingoingB.minAdj(ingoingD);
+    PWMap ingB = dsbgB.restrict(ingoing), ingD = dsbgD.restrict(ingoing);
+    PWMap ith_smap = ingB.minAdjMap(ingD);
 
     Util::DEBUG_LOG << "ith_smap: " << ith_smap << "\n";
 
     // Edges that lead to a successor
-    Set Ei = auxD.equalImage(ith_smap.composition(auxB));
+    Set Eith = dsbgD.equalImage(ith_smap.composition(dsbgB));
     // Visited set-edges
-    Set repeatedSE = visitedSE.intersection(Emap.image(Ei));
-    if (!repeatedSE.isEmpty()) {
-      // Propose candidate successors for repetitive paths
-      Set Eplus = Emap.preImage(repeatedSE);
-      PWMap smap_plus = auxB.restrict(Eplus).minAdj(auxD.restrict(Eplus));
-      Util::DEBUG_LOG << "smap_plus: " << smap_plus << "\n";
-      ith_smap = ith_smap.combine(smap_plus);
-      visitedSE = visitedSE.difference(repeatedSE);
-    } else {
-      visitedSE = visitedSE.disjointCup(Emap.image(Ei));
+    Set Erec = visitedE.intersection(subEmap.image(Eith)); 
+    // Handle recursion
+    if (!Erec.isEmpty()) {
+      Set Eplus = subEmap.preImage(Erec);
+      PWMap rec_smap = dsbgB.restrict(Eplus).minAdjMap(dsbgD.restrict(Eplus)); 
+      Util::DEBUG_LOG << "rec_smap: " << rec_smap << "\n";
+      ith_smap = ith_smap.combine(rec_smap);
     }
-    smap = ith_smap.combine(smap);
-
+    res = ith_smap.combine(res);
+ 
     // Take out other outgoing edges to avoid cycles
-    E = E.difference(auxB.preImage(smap.domain()));
-    auxD = auxD.restrict(E);
-    auxB = auxB.restrict(E);
+    allowed_edges = allowed_edges.difference(dsbgB.preImage(res.dom()));
+    dsbgD = dsbgD.restrict(allowed_edges);
+    dsbgB = dsbgB.restrict(allowed_edges);
 
     // Edges that reach vertices with a successor
-    ingoing = auxD.preImage(smap.domain()).intersection(E);
+    ingoing = dsbgD.preImage(res.dom()).intersection(allowed_edges);
 
-    Util::DEBUG_LOG << "Ei: " << Ei << "\n";
-    Util::DEBUG_LOG << "repeatedSE: " << repeatedSE << "\n";
-    Util::DEBUG_LOG << "visitedSE: " << visitedSE << "\n";
-    Util::DEBUG_LOG << "smap: " << smap << "\n\n";
+    visitedE = visitedE.cup(subEmap.image(Eith));
+
+    Util::DEBUG_LOG << "Eith: " << Eith << "\n";
+    Util::DEBUG_LOG << "Erec: " << Erec << "\n";
+    Util::DEBUG_LOG << "visitedE: " << visitedE << "\n";
+    Util::DEBUG_LOG << "res: " << res << "\n\n";
   } while (!ingoing.isEmpty());
 
-  // Keep edges that reach vertices in U
-  Set P = smap.composition(mapB).equalImage(mapD);
-  PWMap rmap = smap.mapInf();
-  Set reach_unmatched = rmap.preImage(endings);
-  P = P.intersection(mapD.preImage(reach_unmatched));
-
-  Util::DEBUG_LOG << "BFS Paths P: " << P << "\n\n";
-
-  return P;
+  return res;
 }
 
-}  // namespace detail
+} // namespace LIB
 
-}  // namespace LIB
-
-}  // namespace SBG
+} // namespace SBG

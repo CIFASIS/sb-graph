@@ -48,7 +48,11 @@ static std::ostream null_stream(&null_buffer);
 
 class SBGLogger {
   public:
-  static SBGLogger& instance();
+  static SBGLogger& instance()
+  {
+    static SBGLogger _instance;
+    return _instance;
+  }
 
   ~SBGLogger();
 
@@ -57,8 +61,8 @@ class SBGLogger {
 
   private:
   SBGLogger();
-  std::ofstream _file;
-  LogLevel _level{LogLevel::Info};
+  std::ofstream file_;
+  LogLevel level_{LogLevel::Info};
 };
 
 } // namespace Util

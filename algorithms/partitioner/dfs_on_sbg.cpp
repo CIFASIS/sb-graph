@@ -19,9 +19,6 @@
 
 #include <iostream>
 
-#include <util/logger.hpp>
-#include <sbg/set_detail.hpp>
-
 #include "dfs_on_sbg.hpp"
 #include "sbg_partitioner_log.hpp"
 #include "weighted_sb_graph.hpp"
@@ -29,9 +26,6 @@
 using namespace std;
 
 using namespace SBG::LIB;
-using SBG::LIB::detail::OrderedSet;
-using SBG::LIB::detail::SetAccess;
-using SBG::LIB::detail::SetAccessKey;
 using namespace SBG::Util;
 
 namespace sbg_partitioner {
@@ -61,26 +55,21 @@ vector<map<unsigned, set<Set, setCompare>>> partitionate()
 }
 
 // This is just a dirty trick to create an empty object
-DFS::DFS() : _nodes(Set()) {}
+DFS::DFS() : _nodes(SET_FACT.createSet()) {}
 
 DFS::DFS(SBG::LIB::WeightedSBGraph& graph, unsigned number_of_partitions)
-    : _number_of_partitions(number_of_partitions),
-      _root_node_idx(nullopt),
-      _graph(&graph),
-      _nodes(graph.V()),
-      _node_pieces(SetAccess::key().pieces(get<OrderedSet>(SetAccess::key().impl(graph.V()))))
+    : _number_of_partitions(number_of_partitions), _root_node_idx(nullopt), _graph(&graph), _nodes(graph.V())
 {
   initialize_adjacents();
 }
 
 void DFS::initialize_adjacents()
 {
-  SetAccessKey key = SetAccess::key();
   // Fill adjacents
-  for (auto it = _node_pieces.begin(); it != _node_pieces.end(); ++it) {
+  for (auto it = _nodes.begin(); it != _nodes.end(); ++it) {
     const auto incoming_node = *it;
 
-    auto incoming_node_set = key.createSet(OrderedSet(incoming_node));
+    auto incoming_node_set = SET_FACT.createSet(incoming_node);
 
     auto pre_im_1 = _graph->map1().preImage(incoming_node_set);
     auto adjacent_nodes_1 = _graph->map2().image(pre_im_1);
@@ -90,10 +79,10 @@ void DFS::initialize_adjacents()
 
     auto adjacent_nodes = adjacent_nodes_1.cup(adjacent_nodes_2).difference(incoming_node_set);
 
-    for (auto it_2 = _node_pieces.begin(); it_2 != _node_pieces.end(); ++it_2) {
+    for (auto it_2 = _nodes.begin(); it_2 != _nodes.end(); ++it_2) {
       if (it_2 != it) {
         const auto potential_arriving_node = *it_2;
-        const auto potential_arriving_node_set = key.createSet(OrderedSet(potential_arriving_node));
+        const auto potential_arriving_node_set = SET_FACT.createSet(potential_arriving_node);
         if (not potential_arriving_node_set.intersection(adjacent_nodes).isEmpty()) {
           _adjacent[it].insert(it_2);
         }
@@ -102,12 +91,12 @@ void DFS::initialize_adjacents()
   }
 
   // Choosing root node
-  _root_node_idx = _node_pieces.begin();
+  _root_node_idx = _nodes.begin();
   auto current_max_adj_values = _adjacent[*_root_node_idx].size();
 
-  auto it = _node_pieces.begin();
+  auto it = _nodes.begin();
   ++it;
-  for (; it != _node_pieces.end(); ++it) {
+  for (; it != _nodes.end(); ++it) {
     if (_adjacent[it].size() > current_max_adj_values) {
       _root_node_idx = it;
       current_max_adj_values = _adjacent[*_root_node_idx].size();
@@ -119,15 +108,14 @@ void DFS::initialize_adjacents()
 
 void DFS::add_adjacent_nodes(const node_identifier id, const PWMap& map, const Set& edge)
 {
-  SetAccessKey key = SetAccess::key();
-  const auto edge_map_intersection = edge.intersection(map.domain());
+  const auto edge_map_intersection = edge.intersection(map.dom());
   if (not edge_map_intersection.isEmpty()) {
     const auto map_image = map.image(edge_map_intersection);
 
-    for (auto it = _node_pieces.begin(); it != _node_pieces.end(); ++it) {
+    for (auto it = _nodes.begin(); it != _nodes.end(); ++it) {
       if (it != id) {
         const auto potential_arriving_node = *it;
-        const auto potential_arriving_node_set = key.createSet(OrderedSet(potential_arriving_node));
+        const auto potential_arriving_node_set = SET_FACT.createSet(potential_arriving_node);
         if (potential_arriving_node_set.intersection(map_image) == potential_arriving_node_set) {
           _adjacent[id].insert(it);
         }
@@ -167,9 +155,9 @@ void DFS::iterate()
 
     // At this point, _partially_visited is empty, that means all nodes connected to
     // the root node were visited. Let's see if there is any isolated node.
-    finished = _visited.size() == _node_pieces.size();
+    finished = _visited.size() == _nodes.size();
     if (not finished) {
-      for (node_identifier i = _node_pieces.begin(); i != _node_pieces.end(); ++i) {
+      for (node_identifier i = _nodes.begin(); i != _nodes.end(); ++i) {
         if (find(_visited.begin(), _visited.end(), i) == _visited.end()) {
           add_it_partially(i);
           break;
@@ -239,8 +227,7 @@ void DFS::add_it_definitely(node_identifier id)
 
 void DFS::add_it_to_a_partition(node_identifier id, bool pre_order)
 {
-  SetAccessKey key = SetAccess::key();
-  auto v = key.createSet(OrderedSet(*id));
+  auto v = SET_FACT.createSet(*id);
   if (pre_order) {
     for (size_t i = 0; i < _partition_strategy_pre_order.size(); i++) {
       (*_partition_strategy_pre_order[i])(v);

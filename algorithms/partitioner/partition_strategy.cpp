@@ -19,8 +19,6 @@
 
 #include <bits/stdc++.h>
 
-#include <sbg/set_detail.hpp>
-
 #include "build_sb_graph.hpp"
 #include "partition_strategy.hpp"
 #include "sbg_partitioner_log.hpp"
@@ -30,9 +28,6 @@
 using namespace std;
 
 using namespace SBG::LIB;
-using SBG::LIB::detail::OrderedSet;
-using SBG::LIB::detail::SetAccess;
-using SBG::LIB::detail::SetAccessKey;
 
 namespace sbg_partitioner {
 
@@ -74,7 +69,6 @@ vector<unsigned> sort_keys_by_value(const map<unsigned, size_t>& current_size_by
 
 void PartitionStrategyGreedy::operator()(const Set& node_to_be_added)
 {
-  SetAccessKey key = SetAccess::key();
 #if DEBUG_PARTITION_STRATEGY_ENABLED
   logging::sbg_log << "Adding node " << node << endl;
 #endif
@@ -115,12 +109,10 @@ void PartitionStrategyGreedy::operator()(const Set& node_to_be_added)
 
     auto& p = _partitions[i];
 
-    Set node_to_be_added;
+    Set node_to_be_added = SET_FACT.createSet();
     tie(node_to_be_added, remaining_node) = cut_interval_by_dimension(remaining_node, _node_weight, size_by_partition[i]);
 
-    for (const auto& set_piece : key.pieces(get<OrderedSet>(key.impl(node_to_be_added)))) {
-      p.insert(key.createSet(OrderedSet(set_piece)));
-    }
+    for_each(node_to_be_added.begin(), node_to_be_added.end(), [&p](const auto& set_piece) { p.insert(SET_FACT.createSet(set_piece)); });
   }
 }
 
@@ -171,7 +163,6 @@ void add_surplus_sorting_by_value(const map<size_t, size_t>& current_size_by_par
 
 void PartitionStrategyDistributive::operator()(const SBG::LIB::Set& node_to_be_added)
 {
-  SetAccessKey key = SetAccess::key();
 #if DEBUG_PARTITION_STRATEGY_ENABLED
   logging::sbg_log << "Adding " << node_to_be_added << " distributively to partitions" << endl;
 #endif
@@ -199,14 +190,12 @@ void PartitionStrategyDistributive::operator()(const SBG::LIB::Set& node_to_be_a
     }
     auto& p = _partitions[i];
 
-    Set temp_node;
+    Set temp_node = SET_FACT.createSet();
     tie(temp_node, remaining_nodes) = cut_interval_by_dimension(remaining_nodes, NodeWeight(), size_by_partition[i]);
 #if DEBUG_PARTITION_STRATEGY_ENABLED
     logging::sbg_log << "About to add " << temp_node << " to " << i << ", remaining: " << remaining_nodes << endl;
 #endif
-    for (const auto& set_piece : key.pieces(get<OrderedSet>(key.impl(temp_node)))) {
-      p.insert(key.createSet(OrderedSet(set_piece)));
-    }
+    for_each(temp_node.begin(), temp_node.end(), [&p](const auto& set_piece) { p.insert(SET_FACT.createSet(set_piece)); });
     _current_size_by_partition[i] += get_node_size(temp_node, _node_weight);
   }
 }

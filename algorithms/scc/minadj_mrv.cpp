@@ -17,8 +17,7 @@
 
  ******************************************************************************/
 
-#include <sbgraph/detail/algorithms/scc/minadj_mrv.hpp>
-#include <sbgraph/sbg/integer.hpp>
+#include "algorithms/scc/minadj_mrv.hpp"
 #include "util/logger.hpp"
 
 namespace SBG {
@@ -31,98 +30,79 @@ namespace LIB {
 
 MinAdjMRV::MinAdjMRV() {}
 
-PWMap MinAdjMRV::calculate(const DirectedSBG& dsbg)
+PWMap MinAdjMRV::calculate(const DSBG& dsbg)
 {
-  Set V = dsbg.V();
-  Set E = dsbg.E();
-  PWMap mapB = dsbg.mapB();
-  PWMap mapD = dsbg.mapD();
-  PWMap Emap = dsbg.Emap();
+  Set V = dsbg.V(), E = dsbg.E();
+  PWMap mapB = dsbg.mapB(), mapD = dsbg.mapD(), subEmap = dsbg.subEmap();
   if (!V.isEmpty()) {
-    std::size_t arity = V.arity();
-    PWMap rmap{V};
-    PWMap old_rmap;
+    unsigned int copies = V.arity();
+    PWMap rmap = PW_FACT.createPWMap(V), old_rmap = PW_FACT.createPWMap();
 
-    if (E.isEmpty()) {
+    if (E.isEmpty())
       return rmap;
-    }
 
-    Set greater_one{2, 1, kPosInf};
-    for (std::size_t k = 1; k < arity; ++k) {
-      greater_one = greater_one.cartesianProduct(Set{2, 1, kPosInf});
-    }
-
-    Set Vc;
+    Set Vc = SET_FACT.createSet();
     do {
       old_rmap = rmap;
 
       PWMap ermapD = rmap.composition(mapD);
 
-      PWMap new_rmap = mapB.minAdj(ermapD);
-      rmap = rmap.min(new_rmap).combine(std::move(rmap));
+      PWMap new_rmap = mapB.minAdjMap(ermapD);
+      rmap = rmap.minMap(new_rmap).combine(rmap);
       Util::DEBUG_LOG << "rmap before rec: " << rmap << "\n\n";
 
-      PWMap rec_rmap;
+      PWMap rec_rmap = PW_FACT.createPWMap();
       Vc = V.difference(old_rmap.equalImage(rmap));
       if (!Vc.isEmpty()) {
         // If the mrv is in the same SV, the algorithm would detect a false
-        // repetition, i.e. if we have a cycle 1 -> 2 -> ... -> 10 -> 1,
-        // where SV = [1:10], then it detects a repetition when mrv(10)
-        // becomes "1" (false repetition). So we take self mrvs out.
-        Set other_rep = rmap.domain().difference(rmap.fixedPoints());
-        PWMap Vmap = dsbg.Vmap();
-        Set set_vertices = Vmap.image();
-        while (!set_vertices.isEmpty()) {
-          Set min_elem_set{set_vertices.minElem()};
-          Set vs = Vmap.preImage(min_elem_set);
+        // recursion, i.e. if we have a cycle 1 -> 2 -> ... -> 10 -> 1,
+        // where SV = [1:10], then it detects a recursion when mrv(10)
+        // becomes "1" (false recursion). So we take self mrvs out.
+        Set other_rep = rmap.dom().difference(rmap.fixedPoints());
+        for (const Map &subv : dsbg.Vmap()) {
+          Set vs = subv.dom();
           if (!vs.intersection(Vc).isEmpty()) {
             // Vertices in the set-vertex that share its rep with other vertex
             // in the set-vertex
-            PWMap rmap_other = rmap.restrict(vs.intersection(other_rep));
-            Set repeated = rmap_other.imageMultiplicity().preImage(greater_one);
-            Set VR = rmap.preImage(repeated);
-            // There is a repeated vertex that changed its rep in the last step
-            // (to avoid computing again an already found repetition).
+            Set VR = rmap.restrict(vs.intersection(other_rep)).sharedImage();
+            // There is a recursive vertex that changed its rep in the last step
+            // (to avoid computing again an already found recursion)
             if (!VR.intersection(Vc).isEmpty()) {
               // Vertices that reach the shared representative
               Set repV = rmap.preImage(rmap.image(VR));
               Set end = VR.difference(Vc);
 
               // Edges with both endings in VR (path to a minimum rep)
-              Set ERB = mapB.preImage(repV);
-              Set ERD = mapD.preImage(repV);
+              Set ERB = mapB.preImage(repV), ERD = mapD.preImage(repV);
               Set ER = ERB.intersection(ERD);
               if (!end.isEmpty() && !ER.isEmpty()) {
                 // Distance map
-                PWMap dmap;
+                PWMap dmap = PW_FACT.createPWMap();
                 Set ith = end;
-                unsigned int dist = 0;
+                NAT dist = 0;
                 // Calculate distance for vertices in same_rep that reach reps
-                for (; dmap.domain().intersection(Vc.intersection(VR)).isEmpty();) {
-                  Set domain = ith.difference(dmap.domain());
-                  Expression expr(IntTuple{arity, dist});
-                  dmap.emplace(domain, expr);
+                for (; dmap.dom().intersection(Vc.intersection(VR)).isEmpty();) {
+                  Set dom = ith.difference(dmap.dom());
+                  Exp exp(MD_NAT(copies, dist));
+                  dmap.emplaceBack(Map(dom, exp));
                   // Update ith to vertices that have outgoing edges entering ith
                   ith = mapB.image(mapD.preImage(ith));
                   ++dist;
                 }
-                PWMap dmapB = dmap.composition(mapB);
-                PWMap dmapD = dmap.composition(mapD);
+                PWMap dmapB = dmap.composition(mapB), dmapD = dmap.composition(mapD);
                 // Get edges where the end is closer to the rep than the beginning
                 Set not_cycle_edges = dmapD.lessImage(dmapB);
                 ER = ER.intersection(not_cycle_edges);
 
                 // Extend to subset-edge
-                Set ER_plus = Emap.preImage(Emap.image(ER));
+                Set ER_plus = subEmap.preImage(subEmap.image(ER));
                 // Calculate a succesor
-                PWMap auxB = mapB.restrict(ER_plus);
-                PWMap auxD = mapD.restrict(ER_plus);
+                PWMap auxB = mapB.restrict(ER_plus), auxD = mapD.restrict(ER_plus);
                 PWMap smap_plus = rmap.restrict(VR);
-                smap_plus = std::move(smap_plus).combine(auxB.minAdj(auxD));
+                smap_plus = smap_plus.combine(auxB.minAdjMap(auxD));
 
-                // Update rmap for repetition, and leave the rest unchanged
-                rec_rmap = std::move(smap_plus).combine(rec_rmap);
-                rec_rmap.compact();
+                // Update rmap for recursion, and leave the rest unchanged
+                rec_rmap = smap_plus.combine(rec_rmap).compact();
 
                 Util::DEBUG_LOG << "VR: " << VR << "\n";
                 Util::DEBUG_LOG << "repV: " << repV << "\n";
@@ -135,23 +115,21 @@ PWMap MinAdjMRV::calculate(const DirectedSBG& dsbg)
               }
             }
           }
-          set_vertices = set_vertices.difference(min_elem_set);
         }
-        PWMap rmap_plus = std::move(rec_rmap).combine(std::move(rmap));
+        PWMap rmap_plus = rec_rmap.combine(rmap);
         rmap_plus = rmap_plus.mapInf();
-        rmap = rmap.min(rmap_plus);
-        rmap.compact();
+        rmap = rmap.minMap(rmap_plus).compact();
 
         Util::DEBUG_LOG << "rmap after rec: " << rmap << "\n\n";
       }
-    } while (!Vc.isEmpty());
+    } while (!Vc.isEmpty()); 
 
     return rmap;
   }
 
-  return PWMap{};
+  return PW_FACT.createPWMap();
 }
 
-}  // namespace LIB
+} // namespace LIB
 
-}  // namespace SBG
+} // namespace SBG

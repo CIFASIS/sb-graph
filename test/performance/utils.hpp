@@ -1,8 +1,8 @@
-/** @file utils.hpp
+/** @file interval.hpp
 
  @brief <b>Utils</b>
 
- Declares useful functions for all benchmarks.
+ Declares useful functions that all benchmarks can use
 
  <hr>
 
@@ -23,32 +23,14 @@
 
  ******************************************************************************/
 
-#ifndef SBGRAPH_TEST_PERFORMANCE_UTILS_HPP_
-#define SBGRAPH_TEST_PERFORMANCE_UTILS_HPP_
+#ifndef TEST_PERF_UTILS
+#define TEST_PERF_UTILS
 
-#include <sbgraph/algorithms/matching/match_data.hpp>
-#include <sbgraph/sbg/bipartite_sbg.hpp>
-#include <sbgraph/sbg/integer.hpp>
-#include <sbgraph/sbg/pw_map.hpp>
-#include <sbgraph/sbg/set.hpp>
+#include "algorithms/misc/causalization_builders.hpp"
 
-#include <string>
+namespace Test {
 
-namespace SBG {
-
-namespace perf {
-
-namespace detail {
-
-using SBG::LIB::Int;
-using SBG::LIB::Set;
-using SBG::LIB::PWMap;
-using SBG::LIB::BipartiteSBG;
-using SBG::LIB::MatchData;
-
-////////////////////////////////////////////////////////////////////////////////
-// File Manipulation -----------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
+namespace Internal {
 
 /**
  * @brief Replaces the value of N with the desired value in the designated
@@ -64,8 +46,7 @@ bool updateN(const std::string& filename, int N);
  * @param N Size of set-vertices and set-edges. 
  * @param copies Copies of the SBG, i.e. number of set-vertices and set-edges.
  */
-template<typename SBGT>
-SBGT generateSBG(std::string filename, int N, int copies);
+SBG::LIB::BipartiteSBG generateSBG(std::string filename, int N, int copies);
 
 /**
  * @brief Reads a .test file to search for an SBG that will be the input for
@@ -76,91 +57,10 @@ SBGT generateSBG(std::string filename, int N, int copies);
  * @param N Size of set-vertices and set-edges. 
  * @param copies Copies of the SBG, i.e. number of set-vertices and set-edges.
  */
-MatchData calculateMatching(std::string filename, int N, int copies);
+SBG::LIB::MatchData calculateMatching(std::string filename, int N, int copies);
 
-////////////////////////////////////////////////////////////////////////////////
-// Set Construction ------------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
+} // namespace Internal
 
-/*
- * @brief Creates two dense sets, where the first one is:
- * {[0:99]x[0:99], [100:199]x[0:99], ..., [N-99:N]x[0:99]}
- * and the second PW:
- * {[50:149]x[0:99], [150:249]x[0:99], ..., [N-49:N+50]x[0:99]}
- * where N = set_sz*100-1.
- */
-std::pair<Set, Set> nonDisjointPieces(Int set_sz);
+} // namespace Test
 
-/*
- * @brief Creates two dense sets, where the first one is:
- * {[0:99], [200:199], ..., [N-199:N-100]}
- * and the second PW:
- * {[100:199], [300:399], ..., [N-99:N]}
- * where N = set_sz*100-1.
- */
-std::pair<Set, Set> interlacedPieces(Int set_sz);
-
-////////////////////////////////////////////////////////////////////////////////
-// PWMap Construction ----------------------------------------------------------
-////////////////////////////////////////////////////////////////////////////////
-
-/*
- * @brief Creates a PW with a dense domain of the form:
- * <<{[0:99], [100:199], ..., [900:999]} -> |x|
- *   , {[1000:1099], ..., [1900:1999]} -> |x|
- *   , ..., {[N-999:N-900], ..., [N-99:N]} -> |x|>>.
- * where N = map_sz*1e3-1.
- */
-PWMap denseDom(Int map_sz);
-
-/*
- * @brief Creates two PWs with a dense domain, where the first one is:
- * <<{[0:99], [100:199], ..., [900:999]} -> |x|
- *   , {[1000:1099], ..., [1900:1999]} -> |x|
- *   , ..., {[N-999:N-900], ..., [N-99:N]} -> |x|>>.
- * and the second PW:
- * <<{[50:149], [150:249], ..., [950:1049]} -> |x-1|
- *   , {[1050:1149], ..., [1950:2049]} -> |x-1|
- *   , ..., {[N-949:N-850], ..., [N-49:N+50]} -> |x-1|>>
- * where N = map_sz*1e3-1.
- */
-std::pair<PWMap, PWMap> minAdjMaps(Int map_sz);
-
-/*
- * @brief Creates two PWs with a dense domain, where the first one is:
- * <<{[0:99]x[0:99], [200:299]x[0:99], ..., [800:899]x[0:99]} -> |x|x|
- *   , {[1000:1099]x[0:99], ..., [1800:1899]x[0:99]} -> |x|x|
- *   , ..., {[N-999:N-900]x[0:99], ..., [N-199:N-100]x[0:99]} -> |x|x|>>.
- * and the second PW:
- * <<{[100:199]x[0:99], [300:399]x[0:99], ..., [900:999]x[0:99]} -> |x|x|
- *   , {[1100:1199]x[0:99], ..., [1300:1399]x[0:99]} -> |x|x|
- *   , ..., {[N-899:N-800]x[0:99], ..., [N-99:N]x[0:99]} -> |x|x|>>
- * where N = map_sz*1e3-1.
- */
-std::pair<PWMap, PWMap> interlacedMaps(Int map_sz);
-
-/*
- * @brief Creates two PWs with a dense domain, where the first one is:
- * <<{[0:99]x[0:99], [100:199]x[0:99], ..., [900:999]x[0:99]} -> |x|x|
- *   , {[1000:1099]x[0:99]x, ..., [1900:1999]x[0:99]} -> |x|x|
- *   , ..., {[N-999:N-900]x[0:99], ..., [N-99:N]x[0:99]} -> |x|x|>>.
- * and the second PW:
- * <<{[50:149]x[0:99], [150:249]x[0:99], ..., [950:1049]x[0:99]} -> |x|x|
- *   , {[1050:1149]x[0:99], ..., [1950:2049]x[0:99]} -> |x|x|
- *   , ..., {[N-949:N-850]x[0:99], ..., [N-49:N+50]x[0:99]} -> |x|x|>>
- * where N = map_sz*1e3-1.
- */
-std::pair<PWMap, PWMap> nonDisjointMaps(Int map_sz);
-
-/**
- * @brief TODO
- */
-PWMap reducibleMaps(Int map_sz);
-
-} // namespace detail
-
-} // namespace perf
-
-} // namespace SBG
-
-#endif // SBGRAPH_TEST_PERFORMANCE_UTILS_HPP_
+#endif

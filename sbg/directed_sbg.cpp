@@ -17,13 +17,7 @@
 
  ******************************************************************************/
 
-#include <sbgraph/sbg/directed_sbg.hpp>
-#include <sbgraph/sbg/integer.hpp>
-#include <sbgraph/sbg/map.hpp>
-#include <sbgraph/sbg/rational.hpp>
-#include "util/debug.hpp"
-
-#include <iostream>
+#include "sbg/directed_sbg.hpp"
 
 namespace SBG {
 
@@ -33,90 +27,40 @@ namespace LIB {
 // Directed SBG ----------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-// Constructors/Destructors ----------------------------------------------------
+member_imp(DSBG, Set, V);
+member_imp(DSBG, PWMap, Vmap);
+member_imp(DSBG, Set, E);
+member_imp(DSBG, PWMap, mapB);
+member_imp(DSBG, PWMap, mapD);
+member_imp(DSBG, PWMap, Emap);
+member_imp(DSBG, PWMap, subEmap);
 
-DirectedSBG::DirectedSBG() : _V(), _Vmap(), _E(), _mapB(), _mapD(), _Emap() {}
+DSBG::DSBG()
+  : V_(SET_FACT.createSet()), Vmap_(PW_FACT.createPWMap())
+  , E_(SET_FACT.createSet()), mapB_(PW_FACT.createPWMap())
+  , mapD_(PW_FACT.createPWMap()), Emap_(PW_FACT.createPWMap())
+  , subEmap_(PW_FACT.createPWMap()) {}
+DSBG::DSBG(const Set &V, const PWMap &Vmap
+  , const PWMap &mapB, const PWMap &mapD
+  , const PWMap &Emap, const PWMap &subEmap)
+  : V_(V), Vmap_(Vmap)
+    , E_(mapB.dom().intersection(mapD.dom()))
+    , mapB_(mapB), mapD_(mapD), Emap_(Emap), subEmap_(subEmap) {}
 
-DirectedSBG::DirectedSBG(const Set& V, const PWMap& Vmap, const PWMap& mapB, const PWMap& mapD, const PWMap& Emap)
-    : _V(V), _Vmap(Vmap), _E(mapB.domain().intersection(mapD.domain())), _mapB(mapB), _mapD(mapD), _Emap(Emap)
+DSBG &DSBG::operator=(const DSBG &other)
 {
+  V_ = other.V_;
+  Vmap_ = other.Vmap_;
+  E_ = other.E_;
+  mapB_ = other.mapB_;
+  mapD_ = other.mapD_;
+  Emap_ = other.Emap_;
+  subEmap_ = other.subEmap_;
+
+  return *this;
 }
 
-// Getters ---------------------------------------------------------------------
-
-const Set& DirectedSBG::V() const { return _V; }
-
-const PWMap& DirectedSBG::Vmap() const { return _Vmap; }
-
-const Set& DirectedSBG::E() const { return _E; }
-
-const PWMap& DirectedSBG::mapB() const { return _mapB; }
-
-const PWMap& DirectedSBG::mapD() const { return _mapD; }
-
-const PWMap& DirectedSBG::Emap() const { return _Emap; }
-
-// Setters ---------------------------------------------------------------------
-
-void DirectedSBG::addSetVertex(const Set& vertices)
-{
-  if (!vertices.intersection(_V).isEmpty()) {
-    Util::ERROR("Trying to add existing vertices: ", vertices, " to DirectedSBG\n");
-  } else if (!vertices.isEmpty()) {
-    Set set_vertices = _Vmap.image();
-    std::size_t arity = vertices.arity();
-    IntTuple max = set_vertices.isEmpty() ? IntTuple{arity, 0} : set_vertices.maxElem();
-    _Vmap.emplace(vertices, max + IntTuple{arity, 1});
-    _V = std::move(_V).cup(std::move(vertices));
-  }
-}
-
-void DirectedSBG::addSetEdge(const PWMap& pwB, const PWMap& pwD)
-{
-  Set edgesB = pwB.domain();
-  Set edgesD = pwD.domain();
-  if (edgesB != edgesD) {
-    // TODO
-    Util::ERROR("The domain of ", edgesB, " is different from ", edgesD, "\n");
-  } else if (edgesB.intersection(_E).isEmpty()) {
-    Set edges = edgesB;
-    if (!edges.isEmpty()) {
-      Set set_edges = _Emap.image();
-      std::size_t arity = edges.arity();
-      IntTuple max = set_edges.isEmpty() ? IntTuple{arity, 0} : set_edges.maxElem();
-      _mapB = std::move(_mapB).concatenation(pwB);
-      _mapD = std::move(_mapD).concatenation(pwD);
-      _Emap.emplace(edges, max + IntTuple{arity, 1});
-      _E = std::move(_E).cup(std::move(edges));
-    }
-  } else {
-    Util::ERROR("Trying to add existing edges: ", edgesB, " to SBG\n");
-  }
-}
-
-void DirectedSBG::eraseVertices(const Set& V)
-{
-  _V = _V.difference(V);
-  _Vmap = _Vmap.restrict(_V);
-
-  Set eraseE = _mapB.preImage(V).cup(_mapD.preImage(V));
-  _E = _E.difference(eraseE);
-  _mapB = _mapB.restrict(_E);
-  _mapD = _mapD.restrict(_E);
-  _Emap = _Emap.restrict(_E);
-}
-
-void DirectedSBG::eraseEdges(const Set& E)
-{
-  _E = _E.difference(E);
-  _mapB = _mapB.restrict(_E);
-  _mapD = _mapD.restrict(_E);
-  _Emap = _Emap.restrict(_E);
-}
-
-// Operators -------------------------------------------------------------------
-
-std::ostream& operator<<(std::ostream& out, const DirectedSBG& dg)
+std::ostream &operator<<(std::ostream &out, const DSBG &dg)
 {
   out << "V: " << dg.V() << "\n";
   out << "Vmap: " << dg.Vmap() << "\n\n";
@@ -124,61 +68,84 @@ std::ostream& operator<<(std::ostream& out, const DirectedSBG& dg)
   out << "mapB: " << dg.mapB() << "\n";
   out << "mapD: " << dg.mapD() << "\n";
   out << "Emap: " << dg.Emap() << "\n";
+  out << "subEmap: " << dg.subEmap() << "\n";
 
   return out;
 }
 
-// Non-member functions --------------------------------------------------------
-
-DirectedSBG copy(unsigned int copies, DirectedSBG dsbg)
+DSBG DSBG::addSV(const Set &vertices) const
 {
-  if (copies == 0) {
-    Util::ERROR("DirectedSBG::copy: zeros copies is not allowed\n");
+  if (!vertices.isEmpty() && vertices.intersection(V_).isEmpty()) {
+    PWMap new_Vmap(std::move(Vmap_));
+    PWMap new_mapB(std::move(mapB_)), new_mapD(std::move(mapD_));
+    PWMap new_Emap(std::move(Emap_)), new_subE(std::move(subEmap_));
+
+    Set new_V = new_V.cup(vertices);
+
+    Set SV = new_Vmap.image(); // Identifiers of SV
+    std::size_t dims = vertices.arity();
+    MD_NAT max = SV.isEmpty() ? MD_NAT(dims, 0) : SV.maxElem();
+    for (unsigned int j = 0; j < dims; ++j)
+      max[j] = max[j] + 1;
+    Map m(vertices, Exp(max));
+    new_Vmap.emplaceBack(m);
+
+    return DSBG(new_V, new_Vmap, new_mapB, new_mapD, new_Emap, new_subE);
   }
 
-  Set V = dsbg.V();
-  PWMap Vmap = dsbg.Vmap();
-  PWMap mapB = dsbg.mapB();
-  PWMap mapD = dsbg.mapD();
-  PWMap Emap = dsbg.Emap();
-  Set E = dsbg.E();
+  else if (!vertices.intersection(V_).isEmpty())
+    Util::ERROR("Trying to add existing vertices: ", vertices, " to DSBG\n");
 
-  DirectedSBG result = dsbg;
-  for (unsigned int j = 1; j < copies; ++j) {
-    IntTuple max_v = result.V().maxElem();
-    dsbg.foreachSetVertex([&](const IntTuple& SV) {
-      Set vertices = Vmap.preImage(Set{SV});
-      result.addSetVertex(vertices.translate(max_v));
-    });
-
-    Expression offset_v;
-    for (std::size_t k = 0; k < max_v.arity(); ++k) {
-      offset_v = offset_v.cartesianProduct(Expression{Rational{1}, Rational{max_v[k]}});
-    }
-    PWMap offset_pw_v{Map{V, offset_v}};
-
-    IntTuple max_e = result.E().maxElem();
-    Expression offset_e;
-    for (std::size_t k = 0; k < max_e.arity(); ++k) {
-      offset_e = offset_e.cartesianProduct(Expression{Rational{1}, Rational{max_e[k]}});
-    }
-    PWMap offset_pw_e{Map{E, offset_e}};
-    PWMap inverse_offset_pw_e = offset_pw_e.inverse();
-
-    Set set_edges = Emap.image();
-    dsbg.foreachSetEdge([&](const IntTuple& SE) {
-      Set edges = Emap.preImage(Set{SE});
-      PWMap pwB = mapB.restrict(edges);
-      PWMap pwD = mapD.restrict(edges);
-      pwB = offset_pw_v.composition(pwB.composition(inverse_offset_pw_e));
-      pwD = offset_pw_v.composition(pwD.composition(inverse_offset_pw_e));
-      result.addSetEdge(pwB, pwD);
-    });
-  }
-
-  return result;
+  return DSBG();
 }
 
-}  // namespace LIB
+DSBG DSBG::addSE(const PWMap &pw1, const PWMap &pw2) const
+{
+  Set edges = SET_FACT.createSet(), edges1 = pw1.dom(), edges2 = pw2.dom();
+  if (edges1 == edges2) {
+    edges = edges1;
+    if (!edges.isEmpty() && edges.intersection(E_).isEmpty()) {
+      Set new_V(std::move(V_));
+      PWMap new_Vmap(std::move(Vmap_));
+      PWMap new_mapB(std::move(mapB_)), new_mapD(std::move(mapD_));
+      PWMap new_Emap(std::move(Emap_)), new_subE(std::move(subEmap_));
 
-}  // namespace SBG
+      Set SE = Emap_.image(); // Identifiers of SV
+      std::size_t dims = edges.arity();
+      MD_NAT max = SE.isEmpty() ? MD_NAT(dims, 0) : SE.maxElem();
+      for (unsigned int j = 0; j < dims; ++j)
+        max[j] = max[j] + 1;
+      Map m(edges, max);
+      new_Emap.emplaceBack(m);
+
+      new_mapB = new_mapB.concatenation(pw1);
+      new_mapD = new_mapD.concatenation(pw2);
+   
+      return DSBG(new_V, new_Vmap, new_mapB, new_mapD, new_Emap, new_subE);
+    }
+
+    else if (!edges.intersection(E_).isEmpty())
+      Util::ERROR("Trying to add existing edges: ", edges, " to DSBG\n");
+  }
+
+  return DSBG();
+}
+
+DSBG DSBG::eraseVertices(const Set &vs) const
+{
+  Set new_V = V_.difference(vs);
+  PWMap new_Vmap = Vmap_.restrict(V_);
+
+  Set eraseE = mapB_.preImage(vs).cup(mapD_.preImage(vs));
+  Set new_E = E_.difference(eraseE);
+  PWMap new_mapB = mapB_.restrict(new_E);
+  PWMap new_mapD = mapD_.restrict(new_E);
+  PWMap new_Emap = Emap_.restrict(new_E);
+  PWMap new_subE = subEmap_.restrict(new_E);
+
+  return DSBG(new_V, new_Vmap, new_mapB, new_mapD, new_Emap, new_subE);
+}
+
+} // namespace LIB
+
+} // namespace SBG

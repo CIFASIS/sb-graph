@@ -25,8 +25,10 @@
 
  ******************************************************************************/
 
-#ifndef SBGRAPH_EVAL_VISITORS_AUTOM_IMPL_VISITOR_HPP_ 
-#define SBGRAPH_EVAL_VISITORS_AUTOM_IMPL_VISITOR_HPP_
+#ifndef AUTOM_IMPL_VISITOR 
+#define AUTOM_IMPL_VISITOR 
+
+#include <boost/variant.hpp>
 
 #include "ast/sbg_program.hpp"
 #include "eval/user_input.hpp"
@@ -35,19 +37,15 @@ namespace SBG {
 
 namespace Eval {
 
-namespace detail {
-
 class AutomImplVisitor {
-public:
+  public:
   AutomImplVisitor();
 
   EvalUserInput visit(AST::SBGProgram p) const;
 };
 
-} // namespace detail
-
 } // namespace Eval
 
 } // namespace SBG
 
-#endif // SBGRAPH_EVAL_VISITORS_AUTOM_IMPL_VISITOR_HPP_
+#endif

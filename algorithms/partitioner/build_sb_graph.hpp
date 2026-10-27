@@ -19,11 +19,7 @@
 
 #pragma once
 
-#include <sbgraph/detail/sbg/interval.hpp>
-#include <sbgraph/detail/sbg/linear_expr.hpp>
-#include <sbgraph/detail/sbg/multidim_inter.hpp>
-#include <sbgraph/sbg/sbg.hpp>
-#include <sbg/set_detail.hpp>
+#include <sbg/sbg.hpp>
 
 #include "weighted_sb_graph.hpp"
 
@@ -41,7 +37,7 @@ SBG::LIB::WeightedSBGraph build_sb_graph(const std::string& filename, bool compa
 /// @param image_interval  Image we want to get the pre image from
 /// @param expression  Expression to get the pre image
 /// @return pre image as an interval
-SBG::LIB::detail::Interval get_pre_image(const SBG::LIB::detail::Interval& image_interval, const SBG::LIB::detail::LinearExpr& expression);
+SBG::LIB::Interval get_pre_image(const SBG::LIB::Interval& image_interval, const SBG::LIB::LExp& expression);
 
 
 /// Takes a graph and a set of nodes and return a set of nodes connected with the mentioned set.
@@ -57,7 +53,7 @@ SBG::LIB::Set get_adjacents(const SBG::LIB::SBG& graph, const SBG::LIB::Set& nod
 /// {[1:10], [1:10]} has 100 elements.
 /// @param node input set we want to calculate the size.
 /// @return the number of elements
-size_t get_node_size(const SBG::LIB::detail::MultiDimInter& node, const SBG::LIB::NodeWeight& node_weight);
+size_t get_node_size(const SBG::LIB::SetPiece& node, const SBG::LIB::NodeWeight& node_weight);
 
 
 /// Takes each set piece and calculates its size, it returns the sum of them
@@ -77,7 +73,7 @@ unsigned get_edge_set_cost(const SBG::LIB::Set& edges, const SBG::LIB::EdgeCost&
 /// Takes a set piece of edges and compute its cost.
 /// @param edges - input set piece edges we want to calculate the size.
 /// @return the cost of edges (number of elements * communication cost).
-unsigned get_edge_set_cost(const SBG::LIB::detail::MultiDimInter& node, const SBG::LIB::EdgeCost& edge_cost);
+unsigned get_edge_set_cost(const SBG::LIB::SetPiece& node, const SBG::LIB::EdgeCost& edge_cost);
 
 
 /// Flattens a set of nodes according to the graph nodes.
@@ -95,9 +91,6 @@ SBG::LIB::WeightedSBGraph create_air_conditioners_with_controller_graph(int size
 SBG::LIB::WeightedSBGraph create_advection2D_graph(int size);
 
 
-SBG::LIB::WeightedSBGraph create_starpu_graph(int size);
-
-
 /***
  * @brief Splits sets according to their relations, defined by the piecewise maps of the graph.
  */
@@ -110,12 +103,12 @@ SBG::LIB::Set split_sets_according_to_relations(const SBG::LIB::WeightedSBGraph&
 /// @param costs hashtable with set/costs.
 /// @return the cost of set.
 template<typename T>
-int get_set_cost(const SBG::LIB::detail::MultiDimInter& set_piece, const T& costs)
+int get_set_cost(const SBG::LIB::SetPiece& set_piece, const T& costs)
 {
   int weight = 1;
-  auto set = SBG::LIB::detail::SetAccess::key().createSet(SBG::LIB::detail::OrderedSet(set_piece));
+  auto set = SBG::LIB::SET_FACT.createSet(set_piece);
   for (const auto& [cost_set, w] : costs) {
-    if (not set.intersection(cost_set).isEmpty()) {
+    if (set.intersection(cost_set).size() > 0) {
       weight = costs.at(cost_set);
     }
   }
@@ -129,7 +122,7 @@ int get_set_cost(const SBG::LIB::Set& set, const T& costs)
 {
   int weight = 1;
   for (const auto& [cost_set, w] : costs) {
-    if (not set.intersection(cost_set).isEmpty()) {
+    if (set.intersection(cost_set).size() > 0) {
       weight = costs.at(cost_set);
     }
   }
@@ -146,6 +139,6 @@ std::pair<SBG::LIB::Set, SBG::LIB::Set> cut_interval_by_dimension(
     const SBG::LIB::NodeWeight& node_weight,
     std::size_t size);
 
-std::pair<SBG::LIB::detail::MultiDimInter, SBG::LIB::detail::MultiDimInter> cut_interval(const SBG::LIB::detail::MultiDimInter& interval, int cut_value);
+std::pair<SBG::LIB::SetPiece, SBG::LIB::SetPiece> cut_interval(const SBG::LIB::SetPiece& interval, int cut_value);
 
 } // namespace sbg-partitioner

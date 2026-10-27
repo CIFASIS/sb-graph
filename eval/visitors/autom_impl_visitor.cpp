@@ -21,12 +21,11 @@
 #include "eval/visitors/autom_impl_visitor.hpp"
 #include "eval/visitors/stm_evaluator.hpp"
 #include "eval/visitors/set_impl_visitor.hpp"
+#include "sbg/pwmap_fact.hpp"
 
 namespace SBG {
 
 namespace Eval {
-
-namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Automatic Implementation Visitor --------------------------------------------
@@ -35,29 +34,28 @@ namespace detail {
 AutomImplVisitor::AutomImplVisitor() {}
 
 EvalUserInput AutomImplVisitor::visit(AST::SBGProgram p) const
-{
-  // Statement inspection ------------------------------------------------------
+{ 
+  // Statement inspection ------------------------------------------------------ 
 
+  LIB::NAT dims = 1;
   AST::IsConfig cfg_visit;
-  EvalContext eval_context;
+  EvalContext eval_ctx;
   if (!p.stms().empty()) {
     AST::Statement first = p.stms()[0];
-    if (boost::apply_visitor(cfg_visit, first)) {
-      eval_context.setArity(boost::get<AST::ConfigDims>(first).arity());
-    }
+    if (boost::apply_visitor(cfg_visit, first))
+      eval_ctx.setArity(boost::get<AST::ConfigDims>(first).nmbr_dims());
   }
 
-  StmEvaluator stm_eval{eval_context};
+  StmEvaluator stm_eval(eval_ctx);
   for (AST::Statement stm : p.stms()) {
-    if (!boost::apply_visitor(cfg_visit, stm)) {
+    if (!boost::apply_visitor(cfg_visit, stm))
       StmResult se = boost::apply_visitor(stm_eval, stm);
-    }
   }
 
   // Set Implementation --------------------------------------------------------
 
   int auto_set_impl = 2;
-  SetImplExprVisitor set_impl_visit{stm_eval.eval_context().venv()};
+  SetImplExprVisitor set_impl_visit(stm_eval.eval_ctx().venv());
   for (AST::Expr expr : p.exprs()) {
     int ith_set_impl = boost::apply_visitor(set_impl_visit, expr);
     auto_set_impl = std::min(auto_set_impl, ith_set_impl);
@@ -76,8 +74,6 @@ EvalUserInput AutomImplVisitor::visit(AST::SBGProgram p) const
   return result;
 }
 
-}  // namespace detail
+} // namespace Eval
 
-}  // namespace Eval
-
-}  // namespace SBG
+} // namespace SBG

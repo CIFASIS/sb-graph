@@ -1,11 +1,8 @@
-add_library(sbg-parser-lib OBJECT)
+# sbg-parser-lib
+add_library(sbg-parser-lib STATIC)
 
-target_include_directories(sbg-parser-lib
-    PUBLIC
-      ${PROJECT_SOURCE_DIR}/include
-    PRIVATE
-      ${PROJECT_SOURCE_DIR}
-)
+set_target_properties(sbg-parser-lib PROPERTIES DEBUG_POSTFIX "d")
+target_include_directories(sbg-parser-lib PUBLIC ${PROJECT_SOURCE_DIR})
 
 target_sources(
     sbg-parser-lib
@@ -16,19 +13,48 @@ target_sources(
     sbg_program.cpp
     skipper.cpp
     statement.cpp
-    ${PROJECT_SOURCE_DIR}/ast/expression.cpp
-    ${PROJECT_SOURCE_DIR}/ast/sbg_program.cpp
-    ${PROJECT_SOURCE_DIR}/ast/statement.cpp
 )
 
+add_dependencies(sbg-parser-lib sbg-dev)
+
+# Add executable
 add_executable(
     sbg-parser
+)
+
+target_sources(
+    sbg-parser
+    PRIVATE
     main.cpp
 )
 
-target_include_directories(sbg-parser
+find_package(Boost REQUIRED COMPONENTS program_options)
+
+target_link_libraries(
+    sbg-parser
     PRIVATE
-      ${PROJECT_SOURCE_DIR}
+    sbg-dev
+    sbg-parser-lib
+    sbg-util-lib
+    Boost::program_options
 )
 
-target_link_libraries(sbg-parser PRIVATE sbgraph)
+# install
+install(
+    TARGETS sbg-parser sbg-parser-lib
+    RUNTIME DESTINATION bin
+    COMPONENT sbg-parser
+    LIBRARY
+    DESTINATION lib
+    PERMISSIONS
+    OWNER_READ
+    OWNER_WRITE
+    OWNER_EXECUTE
+    GROUP_READ
+    GROUP_EXECUTE
+    WORLD_READ
+    WORLD_EXECUTE
+    COMPONENT sbg-parser
+)
+
+install_lib_headers("${CMAKE_CURRENT_SOURCE_DIR}")

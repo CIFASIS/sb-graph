@@ -17,26 +17,25 @@
 
  ******************************************************************************/
 
-#include "util/logger.hpp"
+#include "logger.hpp"
+
+using namespace std;
 
 namespace SBG {
 
 namespace Util {
 
-SBGLogger::SBGLogger() { _file.open("SBG.log", std::ofstream::out); }
+SBGLogger::SBGLogger() { file_.open("SBG.log", std::ofstream::out); }
 
-SBGLogger::~SBGLogger() { _file.close(); }
+SBGLogger::~SBGLogger() { file_.close(); }
 
-SBGLogger& SBGLogger::instance()
+void SBGLogger::setLevel(LogLevel lvl) { level_ = lvl; }
+
+std::ostream& SBGLogger::log(LogLevel msg_lvl)
 {
-  static SBGLogger _instance;
-  return _instance;
+  return (msg_lvl <= level_) ? file_ : null_stream;
 }
 
-void SBGLogger::setLevel(LogLevel lvl) { _level = lvl; }
+} // namespace Util
 
-std::ostream& SBGLogger::log(LogLevel msg_lvl) { return (msg_lvl <= _level) ? _file : null_stream; }
-
-}  // namespace Util
-
-}  // namespace SBG
+} // namespace SBG

@@ -26,27 +26,23 @@
 
  ******************************************************************************/
 
-#ifndef SBGRAPH_EVAL_USER_IMPL_MAP_HPP_
-#define SBGRAPH_EVAL_USER_IMPL_MAP_HPP_
-
-#include <sbgraph/algorithms/matching/matching_impl.hpp>
-#include <sbgraph/algorithms/mfvs/mfvs_impl.hpp>
-#include <sbgraph/algorithms/scc/scc_impl.hpp>
-#include <sbgraph/algorithms/sorting/topological/ts_impl.hpp>
-#include <sbgraph/sbg/pw_map.hpp>
-#include <sbgraph/sbg/pwmap_impl.hpp>
-#include <sbgraph/sbg/set.hpp>
-#include <sbgraph/sbg/set_impl.hpp>
+#ifndef EVAL_USER_IMPL_MAP_HPP
+#define EVAL_USER_IMPL_MAP_HPP
 
 #include <functional>
 #include <unordered_map>
 #include <variant>
 
+#include "algorithms/cutvertex/cv_fact.hpp"
+#include "algorithms/matching/matching_fact.hpp"
+#include "algorithms/scc/scc_fact.hpp"
+#include "algorithms/toposort/ts_fact.hpp"
+#include "sbg/pwmap_fact.hpp"
+#include "sbg/set_fact.hpp"
+
 namespace SBG {
 
 namespace Eval {
-
-namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
 // User input to implementation map --------------------------------------------
@@ -55,28 +51,24 @@ namespace detail {
 #define IMPL_MAP UserImplMap::instance()
 
 /**
- * @brief Type defined to be used in UserImplMap.
+ * @brief Type defined to be used in ImplEnv.
  */
-using Kind = std::variant<LIB::SetKind
-  , LIB::PWMapKind
-  , LIB::MatchKind
-  , LIB::SCCKind
-  , LIB::MFVSKind
-  , LIB::TSKind>;
+using ImplFactory = std::variant<LIB::SetFactPtr, LIB::PWMapFactPtr
+  , LIB::MatchFactPtr, LIB::SCCFactPtr, LIB::TSFactPtr, LIB::CVFactPtr>;
 
 /**
  * @brief Mapping for all structures such as Set, PW and algorithms.
  */
 class UserImplMap {
-public:
+  public:
   /**
    * @brief Mapping of a single structure. For example, it maps numbers to the
    * different Set implementations.
    */
   class StructImplMap {
-  public:
+    public:
     using SKey = int;
-    using SValue = Kind;
+    using SValue = std::function<ImplFactory()>;
     using SType = std::unordered_map<SKey, SValue>;
   
     StructImplMap();
@@ -85,9 +77,9 @@ public:
     const SValue& operator[](const SKey& key) const;
     void freeze();
   
-  private:
-    bool _is_frozen;
-    SType _struct_impls;
+    private:
+    bool is_frozen_;
+    SType struct_impls_;
   };
 
   using IKey = std::string;
@@ -98,15 +90,13 @@ public:
     static UserImplMap instance_;
     return instance_;
   }
-  Kind getFactory(std::string strct, int impl);
+  ImplFactory getFactory(std::string strct, int impl);
 
-private: 
+  private: 
   UserImplMap();
 
   IType implementations_;
 };
-
-} // namespace detail
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extra operations ------------------------------------------------------------
@@ -115,10 +105,9 @@ private:
 void setSetFactory(int set_impl);
 void setPWFactory(int pw_impl);
 void setSCCFactory(int scc_impl);
-void setMFVSFactory(int mfvs_impl);
 
 } // namespace Eval
 
 } // namespace SBG
 
-#endif // SBGRAPH_EVAL_USER_IMPL_MAP_HPP
+#endif

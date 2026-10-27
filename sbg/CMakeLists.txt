@@ -1,10 +1,8 @@
-add_library(sbg-dev OBJECT)
+# sbg-library
+add_library(sbg-dev STATIC)
 
-target_include_directories(sbg-dev
-    PRIVATE
-      ${PROJECT_SOURCE_DIR}/include
-      ${PROJECT_SOURCE_DIR}
-)
+set_target_properties(sbg-dev PROPERTIES DEBUG_POSTFIX "d")
+target_include_directories(sbg-dev PUBLIC ${PROJECT_SOURCE_DIR})
 
 target_sources(
     sbg-dev
@@ -12,29 +10,24 @@ target_sources(
     bipartite_sbg.cpp
     directed_sbg.cpp
     dom_ord_pwmap.cpp
-    expression.cpp
-    fixed_points.cpp
-    integer.cpp
     interval.cpp
-    linear_expr.cpp
+    lexp.cpp
     map.cpp
-    map_detail.cpp
     map_entry.cpp
     multidim_inter.cpp
-    ord_pwmap.cpp
+    multidim_lexp.cpp
+    natural.cpp
     ord_set.cpp
     ord_unidim_dense_set.cpp
-    perimeter.cpp
+    ord_pwmap.cpp
     pw_map.cpp
-    pwmap_detail.cpp
-    pwmap_impl.cpp
+    pwmap_fact.cpp
     rational.cpp
     sbg.cpp
     set.cpp
-    set_detail.cpp
-    set_impl.cpp
-    unord_pwmap.cpp
+    set_fact.cpp
     unord_set.cpp
+    unord_pwmap.cpp
 )
 
 add_custom_target(sbg-doc
@@ -43,3 +36,23 @@ add_custom_target(sbg-doc
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/sbg
     COMMENT "Generating API documentation with Doxygen"
 )
+
+# install
+install(
+    TARGETS sbg-dev
+    RUNTIME DESTINATION lib
+    COMPONENT sbg-dev
+    LIBRARY
+    DESTINATION lib
+    PERMISSIONS
+    OWNER_READ
+    OWNER_WRITE
+    OWNER_EXECUTE
+    GROUP_READ
+    GROUP_EXECUTE
+    WORLD_READ
+    WORLD_EXECUTE
+    COMPONENT sbg-dev
+)
+
+install_lib_headers("${CMAKE_CURRENT_SOURCE_DIR}")

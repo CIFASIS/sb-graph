@@ -2,12 +2,7 @@
 add_library(sbg-part-lib STATIC)
 
 set_target_properties(sbg-part-lib PROPERTIES DEBUG_POSTFIX "d")
-target_include_directories(sbg-part-lib
-    PUBLIC
-      ${PROJECT_SOURCE_DIR}/include
-    PRIVATE
-      ${PROJECT_SOURCE_DIR}
-)
+target_include_directories(sbg-part-lib PUBLIC ${PROJECT_SOURCE_DIR})
 
 set(ENABLE_MEMORY_BENCHMARKING OFF)
 if(ENABLE_MEMORY_BENCHMARKING)
@@ -27,10 +22,20 @@ target_sources(
         weighted_sb_graph.cpp
 )
 
+add_dependencies(sbg-part-lib sbg-util-lib)
+
+
+target_link_directories(
+     sbg-part-lib
+     PRIVATE
+         sbg-util-lib
+)
+
 target_link_libraries(
     sbg-part-lib
-    PUBLIC
-        SBG::sbgraph
+    PRIVATE
+        sbg-dev
+        sbg-util-lib
 )
 
 
@@ -44,8 +49,6 @@ target_sources(
     PRIVATE
         main.cpp
 )
-
-target_include_directories(sbg-partitioner PRIVATE ${PROJECT_SOURCE_DIR})
 
 target_link_libraries(
     sbg-partitioner

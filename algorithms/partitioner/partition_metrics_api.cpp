@@ -19,9 +19,7 @@
 #include <filesystem>
 #include <fstream>
 
-#include <sbgraph/sbg/sbg.hpp>
-#include <sbg/set_detail.hpp>
-#include <util/logger.hpp>
+#include <sbg/sbg.hpp>
 
 #include "build_sb_graph.hpp"
 #include "partition_metrics_api.hpp"
@@ -30,11 +28,6 @@
 using namespace std;
 
 using namespace SBG::LIB;
-using SBG::LIB::detail::Interval;
-using SBG::LIB::detail::MultiDimInter;
-using SBG::LIB::detail::OrderedSet;
-using SBG::LIB::detail::SetAccess;
-using SBG::LIB::detail::SetAccessKey;
 using namespace SBG::Util;
 
 namespace sbg_partitioner {
@@ -55,9 +48,8 @@ Set get_edge_cut(const Set& partition, const PWMap& maps_1, const PWMap& maps_2)
   return external_communication;
 }
 
-int communication_volume_one_dim(const PartitionMap& partitions, const MultiDimInter& v, const WeightedSBGraph& sb_graph, unsigned i)
+int communication_volume_one_dim(const PartitionMap& partitions, const SetPiece& v, const WeightedSBGraph& sb_graph, unsigned i)
 {
-  SetAccessKey key = SetAccess::key();
   // avoid repeating this
   auto look_for_adjacents = [](const Set& nodes, const PWMap& map1, const PWMap& map2) {
     auto involved_edges1 = map1.preImage(nodes);
@@ -74,10 +66,10 @@ int communication_volume_one_dim(const PartitionMap& partitions, const MultiDimI
   };
 
   int acc = 0;
-  for (unsigned value = v[0].begin(); value <= v[0].end(); value += v[0].step()) {
+  for (unsigned value = v.intervals()[0].begin(); value <= v.intervals()[0].end(); value += v.intervals()[0].step()) {
     int local_total_vol = 0;
-    Interval set_piece = Interval(value, v[0].step(), value);
-    auto s = key.createSet(OrderedSet(set_piece));
+    Interval set_piece = Interval(value, v.intervals()[0].step(), value);
+    auto s = SET_FACT.createSet(set_piece);
     const Set adjacents = look_for_adjacents(s, sb_graph.map1(), sb_graph.map2());
 
     for (unsigned j = 0; j < partitions.size(); j++) {
@@ -113,13 +105,13 @@ void write_node_by_partition(const PartitionMap& partitions, const WeightedSBGra
   //   vector<unsigned> partition_by_node;
   //   ofstream output_file("output.txt");
   //   for (const auto& n : nodes) {
-  //     for (unsigned v_0 = n[0].begin(); v_0 <= n[0].end(); v_0++) {
-  //       MultiDimInter set_piece;
-  //       set_piece.emplaceBack(Interval(v_0, n[0].step(), v_0));
+  //     for (unsigned v_0 = n.intervals()[0].begin(); v_0 <= n.intervals()[0].end(); v_0++) {
+  //       SetPiece set_piece;
+  //       set_piece.emplaceBack(Interval(v_0, n.intervals()[0].step(), v_0));
   //       for (size_t i = 0; i < partitions.size(); i++) {
   //         Partition p = partitions.at(i);
   //         auto p_set = from_vector(p);
-  //         if (not create_set(set_piece).intersection(p_set).isEmpty()) {
+  //         if (not SET_FACT.createSet(set_piece).intersection(p_set).isEmpty()) {
   //           partition_by_node.push_back(i);
   //           output_file << to_string(i) << endl;
   //           break;
@@ -134,7 +126,7 @@ void write_node_by_partition(const PartitionMap& partitions, const WeightedSBGra
 int edge_cut(const PartitionMap& partitions, const WeightedSBGraph& sb_graph)
 {
   cout << "computing edge cut " << endl;
-  Set ec;
+  Set ec = SET_FACT.createSet();
   const auto& maps_1 = sb_graph.map1();
   const auto& maps_2 = sb_graph.map2();
   for (size_t i = 0; i < partitions.size(); i++) {
@@ -225,30 +217,31 @@ ostream& operator<<(ostream& os, const communication_metrics& comm_metrics)
 
 void dump_results(const SBG::LIB::WeightedSBGraph& sb_graph, const std::string& filename, const PartitionMap& partition)
 {
-  SetAccessKey key = SetAccess::key();
   ofstream edges_file(std::filesystem::path(filename).stem().string() + "_edges.txt");
-  auto edges = sb_graph.E();
-  edges.compact();
+  auto edges = sb_graph.E().compact();
   if (edges.arity() == 2) {
-    size_t row_size = key.pieces(get<OrderedSet>(key.impl(sb_graph.V()))).front()[0].cardinal();
-    for (const auto& edge : key.pieces(get<OrderedSet>(key.impl(edges)))) {
-      auto departure = key.pieces(get<OrderedSet>(key.impl(sb_graph.map1().image(key.createSet(OrderedSet(edge))))));
-      auto arrival = key.pieces(get<OrderedSet>(key.impl(sb_graph.map2().image(key.createSet(OrderedSet(edge))))));
+    size_t row_size = (*sb_graph.V().begin()).intervals()[0].cardinal();
+    for (auto it = edges.begin(); it != edges.end(); ++it) {
+      auto departure = sb_graph.map1().image(SET_FACT.createSet(*it));
+      auto arrival = sb_graph.map2().image(SET_FACT.createSet(*it));
       if (departure.size() > 1 or arrival.size() > 1) {
-        cout << departure.size() << "\n" << arrival.size() << endl;
         cout << "we are not ready for this" << endl;
         throw 1;
       }
 
-      for (size_t piece_idx = 0; piece_idx < departure.size() and piece_idx < arrival.size(); piece_idx++) {
+      // outer iterators
+      auto dep_it = departure.begin();
+      auto arrival_it = arrival.begin();
+
+      for (; dep_it != departure.end(), arrival_it != arrival.end(); ++dep_it, ++arrival_it) {
         // set pieces
-        const auto& set_piece_dep = departure[piece_idx];
-        const auto& set_piece_arr = arrival[piece_idx];
-        for (size_t dep_row_val = set_piece_dep[0].begin(), arr_row_val = set_piece_arr[0].begin();
-             dep_row_val <= size_t(set_piece_dep[0].end()) and arr_row_val <= size_t(set_piece_arr[0].end());
+        auto set_piece_dep = *dep_it;
+        auto set_piece_arr = *arrival_it;
+        for (size_t dep_row_val = set_piece_dep.intervals()[0].begin(), arr_row_val = set_piece_arr.intervals()[0].begin();
+             dep_row_val <= set_piece_dep.intervals()[0].end() and arr_row_val <= set_piece_arr.intervals()[0].end();
              dep_row_val++, arr_row_val++) {
-          for (size_t dep_col_val = set_piece_dep[1].begin(), arr_col_val = set_piece_arr[1].begin();
-               dep_col_val <= size_t(set_piece_dep[1].end()) and arr_col_val <= size_t(set_piece_arr[1].end());
+          for (size_t dep_col_val = set_piece_dep.intervals()[1].begin(), arr_col_val = set_piece_arr.intervals()[1].begin();
+               dep_col_val <= set_piece_dep.intervals()[1].end() and arr_col_val <= set_piece_arr.intervals()[1].end();
                dep_col_val++, arr_col_val++) {
             size_t dep_val = dep_row_val * row_size + dep_col_val;
             size_t arr_val = arr_row_val * row_size + arr_col_val;
@@ -260,12 +253,9 @@ void dump_results(const SBG::LIB::WeightedSBGraph& sb_graph, const std::string& 
       }
     }
   } else {
-    for (size_t i = key.pieces(get<OrderedSet>(key.impl(edges))).front()[0].begin();
-         i <= size_t(key.pieces(get<OrderedSet>(key.impl(edges))).front()[0].end()); i++) {
-      auto departure =
-          key.pieces(get<OrderedSet>(key.impl(sb_graph.map1().image(key.createSet(OrderedSet(Interval(i))))))).front()[0].begin();
-      auto arrival =
-          key.pieces(get<OrderedSet>(key.impl(sb_graph.map2().image(key.createSet(OrderedSet(Interval(i))))))).front()[0].begin();
+    for (size_t i = (*edges.begin())[0].begin(); i <= (*edges.begin())[0].end(); i++) {
+      auto departure = (*sb_graph.map1().image(SBG::LIB::SET_FACT.createSet(SBG::LIB::Interval(i))).begin())[0].begin();
+      auto arrival = (*sb_graph.map2().image(SBG::LIB::SET_FACT.createSet(SBG::LIB::Interval(i))).begin())[0].begin();
       edges_file << departure << " " << arrival << endl;
     }
   }
@@ -273,13 +263,13 @@ void dump_results(const SBG::LIB::WeightedSBGraph& sb_graph, const std::string& 
 
   vector<unsigned> partition_vector(sb_graph.V().cardinal(), 0);
   if (sb_graph.V().arity() == 2) {
-    size_t row_size = key.pieces(get<OrderedSet>(key.impl(sb_graph.V()))).front()[0].cardinal();
+    size_t row_size = (*sb_graph.V().begin()).intervals()[0].cardinal();
     for (size_t i = 0; i < partition.size(); i++) {
       const auto& p = partition.at(i);
       for (const auto& set : p) {
-        for (const auto& sp : key.pieces(get<OrderedSet>(key.impl(set)))) {
-          for (size_t row = sp[0].begin(); row <= size_t(sp[0].end()); row++) {
-            for (size_t col = sp[1].begin(); col <= size_t(sp[1].end()); col++) {
+        for (const auto sp : set) {
+          for (size_t row = sp.intervals()[0].begin(); row <= sp.intervals()[0].end(); row++) {
+            for (size_t col = sp.intervals()[1].begin(); col <= sp.intervals()[1].end(); col++) {
               auto val = row * row_size + col;
               partition_vector[val] = i;
             }
@@ -290,8 +280,8 @@ void dump_results(const SBG::LIB::WeightedSBGraph& sb_graph, const std::string& 
   } else {
     for (unsigned i = 0; i < partition.size(); i++) {
       for (size_t vert_idx = 0; vert_idx < partition.at(i).size(); vert_idx++) {
-        const auto first_interval = key.pieces(get<OrderedSet>(key.impl(partition.at(i).at(vert_idx)))).front()[0];
-        for (size_t val = first_interval.begin(); val <= size_t(first_interval.end()); val++) {
+        for (size_t val = (*(*partition.at(i).at(vert_idx).begin()).begin()).begin();
+             val <= (*(*partition.at(i).at(vert_idx).begin()).begin()).end(); val++) {
           partition_vector[val] = i;
         }
       }

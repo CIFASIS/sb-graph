@@ -21,52 +21,44 @@
 
  ******************************************************************************/
 
-#ifndef SBGRAPH_EVAL_VISITORS_LINEAR_EXPR_EVALUTOR_HPP_
-#define SBGRAPH_EVAL_VISITORS_LINEAR_EXPR_EVALUTOR_HPP_
+#ifndef LE_EVALUATOR 
+#define LE_EVALUATOR 
 
-#include <sbgraph/detail/ast/expression.hpp>
 #include "eval/var_env.hpp"
-#include <sbgraph/detail/sbg/linear_expr.hpp>
-
-#include "boost/variant.hpp"
+#include "sbg/lexp.hpp"
 
 namespace SBG {
 
 namespace Eval {
 
-namespace detail {
-
-class LinearExprEvaluator
-  : public boost::static_visitor<LIB::detail::LinearExpr> {
-public:
+class LinearExprEvaluator : public boost::static_visitor<LIB::LExp> {
+  public:
   LinearExprEvaluator(VarEnv &venv);
 
-  LIB::detail::LinearExpr operator()(AST::Integer v) const;
-  LIB::detail::LinearExpr operator()(AST::Rational v) const;
-  LIB::detail::LinearExpr operator()(AST::Name v) const;
-  LIB::detail::LinearExpr operator()(AST::UnaryOp v) const;
-  LIB::detail::LinearExpr operator()(AST::BinOp v) const;
-  LIB::detail::LinearExpr operator()(AST::Call v) const;
-  LIB::detail::LinearExpr operator()(AST::Interval v) const;
-  LIB::detail::LinearExpr operator()(AST::MultiDimInter v) const;
-  LIB::detail::LinearExpr operator()(AST::Set v) const;
-  LIB::detail::LinearExpr operator()(AST::LinearExpr v) const;
-  LIB::detail::LinearExpr operator()(AST::MDLExp v) const;
-  LIB::detail::LinearExpr operator()(AST::LinearMap v) const;
-  LIB::detail::LinearExpr operator()(AST::PWLMap v) const;
-  LIB::detail::LinearExpr operator()(AST::SBG v) const;
-  LIB::detail::LinearExpr operator()(AST::BipartiteSBG v) const;
-  LIB::detail::LinearExpr operator()(AST::DSBG v) const;
-  LIB::detail::LinearExpr operator()(AST::ParenExpr v) const;
+  LIB::LExp operator()(AST::Natural v) const;
+  LIB::LExp operator()(AST::Rational v) const;
+  LIB::LExp operator()(AST::Name v) const;
+  LIB::LExp operator()(AST::UnaryOp v) const;
+  LIB::LExp operator()(AST::BinOp v) const;
+  LIB::LExp operator()(AST::Call v) const;
+  LIB::LExp operator()(AST::Interval v) const;
+  LIB::LExp operator()(AST::MultiDimInter v) const;
+  LIB::LExp operator()(AST::Set v) const;
+  LIB::LExp operator()(AST::LinearExp v) const;
+  LIB::LExp operator()(AST::MDLExp v) const;
+  LIB::LExp operator()(AST::LinearMap v) const;
+  LIB::LExp operator()(AST::PWLMap v) const;
+  LIB::LExp operator()(AST::SBG v) const;
+  LIB::LExp operator()(AST::BipartiteSBG v) const;
+  LIB::LExp operator()(AST::DSBG v) const;
+  LIB::LExp operator()(AST::ParenExpr v) const;
 
-private:
-  mutable VarEnv _venv;
+  private:
+  mutable VarEnv venv_;
 };
-
-} // namespace detail
 
 } // namespace Eval
 
 } // namespace SBG
 
-#endif // SBGRAPH_EVAL_VISITORS_LINEAR_EXPR_EVALUTOR_HPP_
+#endif

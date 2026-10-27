@@ -23,12 +23,11 @@
 
  ******************************************************************************/
 
-#ifndef SBGRAPH_PARSER_EXPR_HPP_
-#define SBGRAPH_PARSER_EXPR_HPP_
+#ifndef EXPR_PARSER_HPP
+#define EXPR_PARSER_HPP
 
-#include <sbgraph/detail/ast/expression.hpp>
+#include "ast/expr.hpp"
 #include "parser/skipper.hpp"
-#include <sbgraph/sbg/integer.hpp>
 
 namespace SBG {
 
@@ -37,8 +36,7 @@ namespace Parser {
 namespace qi = boost::spirit::qi;
 
 template <typename Iterator>
-class ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
-public:
+struct ExprRule : qi::grammar<Iterator, Skipper<Iterator>, AST::ExprList()> {
   ExprRule(Iterator &it);
 
   // Rules with no skip
@@ -49,10 +47,10 @@ public:
   // Operators tokens
   qi::rule<Iterator> OPAREN, CPAREN, OBRACKET, CBRACKET, OBRACE, CBRACE, COLON
     , RAT, COMA, DIV, ARROW, OANGLE, CANGLE, CARTPROD, SLO, VAR, ADD, SUB, PIPE
-    , SEMI, V, VMAP, MAP1, MAP2, EMAP, MAPB, MAPD, X, Y;
+    , SEMI, V, VMAP, MAP1, MAP2, EMAP, SUBE, MAPB, MAPD, X, Y;
 
   // Other rules
-  qi::rule<Iterator, Skipper<Iterator>, LIB::Int> integer;
+  qi::rule<Iterator, Skipper<Iterator>, LIB::NAT()> nat;
   qi::rule<Iterator, Skipper<Iterator>, AST::Rational> rational_legacy;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> primary;
   qi::rule<Iterator, Skipper<Iterator>, AST::Expr()> factor;
@@ -102,4 +100,4 @@ public:
 
 } // namespace SBG
 
-#endif // SBGRAPH_PARSER_EXPR_HPP_
+#endif

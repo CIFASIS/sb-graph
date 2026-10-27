@@ -1,20 +1,11 @@
-add_executable(sbg-benchmark main.cpp)
-
-target_include_directories(sbg-benchmark PRIVATE ${PROJECT_SOURCE_DIR})
+# SBG Benchmark for different Set and PWMap implementations
+add_executable(sbg-benchmark benchmark_main.cpp)
 
 target_sources(sbg-benchmark
                PRIVATE
-               boost/boost_bm.cpp
-               boost/scalar_graph.cpp
-               boost/scalar_graph_builder.cpp
-               boost/scc_graph_builder.cpp
-               main.cpp
-               bm_exec.cpp
-               matching_bm.cpp
-               pwmap_bm.cpp
-               scc_bm.cpp
-               set_bm.cpp
-               utils.cpp)
+               benchmark_main.cpp
+               dom_ord_pwmap_bm.cpp
+               ord_set_bm.cpp)
 
 set_target_properties(sbg-benchmark PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY
@@ -26,10 +17,13 @@ add_custom_target(run-benchmark
       COMMAND cd ${BIN_DIR} && ./sbg-benchmark
 )
 
-target_link_libraries(
-    sbg-benchmark
-    PUBLIC
-    benchmark::benchmark
-    PRIVATE
-    sbgraph
-)
+target_link_libraries(sbg-benchmark
+                      PUBLIC
+                      benchmark::benchmark
+                      PRIVATE
+                      sbg-dev
+                      sbg-eval-lib)
+
+add_subdirectory(boost)
+add_subdirectory(matching)
+add_subdirectory(scc)

@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <set>
 
-#include <sbgraph/sbg/sbg.hpp>
+#include "sbg/sbg.hpp"
 #include "weighted_sb_graph.hpp"
 
 

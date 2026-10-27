@@ -25,11 +25,11 @@
 
  ******************************************************************************/
 
-#include "eval/eval_exec.hpp"
-
 #include <iostream>
 
-int main(int argc, char* argv[])
+#include "eval/eval_exec.hpp"
+
+int main(int argc, char**argv)
 {
   std::cout << std::boolalpha;
 

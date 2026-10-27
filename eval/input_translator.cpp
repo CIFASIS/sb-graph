@@ -19,13 +19,11 @@
 
 #include "eval/input_translator.hpp"
 #include "eval/user_impl_map.hpp"
-#include "util/debug.hpp"
+#include "sbg/set_fact.hpp"
 
 namespace SBG {
 
 namespace Eval {
-
-namespace detail {
 
 InputTranslator::InputTranslator() {}
 
@@ -33,18 +31,20 @@ void InputTranslator::translate(EvalUserInput& input)
 {
   EvalUserInput::MaybeInt s = input.set_impl();
   EvalUserInput::MaybeInt pw = input.pw_impl();
-  if (s && pw) {
-    if (*s == 0 && *pw == 2) {
-      Util::ERROR(
-          "Domain ordered PWMap should be used with an ordered set"
-          " implementation\n");
-    } else {
+  if (pw && s) {
+    if (*pw == 2 && *s == 0) {
+      Util::ERROR("Domain ordered PWMap should be used with an ordered set"
+        " implementation\n");
+    }
+    else {
       setSetFactory(*s);
       setPWFactory(*pw);
     }
-  } else if (s) {
+  }
+  else if (s) {
     setSetFactory(*s);
-  } else if (pw) {
+  }
+  else if (pw) {
     setPWFactory(*pw);
   }
 
@@ -53,14 +53,9 @@ void InputTranslator::translate(EvalUserInput& input)
     setSCCFactory(*scc);
   }
 
-  EvalUserInput::MaybeInt mfvs = input.mfvs_impl();
-  if (mfvs) {
-    setMFVSFactory(*mfvs);
-  }
+  return;
 }
 
-}  // namespace detail
+} // namespace Eval
 
-}  // namespace Eval
-
-}  // namespace SBG
+} // namespace SBG

@@ -19,8 +19,7 @@
 
 #include <vector>
 
-#include <sbgraph/detail/sbg/multidim_inter.hpp>
-#include <sbgraph/sbg/sbg.hpp>
+#include <sbg/sbg.hpp>
 
 #pragma once
 
@@ -42,11 +41,11 @@ namespace using_cc {
 
 struct SetPointer {
     unsigned index;
-    SBG::LIB::detail::MultiDimInter set_piece;
+    SBG::LIB::SetPiece set_piece;
     size_t offset;
     size_t size;
 
-    SetPointer(unsigned index, const SBG::LIB::detail::MultiDimInter& set_piece, size_t offset, size_t size)
+    SetPointer(unsigned index, const SBG::LIB::SetPiece& set_piece, size_t offset, size_t size)
         : index(index),
         set_piece(set_piece),
         offset(offset),

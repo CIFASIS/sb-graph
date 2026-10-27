@@ -23,52 +23,50 @@ namespace SBG {
 
 namespace AST {
 
-Assign::Assign(Name left, Expr right) : _left(left), _right(right) {}
+Assign::Assign() : l_(), r_() {}
+Assign::Assign(Name l, Expr r) : l_(l), r_(r) {}
 
-const Name &Assign::left() const { return _left; }
-
-const Expr &Assign::right() const { return _right; }
+member_imp(Assign, Name, l);
+member_imp(Assign, Expr, r);
 
 std::ostream &operator<<(std::ostream &out, const Assign &asgn)
 {
-  out << asgn.left() << " = " << asgn.right();
+  out << asgn.l() << " = " << asgn.r();
 
   return out;
 }
 
-ConfigDims::ConfigDims(std::size_t arity) : _arity(arity)
-{
-  if (arity > 0) {
-    _arity = arity;
-  }
+ConfigDims::ConfigDims() : nmbr_dims_() {}
+ConfigDims::ConfigDims(LIB::NAT nmbr_dims) : nmbr_dims_() {
+  if (nmbr_dims > 0)
+    nmbr_dims_ = nmbr_dims;
 
-  else {
-    Util::ERROR("ConfigDims::ConfigDims: dimension should be greater than 0\n");
-  }
+  else
+    Util::ERROR("ConfigDims: dimension should be greater than 0\n");
 }
 
-const std::size_t ConfigDims::arity() const { return _arity; }
+member_imp(ConfigDims, LIB::NAT, nmbr_dims);
 
 std::ostream &operator<<(std::ostream &out, const ConfigDims &cfg)
 {
-  out << "arity = " << cfg.arity();
+  out << "nmbr_dims = " << cfg.nmbr_dims();
 
   return out;
 }
 
-bool IsConfig::operator()(Assign v) const { return false; }
+IsConfig::IsConfig() {}
 
+bool IsConfig::operator()(Assign v) const { return false; }
 bool IsConfig::operator()(ConfigDims v) const { return true; }
 
 std::ostream &operator<<(std::ostream &out, const StatementList &stml)
 {
-  for (Statement s : stml) {
+  for (Statement s : stml)
     out << s << ";\n";
-  }
 
   return out;
 }
 
-}  // namespace AST
+} // namespace AST
 
-}  // namespace SBG
+} // namespace SBG

@@ -27,9 +27,8 @@
 #include <string>
 #include <vector>
 
-#include <sbgraph/algorithms/cc/cc.hpp>
-#include <sbgraph/sbg/set_impl.hpp>
-#include <sbgraph/detail/util/defs.hpp>
+#include <algorithms/cc/cc.hpp>
+#include <sbg/set_fact.hpp>
 #include <util/time_profiler.hpp>
 
 #include "build_sb_graph.hpp"
@@ -222,20 +221,6 @@ int get_advection2D_size(const string& name)
 
 SBG::LIB::WeightedSBGraph get_sbg(const std::string& filename, unsigned number_of_parts, bool duplicate_conns)
 {
-  auto sb_graph = create_starpu_graph(4);
-  std::cout << "something " << sb_graph << std::endl;
-  cout << "connections:\n";
-  SBG::LIB::PWMap pw_map1 = sb_graph.map1();
-  SBG::LIB::PWMap pw_map2 = sb_graph.map2();
-  auto edges = sb_graph.E();
-  for (auto it1 = pw_map1.begin(), it2 = pw_map2.begin(); it2 != pw_map2.end(); it1, ++it2) {
-    auto n1 = (*it1).image();
-    auto n2 = (*it2).image();
-    cout << n1 << ", " << n2 << " from " << (*it1).domain() << "\n";
-  }
-  cout << endl;
-  // throw 1;
-  return sb_graph;
   if (filename.find("air_conditioners_cont") != std::string::npos) {
     auto size = get_air_conditioners_controller_size(filename);
     auto sb_graph = create_air_conditioners_with_controller_graph(size, number_of_parts, duplicate_conns);
@@ -278,22 +263,17 @@ SBG::LIB::WeightedSBGraph build_computational_sbg(const PartitionerParams& param
 #ifdef SBG_PARTITIONER_LOGGING
   cout << "sb_graph: " << sb_graph << endl;
   cout << "connections:\n";
-  SBG::LIB::PWMap pw_map1 = sb_graph.map1();
-  SBG::LIB::PWMap pw_map2 = sb_graph.map2();
-  for (auto it1 = pw_map1.begin(), it2 = pw_map2.begin(); it1 != pw_map1.end() and it2 != pw_map2.end(); ++it1, ++it2) {
+  for (auto it1 = sb_graph.map1().begin(), it2 = sb_graph.map2().begin(); it1 != sb_graph.map1().end() and it2 != sb_graph.map2().end();
+       ++it1, ++it2) {
     auto n1 = (*it1).image();
     auto n2 = (*it2).image();
-    cout << n1 << ", " << n2 << " from " << (*it1).domain() << "\n";
+    cout << n1 << ", " << n2 << " from " << (*it1).dom() << "\n";
   }
   cout << endl;
 #endif
 
-  auto map1 = sb_graph.map1();
-  map1.compact();
-  auto map2 = sb_graph.map2();
-  map2.compact();
-
-  return SBG::LIB::WeightedSBGraph(new_vertices, SBG::LIB::PWMap(), map1, map2, SBG::LIB::PWMap());
+  return SBG::LIB::WeightedSBGraph(new_vertices, SBG::LIB::PW_FACT.createPWMap(), sb_graph.map1().compact(), sb_graph.map2().compact(),
+                                   SBG::LIB::PW_FACT.createPWMap(), SBG::LIB::PW_FACT.createPWMap());
 }
 
 tuple<SBG::LIB::WeightedSBGraph, PartitionMap, double, double> run_partitioner(const PartitionerParams& params)
@@ -338,8 +318,6 @@ static struct option long_options[] = {{"config-filename", required_argument, 0,
 
 int main(int argc, char** argv)
 {
-  SBG::LIB::SET_IMPL.set_set_fact(SBG::LIB::SetKind::kOrdered);
-
   int opt;
   PartitionerParams params;
 

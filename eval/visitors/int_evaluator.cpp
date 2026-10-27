@@ -18,44 +18,38 @@
  ******************************************************************************/
 
 #include "eval/visitors/int_evaluator.hpp"
-#include "util/debug.hpp"
-
-#include <cmath>
 
 namespace SBG {
 
 namespace Eval {
 
-namespace detail {
+IntEvaluator::IntEvaluator() : venv_() {}
+IntEvaluator::IntEvaluator(VarEnv &venv) : venv_(venv) {}
 
-IntEvaluator::IntEvaluator() : _venv() {}
+LIB::INT IntEvaluator::operator()(AST::Natural v) const { return (LIB::INT) v; }
 
-IntEvaluator::IntEvaluator(VarEnv &venv) : _venv(venv) {}
-
-LIB::Int IntEvaluator::operator()(AST::Integer v) const { return (LIB::Int)v; }
-
-LIB::Int IntEvaluator::operator()(AST::Rational v) const
-{
-  if (boost::apply_visitor(*this, v.denominator()) == 1) {
-    return boost::apply_visitor(*this, v.numerator());
-  }
+LIB::INT IntEvaluator::operator()(AST::Rational v) const 
+{ 
+  if (boost::apply_visitor(*this, v.den()) == 1)
+    return boost::apply_visitor(*this, v.num());
 
   Util::ERROR("IntEvaluator: trying to evaluate Rational ", v, "\n");
-  return 0;
+  return 0; 
 }
 
-LIB::Int IntEvaluator::operator()(AST::Name v) const
-{
-  auto var_definition = _venv.find(v);
-  if (var_definition != _venv.end()) {
+LIB::INT IntEvaluator::operator()(AST::Name v) const 
+{ 
+  auto var_definition = venv_.find(v);
+  if (var_definition != venv_.end()) { 
     ExprBaseType value = var_definition->second;
-    if (std::holds_alternative<LIB::Int>(value)) {
-      return std::get<LIB::Int>(value);
-    } else if (std::holds_alternative<LIB::IntTuple>(value)) {
-      LIB::IntTuple x = std::get<LIB::IntTuple>(value);
-      return x[0];
-    } else if (std::holds_alternative<LIB::Rational>(value)) {
-      LIB::Rational x = std::get<LIB::Rational>(value);
+    if (std::holds_alternative<LIB::NAT>(value))
+      return (LIB::INT)(std::get<LIB::NAT>(value));
+    else if (std::holds_alternative<LIB::MD_NAT>(value)) {
+      LIB::MD_NAT x = std::get<LIB::MD_NAT>(value);
+      return (LIB::INT)(x[0]);
+    }
+    else if (std::holds_alternative<LIB::RATIONAL>(value)) {
+      LIB::RATIONAL x = std::get<LIB::RATIONAL>(value);
       return x.toInt();
     }
   }
@@ -64,119 +58,113 @@ LIB::Int IntEvaluator::operator()(AST::Name v) const
   return 0;
 }
 
-LIB::Int IntEvaluator::operator()(AST::UnaryOp v) const
+LIB::INT IntEvaluator::operator()(AST::UnaryOp v) const 
 {
-  LIB::Int x = boost::apply_visitor(*this, v.expr());
+  LIB::INT x = boost::apply_visitor(*this, v.expr());
   switch (v.op()) {
-  case AST::UnOp::oppo: {
-    return -x;
-  }
+    case AST::UnOp::oppo:
+      return -x;
 
-  default: {
-    Util::ERROR("IntEvaluator: BinOp ", v.op(), " unsupported\n");
-    return 0;
-  }
+    default:
+      Util::ERROR("IntEvaluator: BinOp ", v.op(), " unsupported\n");
+      return 0;
   }
 }
 
-LIB::Int IntEvaluator::operator()(AST::BinOp v) const
+LIB::INT IntEvaluator::operator()(AST::BinOp v) const 
 {
-  LIB::Int l = boost::apply_visitor(*this, v.left());
-  LIB::Int r = boost::apply_visitor(*this, v.right());
+  LIB::INT l = boost::apply_visitor(*this, v.left());
+  LIB::INT r = boost::apply_visitor(*this, v.right());
   switch (v.op()) {
-  case AST::Op::add: {
-    return l + r;
-  }
+    case AST::Op::add:
+      return l + r;
 
-  case AST::Op::sub: {
-    return l - r;
-  }
+    case AST::Op::sub:
+      return l - r;
 
-  case AST::Op::mult: {
-    return l * r;
-  }
+    case AST::Op::mult:
+      return l * r;
 
-  case AST::Op::expo: {
-    return pow(l, r);
-  }
+    case AST::Op::expo:
+      return pow(l, r);
 
-  default: {
-    Util::ERROR("IntEvaluator: BinOp ", v.op(), " unsupported\n");
-    return 0;
-  }
+    default:
+      Util::ERROR("IntEvaluator: BinOp ", v.op(), " unsupported\n");
+      return 0;
   }
 }
 
-LIB::Int IntEvaluator::operator()(AST::Call v) const
+LIB::INT IntEvaluator::operator()(AST::Call v) const
 {
   Util::ERROR("IntEvaluator: trying to evaluate Call ", v, "\n");
   return 0;
 }
 
-LIB::Int IntEvaluator::operator()(AST::Interval v) const
+LIB::INT IntEvaluator::operator()(AST::Interval v) const
 {
   Util::ERROR("IntEvaluator: trying to evaluate Interval ", v, "\n");
   return 0;
 }
 
-LIB::Int IntEvaluator::operator()(AST::MultiDimInter v) const
+LIB::INT IntEvaluator::operator()(AST::MultiDimInter v) const
 {
   Util::ERROR("IntEvaluator: trying to evaluate MultiDimInter ", v, "\n");
   return 0;
 }
 
-LIB::Int IntEvaluator::operator()(AST::Set v) const
+LIB::INT IntEvaluator::operator()(AST::Set v) const
 {
   Util::ERROR("IntEvaluator: trying to evaluate Set ", v, "\n");
   return 0;
 }
 
-LIB::Int IntEvaluator::operator()(AST::LinearExpr v) const
+LIB::INT IntEvaluator::operator()(AST::LinearExp v) const
 {
   Util::ERROR("IntEvaluator: trying to evaluate LinearExp ", v, "\n");
   return 0;
 }
 
-LIB::Int IntEvaluator::operator()(AST::MDLExp v) const
+LIB::INT IntEvaluator::operator()(AST::MDLExp v) const
 {
   Util::ERROR("IntEvaluator: trying to evaluate MDLExp ", v, "\n");
   return 0;
 }
 
-LIB::Int IntEvaluator::operator()(AST::LinearMap v) const
+LIB::INT IntEvaluator::operator()(AST::LinearMap v) const
 {
   Util::ERROR("IntEvaluator: trying to evaluate LinearMap ", v, "\n");
   return 0;
 }
 
-LIB::Int IntEvaluator::operator()(AST::PWLMap v) const
+LIB::INT IntEvaluator::operator()(AST::PWLMap v) const
 {
   Util::ERROR("IntEvaluator: trying to evaluate PWLMap ", v, "\n");
   return 0;
 }
 
-LIB::Int IntEvaluator::operator()(AST::SBG v) const
+LIB::INT IntEvaluator::operator()(AST::SBG v) const
 {
   Util::ERROR("IntEvaluator: trying to evaluate SBG ", v, "\n");
   return 0;
 }
 
-LIB::Int IntEvaluator::operator()(AST::BipartiteSBG v) const
+LIB::INT IntEvaluator::operator()(AST::BipartiteSBG v) const
 {
   Util::ERROR("IntEvaluator: trying to evaluate BipartiteSBG ", v, "\n");
   return 0;
 }
 
-LIB::Int IntEvaluator::operator()(AST::DSBG v) const
+LIB::INT IntEvaluator::operator()(AST::DSBG v) const
 {
-  Util::ERROR("IntEvaluator: trying to evaluate DirectedSBG ", v, "\n");
+  Util::ERROR("IntEvaluator: trying to evaluate DSBG ", v, "\n");
   return 0;
 }
 
-LIB::Int IntEvaluator::operator()(AST::ParenExpr v) const { return boost::apply_visitor(*this, v.pexpr()); }
+LIB::INT IntEvaluator::operator()(AST::ParenExpr v) const
+{
+  return boost::apply_visitor(*this, v.e());
+}
 
-}  // namespace detail
+} // namespace Eval
 
-}  // namespace Eval
-
-}  // namespace SBG
+} // namespace SBG

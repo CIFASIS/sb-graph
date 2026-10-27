@@ -21,27 +21,24 @@
 
  ******************************************************************************/
 
-#ifndef SBGRAPH_EVAL_FUNC_ENV_HPP_
-#define SBGRAPH_EVAL_FUNC_ENV_HPP_
+#ifndef EVAL_FUNC_ENV_HPP
+#define EVAL_FUNC_ENV_HPP
 
-#include <sbgraph/detail/ast/expression.hpp>
-#include <sbgraph/eval/base_type.hpp>
-
-#include <functional>
 #include <unordered_map>
+
+#include "ast/expr.hpp"
+#include "eval/base_type.hpp"
 
 namespace SBG {
 
 namespace Eval {
-
-namespace detail {
 
 /**
  * @brief Function environment. Only has built-in functions: SBG programs can't
  * define new functions.
  */
 class FuncEnv {
-public:
+  public:
   using FKey = AST::Name;
   using FValue = std::function<ExprBaseType(const std::vector<ExprBaseType>&)>;
   using FType = std::unordered_map<FKey, FValue>;
@@ -54,14 +51,12 @@ public:
   FIt find(const FKey& key) const;
   void insert(FKey key, FValue value);
 
-private:
-  FType _functions;
+  private:
+  FType functions_;
 };
-
-} // namespace detail
 
 } // namespace Eval
 
 } // namespace SBG
 
-#endif // SBGRAPH_EVAL_FUNC_ENV_HPP_
+#endif

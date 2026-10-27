@@ -17,65 +17,86 @@
 
  ******************************************************************************/
 
-#include "sbg/multidim_inter.hpp"
+#include <sbgraph/detail/sbg/multidim_inter.hpp>
+
+#include <iostream>
 
 namespace SBG {
 
 namespace LIB {
 
-member_imp(MultiDimInter, InterVector, intervals);
+namespace detail {
 
-MultiDimInter::MultiDimInter() : intervals_() {}
-MultiDimInter::MultiDimInter(const MD_NAT &x) : intervals_()
-{
-  for (NAT xi : x) intervals_.push_back(Interval(xi, 1, xi));
-}
-MultiDimInter::MultiDimInter(const Interval &i) : intervals_() { intervals_.push_back(i); }
-MultiDimInter::MultiDimInter(const unsigned int &nmbr_copies, const Interval &i) : intervals_()
-{
-  for (unsigned int j = 0; j < nmbr_copies; ++j) intervals_.push_back(i);
-}
-MultiDimInter::MultiDimInter(const InterVector &iv) : intervals_(std::move(iv)) {}
+// Constructors/Destructors ----------------------------------------------------
 
-MultiDimInter::iterator MultiDimInter::begin() { return intervals_.begin(); }
-MultiDimInter::iterator MultiDimInter::end() { return intervals_.end(); }
-MultiDimInter::const_iterator MultiDimInter::begin() const { return intervals_.begin(); }
-MultiDimInter::const_iterator MultiDimInter::end() const { return intervals_.end(); }
+MultiDimInter::MultiDimInter() : _intervals() {}
 
-void MultiDimInter::emplaceBack(Interval i)
+MultiDimInter::MultiDimInter(const IntTuple& x) : _intervals()
 {
-  if (i.isEmpty()) {
-    intervals_ = InterVector();
-  } else
-    intervals_.push_back(i);
-  return;
+  for (const Int xi : x) {
+    _intervals.emplace_back(Interval{xi, 1, xi});
+  }
 }
 
-Interval &MultiDimInter::operator[](std::size_t n) { return intervals_[n]; }
+MultiDimInter::MultiDimInter(const Interval& i) : _intervals() { _intervals.push_back(i); }
 
-const Interval &MultiDimInter::operator[](std::size_t n) const { return intervals_[n]; }
-
-bool MultiDimInter::operator==(const MultiDimInter &other) const { return intervals_ == other.intervals_; }
-
-bool MultiDimInter::operator!=(const MultiDimInter &other) const { return !(*this == other); }
-
-bool MultiDimInter::operator<(const MultiDimInter &other) const
+MultiDimInter::MultiDimInter(const std::size_t k, const Interval& i) : _intervals()
 {
-  if (other.isEmpty()) return false;
+  for (unsigned int j = 0; j < k; ++j) {
+    _intervals.push_back(i);
+  }
+}
 
-  if (isEmpty()) return true;
+MultiDimInter::MultiDimInter(InterVector iv) : _intervals(std::move(iv)) {}
+
+// Getters ---------------------------------------------------------------------
+
+MultiDimInter::ConstIt MultiDimInter::begin() const { return _intervals.begin(); }
+
+MultiDimInter::ConstIt MultiDimInter::end() const { return _intervals.end(); }
+
+// Setters ---------------------------------------------------------------------
+
+void MultiDimInter::pushBack(const Interval& i)
+{
+  if (!i.isEmpty()) {
+    _intervals.push_back(i);
+  }
+}
+
+// Operators -------------------------------------------------------------------
+
+Interval& MultiDimInter::operator[](std::size_t n) { return _intervals[n]; }
+
+const Interval& MultiDimInter::operator[](std::size_t n) const { return _intervals[n]; }
+
+bool MultiDimInter::operator==(const MultiDimInter& other) const { return _intervals == other._intervals; }
+
+bool MultiDimInter::operator!=(const MultiDimInter& other) const { return !(*this == other); }
+
+bool MultiDimInter::operator<(const MultiDimInter& other) const
+{
+  if (other.isEmpty()) {
+    return false;
+  }
+
+  if (isEmpty()) {
+    return true;
+  }
 
   return minElem() < other.minElem();
 }
 
-bool MultiDimInter::operator>(const MultiDimInter &other) const { return !(*this == other && *this < other); }
+bool MultiDimInter::operator>(const MultiDimInter& other) const { return !(*this == other && *this < other); }
 
-std::ostream &operator<<(std::ostream &out, const MultiDimInter &mdi)
+std::ostream& operator<<(std::ostream& out, const MultiDimInter& mdi)
 {
   std::size_t sz = mdi.arity();
 
   if (sz > 0) {
-    for (std::size_t j = 0; j < sz - 1; ++j) out << mdi[j] << "x";
+    for (std::size_t j = 0; j < sz - 1; ++j) {
+      out << mdi[j] << "x";
+    }
     out << mdi[sz - 1];
   }
 
@@ -86,98 +107,138 @@ std::ostream &operator<<(std::ostream &out, const MultiDimInter &mdi)
 
 size_t MultiDimInter::cardinal() const
 {
-  size_t res = 1;
+  size_t result = 1;
 
-  for (const Interval &i : intervals_) res *= i.cardinal();
-
-  return res;
-}
-
-bool MultiDimInter::isEmpty() const { return intervals_.empty(); }
-
-MD_NAT MultiDimInter::minElem() const
-{
-  MD_NAT res;
-
-  for (const Interval &i : intervals_) res.emplaceBack(i.begin());
-
-  return res;
-}
-
-MD_NAT MultiDimInter::maxElem() const
-{
-  MD_NAT res;
-
-  for (const Interval &i : intervals_) res.emplaceBack(i.end());
-
-  return res;
-}
-
-MultiDimInter MultiDimInter::intersection(const MultiDimInter &other) const
-{
-  if (isEmpty() || other.isEmpty()) return MultiDimInter();
-
-  MultiDimInter res;
-
-  for (unsigned int j = 0; j < arity(); ++j) {
-    Interval ith = operator[](j).intersection(other[j]);
-    if (!ith.isEmpty())
-      res.emplaceBack(ith);
-
-    else
-      return MultiDimInter();
+  for (const Interval& i : _intervals) {
+    result *= i.cardinal();
   }
 
-  return res;
+  return result;
+}
+
+bool MultiDimInter::isEmpty() const { return _intervals.empty(); }
+
+IntTuple MultiDimInter::minElem() const
+{
+  IntTuple result;
+
+  for (const Interval& i : _intervals) {
+    result.pushBack(i.begin());
+  }
+
+  return result;
+}
+
+IntTuple MultiDimInter::maxElem() const
+{
+  IntTuple result;
+
+  for (const Interval& i : _intervals) {
+    result.pushBack(i.end());
+  }
+
+  return result;
+}
+
+MultiDimInter MultiDimInter::intersection(const MultiDimInter& other) const
+{
+  if (isEmpty() || other.isEmpty()) {
+    return MultiDimInter{};
+  }
+
+  MultiDimInter result;
+
+  for (unsigned int j = 0; j < arity(); ++j) {
+    Interval jth_intersection = operator[](j).intersection(other[j]);
+    if (jth_intersection.isEmpty()) {
+      return MultiDimInter{};
+    } else {
+      result.pushBack(jth_intersection);
+    }
+  }
+
+  return result;
+}
+
+MultiDimInter MultiDimInter::cartesianProduct(const MultiDimInter& other) const
+{
+  MultiDimInter result = *this;
+
+  for (const Interval& other_i : other._intervals) {
+    result.pushBack(other_i);
+  }
+
+  return result;
 }
 
 // Extra operations ------------------------------------------------------------
 
-std::size_t MultiDimInter::arity() const { return intervals_.size(); }
+std::size_t MultiDimInter::arity() const { return _intervals.size(); }
 
-MultiDimInter MultiDimInter::offset(const MD_NAT &off) const
+MultiDimInter MultiDimInter::translate(const IntTuple& t) const
 {
-  MultiDimInter res;
+  MultiDimInter result;
 
-  for (unsigned int j = 0; j < arity(); ++j) res.emplaceBack(operator[](j).offset(off[j]));
+  for (unsigned int j = 0; j < arity(); ++j) {
+    result.pushBack(operator[](j).translate(t[j]));
+  }
 
-  return res;
+  return result;
 }
 
-MultiDimInter MultiDimInter::least(const MultiDimInter &other) const { return std::min(*this, other); }
+MultiDimInter MultiDimInter::least(const MultiDimInter& other) const { return std::min(*this, other); }
 
-MaybeMDI MultiDimInter::compact(const MultiDimInter &other) const
+Perimeter MultiDimInter::perimeter() const { return Perimeter{minElem(), maxElem()}; }
+
+MaybeMDI MultiDimInter::compact(const MultiDimInter& other) const
 {
-  MultiDimInter res;
+  MultiDimInter result;
 
   unsigned int j = 0;
   for (; j < arity(); ++j) {
-    auto ith = operator[](j).compact(other[j]);
-    if (operator[](j) == other[j])
-      res.emplaceBack(operator[](j));
-
-    else {
-      if (ith) {
-        res.emplaceBack(ith.value());
+    Interval jth_this = operator[](j);
+    Interval jth_other = other[j];
+    if (jth_this == jth_other) {
+      result.pushBack(jth_this);
+    } else {
+      MaybeInterval jth_compact = jth_this.compact(jth_other);
+      if (jth_compact) {
+        result.pushBack(jth_compact.value());
         ++j;
         break;
-      }
-
-      else
+      } else {
         return {};
+      }
     }
   }
 
   for (; j < arity(); ++j) {
-    if (operator[](j) != other[j])
+    if (operator[](j) != other[j]) {
       return {};
-
-    else
-      res.emplaceBack(operator[](j));
+    } else {
+      result.pushBack(operator[](j));
+    }
   }
 
-  return res;
+  return result;
 }
+
+// Non-member functions --------------------------------------------------------
+
+rapidjson::Value toJSON(MultiDimInter mdi, rapidjson::Document::AllocatorType& alloc)
+{
+  rapidjson::Value interval_array{rapidjson::kArrayType};
+  for (const Interval& i : mdi) {
+    rapidjson::Value jth = toJSON(i, alloc);
+    interval_array.PushBack(jth, alloc);
+  }
+  rapidjson::Value result{rapidjson::kObjectType};
+  result.AddMember("bounds", interval_array, alloc);
+
+  return result;
+}
+
+}  // namespace detail
 
 }  // namespace LIB
 

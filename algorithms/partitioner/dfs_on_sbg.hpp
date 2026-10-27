@@ -25,7 +25,8 @@
 #include <stack>
 #include <vector>
 
-#include <sbg/sbg.hpp>
+#include <sbgraph/detail/sbg/multidim_inter.hpp>
+#include <sbgraph/sbg/sbg.hpp>
 
 #include "partition_strategy.hpp"
 #include "weighted_sb_graph.hpp"
@@ -68,7 +69,7 @@ public:
     void add_partition_strategy(PartitionStrategyPtr&& strategy, bool pre_order);
 
 private:
-    typedef SBG::LIB::Set::Iterator node_identifier;
+    typedef std::vector<SBG::LIB::detail::MultiDimInter>::const_iterator node_identifier;
 
     unsigned _number_of_partitions;
 
@@ -82,6 +83,7 @@ private:
 
     SBG::LIB::WeightedSBGraph* _graph;
     SBG::LIB::Set _nodes;
+    std::vector<SBG::LIB::detail::MultiDimInter> _node_pieces;
 
     std::vector<PartitionStrategyPtr> _partition_strategy_pre_order;
     std::vector<PartitionStrategyPtr> _partition_strategy_post_order;

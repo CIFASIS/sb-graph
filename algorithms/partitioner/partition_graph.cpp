@@ -22,6 +22,7 @@
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/writer.h>
 #include <set>
+#include <sbg/set_detail.hpp>
 #include <util/logger.hpp>
 
 #include "build_sb_graph.hpp"
@@ -33,6 +34,10 @@
 using namespace std;
 
 using namespace SBG::LIB;
+using SBG::LIB::detail::Interval;
+using SBG::LIB::detail::OrderedSet;
+using SBG::LIB::detail::SetAccess;
+using SBG::LIB::detail::SetAccessKey;
 using namespace SBG::Util;
 
 using namespace sbg_partitioner::search;
@@ -54,7 +59,7 @@ Set get_communication_edges(Set partition, const PWMap& map_1, const PWMap& map_
 
 // [[maybe_unused]] size_t get_partition_communication(WeightedSBGraph& graph, const PartitionMap& partitions)
 // {
-//   Set s = SET_FACT.createSet();
+//   Set s = create_set();
 //   for (size_t i = 0; i < partitions.size(); i++) {
 //     auto ss = get_connectivity_set(graph, partitions, i);
 //     s = ss.cup(s);
@@ -98,13 +103,13 @@ vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, u
   for (const auto& partition : partitions) {
     PartitionMap partition_set;
     for (const auto& [id, set] : partition) {
-      Set one_partition_set = SET_FACT.createSet();
+      Set one_partition_set;
       Partition p;
       for (auto& s : set) {
-        // Set intervals = SET_FACT.createSet();
+        // Set intervals = create_set();
         // if (not s.intervals().empty()) {
-        //   for (size_t i = 0; i < s.intervals().size(); i++) {
-        //     Interval interv = s.intervals()[i];
+        //   for (size_t i = 0; i < s.arity(); i++) {
+        //     Interval interv = s[i];
         //     intervals.emplaceBack(interv);
         //   }
         // }
@@ -132,7 +137,7 @@ vector<PartitionMap> make_initial_partitions(SBG::LIB::WeightedSBGraph& graph, u
 // we could cache solutions here
 Set from_vector(const Partition& partition)
 {
-  Set partition_set = SET_FACT.createSet();
+  Set partition_set;
   for (size_t i = 0; i < partition.size(); i++) {
     partition_set = partition_set.cup(partition[i]);
   }
@@ -142,9 +147,10 @@ Set from_vector(const Partition& partition)
 
 Partition to_vector(const Set& partition_set)
 {
+  SetAccessKey key = SetAccess::key();
   Partition partition;
-  for (auto set_piece : partition_set) {
-    partition.push_back(SET_FACT.createSet(move(set_piece)));
+  for (const auto& set_piece : key.pieces(get<OrderedSet>(key.impl(partition_set)))) {
+    partition.push_back(key.createSet(OrderedSet(set_piece)));
   }
 
   return partition;
@@ -163,7 +169,7 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
     comm_cost = create_communication_cost(graph, best_initial_partitions, multithreading_enabled);
   }
   if (strategy == InitialPartitionStrategy::ALL) {
-    auto best_communication_set = SET_FACT.createSet();
+    auto best_communication_set = Set();
     for (unsigned i = 0; i < number_of_partitions; i++) {
       best_communication_set = best_communication_set.cup(comm_cost->get_ec_by_partition_id(i));
     }
@@ -173,9 +179,9 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
       auto temp_intial_partitions = partition_maps[i];
       CommunicationCostPtr temp_comm_cost = create_communication_cost(graph, temp_intial_partitions, multithreading_enabled);
 
-      auto temp_partition_comm = SET_FACT.createSet();
+      auto temp_partition_comm = Set();
       for (unsigned i = 0; i < number_of_partitions; i++) {
-        temp_partition_comm = temp_partition_comm.cup(comm_cost->get_ec_by_partition_id(i));
+        temp_partition_comm = temp_partition_comm.cup(temp_comm_cost->get_ec_by_partition_id(i));
       }
 
       size_t temp_intial_partitions_size = temp_partition_comm.cardinal();
@@ -199,7 +205,7 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
 // Set get_connectivity_set(SBG::LIB::SBG& graph, const PartitionMap& partitions, size_t partition_index)
 // {
 //   const auto& partition_vector = partitions.at(partition_index);
-//   Set partition = SET_FACT.createSet();
+//   Set partition = create_set();
 //   for_each(partition_vector.cbegin(), partition_vector.cend(), [&partition](auto s) { partition.emplaceBack(s); });
 
 //   auto comm_edges_1 = get_communication_edges(partition, graph.map1(), graph.map2());
@@ -212,7 +218,7 @@ PartitionMap best_initial_partition(WeightedSBGraph& graph, unsigned number_of_p
 void sanity_check(const WeightedSBGraph& graph, const PartitionMap& partitions_set, unsigned number_of_partitions)
 {
   // This is just a sanity check
-  Set nodes_to_check = SET_FACT.createSet();
+  Set nodes_to_check;
   for (unsigned i = 0; i < number_of_partitions; i++) {
     cout << i << ", " << partitions_set[i] << endl;
     auto s_i = from_vector(partitions_set[i]);

@@ -1,8 +1,11 @@
-// SCC test, with a long path, and a branch in the middle
-// that goes to a minimum value
+/* Model for SCC testing =======================================================
+ * Description: model with a simple repetitive path of the form
+   2 -> 3 -> ... -> 11, and a branch in the middle 6 -> 1 for N = 10.
+   Meant to test the implementation of MinReach.
+==============================================================================*/
 
-N = 100000;
-N2 = 50000;
+N = 1000000;
+N2 = 500000;
 
 V1 = 1;
 V2 = N+V1;

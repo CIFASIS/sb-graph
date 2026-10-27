@@ -19,7 +19,16 @@
 
 #include "test/performance/boost/scc_graph_builder.hpp"
 
-namespace OG {
+#include <boost/graph/graph_traits.hpp>
+#include <boost/tuple/tuple.hpp>
+
+#include <functional>
+
+namespace SBG {
+
+namespace perf {
+
+namespace detail {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Auxiliary structures --------------------------------------------------------
@@ -36,24 +45,21 @@ std::size_t EdgeHash::operator()(const Edge& e) const
 // Builder for the algebraic loop detection stage ------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-SCCGraphBuilder::SCCGraphBuilder(BipartiteGraph&& bgraph
-  , VertexVector&& matching)
-  : _bgraph(bgraph), _matching(matching) {}
+SCCGraphBuilder::SCCGraphBuilder(BipartiteGraph&& bgraph, VertexVector&& matching) : _bgraph(bgraph), _matching(matching) {}
 
 DirectedGraph SCCGraphBuilder::build()
 {
-  SBG::LIB::NAT number_vertices = translateVertices();
+  SBG::LIB::Int number_vertices = translateVertices();
   EdgeVector edges = getEdgeList();
   return build(number_vertices, edges);
 }
 
-DirectedGraph SCCGraphBuilder::build(SBG::LIB::NAT number_vertices
-  , EdgeVector& E)
+DirectedGraph SCCGraphBuilder::build(SBG::LIB::Int number_vertices, EdgeVector& E)
 {
   return DirectedGraph(E.begin(), E.end(), number_vertices);
 }
 
-SBG::LIB::NAT SCCGraphBuilder::translateVertices()
+SBG::LIB::Int SCCGraphBuilder::translateVertices()
 {
   _vertex_map.reserve(boost::num_edges(_bgraph.graph()));
 
@@ -87,10 +93,8 @@ EdgeVector SCCGraphBuilder::getEdgeList()
     // Detect unmatched edge
     if (match_u != v) {
       Vertex match_v = _matching[v];
-      Vertex newv = v < match_v ? _vertex_map[Edge(v, match_v)]
-        : _vertex_map[Edge(match_v, v)];
-      Vertex newu = u < match_u ? _vertex_map[Edge(u, match_u)]
-        : _vertex_map[Edge(match_u, u)];
+      Vertex newv = v < match_v ? _vertex_map[Edge(v, match_v)] : _vertex_map[Edge(match_v, v)];
+      Vertex newu = u < match_u ? _vertex_map[Edge(u, match_u)] : _vertex_map[Edge(match_u, u)];
       Edge e_result(newv, newu);
       if (!partition[u] && partition[v]) {
         result.emplace_back(Edge(newu, newv));
@@ -103,4 +107,8 @@ EdgeVector SCCGraphBuilder::getEdgeList()
   return result;
 }
 
-}  // namespace OG
+}  // namespace detail
+
+}  // namespace perf
+
+}  // namespace SBG

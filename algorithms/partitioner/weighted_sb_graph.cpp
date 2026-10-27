@@ -34,9 +34,8 @@ WeightedSBGraph::WeightedSBGraph(WeightedSBGraph&& graph)
 {
 }
 
-WeightedSBGraph::WeightedSBGraph(const Set& V, const PWMap& Vmap, const PWMap& map1, const PWMap& map2, const PWMap& Emap,
-                                 const PWMap& subEmap)
-    : SBG(V, Vmap, map1, map2, Emap, subEmap)
+WeightedSBGraph::WeightedSBGraph(const Set& V, const PWMap& Vmap, const PWMap& map1, const PWMap& map2, const PWMap& Emap)
+    : SBG(V, Vmap, map1, map2, Emap)
 {
 }
 

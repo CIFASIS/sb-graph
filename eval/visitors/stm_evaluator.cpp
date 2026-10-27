@@ -24,27 +24,25 @@ namespace SBG {
 
 namespace Eval {
 
-StmEvaluator::StmEvaluator(EvalContext& eval_ctx) : eval_ctx_(eval_ctx) {}
+namespace detail {
 
-EvalContext& StmEvaluator::eval_ctx() const
+StmEvaluator::StmEvaluator(EvalContext& eval_ctx) : _eval_context(eval_ctx) {}
+
+EvalContext& StmEvaluator::eval_context() const { return _eval_context; }
+
+StmResult StmEvaluator::operator()(AST::Assign assgn) const
 {
-  return eval_ctx_;
+  ExprEvaluator eval_expr(_eval_context);
+  ExprBaseType e = boost::apply_visitor(eval_expr, assgn.right());
+  _eval_context.insertVariable(assgn.left(), e);
+
+  return StmResult(assgn.left(), e);
 }
 
-StmResult StmEvaluator::operator()(AST::Assign assgn) const 
-{
-  ExprEvaluator eval_expr(eval_ctx_);
-  ExprBaseType e = boost::apply_visitor(eval_expr, assgn.r());
-  eval_ctx_.insertVariable(assgn.l(), e);
+StmResult StmEvaluator::operator()(AST::ConfigDims cfg) const { return StmResult("", static_cast<LIB::Int>(cfg.arity())); }
 
-  return StmResult(assgn.l(), e);
-}
+}  // namespace detail
 
-StmResult StmEvaluator::operator()(AST::ConfigDims cfg) const
-{
-  return StmResult("", cfg.nmbr_dims());
-}
+}  // namespace Eval
 
-} // namespace Eval
-
-} // namespace SBG
+}  // namespace SBG

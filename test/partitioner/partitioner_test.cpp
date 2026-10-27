@@ -31,6 +31,11 @@
 ///
 
 using namespace SBG::LIB;
+using SBG::LIB::detail::Interval;
+using SBG::LIB::detail::OrderedSet;
+using SBG::LIB::detail::SetAccess;
+using SBG::LIB::detail::SetAccessKey;
+using namespace sbg_partitioner;
 
 /// @addtogroup SBGraphParserTests
 /// @{
@@ -56,33 +61,33 @@ const std::string get_full_file_name(const std::string json_file)
  * @param rhs_map_domain rhs map domain.
  * @param rhs_map_exps rhs map expresions.
  */
-static void test_create_sb_graph(const std::string& filename, const std::vector<Interval>& node_intervals,
-                                 const std::vector<Interval>& lhs_map_domain, const std::vector<Exp>& lhs_map_exps,
-                                 const std::vector<Interval>& rhs_map_domain, const std::vector<Exp>& rhs_map_exps)
+static void test_create_sb_graph(const std::string& filename, const std::vector<Set>& node_intervals,
+                                 const std::vector<Set>& lhs_map_domain, const std::vector<Expression>& lhs_map_exps,
+                                 const std::vector<Set>& rhs_map_domain, const std::vector<Expression>& rhs_map_exps)
 {
   auto sb_graph = sbg_partitioner::build_sb_graph(filename);
 
   // create nodes of the expected graph
-  auto expected_nodes = SET_FACT.createSet();
+  auto expected_nodes = Set();
   for (const auto& n : node_intervals) {
-    expected_nodes.emplaceBack(n);
+    expected_nodes = expected_nodes.cup(n);
   }
   EXPECT_EQ(expected_nodes, sb_graph.V());
 
   // create edges of the expected graph through its maps
-  PWMap lhs_maps = PW_FACT.createPWMap();
+  PWMap lhs_maps = PWMap();
   for (size_t i = 0; i < lhs_map_domain.size(); i++) {
-    lhs_maps.emplaceBack(Map(lhs_map_domain[i], lhs_map_exps[i]));
+    lhs_maps.insert(Map(lhs_map_domain[i], lhs_map_exps[i]));
   }
 
-  PWMap rhs_maps = PW_FACT.createPWMap();
+  PWMap rhs_maps = PWMap();
   for (size_t i = 0; i < rhs_map_domain.size(); i++) {
-    rhs_maps.emplaceBack(Map(rhs_map_domain[i], rhs_map_exps[i]));
+    rhs_maps.insert(Map(rhs_map_domain[i], rhs_map_exps[i]));
   }
 
   // test edges are correct
-  EXPECT_EQ(true, lhs_maps.dom() == sb_graph.E());
-  EXPECT_EQ(true, rhs_maps.dom() == sb_graph.E());
+  EXPECT_EQ(true, lhs_maps.domain() == sb_graph.E());
+  EXPECT_EQ(true, rhs_maps.domain() == sb_graph.E());
 
   //// test that maps are as expected
   EXPECT_EQ(true, lhs_maps == sb_graph.map1());
@@ -91,18 +96,16 @@ static void test_create_sb_graph(const std::string& filename, const std::vector<
 
 TEST(create_sb_graph, PartitionerTests)
 {
-  test_create_sb_graph(get_full_file_name("air_conditioners_1000.json"),
-                       {Interval(0, 1, 999), Interval(1000, 1, 1999), Interval(2000, 1, 2999), Interval(3000, 1, 3999)},
-                       {Interval(4000, 1, 4999), Interval(5000, 1, 5999), Interval(6000, 1, 6999), Interval(7000, 1, 7999)},
-                       {Exp(LExp(1, RATIONAL(-3000, 1))), Exp(LExp(1, RATIONAL(-2000, 1))), Exp(LExp(1, RATIONAL(-6000, 1))),
-                        Exp(LExp(1, RATIONAL(-5000, 1)))},
-                       {Interval(4000, 1, 4999), Interval(5000, 1, 5999), Interval(6000, 1, 6999), Interval(7000, 1, 7999)},
-                       {Exp(LExp(1, RATIONAL(-4000, 1))), Exp(LExp(1, RATIONAL(-5000, 1))), Exp(LExp(1, RATIONAL(-5000, 1))),
-                        Exp(LExp(1, RATIONAL(-6000, 1)))});
+  test_create_sb_graph(
+      get_full_file_name("air_conditioners_1000.json"), {Set(0, 1, 999), Set(1000, 1, 1999), Set(2000, 1, 2999), Set(3000, 1, 3999)},
+      {Set(4000, 1, 4999), Set(5000, 1, 5999), Set(6000, 1, 6999), Set(7000, 1, 7999)},
+      {Expression(Rational(1), -3000), Expression(Rational(1), -2000), Expression(Rational(1), -6000), Expression(Rational(1), -5000)},
+      {Set(4000, 1, 4999), Set(5000, 1, 5999), Set(6000, 1, 6999), Set(7000, 1, 7999)},
+      {Expression(Rational(1), -4000), Expression(Rational(1), -5000), Expression(Rational(1), -5000), Expression(Rational(1), -6000)});
 
-  test_create_sb_graph(get_full_file_name("advection.json"), {Interval(0, 1, 0), Interval(1, 1, 99)},
-                       {Interval(100, 1, 100), Interval(101, 1, 198)}, {Exp(LExp(0, 0)), Exp(LExp(1, RATIONAL(-100, 1)))},
-                       {Interval(100, 1, 100), Interval(101, 1, 198)}, {Exp(LExp(1, RATIONAL(-99, 1))), Exp(LExp(1, RATIONAL(-99, 1)))});
+  test_create_sb_graph(get_full_file_name("advection.json"), {Set(0, 1, 0), Set(1, 1, 99)}, {Set(100, 1, 100), Set(101, 1, 198)},
+                       {Expression(Rational(0), 0), Expression(Rational(1), -100)}, {Set(100, 1, 100), Set(101, 1, 198)},
+                       {Expression(Rational(1), -99), Expression(Rational(1), -99)});
 }
 
 TEST(initial_partition, PartitionerTests)
@@ -113,35 +116,35 @@ TEST(initial_partition, PartitionerTests)
   sbg_partitioner::PartitionMap partition =
       sbg_partitioner::best_initial_partition(sb_graph, 4, sbg_partitioner::InitialPartitionStrategy::ALL, enable_multithreading);
 
-  auto expected_distributed_pre_order_0 = SET_FACT.createSet();
-  expected_distributed_pre_order_0.emplaceBack(Interval(0, 1, 249));
-  expected_distributed_pre_order_0.emplaceBack(Interval(1000, 1, 1249));
-  expected_distributed_pre_order_0.emplaceBack(Interval(2000, 1, 2249));
-  expected_distributed_pre_order_0.emplaceBack(Interval(3000, 1, 3249));
+  auto expected_distributed_pre_order_0 = Set();
+  expected_distributed_pre_order_0 = expected_distributed_pre_order_0.cup(Set(0, 1, 249));
+  expected_distributed_pre_order_0 = expected_distributed_pre_order_0.cup(Set(1000, 1, 1249));
+  expected_distributed_pre_order_0 = expected_distributed_pre_order_0.cup(Set(2000, 1, 2249));
+  expected_distributed_pre_order_0 = expected_distributed_pre_order_0.cup(Set(3000, 1, 3249));
   Set partition_0 = sbg_partitioner::from_vector(partition.at(0));
   EXPECT_EQ(expected_distributed_pre_order_0, partition_0);
 
-  auto expected_distributed_pre_order_1 = SET_FACT.createSet();
-  expected_distributed_pre_order_1.emplaceBack(Interval(250, 1, 499));
-  expected_distributed_pre_order_1.emplaceBack(Interval(1250, 1, 1499));
-  expected_distributed_pre_order_1.emplaceBack(Interval(2250, 1, 2499));
-  expected_distributed_pre_order_1.emplaceBack(Interval(3250, 1, 3499));
+  auto expected_distributed_pre_order_1 = Set();
+  expected_distributed_pre_order_1 = expected_distributed_pre_order_1.cup(Set(250, 1, 499));
+  expected_distributed_pre_order_1 = expected_distributed_pre_order_1.cup(Set(1250, 1, 1499));
+  expected_distributed_pre_order_1 = expected_distributed_pre_order_1.cup(Set(2250, 1, 2499));
+  expected_distributed_pre_order_1 = expected_distributed_pre_order_1.cup(Set(3250, 1, 3499));
   Set partition_1 = sbg_partitioner::from_vector(partition.at(1));
   EXPECT_EQ(expected_distributed_pre_order_1, partition_1);
 
-  auto expected_distributed_pre_order_2 = SET_FACT.createSet();
-  expected_distributed_pre_order_2.emplaceBack(Interval(500, 1, 749));
-  expected_distributed_pre_order_2.emplaceBack(Interval(1500, 1, 1749));
-  expected_distributed_pre_order_2.emplaceBack(Interval(2500, 1, 2749));
-  expected_distributed_pre_order_2.emplaceBack(Interval(3500, 1, 3749));
+  auto expected_distributed_pre_order_2 = Set();
+  expected_distributed_pre_order_2 = expected_distributed_pre_order_2.cup(Set(500, 1, 749));
+  expected_distributed_pre_order_2 = expected_distributed_pre_order_2.cup(Set(1500, 1, 1749));
+  expected_distributed_pre_order_2 = expected_distributed_pre_order_2.cup(Set(2500, 1, 2749));
+  expected_distributed_pre_order_2 = expected_distributed_pre_order_2.cup(Set(3500, 1, 3749));
   Set partition_2 = sbg_partitioner::from_vector(partition.at(2));
   EXPECT_EQ(expected_distributed_pre_order_2, partition_2);
 
-  auto expected_distributed_pre_order_3 = SET_FACT.createSet();
-  expected_distributed_pre_order_3.emplaceBack(Interval(750, 1, 999));
-  expected_distributed_pre_order_3.emplaceBack(Interval(1750, 1, 1999));
-  expected_distributed_pre_order_3.emplaceBack(Interval(2750, 1, 2999));
-  expected_distributed_pre_order_3.emplaceBack(Interval(3750, 1, 3999));
+  auto expected_distributed_pre_order_3 = Set();
+  expected_distributed_pre_order_3 = expected_distributed_pre_order_3.cup(Set(750, 1, 999));
+  expected_distributed_pre_order_3 = expected_distributed_pre_order_3.cup(Set(1750, 1, 1999));
+  expected_distributed_pre_order_3 = expected_distributed_pre_order_3.cup(Set(2750, 1, 2999));
+  expected_distributed_pre_order_3 = expected_distributed_pre_order_3.cup(Set(3750, 1, 3999));
   Set partition_3 = sbg_partitioner::from_vector(partition.at(3));
   EXPECT_EQ(expected_distributed_pre_order_3, partition_3);
 

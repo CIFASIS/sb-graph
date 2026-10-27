@@ -23,7 +23,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include <sbg/sbg.hpp>
+#include <sbgraph/detail/sbg/multidim_inter.hpp>
+#include <sbgraph/sbg/sbg.hpp>
 
 #include "sbg_partitioner_types.hpp"
 #include "weighted_sb_graph.hpp"
@@ -33,8 +34,8 @@ namespace sbg_partitioner {
 
 struct SetPieceHash {
     SetPieceHash() = default;
-    static std::size_t set_piece_hash(const SBG::LIB::SetPiece& set_piece);
-    std::size_t operator()(const SBG::LIB::SetPiece& set_piece) const;
+    static std::size_t set_piece_hash(const SBG::LIB::detail::MultiDimInter& set_piece);
+    std::size_t operator()(const SBG::LIB::detail::MultiDimInter& set_piece) const;
 };
 
 struct SetHash {

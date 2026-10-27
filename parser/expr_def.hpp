@@ -17,23 +17,25 @@
 
  ******************************************************************************/
 
-#ifndef EXPR_DEF_PARSER_HPP
-#define EXPR_DEF_PARSER_HPP
+#ifndef SBGRAPH_PARSER_EXPR_DEF_HPP_
+#define SBGRAPH_PARSER_EXPR_DEF_HPP_
+
+#include <sbgraph/detail/ast/expression.hpp>
+#include <sbgraph/sbg/rational.hpp>
 
 #include <boost/phoenix/core.hpp>
 #include <boost/phoenix/operator.hpp>
 #include <boost/phoenix/object.hpp>
 #include <boost/spirit/include/qi.hpp>
 
-#include "ast/expr.hpp"
-#include "sbg/rational.hpp"
-
 // Adapt structures ------------------------------------------------------------
 
-BOOST_FUSION_ADAPT_STRUCT(SBG::LIB::MD_NAT, (SBG::LIB::VNAT, value_))
+BOOST_FUSION_ADAPT_STRUCT(
+  SBG::LIB::IntTuple, (std::vector<SBG::LIB::Int>, value_)
+)
 
 BOOST_FUSION_ADAPT_STRUCT(
-  SBG::LIB::RATIONAL, (boost::rational<SBG::LIB::INT>, value_)
+  SBG::LIB::Rational, (boost::rational<SBG::LIB::Int>, value_)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
@@ -61,7 +63,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::Set, (SBG::AST::ExprList, pieces_))
 
 BOOST_FUSION_ADAPT_STRUCT(
-  SBG::AST::LinearExp, (SBG::AST::Expr, slope_)(SBG::AST::Expr, offset_)
+  SBG::AST::LinearExpr, (SBG::AST::Expr, slope_)(SBG::AST::Expr, offset_)
 )
 
 BOOST_FUSION_ADAPT_STRUCT(SBG::AST::MDLExp, (SBG::AST::ExprList, exps_))
@@ -166,7 +168,6 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   , MAP1("map1:")
   , MAP2("map2:")
   , EMAP("Emap:")
-  , SUBE("subE:")
   , MAPB("mapB:")
   , MAPD("mapD:")
   , X("X:")
@@ -175,7 +176,8 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
   identifier = qi::lexeme[qi::char_("a-zA-Z")
     >> *(qi::alnum | qi::char_('_'))];
 
-  nat = qi::lexeme[qi::ulong_long][qi::_val = phx::construct<LIB::NAT>(qi::_1)];
+  integer = qi::lexeme[qi::long_long]
+    [qi::_val = phx::construct<LIB::Int>(qi::_1)];
 
   rational_legacy = (RAT 
     >> OPAREN 
@@ -185,7 +187,7 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
     >> CPAREN)[qi::_val = phx::construct<AST::Rational>(qi::_1, qi::_2)];
 
   primary = rational_legacy[qi::_val = qi::_1]
-    | nat[qi::_val = qi::_1]
+    | integer[qi::_val = qi::_1]
     | identifier[qi::_val = qi::_1]
     | (OPAREN >> arithmetic_expr >> CPAREN)
       [qi::_val = phx::construct<AST::ParenExpr>(qi::_1)];
@@ -271,14 +273,8 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
     >> VMAP >> sbg_expr
     >> MAP1 >> sbg_expr
     >> MAP2 >> sbg_expr
-    >> EMAP >> sbg_expr 
-    >> -(SUBE >> sbg_expr))[qi::_val = phx::if_else(qi::_6
-          , phx::construct<AST::SBG>(qi::_1, qi::_2, qi::_3, qi::_4, qi::_5
-            , *qi::_6)
-          , phx::construct<AST::SBG>(qi::_1, qi::_2, qi::_3, qi::_4, qi::_5
-            , phx::construct<AST::PWLMap>())
-        )
-      ];
+    >> EMAP >> sbg_expr)[qi::_val
+      = phx::construct<AST::SBG>(qi::_1, qi::_2, qi::_3, qi::_4, qi::_5)];
 
   // ------------ //
 
@@ -287,15 +283,10 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
     >> MAP1 >> sbg_expr 
     >> MAP2 >> sbg_expr 
     >> EMAP >> sbg_expr
-    >> -(SUBE >> sbg_expr)
     >> X >> sbg_expr
-    >> Y >> sbg_expr)[qi::_val = phx::if_else(qi::_6
-          , phx::construct<AST::BipartiteSBG>(qi::_1, qi::_2, qi::_3, qi::_4
-            , qi::_5, *qi::_6, qi::_7, qi::_8)
-          , phx::construct<AST::BipartiteSBG>(qi::_1, qi::_2, qi::_3, qi::_4
-            , qi::_5, phx::construct<AST::PWLMap>(), qi::_7, qi::_8)
-        )
-      ];
+    >> Y >> sbg_expr)[qi::_val
+      = phx::construct<AST::BipartiteSBG>(qi::_1, qi::_2, qi::_3, qi::_4, qi::_5
+        , qi::_6, qi::_7)];
 
   // ------------ //
 
@@ -303,14 +294,8 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
     >> VMAP >> sbg_expr 
     >> MAPB >> sbg_expr 
     >> MAPD >> sbg_expr 
-    >> EMAP >> sbg_expr
-    >> -(SUBE >> sbg_expr))[qi::_val = phx::if_else(qi::_6
-           , phx::construct<AST::DSBG>(qi::_1, qi::_2, qi::_3, qi::_4, qi::_5
-             , *qi::_6)
-           , phx::construct<AST::DSBG>(qi::_1, qi::_2, qi::_3, qi::_4, qi::_5
-             , phx::construct<AST::PWLMap>())
-         )
-       ];
+    >> EMAP >> sbg_expr)[qi::_val
+      = phx::construct<AST::DSBG>(qi::_1, qi::_2, qi::_3, qi::_4, qi::_5)];
 
   // ------------ //
 
@@ -340,4 +325,4 @@ ExprRule<Iterator>::ExprRule(Iterator &it) :
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_PARSER_EXPR_DEF_HPP_

@@ -18,8 +18,9 @@
 
 #include <iostream>
 
-#include <algorithms/cc/cc.hpp>
-#include <sbg/sbg.hpp>
+#include <sbgraph/algorithms/cc/cc.hpp>
+#include <sbgraph/sbg/sbg.hpp>
+#include <sbg/set_detail.hpp>
 #include <unordered_map>
 
 #include "communication_cost.hpp"
@@ -29,10 +30,14 @@
 using namespace std;
 
 using namespace SBG::LIB;
+using SBG::LIB::detail::MultiDimInter;
+using SBG::LIB::detail::OrderedSet;
+using SBG::LIB::detail::SetAccess;
+using SBG::LIB::detail::SetAccessKey;
 
 namespace sbg_partitioner {
 
-std::size_t SetPieceHash::set_piece_hash(const SetPiece& set_piece)
+std::size_t SetPieceHash::set_piece_hash(const MultiDimInter& set_piece)
 {
   constexpr size_t magic_number = 0x9e3779b9;
   std::size_t seed = 0;
@@ -44,7 +49,7 @@ std::size_t SetPieceHash::set_piece_hash(const SetPiece& set_piece)
   return seed;
 }
 
-std::size_t SetPieceHash::operator()(const SetPiece& set_piece) const
+std::size_t SetPieceHash::operator()(const MultiDimInter& set_piece) const
 {
   std::size_t seed = set_piece_hash(set_piece);
 
@@ -53,8 +58,10 @@ std::size_t SetPieceHash::operator()(const SetPiece& set_piece) const
 
 std::size_t SetHash::operator()(const SBG::LIB::Set& set) const
 {
-  std::size_t seed = set.size();
-  for (const auto& set_piece : set) {
+  SetAccessKey key = SetAccess::key();
+  const auto set_pieces = key.pieces(get<OrderedSet>(key.impl(set)));
+  std::size_t seed = set_pieces.size();
+  for (const auto& set_piece : set_pieces) {
     seed ^= SetPieceHash::set_piece_hash(set_piece) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
   }
   return seed;
@@ -74,7 +81,7 @@ namespace {
 tuple<Set, Set, Set> set_piece_communication(const Set& node_set, const WeightedSBGraph& graph)
 {
   // convert nodes into a set
-  //   auto node_set = SET_FACT.createSet(nodes);
+  //   auto node_set = create_set(nodes);
 
   // compute preImage of map1 and map2 to get the edges that connects `nodes`
   auto edges_map1 = graph.map1().preImage(node_set);
@@ -101,8 +108,8 @@ CommunicationCost::CommunicationCost(const WeightedSBGraph& graph, PartitionMap 
 
 pair<Set, Set> CommunicationCost::get_part_communication(unsigned id)
 {
-  Set partition_i_communication = SET_FACT.createSet();
-  Set internal_communication_partition_i = SET_FACT.createSet();
+  Set partition_i_communication;
+  Set internal_communication_partition_i;
 
   for (const auto& node : _partitions.at(id)) {
     if (_communication_by_set_piece.find(node) == _communication_by_set_piece.end()) {
@@ -283,7 +290,7 @@ void CommunicationCostSync::clear_communication_cache()
 }
 
 // CommunicationCostCC::CommunicationCostCC(const WeightedSBGraph& graph, const using_cc::SetPointers& nodes)
-//     : _graph(graph), _sorted_nodes(nodes), _set_piece_indices(PW_FACT.createPWMap())
+//     : _graph(graph), _sorted_nodes(nodes), _set_piece_indices(PWMap())
 // {
 //   initialize();
 // }
@@ -318,10 +325,10 @@ void CommunicationCostSync::clear_communication_cache()
 // #endif
 // }
 
-// unsigned CommunicationCostCC::get_communication(const SBG::LIB::SetPiece& a, const SBG::LIB::SetPiece& b) const
+// unsigned CommunicationCostCC::get_communication(const MultiDimInter& a, const MultiDimInter& b) const
 // {
-//   auto a_set = SET_FACT.createSet(a);
-//   auto b_set = SET_FACT.createSet(b);
+//   auto a_set = create_set(a);
+//   auto b_set = create_set(b);
 
 //   unsigned a_idx = (*_set_piece_indices.image(a_set).begin())[0].begin();
 //   unsigned b_idx = (*_set_piece_indices.image(b_set).begin())[0].begin();
@@ -331,9 +338,9 @@ void CommunicationCostSync::clear_communication_cache()
 //   return cost;
 // }
 
-// unsigned CommunicationCostCC::get_communication(const SBG::LIB::SetPiece& a) const
+// unsigned CommunicationCostCC::get_communication(const MultiDimInter& a) const
 // {
-//   auto a_set = SET_FACT.createSet(a);
+//   auto a_set = create_set(a);
 //   unsigned a_idx = (*_set_piece_indices.image(a_set).begin())[0].begin();
 //   unsigned cost = 0;
 //   for_each(_adjacency_matrix[a_idx].cbegin(), _adjacency_matrix[a_idx].cend(), [&cost](unsigned c) { cost += c; });

@@ -23,28 +23,20 @@ namespace SBG {
 
 namespace Eval {
 
+namespace detail {
+
 FuncEnv::FuncEnv() {}
 
-FuncEnv::FIt FuncEnv::begin() const
-{
-  return functions_.begin();
-}
+FuncEnv::FIt FuncEnv::begin() const { return _functions.begin(); }
 
-FuncEnv::FIt FuncEnv::end() const
-{
-  return functions_.end();
-}
+FuncEnv::FIt FuncEnv::end() const { return _functions.end(); }
 
-FuncEnv::FIt FuncEnv::find(const FuncEnv::FKey& key) const
-{
-  return functions_.find(key);
-}
+FuncEnv::FIt FuncEnv::find(const FuncEnv::FKey& key) const { return _functions.find(key); }
 
-void FuncEnv::insert(FuncEnv::FKey key, FuncEnv::FValue value)
-{
-  functions_[key] = value;
-}
+void FuncEnv::insert(FuncEnv::FKey key, FuncEnv::FValue value) { _functions[key] = value; }
 
-} // namespace Eval
+}  // namespace detail
 
-} // namespace SBG
+}  // namespace Eval
+
+}  // namespace SBG

@@ -2,6 +2,7 @@ set(3RD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(KAHIP_LIB "${CMAKE_INSTALL_PREFIX}/lib/libkahip.a")
 set(SBG_LIB "${CMAKE_INSTALL_PREFIX}/lib/libsbgraph.a")
+set(SBG_INSTALL_DIR "$ENV{HOME}/.local/sbgraph" CACHE PATH "SBGraph install prefix")
 
 option(BUILD_KAHIP_LIB "Build KaHIP Library" OFF)
 
@@ -29,7 +30,7 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E echo "Installing SBG Library. ${3RD_PARTY_DIR}/sbg"
     COMMAND ${CMAKE_COMMAND} -E rm -rf ${3RD_PARTY_DIR}/sbg
     COMMAND mkdir -p ${3RD_PARTY_DIR}/sbg
-    COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/../../../../install/lib/* ${3RD_PARTY_DIR}/sbg
+    COMMAND sh -c "cp ${SBG_INSTALL_DIR}/lib/*.a ${3RD_PARTY_DIR}/sbg"
 )
 
 

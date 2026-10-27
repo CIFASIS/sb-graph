@@ -25,6 +25,7 @@
 #include <vector>
 
 #include "graph_partitioner.hpp"
+#include <sbgraph/sbg/set_impl.hpp>
 
 static int number_of_executions = 15;
 static int number_of_cold_executions = 5;
@@ -106,6 +107,8 @@ void addRecord(const std::string& filename, const std::string& method, int parti
 
 int main(int argc, char* argv[])
 {
+  SBG::LIB::SET_IMPL.set_set_fact(SBG::LIB::SetKind::kOrdered);
+
   std::string json_file_name;
   int parts;
   std::string partition_method;

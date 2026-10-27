@@ -32,6 +32,7 @@
 
 using namespace SBG::LIB;
 using SBG::LIB::detail::Interval;
+using SBG::LIB::detail::MultiDimInter;
 using SBG::LIB::detail::OrderedSet;
 using SBG::LIB::detail::SetAccess;
 using SBG::LIB::detail::SetAccessKey;
@@ -176,6 +177,73 @@ TEST(partitioning, PartitionerTests)
   test_partitioning(get_full_file_name("air_conditioners_1000.json"), 8);
 
   test_partitioning(get_full_file_name("air_conditioners_cont_4_1000.json"), 4);
+}
+
+namespace {
+
+Set make_set(const std::vector<std::vector<std::tuple<int, int, int>>>& pieces)
+{
+  SetAccessKey key = SetAccess::key();
+  Set s;
+  for (const auto& piece : pieces) {
+    MultiDimInter mdi;
+    for (const auto& [lo, step, hi] : piece) {
+      mdi.emplaceBack(Interval(lo, step, hi));
+    }
+    s = s.cup(key.createSet(OrderedSet(mdi)));
+  }
+  return s;
+}
+
+// Compares sets by element content, not by piece layout, since cup/difference may fragment pieces.
+void expect_same_set(const Set& actual, const Set& expected, const std::string& label)
+{
+  EXPECT_TRUE(actual.difference(expected).isEmpty()) << label << ": actual has elements not in expected: " << actual.difference(expected);
+  EXPECT_TRUE(expected.difference(actual).isEmpty()) << label << ": expected has elements not in actual: " << expected.difference(actual);
+}
+
+void check_cut(const Set& input, size_t size, const Set& expected_taken, const Set& expected_remaining, const std::string& label)
+{
+  auto [taken, remaining] = cut_interval_by_dimension(input, NodeWeight(), size);
+  expect_same_set(taken, expected_taken, label + " taken");
+  expect_same_set(remaining, expected_remaining, label + " remaining");
+  EXPECT_TRUE(taken.intersection(remaining).isEmpty()) << label << ": taken and remaining overlap";
+  expect_same_set(taken.cup(remaining), input, label + " union");
+  EXPECT_EQ(taken.cardinal(), expected_taken.cardinal()) << label << " taken cardinal";
+  EXPECT_EQ(remaining.cardinal(), expected_remaining.cardinal()) << label << " remaining cardinal";
+}
+
+}  // namespace
+
+TEST(cut_interval_by_dimension, PartitionerTests)
+{
+  // 1-D: take 4 from [0:9].
+  check_cut(make_set({{{0, 1, 9}}}), 4, make_set({{{0, 1, 3}}}), make_set({{{4, 1, 9}}}), "1D");
+
+  // 2-D: take 10 from [0:2]x[0:3] -> {[0:1]x[0:3], [2:2]x[0:1]}, remaining {[2:2]x[2:3]}.
+  check_cut(make_set({{{0, 1, 2}, {0, 1, 3}}}), 10, make_set({{{0, 1, 1}, {0, 1, 3}}, {{2, 1, 2}, {0, 1, 1}}}),
+            make_set({{{2, 1, 2}, {2, 1, 3}}}), "2D");
+
+  // 3-D: take 17 from [0:1]x[0:2]x[0:3] (cardinal 24).
+  check_cut(make_set({{{0, 1, 1}, {0, 1, 2}, {0, 1, 3}}}), 17,
+            make_set({{{0, 1, 0}, {0, 1, 2}, {0, 1, 3}}, {{1, 1, 1}, {0, 1, 0}, {0, 1, 3}}, {{1, 1, 1}, {1, 1, 1}, {0, 1, 0}}}),
+            make_set({{{1, 1, 1}, {1, 1, 1}, {1, 1, 3}}, {{1, 1, 1}, {2, 1, 2}, {0, 1, 3}}}), "3D");
+
+  // Multi-piece 2-D (lex-ordered pieces): first full, second partially cut.
+  check_cut(make_set({{{0, 1, 1}, {0, 1, 1}}, {{5, 1, 6}, {0, 1, 1}}}), 6, make_set({{{0, 1, 1}, {0, 1, 1}}, {{5, 1, 5}, {0, 1, 1}}}),
+            make_set({{{6, 1, 6}, {0, 1, 1}}}), "multi-piece 2D");
+
+  // Interleaved pieces (partial remainder sorts after a later untouched piece — exercises the sort before OrderedSet).
+  check_cut(make_set({{{0, 1, 1}, {0, 1, 1}}, {{0, 1, 1}, {5, 1, 6}}}), 3, make_set({{{0, 1, 0}, {0, 1, 1}}, {{1, 1, 1}, {0, 1, 0}}}),
+            make_set({{{0, 1, 1}, {5, 1, 6}}, {{1, 1, 1}, {1, 1, 1}}}), "interleaved pieces");
+
+  // Edge: size == 0.
+  Set input_edge = make_set({{{0, 1, 2}, {0, 1, 3}}});
+  check_cut(input_edge, 0, Set(), input_edge, "size==0");
+
+  // Edge: size >= cardinal.
+  check_cut(input_edge, input_edge.cardinal(), input_edge, Set(), "size==cardinal");
+  check_cut(input_edge, input_edge.cardinal() + 42, input_edge, Set(), "size>cardinal");
 }
 
 // TEST(DISABLED_test_adjacency_matrix, PartitionerTests)

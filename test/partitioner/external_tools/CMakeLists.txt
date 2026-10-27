@@ -17,7 +17,7 @@ add_library(graph-partitioner STATIC)
 
 set_target_properties(graph-partitioner PROPERTIES DEBUG_POSTFIX "d")
 
-target_include_directories(graph-partitioner PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/../../../)
+target_include_directories(graph-partitioner PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/../../../ ${PROJECT_SOURCE_DIR}/../../../include)
 
 target_include_directories(graph-partitioner PRIVATE 3rd-party/KaHIP/deploy ${PROJECT_SOURCE_DIR})
 
@@ -53,8 +53,8 @@ target_link_libraries(
         scotcherr
         kahip.a
         sbg-part-lib
-        sbg-util-lib
-        sbg-dev
+        sbgraph
+        boost_program_options
 )
 
 # install

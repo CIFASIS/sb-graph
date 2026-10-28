@@ -17,11 +17,8 @@
 
  ******************************************************************************/
 
-#include "algorithms/tearing/tearing.hpp"
-#include "algorithms/tearing/tearing_data.hpp"
-#include "algorithms/tearing/tearing_impl.hpp"
-#include "algorithms/tearing/tearing_v1.hpp"
-#include "sbg/directed_sbg.hpp"
+#include <sbgraph/algorithms/tearing/tearing_impl.hpp>
+#include <sbgraph/algorithms/tearing/tearing.hpp>
 #include "util/debug.hpp"
 #include "util/logger.hpp"
 #include "util/time_profiler.hpp"

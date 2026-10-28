@@ -25,10 +25,11 @@
 #ifndef SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_DFS_TS_HPP_
 #define SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_DFS_TS_HPP_
 
-#include "sbg/directed_sbg.hpp"
-#include "sbg/expression.hpp"
-#include "sbg/pw_map.hpp"
-#include "sbg/set.hpp"
+#include <sbgraph/sbg/directed_sbg.hpp>
+#include <sbgraph/sbg/expression.hpp>
+#include <sbgraph/sbg/integer.hpp>
+#include <sbgraph/sbg/pw_map.hpp>
+#include <sbgraph/sbg/set.hpp>
 #include <vector>
 #include <tuple>
 
@@ -42,7 +43,7 @@ namespace detail {
 // Depth First Search Topological Sorting Algorithm Implementation -------------
 ////////////////////////////////////////////////////////////////////////////////
 
-using SVExprTuple = std::tuple<MD_NAT, MD_NAT, Expression>;
+using SVExprTuple = std::tuple<IntTuple, IntTuple, Expression>;
 
 enum SVExprFields {From, To, Expr};
 
@@ -64,13 +65,13 @@ private:
    */
   void init(const DirectedSBG& dsbg);
 
-  void addSV(MD_NAT from_sv, MD_NAT from, MD_NAT to_sv, MD_NAT to, Expression expr);
+  void addSV(IntTuple from_sv, IntTuple from, IntTuple to_sv, IntTuple to, Expression expr);
 
-  void checkRepetitionAndAdd(MD_NAT from, MD_NAT to, bool isSucc);
+  void checkRepetitionAndAdd(IntTuple from, IntTuple to, bool isSucc);
 
-  MD_NAT getVertex();
+  IntTuple getVertex();
 
-  MD_NAT dfs(MD_NAT v, bool isRec);
+  IntTuple dfs(IntTuple v, bool isRec);
 
   DirectedSBG _dsbg;
   PWMap _smap;
@@ -79,7 +80,7 @@ private:
   PWMap _mapD;
   Set _V;
   Set _visitedSV;
-  MD_NAT _last_v;
+  IntTuple _last_v;
   std::vector<SVExprTuple> _SVExprVector;
 };
 

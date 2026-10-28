@@ -17,11 +17,9 @@
 
  ******************************************************************************/
 
-#include "algorithms/sorting/topological/dfs_ts.hpp"
-#include "sbg/natural.hpp"
+#include <sbgraph/detail/algorithms/sorting/topological/dfs_ts.hpp>
 #include "util/debug.hpp"
 #include "util/logger.hpp"
-#include <iostream>
 
 namespace SBG {
 
@@ -68,7 +66,7 @@ void checkSort(PWMap& smap, const DirectedSBG& dsbg)
     , "checkSort: the order is partial\n");
 }
 
-void DFS_TS::addSV(MD_NAT from_sv, MD_NAT from, MD_NAT to_sv, MD_NAT to, Expression expr) {
+void DFS_TS::addSV(IntTuple from_sv, IntTuple from, IntTuple to_sv, IntTuple to, Expression expr) {
   // Set last_v
   Set d_to = _Vmap.preImage(to_sv);
   Set last = Set{d_to.maxElem()};
@@ -80,7 +78,7 @@ void DFS_TS::addSV(MD_NAT from_sv, MD_NAT from, MD_NAT to_sv, MD_NAT to, Express
   //
   Set sv{from_sv};
   Set d = _Vmap.preImage(sv);
-  MD_NAT max_v = d.maxElem();
+  IntTuple max_v = d.maxElem();
   if (max_v == from) {
     d = Set{from};
   }
@@ -91,10 +89,10 @@ void DFS_TS::addSV(MD_NAT from_sv, MD_NAT from, MD_NAT to_sv, MD_NAT to, Express
   _smap.emplace(d, expr);
 }
 
-void DFS_TS::checkRepetitionAndAdd(MD_NAT from, MD_NAT to, bool isSucc) {
+void DFS_TS::checkRepetitionAndAdd(IntTuple from, IntTuple to, bool isSucc) {
   Expression expr{from, to};
-  MD_NAT from_sv = _Vmap.image(from).minElem();
-  MD_NAT to_sv = _Vmap.image(to).minElem();
+  IntTuple from_sv = _Vmap.image(from).minElem();
+  IntTuple to_sv = _Vmap.image(to).minElem();
   SVExprTuple tuple = std::make_tuple(from_sv, to_sv, expr);
 
   if (std::find(_SVExprVector.begin(), _SVExprVector.end(), tuple) == _SVExprVector.end()) {
@@ -119,7 +117,7 @@ void DFS_TS::checkRepetitionAndAdd(MD_NAT from, MD_NAT to, bool isSucc) {
   }
 }
 
-MD_NAT DFS_TS::dfs(MD_NAT v, bool isRec) {
+IntTuple DFS_TS::dfs(IntTuple v, bool isRec) {
   Set sv{v};
   Set succ = _mapD.image(_mapB.preImage(sv));
   if (!isRec) {
@@ -130,10 +128,10 @@ MD_NAT DFS_TS::dfs(MD_NAT v, bool isRec) {
     return v;
   }
 
-  MD_NAT _v = v;
-  MD_NAT last_v;
+  IntTuple _v = v;
+  IntTuple last_v;
   do {
-    MD_NAT succ_v = succ.minElem();
+    IntTuple succ_v = succ.minElem();
     Set succ_sv{succ_v};
     last_v = succ_v;
 
@@ -160,7 +158,7 @@ PWMap DFS_TS::calculate(const DirectedSBG& dsbg
     return _smap;
   }
 
-  MD_NAT v = _V.minElem();
+  IntTuple v = _V.minElem();
   _last_v = v;
   dfs(v, false);
   _V = _V.difference(_visitedSV);

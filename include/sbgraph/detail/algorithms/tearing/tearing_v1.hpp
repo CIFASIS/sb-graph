@@ -24,10 +24,9 @@
 #ifndef SBG_MINREACH_TEARING_HPP
 #define SBG_MINREACH_TEARING_HPP
 
-#include "algorithms/tearing/tearing_v1.hpp"
-#include "algorithms/tearing/tearing_data.hpp"
-#include "algorithms/scc/scc.hpp"
-#include "sbg/directed_sbg.hpp"
+#include <sbgraph/sbg/directed_sbg.hpp>
+#include <sbgraph/algorithms/tearing/tearing_data.hpp>
+#include <sbgraph/algorithms/scc/scc.hpp>
 
 namespace SBG {
 

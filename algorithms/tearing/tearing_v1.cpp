@@ -19,13 +19,9 @@
 
 #include <chrono>
 
-#include "algorithms/scc/decreasing_edges_mrv.hpp"
-#include "algorithms/tearing/tearing_v1.hpp"
-#include "algorithms/tearing/tearing_data.hpp"
-#include "algorithms/scc/minadj_mrv.hpp"
-#include "algorithms/scc/scc.hpp"
+#include <sbgraph/detail/algorithms/tearing/tearing_v1.hpp>
+#include <sbgraph/algorithms/scc/scc.hpp>
 #include "util/logger.hpp"
-#include <iostream>
 
 namespace SBG {
 
@@ -81,7 +77,7 @@ TearingData TearingV1::calculate(const DirectedSBG& dsbg)
   LIB::SCC sccAlgorithm;
   auto begin = std::chrono::high_resolution_clock::now();
 
-  MD_NAT maxOffset = _dsbg.V().maxElem();
+  IntTuple maxOffset = _dsbg.V().maxElem();
   SCCData result = sccAlgorithm.calculate(_dsbg);
   PWMap _rmap = result.rmap();
   Set e_notscc = result.Ediff();

@@ -1,6 +1,6 @@
-/** @file tearing_data.hpp
+/** @file tearing.hpp
 
- @brief <b>Tearing Input and Ouput data structure</b>
+ @brief <b>SBG Tearing Algorithm Abstract Interface</b>
 
  <hr>
 
@@ -21,39 +21,44 @@
 
  ******************************************************************************/
 
-#ifndef SBGRAPH_ALGORITHMS_TEARING_TEARING_DATA_HPP_
-#define SBGRAPH_ALGORITHMS_TEARING_TEARING_DATA_HPP_
+#ifndef SBGRAPH_ALGORITHMS_TEARING_TEARING_HPP_
+#define SBGRAPH_ALGORITHMS_TEARING_TEARING_HPP_
 
-#include "sbg/directed_sbg.hpp"
-#include "sbg/pw_map.hpp"
+#include <sbgraph/sbg/directed_sbg.hpp>
+#include <sbgraph/algorithms/tearing/tearing_data.hpp>
+#include <sbgraph/detail/algorithms/tearing/tearing_v1.hpp>
+#include <variant>
 
 namespace SBG {
 
 namespace LIB {
 
+namespace detail {
+
 ////////////////////////////////////////////////////////////////////////////////
-// Tearing Factory implementations ---------------------------------------------
+// Tearing Algorithm implementations -------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-/**
- * @brief Saves input and output data from a Tearing algorithm run.
- */
-class TearingData {
+using TearingImpl = std::variant<TearingV1>;
+
+} // namespace detail
+
+////////////////////////////////////////////////////////////////////////////////
+// Tearing Algorithm -----------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+
+class Tearing {
 public:
-  TearingData(DirectedSBG dsbg, PWMap rmap, PWMap tearIOMap);
+  Tearing();
 
-  const DirectedSBG& dsbg() const;
-  const PWMap& rmap() const;
-  const PWMap& tearIOMap() const;
+  TearingData calculate(const DirectedSBG& dsbg);
 
 private:
-  DirectedSBG _dsbg;  ///< Original input directed SBG
-  PWMap _rmap; ///< Resulting SCCs
-  PWMap _tearIOMap;  ///< Paired tearing vertices
+  detail::TearingImpl _impl;
 };
 
 } // namespace LIB
 
 } // namespace SBG
 
-#endif // SBGRAPH_ALGORITHMS_TEARING_TEARING_DATA_HPP_
+#endif // SBGRAPH_ALGORITHMS_TEARING_TEARING_HPP_

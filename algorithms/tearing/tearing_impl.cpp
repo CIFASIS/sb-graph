@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "algorithms/tearing/tearing_impl.hpp"
+#include <sbgraph/algorithms/tearing/tearing_impl.hpp>
 #include "util/debug.hpp"
 
 namespace SBG {

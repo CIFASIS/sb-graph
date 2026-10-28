@@ -49,6 +49,8 @@ Set LtRmapMRV::decreasingRepresentative()
   rmapD = rmapD.restrict(decreasing_edges);
   PWMap decreasing_rmap = rmapB.minAdj(rmapD);
   _rmap = decreasing_rmap.combine(std::move(_rmap));
+  _rmap.compact();
+  _rmap = _rmap.mapInf();
 
   return decreasing_edges;
 }
@@ -59,26 +61,18 @@ PWMap LtRmapMRV::repetition(const Set& E)
   PWMap Emap = _dsbg.Emap();
   Set E_plus = Emap.preImage(Emap.image(_decreasing));
 
-  // Delete cycle generating edges.
-  PWMap mapD = _dsbg.mapD();
-  Set decreasing_reps = _rmap.image(mapD.image(E));
-  PWMap mapB = _dsbg.mapB();
-  E_plus = E_plus.difference(mapB.preImage(decreasing_reps));
-
   // Calculate a guess path using edges in the repetition.
+  PWMap mapB = _dsbg.mapB();
+  PWMap mapD = _dsbg.mapD();
   PWMap mapB_plus = mapB.restrict(E_plus);
   PWMap mapD_plus = mapD.restrict(E_plus);
   PWMap smap_plus = mapB_plus.minAdj(mapD_plus);
-
-  // Avoid using repetitive paths for vertices that found a minimum through
-  // the main iteration of the algorithm.
-  Set decreasing_repd = _rmap.preImage(decreasing_reps);
-  smap_plus = smap_plus.restrict(
-    smap_plus.domain().difference(decreasing_repd)
-  );
-
   Set edges = smap_plus.composition(mapB).equalImage(mapD);
   _decreasing = _decreasing.difference(edges);
+
+  // Keep endings of the paths untouched.
+  Set decreasing_repd = _rmap.preImage(_rmap.image(mapD.image(E)));
+  smap_plus = _rmap.restrict(decreasing_repd).combine(std::move(smap_plus));
 
   return smap_plus;
 }
@@ -102,8 +96,6 @@ PWMap LtRmapMRV::calculate(const DirectedSBG& dsbg)
   Set E;
   Set visitedSE;
   do {
-    _old_rmap = _rmap;
-
     // Edges that lead to a new MRV.
     E = decreasingRepresentative();
 
@@ -116,14 +108,9 @@ PWMap LtRmapMRV::calculate(const DirectedSBG& dsbg)
     }
 
     if (!smap_plus.isEmpty()) {
-      PWMap smap = smap_plus.combine(_rmap);
-      PWMap guess_rmap = smap.mapInf();
-      _rmap = guess_rmap.min(_old_rmap).combine(std::move(_rmap));
-    } else { // Calculate new MRV with the proposed paths.
-      PWMap reps_rmap = _rmap.restrict(_rmap.image()).mapInf();
-      _rmap = reps_rmap.combine(std::move(_rmap));
+      PWMap rmap_plus = smap_plus.mapInf();
+      _rmap = rmap_plus.min(_rmap).combine(std::move(_rmap));
     }
-    _rmap.compact();
     Util::DEBUG_LOG << "LtRmapMRV rmap:\n" << _rmap << "\n\n";
   } while (!E.isEmpty());
 

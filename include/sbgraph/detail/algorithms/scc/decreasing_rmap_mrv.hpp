@@ -69,7 +69,6 @@ private:
   PWMap repetition(const Set& E);
 
   DirectedSBG _dsbg;
-  PWMap _old_rmap; ///< MRV map in the previous iteration.
   PWMap _rmap; ///< MRV map.
   Set _decreasing;
 };

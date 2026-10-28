@@ -2,6 +2,7 @@ target_sources(
     sbgraph
     PRIVATE
         decreasing_edges_mrv.cpp
+        decreasing_rmap_mrv.cpp
         minadj_mrv.cpp
         minreach_scc.cpp
         scc.cpp

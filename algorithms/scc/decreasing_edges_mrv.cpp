@@ -25,7 +25,7 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Minimum Adjacent MRV Implementation -----------------------------------------
+// Decreasing edges MRV Implementation -----------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 LtEdgesMRV::LtEdgesMRV() : _n(0) {}
@@ -41,9 +41,7 @@ Set LtEdgesMRV::decreasingRepresentative(const PWMap& rmap) const
 
   PWMap rmapB = rmap.composition(mapB);
   PWMap rmapD = rmap.composition(mapD);
-
-  Set result = rmapD.lessImage(rmapB);
-  return result;
+  return rmapD.lessImage(rmapB);
 }
 
 PWMap LtEdgesMRV::detectRepetition(const PWMap& decreasing_smap) const
@@ -71,18 +69,13 @@ PWMap LtEdgesMRV::repetition(const PWMap& decreasing_smap) const
   PWMap Emap = _dsbg.Emap();
   Set E_plus = Emap.preImage(Emap.image(E_repetition));
 
-  // Delete cycle generating edges.
-  Set decreasing_reps = _rmap.image(decreasing_smap.image());
-  E_plus = E_plus.difference(mapB.preImage(decreasing_reps));
-
   // Calculate a guess path using edges in the repetition.
   PWMap mapB_plus = mapB.restrict(E_plus);
   PWMap mapD_plus = mapD.restrict(E_plus);
   PWMap smap_plus = mapB_plus.minAdj(mapD_plus);
 
-  // Avoid using repetitive paths for vertices that found a minimum through
-  // the main iteration of the algorithm.
-  Set decreasing_repd = _rmap.preImage(decreasing_reps);
+  // Keep endings of the paths untouched.
+  Set decreasing_repd = _rmap.preImage(_rmap.image(mapD.image(E_repetition)));
   smap_plus = smap_plus.restrict(
     smap_plus.domain().difference(decreasing_repd)
   );
@@ -108,6 +101,7 @@ PWMap LtEdgesMRV::calculate(const DirectedSBG& dsbg)
   _rmap = PWMap{dsbg.V()};
 
   _n = 0;
+  Set globalE;
   Set E;
   Set visitedSE;
   do {
@@ -115,6 +109,7 @@ PWMap LtEdgesMRV::calculate(const DirectedSBG& dsbg)
 
     // Calculate successor map using edges that lead to a minor representative.
     E = decreasingRepresentative(_rmap);
+    globalE = std::move(globalE).disjointCup(E);
     PWMap decreasingB = mapB.restrict(E);
     PWMap decreasingD = mapD.restrict(E);
     PWMap decreasing_smap = decreasingB.minAdj(decreasingD);
@@ -125,7 +120,8 @@ PWMap LtEdgesMRV::calculate(const DirectedSBG& dsbg)
     Set repeatedSE = visitedSE.intersection(Emap.image(Pj));
     if (!repeatedSE.isEmpty()) {
       smap_plus = repetition(decreasing_smap);
-      //visitedSE = visitedSE.difference(Emap.image(E_repetition));
+      visitedSE = visitedSE.difference(Emap.image(globalE));
+      globalE  = Set{};
       _n = 0;
     } else {
       visitedSE = std::move(visitedSE).disjointCup(Emap.image(Pj));
@@ -135,7 +131,9 @@ PWMap LtEdgesMRV::calculate(const DirectedSBG& dsbg)
 
     // Calculate new MRV with the proposed paths.
     _rmap = _smap.mapInf();
-    _rmap = _rmap.min(_old_rmap).combine(std::move(_rmap));
+    Set less_img = _rmap.lessImage(_old_rmap);
+    _smap = _smap.restrict(less_img).combine(std::move(_smap));
+    _rmap = _rmap.restrict(less_img).combine(std::move(_rmap));
     _rmap.compact();
   } while (!E.isEmpty());
 

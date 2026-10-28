@@ -21,7 +21,6 @@
 
 #include <algorithm>
 #include <forward_list>
-#include <iostream>
 #include <set>
 
 namespace SBG {
@@ -288,7 +287,9 @@ UnordPWMap UnordPWMap::mapInf() const
   result.compact();
 
   if (!result.domain().isEmpty()) {
-    for (const Map& m : result) {
+    Set unfixed = result.domain().difference(result.fixedPoints());
+    std::size_t j = result.restrict(unfixed)._pieces.size();
+    for (std::size_t h = 0; h < j; ++h) {
       result = composition(result).reduce();
     }
 

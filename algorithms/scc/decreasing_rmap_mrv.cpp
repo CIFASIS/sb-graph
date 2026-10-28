@@ -19,7 +19,6 @@
 
 #include <sbgraph/detail/algorithms/scc/decreasing_rmap_mrv.hpp>
 #include "util/logger.hpp"
-#include <iostream>
 
 namespace SBG {
 

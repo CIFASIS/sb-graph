@@ -1,7 +1,9 @@
-// SCC test that is solved in constant time, but
-// doesn't satisfies the constraints of the lemmas
+/* Model for SCC testing =======================================================
+ * Description: example that is solved in constant time, but doesn't satisfies
+   the constraints of the lemmas.
+==============================================================================*/
 
-N = 100000;
+N = 1000000;
 
 V1 = N;
 V2 = N+V1;

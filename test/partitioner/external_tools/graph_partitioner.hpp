@@ -26,7 +26,7 @@
 #include <metis.h>
 #include <scotch/scotch.h>
 
-#include <algorithms/partitioner/sbg_partitioner_types.hpp>
+#include <sbgraph/algorithms/partitioner/sbg_partitioner_types.hpp>
 
 namespace SBG {
   namespace LIB {

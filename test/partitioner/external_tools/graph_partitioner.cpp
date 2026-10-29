@@ -35,11 +35,11 @@
 #include <kaHIP_interface.h>
 
 #include "graph_partitioner.hpp"
-#include <algorithms/partitioner/build_sb_graph.hpp>
-#include <algorithms/partitioner/kernighan_lin_partitioner.hpp>
-#include <algorithms/partitioner/partition_graph.hpp>
-#include <algorithms/partitioner/sbg_partitioner_types.hpp>
-#include <algorithms/partitioner/weighted_sb_graph.hpp>
+#include <sbgraph/algorithms/partitioner/build_sb_graph.hpp>
+#include <sbgraph/algorithms/partitioner/kernighan_lin_partitioner.hpp>
+#include <sbgraph/algorithms/partitioner/partition_graph.hpp>
+#include <sbgraph/algorithms/partitioner/sbg_partitioner_types.hpp>
+#include <sbgraph/algorithms/partitioner/weighted_sb_graph.hpp>
 
 constexpr const char *VALID_PARTITION_METHODS = "{ Scotch, Metis, HMetis, Kahip, SBG }";
 
@@ -72,11 +72,7 @@ static void write_node_by_partition(const sbg_partitioner::PartitionMap &partiti
                                     const std::string &partition_method_name)
 {
   std::cout << "writing results of SBG to " << partition_method_name << std::endl;
-  sbg_partitioner::Partition nodes;
-  nodes.reserve(sb_graph.V().size());
-  for (auto v : sb_graph.V()) {
-    nodes.push_back(SBG::LIB::SET_FACT.createSet(v));
-  }
+  auto nodes = sbg_partitioner::to_vector(sb_graph.V());
 
   sbg_partitioner::sort_partition_intervals(nodes);
 
@@ -85,13 +81,14 @@ static void write_node_by_partition(const sbg_partitioner::PartitionMap &partiti
   std::vector<unsigned> partition_vector(sb_graph.V().cardinal(), 0);
 
   if (sb_graph.V().arity() == 2) {
-    size_t row_size = (*sb_graph.V().begin()).intervals()[0].cardinal();
+    auto v0 = sbg_partitioner::to_vector(sb_graph.V())[0];
+    size_t row_size = v0.maxElem()[0] - v0.minElem()[0] + 1;
     for (size_t i = 0; i < partition.size(); i++) {
       const auto &p = partition.at(i);
       for (const auto &set : p) {
-        for (const auto sp : set) {
-          for (size_t row = sp.intervals()[0].begin(); row <= sp.intervals()[0].end(); row++) {
-            for (size_t col = sp.intervals()[1].begin(); col <= sp.intervals()[1].end(); col++) {
+        for (const auto &piece : sbg_partitioner::to_vector(set)) {
+          for (size_t row = piece.minElem()[0]; row <= piece.maxElem()[0]; row++) {
+            for (size_t col = piece.minElem()[1]; col <= piece.maxElem()[1]; col++) {
               auto val = row * row_size + col;
               partition_vector[val] = i;
             }
@@ -101,10 +98,11 @@ static void write_node_by_partition(const sbg_partitioner::PartitionMap &partiti
     }
   } else {
     for (unsigned i = 0; i < partition.size(); i++) {
-      for (size_t vert_idx = 0; vert_idx < partition.at(i).size(); vert_idx++) {
-        for (size_t val = (*(*partition.at(i).at(vert_idx).begin()).begin()).begin();
-             val <= (*(*partition.at(i).at(vert_idx).begin()).begin()).end(); val++) {
-          partition_vector[val] = i;
+      for (const auto &set : partition.at(i)) {
+        for (const auto &piece : sbg_partitioner::to_vector(set)) {
+          for (size_t val = piece.minElem()[0]; val <= piece.maxElem()[0]; val++) {
+            partition_vector[val] = i;
+          }
         }
       }
     }
@@ -217,9 +215,11 @@ void GraphPartitioner::readGraphFromJson()
 
     {
       auto new_vertices = sbg_partitioner::split_sets_according_to_relations(temp_sbg_graph);
-      sbg_graph.reset(new SBG::LIB::WeightedSBGraph(new_vertices, SBG::LIB::PW_FACT.createPWMap(), temp_sbg_graph.map1().compact(),
-                                                    temp_sbg_graph.map2().compact(), SBG::LIB::PW_FACT.createPWMap(),
-                                                    SBG::LIB::PW_FACT.createPWMap()));
+      auto map1 = temp_sbg_graph.map1();
+      map1.compact();
+      auto map2 = temp_sbg_graph.map2();
+      map2.compact();
+      sbg_graph.reset(new SBG::LIB::WeightedSBGraph(new_vertices, SBG::LIB::PWMap(), map1, map2, SBG::LIB::PWMap()));
     }
 
     // sbg_graph.reset(new SBG::LIB::WeightedSBGraph(temp_sbg_graph));
@@ -450,21 +450,15 @@ void GraphPartitioner::addRow(const SBG::LIB::Set &s)
   auto nodes_vector = std::vector<int>();
   nodes_vector.reserve(nodes.cardinal());
 
-  size_t row_size = (*(*sbg_graph->V().begin()).begin()).cardinal();
+  auto v0 = sbg_partitioner::to_vector(sbg_graph->V())[0];
+  size_t row_size = v0.maxElem()[0] - v0.minElem()[0] + 1;
 
-  for (const auto &n : nodes) {
-    // std::cout << n << ": ";
-    auto it = n.begin();
-    auto n1 = *it;
-    ++it;
-    auto n2 = *it;
-    for (auto row = n1.begin(); row <= n1.end(); row++) {
-      for (auto col = n2.begin(); col <= n2.end(); col++) {
-        // std::cout << row << ", ";
+  for (const auto &n : sbg_partitioner::to_vector(nodes)) {
+    for (auto row = n.minElem()[0]; row <= n.maxElem()[0]; row++) {
+      for (auto col = n.minElem()[1]; col <= n.maxElem()[1]; col++) {
         nodes_vector.push_back(row_size * row + col);
       }
     }
-    // std::cout << std::endl;
   }
 
   sort(nodes_vector.begin(), nodes_vector.end());
@@ -482,22 +476,18 @@ void GraphPartitioner::readGraphFromSBG()
   _xadj.push_back(0);
   std::cout << "arity: " << sbg_graph->V().arity() << std::endl;
   if (sbg_graph->V().arity() == 2) {
-    for (const auto &v : sbg_graph->V()) {
-      auto it = v.begin();
-      const auto &v1 = *it;
-      ++it;
-      const auto v2 = *it;
-#pragma omp parallel for collapse(2)
-      for (size_t i = v1.begin(); i <= v1.end(); i++) {
-        for (size_t j = v2.begin(); j <= v2.end(); j++) {
-          auto s = SBG::LIB::SET_FACT.createSet(SBG::LIB::MultiDimInter({SBG::LIB::Interval(i, 1, i), SBG::LIB::Interval(j, 1, j)}));
-          addRow(s);
+    for (const auto &v : sbg_partitioner::to_vector(sbg_graph->V())) {
+      for (size_t i = v.minElem()[0]; i <= v.maxElem()[0]; i++) {
+        for (size_t j = v.minElem()[1]; j <= v.maxElem()[1]; j++) {
+          SBG::LIB::IntTuple t(i);
+          t.pushBack(j);
+          addRow(SBG::LIB::Set(t));
         }
       }
     }
   } else {
     for (int i = 0; i <= _nbr_vtxs; i++) {
-      auto s = SBG::LIB::SET_FACT.createSet(SBG::LIB::Interval(i, 1, i));
+      auto s = SBG::LIB::Set(i, 1, i);
       auto edges1 = sbg_graph->map1().preImage(s);
       auto nodes1 = sbg_graph->map2().image(edges1);
 
@@ -508,8 +498,8 @@ void GraphPartitioner::readGraphFromSBG()
       auto nodes_vector = std::vector<int>();
       nodes_vector.reserve(nodes.cardinal());
 
-      for (const auto &n : nodes) {
-        for (int val = n.begin()[0].begin(); val <= n.begin()[0].end(); val++) {
+      for (const auto &n_piece : sbg_partitioner::to_vector(nodes)) {
+        for (int val = n_piece.minElem()[0]; val <= n_piece.maxElem()[0]; val++) {
           nodes_vector.push_back(val);
         }
       }

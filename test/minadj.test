@@ -1,0 +1,11 @@
+/* Test for minimum adjacent ===================================================
+ * Motivation: the result of SCC advection2D.test is not correct. Apparently,
+   decreasing_smap has errors. decreasingB and decreasingD were printed, and
+   the parts of the PWMaps which return an incorrect result are analyzed in
+   this test. SOLVED.
+==============================================================================*/
+
+dims = 2;
+
+minAdj(<<{[501:501]x[110:207]} -> |x+3|x+296|, {[502:502]x[208:306]} -> |x+2|x+198|>>
+  , <<{[501:501]x[110:207]} -> |x-1|x-99|, {[502:502]x[208:306]} -> |x-2|x-198|>>);

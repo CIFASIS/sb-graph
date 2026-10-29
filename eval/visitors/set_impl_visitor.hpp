@@ -25,19 +25,19 @@
 
  ******************************************************************************/
 
-#ifndef SET_IMPL_VISITOR
-#define SET_IMPL_VISITOR
-
-#include <algorithm>
-
-#include <boost/variant.hpp>
+#ifndef SBGRAPH_EVAL_VISITORS_SET_IMPL_VISITOR_HPP_
+#define SBGRAPH_EVAL_VISITORS_SET_IMPL_VISITOR_HPP_
 
 #include "ast/sbg_program.hpp"
 #include "eval/var_env.hpp"
 
+#include <boost/variant.hpp>
+
 namespace SBG {
 
 namespace Eval {
+
+namespace detail {
 
 /**
  * @brief Single expression visitor to pick the optimal representation for
@@ -49,10 +49,10 @@ namespace Eval {
  *   - 2: unidimensional ordered sets.
  */
 class SetImplExprVisitor : public boost::static_visitor<int> {
-  public:
+public:
   SetImplExprVisitor(VarEnv& venv);
 
-  int operator()(AST::Natural v) const;
+  int operator()(AST::Integer v) const;
   int operator()(AST::Rational v) const;
   int operator()(AST::Name v) const;
   int operator()(AST::UnaryOp v) const;
@@ -61,7 +61,7 @@ class SetImplExprVisitor : public boost::static_visitor<int> {
   int operator()(AST::Interval v) const;
   int operator()(AST::MultiDimInter v) const;
   int operator()(AST::Set v) const;
-  int operator()(AST::LinearExp v) const;
+  int operator()(AST::LinearExpr v) const;
   int operator()(AST::MDLExp v) const;
   int operator()(AST::LinearMap v) const;
   int operator()(AST::PWLMap v) const;
@@ -70,12 +70,14 @@ class SetImplExprVisitor : public boost::static_visitor<int> {
   int operator()(AST::DSBG v) const;
   int operator()(AST::ParenExpr) const;
 
-  private:
-  VarEnv& venv_;
+private:
+  VarEnv& _venv;
 };
+
+} // namespace detail
 
 } // namespace Eval
 
 } // namespace SBG
 
-#endif
+#endif // SBGRAPH_EVAL_VISITORS_SET_IMPL_VISITOR_HPP_

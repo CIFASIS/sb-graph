@@ -1,22 +1,25 @@
-/* Implicit 1D advection equation contains N small algebraic loops:
+/* Model for causalization testing =============================================
+ * Description: implicit 1D advection model, with N algebraic loops.
+   a[i] and b[i] must be simultaneously solved.
+--------------------------------------------------------------------------------
 
 model Test1D
   constant Integer N=100;
   Real a[N],b[N],x[N];
 equation
-  a[1]+b[1]=1; // a[1]
-  b[1]-a[1]=2*x[1]-1; // b[1]
+  a[1]+b[1]=1;
+  b[1]-a[1]=2*x[1]-1;
   
   for i in 2:N loop
-    a[i]+b[i]=b[i-1]; // a[2:N]
-    b[i]-a[i]= 2*x[i]-x[i-1]; // b[2:N] 
+    a[i]+b[i]=b[i-1];
+    b[i]-a[i]= 2*x[i]-x[i-1];
   end for;    
   
   for i in 1:N loop
-    der(x[i])=a[i]; // der(x[1:N])
+    der(x[i])=a[i];
   end for;
 end Test1D;
-*/
+==============================================================================*/
 
 V0 = 0;
 E0 = 0;

@@ -1,6 +1,6 @@
-// Test consisting of only set expressions
-// !!! If this file is modified the corresponding SBG.log file
-//     in all the gt_data directories should be modified.
+/* Test for ordered set implementation =========================================
+ * Simple file to add some test cases for the ordered set implementation.
+==============================================================================*/
 
 #{[1:1:100], [200:3:500]}
 

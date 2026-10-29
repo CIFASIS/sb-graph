@@ -1,27 +1,29 @@
-/* Matching test originated from the following model
-(the result is indicated with comments):
+/* Model for causalization testing =============================================
+ * Description: model with N algebraic loops.
+   vA[i], vB[i] and iR[i] must be simultaneously solved for i = 2, ..., N. 
+--------------------------------------------------------------------------------
 
 model rc
-  constant Integer N=100000;
+  constant Integer N=1000000;
   parameter Real RA=1,RB=1,C=1,i0=1;
   Real vA[N],vB[N],vC[N],iR[N];
 equation
-  iR[1]=i0; // iR[1]
+  iR[1]=i0;
   for i in 1:N loop
-    vA[i]=RA*iR[i]; // iR[2:N], vA[1] 
-    vB[i]=RB*iR[i]; // vB[1:N]
+    vA[i]=RA*iR[i];
+    vB[i]=RB*iR[i];
   end for;
   for i in 2:N loop
-    vA[i]+vB[i]=vC[i-1]-vC[i]; // vA[2:N]
+    vA[i]+vB[i]=vC[i-1]-vC[i];
   end for;
   for i in 1:N-1 loop
-    C*der(vC[i])=iR[i]-iR[i+1]; // vC[1:N-1]
+    C*der(vC[i])=iR[i]-iR[i+1];
   end for;
-  C*der(vC[N])=iR[N]; // der(vC[N])
+  C*der(vC[N])=iR[N];
 end rc;
-*/
+==============================================================================*/
 
-N = 100000;
+N = 1000000;
 
 F1 = 1;
 F2 = N+F1;
@@ -92,7 +94,7 @@ Emap: <<{[1:1:E1]} -> |0*x+1|, {[E1+1:1:E2]} -> |0*x+2|, {[E2+1:1:E3]} -> |0*x+3
 X: F
 Y: U;
 
-matchSCC(
+match(
   V: F \/ U
   Vmap: <<{[1:1:F1]} -> |0*x+1|, {[F1+1:1:F2]} -> |0*x+2|, {[F2+1:1:F3]} -> |0*x+3|, {[F3+1:1:F4]} -> |0*x+4
     |, {[F4+1:1:F5]} -> |0*x+5|, {[F5+1:1:F6]} -> |0*x+6|, {[F6+1:1:U1]} -> |0*x+7

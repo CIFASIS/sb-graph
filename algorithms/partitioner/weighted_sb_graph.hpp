@@ -21,8 +21,8 @@
 #include <map>
 #include <iostream>
 
-#include <sbg/sbg.hpp>
-#include <sbg/set.hpp>
+#include <sbgraph/sbg/sbg.hpp>
+#include <sbgraph/sbg/set.hpp>
 
 namespace SBG {
 
@@ -47,7 +47,7 @@ public:
 
     WeightedSBGraph(const Set &V, const PWMap &Vmap
         , const PWMap &map1, const PWMap &map2
-        , const PWMap &Emap, const PWMap &subEmap);
+        , const PWMap &Emap);
 
 
     WeightedSBGraph(const WeightedSBGraph&) = delete;

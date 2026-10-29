@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include "eval/visitors/nat_evaluator.hpp"
+#include "eval/visitors/int_evaluator.hpp"
 #include "eval/visitors/rational_evaluator.hpp"
 #include "eval/visitors/set_impl_visitor.hpp"
 #include "eval/visitors/stm_evaluator.hpp"
@@ -26,26 +26,24 @@ namespace SBG {
 
 namespace Eval {
 
+namespace detail {
+
 ////////////////////////////////////////////////////////////////////////////////
 // Set Implementation single Expression Visitor --------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-SetImplExprVisitor::SetImplExprVisitor(VarEnv& venv) : venv_(venv) {}
+SetImplExprVisitor::SetImplExprVisitor(VarEnv& venv) : _venv(venv) {}
 
-int SetImplExprVisitor::operator()(AST::Natural v) const { return 2; }
+int SetImplExprVisitor::operator()(AST::Integer v) const { return 2; }
 
 int SetImplExprVisitor::operator()(AST::Rational v) const { return 2; }
 
 int SetImplExprVisitor::operator()(AST::Name v) const { return 2; }
 
-int SetImplExprVisitor::operator()(AST::UnaryOp v) const 
-{
-  return boost::apply_visitor(*this, v.expr());
-}
+int SetImplExprVisitor::operator()(AST::UnaryOp v) const { return boost::apply_visitor(*this, v.expr()); }
 
-int SetImplExprVisitor::operator()(AST::BinOp v) const 
+int SetImplExprVisitor::operator()(AST::BinOp v) const
 {
-  int impl = 2;
   int limpl = boost::apply_visitor(*this, v.left());
   int rimpl = boost::apply_visitor(*this, v.right());
 
@@ -55,15 +53,16 @@ int SetImplExprVisitor::operator()(AST::BinOp v) const
 int SetImplExprVisitor::operator()(AST::Call v) const
 {
   int impl = 2;
-  for (const AST::Expr &e : v.args())
+  for (const AST::Expr& e : v.args()) {
     impl = std::min(impl, boost::apply_visitor(*this, e));
+  }
 
   return impl;
 }
 
 int SetImplExprVisitor::operator()(AST::Interval v) const
 {
-  NatEvaluator visit_nat(venv_);
+  IntEvaluator visit_nat{_venv};
   return boost::apply_visitor(visit_nat, v.step()) == 1 ? 2 : 1;
 }
 
@@ -71,11 +70,13 @@ int SetImplExprVisitor::operator()(AST::MultiDimInter v) const
 {
   int impl = 2;
 
-  if (v.intervals().size() > 1)
+  if (v.intervals().size() > 1) {
     return 1;
+  }
 
-  for (const AST::Expr &e : v.intervals())
+  for (const AST::Expr& e : v.intervals()) {
     impl = std::min(impl, boost::apply_visitor(*this, e));
+  }
 
   return impl;
 }
@@ -83,16 +84,17 @@ int SetImplExprVisitor::operator()(AST::MultiDimInter v) const
 int SetImplExprVisitor::operator()(AST::Set v) const
 {
   int impl = 2;
-  for (const AST::Expr &e : v.pieces())
+  for (const AST::Expr& e : v.pieces()) {
     impl = std::min(impl, boost::apply_visitor(*this, e));
+  }
 
   return impl;
 }
 
-int SetImplExprVisitor::operator()(AST::LinearExp v) const
+int SetImplExprVisitor::operator()(AST::LinearExpr v) const
 {
-  RationalEvaluator visit_rat(venv_);
-  LIB::RATIONAL r = boost::apply_visitor(visit_rat, v.slope());
+  RationalEvaluator visit_rat{_venv};
+  LIB::Rational r = boost::apply_visitor(visit_rat, v.slope());
 
   return (r == 0 || r == 1) ? 2 : 1;
 }
@@ -100,16 +102,17 @@ int SetImplExprVisitor::operator()(AST::LinearExp v) const
 int SetImplExprVisitor::operator()(AST::MDLExp v) const
 {
   int impl = 2;
-  for (const AST::Expr &e : v.exps())
+  for (const AST::Expr& e : v.exps()) {
     impl = std::min(impl, boost::apply_visitor(*this, e));
+  }
 
   return impl;
 }
 
 int SetImplExprVisitor::operator()(AST::LinearMap v) const
 {
-  int dom_impl = boost::apply_visitor(*this, v.dom());
-  int lexp_impl = boost::apply_visitor(*this, v.lexp());
+  int dom_impl = boost::apply_visitor(*this, v.domain());
+  int lexp_impl = boost::apply_visitor(*this, v.law());
 
   return std::min(dom_impl, lexp_impl);
 }
@@ -117,10 +120,11 @@ int SetImplExprVisitor::operator()(AST::LinearMap v) const
 int SetImplExprVisitor::operator()(AST::PWLMap v) const
 {
   int impl = 2;
-  for (const AST::Expr &e : v.maps())
+  for (const AST::Expr& e : v.maps()) {
     impl = std::min(impl, boost::apply_visitor(*this, e));
+  }
 
-  return impl; 
+  return impl;
 }
 
 int SetImplExprVisitor::operator()(AST::SBG v) const
@@ -164,11 +168,10 @@ int SetImplExprVisitor::operator()(AST::DSBG v) const
   return impl;
 }
 
-int SetImplExprVisitor::operator()(AST::ParenExpr v) const
-{
-  return boost::apply_visitor(*this, v.e());
-}
+int SetImplExprVisitor::operator()(AST::ParenExpr v) const { return boost::apply_visitor(*this, v.pexpr()); }
 
-} // namespace Eval
+}  // namespace detail
 
-} // namespace SBG
+}  // namespace Eval
+
+}  // namespace SBG

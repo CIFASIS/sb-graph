@@ -1,6 +1,9 @@
-// Topological sort test, with a simple recursion, and a self recursion on the right
+/* Model for topological sorting testing =======================================
+ * Description: test with a simple repetitive path of the form
+   1 -> 11 -> 2 -> 12 -> ... -> 10 -> 20 when N = 10.
+==============================================================================*/
 
-N = 100000;
+N = 1000000;
 
 V1 = 1;
 V2 = N-1+V1;
@@ -29,5 +32,5 @@ sort(
             |, {[V3:1:V3]} -> |0*x+4|>>
   mapB: <<{[1:1:E1]} -> |1*x+0|, {[E1+1:1:E2]} -> |1*x+off2d|, {[E2+1:1:E3]} -> |1*x-off3b|>>
   mapD: <<{[1:1:E1]} -> |1*x+off1d|, {[E1+1:1:E2]} -> |1*x+0|, {[E2+1:1:E3]} -> |1*x+off3d|>>
-  Emap: <<{[1:1:E1]} -> |0*x+1|, {[E1+1:1:E2], [E2+1:1:E3]} -> |0*x+2|>>
+  Emap: <<{[1:1:E1]} -> |0*x+1|, {[E1+1:1:E2]} -> |0*x+2|, {[E2+1:1:E3]} -> |0*x+3|>>
 );

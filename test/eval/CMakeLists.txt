@@ -16,16 +16,14 @@ target_sources(
 target_compile_options(eval-test PRIVATE "-Wall")
 
 # Link the library
-target_link_libraries(eval-test
-                      PRIVATE 
-                      ${GOOGLE_TEST_LIB}
-                      ${GOOGLE_MOCK_LIB}
-                      pthread
+target_link_libraries(
+    eval-test
+    PRIVATE 
+    GTest::gtest
+    GTest::gmock
+    GTest::gtest_main
+    pthread
 )
-
-target_include_directories(eval-test PRIVATE ${GOOGLE_TEST_INCLUDE})
-
-target_link_directories(eval-test PRIVATE ${GOOGLE_TEST_INSTALL}/lib)
 
 # Set output directory for executable
 set_target_properties(eval-test PROPERTIES

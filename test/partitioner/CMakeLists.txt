@@ -14,17 +14,15 @@ target_compile_options(partitioner-test PRIVATE "-Wall")
 
 # Link the library
 target_link_libraries(partitioner-test
-                      PRIVATE
-                      sbg-dev
-                      sbg-part-lib
-                      ${GOOGLE_TEST_LIB}
-                      ${GOOGLE_MOCK_LIB}
-                      pthread
+    PRIVATE
+    sbg-part-lib
+    GTest::gtest
+    GTest::gmock
+    GTest::gtest_main
+    pthread
 )
 
-target_include_directories(partitioner-test PRIVATE ${GOOGLE_TEST_INCLUDE} ${PROJECT_SOURCE_DIR})
-
-target_link_directories(partitioner-test PRIVATE ${GOOGLE_TEST_INSTALL}/lib)
+target_include_directories(partitioner-test PRIVATE ${PROJECT_SOURCE_DIR})
 
 # Set output directory for executable
 set_target_properties(partitioner-test PROPERTIES

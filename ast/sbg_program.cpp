@@ -23,25 +23,28 @@ namespace SBG {
 
 namespace AST {
 
-SBGProgram::SBGProgram() : nmbr_dims_(1), stms_(), exprs_() {}
-SBGProgram::SBGProgram(StatementList stms, ExprList exprs) : nmbr_dims_(1)
-  , stms_(stms), exprs_(exprs) {}
-SBGProgram::SBGProgram(LIB::NAT nmbr_dims, StatementList stms, ExprList exprs) 
-  : nmbr_dims_(nmbr_dims), stms_(stms), exprs_(exprs) {}
+SBGProgram::SBGProgram() : _arity(1) {}
 
-member_imp(SBGProgram, LIB::NAT, nmbr_dims);
-member_imp(SBGProgram, StatementList, stms);
-member_imp(SBGProgram, ExprList, exprs);
+SBGProgram::SBGProgram(StatementList stms, ExprList exprs) : _arity(1), _stms(stms), _exprs(exprs) {}
+
+SBGProgram::SBGProgram(std::size_t arity, StatementList stms, ExprList exprs) : _arity(arity), _stms(stms), _exprs(exprs) {}
+
+const std::size_t SBGProgram::arity() const { return _arity; }
+
+const StatementList &SBGProgram::stms() const { return _stms; }
+
+const ExprList &SBGProgram::exprs() const { return _exprs; }
 
 std::ostream &operator<<(std::ostream &out, const SBGProgram &prog)
 {
-  if (!prog.stms().empty())
+  if (!prog.stms().empty()) {
     out << prog.stms() << "\n";
-  out<< prog.exprs();  
+  }
+  out << prog.exprs();
 
   return out;
 }
 
-} // namespace AST
+}  // namespace AST
 
-} // namespace SBG
+}  // namespace SBG

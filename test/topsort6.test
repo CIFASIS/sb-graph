@@ -1,0 +1,39 @@
+/* Model for topological sorting testing =======================================
+ * Description: model where node i must be solved before i+1 for ≤ N, and
+   node N+1 must be solved before N/2+1. If N=10, the corresponding graph is:
+
+   1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
+                            ↑
+                            11
+
+ * Motivation: implement repetition correctly. SOLVED.
+============================================================================= */
+
+N = 1000000;
+N2 = 500000;
+
+V1 = N;
+V2 = V1+1;
+
+E1 = 1;
+E2 = N-1+E1;
+
+off1b = V2-E1;
+off2b = V2-E2-2;
+
+off1d = V2-E1-N2;
+off2d = V2-E2-1;
+
+V: {[1:1:V1], [V1+1:1:V2]}
+Vmap: <<{[1:1:V1]} -> |0*x+1|, {[V1+1:1:V2]} -> |0*x+2|>>
+mapB: <<{[1:1:E1]} -> |1*x+off1b|, {[E1+1:1:E2]} -> |1*x+off2b|>>
+mapD: <<{[1:1:E1]} -> |1*x+off1d|, {[E1+1:1:E2]} -> |1*x+off2d|>>
+Emap: <<{[1:1:E1]} -> |0*x+1|, {[E1+1:1:E2]} -> |0*x+2|>>;
+
+sort(
+  V: {[1:1:V1], [V1+1:1:V2]}
+  Vmap: <<{[1:1:V1]} -> |0*x+1|, {[V1+1:1:V2]} -> |0*x+2|>> 
+  mapB: <<{[1:1:E1]} -> |1*x+off1b|, {[E1+1:1:E2]} -> |1*x+off2b|>>
+  mapD: <<{[1:1:E1]} -> |1*x+off1d|, {[E1+1:1:E2]} -> |1*x+off2d|>>
+  Emap: <<{[1:1:E1]} -> |0*x+1|, {[E1+1:1:E2]} -> |0*x+2|>>
+);

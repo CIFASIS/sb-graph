@@ -1,9 +1,3 @@
-set(GOOGLE_TEST_INSTALL ${PROJECT_SOURCE_DIR}/3rd-party/build)
-set(GOOGLE_TEST_LIB gtest)
-set(GOOGLE_MOCK_LIB gmock)
-set(GOOGLE_TEST_INCLUDE ${GOOGLE_TEST_INSTALL}/include)
-
-
 # Output directories
 set(BUILD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/build)
 set(BIN_DIR ${BUILD_DIR}/bin)

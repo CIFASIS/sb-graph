@@ -16,12 +16,15 @@
 
  ******************************************************************************/
 
+#include <cmath>
 #include <future>
+#include <limits>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <unordered_map>
 
 #include <util/time_profiler.hpp>
+#include <sbg/set_detail.hpp>
 
 #include "build_sb_graph.hpp"
 #include "communication_cost.hpp"
@@ -36,6 +39,11 @@
 using namespace std;
 
 using namespace SBG::LIB;
+using SBG::LIB::detail::Interval;
+using SBG::LIB::detail::MultiDimInter;
+using SBG::LIB::detail::OrderedSet;
+using SBG::LIB::detail::SetAccess;
+using SBG::LIB::detail::SetAccessKey;
 using namespace SBG::Util;
 
 namespace sbg_partitioner {
@@ -60,7 +68,7 @@ GainObjectImbalance generate_gain_object(int a_idx, unsigned partition_a_id, Par
                                          Partition partition_b, ICommunicationCost& comm)
 {
   auto get_edges_by_set = [](const auto& set, auto fun) {
-    auto comm_aff = SET_FACT.createSet();
+    auto comm_aff = Set();
     comm_aff = comm_aff.cup(fun(set));
     // for_each(set.begin(), set.end(), [&comm_aff, &fun](const auto sp) { comm_aff = comm_aff.cup(fun(sp)); });
 
@@ -129,7 +137,7 @@ pair<pair<Set, Set>, pair<Set, Set>> update_sets(Partition& partition_a, Partiti
   auto node_a = partition_a[gain_object.a_idx];
   size_t partition_size_a = get_node_size(node_a, graph.get_node_weights());
   bool node_a_is_fully_used = partition_size_a == gain_object.size_a;
-  Set rest_a = SET_FACT.createSet();
+  Set rest_a;
   if (not node_a_is_fully_used) {
     tie(node_a, rest_a) = cut_interval_by_dimension(node_a, graph.get_node_weights(), gain_object.size_a);
     logging::sbg_log << "cut_interval_by_dimension " << gain_object.size_a << ": " << node_a << rest_a << endl;
@@ -138,7 +146,7 @@ pair<pair<Set, Set>, pair<Set, Set>> update_sets(Partition& partition_a, Partiti
   auto node_b = partition_b[gain_object.b_idx];
   size_t partition_size_b = get_node_size(node_b, graph.get_node_weights());
   bool node_b_is_fully_used = partition_size_b == gain_object.size_b;
-  Set rest_b = SET_FACT.createSet();
+  Set rest_b;
   if (not node_b_is_fully_used) {
     tie(node_b, rest_b) = cut_interval_by_dimension(node_b, graph.get_node_weights(), gain_object.size_b);
     logging::sbg_log << "cut_interval_by_dimension " << gain_object.size_b << ": " << node_b << rest_b << endl;
@@ -374,16 +382,17 @@ Set get_me_edgecut(const Partition& partition_a, const Partition& partition_b, c
 int kl_sbg_imbalance(const WeightedSBGraph& graph, ICommunicationCost& cost_matrix, unsigned partition_a_id, Partition& partition_a,
                      unsigned partition_b_id, Partition& partition_b, unsigned LMin, unsigned LMax)
 {
+  SetAccessKey key = SetAccess::key();
 #if PARTITION_IMBALANCE_DEBUG
   logging::sbg_log << "Algorithm starts with " << partition_a << ", " << partition_b << endl;
 #endif
   auto a_c = partition_a;
   auto b_c = partition_b;
   int max_par_sum = 0;
-  auto max_par_sum_set = make_pair(SET_FACT.createSet(), SET_FACT.createSet());
+  auto max_par_sum_set = make_pair(Set(), Set());
   int par_sum = 0;
-  Set a_v = SET_FACT.createSet();
-  Set b_v = SET_FACT.createSet();
+  Set a_v;
+  Set b_v;
   const auto node_weights = graph.get_node_weights();
 
   auto [g, gm] = generate_gain_matrix(graph, cost_matrix, partition_a_id, partition_a, partition_b_id, partition_b, LMin, LMax);
@@ -416,7 +425,7 @@ int kl_sbg_imbalance(const WeightedSBGraph& graph, ICommunicationCost& cost_matr
 
     logging::sbg_log << g << endl;
 
-    pair<Set, Set> a_ = {SET_FACT.createSet(), SET_FACT.createSet()}, b_ = {SET_FACT.createSet(), SET_FACT.createSet()};
+    pair<Set, Set> a_ = {Set(), Set()}, b_ = {Set(), Set()};
     tie(a_, b_) = update_sets(a_c, b_c, a_v, b_v, g, graph);
 
     // update part comm
@@ -447,13 +456,13 @@ int kl_sbg_imbalance(const WeightedSBGraph& graph, ICommunicationCost& cost_matr
       flatten_set(partition_a_set, graph);
       Partition temp_partition_a;
       for_each(partition_a_set.begin(), partition_a_set.end(),
-               [&temp_partition_a](auto s) { temp_partition_a.push_back(SET_FACT.createSet(s)); });
+               [&temp_partition_a](auto s) { temp_partition_a.push_back(key.createSet(OrderedSet(s))); });
 
       auto partition_b_set = from_vector(b_c).cup(a_v);
       flatten_set(partition_b_set, graph);
       Partition temp_partition_b;
       for_each(partition_b_set.begin(), partition_b_set.end(),
-               [&temp_partition_b](auto s) { temp_partition_b.push_back(SET_FACT.createSet(s)); });
+               [&temp_partition_b](auto s) { temp_partition_b.push_back(key.createSet(OrderedSet(s))); });
 
       int current_edge_cut = get_me_edgecut(temp_partition_a, temp_partition_b, graph).cardinal();
       int expected_gain = prev_edge_cut - current_edge_cut;
@@ -473,14 +482,18 @@ int kl_sbg_imbalance(const WeightedSBGraph& graph, ICommunicationCost& cost_matr
     partition_a_set = partition_a_set.cup(max_par_sum_set.second);
     flatten_set(partition_a_set, graph);
     partition_a.clear();
-    for_each(partition_a_set.begin(), partition_a_set.end(), [&partition_a](auto s) { partition_a.push_back(SET_FACT.createSet(s)); });
+    for (const auto& s : key.pieces(get<OrderedSet>(key.impl(partition_a_set)))) {
+      partition_a.push_back(key.createSet(OrderedSet(s)));
+    }
 
     auto partition_b_set = from_vector(partition_b);
     partition_b_set = partition_b_set.difference(max_par_sum_set.second);
     partition_b_set = partition_b_set.cup(max_par_sum_set.first);
     flatten_set(partition_b_set, graph);
     partition_b.clear();
-    for_each(partition_b_set.begin(), partition_b_set.end(), [&partition_b](auto s) { partition_b.push_back(SET_FACT.createSet(s)); });
+    for (const auto& s : key.pieces(get<OrderedSet>(key.impl(partition_b_set)))) {
+      partition_b.push_back(key.createSet(OrderedSet(s)));
+    }
   }
 
 #if PARTITION_IMBALANCE_DEBUG
@@ -633,10 +646,11 @@ string get_pretty_sb_graph(const SBG::LIB::SBG& g)
   rapidjson::Document::AllocatorType& allocator = json_doc.GetAllocator();
   json_doc.SetObject();
 
+  SetAccessKey key = SetAccess::key();
   rapidjson::Value obj_nodes(rapidjson::kArrayType);
-  for (const SetPiece& set_piece : g.V()) {
+  for (const MultiDimInter& set_piece : key.pieces(get<OrderedSet>(key.impl(g.V())))) {
     rapidjson::Value obj_set_piece_array(rapidjson::kArrayType);
-    for (const Interval& interval : set_piece.intervals()) {
+    for (const Interval& interval : set_piece) {
       rapidjson::Value obj_interval_array(rapidjson::kArrayType);
 
       rapidjson::Value begin(rapidjson::kNumberType);
@@ -655,52 +669,37 @@ string get_pretty_sb_graph(const SBG::LIB::SBG& g)
 
   json_doc.AddMember("nodes", obj_nodes, allocator);
 
-  auto map_parser = [&json_doc, &allocator](const auto& maps, const char* key) {
+  auto map_parser = [&json_doc, &allocator, &key](PWMap maps, const char* name) {
     rapidjson::Value obj_maps(rapidjson::kArrayType);
     for (const auto& map1 : maps) {
       rapidjson::Value map_1_obj(rapidjson::kObjectType);
 
-      const Set& domain = map1.dom();
+      const Set& domain = map1.domain();
       rapidjson::Value domain_obj(rapidjson::kArrayType);
-      for (const auto& interval : domain) {
+      for (const auto& interval : key.pieces(get<OrderedSet>(key.impl(domain)))) {
         rapidjson::Value obj_interval_array(rapidjson::kArrayType);
 
         rapidjson::Value begin(rapidjson::kNumberType);
-        begin.SetUint(interval.intervals()[0].begin());
+        begin.SetUint(interval[0].begin());
         obj_interval_array.PushBack(begin, allocator);
 
         rapidjson::Value end(rapidjson::kNumberType);
-        end.SetUint(interval.intervals()[0].end());
+        end.SetUint(interval[0].end());
         obj_interval_array.PushBack(end, allocator);
 
         domain_obj.PushBack(obj_interval_array, allocator);
       }
       map_1_obj.AddMember("domain", domain_obj, allocator);
 
-      rapidjson::Value exp_obj(rapidjson::kArrayType);
-      for (const auto& exp : map1.exp()) {
-        rapidjson::Value obj_exp_array(rapidjson::kArrayType);
-
-        rapidjson::Value slope(rapidjson::kNumberType);
-        float _slope = exp.slope().numerator();
-        slope.SetFloat(_slope);
-        obj_exp_array.PushBack(slope, allocator);
-
-        rapidjson::Value offset(rapidjson::kNumberType);
-        float _offset = exp.offset().numerator();
-        slope.SetFloat(_offset);
-        obj_exp_array.PushBack(offset, allocator);
-
-        exp_obj.PushBack(obj_exp_array, allocator);
-      }
+      rapidjson::Value exp_obj = map1.law().toJSON(allocator);
       map_1_obj.AddMember("exp", exp_obj, allocator);
 
       obj_maps.PushBack(map_1_obj, allocator);
     }
 
-    rapidjson::Value key_value(key, allocator);
+    rapidjson::Value name_value(name, allocator);
 
-    json_doc.AddMember(key_value, obj_maps, allocator);
+    json_doc.AddMember(name_value, obj_maps, allocator);
   };
 
   map_parser(g.map1(), "map1");
@@ -785,7 +784,7 @@ void kl_sbg_imbalance_partitioner(const WeightedSBGraph& graph, PartitionMap& pa
           if (max_gain_it != gains.end()) {
             best_gain = *max_gain_it;
           } else {
-            best_gain = KLSbgPartitionerResult{0, 0, -Inf, {}, {}};
+            best_gain = KLSbgPartitionerResult{0, 0, numeric_limits<int>::min(), {}, {}};
           }
         }
       }

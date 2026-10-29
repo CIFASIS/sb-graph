@@ -607,6 +607,62 @@ size_t add_adjacent_nodes(const Map& incoming_map, const Map& arrival_map, const
   return qty;
 }
 
+/// @brief Splits the dimensions [dim, arity) of a set piece into its first n elements (in lexicographic
+/// order) and the remaining ones. It requires 0 < n < cardinal of those dimensions.
+/// @return a pair with the pieces of the taken elements and the pieces of the remaining ones.
+pair<vector<MultiDimInter>, vector<MultiDimInter>> split_first_elements(const MultiDimInter& piece, size_t dim, size_t n)
+{
+  const Interval& head = piece[dim];
+  const Int step = head.step();
+
+  size_t inner = 1;
+  for (size_t d = dim + 1; d < piece.arity(); d++) {
+    inner *= piece[d].cardinal();
+  }
+
+  // Builds [begin:step:end] x sub, or [begin:step:end] x piece[dim + 1 ..] when there is no sub.
+  auto make_piece = [&](Int begin, Int end, const MultiDimInter* sub) {
+    MultiDimInter result(Interval(begin, step, end));
+    if (sub) {
+      for (const Interval& i : *sub) {
+        result.emplaceBack(i);
+      }
+    } else {
+      for (size_t d = dim + 1; d < piece.arity(); d++) {
+        result.emplaceBack(piece[d]);
+      }
+    }
+    return result;
+  };
+
+  const size_t full = n / inner;
+  const size_t rest = n % inner;
+  const Int row = head.begin() + Int(full) * step;
+
+  vector<MultiDimInter> taken, remaining;
+  if (full > 0) {
+    taken.push_back(make_piece(head.begin(), row - step, nullptr));
+  }
+
+  Int next_row = row;
+  if (rest > 0) {
+    auto [sub_taken, sub_remaining] = split_first_elements(piece, dim + 1, rest);
+    for (const auto& sub : sub_taken) {
+      taken.push_back(make_piece(row, row, &sub));
+    }
+    for (const auto& sub : sub_remaining) {
+      remaining.push_back(make_piece(row, row, &sub));
+    }
+    next_row += step;
+  }
+
+  if (next_row <= head.end()) {
+    remaining.push_back(make_piece(next_row, head.end(), nullptr));
+  }
+
+  return make_pair(taken, remaining);
+}
+
 }  // namespace
 
 pair<MultiDimInter, MultiDimInter> cut_interval(const MultiDimInter& interval, int cut_value)
@@ -688,51 +744,6 @@ Set get_adjacents(const SBG::LIB::SBG& graph, const Set& node)
   return adjacents;
 }
 
-pair<Set, Set> cut_bidimensional_interval(const MultiDimInter& set_piece, size_t s)
-{
-  SetAccessKey key = SetAccess::key();
-  logging::sbg_log << "cutting interval " << set_piece << ", " << s << endl;
-
-  auto size_node_2 = get_node_size(MultiDimInter(set_piece[1]), NodeWeight());
-
-  unsigned ammount_of_rows = s / size_node_2;
-
-  unsigned rest = s % size_node_2;
-
-  logging::sbg_log << "Ammount of rows " << ammount_of_rows << endl;
-
-  Set OrdSet_ret;
-  MultiDimInter interval_2 = *set_piece.begin();
-
-  if (ammount_of_rows > 0) {
-    MultiDimInter interval_1;
-    tie(interval_1, interval_2) = cut_interval(set_piece[0], set_piece[0].begin() + ammount_of_rows - 1);
-    logging::sbg_log << "Interval cut in " << ammount_of_rows << ": " << interval_1 << ", " << interval_2 << endl;
-    if (interval_2.arity() == 0 and rest > 0) {
-      interval_2 = Interval(interval_1[0].end(), 1, interval_1[0].end());
-    }
-    interval_1.emplaceBack(set_piece[1]);
-    OrdSet_ret = OrdSet_ret.cup(key.createSet(OrderedSet(interval_1)));
-  }
-
-  if (rest > 0) {
-    MultiDimInter rest_set_piece;
-    rest_set_piece.emplaceBack(Interval(interval_2[0].begin(), 1, interval_2[0].begin()));
-    MultiDimInter interval_3, interval_4;
-    tie(interval_3, interval_4) = cut_interval(set_piece[1], set_piece[1].begin() + rest - 1);
-    rest_set_piece.emplaceBack(interval_3[0]);
-
-    OrdSet_ret = OrdSet_ret.cup(key.createSet(OrderedSet(rest_set_piece)));
-  }
-
-  Set set = key.createSet(OrderedSet(set_piece));
-  Set remaining = set.difference(OrdSet_ret);
-
-  logging::sbg_log << "original " << set_piece << ", " << OrdSet_ret << ", " << remaining << endl;
-
-  return make_pair(OrdSet_ret, remaining);
-}
-
 pair<Set, Set> cut_interval_by_dimension(const Set& set_piece, const NodeWeight& node_weight, std::size_t size)
 {
   SetAccessKey key = SetAccess::key();
@@ -744,48 +755,41 @@ pair<Set, Set> cut_interval_by_dimension(const Set& set_piece, const NodeWeight&
     return make_pair(Set(), set_piece);
   }
 
-  if (set_piece.arity() == 2) {
-    auto s = Set();
-    auto t = to_vector(set_piece);
-    std::sort(t.begin(), t.end(), [](const auto& a, const auto& b) { return a.minElem() < b.minElem(); });
-
-    for (auto actual_set_piece : t) {
-      if (size == 0) {
-        break;
-      }
-
-      size_t rows = actual_set_piece.maxElem()[0] - actual_set_piece.minElem()[0] + 1;
-      size_t cols = actual_set_piece.maxElem()[1] - actual_set_piece.minElem()[1] + 1;
-      size_t expected_size = actual_set_piece.cardinal() < size ? actual_set_piece.cardinal() : size;
-
-      size_t n_rows = expected_size / cols;
-      size_t n_cols = expected_size % cols;
-
-      size_t current_size = s.cardinal();
-      if (n_rows > 0) {
-        s = s.cup(
-            key.createSet(OrderedSet(MultiDimInter({Interval(actual_set_piece.minElem()[0], 1, actual_set_piece.minElem()[0] + n_rows - 1),
-                                                    Interval(actual_set_piece.minElem()[1], 1, actual_set_piece.maxElem()[1])}))));
-      }
-      if (n_cols > 0) {
-        auto ss = key.createSet(
-            OrderedSet(MultiDimInter({Interval(actual_set_piece.minElem()[0] + n_rows, 1, actual_set_piece.minElem()[0] + n_rows),
-                                      Interval(actual_set_piece.minElem()[1], 1, actual_set_piece.minElem()[1] + n_cols - 1)})));
-        s = s.cup(ss);
-      }
-      // cout << s << " " << actual_set_piece.difference(s) << endl;
-      size -= (s.cardinal() - current_size);
+  // OrderedSet pieces are already sorted by minElem(), so we can walk them in lexicographic order.
+  OrderedSet::OrdMDICollection taken, remaining;
+  for (const MultiDimInter& piece : key.pieces(get<OrderedSet>(key.impl(set_piece)))) {
+    if (size == 0) {
+      remaining.push_back(piece);
+      continue;
     }
 
-    return make_pair(s, set_piece.difference(s));
+    const size_t cost = unsigned(get_set_cost(piece, node_weight));
+    const size_t available = piece.cardinal();
+    const size_t n = min(available, size / cost);
+
+    if (n == 0) {
+      remaining.push_back(piece);
+      continue;
+    }
+
+    if (n == available) {
+      taken.push_back(piece);
+    } else {
+      auto [sub_taken, sub_remaining] = split_first_elements(piece, 0, n);
+      taken.insert(taken.end(), sub_taken.begin(), sub_taken.end());
+      remaining.insert(remaining.end(), sub_remaining.begin(), sub_remaining.end());
+    }
+
+    size -= n * cost;
   }
 
-  size_t actual_size = size / unsigned(get_set_cost(key.pieces(get<OrderedSet>(key.impl(set_piece))).front(), node_weight));
+  // OrderedSet::cup expects its pieces sorted by minElem(). Pieces are disjoint by construction,
+  // but with multi-piece inputs a partial-row remainder can sort after a later untouched piece.
+  auto by_min_elem = [](const MultiDimInter& a, const MultiDimInter& b) { return a.minElem() < b.minElem(); };
+  std::sort(taken.begin(), taken.end(), by_min_elem);
+  std::sort(remaining.begin(), remaining.end(), by_min_elem);
 
-  MultiDimInter p_1, p_2;
-  auto i1 = key.pieces(get<OrderedSet>(key.impl(set_piece))).front();
-  tie(p_1, p_2) = cut_interval(i1[0], i1[0].begin() + actual_size - 1);
-  return make_pair(key.createSet(OrderedSet(p_1)), key.createSet(OrderedSet(p_2)));
+  return make_pair(key.createSet(OrderedSet(std::move(taken))), key.createSet(OrderedSet(std::move(remaining))));
 }
 
 size_t get_node_size(const MultiDimInter& node, const NodeWeight& node_weight)

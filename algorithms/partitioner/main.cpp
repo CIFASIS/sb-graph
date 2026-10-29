@@ -222,20 +222,6 @@ int get_advection2D_size(const string& name)
 
 SBG::LIB::WeightedSBGraph get_sbg(const std::string& filename, unsigned number_of_parts, bool duplicate_conns)
 {
-  auto sb_graph = create_starpu_graph(4);
-  std::cout << "something " << sb_graph << std::endl;
-  cout << "connections:\n";
-  SBG::LIB::PWMap pw_map1 = sb_graph.map1();
-  SBG::LIB::PWMap pw_map2 = sb_graph.map2();
-  auto edges = sb_graph.E();
-  for (auto it1 = pw_map1.begin(), it2 = pw_map2.begin(); it2 != pw_map2.end(); it1, ++it2) {
-    auto n1 = (*it1).image();
-    auto n2 = (*it2).image();
-    cout << n1 << ", " << n2 << " from " << (*it1).domain() << "\n";
-  }
-  cout << endl;
-  // throw 1;
-  return sb_graph;
   if (filename.find("air_conditioners_cont") != std::string::npos) {
     auto size = get_air_conditioners_controller_size(filename);
     auto sb_graph = create_air_conditioners_with_controller_graph(size, number_of_parts, duplicate_conns);

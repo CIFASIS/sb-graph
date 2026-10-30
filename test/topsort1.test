@@ -1,5 +1,5 @@
 /* Model for topological sorting testing =======================================
- * Description: model with edges i - i+10 for i \in [1:10] when N = 10.
+ * Description: model with edges i+10 - i for i \in [1:10] when N = 10.
 ==============================================================================*/
 
 N = 1000000;

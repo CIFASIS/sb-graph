@@ -104,6 +104,18 @@ protected:
   PWMap sccStep();
 };
 
+////////////////////////////////////////////////////////////////////////////////
+// Third version with decreasing Rmap MRV -------------------------------------- 
+////////////////////////////////////////////////////////////////////////////////
+
+class MinReachSCCV3 : public MinReachSCC {
+public:
+  MinReachSCCV3();
+
+protected:
+  PWMap sccStep();
+};
+
 } // namespace detail
 
 } // namespace LIB

@@ -18,6 +18,7 @@
  ******************************************************************************/
 
 #include <sbgraph/detail/algorithms/sorting/topological/min_vertex_ts.hpp>
+#include <sbgraph/detail/algorithms/sorting/topological/ts_utils.hpp>
 #include "util/debug.hpp"
 #include "util/logger.hpp"
 
@@ -31,66 +32,49 @@ namespace detail {
 // Minimum Vertex Topological Sort Algorithm -----------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-MinVertexTS::MinVertexTS() : _max_repetition_depth(0) {}
+MinVertexTS::MinVertexTS() : _depth(0) {}
 
 // Repetition ------------------------------------------------------------------
 
-std::tuple<Set, PWMap> MinVertexTS::detectRepetition(Set Vj, const DirectedSBG& dsbg)
+PWMap MinVertexTS::extendRepetition()
 {
-  Set repetition_vertices;
+  PWMap Vmap = _dsbg.Vmap();
+
+  // Extend repetition to whole set-vertices.
   PWMap smap_plus;
-
-  PWMap Vmap = dsbg.Vmap();
-  Set init_SV = Vmap.image(Vj);
-  bool repetition = false;
-  unsigned int n = 0;
-  do {
-    // Calculate jth result.
-    repetition_vertices = std::move(repetition_vertices).disjointCup(Vj);
-    Set Vj_plus = Vmap.preImage(Vmap.image(Vj));
-    smap_plus = std::move(smap_plus).concatenation(Map{Vj_plus, (*(_smap.restrict(Vj).begin())).law()});
-
-    // Values for the next iteration.
-    Vj = _smap.image(Vj);
-    repetition = !Vmap.image(Vj).intersection(init_SV).isEmpty();
-    ++n;
-  } while (!repetition);
-
-  if (repetition) {
-    // Take out vertices that are mapped to a value that doesn't belong to any
-    // vertex.
-    smap_plus = smap_plus.restrict(smap_plus.preImage(dsbg.V()));
-
-    // Take out already sorted elements.
-    Set sorted = _smap.domain().cup(smap_plus.preImage(_smap.image()));
-    Set plus_domain = smap_plus.domain().difference(sorted);
-    smap_plus = smap_plus.restrict(plus_domain);
-  } else {
-    repetition_vertices = Set{};
-    smap_plus = PWMap{};
+  for (std::size_t k = 1; _depth >= k; ++k) {
+    std::size_t sz = _repetitionSV.size();
+    Set domain_plus = Vmap.preImage(_repetitionSV[sz - k]);
+    sz = _repetition_sort.size();
+    smap_plus.emplace(domain_plus, _repetition_sort[sz - k].law());
   }
 
-  return {repetition_vertices, smap_plus};
+  // Take out vertices that are assigned a value that is not in V.
+  smap_plus = smap_plus.restrict(smap_plus.preImage(_dsbg.V()));
+
+  // Take out already sorted elements.
+  Set sorted = _smap.domain().cup(smap_plus.preImage(_smap.image()));
+  Set plus_domain = smap_plus.domain().difference(sorted);
+  smap_plus = smap_plus.restrict(plus_domain);
+
+  return smap_plus;
 }
 
-PWMap MinVertexTS::repetition(const Set& init_V, const DirectedSBG& dsbg)
+PWMap MinVertexTS::repetition(const PWMap& Emap)
 {
   // Identify repetition and extend it to vertices in the same set-vertex,
   // taking out sorted vertices in the domain, and also vertices that map to
   // another sorted vertex, i.e, checking the successor map is injective.
-  auto [repetition_vertices, smap_plus] = detectRepetition(init_V, dsbg);
+  PWMap smap_plus = extendRepetition();
   if (smap_plus.isEmpty()) {
     return PWMap{};
   }
   Set plus_domain = smap_plus.domain();
 
-  // Get erased edges of the repetition, and erase edges that belong to the
-  // same set-edge.
-  Set outgoing_edges = dsbg.mapB().preImage(repetition_vertices);
-  PWMap Emap = dsbg.Emap();
-  Set E_plus = Emap.preImage(Emap.image(outgoing_edges));
+  // Delete set-edges that had an edge that was deleted up to the repetition.
+  Set Eplus = Emap.preImage(_repetitionSE.accumulated(_depth));
   DirectedSBG dsbg_copy = _dsbg;
-  dsbg_copy.eraseEdges(E_plus);
+  dsbg_copy.eraseEdges(Eplus);
 
   // Identify vertices with ingoing edges after the previous step. These are
   // "cut" vertices for the repetition.
@@ -109,10 +93,9 @@ IntTuple MinVertexTS::getVertex(Set old_Vj)
 {
   Set V = _dsbg.V();
   PWMap mapD = _dsbg.mapD();
-  _independent = V.difference(mapD.image());
 
   // Independent vertices with no incoming edges.
-  Set Vj = _independent;
+  Set Vj = V.difference(mapD.image());
   if (Vj.isEmpty()) {
     Util::ERROR("MinVertexTS::getVertex: the SBG is not acyclic\n");
   }
@@ -126,7 +109,8 @@ IntTuple MinVertexTS::getVertex(Set old_Vj)
 
   // Independent vertices with priority treatment, that belong to a visited
   // set-vertex.
-  Set Vj_repeated_SV = _visitedSV.intersection(_dsbg.Vmap().image(Vj));
+  Set Vj_set_vertex = _dsbg.Vmap().image(Vj);
+  Set Vj_repeated_SV = _repetitionSV.accumulated().intersection(Vj_set_vertex);
   if (!Vj_repeated_SV.isEmpty()) {
     Vj = _dsbg.Vmap().preImage(Vj_repeated_SV).intersection(Vj);
   }
@@ -135,26 +119,6 @@ IntTuple MinVertexTS::getVertex(Set old_Vj)
 }
 
 // Algorithm -------------------------------------------------------------------
-
-/**
- * @brief Checks that the returned map is a topological sort of the dsbg.
- */
-void checkSort(PWMap& smap, const DirectedSBG& dsbg)
-{
-  // Check if it is injective, that is, if is an actual order.
-  Set fixed_points = smap.fixedPoints();
-  Set visited_img;
-  for (const Map& m : smap) {
-    Set m_image = m.image().difference(fixed_points);
-    if (!visited_img.intersection(m_image).isEmpty()) {
-      Util::ERROR("checkSort: proposed result ", smap, " is not an order\n");
-    }
-    visited_img = std::move(visited_img).disjointCup(std::move(m_image));
-  }
-
-  // Check if the sort is total.
-  Util::ERROR_UNLESS(smap.domain() == dsbg.V(), "checkSort: the order ", smap, " is partial\n");
-}
 
 PWMap MinVertexTS::calculate(const DirectedSBG& dsbg, const PWMap& scc_map)
 {
@@ -165,28 +129,37 @@ PWMap MinVertexTS::calculate(const DirectedSBG& dsbg, const PWMap& scc_map)
     return PWMap{};
   }
   _dsbg = dsbg;
+  PWMap mapB = _dsbg.mapB();
+  PWMap Emap = _dsbg.Emap();
 
   IntTuple vj;
   IntTuple old_vj = V.difference(_dsbg.mapD().image()).minElem();
-  _smap = PWMap{Set{old_vj}};
-  _visitedSV = dsbg.Vmap().image(Set{old_vj});
-  _priority = scc_map.preImage(scc_map.image(Set{old_vj}));
+  Set old_vj_set{old_vj};
+  _smap = PWMap{old_vj_set};
+  _repetitionSV.pushBack(dsbg.Vmap().image(old_vj_set));
+  _priority = scc_map.preImage(scc_map.image(old_vj_set));
+  _repetitionSE.pushBack(Emap.image(mapB.preImage(old_vj_set)));
   _dsbg.eraseVertices(_smap.domain());
   do {
     // Find new vertex without dependencies, and add it to the sorting.
     vj = getVertex(Set{old_vj});
     Set vj_set{vj};
     Util::DEBUG_LOG << "vj_set: " << vj_set << "\n";
-    _smap.emplace(vj_set, Expression{vj, old_vj});
+    Map new_map{vj_set, Expression{vj, old_vj}};
+    _smap.emplace(new_map);
+    _repetition_sort.push_back(new_map);
+    _repetitionSE.pushBack(Emap.image(mapB.preImage(vj_set)));
 
     // Handle repetition.
-    Set repeatedSV = _visitedSV.intersection(_dsbg.Vmap().image(vj_set));
+    Set vj_set_vertex = _dsbg.Vmap().image(vj_set);
+    Set repeatedSV = _repetitionSV.accumulated().intersection(vj_set_vertex);
+    _repetitionSV.pushBack(_dsbg.Vmap().image(vj_set));
     if (!repeatedSV.isEmpty()) {
-      PWMap smap_plus = repetition(vj_set, dsbg);
+      _depth = _repetitionSV.repetitionDepth();
+      PWMap smap_plus = repetition(dsbg.Emap());
       _smap = std::move(smap_plus).concatenation(std::move(_smap));
       vj = _smap.domain().difference(_smap.image()).minElem();
-    } else {
-      _visitedSV = _visitedSV.cup(_dsbg.Vmap().image(vj_set));
+      _depth = 0;
     }
 
     // Update values for new iteration.

@@ -83,6 +83,7 @@ UserImplMap::StructImplMap sccMap()
   UserImplMap::StructImplMap scc_mapping;
   scc_mapping[0] = LIB::SCCKind::kMinReachV1;
   scc_mapping[1] = LIB::SCCKind::kMinReachV2;
+  scc_mapping[2] = LIB::SCCKind::kMinReachV3;
   scc_mapping.freeze();
   return scc_mapping;
 }

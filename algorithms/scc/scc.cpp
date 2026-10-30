@@ -46,6 +46,11 @@ SCC::SCC() : _impl()
     break;
   }
 
+  case SCCKind::kMinReachV3: {
+    _impl = detail::MinReachSCCV3{};
+    break;
+  }
+
   default: {
     Util::ERROR("Unsupported SCC implementation");
     break;

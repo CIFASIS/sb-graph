@@ -39,7 +39,7 @@ static void BM_Matching(benchmark::State& state, std::string filename)
   int N = state.range(0);
 
   LIB::Matching match_algorithm;
-  LIB::BipartiteSBG match_sbg = generateSBG<LIB::BipartiteSBG>(filename, N, 1); 
+  LIB::BipartiteSBG match_sbg = generateSBG<LIB::BipartiteSBG>(filename, N, 1);
   for (auto _ : state) {
     benchmark::DoNotOptimize(match_algorithm.calculate(match_sbg));
   }
@@ -53,8 +53,7 @@ static void BM_MatchingCopies(benchmark::State& state, std::string filename)
 
   // Calculate Matching
   LIB::Matching match_algorithm;
-  LIB::BipartiteSBG match_sbg = generateSBG<LIB::BipartiteSBG>(
-    filename, 100, N);
+  LIB::BipartiteSBG match_sbg = generateSBG<LIB::BipartiteSBG>(filename, 100, N);
 
   for (auto _ : state) {
     benchmark::DoNotOptimize(match_algorithm.calculate(match_sbg));
@@ -68,21 +67,18 @@ static void BM_MatchingCopies(benchmark::State& state, std::string filename)
 
 void registerMatchingBenchmarks(std::string filename)
 {
-  benchmark::RegisterBenchmark(
-    ("BM_Matching/" + filename).c_str(),
-    [filename](benchmark::State& state) {
-      BM_Matching(state, filename);
-    }
-  )->RangeMultiplier(10)->Range(100, 1e6)->Complexity()
-    ->Unit(benchmark::kMillisecond);
+  benchmark::RegisterBenchmark(("BM_Matching/" + filename).c_str(), [filename](benchmark::State& state) { BM_Matching(state, filename); })
+      ->RangeMultiplier(10)
+      ->Range(100, 1e6)
+      ->Complexity()
+      ->Unit(benchmark::kMillisecond);
 
-  benchmark::RegisterBenchmark(
-    ("BM_MatchingCopies/" + filename).c_str(),
-    [filename](benchmark::State& state) {
-      BM_MatchingCopies(state, filename);
-    }
-  )->RangeMultiplier(2)->Range(1, 128)->Complexity()
-    ->Unit(benchmark::kMillisecond);
+  benchmark::RegisterBenchmark(("BM_MatchingCopies/" + filename).c_str(),
+                               [filename](benchmark::State& state) { BM_MatchingCopies(state, filename); })
+      ->RangeMultiplier(2)
+      ->Range(1, 128)
+      ->Complexity()
+      ->Unit(benchmark::kMillisecond);
 }
 
 void registerMatchingBenchmarks()
@@ -92,8 +88,8 @@ void registerMatchingBenchmarks()
   registerMatchingBenchmarks("../../matching_TestRL3.test");
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace perf
+}  // namespace perf
 
-} // namespace SBG
+}  // namespace SBG

@@ -32,25 +32,16 @@ namespace detail {
 // Auxiliary functions ---------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-Interval least(const Interval& lhs, const Interval& rhs)
+Interval least(const Interval& lhs, const Interval& rhs) { return lhs < rhs ? lhs : rhs; }
+
+bool overlap(const OrdUnidimDenseSet::OrdIntervalCollection& lhs, const OrdUnidimDenseSet::OrdIntervalCollection& rhs)
 {
-  return lhs < rhs ? lhs : rhs;
+  return lhs.back().end() >= rhs.front().begin() || rhs.back().end() >= lhs.front().begin();
 }
 
-bool overlap(const OrdUnidimDenseSet::OrdIntervalCollection& lhs,
-  const OrdUnidimDenseSet::OrdIntervalCollection& rhs)
-{
-  return lhs.back().end() >= rhs.front().begin()
-    || rhs.back().end() >= lhs.front().begin();
-}
+Interval intersection(const Interval& lhs, const Interval& rhs) { return lhs.intersection(rhs); }
 
-Interval intersection(const Interval& lhs, const Interval& rhs)
-{
-  return lhs.intersection(rhs);
-}
-
-OrdUnidimDenseSet::OrdIntervalCollection
-  compact(const OrdUnidimDenseSet::OrdIntervalCollection& c)
+OrdUnidimDenseSet::OrdIntervalCollection compact(const OrdUnidimDenseSet::OrdIntervalCollection& c)
 {
   OrdUnidimDenseSet::OrdIntervalCollection result;
 
@@ -85,10 +76,7 @@ OrdUnidimDenseSet::OrdIntervalCollection
 
 OrdUnidimDenseSet::OrdUnidimDenseSet() : _pieces() {}
 
-OrdUnidimDenseSet::OrdUnidimDenseSet(const Int x) : _pieces()
-{
-  _pieces.emplace_back(x);
-}
+OrdUnidimDenseSet::OrdUnidimDenseSet(const Int x) : _pieces() { _pieces.emplace_back(x); }
 
 OrdUnidimDenseSet::OrdUnidimDenseSet(const Interval& i) : _pieces()
 {
@@ -97,13 +85,9 @@ OrdUnidimDenseSet::OrdUnidimDenseSet(const Interval& i) : _pieces()
   }
 }
 
-OrdUnidimDenseSet::OrdUnidimDenseSet(
-  const OrdUnidimDenseSet::OrdIntervalCollection& pieces)
-  : _pieces(pieces) {}
+OrdUnidimDenseSet::OrdUnidimDenseSet(const OrdUnidimDenseSet::OrdIntervalCollection& pieces) : _pieces(pieces) {}
 
-OrdUnidimDenseSet::OrdUnidimDenseSet(
-  OrdUnidimDenseSet::OrdIntervalCollection&& pieces)
-  : _pieces(std::move(pieces)) {}
+OrdUnidimDenseSet::OrdUnidimDenseSet(OrdUnidimDenseSet::OrdIntervalCollection&& pieces) : _pieces(std::move(pieces)) {}
 
 OrdUnidimDenseSet::OrdUnidimDenseSet(const FixedPointsInfo& info)
 {
@@ -121,15 +105,9 @@ OrdUnidimDenseSet::OrdUnidimDenseSet(const FixedPointsInfo& info)
 
 // Getters ---------------------------------------------------------------------
 
-OrdUnidimDenseSet::ConstIt OrdUnidimDenseSet::begin() const
-{
-  return _pieces.begin();
-}
+OrdUnidimDenseSet::ConstIt OrdUnidimDenseSet::begin() const { return _pieces.begin(); }
 
-OrdUnidimDenseSet::ConstIt OrdUnidimDenseSet::end() const
-{
-  return _pieces.end();
-}
+OrdUnidimDenseSet::ConstIt OrdUnidimDenseSet::end() const { return _pieces.end(); }
 
 // Setters ---------------------------------------------------------------------
 
@@ -178,10 +156,7 @@ bool OrdUnidimDenseSet::operator==(const OrdUnidimDenseSet& other) const
   return detail::compact(_pieces) == detail::compact(other._pieces);
 }
 
-bool OrdUnidimDenseSet::operator!=(const OrdUnidimDenseSet& other) const
-{
-  return !(*this == other);
-}
+bool OrdUnidimDenseSet::operator!=(const OrdUnidimDenseSet& other) const { return !(*this == other); }
 
 std::ostream& OrdUnidimDenseSet::print(std::ostream& out) const
 {
@@ -190,7 +165,7 @@ std::ostream& OrdUnidimDenseSet::print(std::ostream& out) const
   out << "{";
   if (sz > 0) {
     unsigned int j = 0;
-    for (const Interval& i : _pieces) { 
+    for (const Interval& i : _pieces) {
       if (j < sz - 1) {
         out << i << ", ";
       } else {
@@ -220,18 +195,11 @@ unsigned int OrdUnidimDenseSet::cardinal() const
 
 bool OrdUnidimDenseSet::isEmpty() const { return _pieces.empty(); }
 
-IntTuple OrdUnidimDenseSet::minElem() const
-{
-  return IntTuple(_pieces.front().begin());
-}
+IntTuple OrdUnidimDenseSet::minElem() const { return IntTuple(_pieces.front().begin()); }
 
-IntTuple OrdUnidimDenseSet::maxElem() const
-{
-  return IntTuple(_pieces.back().end());
-}
+IntTuple OrdUnidimDenseSet::maxElem() const { return IntTuple(_pieces.back().end()); }
 
-OrdUnidimDenseSet OrdUnidimDenseSet::intersection(const OrdUnidimDenseSet&
-  other) const
+OrdUnidimDenseSet OrdUnidimDenseSet::intersection(const OrdUnidimDenseSet& other) const
 {
   // Special cases to enhance performance
   if (isEmpty() || other.isEmpty()) {
@@ -249,29 +217,20 @@ OrdUnidimDenseSet OrdUnidimDenseSet::intersection(const OrdUnidimDenseSet&
   return boundedTraverse(detail::intersection, other);
 }
 
-OrdUnidimDenseSet OrdUnidimDenseSet::cup(const OrdUnidimDenseSet& other) const &
-{
-  return OrdUnidimDenseSet{*this}.cup(other);
-}
+OrdUnidimDenseSet OrdUnidimDenseSet::cup(const OrdUnidimDenseSet& other) const& { return OrdUnidimDenseSet{*this}.cup(other); }
 
-OrdUnidimDenseSet OrdUnidimDenseSet::cup(const OrdUnidimDenseSet& other) &&
-{
-  return std::move(*this).cup(OrdUnidimDenseSet{other});
-}
+OrdUnidimDenseSet OrdUnidimDenseSet::cup(const OrdUnidimDenseSet& other) && { return std::move(*this).cup(OrdUnidimDenseSet{other}); }
 
-OrdUnidimDenseSet OrdUnidimDenseSet::cup(OrdUnidimDenseSet&& other) const &
-{
-  return OrdUnidimDenseSet{*this}.cup(std::move(other));
-}
+OrdUnidimDenseSet OrdUnidimDenseSet::cup(OrdUnidimDenseSet&& other) const& { return OrdUnidimDenseSet{*this}.cup(std::move(other)); }
 
-OrdUnidimDenseSet OrdUnidimDenseSet::cup(OrdUnidimDenseSet&& other) && 
-{ 
+OrdUnidimDenseSet OrdUnidimDenseSet::cup(OrdUnidimDenseSet&& other) &&
+{
   // Special cases
   if (other.isEmpty() || _pieces == other._pieces) {
     return OrdUnidimDenseSet{std::move(_pieces)};
   }
 
-  if (isEmpty()) { 
+  if (isEmpty()) {
     return OrdUnidimDenseSet{std::move(other._pieces)};
   }
 
@@ -290,7 +249,7 @@ OrdUnidimDenseSet OrdUnidimDenseSet::complement() const
   OrdUnidimDenseSet result;
 
   if (isEmpty()) {
-    result._pieces.emplace_back(kOneDimUniverse); 
+    result._pieces.emplace_back(kOneDimUniverse);
     return result;
   }
 
@@ -316,8 +275,7 @@ OrdUnidimDenseSet OrdUnidimDenseSet::complement() const
   return result;
 }
 
-OrdUnidimDenseSet OrdUnidimDenseSet::difference(const OrdUnidimDenseSet& other)
-  const
+OrdUnidimDenseSet OrdUnidimDenseSet::difference(const OrdUnidimDenseSet& other) const
 {
   if (isEmpty() || other.isEmpty()) {
     return OrdUnidimDenseSet{_pieces};
@@ -334,8 +292,7 @@ OrdUnidimDenseSet OrdUnidimDenseSet::difference(const OrdUnidimDenseSet& other)
   return intersection(other.complement());
 }
 
-OrdUnidimDenseSet OrdUnidimDenseSet::cartesianProduct(const OrdUnidimDenseSet&
-  other) const
+OrdUnidimDenseSet OrdUnidimDenseSet::cartesianProduct(const OrdUnidimDenseSet& other) const
 {
   Util::ERROR("OrdUnidimDenseSet::cartesianProduct: operation not supported\n");
 
@@ -353,20 +310,17 @@ std::size_t OrdUnidimDenseSet::arity() const
   return 1;
 }
 
-OrdUnidimDenseSet OrdUnidimDenseSet::disjointCup(const OrdUnidimDenseSet& other)
-  const &
+OrdUnidimDenseSet OrdUnidimDenseSet::disjointCup(const OrdUnidimDenseSet& other) const&
 {
   return OrdUnidimDenseSet{*this}.disjointCup(other);
 }
 
-OrdUnidimDenseSet OrdUnidimDenseSet::disjointCup(const OrdUnidimDenseSet& other)
- &&
+OrdUnidimDenseSet OrdUnidimDenseSet::disjointCup(const OrdUnidimDenseSet& other) &&
 {
   return std::move(*this).disjointCup(OrdUnidimDenseSet{other});
 }
 
-OrdUnidimDenseSet OrdUnidimDenseSet::disjointCup(OrdUnidimDenseSet&& other)
-  const &
+OrdUnidimDenseSet OrdUnidimDenseSet::disjointCup(OrdUnidimDenseSet&& other) const&
 {
   return OrdUnidimDenseSet{*this}.disjointCup(std::move(other));
 }
@@ -384,13 +338,11 @@ OrdUnidimDenseSet OrdUnidimDenseSet::disjointCup(OrdUnidimDenseSet&& other) &&
 
   if (!overlap(_pieces, other._pieces)) {
     OrdIntervalCollection result;
-    result.insert(result.end(), std::make_move_iterator(_pieces.begin())
-      , std::make_move_iterator(_pieces.end()));
-    result.insert(result.end(), std::make_move_iterator(other._pieces.begin())
-      , std::make_move_iterator(other._pieces.end()));
+    result.insert(result.end(), std::make_move_iterator(_pieces.begin()), std::make_move_iterator(_pieces.end()));
+    result.insert(result.end(), std::make_move_iterator(other._pieces.begin()), std::make_move_iterator(other._pieces.end()));
     return result;
   }
-  
+
   return traverse(least, other);
 }
 
@@ -405,10 +357,7 @@ OrdUnidimDenseSet OrdUnidimDenseSet::translate(const IntTuple& t) const
   return result;
 }
 
-Perimeter OrdUnidimDenseSet::perimeter() const
-{
-  return Perimeter{minElem(), maxElem()};
-}
+Perimeter OrdUnidimDenseSet::perimeter() const { return Perimeter{minElem(), maxElem()}; }
 
 void OrdUnidimDenseSet::compact()
 {
@@ -436,9 +385,7 @@ void OrdUnidimDenseSet::compact()
   _pieces = std::move(result);
 }
 
-OrdUnidimDenseSet OrdUnidimDenseSet::boundedTraverse(
-  Interval f(const Interval&, const Interval&), const OrdUnidimDenseSet& other
-) const
+OrdUnidimDenseSet OrdUnidimDenseSet::boundedTraverse(Interval f(const Interval&, const Interval&), const OrdUnidimDenseSet& other) const
 {
   OrdUnidimDenseSet result;
   auto it1 = _pieces.begin();
@@ -452,7 +399,7 @@ OrdUnidimDenseSet OrdUnidimDenseSet::boundedTraverse(
 
     if (i1.maxElem() < i2.maxElem()) {
       ++it1;
-    } else { 
+    } else {
       ++it2;
     }
   }
@@ -460,9 +407,7 @@ OrdUnidimDenseSet OrdUnidimDenseSet::boundedTraverse(
   return result;
 }
 
-OrdUnidimDenseSet OrdUnidimDenseSet::traverse(
-  Interval f(const Interval&, const Interval&) , const OrdUnidimDenseSet& other)
-  const
+OrdUnidimDenseSet OrdUnidimDenseSet::traverse(Interval f(const Interval&, const Interval&), const OrdUnidimDenseSet& other) const
 {
   OrdUnidimDenseSet result;
 
@@ -489,8 +434,7 @@ OrdUnidimDenseSet OrdUnidimDenseSet::traverse(
 
 // Non-member functions --------------------------------------------------------
 
-rapidjson::Value toJSON(OrdUnidimDenseSet s
-  , rapidjson::Document::AllocatorType& alloc)
+rapidjson::Value toJSON(OrdUnidimDenseSet s, rapidjson::Document::AllocatorType& alloc)
 {
   rapidjson::Value interval_array{rapidjson::kArrayType};
   for (const Interval& i : s) {
@@ -506,8 +450,8 @@ rapidjson::Value toJSON(OrdUnidimDenseSet s
   return result;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

@@ -25,10 +25,10 @@ namespace SBG {
 
 namespace Eval {
 
-template<typename T, typename... Ts>
+template <typename T, typename... Ts>
 std::ostream& operator<<(std::ostream& out, const std::variant<T, Ts...>& v)
 {
-  std::visit([&out](auto&& arg){ out << arg; }, v);
+  std::visit([&out](auto&& arg) { out << arg; }, v);
 
   return out;
 }
@@ -37,7 +37,7 @@ template std::ostream& operator<<(std::ostream& out, const ExprBaseType& v);
 
 std::ostream& operator<<(std::ostream& out, const ExprResult& e)
 {
-  out << std::get<0>(e) << "\n  --> " << std::get<1>(e) << "\n"; 
+  out << std::get<0>(e) << "\n  --> " << std::get<1>(e) << "\n";
 
   return out;
 }
@@ -67,11 +67,9 @@ std::ostream& operator<<(std::ostream& out, const StmResultList& ss)
   return out;
 }
 
-ProgramIO::ProgramIO(StmResultList stms, ExprResultList exprs) 
-  : _arity(1), _stms(stms), _exprs(exprs) {}
+ProgramIO::ProgramIO(StmResultList stms, ExprResultList exprs) : _arity(1), _stms(stms), _exprs(exprs) {}
 
-ProgramIO::ProgramIO(std::size_t n, StmResultList stms, ExprResultList exprs)
-  : _arity(n), _stms(stms), _exprs(exprs) {}
+ProgramIO::ProgramIO(std::size_t n, StmResultList stms, ExprResultList exprs) : _arity(n), _stms(stms), _exprs(exprs) {}
 
 const std::size_t& ProgramIO::arity() const { return _arity; }
 
@@ -90,6 +88,6 @@ std::ostream& operator<<(std::ostream& out, const ProgramIO& p)
   return out;
 }
 
-} // namespace Eval
+}  // namespace Eval
 
-} // namespace SBG
+}  // namespace SBG

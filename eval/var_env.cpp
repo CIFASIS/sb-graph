@@ -27,28 +27,16 @@ namespace detail {
 
 VarEnv::VarEnv() : _variables() {}
 
-VarEnv::VIt VarEnv::begin() const
-{
-  return _variables.begin();
-}
+VarEnv::VIt VarEnv::begin() const { return _variables.begin(); }
 
-VarEnv::VIt VarEnv::end() const
-{
-  return _variables.end();
-}
+VarEnv::VIt VarEnv::end() const { return _variables.end(); }
 
-VarEnv::VIt VarEnv::find(const VarEnv::VKey& key) const
-{
-  return _variables.find(key);
-}
+VarEnv::VIt VarEnv::find(const VarEnv::VKey& key) const { return _variables.find(key); }
 
-void VarEnv::insert(VarEnv::VKey key, VarEnv::VValue value)
-{
-  _variables[key] = value;
-}
+void VarEnv::insert(VarEnv::VKey key, VarEnv::VValue value) { _variables[key] = value; }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace Eval
+}  // namespace Eval
 
-} // namespace SBG
+}  // namespace SBG

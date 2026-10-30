@@ -40,12 +40,9 @@ int SetImplExprVisitor::operator()(AST::Rational v) const { return 2; }
 
 int SetImplExprVisitor::operator()(AST::Name v) const { return 2; }
 
-int SetImplExprVisitor::operator()(AST::UnaryOp v) const 
-{
-  return boost::apply_visitor(*this, v.expr());
-}
+int SetImplExprVisitor::operator()(AST::UnaryOp v) const { return boost::apply_visitor(*this, v.expr()); }
 
-int SetImplExprVisitor::operator()(AST::BinOp v) const 
+int SetImplExprVisitor::operator()(AST::BinOp v) const
 {
   int limpl = boost::apply_visitor(*this, v.left());
   int rimpl = boost::apply_visitor(*this, v.right());
@@ -127,7 +124,7 @@ int SetImplExprVisitor::operator()(AST::PWLMap v) const
     impl = std::min(impl, boost::apply_visitor(*this, e));
   }
 
-  return impl; 
+  return impl;
 }
 
 int SetImplExprVisitor::operator()(AST::SBG v) const
@@ -171,13 +168,10 @@ int SetImplExprVisitor::operator()(AST::DSBG v) const
   return impl;
 }
 
-int SetImplExprVisitor::operator()(AST::ParenExpr v) const
-{
-  return boost::apply_visitor(*this, v.pexpr());
-}
+int SetImplExprVisitor::operator()(AST::ParenExpr v) const { return boost::apply_visitor(*this, v.pexpr()); }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace Eval
+}  // namespace Eval
 
-} // namespace SBG
+}  // namespace SBG

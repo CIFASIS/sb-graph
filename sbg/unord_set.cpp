@@ -33,10 +33,7 @@ namespace detail {
 // Auxiliary functions ---------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-bool overlap(const UnorderedSet& lhs, const UnorderedSet& rhs)
-{
-  return rhs.minElem() < lhs.maxElem() || lhs.minElem() < rhs.maxElem();
-}
+bool overlap(const UnorderedSet& lhs, const UnorderedSet& rhs) { return rhs.minElem() < lhs.maxElem() || lhs.minElem() < rhs.maxElem(); }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Unordered Set Implementation ------------------------------------------------
@@ -46,10 +43,7 @@ bool overlap(const UnorderedSet& lhs, const UnorderedSet& rhs)
 
 UnorderedSet::UnorderedSet() : _pieces() {}
 
-UnorderedSet::UnorderedSet(const IntTuple& x) : _pieces()
-{
-  _pieces.emplace_back(MultiDimInter{x});
-}
+UnorderedSet::UnorderedSet(const IntTuple& x) : _pieces() { _pieces.emplace_back(MultiDimInter{x}); }
 
 UnorderedSet::UnorderedSet(const Interval& i) : _pieces()
 {
@@ -65,11 +59,9 @@ UnorderedSet::UnorderedSet(const MultiDimInter& mdi) : _pieces()
   }
 }
 
-UnorderedSet::UnorderedSet(const UnorderedSet::MDIUnordCollection& pieces)
-  : _pieces(pieces) {}
+UnorderedSet::UnorderedSet(const UnorderedSet::MDIUnordCollection& pieces) : _pieces(pieces) {}
 
-UnorderedSet::UnorderedSet(UnorderedSet::MDIUnordCollection&& pieces)
-  : _pieces(std::move(pieces)) {}
+UnorderedSet::UnorderedSet(UnorderedSet::MDIUnordCollection&& pieces) : _pieces(std::move(pieces)) {}
 
 UnorderedSet::UnorderedSet(const FixedPointsInfo& info) : _pieces()
 {
@@ -123,10 +115,7 @@ bool UnorderedSet::operator==(const UnorderedSet& other) const
   return difference(other).isEmpty() && other.difference(*this).isEmpty();
 }
 
-bool UnorderedSet::operator!=(const UnorderedSet& other) const
-{
-  return !(*this == other);
-}
+bool UnorderedSet::operator!=(const UnorderedSet& other) const { return !(*this == other); }
 
 std::ostream& UnorderedSet::print(std::ostream& out) const
 {
@@ -135,9 +124,9 @@ std::ostream& UnorderedSet::print(std::ostream& out) const
   out << "{";
   if (sz > 0) {
     unsigned int j = 0;
-    for (const MultiDimInter& mdi : _pieces) { 
+    for (const MultiDimInter& mdi : _pieces) {
       if (j < sz - 1) {
-        out << mdi << ", "; 
+        out << mdi << ", ";
       } else {
         out << mdi;
       }
@@ -172,7 +161,7 @@ IntTuple UnorderedSet::minElem() const
   for (const MultiDimInter& mdi : _pieces) {
     result = std::min(result, mdi.minElem());
   }
-  
+
   return result;
 }
 
@@ -183,12 +172,11 @@ IntTuple UnorderedSet::maxElem() const
   for (const MultiDimInter& mdi : _pieces) {
     result = std::max(result, mdi.maxElem());
   }
-  
+
   return result;
 }
 
-UnorderedSet intersectionEpilogue(const UnorderedSet::MDIUnordCollection& lhs
-  , const UnorderedSet::MDIUnordCollection& rhs)
+UnorderedSet intersectionEpilogue(const UnorderedSet::MDIUnordCollection& lhs, const UnorderedSet::MDIUnordCollection& rhs)
 {
   // General case
   UnorderedSet result;
@@ -214,24 +202,15 @@ UnorderedSet UnorderedSet::intersection(const UnorderedSet& other) const
   return intersectionEpilogue(_pieces, other._pieces);
 }
 
-UnorderedSet UnorderedSet::cup(const UnorderedSet& other) const &
-{
-  return UnorderedSet{*this}.cup(other);
-}
+UnorderedSet UnorderedSet::cup(const UnorderedSet& other) const& { return UnorderedSet{*this}.cup(other); }
 
-UnorderedSet UnorderedSet::cup(const UnorderedSet& other) &&
-{
-  return std::move(*this).cup(UnorderedSet{other});
-}
+UnorderedSet UnorderedSet::cup(const UnorderedSet& other) && { return std::move(*this).cup(UnorderedSet{other}); }
 
-UnorderedSet UnorderedSet::cup(UnorderedSet&& other) const &
-{
-  return UnorderedSet{*this}.cup(std::move(other));
-}
+UnorderedSet UnorderedSet::cup(UnorderedSet&& other) const& { return UnorderedSet{*this}.cup(std::move(other)); }
 
 UnorderedSet UnorderedSet::cup(UnorderedSet&& other) &&
 {
-  if (isEmpty()) { 
+  if (isEmpty()) {
     return std::move(other);
   }
 
@@ -241,8 +220,7 @@ UnorderedSet UnorderedSet::cup(UnorderedSet&& other) &&
 
   if (maxElem() < other.minElem() || other.maxElem() < minElem()) {
     MDIUnordCollection result = std::move(_pieces);
-    result.insert(result.end(), std::make_move_iterator(other._pieces.begin())
-      , std::make_move_iterator(other._pieces.end()));
+    result.insert(result.end(), std::make_move_iterator(other._pieces.begin()), std::make_move_iterator(other._pieces.end()));
     return UnorderedSet{std::move(result)};
   }
 
@@ -366,24 +344,15 @@ std::size_t UnorderedSet::arity() const
   return _pieces.begin()->arity();
 }
 
-UnorderedSet UnorderedSet::disjointCup(const UnorderedSet& other) const &
-{
-  return UnorderedSet{*this}.disjointCup(other);
-}
+UnorderedSet UnorderedSet::disjointCup(const UnorderedSet& other) const& { return UnorderedSet{*this}.disjointCup(other); }
 
-UnorderedSet UnorderedSet::disjointCup(const UnorderedSet& other) &&
-{
-  return std::move(*this).disjointCup(UnorderedSet{other});
-}
+UnorderedSet UnorderedSet::disjointCup(const UnorderedSet& other) && { return std::move(*this).disjointCup(UnorderedSet{other}); }
 
-UnorderedSet UnorderedSet::disjointCup(UnorderedSet&& other) const &
-{
-  return UnorderedSet{*this}.disjointCup(std::move(other));
-}
+UnorderedSet UnorderedSet::disjointCup(UnorderedSet&& other) const& { return UnorderedSet{*this}.disjointCup(std::move(other)); }
 
 UnorderedSet UnorderedSet::disjointCup(UnorderedSet&& other) &&
 {
-  if (isEmpty()) { 
+  if (isEmpty()) {
     return std::move(other);
   }
 
@@ -392,10 +361,8 @@ UnorderedSet UnorderedSet::disjointCup(UnorderedSet&& other) &&
   }
 
   MDIUnordCollection result;
-  result.insert(result.end(), std::make_move_iterator(_pieces.begin())
-    , std::make_move_iterator(_pieces.end()));
-  result.insert(result.end(), std::make_move_iterator(other._pieces.begin())
-    , std::make_move_iterator(other._pieces.end()));
+  result.insert(result.end(), std::make_move_iterator(_pieces.begin()), std::make_move_iterator(_pieces.end()));
+  result.insert(result.end(), std::make_move_iterator(other._pieces.begin()), std::make_move_iterator(other._pieces.end()));
 
   return UnorderedSet{std::move(result)};
 }
@@ -440,8 +407,7 @@ void UnorderedSet::compact()
   MDIUnordCollection result;
 
   if (!isEmpty()) {
-    MDISet set_result{std::make_move_iterator(_pieces.begin())
-      , std::make_move_iterator(_pieces.end())};
+    MDISet set_result{std::make_move_iterator(_pieces.begin()), std::make_move_iterator(_pieces.end())};
     MDISet to_erase;
     do {
       MDISet new_set_result;
@@ -479,8 +445,7 @@ void UnorderedSet::compact()
 
 // Non-member functions --------------------------------------------------------
 
-rapidjson::Value toJSON(UnorderedSet s
-  , rapidjson::Document::AllocatorType& alloc) 
+rapidjson::Value toJSON(UnorderedSet s, rapidjson::Document::AllocatorType& alloc)
 {
   rapidjson::Value mdi_array{rapidjson::kArrayType};
   for (const MultiDimInter& mdi : s) {
@@ -493,8 +458,8 @@ rapidjson::Value toJSON(UnorderedSet s
   return result;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

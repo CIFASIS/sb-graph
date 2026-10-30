@@ -45,39 +45,38 @@ namespace detail {
 // Auxiliary definitions -------------------------------------------------------
 
 class MapLess {
-public:
-  bool operator()(const Map& a, const Map& b) const {
-    return a.domain().minElem() < b.domain().minElem();
-  }
+  public:
+  bool operator()(const Map& a, const Map& b) const { return a.domain().minElem() < b.domain().minElem(); }
 };
 
 // Constructors/Destructors ----------------------------------------------------
 
 DomOrdPWMap::DomOrdPWMap() : _pieces() {}
 
-DomOrdPWMap::DomOrdPWMap(const Set& s) : _pieces() {
+DomOrdPWMap::DomOrdPWMap(const Set& s) : _pieces()
+{
   if (!s.isEmpty()) {
     _pieces.emplace_back(Map{s, Expression{s.arity(), 1, 0}});
   }
 }
 
-DomOrdPWMap::DomOrdPWMap(const Map& m) : _pieces() {
+DomOrdPWMap::DomOrdPWMap(const Map& m) : _pieces()
+{
   if (!m.domain().isEmpty()) {
     _pieces.emplace_back(m);
   }
 }
 
-DomOrdPWMap::DomOrdPWMap(const std::vector<Map>& pieces) : _pieces() {
+DomOrdPWMap::DomOrdPWMap(const std::vector<Map>& pieces) : _pieces()
+{
   for (const Map& m : pieces) {
     insert(m);
   }
 }
 
-DomOrdPWMap::DomOrdPWMap(const DomOrdPWMap::OrdMapCollection& pieces)
-  : _pieces(pieces) {}
+DomOrdPWMap::DomOrdPWMap(const DomOrdPWMap::OrdMapCollection& pieces) : _pieces(pieces) {}
 
-DomOrdPWMap::DomOrdPWMap(DomOrdPWMap::OrdMapCollection&& pieces)
-  : _pieces(std::move(pieces)) {}
+DomOrdPWMap::DomOrdPWMap(DomOrdPWMap::OrdMapCollection&& pieces) : _pieces(std::move(pieces)) {}
 
 // Getters ---------------------------------------------------------------------
 
@@ -87,16 +86,13 @@ DomOrdPWMap::ConstIt DomOrdPWMap::end() const { return _pieces.end(); }
 
 // Setters ---------------------------------------------------------------------
 
-void DomOrdPWMap::insert(const Map& m)
-{
-  insert(Map{m});
-}
+void DomOrdPWMap::insert(const Map& m) { insert(Map{m}); }
 
 void DomOrdPWMap::insert(Map&& m)
 {
   if (!m.isEmpty()) {
     MapEntry entry{m};
-    if (isEmpty() || _pieces.back() < entry) { 
+    if (isEmpty() || _pieces.back() < entry) {
       _pieces.push_back(entry);
     } else {
       insertHint(0, std::move(m));
@@ -104,10 +100,7 @@ void DomOrdPWMap::insert(Map&& m)
   }
 }
 
-void DomOrdPWMap::pushBack(const Map& m)
-{
-  pushBack(Map{m});
-}
+void DomOrdPWMap::pushBack(const Map& m) { pushBack(Map{m}); }
 
 void DomOrdPWMap::pushBack(Map&& m)
 {
@@ -116,10 +109,7 @@ void DomOrdPWMap::pushBack(Map&& m)
   }
 }
 
-void DomOrdPWMap::pushBack(const MapEntry& entry)
-{
-  pushBack(MapEntry{entry});
-}
+void DomOrdPWMap::pushBack(const MapEntry& entry) { pushBack(MapEntry{entry}); }
 
 void DomOrdPWMap::pushBack(MapEntry&& entry)
 {
@@ -128,10 +118,7 @@ void DomOrdPWMap::pushBack(MapEntry&& entry)
   }
 }
 
-void DomOrdPWMap::insertHint(std::size_t hint, const Map& m)
-{
-  insertHint(hint, Map{m});
-}
+void DomOrdPWMap::insertHint(std::size_t hint, const Map& m) { insertHint(hint, Map{m}); }
 
 void DomOrdPWMap::insertHint(std::size_t hint, Map&& m)
 {
@@ -170,9 +157,8 @@ std::size_t DomOrdPWMap::advanceHint(std::size_t hint, const MapEntry& jth_entry
 
 // Traverse --------------------------------------------------------------------
 
-template<typename OrdCollection1, typename OrdCollection2, typename Core>
-Core traverse(const OrdCollection1& lhs, const OrdCollection2& rhs
-  , Core core_op)
+template <typename OrdCollection1, typename OrdCollection2, typename Core>
+Core traverse(const OrdCollection1& lhs, const OrdCollection2& rhs, Core core_op)
 {
   OrdCollection1 short_collection = lhs;
   OrdCollection2 long_collection = rhs;
@@ -187,16 +173,16 @@ Core traverse(const OrdCollection1& lhs, const OrdCollection2& rhs
   auto short_begin = short_collection.begin();
   for (const auto& long_elem : long_collection) {
     const Perimeter& long_perimeter = long_elem.perimeter();
-    
+
     auto prev_index = indexes.before_begin();
     auto curr_index = indexes.begin();
     while (curr_index != indexes.end()) {
       size_t idx = *curr_index;
       const auto& short_elem = *(short_begin + idx);
-      const Perimeter& short_perimeter = short_elem.perimeter(); 
-      
+      const Perimeter& short_perimeter = short_elem.perimeter();
+
       // Here short_elem is "before" long_elem, so it is also "before" all the
-      // remaining elements in long_collection, thus it can be discarded. 
+      // remaining elements in long_collection, thus it can be discarded.
       if (short_perimeter.max() < long_perimeter.min()) {
         curr_index = indexes.erase_after(prev_index);
         continue;
@@ -204,7 +190,7 @@ Core traverse(const OrdCollection1& lhs, const OrdCollection2& rhs
 
       // Here short_elem is "after" long_elem, so no comparison is needed, and
       // the loop of long_collection continues to check if this short_map interacts
-      // with the following elements of long_collection. 
+      // with the following elements of long_collection.
       if (long_perimeter.max() < short_perimeter.min()) {
         break;
       }
@@ -230,8 +216,9 @@ Core traverse(const OrdCollection1& lhs, const OrdCollection2& rhs
 // Operators -------------------------------------------------------------------
 
 class EqualCore {
-public:
-  bool operator()(const MapEntry& entry1, const MapEntry& entry2) {
+  public:
+  bool operator()(const MapEntry& entry1, const MapEntry& entry2)
+  {
     Map m1 = entry1.map();
     Map m2 = entry2.map();
     Set cap_domain = m1.domain().intersection(m2.domain());
@@ -259,11 +246,11 @@ public:
 
   bool result() const { return _are_equal; }
 
-private:
+  private:
   bool _are_equal = true;
 };
 
-bool DomOrdPWMap::operator==(const DomOrdPWMap& other) const 
+bool DomOrdPWMap::operator==(const DomOrdPWMap& other) const
 {
   if (domain() != other.domain()) {
     return false;
@@ -276,14 +263,12 @@ bool DomOrdPWMap::operator==(const DomOrdPWMap& other) const
   return traverse(_pieces, other._pieces, EqualCore{}).result();
 }
 
-bool DomOrdPWMap::operator!=(const DomOrdPWMap& other) const
-{ 
-  return !(*this == other);
-}
+bool DomOrdPWMap::operator!=(const DomOrdPWMap& other) const { return !(*this == other); }
 
 class AddCore {
-public:
-  bool operator()(const MapEntry& entry1, const MapEntry& entry2) {
+  public:
+  bool operator()(const MapEntry& entry1, const MapEntry& entry2)
+  {
     Map added = entry1.map() + entry2.map();
     _global_pos = _result.advanceHint(_global_pos, entry2);
     _result.insertHint(_global_pos, added);
@@ -294,9 +279,9 @@ public:
 
   DomOrdPWMap result() const { return _result; }
 
-private:
+  private:
   DomOrdPWMap _result;
-  std::size_t _global_pos = 0; 
+  std::size_t _global_pos = 0;
 };
 
 DomOrdPWMap DomOrdPWMap::operator+(const DomOrdPWMap& other) const
@@ -338,7 +323,7 @@ std::size_t DomOrdPWMap::arity() const
 
 bool DomOrdPWMap::isEmpty() const { return _pieces.empty(); }
 
-Set DomOrdPWMap::domain() const &
+Set DomOrdPWMap::domain() const&
 {
   Set result;
 
@@ -360,10 +345,11 @@ Set DomOrdPWMap::domain() &&
   return result;
 }
 
-template<typename T, typename SetImplT>
+template <typename T, typename SetImplT>
 class RestrictCore {
-public:
-  bool operator()(const MapEntry& entry, const T& subdom) {
+  public:
+  bool operator()(const MapEntry& entry, const T& subdom)
+  {
     SetAccessKey key = SetAccess::key();
     Set set_subdom = key.createSet(SetImplT{subdom});
     _result.insert(entry.map().restrict(set_subdom));
@@ -375,7 +361,7 @@ public:
 
   DomOrdPWMap result() const { return DomOrdPWMap(std::move(_result)); }
 
-private:
+  private:
   DomOrdPWMap _result;
 };
 
@@ -386,24 +372,15 @@ DomOrdPWMap DomOrdPWMap::restrict(const Set& subdom) const
   }
 
   SetAccessKey key = SetAccess::key();
-  auto restrict_evaluator = Util::Overload {
-    [&](const OrderedSet& impl)
-    {
-      return traverse(_pieces, key.pieces(impl)
-        , RestrictCore<MultiDimInter, OrderedSet>{}).result();
-    },
-    [&](const OrdUnidimDenseSet& impl)
-    {
-      return traverse(_pieces, key.pieces(impl)
-        , RestrictCore<Interval, OrdUnidimDenseSet>{}).result();
-    },
-    [&](const auto& impl)
-    {
-      Util::ERROR("DomOrdPWMap::restrict: unsupported ", SET_IMPL.kind()
-        , " set implementation");
-      return DomOrdPWMap{};
-    }
-  };
+  auto restrict_evaluator = Util::Overload{
+      [&](const OrderedSet& impl) { return traverse(_pieces, key.pieces(impl), RestrictCore<MultiDimInter, OrderedSet>{}).result(); },
+      [&](const OrdUnidimDenseSet& impl) {
+        return traverse(_pieces, key.pieces(impl), RestrictCore<Interval, OrdUnidimDenseSet>{}).result();
+      },
+      [&](const auto& impl) {
+        Util::ERROR("DomOrdPWMap::restrict: unsupported ", SET_IMPL.kind(), " set implementation");
+        return DomOrdPWMap{};
+      }};
 
   return std::visit(restrict_evaluator, key.impl(subdom));
 }
@@ -419,10 +396,7 @@ Set DomOrdPWMap::image() const
   return result;
 }
 
-Set DomOrdPWMap::image(const Set& subdom) const
-{
-  return restrict(subdom).image();
-}
+Set DomOrdPWMap::image(const Set& subdom) const { return restrict(subdom).image(); }
 
 Set DomOrdPWMap::preImage(const Set& subcodom) const
 {
@@ -454,7 +428,7 @@ DomOrdPWMap DomOrdPWMap::composition(const DomOrdPWMap& other) const
   for (const MapEntry& other_entry : other._pieces) {
     Map other_map = other_entry.map();
     Set img = other_map.image();
-    
+
     Perimeter img_perimeter = img.perimeter();
     result.advanceHint(global_pos, other_entry);
     IntTuple img_max_perimeter = img_perimeter.max();
@@ -468,7 +442,7 @@ DomOrdPWMap DomOrdPWMap::composition(const DomOrdPWMap& other) const
       }
 
       // No possible intersection between the current image and the remaining
-      // elements of _pieces. 
+      // elements of _pieces.
       if (img_max_perimeter < entry_perimeter.min()) {
         break;
       }
@@ -514,25 +488,16 @@ Set DomOrdPWMap::fixedPoints() const
 
 // Extra operations ------------------------------------------------------------
 
-DomOrdPWMap DomOrdPWMap::concatenation(const DomOrdPWMap& other) const &
-{
-  return DomOrdPWMap{*this}.concatenation(other);
-}
+DomOrdPWMap DomOrdPWMap::concatenation(const DomOrdPWMap& other) const& { return DomOrdPWMap{*this}.concatenation(other); }
 
-DomOrdPWMap DomOrdPWMap::concatenation(const DomOrdPWMap& other) &&
-{
-  return std::move(*this).concatenation(DomOrdPWMap{other});
-}
+DomOrdPWMap DomOrdPWMap::concatenation(const DomOrdPWMap& other) && { return std::move(*this).concatenation(DomOrdPWMap{other}); }
 
-DomOrdPWMap DomOrdPWMap::concatenation(DomOrdPWMap&& other) const &
-{
-  return DomOrdPWMap{*this}.concatenation(std::move(other));
-}
+DomOrdPWMap DomOrdPWMap::concatenation(DomOrdPWMap&& other) const& { return DomOrdPWMap{*this}.concatenation(std::move(other)); }
 
 DomOrdPWMap DomOrdPWMap::concatenation(DomOrdPWMap&& other) &&
 {
   // Special cases
-  if (isEmpty()) { 
+  if (isEmpty()) {
     return std::move(other);
   }
 
@@ -542,16 +507,12 @@ DomOrdPWMap DomOrdPWMap::concatenation(DomOrdPWMap&& other) &&
 
   OrdMapCollection result;
   if (_pieces.back() < other._pieces.front()) {
-    result.insert(result.end(), std::make_move_iterator(_pieces.begin())
-      , std::make_move_iterator(_pieces.end()));
-    result.insert(result.end(), std::make_move_iterator(other._pieces.begin())
-      , std::make_move_iterator(other._pieces.end()));
+    result.insert(result.end(), std::make_move_iterator(_pieces.begin()), std::make_move_iterator(_pieces.end()));
+    result.insert(result.end(), std::make_move_iterator(other._pieces.begin()), std::make_move_iterator(other._pieces.end()));
   } else if (other._pieces.back() < _pieces.front()) {
-    result.insert(result.end(), std::make_move_iterator(other._pieces.begin())
-      , std::make_move_iterator(other._pieces.end()));
-    result.insert(result.end(), std::make_move_iterator(_pieces.begin())
-      , std::make_move_iterator(_pieces.end()));
-  } else { 
+    result.insert(result.end(), std::make_move_iterator(other._pieces.begin()), std::make_move_iterator(other._pieces.end()));
+    result.insert(result.end(), std::make_move_iterator(_pieces.begin()), std::make_move_iterator(_pieces.end()));
+  } else {
     // General case
     auto it1 = _pieces.begin();
     auto end1 = _pieces.end();
@@ -566,31 +527,20 @@ DomOrdPWMap DomOrdPWMap::concatenation(DomOrdPWMap&& other) &&
         ++it2;
       }
     }
-    result.insert(result.end(), std::make_move_iterator(it1)
-      , std::make_move_iterator(end1));
-    result.insert(result.end(), std::make_move_iterator(it2)
-      , std::make_move_iterator(end2));
+    result.insert(result.end(), std::make_move_iterator(it1), std::make_move_iterator(end1));
+    result.insert(result.end(), std::make_move_iterator(it2), std::make_move_iterator(end2));
   }
 
   return DomOrdPWMap{std::move(result)};
 }
 
-DomOrdPWMap DomOrdPWMap::combine(const DomOrdPWMap& other) const &
-{
-  return DomOrdPWMap{*this}.combine(other);
-}
+DomOrdPWMap DomOrdPWMap::combine(const DomOrdPWMap& other) const& { return DomOrdPWMap{*this}.combine(other); }
 
-DomOrdPWMap DomOrdPWMap::combine(const DomOrdPWMap& other) &&
-{
-  return std::move(*this).combine(DomOrdPWMap{other});
-}
+DomOrdPWMap DomOrdPWMap::combine(const DomOrdPWMap& other) && { return std::move(*this).combine(DomOrdPWMap{other}); }
 
-DomOrdPWMap DomOrdPWMap::combine(DomOrdPWMap&& other) const &
-{
-  return DomOrdPWMap{*this}.combine(std::move(other));
-}
+DomOrdPWMap DomOrdPWMap::combine(DomOrdPWMap&& other) const& { return DomOrdPWMap{*this}.combine(std::move(other)); }
 
-DomOrdPWMap DomOrdPWMap::combine(DomOrdPWMap&& other) && 
+DomOrdPWMap DomOrdPWMap::combine(DomOrdPWMap&& other) &&
 {
   if (isEmpty()) {
     return std::move(other);
@@ -629,7 +579,7 @@ DomOrdPWMap DomOrdPWMap::min(const DomOrdPWMap& other) const
   }
 
   Set min_in_pw1 = lessImage(other);
-  return restrict(min_in_pw1).combine(other.restrict(domain())); 
+  return restrict(min_in_pw1).combine(other.restrict(domain()));
 }
 
 DomOrdPWMap DomOrdPWMap::max(const DomOrdPWMap& other) const
@@ -644,19 +594,19 @@ DomOrdPWMap DomOrdPWMap::max(const DomOrdPWMap& other) const
 }
 
 class MinAdjCore {
-public:
-  bool operator()(const MapEntry& entry1, const MapEntry& entry2) {
+  public:
+  bool operator()(const MapEntry& entry1, const MapEntry& entry2)
+  {
     Map min_adj = entry1.map().minAdj(entry2.map());
     if (!min_adj.isEmpty()) {
       Set min_adj_domain = min_adj.domain();
       Set repeated = min_adj_domain.intersection(_visited);
       if (!repeated.isEmpty()) {
         DomOrdPWMap min_adj_pw{std::move(min_adj)};
-        DomOrdPWMap min_adj_repeated = min_adj_pw.restrict(repeated); 
+        DomOrdPWMap min_adj_repeated = min_adj_pw.restrict(repeated);
         DomOrdPWMap result_repeated = _result.restrict(repeated);
         DomOrdPWMap min_map = min_adj_repeated.min(result_repeated);
-        DomOrdPWMap min_adj_result = std::move(min_map).combine(
-          std::move(min_adj_pw));
+        DomOrdPWMap min_adj_result = std::move(min_map).combine(std::move(min_adj_pw));
         _result = std::move(min_adj_result).combine(std::move(_result));
         _visited = std::move(_visited).cup(std::move(min_adj_domain));
       } else {
@@ -672,7 +622,7 @@ public:
 
   DomOrdPWMap result() const { return _result; }
 
-private:
+  private:
   DomOrdPWMap _result;
   Set _visited;
 };
@@ -687,8 +637,9 @@ DomOrdPWMap DomOrdPWMap::minAdj(const DomOrdPWMap& other) const
 }
 
 class MaxAdjCore {
-public:
-  bool operator()(const MapEntry& entry1, const MapEntry& entry2) {
+  public:
+  bool operator()(const MapEntry& entry1, const MapEntry& entry2)
+  {
     Map max_adj = entry1.map().maxAdj(entry2.map());
     if (!max_adj.isEmpty()) {
       Set max_adj_domain = max_adj.domain();
@@ -698,8 +649,7 @@ public:
         DomOrdPWMap max_adj_repeated = max_adj_pw.restrict(repeated);
         DomOrdPWMap result_repeated = _result.restrict(repeated);
         DomOrdPWMap max_map = max_adj_repeated.max(result_repeated);
-        DomOrdPWMap max_adj_result = std::move(max_map).combine(
-          std::move(max_adj_pw));
+        DomOrdPWMap max_adj_result = std::move(max_map).combine(std::move(max_adj_pw));
         _result = std::move(max_adj_result).combine(std::move(_result));
         _visited = std::move(_visited).cup(std::move(max_adj_domain));
       } else {
@@ -715,7 +665,7 @@ public:
 
   DomOrdPWMap result() const { return _result; }
 
-private:
+  private:
   DomOrdPWMap _result;
   Set _visited;
 };
@@ -730,8 +680,9 @@ DomOrdPWMap DomOrdPWMap::maxAdj(const DomOrdPWMap& other) const
 }
 
 class EqualImageCore {
-public:
-  bool operator()(const MapEntry& entry1, const MapEntry& entry2) {
+  public:
+  bool operator()(const MapEntry& entry1, const MapEntry& entry2)
+  {
     Map m1 = entry1.map();
     Map m2 = entry2.map();
     Set cap_dom = m1.domain().intersection(m2.domain());
@@ -750,7 +701,7 @@ public:
 
   Set result() const { return _result; }
 
-private:
+  private:
   Set _result;
 };
 
@@ -768,8 +719,9 @@ Set DomOrdPWMap::equalImage(const DomOrdPWMap& other) const
 }
 
 class LessImageCore {
-public:
-  bool operator()(const MapEntry& entry1, const MapEntry& entry2) {
+  public:
+  bool operator()(const MapEntry& entry1, const MapEntry& entry2)
+  {
     Set less_map = entry1.map().lessImage(entry2.map());
     _result = std::move(_result).disjointCup(std::move(less_map));
 
@@ -780,7 +732,7 @@ public:
 
   Set result() const { return _result; }
 
-private:
+  private:
   Set _result;
 };
 
@@ -795,7 +747,7 @@ Set DomOrdPWMap::lessImage(const DomOrdPWMap& other) const
   }
 
   return traverse(_pieces, other._pieces, LessImageCore{}).result();
-} 
+}
 
 DomOrdPWMap DomOrdPWMap::imageMultiplicity() const
 {
@@ -809,7 +761,7 @@ DomOrdPWMap DomOrdPWMap::imageMultiplicity() const
   }
 
   return result;
-} 
+}
 
 void DomOrdPWMap::compact()
 {
@@ -863,8 +815,7 @@ void DomOrdPWMap::compact()
 
 // Non-member functions --------------------------------------------------------
 
-rapidjson::Value toJSON(DomOrdPWMap pw
-  , rapidjson::Document::AllocatorType& alloc)
+rapidjson::Value toJSON(DomOrdPWMap pw, rapidjson::Document::AllocatorType& alloc)
 {
   rapidjson::Value result{rapidjson::kArrayType};
 
@@ -876,9 +827,8 @@ rapidjson::Value toJSON(DomOrdPWMap pw
   return result;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG;
-
+}  // namespace SBG

@@ -34,25 +34,25 @@ MinFeedbackVertexSet::MinFeedbackVertexSet() : _impl()
 {
   MFVSKind kind = MFVS_IMPL.kind();
   switch (kind) {
-    case MFVSKind::kGreedy: {
-      _impl = detail::GreedyMFVS{};
-      break;
-    }
+  case MFVSKind::kGreedy: {
+    _impl = detail::GreedyMFVS{};
+    break;
+  }
 
-    case MFVSKind::kSmallSV: {
-      _impl = detail::SmallestSVMFVS{};
-      break;
-    }
+  case MFVSKind::kSmallSV: {
+    _impl = detail::SmallestSVMFVS{};
+    break;
+  }
 
-    case MFVSKind::kParallelSCC: {
-      _impl = detail::ParallelSCCMFVS{};
-      break;
-    }
+  case MFVSKind::kParallelSCC: {
+    _impl = detail::ParallelSCCMFVS{};
+    break;
+  }
 
-    default: {
-      Util::ERROR("MinFeedbackVertexSet: unsupported MFVS implementation");
-      break;
-    }
+  default: {
+    Util::ERROR("MinFeedbackVertexSet: unsupported MFVS implementation");
+    break;
+  }
   }
 }
 
@@ -63,6 +63,6 @@ Set MinFeedbackVertexSet::calculate(const DirectedSBG& dsbg)
   return std::visit([&](auto& a) { return a.calculate(dsbg); }, _impl);
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

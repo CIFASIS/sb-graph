@@ -30,10 +30,7 @@ namespace detail {
 
 LinearExprEvaluator::LinearExprEvaluator(VarEnv &venv) : _venv(venv) {}
 
-LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::Integer v) const
-{
-  return LIB::detail::LinearExpr{0, LIB::Rational{v}}; 
-}
+LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::Integer v) const { return LIB::detail::LinearExpr{0, LIB::Rational{v}}; }
 
 LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::Rational v) const
 {
@@ -49,8 +46,7 @@ LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::Name v) const
     return LIB::detail::LinearExpr{1, 0};
   }
 
-  LIB::Rational off = boost::apply_visitor(RationalEvaluator{_venv}
-    , AST::Expr{v});
+  LIB::Rational off = boost::apply_visitor(RationalEvaluator{_venv}, AST::Expr{v});
   return LIB::detail::LinearExpr{0, off};
 }
 
@@ -59,56 +55,50 @@ LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::UnaryOp v) const
   LIB::detail::LinearExpr le = boost::apply_visitor(*this, v.expr());
 
   switch (v.op()) {
-    case AST::UnOp::oppo: {
-      return LIB::detail::LinearExpr{-le.slope(), -le.offset()}; 
-    }
+  case AST::UnOp::oppo: {
+    return LIB::detail::LinearExpr{-le.slope(), -le.offset()};
+  }
 
-    default: {
-      Util::ERROR("LinearExprEvaluator: UnaryOp ", v.op()
-        , " is not arithmetic\n");
-      break;
-    }
+  default: {
+    Util::ERROR("LinearExprEvaluator: UnaryOp ", v.op(), " is not arithmetic\n");
+    break;
+  }
   };
 
   return LIB::detail::LinearExpr{};
 }
 
-LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::BinOp v) const 
+LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::BinOp v) const
 {
   LIB::detail::LinearExpr vl = boost::apply_visitor(*this, v.left());
   LIB::detail::LinearExpr vr = boost::apply_visitor(*this, v.right());
 
   switch (v.op()) {
-    case AST::Op::add: {
-      return LIB::detail::LinearExpr{vl.slope() + vr.slope()
-        , vl.offset() + vr.offset()}; 
+  case AST::Op::add: {
+    return LIB::detail::LinearExpr{vl.slope() + vr.slope(), vl.offset() + vr.offset()};
+  }
+
+  case AST::Op::sub: {
+    return LIB::detail::LinearExpr{vl.slope() - vr.slope(), vl.offset() - vr.offset()};
+  }
+
+  case AST::Op::mult: {
+    if (vl.slope() == 0 && vr.slope() == 0) {
+      return LIB::detail::LinearExpr{0, vr.offset() * vl.offset()};
+    } else if (vl.slope() == 0) {
+      return LIB::detail::LinearExpr{vl.offset() * vr.slope(), vl.offset() * vr.offset()};
+    } else if (vr.slope() == 0) {
+      return LIB::detail::LinearExpr{vl.slope() * vr.offset(), vl.offset() * vr.offset()};
     }
 
-    case AST::Op::sub: {
-      return LIB::detail::LinearExpr{vl.slope() - vr.slope()
-        , vl.offset() - vr.offset()}; 
-    }
+    Util::ERROR("LinearExprEvaluator: expression ", v, " is not linear\n");
+    break;
+  }
 
-    case AST::Op::mult: {
-      if (vl.slope() == 0 && vr.slope() == 0) {
-        return LIB::detail::LinearExpr{0, vr.offset()*vl.offset()};
-      } else if (vl.slope() == 0) {
-        return LIB::detail::LinearExpr{vl.offset()*vr.slope()
-           , vl.offset()*vr.offset()};
-      } else if (vr.slope() == 0) {
-        return LIB::detail::LinearExpr{vl.slope()*vr.offset()
-          , vl.offset()*vr.offset()};
-      }
-
-      Util::ERROR("LinearExprEvaluator: expression ", v, " is not linear\n");
-      break;
-    }
-
-    default: {
-      Util::ERROR("LinearExprEvaluator: BinOp ", v.op()
-        , " is not arithmetic\n");
-      break;
-    }
+  default: {
+    Util::ERROR("LinearExprEvaluator: BinOp ", v.op(), " is not arithmetic\n");
+    break;
+  }
   };
 
   return LIB::detail::LinearExpr{};
@@ -117,84 +107,76 @@ LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::BinOp v) const
 LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::Call v) const
 {
   Util::ERROR("LinearExprEvaluator: trying to evaluate Call ", v, "\n");
-  return LIB::detail::LinearExpr{}; 
+  return LIB::detail::LinearExpr{};
 }
 
 LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::Interval v) const
-{ 
+{
   Util::ERROR("LinearExprEvaluator: trying to evaluate Interval ", v, "\n");
-  return LIB::detail::LinearExpr{}; 
+  return LIB::detail::LinearExpr{};
 }
 
-LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::MultiDimInter v)
-  const
-{ 
-  Util::ERROR("LinearExprEvaluator: trying to evaluate MultiDimInter ", v
-    , "\n");
-  return LIB::detail::LinearExpr{}; 
+LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::MultiDimInter v) const
+{
+  Util::ERROR("LinearExprEvaluator: trying to evaluate MultiDimInter ", v, "\n");
+  return LIB::detail::LinearExpr{};
 }
 
-LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::Set v) const 
+LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::Set v) const
 {
   Util::ERROR("LinearExprEvaluator: trying to evaluate Set ", v, "\n");
-  return LIB::detail::LinearExpr{}; 
+  return LIB::detail::LinearExpr{};
 }
 
 LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::LinearExpr v) const
-{ 
+{
   RationalEvaluator visit_rat{_venv};
   AST::Expr m = v.slope();
   AST::Expr h = v.offset();
 
-  return LIB::detail::LinearExpr{boost::apply_visitor(visit_rat, m)
-    , boost::apply_visitor(visit_rat, h)};
+  return LIB::detail::LinearExpr{boost::apply_visitor(visit_rat, m), boost::apply_visitor(visit_rat, h)};
 }
 
-LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::MDLExp v)
-  const
+LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::MDLExp v) const
 {
   Util::ERROR("LinearExprEvaluator: trying to evaluate MDLExp ", v, "\n");
-  return LIB::detail::LinearExpr{}; 
+  return LIB::detail::LinearExpr{};
 }
 
-LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::LinearMap v) const 
+LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::LinearMap v) const
 {
   Util::ERROR("LinearExprEvaluator: trying to evaluate LinearMap ", v, "\n");
-  return LIB::detail::LinearExpr{}; 
+  return LIB::detail::LinearExpr{};
 }
 
-LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::PWLMap v) const 
+LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::PWLMap v) const
 {
   Util::ERROR("LinearExprEvaluator: trying to evaluate PWLMap ", v, "\n");
-  return LIB::detail::LinearExpr{}; 
+  return LIB::detail::LinearExpr{};
 }
 
-LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::SBG v) const 
+LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::SBG v) const
 {
   Util::ERROR("LinearExprEvaluator: trying to evaluate SBG ", v, "\n");
-  return LIB::detail::LinearExpr{}; 
+  return LIB::detail::LinearExpr{};
 }
 
-LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::BipartiteSBG v)
-  const 
+LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::BipartiteSBG v) const
 {
   Util::ERROR("LinearExprEvaluator: trying to evaluate BipartiteSBG ", v, "\n");
-  return LIB::detail::LinearExpr{}; 
+  return LIB::detail::LinearExpr{};
 }
 
-LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::DSBG v) const 
+LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::DSBG v) const
 {
   Util::ERROR("LinearExprEvaluator: trying to evaluate DirectedSBG ", v, "\n");
-  return LIB::detail::LinearExpr{}; 
+  return LIB::detail::LinearExpr{};
 }
 
-LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::ParenExpr v) const
-{
-  return boost::apply_visitor(*this, v.pexpr());
-}
+LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::ParenExpr v) const { return boost::apply_visitor(*this, v.pexpr()); }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace Eval
+}  // namespace Eval
 
-} // namespace SBG
+}  // namespace SBG

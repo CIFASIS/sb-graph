@@ -41,7 +41,7 @@ Rational::Rational(Int n, Int d) : _value()
 
 // Getters ---------------------------------------------------------------------
 
-const Rational::RationalT& Rational::value() const  { return _value; }
+const Rational::RationalT& Rational::value() const { return _value; }
 
 Int Rational::numerator() const { return _value.numerator(); }
 
@@ -49,60 +49,27 @@ Int Rational::denominator() const { return _value.denominator(); }
 
 // Operators -------------------------------------------------------------------
 
-bool Rational::operator==(const Rational& r) const
-{
-  return _value == r._value;
-}
+bool Rational::operator==(const Rational& r) const { return _value == r._value; }
 
-bool Rational::operator!=(const Rational& r) const
-{
-  return _value != r._value;
-}
+bool Rational::operator!=(const Rational& r) const { return _value != r._value; }
 
-bool Rational::operator<(const Rational& r) const
-{
-  return _value < r._value;
-}
+bool Rational::operator<(const Rational& r) const { return _value < r._value; }
 
-bool Rational::operator>(const Rational& r) const
-{
-  return _value > r._value;
-}
+bool Rational::operator>(const Rational& r) const { return _value > r._value; }
 
-bool Rational::operator>=(const Rational& r) const
-{
-  return _value >= r._value;
-}
+bool Rational::operator>=(const Rational& r) const { return _value >= r._value; }
 
-bool Rational::operator==(const Int& other) const
-{
-  return numerator() == other && denominator() == 1;
-}
+bool Rational::operator==(const Int& other) const { return numerator() == other && denominator() == 1; }
 
-Rational Rational::operator-() const
-{
-  return Rational{-_value};
-}
+Rational Rational::operator-() const { return Rational{-_value}; }
 
-Rational Rational::operator+(const Rational& other) const
-{
-  return Rational{_value + other._value};
-}
+Rational Rational::operator+(const Rational& other) const { return Rational{_value + other._value}; }
 
-Rational Rational::operator-(const Rational& other) const
-{
-  return Rational{_value - other._value};
-}
+Rational Rational::operator-(const Rational& other) const { return Rational{_value - other._value}; }
 
-Rational Rational::operator*(const Rational& other) const
-{
-  return Rational{_value*other._value};
-}
+Rational Rational::operator*(const Rational& other) const { return Rational{_value * other._value}; }
 
-Rational Rational::operator/(const Rational& other) const
-{
-  return Rational{_value/other._value};
-}
+Rational Rational::operator/(const Rational& other) const { return Rational{_value / other._value}; }
 
 // Member functions ------------------------------------------------------------
 
@@ -114,10 +81,7 @@ Int Rational::toInt() const
   return 0;
 }
 
-Int Rational::floor() const
-{
-  return boost::rational_cast<Int>(_value);
-}
+Int Rational::floor() const { return boost::rational_cast<Int>(_value); }
 
 Int Rational::ceiling() const
 {
@@ -142,6 +106,6 @@ std::ostream& operator<<(std::ostream& out, const Rational& r)
   return out;
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

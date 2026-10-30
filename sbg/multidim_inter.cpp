@@ -38,13 +38,9 @@ MultiDimInter::MultiDimInter(const IntTuple& x) : _intervals()
   }
 }
 
-MultiDimInter::MultiDimInter(const Interval& i) : _intervals()
-{
-  _intervals.push_back(i);
-}
+MultiDimInter::MultiDimInter(const Interval& i) : _intervals() { _intervals.push_back(i); }
 
-MultiDimInter::MultiDimInter(const std::size_t k, const Interval& i)
-  : _intervals()
+MultiDimInter::MultiDimInter(const std::size_t k, const Interval& i) : _intervals()
 {
   for (unsigned int j = 0; j < k; ++j) {
     _intervals.push_back(i);
@@ -55,20 +51,14 @@ MultiDimInter::MultiDimInter(InterVector iv) : _intervals(std::move(iv)) {}
 
 // Getters ---------------------------------------------------------------------
 
-MultiDimInter::ConstIt MultiDimInter::begin() const
-{
-  return _intervals.begin();
-}
+MultiDimInter::ConstIt MultiDimInter::begin() const { return _intervals.begin(); }
 
-MultiDimInter::ConstIt MultiDimInter::end() const
-{
-  return _intervals.end();
-}
+MultiDimInter::ConstIt MultiDimInter::end() const { return _intervals.end(); }
 
 // Setters ---------------------------------------------------------------------
 
-void MultiDimInter::pushBack(const Interval& i) 
-{ 
+void MultiDimInter::pushBack(const Interval& i)
+{
   if (!i.isEmpty()) {
     _intervals.push_back(i);
   }
@@ -76,25 +66,13 @@ void MultiDimInter::pushBack(const Interval& i)
 
 // Operators -------------------------------------------------------------------
 
-Interval& MultiDimInter::operator[](std::size_t n)
-{
-  return _intervals[n];
-}
+Interval& MultiDimInter::operator[](std::size_t n) { return _intervals[n]; }
 
-const Interval& MultiDimInter::operator[](std::size_t n) const
-{
-  return _intervals[n];
-}
+const Interval& MultiDimInter::operator[](std::size_t n) const { return _intervals[n]; }
 
-bool MultiDimInter::operator==(const MultiDimInter& other) const
-{
-  return _intervals == other._intervals;
-}
+bool MultiDimInter::operator==(const MultiDimInter& other) const { return _intervals == other._intervals; }
 
-bool MultiDimInter::operator!=(const MultiDimInter& other) const
-{
-  return !(*this == other);
-}
+bool MultiDimInter::operator!=(const MultiDimInter& other) const { return !(*this == other); }
 
 bool MultiDimInter::operator<(const MultiDimInter& other) const
 {
@@ -109,10 +87,7 @@ bool MultiDimInter::operator<(const MultiDimInter& other) const
   return minElem() < other.minElem();
 }
 
-bool MultiDimInter::operator>(const MultiDimInter& other) const
-{
-  return !(*this == other && *this < other);
-}
+bool MultiDimInter::operator>(const MultiDimInter& other) const { return !(*this == other && *this < other); }
 
 std::ostream& operator<<(std::ostream& out, const MultiDimInter& mdi)
 {
@@ -122,7 +97,7 @@ std::ostream& operator<<(std::ostream& out, const MultiDimInter& mdi)
     for (std::size_t j = 0; j < sz - 1; ++j) {
       out << mdi[j] << "x";
     }
-    out << mdi[sz-1];
+    out << mdi[sz - 1];
   }
 
   return out;
@@ -190,7 +165,7 @@ MultiDimInter MultiDimInter::cartesianProduct(const MultiDimInter& other) const
   MultiDimInter result = *this;
 
   for (const Interval& other_i : other._intervals) {
-    result.pushBack(other_i); 
+    result.pushBack(other_i);
   }
 
   return result;
@@ -211,15 +186,9 @@ MultiDimInter MultiDimInter::translate(const IntTuple& t) const
   return result;
 }
 
-MultiDimInter MultiDimInter::least(const MultiDimInter& other) const
-{
-  return std::min(*this, other);
-}
+MultiDimInter MultiDimInter::least(const MultiDimInter& other) const { return std::min(*this, other); }
 
-Perimeter MultiDimInter::perimeter() const
-{
-  return Perimeter{minElem(), maxElem()};
-}
+Perimeter MultiDimInter::perimeter() const { return Perimeter{minElem(), maxElem()}; }
 
 MaybeMDI MultiDimInter::compact(const MultiDimInter& other) const
 {
@@ -256,8 +225,7 @@ MaybeMDI MultiDimInter::compact(const MultiDimInter& other) const
 
 // Non-member functions --------------------------------------------------------
 
-rapidjson::Value toJSON(MultiDimInter mdi
-  , rapidjson::Document::AllocatorType& alloc)
+rapidjson::Value toJSON(MultiDimInter mdi, rapidjson::Document::AllocatorType& alloc)
 {
   rapidjson::Value interval_array{rapidjson::kArrayType};
   for (const Interval& i : mdi) {
@@ -270,8 +238,8 @@ rapidjson::Value toJSON(MultiDimInter mdi
   return result;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

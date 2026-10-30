@@ -32,12 +32,12 @@ ProgramIO parseEvalFile(std::string fname)
 {
   AST::SBGProgram parser_result = Parser::parseFile(fname);
 
-  detail::ProgramEvaluator program_visit; 
+  detail::ProgramEvaluator program_visit;
   ProgramIO visit_result = program_visit.evaluate(parser_result);
 
   return visit_result;
 }
 
-} // namespace Eval
+}  // namespace Eval
 
-} // namespace SBG
+}  // namespace SBG

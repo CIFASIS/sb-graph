@@ -56,8 +56,7 @@ static void BM_BoostMatching(benchmark::State& state, std::string filename)
   state.SetComplexityN(N);
 }
 
-static void BM_BoostSCC(benchmark::State& state
-  , std::string filename)
+static void BM_BoostSCC(benchmark::State& state, std::string filename)
 {
   int N = state.range(0);
 
@@ -77,8 +76,7 @@ static void BM_BoostSCC(benchmark::State& state
   state.SetComplexityN(N);
 }
 
-static void BM_BoostSCCWithBuilder(benchmark::State& state
-  , std::string filename)
+static void BM_BoostSCCWithBuilder(benchmark::State& state, std::string filename)
 {
   int N = state.range(0);
 
@@ -104,33 +102,29 @@ static void BM_BoostSCCWithBuilder(benchmark::State& state
 
 void registerBoostBenchmarks(std::string filename)
 {
-  benchmark::RegisterBenchmark(
-    ("BM_BoostMatching/" + filename).c_str(),
-    [filename](benchmark::State& state) {
-      BM_BoostMatching(state, filename);
-    }
-  )->RangeMultiplier(10)->Range(100, 1e6)->Complexity()
-    ->Unit(benchmark::kMillisecond);
+  benchmark::RegisterBenchmark(("BM_BoostMatching/" + filename).c_str(),
+                               [filename](benchmark::State& state) { BM_BoostMatching(state, filename); })
+      ->RangeMultiplier(10)
+      ->Range(100, 1e6)
+      ->Complexity()
+      ->Unit(benchmark::kMillisecond);
 
-  benchmark::RegisterBenchmark(
-    ("BM_BoostSCC/" + filename).c_str(),
-    [filename](benchmark::State& state) {
-      BM_BoostSCC(state, filename);
-    }
-  )->RangeMultiplier(10)->Range(100, 1e6)->Complexity()
-    ->Unit(benchmark::kMillisecond);
+  benchmark::RegisterBenchmark(("BM_BoostSCC/" + filename).c_str(), [filename](benchmark::State& state) { BM_BoostSCC(state, filename); })
+      ->RangeMultiplier(10)
+      ->Range(100, 1e6)
+      ->Complexity()
+      ->Unit(benchmark::kMillisecond);
 
-  benchmark::RegisterBenchmark(
-    ("BM_BoostSCCWithBuilder/" + filename).c_str(),
-    [filename](benchmark::State& state) {
-      BM_BoostSCCWithBuilder(state, filename);
-    }
-  )->RangeMultiplier(10)->Range(100, 1e6)->Complexity()
-    ->Unit(benchmark::kMillisecond);
+  benchmark::RegisterBenchmark(("BM_BoostSCCWithBuilder/" + filename).c_str(),
+                               [filename](benchmark::State& state) { BM_BoostSCCWithBuilder(state, filename); })
+      ->RangeMultiplier(10)
+      ->Range(100, 1e6)
+      ->Complexity()
+      ->Unit(benchmark::kMillisecond);
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace perf
+}  // namespace perf
 
-} // namespace SBG
+}  // namespace SBG

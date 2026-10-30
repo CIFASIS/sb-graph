@@ -27,23 +27,23 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Matching Algorithm Interface ------------------------------------------------ 
+// Matching Algorithm Interface ------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 Matching::Matching() : _impl()
 {
   MatchKind kind = MATCH_IMPL.kind();
   switch (kind) {
-    case MatchKind::kBFSPaths: {
-      _impl = detail::BFSMatching{};
-      break;
-    }
+  case MatchKind::kBFSPaths: {
+    _impl = detail::BFSMatching{};
+    break;
+  }
 
-    default: {
-      Util::ERROR("Unsupported matching algorithm implementation");
-      break;
-    }
-  }  
+  default: {
+    Util::ERROR("Unsupported matching algorithm implementation");
+    break;
+  }
+  }
 }
 
 MatchData Matching::calculate(const BipartiteSBG& bsbg)
@@ -53,6 +53,6 @@ MatchData Matching::calculate(const BipartiteSBG& bsbg)
   return std::visit([&](auto& a) { return a.calculate(bsbg); }, _impl);
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

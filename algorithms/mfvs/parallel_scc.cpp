@@ -118,7 +118,7 @@ Set ParallelSCCMFVS::calculate(const DirectedSBG& input_dsbg)
     Set Vj_SV = Vmap.image(Vj);
     Set repeatedSV = visitedSV.intersection(Vj_SV);
     if (!repeatedSV.isEmpty()) {
-      fvs_result = fvs_result.cup(Vmap.preImage(Vj_SV)); 
+      fvs_result = fvs_result.cup(Vmap.preImage(Vj_SV));
     } else {
       visitedSV = visitedSV.cup(Vj_SV);
     }
@@ -137,8 +137,8 @@ Set ParallelSCCMFVS::calculate(const DirectedSBG& input_dsbg)
   return fvs_result;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

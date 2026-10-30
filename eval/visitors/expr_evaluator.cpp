@@ -34,13 +34,12 @@ namespace detail {
 // Expression evaluator --------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-template<typename T>
+template <typename T>
 T eval(const ExprEvaluator& visit, AST::Expr e, std::string t = "UNDEF")
 {
   ExprBaseType visited = boost::apply_visitor(visit, e);
 
-  Util::ERROR_UNLESS(std::holds_alternative<T>(visited)
-    , "ExprEvaluator: expression ", e, " is not of type ", t, "\n");
+  Util::ERROR_UNLESS(std::holds_alternative<T>(visited), "ExprEvaluator: expression ", e, " is not of type ", t, "\n");
 
   return std::get<T>(visited);
 }
@@ -69,26 +68,22 @@ ExprEvaluator::ExprEvaluator(EvalContext& eval_ctx) : _eval_context(eval_ctx)
   eval_ctx.insertFunction("sort", BuiltInFunctions::topoSortEvaluator);
 }
 
-ExprBaseType ExprEvaluator::operator()(AST::Integer v) const
-{
-  return (LIB::Int) v;
-}
+ExprBaseType ExprEvaluator::operator()(AST::Integer v) const { return (LIB::Int)v; }
 
 ExprBaseType ExprEvaluator::operator()(AST::Rational v) const
 {
-  return boost::apply_visitor(RationalEvaluator{_eval_context.venv()}
-    , AST::Expr{v});
+  return boost::apply_visitor(RationalEvaluator{_eval_context.venv()}, AST::Expr{v});
 }
 
-ExprBaseType ExprEvaluator::operator()(AST::Name v) const 
+ExprBaseType ExprEvaluator::operator()(AST::Name v) const
 {
   auto var_definition = _eval_context.venv().find(v);
-  if (var_definition != _eval_context.venv().end()) { 
+  if (var_definition != _eval_context.venv().end()) {
     return var_definition->second;
   }
 
   Util::ERROR("ExprEvaluator: variable ", v, " undefined\n");
-  return ExprBaseType{}; 
+  return ExprBaseType{};
 }
 
 ExprBaseType ExprEvaluator::operator()(AST::UnaryOp v) const
@@ -101,7 +96,7 @@ ExprBaseType ExprEvaluator::operator()(AST::UnaryOp v) const
 }
 
 ExprBaseType ExprEvaluator::operator()(AST::BinOp v) const
-{ 
+{
   ExprBaseType left = boost::apply_visitor(*this, v.left());
   ExprBaseType right = boost::apply_visitor(*this, v.right());
   EBTList evaluated_args;
@@ -116,7 +111,7 @@ ExprBaseType ExprEvaluator::operator()(AST::Call v) const
   std::string func_name = v.name();
 
   auto func_definition = _eval_context.fenv().find(func_name);
-  if (func_definition != _eval_context.fenv().end()) { 
+  if (func_definition != _eval_context.fenv().end()) {
     std::vector<ExprBaseType> evaluated_args;
     for (AST::Expr a : v.args()) {
       evaluated_args.push_back(boost::apply_visitor(*this, a));
@@ -145,7 +140,7 @@ ExprBaseType ExprEvaluator::operator()(AST::MultiDimInter v) const
   LIB::Set result;
 
   int i = 0;
-  for (const AST::Expr& e : v.intervals())  {
+  for (const AST::Expr& e : v.intervals()) {
     LIB::Set kth_component = eval<LIB::Set>(*this, e, "Set");
     if (i == 0) {
       result = std::move(kth_component);
@@ -155,13 +150,11 @@ ExprBaseType ExprEvaluator::operator()(AST::MultiDimInter v) const
     ++i;
   }
 
-  Util::ERROR_UNLESS(result.arity() == _eval_context.arity()
-    || result.arity() == 0, "EvalMDI[arity = ", _eval_context.arity()
-    , "]: arity(", result, ") = ", result.arity(), "\n");
+  Util::ERROR_UNLESS(result.arity() == _eval_context.arity() || result.arity() == 0, "EvalMDI[arity = ", _eval_context.arity(), "]: arity(",
+                     result, ") = ", result.arity(), "\n");
 
   return result;
 }
-
 
 ExprBaseType ExprEvaluator::operator()(AST::Set v) const
 {
@@ -172,9 +165,8 @@ ExprBaseType ExprEvaluator::operator()(AST::Set v) const
     result = std::move(result).disjointCup(std::move(jth_element));
   }
 
-  Util::ERROR_UNLESS(result.arity() == _eval_context.arity()
-    || result.arity() == 0, "ExprEvaluator[arity = ", _eval_context.arity()
-    , "]: arity(", result, ") = ", result.arity(), "\n");
+  Util::ERROR_UNLESS(result.arity() == _eval_context.arity() || result.arity() == 0, "ExprEvaluator[arity = ", _eval_context.arity(),
+                     "]: arity(", result, ") = ", result.arity(), "\n");
 
   return result;
 }
@@ -182,8 +174,7 @@ ExprBaseType ExprEvaluator::operator()(AST::Set v) const
 ExprBaseType ExprEvaluator::operator()(AST::LinearExpr v) const
 {
   LinearExprEvaluator linear_expr_evaluator{_eval_context.venv()};
-  LIB::detail::LinearExpr linear_expr
-    = boost::apply_visitor(linear_expr_evaluator, AST::Expr(v));
+  LIB::detail::LinearExpr linear_expr = boost::apply_visitor(linear_expr_evaluator, AST::Expr(v));
   return LIB::Expression{linear_expr.slope(), linear_expr.offset()};
 }
 
@@ -193,15 +184,12 @@ ExprBaseType ExprEvaluator::operator()(AST::MDLExp v) const
 
   LinearExprEvaluator linear_expr_evaluator{_eval_context.venv()};
   for (const AST::Expr& e : v.exps()) {
-    LIB::detail::LinearExpr kth_component
-      = boost::apply_visitor(linear_expr_evaluator, e);
-    result = result.cartesianProduct(LIB::Expression{kth_component.slope()
-      , kth_component.offset()});
+    LIB::detail::LinearExpr kth_component = boost::apply_visitor(linear_expr_evaluator, e);
+    result = result.cartesianProduct(LIB::Expression{kth_component.slope(), kth_component.offset()});
   }
 
-  Util::ERROR_UNLESS(result.arity() == _eval_context.arity()
-    || result.arity() == 0, "ExprEvaluator[arity = ", _eval_context.arity(),
-    "]: arity(", result, ") = ", result.arity(), "\n");
+  Util::ERROR_UNLESS(result.arity() == _eval_context.arity() || result.arity() == 0, "ExprEvaluator[arity = ", _eval_context.arity(),
+                     "]: arity(", result, ") = ", result.arity(), "\n");
 
   return result;
 }
@@ -213,9 +201,8 @@ ExprBaseType ExprEvaluator::operator()(AST::LinearMap v) const
 
   LIB::Map result{domain, law};
 
-  Util::ERROR_UNLESS(result.arity() == _eval_context.arity()
-    || result.arity() == 0, "ExprEvaluator[arity = ", _eval_context.arity()
-    , "]: arity(", result, ") = ", result.arity(), "\n");
+  Util::ERROR_UNLESS(result.arity() == _eval_context.arity() || result.arity() == 0, "ExprEvaluator[arity = ", _eval_context.arity(),
+                     "]: arity(", result, ") = ", result.arity(), "\n");
 
   return result;
 }
@@ -228,9 +215,8 @@ ExprBaseType ExprEvaluator::operator()(AST::PWLMap v) const
     result.insert(eval<LIB::Map>(*this, e, "Map"));
   }
 
-  Util::ERROR_UNLESS(result.arity() == _eval_context.arity()
-    || result.arity() == 0, "ExprEvaluator[arity = ", _eval_context.arity()
-    , "]: arity(", result, ") = ", result.arity(), "\n");
+  Util::ERROR_UNLESS(result.arity() == _eval_context.arity() || result.arity() == 0, "ExprEvaluator[arity = ", _eval_context.arity(),
+                     "]: arity(", result, ") = ", result.arity(), "\n");
 
   return result;
 }
@@ -270,13 +256,10 @@ ExprBaseType ExprEvaluator::operator()(AST::DSBG v) const
   return LIB::DirectedSBG{V, Vmap, mapB, mapD, Emap};
 }
 
-ExprBaseType ExprEvaluator::operator()(AST::ParenExpr v) const
-{
-  return boost::apply_visitor(*this, v.pexpr());
-}
+ExprBaseType ExprEvaluator::operator()(AST::ParenExpr v) const { return boost::apply_visitor(*this, v.pexpr()); }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace Eval
+}  // namespace Eval
 
-} // namespace SBG
+}  // namespace SBG

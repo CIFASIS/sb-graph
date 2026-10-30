@@ -2,6 +2,6 @@
 add_subdirectory(cc)
 add_subdirectory(matching)
 add_subdirectory(mfvs)
-#add_subdirectory(partitioner)
+add_subdirectory(partitioner)
 add_subdirectory(scc)
 add_subdirectory(sorting)

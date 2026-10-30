@@ -34,26 +34,21 @@ namespace detail {
 
 UserImplMap::StructImplMap::StructImplMap() : _is_frozen(false) {}
 
-UserImplMap::StructImplMap::SValue& UserImplMap::StructImplMap::operator[]
-  (const SKey& key)
+UserImplMap::StructImplMap::SValue& UserImplMap::StructImplMap::operator[](const SKey& key)
 {
-  Util::ERROR_UNLESS(!_is_frozen, "StructImplMap: map is frozen, insertion is"
-    " prohibited.\n");
+  Util::ERROR_UNLESS(!_is_frozen,
+                     "StructImplMap: map is frozen, insertion is"
+                     " prohibited.\n");
   return _struct_impls[key];
 }
 
-const UserImplMap::StructImplMap::SValue& UserImplMap::StructImplMap::operator[]
-  (const SKey& key) const
+const UserImplMap::StructImplMap::SValue& UserImplMap::StructImplMap::operator[](const SKey& key) const
 {
-  Util::ERROR_UNLESS(_struct_impls.find(key) != _struct_impls.end()
-    , "StructImplMap: undefined implementation.\n");
-  return _struct_impls.at(key); 
+  Util::ERROR_UNLESS(_struct_impls.find(key) != _struct_impls.end(), "StructImplMap: undefined implementation.\n");
+  return _struct_impls.at(key);
 }
 
-void UserImplMap::StructImplMap::freeze()
-{
-  _is_frozen = true;
-}
+void UserImplMap::StructImplMap::freeze() { _is_frozen = true; }
 
 UserImplMap::StructImplMap setMap()
 {
@@ -131,7 +126,7 @@ Kind UserImplMap::getFactory(std::string strct, int impl)
   return struct_map[impl];
 }
 
-} // namespace detail
+}  // namespace detail
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extra operations ------------------------------------------------------------
@@ -139,22 +134,19 @@ Kind UserImplMap::getFactory(std::string strct, int impl)
 
 void setSetFactory(int set_impl)
 {
-  LIB::SetKind set_fact = std::get<LIB::SetKind>(detail::IMPL_MAP.getFactory(
-    "set", set_impl));
+  LIB::SetKind set_fact = std::get<LIB::SetKind>(detail::IMPL_MAP.getFactory("set", set_impl));
   LIB::SET_IMPL.set_set_fact(set_fact);
 }
 
 void setPWFactory(int pw_impl)
 {
-  LIB::PWMapKind pwmap_fact = std::get<LIB::PWMapKind>(
-    detail::IMPL_MAP.getFactory("pwmap", pw_impl));
+  LIB::PWMapKind pwmap_fact = std::get<LIB::PWMapKind>(detail::IMPL_MAP.getFactory("pwmap", pw_impl));
   LIB::PWMAP_IMPL.set_pwmap_fact(pwmap_fact);
 }
 
 void setSCCFactory(int scc_impl)
 {
-  LIB::SCCKind scc_fact = std::get<LIB::SCCKind>(
-    detail::IMPL_MAP.getFactory("scc", scc_impl));
+  LIB::SCCKind scc_fact = std::get<LIB::SCCKind>(detail::IMPL_MAP.getFactory("scc", scc_impl));
   LIB::SCC_IMPL.set_scc_fact(scc_fact);
 
   return;
@@ -162,13 +154,12 @@ void setSCCFactory(int scc_impl)
 
 void setMFVSFactory(int mfvs_impl)
 {
-  LIB::MFVSKind mfvs_fact = std::get<LIB::MFVSKind>(
-    detail::IMPL_MAP.getFactory("mfvs", mfvs_impl));
+  LIB::MFVSKind mfvs_fact = std::get<LIB::MFVSKind>(detail::IMPL_MAP.getFactory("mfvs", mfvs_impl));
   LIB::MFVS_IMPL.set_mfvs_fact(mfvs_fact);
 
   return;
 }
 
-} // namespace Eval
+}  // namespace Eval
 
-} // namespace SBG
+}  // namespace SBG

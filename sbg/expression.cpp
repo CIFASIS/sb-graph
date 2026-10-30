@@ -36,15 +36,10 @@ Expression::Expression(const IntTuple& x)
   }
 }
 
-Expression::Expression(const Rational& slope, const Rational& offset) : _impl()
-{
-  _impl.emplace_back(detail::LinearExpr{slope, offset});
-}
+Expression::Expression(const Rational& slope, const Rational& offset) : _impl() { _impl.emplace_back(detail::LinearExpr{slope, offset}); }
 
-Expression::Expression(std::size_t n, const Rational& slope
-  , const Rational& offset)
-  : _impl()
-{ 
+Expression::Expression(std::size_t n, const Rational& slope, const Rational& offset) : _impl()
+{
   detail::LinearExpr linear_expr{slope, offset};
   for (unsigned int k = 0; k < n; ++k) {
     _impl.emplace_back(linear_expr);
@@ -60,29 +55,19 @@ Expression::Expression(const IntTuple& from, const IntTuple& to)
 
 Expression::Expression(const detail::ExpressionImpl& impl) : _impl(impl) {}
 
-Expression::Expression(detail::ExpressionImpl&& impl)
-  : _impl(std::move(impl)) {}
+Expression::Expression(detail::ExpressionImpl&& impl) : _impl(std::move(impl)) {}
 
 // Setters (private) -----------------------------------------------------------
 
 detail::LinearExpr& Expression::operator[](std::size_t n) { return _impl[n]; }
 
-const detail::LinearExpr &Expression::operator[](std::size_t n) const
-{
-  return _impl[n];
-}
+const detail::LinearExpr& Expression::operator[](std::size_t n) const { return _impl[n]; }
 
 // Operators -------------------------------------------------------------------
 
-bool Expression::operator==(const Expression& other) const
-{
-  return _impl == other._impl;
-}
+bool Expression::operator==(const Expression& other) const { return _impl == other._impl; }
 
-bool Expression::operator!=(const Expression& other) const
-{
-  return !(*this == other);
-}
+bool Expression::operator!=(const Expression& other) const { return !(*this == other); }
 
 Expression Expression::operator+(const Expression& other) const
 {
@@ -112,10 +97,10 @@ std::ostream& Expression::print(std::ostream& out) const
 
   out << "|";
   if (sz > 0) {
-    for (unsigned int k = 0; k < sz-1; ++k)  {
+    for (unsigned int k = 0; k < sz - 1; ++k) {
       out << _impl[k] << "|";
     }
-    out << _impl[sz-1];
+    out << _impl[sz - 1];
   }
   out << "|";
 
@@ -221,14 +206,12 @@ Expression Expression::cartesianProduct(const Expression& other) const
   Expression result;
 
   result._impl.insert(result._impl.end(), _impl.begin(), _impl.end());
-  result._impl.insert(result._impl.end(), other._impl.begin()
-    , other._impl.end());
+  result._impl.insert(result._impl.end(), other._impl.begin(), other._impl.end());
 
   return result;
 }
 
-rapidjson::Value Expression::toJSON(rapidjson::Document::AllocatorType& alloc)
-  const
+rapidjson::Value Expression::toJSON(rapidjson::Document::AllocatorType& alloc) const
 {
   rapidjson::Value result{rapidjson::kArrayType};
 
@@ -240,6 +223,6 @@ rapidjson::Value Expression::toJSON(rapidjson::Document::AllocatorType& alloc)
   return result;
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

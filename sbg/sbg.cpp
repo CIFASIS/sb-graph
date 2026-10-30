@@ -33,14 +33,12 @@ namespace LIB {
 
 // Constructors/Destructors ----------------------------------------------------
 
-SBG::SBG() 
-  : _V(), _Vmap(), _E(), _map1(), _map2(), _Emap() {}
+SBG::SBG() : _V(), _Vmap(), _E(), _map1(), _map2(), _Emap() {}
 
-SBG::SBG(const Set& V, const PWMap& Vmap
-  , const PWMap& map1, const PWMap& map2
-  , const PWMap& Emap)
-  : _V(V), _Vmap(Vmap), _E(map1.domain().intersection(map2.domain()))
-    , _map1(map1), _map2(map2), _Emap(Emap) {}
+SBG::SBG(const Set& V, const PWMap& Vmap, const PWMap& map1, const PWMap& map2, const PWMap& Emap)
+    : _V(V), _Vmap(Vmap), _E(map1.domain().intersection(map2.domain())), _map1(map1), _map2(map2), _Emap(Emap)
+{
+}
 
 // Getters ---------------------------------------------------------------------
 
@@ -61,13 +59,11 @@ const PWMap& SBG::Emap() const { return _Emap; }
 void SBG::addSetVertex(const Set& vertices)
 {
   if (!vertices.intersection(_V).isEmpty()) {
-    Util::ERROR("SBG::addSetVertex: trying to add existing vertices: ", vertices
-      , " to SBG\n");
+    Util::ERROR("SBG::addSetVertex: trying to add existing vertices: ", vertices, " to SBG\n");
   } else if (!vertices.isEmpty()) {
     Set set_vertices = _Vmap.image();
     std::size_t arity = vertices.arity();
-    IntTuple max = set_vertices.isEmpty() ? IntTuple{arity, 0}
-      : set_vertices.maxElem();
+    IntTuple max = set_vertices.isEmpty() ? IntTuple{arity, 0} : set_vertices.maxElem();
     _Vmap.emplace(vertices, max + IntTuple{arity, 1});
     _V = std::move(_V).cup(std::move(vertices));
   }
@@ -78,23 +74,20 @@ void SBG::addSetEdge(const PWMap& pw1, const PWMap& pw2)
   Set edges1 = pw1.domain();
   Set edges2 = pw2.domain();
   if (edges1 != edges2) {
-    Util::ERROR("SBG::addSetEdge: ", edges1, " is different from ", edges2
-      , "\n");
+    Util::ERROR("SBG::addSetEdge: ", edges1, " is different from ", edges2, "\n");
   } else if (edges1.intersection(_E).isEmpty()) {
     Set edges = edges1;
     if (!edges.isEmpty()) {
       Set set_edges = _Emap.image();
       std::size_t arity = edges.arity();
-      IntTuple max = set_edges.isEmpty() ? IntTuple{arity, 0}
-        : set_edges.maxElem();
+      IntTuple max = set_edges.isEmpty() ? IntTuple{arity, 0} : set_edges.maxElem();
       _map1 = std::move(_map1).concatenation(pw1);
       _map2 = std::move(_map2).concatenation(pw2);
       _Emap.emplace(edges, max + IntTuple{arity, 1});
       _E = std::move(_E).cup(std::move(edges));
     }
   } else {
-    Util::ERROR("SBG::addSetEdge: trying to add existing edges: ", edges1
-      , " to SBG\n");
+    Util::ERROR("SBG::addSetEdge: trying to add existing edges: ", edges1, " to SBG\n");
   }
 }
 
@@ -124,6 +117,6 @@ std::ostream& operator<<(std::ostream& out, const SBG& g)
   return out;
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

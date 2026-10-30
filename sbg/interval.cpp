@@ -47,11 +47,9 @@ Interval::Interval() : _begin(1), _step(1), _end(0) {}
 
 Interval::Interval(const Int x) : _begin(x), _step(1), _end(x) {}
 
-Interval::Interval(const Int begin, const Int step, const Int end) 
-  : _begin(begin), _step(step), _end(end) 
+Interval::Interval(const Int begin, const Int step, const Int end) : _begin(begin), _step(step), _end(end)
 {
-  Util::ERROR_UNLESS(step >= 0
-    , "Interval::Interval: step must be non-negative\n");
+  Util::ERROR_UNLESS(step >= 0, "Interval::Interval: step must be non-negative\n");
 
   if (end >= begin) {
     _end = end - ((end - begin) % step);
@@ -65,27 +63,17 @@ Interval::Interval(const Int begin, const Int step, const Int end)
 
 // Getters ---------------------------------------------------------------------
 
-const Int& Interval::begin() const
-{
-  return _begin;
-}
+const Int& Interval::begin() const { return _begin; }
 
-const Int& Interval::step() const
-{
-  return _step;
-}
+const Int& Interval::step() const { return _step; }
 
-const Int& Interval::end() const
-{
-  return _end;
-}
+const Int& Interval::end() const { return _end; }
 
 // Operators -------------------------------------------------------------------
 
-bool operator==(const Interval& lhs, const Interval& rhs) 
+bool operator==(const Interval& lhs, const Interval& rhs)
 {
-  return (lhs.begin() == rhs.begin()) && (lhs.step() == rhs.step())
-    && (lhs.end() == rhs.end());
+  return (lhs.begin() == rhs.begin()) && (lhs.step() == rhs.step()) && (lhs.end() == rhs.end());
 }
 
 bool operator!=(const Interval& lhs, const Interval& rhs)
@@ -105,28 +93,22 @@ bool operator!=(const Interval& lhs, const Interval& rhs)
   return false;
 }
 
-bool Interval::operator<(const Interval& other) const
-{
-  return _begin < other._begin;
-}
+bool Interval::operator<(const Interval& other) const { return _begin < other._begin; }
 
-std::ostream& operator<<(std::ostream& out, const Interval& i) 
+std::ostream& operator<<(std::ostream& out, const Interval& i)
 {
   out << "[" << i.begin();
   if (i.step() != 1) {
     out << ":" << i.step();
   }
   out << ":" << i.end() << "]";
- 
+
   return out;
 }
 
 // Set functions ---------------------------------------------------------------
 
-unsigned int Interval::cardinal() const
-{
-  return std::abs(_end - _begin) / _step + 1;
-}
+unsigned int Interval::cardinal() const { return std::abs(_end - _begin) / _step + 1; }
 
 bool Interval::isEmpty() const { return _end < _begin; }
 
@@ -145,8 +127,7 @@ Interval Interval::intersection(const Interval& other) const
   }
 
   // Two non overlapping intervals with the same step.
-  if (_step == other._step && !isMember(_begin, other)
-    && !isMember(other._begin, *this)) {
+  if (_step == other._step && !isMember(_begin, other) && !isMember(other._begin, *this)) {
     return Interval{};
   }
 
@@ -171,10 +152,7 @@ Interval Interval::intersection(const Interval& other) const
 
 // Member functions ------------------------------------------------------------
 
-Interval Interval::translate(const Int t) const
-{
-  return Interval{_begin + t, _step, _end + t};
-}
+Interval Interval::translate(const Int t) const { return Interval{_begin + t, _step, _end + t}; }
 
 Perimeter Interval::perimeter() const { return Perimeter(_begin, _end); }
 
@@ -186,8 +164,7 @@ MaybeInterval Interval::compact(const Interval& other) const
     } else if (other._end + _step == _begin) {
       return Interval{other._begin, _step, _end};
     } else if (!intersection(other).isEmpty()) {
-      return Interval{std::min(_begin, other._begin),  _step
-        , std::max(_end, other._end)};
+      return Interval{std::min(_begin, other._begin), _step, std::max(_end, other._end)};
     }
   }
 
@@ -210,8 +187,8 @@ rapidjson::Value toJSON(Interval i, rapidjson::Document::AllocatorType& alloc)
   return result;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

@@ -23,8 +23,7 @@ namespace SBG {
 
 namespace LIB {
 
-SCCData::SCCData(DirectedSBG dsbg, PWMap rmap, Set Ediff)
-  : _dsbg(dsbg), _rmap(rmap), _Ediff(Ediff) {}
+SCCData::SCCData(DirectedSBG dsbg, PWMap rmap, Set Ediff) : _dsbg(dsbg), _rmap(rmap), _Ediff(Ediff) {}
 
 const DirectedSBG& SCCData::dsbg() const { return _dsbg; }
 
@@ -32,6 +31,6 @@ const PWMap& SCCData::rmap() const { return _rmap; }
 
 const Set& SCCData::Ediff() const { return _Ediff; }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

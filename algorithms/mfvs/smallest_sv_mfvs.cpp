@@ -49,7 +49,7 @@ Set getVerticesFromSmallestSV(const PWMap& Vmap)
   Set remaining = Vmap_image;
   while (!remaining.isEmpty()) {
     Set jth_sv{remaining.minElem()};
-    std::size_t jth_sz = Vmap.preImage(jth_sv).cardinal(); 
+    std::size_t jth_sz = Vmap.preImage(jth_sv).cardinal();
     if (jth_sz < min_sz) {
       min_sz = jth_sz;
     }
@@ -73,7 +73,7 @@ Set getVerticesFromSmallestSV(const PWMap& Vmap)
 }
 
 /**
- * @brief It calculates the minimum vertex of maximum degree of V. 
+ * @brief It calculates the minimum vertex of maximum degree of V.
  */
 IntTuple getMaxDegreeVertex(const Set& V, const DirectedSBG& dsbg)
 {
@@ -141,8 +141,8 @@ Set SmallestSVMFVS::calculate(const DirectedSBG& input_dsbg) const
   return fvs_result;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

@@ -1,0 +1,65 @@
+name: Partitioner Benchmark
+
+on:
+  push:
+  pull_request:
+    branches: [ sb-graph-dev ]
+
+concurrency:
+  group: partitioner-benchmark-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install deps.
+      run: |
+        sudo apt-get update
+        sudo apt-get install libboost1.83-dev
+        sudo apt-get install libboost-program-options-dev
+        sudo apt-get install cmake
+        sudo apt-get install g++
+        sudo apt-get install rapidjson-dev
+
+    - name: Configure
+      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build sbg-partitioner
+      run: cmake --build build -j --target sbg-partitioner
+
+    - name: Run benchmark
+      run: |
+        python3 test/partitioner/benchmark/run_benchmark.py \
+          --binary build/algorithms/partitioner/sbg-partitioner \
+          --output bench.json \
+          --repetitions 3 \
+          --timeout 900
+
+    - name: Upload raw results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: partitioner-bench-${{ github.run_id }}
+        path: bench.json
+        retention-days: 90
+
+    - name: Compare against history / store baseline
+      uses: benchmark-action/github-action-benchmark@v1
+      with:
+        tool: 'customSmallerIsBetter'
+        output-file-path: bench.json
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        benchmark-data-dir-path: dev/bench/partitioner
+        alert-threshold: '120%'
+        fail-on-alert: true
+        comment-on-alert: false
+        auto-push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/sb-graph-dev' }}
+        save-data-file: ${{ github.event_name == 'push' && github.ref == 'refs/heads/sb-graph-dev' }}

@@ -34,16 +34,15 @@ TopologicalSorting::TopologicalSorting() : _impl()
 {
   TSKind kind = TS_IMPL.kind();
   switch (kind) {
-    case TSKind::kMinVertex: {
-      _impl = detail::MinVertexTS{};
-      break;
-    }
+  case TSKind::kMinVertex: {
+    _impl = detail::MinVertexTS{};
+    break;
+  }
 
-    default: {
-      Util::ERROR("TopologicalSorting::operator<<: unsupported topological "
-        , "sorting algorithm implementation");
-    }
-  }  
+  default: {
+    Util::ERROR("TopologicalSorting::operator<<: unsupported topological ", "sorting algorithm implementation");
+  }
+  }
 }
 
 PWMap TopologicalSorting::calculate(const DirectedSBG& dsbg, const PWMap& pmap)
@@ -54,6 +53,6 @@ PWMap TopologicalSorting::calculate(const DirectedSBG& dsbg, const PWMap& pmap)
   return std::visit([&](auto& a) { return a.calculate(dsbg, pmap); }, _impl);
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

@@ -52,18 +52,11 @@ std::ostream& operator<<(std::ostream& out, const Graph& g)
 
 BipartiteGraph::BipartiteGraph() : _graph(), _partition() {}
 
-BipartiteGraph::BipartiteGraph(Graph&& graph, std::vector<int>&& partition)
-  : _graph(graph), _partition(partition) {}
+BipartiteGraph::BipartiteGraph(Graph&& graph, std::vector<int>&& partition) : _graph(graph), _partition(partition) {}
 
-const Graph& BipartiteGraph::graph() const
-{
-  return _graph;
-}
+const Graph& BipartiteGraph::graph() const { return _graph; }
 
-const std::vector<int>& BipartiteGraph::partition() const
-{
-  return _partition;
-}
+const std::vector<int>& BipartiteGraph::partition() const { return _partition; }
 
 std::ostream& operator<<(std::ostream& out, const BipartiteGraph& bgraph)
 {
@@ -96,8 +89,8 @@ std::ostream& operator<<(std::ostream& out, const DirectedGraph& dgraph)
   return out;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace perf
+}  // namespace perf
 
-} // namespace SBG
+}  // namespace SBG

@@ -17,18 +17,22 @@
 
  *****************************************************************************/
 
+#pragma once
+
+#include <chrono>
 #include <vector>
 #include <string>
+#include <memory>
 #include <metis.h>
 #include <scotch/scotch.h>
 
+#include <sbgraph/algorithms/partitioner/sbg_partitioner_types.hpp>
 
 namespace SBG {
   namespace LIB {
     class WeightedSBGraph;
   }
 }
-
 
 using grp_t = int;
 
@@ -37,6 +41,7 @@ enum class PartitionMethod {
     HMetis,
     Scotch,
     Kahip,
+    SBG,
     Unknown
 };
 
@@ -49,9 +54,9 @@ struct Partition {
 
 class GraphPartitioner {
   public:
-  explicit GraphPartitioner(const std::string &name);
+  explicit GraphPartitioner(const std::string &name, unsigned int parts);
 
-  Partition createPartition(const std::string& partition_method, unsigned int partitions);
+  std::tuple<Partition, std::chrono::duration<double>> createPartition(const std::string& partition_method, unsigned int partitions, bool save_to_file);
 
   static std::string validPartitionMethodsStr();
 
@@ -65,11 +70,12 @@ class GraphPartitioner {
   void readGraphFromJson();
   void readGraph();
 
-  void savePartitionToFile(const Partition &partition, const std::string& method_name) const;
+  void savePartitionToFile(const Partition &partition, const std::string& file_name) const;
   void readPartitionFile(const std::string &file_name, Partition &partition) const;
 
   void partitionUsingMetis(Partition &partition);
   void partitionUsingHMetis(Partition &partition);
+  void partitionUsingSBG(sbg_partitioner::PartitionMap& partitions);
   void createHMetisGraphFile(const std::string &file_name);
   void executeKhmetis(const std::string &h_graph_name) const;
 
@@ -77,7 +83,9 @@ class GraphPartitioner {
 
   void partitionUsingKaHip(Partition &partition);
 
-  void readGraphFromSBG(const SBG::LIB::WeightedSBGraph& sbg_graph);
+  void readGraphFromSBG();
+
+  void addRow(const SBG::LIB::Set& set);
 
   std::string _name;
   grp_t _edges;

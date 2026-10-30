@@ -35,8 +35,8 @@ namespace detail {
 AutomImplVisitor::AutomImplVisitor() {}
 
 EvalUserInput AutomImplVisitor::visit(AST::SBGProgram p) const
-{ 
-  // Statement inspection ------------------------------------------------------ 
+{
+  // Statement inspection ------------------------------------------------------
 
   AST::IsConfig cfg_visit;
   EvalContext eval_context;
@@ -76,8 +76,8 @@ EvalUserInput AutomImplVisitor::visit(AST::SBGProgram p) const
   return result;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace Eval
+}  // namespace Eval
 
-} // namespace SBG
+}  // namespace SBG

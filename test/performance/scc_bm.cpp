@@ -50,8 +50,7 @@ static void BM_SCC(benchmark::State& state, std::string filename)
 static void BM_SCCCopies(benchmark::State& state, std::string filename)
 {
   int N = state.range(0);
-  LIB::DirectedSBG scc_dsbg = generateSBG<LIB::DirectedSBG>(
-    filename, 100, N);
+  LIB::DirectedSBG scc_dsbg = generateSBG<LIB::DirectedSBG>(filename, 100, N);
   LIB::SCC scc_algorithm;
 
   for (auto _ : state) {
@@ -66,29 +65,23 @@ static void BM_SCCCopies(benchmark::State& state, std::string filename)
 
 void registerSCCBenchmarks(std::string filename)
 {
-  benchmark::RegisterBenchmark(
-    ("BM_SCC/" + filename).c_str(),
-    [filename](benchmark::State& state) {
-      BM_SCC(state, filename);
-    }
-  )->RangeMultiplier(10)->Range(100, 1e6)->Complexity()
-    ->Unit(benchmark::kMillisecond);
+  benchmark::RegisterBenchmark(("BM_SCC/" + filename).c_str(), [filename](benchmark::State& state) { BM_SCC(state, filename); })
+      ->RangeMultiplier(10)
+      ->Range(100, 1e6)
+      ->Complexity()
+      ->Unit(benchmark::kMillisecond);
 
-  benchmark::RegisterBenchmark(
-    ("BM_SCCCopies/" + filename).c_str(),
-    [filename](benchmark::State& state) {
-      BM_SCCCopies(state, filename);
-    }
-  )->RangeMultiplier(2)->Range(1, 128)->Complexity()
-    ->Unit(benchmark::kMillisecond);
+  benchmark::RegisterBenchmark(("BM_SCCCopies/" + filename).c_str(), [filename](benchmark::State& state) { BM_SCCCopies(state, filename); })
+      ->RangeMultiplier(2)
+      ->Range(1, 128)
+      ->Complexity()
+      ->Unit(benchmark::kMillisecond);
 }
 
-void registerSCCBenchmarks()
-{
-}
+void registerSCCBenchmarks() {}
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace perf
+}  // namespace perf
 
-} // namespace SBG
+}  // namespace SBG

@@ -32,8 +32,7 @@ namespace detail {
 
 LinearExpr::LinearExpr() : _slope(1), _offset(0) {}
 
-LinearExpr::LinearExpr(Rational slope, Rational offset)
-  : _slope(slope), _offset(offset) {}
+LinearExpr::LinearExpr(Rational slope, Rational offset) : _slope(slope), _offset(offset) {}
 
 // Getters ---------------------------------------------------------------------
 
@@ -43,25 +42,13 @@ const Rational& LinearExpr::offset() const { return _offset; }
 
 // Operators -------------------------------------------------------------------
 
-bool LinearExpr::operator==(const LinearExpr& other) const
-{
-  return _slope == other._slope && _offset == other._offset;
-}
+bool LinearExpr::operator==(const LinearExpr& other) const { return _slope == other._slope && _offset == other._offset; }
 
-bool LinearExpr::operator!=(const LinearExpr& other) const
-{
-  return !(*this == other);
-}
+bool LinearExpr::operator!=(const LinearExpr& other) const { return !(*this == other); }
 
-LinearExpr LinearExpr::operator+(const LinearExpr& other) const
-{
-  return LinearExpr{_slope + other._slope, _offset + other._offset};
-}
+LinearExpr LinearExpr::operator+(const LinearExpr& other) const { return LinearExpr{_slope + other._slope, _offset + other._offset}; }
 
-LinearExpr LinearExpr::operator-(const LinearExpr& other) const
-{
-  return LinearExpr{_slope - other._slope, _offset - other._offset};
-}
+LinearExpr LinearExpr::operator-(const LinearExpr& other) const { return LinearExpr{_slope - other._slope, _offset - other._offset}; }
 
 std::ostream& operator<<(std::ostream& out, const LinearExpr& le)
 {
@@ -100,15 +87,12 @@ std::ostream& operator<<(std::ostream& out, const LinearExpr& le)
 
 // Linear expression functions -------------------------------------------------
 
-Int LinearExpr::apply(const Int& x) const
-{
-  return (_slope*x + _offset).toInt();
-}
+Int LinearExpr::apply(const Int& x) const { return (_slope * x + _offset).toInt(); }
 
 LinearExpr LinearExpr::composition(const LinearExpr& other) const
 {
-  Rational new_slope = other._slope*_slope;
-  Rational new_offset = _slope*other._offset + _offset;
+  Rational new_slope = other._slope * _slope;
+  Rational new_offset = _slope * other._offset + _offset;
 
   return LinearExpr{new_slope, new_offset};
 }
@@ -118,7 +102,7 @@ LinearExpr LinearExpr::inverse() const
   Rational new_slope{0, 1};
   Rational new_offset{0, 1};
   new_slope = Rational{_slope.denominator(), _slope.numerator()};
-  new_offset = (-_offset)/_slope;
+  new_offset = (-_offset) / _slope;
 
   return LinearExpr{new_slope, new_offset};
 }
@@ -129,13 +113,9 @@ bool LinearExpr::isConstant() const { return _slope == 0; }
 
 bool LinearExpr::isInjective() const { return _slope != 0; }
 
-Rational LinearExpr::intersectionPoint(const LinearExpr& other) const
-{
-  return (other._offset - _offset)/(_slope - other._slope);
-}
+Rational LinearExpr::intersectionPoint(const LinearExpr& other) const { return (other._offset - _offset) / (_slope - other._slope); }
 
-rapidjson::Value toJSON(LinearExpr le
-  , rapidjson::Document::AllocatorType& alloc)
+rapidjson::Value toJSON(LinearExpr le, rapidjson::Document::AllocatorType& alloc)
 {
   rapidjson::Value result{rapidjson::kArrayType};
 
@@ -154,8 +134,8 @@ rapidjson::Value toJSON(LinearExpr le
   return result;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

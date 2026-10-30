@@ -28,16 +28,13 @@ namespace detail {
 PWMap PWMapAccessKey::reduce(PWMap pw) const
 {
   auto& impl = pw._impl;
-  return std::visit(
-    [](auto&& impl) -> PWMap {
-      return PWMap{impl.reduce()};
-    }, impl);
+  return std::visit([](auto&& impl) -> PWMap { return PWMap{impl.reduce()}; }, impl);
 }
 
 PWMapAccessKey PWMapAccess::key() { return PWMapAccessKey{}; };
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

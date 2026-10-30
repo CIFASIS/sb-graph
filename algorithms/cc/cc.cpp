@@ -63,7 +63,7 @@ PWMap connectedComponents(const SBG& sbg)
         rmap = aux_rmap;
         rmap = rmap.mapInf();
       }
-    } while (rmap != old_rmap); 
+    } while (rmap != old_rmap);
 
     rmap.compact();
     return rmap;
@@ -72,6 +72,6 @@ PWMap connectedComponents(const SBG& sbg)
   return PWMap{};
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

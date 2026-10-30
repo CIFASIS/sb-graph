@@ -214,47 +214,39 @@ static void BM_PWMapCompact(benchmark::State& state)
 
 void registerPWMapBenchmarks()
 {
-  BENCHMARK(BM_PWMapDenseDom)->RangeMultiplier(10)->Range(10, 1e3)
-    ->Complexity();
-  
+  BENCHMARK(BM_PWMapDenseDom)->RangeMultiplier(10)->Range(10, 1e3)->Complexity();
+
   BENCHMARK(BM_PWMapEq)->RangeMultiplier(10)->Range(10, 1e2)->Complexity();
-  
+
   BENCHMARK(BM_PWMapSum)->RangeMultiplier(10)->Range(10, 1e3)->Complexity();
-  
+
   BENCHMARK(BM_PWMapDom)->RangeMultiplier(10)->Range(10, 1e3)->Complexity();
-  
-  BENCHMARK(BM_PWMapRestrict)->RangeMultiplier(10)->Range(10, 1e3)
-    ->Complexity();
-  
+
+  BENCHMARK(BM_PWMapRestrict)->RangeMultiplier(10)->Range(10, 1e3)->Complexity();
+
   BENCHMARK(BM_PWMapImage)->RangeMultiplier(10)->Range(10, 1e3)->Complexity();
-  
-  BENCHMARK(BM_PWMapPreImage)->RangeMultiplier(10)->Range(10, 1e3)
-    ->Complexity();
-  
-  BENCHMARK(BM_PWMapComposition)->RangeMultiplier(10)->Range(10, 1e3)
-    ->Complexity();
-  
-  BENCHMARK(BM_PWMapConcat)->RangeMultiplier(10)->Range(10, 1e3)
-    ->Complexity();
-  
+
+  BENCHMARK(BM_PWMapPreImage)->RangeMultiplier(10)->Range(10, 1e3)->Complexity();
+
+  BENCHMARK(BM_PWMapComposition)->RangeMultiplier(10)->Range(10, 1e3)->Complexity();
+
+  BENCHMARK(BM_PWMapConcat)->RangeMultiplier(10)->Range(10, 1e3)->Complexity();
+
   BENCHMARK(BM_PWMapCombine)->RangeMultiplier(10)->Range(10, 1e3)->Complexity();
 
   BENCHMARK(BM_PWMapReduce)->RangeMultiplier(10)->Range(10, 1e3)->Complexity();
-  
+
   BENCHMARK(BM_PWMapMinAdj)->RangeMultiplier(10)->Range(10, 1e3)->Complexity();
-  
-  BENCHMARK(BM_PWMapEqImage)->RangeMultiplier(10)->Range(10, 1e3)
-    ->Complexity();
-  
-  BENCHMARK(BM_PWMapLessImage)->RangeMultiplier(10)->Range(10, 1e3)
-    ->Complexity();
-  
-  BENCHMARK(BM_PWMapCompact)->RangeMultiplier(10)->Range(10, 1e2)
-    ->Complexity();
+
+  BENCHMARK(BM_PWMapEqImage)->RangeMultiplier(10)->Range(10, 1e3)->Complexity();
+
+  BENCHMARK(BM_PWMapLessImage)->RangeMultiplier(10)->Range(10, 1e3)->Complexity();
+
+  BENCHMARK(BM_PWMapCompact)->RangeMultiplier(10)->Range(10, 1e2)->Complexity();
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace perf
+}  // namespace perf
 
-} // namespace SBG
+}  // namespace SBG

@@ -4,9 +4,9 @@ project(ExtPartitioners)
 
 set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/install)
 
-# Set default build type to Debug if not specified
+# Set default build type to Release if not specified
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 
 set(CMAKE_CXX_STANDARD 17)
@@ -17,9 +17,9 @@ add_library(graph-partitioner STATIC)
 
 set_target_properties(graph-partitioner PROPERTIES DEBUG_POSTFIX "d")
 
-target_include_directories(graph-partitioner PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(graph-partitioner PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} $ENV{HOME}/.local/sbgraph/include)
 
-target_include_directories(graph-partitioner PRIVATE 3rd-party/KaHIP/deploy ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/../../../)
+target_include_directories(graph-partitioner PRIVATE 3rd-party/KaHIP/deploy ${PROJECT_SOURCE_DIR})
 
 target_sources(
     graph-partitioner
@@ -53,8 +53,8 @@ target_link_libraries(
         scotcherr
         kahip.a
         sbg-part-lib
-        sbg-util-lib
-        sbg-dev
+        sbgraph
+        boost_program_options
 )
 
 # install

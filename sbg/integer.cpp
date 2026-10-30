@@ -32,7 +32,7 @@ IntTuple::IntTuple() : _value() {}
 IntTuple::IntTuple(const Int x) : _value() { _value.emplace_back(x); }
 
 IntTuple::IntTuple(const std::size_t k, const Int x) : _value()
-{ 
+{
   for (unsigned int j = 0; j < k; ++j) {
     _value.push_back(x);
   }
@@ -60,10 +60,7 @@ Int& IntTuple::operator[](std::size_t n) { return _value[n]; }
 
 const Int& IntTuple::operator[](std::size_t n) const { return _value[n]; }
 
-bool IntTuple::operator==(const IntTuple& other) const
-{
-  return _value == other._value;
-}
+bool IntTuple::operator==(const IntTuple& other) const { return _value == other._value; }
 
 bool IntTuple::operator!=(const IntTuple& other) const { return !(*this == other); }
 
@@ -80,11 +77,7 @@ bool IntTuple::operator<(const IntTuple& other) const
   return false;
 }
 
-
-bool IntTuple::operator<=(const IntTuple& other) const
-{
-  return *this == other || *this < other;
-}
+bool IntTuple::operator<=(const IntTuple& other) const { return *this == other || *this < other; }
 
 IntTuple IntTuple::operator+(const IntTuple& other) const
 {
@@ -110,15 +103,14 @@ std::ostream& operator<<(std::ostream& out, const IntTuple& md)
     out << aux[0];
   } else if (sz > 1) {
     out << "(";
-    for (unsigned int j = 0; j < sz - 1; ++j)
-      out << aux[j] << ", ";
-    out << aux[sz-1];
+    for (unsigned int j = 0; j < sz - 1; ++j) out << aux[j] << ", ";
+    out << aux[sz - 1];
     out << ")";
   }
 
   return out;
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

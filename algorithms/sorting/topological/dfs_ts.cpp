@@ -89,7 +89,7 @@ void DFS_TS::addSV(IntTuple from_sv, IntTuple from, IntTuple to_sv, IntTuple to,
   _smap.emplace(d, expr);
 }
 
-void DFS_TS::checkRepetitionAndAdd(IntTuple from, IntTuple to, bool isSucc) {
+void DFS_TS::checkRepetitionAndAdd(IntTuple from, IntTuple to) {
   Expression expr{from, to};
   IntTuple from_sv = _Vmap.image(from).minElem();
   IntTuple to_sv = _Vmap.image(to).minElem();
@@ -106,9 +106,6 @@ void DFS_TS::checkRepetitionAndAdd(IntTuple from, IntTuple to, bool isSucc) {
 
   addSV(from_sv, from, to_sv, to, expr);
 
-  if (!isSucc) {
-    return;
-  }
   for (auto it = _SVExprVector.begin(); it != _SVExprVector.end(); ++it) {
     SVExprTuple t = *it;
     if (std::get<To>(t) == from_sv) {
@@ -117,12 +114,10 @@ void DFS_TS::checkRepetitionAndAdd(IntTuple from, IntTuple to, bool isSucc) {
   }
 }
 
-IntTuple DFS_TS::dfs(IntTuple v, bool isRec) {
+IntTuple DFS_TS::dfs(IntTuple v) {
   Set sv{v};
-  Set succ = _mapD.image(_mapB.preImage(sv));
-  if (!isRec) {
-    succ = succ.difference(_visitedSV);
-  }
+  Set succ = _mapD.image(_mapB.preImage(sv)).difference(_visitedSV);
+
   if (succ.isEmpty()) {
     _visitedSV = _visitedSV.cup(sv);
     return v;
@@ -135,9 +130,9 @@ IntTuple DFS_TS::dfs(IntTuple v, bool isRec) {
     Set succ_sv{succ_v};
     last_v = succ_v;
 
-    checkRepetitionAndAdd(_v, succ_v, true);
+    checkRepetitionAndAdd(_v, succ_v);
 
-    dfs(succ_v, true);
+    dfs(succ_v);
     
     _v = succ_v;
     sv = succ_sv;
@@ -160,14 +155,14 @@ PWMap DFS_TS::calculate(const DirectedSBG& dsbg
 
   IntTuple v = _V.minElem();
   _last_v = v;
-  dfs(v, false);
+  dfs(v);
   _V = _V.difference(_visitedSV);
   
   while (!_V.isEmpty()) {
     v = _V.minElem();
     Set v_sv{v};
-    dfs(v, false);
-    checkRepetitionAndAdd(_last_v, v, false);
+    dfs(v);
+    checkRepetitionAndAdd(_last_v, v);
     _V = _V.difference(_visitedSV);
   } 
 

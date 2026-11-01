@@ -67,11 +67,11 @@ private:
 
   void addSV(IntTuple from_sv, IntTuple from, IntTuple to_sv, IntTuple to, Expression expr);
 
-  void checkRepetitionAndAdd(IntTuple from, IntTuple to, bool isSucc);
+  void checkRepetitionAndAdd(IntTuple from, IntTuple to);
 
   IntTuple getVertex();
 
-  IntTuple dfs(IntTuple v, bool isRec);
+  IntTuple dfs(IntTuple v);
 
   DirectedSBG _dsbg;
   PWMap _smap;

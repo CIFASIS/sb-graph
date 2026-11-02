@@ -4,3 +4,5 @@ install/
 3rd-party/sbg/
 data/
 build/
+*.csv
+*.partition

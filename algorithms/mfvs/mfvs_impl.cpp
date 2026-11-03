@@ -55,7 +55,7 @@ std::ostream& operator<<(std::ostream& out, const MFVSKind kind)
   return out;
 }
 
-MFVSImplementation::MFVSImplementation() : _kind(MFVSKind::kSmallSV) {}
+MFVSImplementation::MFVSImplementation() : _kind(MFVSKind::kParallelSCC) {}
 
 MFVSImplementation& MFVSImplementation::instance()
 {

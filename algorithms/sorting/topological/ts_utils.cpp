@@ -49,7 +49,7 @@ Set SortedSets::accumulated(int n) const
 {
   Set result;
   std::size_t sz = _sets.size();
-  for (int j = sz-n; j < sz; ++j) {
+  for (int j = sz - n; j < sz; ++j) {
     result = std::move(result).disjointCup(_sets[j]);
   }
   return result;
@@ -72,14 +72,12 @@ void checkSort(PWMap& smap, const DirectedSBG& dsbg)
 {
   // Check that the order is unique.
   Set fixed_points = smap.fixedPoints();
-  Util::ERROR_UNLESS(fixed_points.cardinal() == 1
-    , "checkSort: the order ", smap, " has multiple ends\n");
+  Util::ERROR_UNLESS(fixed_points.cardinal() == 1, "checkSort: the order ", smap, " has multiple ends\n");
 
   Set domain = smap.domain();
   Set image = smap.image();
   Set starts = domain.difference(image);
-  Util::ERROR_UNLESS(starts.cardinal() == 1
-    , "checkSort: the order ", smap, " has multiple starts\n");
+  Util::ERROR_UNLESS(starts.cardinal() == 1, "checkSort: the order ", smap, " has multiple starts\n");
 
   // Check if it is injective, that is, if is an actual order.
   Set visited_img;
@@ -93,8 +91,7 @@ void checkSort(PWMap& smap, const DirectedSBG& dsbg)
 
   // Check if the sort is total.
   Set V = dsbg.V();
-  Util::ERROR_UNLESS(domain == V && image == V.difference(starts)
-    , "checkSort: the order ", smap, " is partial\n");
+  Util::ERROR_UNLESS(domain == V && image == V.difference(starts), "checkSort: the order ", smap, " is partial\n");
 
   // Delete dependencies of constant depth.
   PWMap smap_copy = smap;
@@ -107,8 +104,7 @@ void checkSort(PWMap& smap, const DirectedSBG& dsbg)
 
   // Check order for long dependencies.
   PWMap smap_inv = smap.restrict(copy.V().difference(fixed_points)).inverse();
-  copy.foreachSetEdge([&](const IntTuple& SE)
-  {
+  copy.foreachSetEdge([&](const IntTuple& SE) {
     Set E = copy.Emap().preImage(SE);
     PWMap mapB = copy.mapB().restrict(E);
     PWMap mapD = copy.mapD().restrict(E);
@@ -120,11 +116,10 @@ void checkSort(PWMap& smap, const DirectedSBG& dsbg)
     rmap = PWMap{intermediate}.combine(smap_inv).mapInf();
     Set before = rmap.preImage(init);
 
-    Util::ERROR_UNLESS(init.difference(before).isEmpty()
-      , "checkSort: the order ", smap, " is partial\n");
+    Util::ERROR_UNLESS(init.difference(before).isEmpty(), "checkSort: the order ", smap, " is partial\n");
   });
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

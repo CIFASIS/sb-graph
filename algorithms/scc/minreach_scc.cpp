@@ -97,8 +97,7 @@ PWMap MinReachSCCV1::sccStep()
   PWMap rmapD = new_rmap.composition(_dsbg.mapD());
   Set Esame = rmapB.equalImage(rmapD);
   _E = Esame;
-  Util::DEBUG_LOG << "MinReachSCCV1 erased edges: "
-    << _dsbg.E().difference(_E) << "\n\n";
+  Util::DEBUG_LOG << "MinReachSCCV1 erased edges: " << _dsbg.E().difference(_E) << "\n\n";
 
   // Swap directions
   swapEdgesDirection(_E);
@@ -124,8 +123,7 @@ PWMap MinReachSCCV2::sccStep()
   PWMap rmapD = new_rmap.composition(_dsbg.mapD());
   Set Esame = rmapB.equalImage(rmapD);
   _E = Esame;
-  Util::DEBUG_LOG << "MinReachSCCV2 erased edges: "
-    << _dsbg.E().difference(_E) << "\n\n";
+  Util::DEBUG_LOG << "MinReachSCCV2 erased edges: " << _dsbg.E().difference(_E) << "\n\n";
 
   // Swap directions
   swapEdgesDirection(_E);
@@ -151,8 +149,7 @@ PWMap MinReachSCCV3::sccStep()
   PWMap rmapD = new_rmap.composition(_dsbg.mapD());
   Set Esame = rmapB.equalImage(rmapD);
   _E = Esame;
-  Util::DEBUG_LOG << "MinReachSCCV3 erased edges: "
-    << _dsbg.E().difference(_E) << "\n\n";
+  Util::DEBUG_LOG << "MinReachSCCV3 erased edges: " << _dsbg.E().difference(_E) << "\n\n";
 
   // Swap directions
   swapEdgesDirection(_E);
@@ -160,8 +157,8 @@ PWMap MinReachSCCV3::sccStep()
   return new_rmap;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

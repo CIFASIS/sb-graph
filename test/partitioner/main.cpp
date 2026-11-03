@@ -20,10 +20,14 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include <sbgraph/sbg/set_impl.hpp>
+
 int main(int argc, char **argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
   ::testing::InitGoogleMock(&argc, argv);
+
+  SBG::LIB::SET_IMPL.set_set_fact(SBG::LIB::SetKind::kOrdered);
 
   return RUN_ALL_TESTS();
 }

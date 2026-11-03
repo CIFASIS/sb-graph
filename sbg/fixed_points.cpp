@@ -25,13 +25,12 @@ namespace LIB {
 
 Solution::Solution(const SolutionKind kind) : _kind(kind), _value() {}
 
-Solution::Solution(const SolutionKind kind, const Int value)
-  : _kind(kind), _value(value) {}
+Solution::Solution(const SolutionKind kind, const Int value) : _kind(kind), _value(value) {}
 
 const SolutionKind& Solution::kind() const { return _kind; }
 
 const std::optional<Int>& Solution::value() const { return _value; }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

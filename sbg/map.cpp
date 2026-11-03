@@ -34,17 +34,15 @@ namespace LIB {
 
 Map::Map() : _domain() {}
 
-Map::Map(const IntTuple& x, const Expression& expr)
-  : _domain(x), _law(expr) {}
+Map::Map(const IntTuple& x, const Expression& expr) : _domain(x), _law(expr) {}
 
 Map::Map(const Set& s, const Expression& expr) : _domain(s), _law(expr) {}
 
-Map::Map(Set&& s, Expression&& expr)
-  : _domain(std::move(s)), _law(std::move(expr)) {}
+Map::Map(Set&& s, Expression&& expr) : _domain(std::move(s)), _law(std::move(expr)) {}
 
 // Getters ---------------------------------------------------------------------
 
-const Set& Map::domain() const & { return _domain; }
+const Set& Map::domain() const& { return _domain; }
 
 Set Map::domain() && { return std::move(_domain); }
 
@@ -57,7 +55,7 @@ bool Map::operator==(const Map& other) const
   if (_domain == other._domain) {
     if (_domain.cardinal() == 1) {
       return image() == other.image();
-    } else { 
+    } else {
       return _law == other._law;
     }
   }
@@ -65,10 +63,7 @@ bool Map::operator==(const Map& other) const
   return false;
 }
 
-bool Map::operator!=(const Map& other) const
-{
-  return !(*this == other);
-}
+bool Map::operator!=(const Map& other) const { return !(*this == other); }
 
 Map Map::operator+(const Map& other) const
 {
@@ -90,20 +85,11 @@ std::size_t Map::arity() const { return _law.arity(); }
 
 bool Map::isEmpty() const { return _domain.isEmpty(); }
 
-Map Map::restrict(const Set& subdom) const &
-{
-  return Map{_domain.intersection(subdom), _law};
-}
+Map Map::restrict(const Set& subdom) const& { return Map{_domain.intersection(subdom), _law}; }
 
-Map Map::restrict(const Set& subdom) &&
-{
-  return Map{std::move(_domain).intersection(subdom), _law};
-}
+Map Map::restrict(const Set& subdom) && { return Map{std::move(_domain).intersection(subdom), _law}; }
 
-Map Map::restrict(Set&& subdom) const &
-{
-  return Map{_domain.intersection(std::move(subdom)), _law};
-}
+Map Map::restrict(Set&& subdom) const& { return Map{_domain.intersection(std::move(subdom)), _law}; }
 
 Set Map::image() const { return image(_domain); }
 
@@ -124,14 +110,10 @@ Set Map::image(const Set& subdom) const
 Set Map::preImage(const Set& subcodom) const
 {
   Set image_subcodom = image().intersection(subcodom);
-  return detail::MapDetail::preImage(image_subcodom, _law)
-    .intersection(_domain);
+  return detail::MapDetail::preImage(image_subcodom, _law).intersection(_domain);
 }
 
-Map Map::inverse() const
-{
-  return detail::MapDetail::inverse(_domain, _law);
-}
+Map Map::inverse() const { return detail::MapDetail::inverse(_domain, _law); }
 
 Map Map::composition(const Map& other) const
 {
@@ -211,15 +193,9 @@ Map Map::maxAdj(const Map& other) const
   return Map{result_domain, result_expr};
 }
 
-std::vector<Map> Map::reduce() const
-{
-  return detail::MapDetail::reduce(*this);
-}
+std::vector<Map> Map::reduce() const { return detail::MapDetail::reduce(*this); }
 
-std::vector<Map> Map::imageMultiplicity() const
-{
-  return detail::MapDetail::imageMultiplicity(*this);
-}
+std::vector<Map> Map::imageMultiplicity() const { return detail::MapDetail::imageMultiplicity(*this); }
 
 MaybeMap Map::compact(const Map& other) const
 {
@@ -245,6 +221,6 @@ rapidjson::Value toJSON(Map m, rapidjson::Document::AllocatorType& alloc)
   return result;
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

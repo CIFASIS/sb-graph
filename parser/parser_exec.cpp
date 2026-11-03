@@ -48,16 +48,15 @@ void ParserExecutor::execute(int arg_count, char* args[])
   // Command line options handling ---------------------------------------------
 
   Util::prog_opts::variables_map vm;
-  store(Util::prog_opts::command_line_parser(arg_count, args)
-    .options(_cmd_line_opts).positional(_positional).run(), vm);
+  store(Util::prog_opts::command_line_parser(arg_count, args).options(_cmd_line_opts).positional(_positional).run(), vm);
   notify(vm);
 
   // Help handling -------------------------------------------------------------
- 
+
   if (vm.count("help")) {
     std::cout << "Usage: filename [options]\n";
     std::cout << "Command line options are prioritized over configuration file"
-      " options.";
+                 " options.";
     std::cout << _visible << "\n";
     return;
   }
@@ -70,8 +69,8 @@ void ParserExecutor::execute(int arg_count, char* args[])
   }
 
   // Optional configuration file handling --------------------------------------
- 
-  if (_config_file) { 
+
+  if (_config_file) {
     std::ifstream config_fs((*_config_file).c_str());
     if (config_fs) {
       store(parse_config_file(config_fs, _cfg_file_opts), vm);
@@ -83,13 +82,12 @@ void ParserExecutor::execute(int arg_count, char* args[])
 
   if (_input_file) {
     parseFile(*_input_file);
-  }
-  else {
+  } else {
     std::cout << "Usage: filename [options]";
     Util::ERROR("ParserExecutor: must provide a SBG program filename\n");
   }
 }
 
-} // namespace Parser
+}  // namespace Parser
 
-} // namespace SBG
+}  // namespace SBG

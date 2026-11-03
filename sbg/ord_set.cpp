@@ -54,7 +54,6 @@ bool overlap(const MultiDimInter& mdi1, const MultiDimInter& mdi2)
   return true;
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // Ordered Set Implementation --------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
@@ -63,10 +62,7 @@ bool overlap(const MultiDimInter& mdi1, const MultiDimInter& mdi2)
 
 OrderedSet::OrderedSet() : _pieces() {}
 
-OrderedSet::OrderedSet(const IntTuple& x) : _pieces()
-{
-  _pieces.push_back(MultiDimInter{x});
-}
+OrderedSet::OrderedSet(const IntTuple& x) : _pieces() { _pieces.push_back(MultiDimInter{x}); }
 
 OrderedSet::OrderedSet(const Interval& i) : _pieces()
 {
@@ -82,11 +78,9 @@ OrderedSet::OrderedSet(const MultiDimInter& mdi) : _pieces()
   }
 }
 
-OrderedSet::OrderedSet(const OrderedSet::OrdMDICollection& pieces)
-  : _pieces(pieces) {}
+OrderedSet::OrderedSet(const OrderedSet::OrdMDICollection& pieces) : _pieces(pieces) {}
 
-OrderedSet::OrderedSet(OrderedSet::OrdMDICollection&& pieces)
-  : _pieces(std::move(pieces)) {}
+OrderedSet::OrderedSet(OrderedSet::OrdMDICollection&& pieces) : _pieces(std::move(pieces)) {}
 
 OrderedSet::OrderedSet(const FixedPointsInfo& info) : _pieces()
 {
@@ -143,7 +137,7 @@ Int OrderedSet::advanceHint(Int hint, const MultiDimInter& mdi)
     }
     ++hint;
   }
-  
+
   return hint;
 }
 
@@ -161,7 +155,7 @@ void OrderedSet::insertHint(const Int hint, const MultiDimInter& mdi)
   auto it = _pieces.begin();
   auto end = _pieces.end();
   std::advance(it, hint);
-  for (; it != end; ++it) { 
+  for (; it != end; ++it) {
     if (mdi < *it) {
       break;
     }
@@ -188,10 +182,7 @@ bool OrderedSet::operator==(const OrderedSet& other) const
   return difference(other).isEmpty() && other.difference(*this).isEmpty();
 }
 
-bool OrderedSet::operator!=(const OrderedSet& other) const
-{
-  return !(*this == other);
-}
+bool OrderedSet::operator!=(const OrderedSet& other) const { return !(*this == other); }
 
 std::ostream& OrderedSet::print(std::ostream& out) const
 {
@@ -200,9 +191,9 @@ std::ostream& OrderedSet::print(std::ostream& out) const
   out << "{";
   if (sz > 0) {
     unsigned int j = 0;
-    for (const MultiDimInter& mdi : _pieces) { 
+    for (const MultiDimInter& mdi : _pieces) {
       if (j < sz - 1) {
-        out << mdi << ", "; 
+        out << mdi << ", ";
       } else {
         out << mdi;
       }
@@ -230,10 +221,7 @@ unsigned int OrderedSet::cardinal() const
 
 bool OrderedSet::isEmpty() const { return _pieces.empty(); }
 
-IntTuple OrderedSet::minElem() const
-{
-  return _pieces.begin()->minElem();
-}
+IntTuple OrderedSet::minElem() const { return _pieces.begin()->minElem(); }
 
 IntTuple OrderedSet::maxElem() const
 {
@@ -242,12 +230,11 @@ IntTuple OrderedSet::maxElem() const
   for (const MultiDimInter& mdi : _pieces) {
     result = std::max(result, mdi.maxElem());
   }
-  
+
   return result;
 }
 
-OrderedSet OrderedSet::intersectionEpilogue(const OrderedSet& lhs
-  , const OrderedSet& rhs) const
+OrderedSet OrderedSet::intersectionEpilogue(const OrderedSet& lhs, const OrderedSet& rhs) const
 {
   OrderedSet result;
 
@@ -256,10 +243,10 @@ OrderedSet OrderedSet::intersectionEpilogue(const OrderedSet& lhs
   OrderedSet::OrdMDICollection long_set = rhs._pieces;
   if (rhs._pieces.size() < lhs._pieces.size()) {
     short_set = rhs._pieces;
-    long_set  = lhs._pieces;
+    long_set = lhs._pieces;
   }
- 
-  // Indexes list corresponding to remaining pieces in short_set 
+
+  // Indexes list corresponding to remaining pieces in short_set
   std::forward_list<size_t> indexes;
   int short_size = short_set.size();
   for (int i = short_size - 1; i >= 0; --i) {
@@ -282,7 +269,7 @@ OrderedSet OrderedSet::intersectionEpilogue(const OrderedSet& lhs
       const auto short_max = short_elem.maxElem();
 
       // Here short_elem is "before" long_elem, so it is also "before" all the
-      // remaining sets in long_set, thus it can be discarded. 
+      // remaining sets in long_set, thus it can be discarded.
       if (short_max < long_min) {
         curr_index = indexes.erase_after(prev_index);
         continue;
@@ -290,7 +277,7 @@ OrderedSet OrderedSet::intersectionEpilogue(const OrderedSet& lhs
 
       // Here short_elem is "after" long_elem, so no comparison is needed, and
       // the loop of long_set continues to check if this short_elem interacts
-      // with the following elements of long_set. 
+      // with the following elements of long_set.
       if (long_max < short_min) {
         break;
       }
@@ -325,24 +312,15 @@ OrderedSet OrderedSet::intersection(const OrderedSet& other) const
   return intersectionEpilogue(*this, other);
 }
 
-OrderedSet OrderedSet::cup(const OrderedSet& other) const &
-{
-  return OrderedSet{*this}.cup(other);
-}
+OrderedSet OrderedSet::cup(const OrderedSet& other) const& { return OrderedSet{*this}.cup(other); }
 
-OrderedSet OrderedSet::cup(const OrderedSet& other) &&
-{
-  return std::move(*this).cup(OrderedSet{other});
-}
+OrderedSet OrderedSet::cup(const OrderedSet& other) && { return std::move(*this).cup(OrderedSet{other}); }
 
-OrderedSet OrderedSet::cup(OrderedSet&& other) const &
-{
-  return OrderedSet{*this}.cup(std::move(other));
-}
+OrderedSet OrderedSet::cup(OrderedSet&& other) const& { return OrderedSet{*this}.cup(std::move(other)); }
 
 OrderedSet OrderedSet::cup(OrderedSet&& other) &&
 {
-  if (isEmpty()) { 
+  if (isEmpty()) {
     return std::move(other);
   }
 
@@ -352,15 +330,13 @@ OrderedSet OrderedSet::cup(OrderedSet&& other) &&
 
   if (maxElem() < other.minElem()) {
     OrdMDICollection result = std::move(_pieces);
-    result.insert(result.end(), std::make_move_iterator(other._pieces.begin())
-      , std::make_move_iterator(other._pieces.end()));
+    result.insert(result.end(), std::make_move_iterator(other._pieces.begin()), std::make_move_iterator(other._pieces.end()));
     return OrderedSet{std::move(result)};
   }
 
   if (other.maxElem() < minElem()) {
     OrdMDICollection result = std::move(other._pieces);
-    result.insert(result.end(), std::make_move_iterator(_pieces.begin())
-      , std::make_move_iterator(_pieces.end()));
+    result.insert(result.end(), std::make_move_iterator(_pieces.begin()), std::make_move_iterator(_pieces.end()));
     return OrderedSet{std::move(result)};
   }
 
@@ -384,7 +360,7 @@ OrderedSet OrderedSet::complementAtom() const
   std::size_t dim = 0;
   std::size_t global_position = 0;
   for (const Interval& i : mdi) {
-    std::size_t local_pos = global_position; 
+    std::size_t local_pos = global_position;
     // Before interval
     if (i.begin() != kNegInf) {
       Interval i_res{0, 1, i.begin() - 1};
@@ -427,8 +403,7 @@ OrderedSet OrderedSet::complementAtom() const
   return OrderedSet{std::move(result)};
 }
 
-void OrderedSet::intersectionComplement(const OrderedSet&
-  local_complement, const MultiDimInter& mdi) 
+void OrderedSet::intersectionComplement(const OrderedSet& local_complement, const MultiDimInter& mdi)
 {
   // Special cases
   if (isEmpty()) {
@@ -447,9 +422,8 @@ void OrderedSet::intersectionComplement(const OrderedSet&
       break;
     }
     ++it;
-  } 
-  result._pieces.insert(result.end(), std::make_move_iterator(_pieces.begin())
-    , std::make_move_iterator(it));
+  }
+  result._pieces.insert(result.end(), std::make_move_iterator(_pieces.begin()), std::make_move_iterator(it));
 
   Int global_position = 0;
   for (; it != _pieces.end(); ++it) {
@@ -537,25 +511,16 @@ std::size_t OrderedSet::arity() const
   return _pieces.begin()->arity();
 }
 
-OrderedSet OrderedSet::disjointCup(const OrderedSet& other) const &
-{
-  return OrderedSet{*this}.disjointCup(other);
-}
+OrderedSet OrderedSet::disjointCup(const OrderedSet& other) const& { return OrderedSet{*this}.disjointCup(other); }
 
-OrderedSet OrderedSet::disjointCup(const OrderedSet& other) &&
-{
-  return std::move(*this).disjointCup(OrderedSet{other});
-}
+OrderedSet OrderedSet::disjointCup(const OrderedSet& other) && { return std::move(*this).disjointCup(OrderedSet{other}); }
 
-OrderedSet OrderedSet::disjointCup(OrderedSet&& other) const &
-{
-  return OrderedSet{*this}.disjointCup(std::move(other));
-}
+OrderedSet OrderedSet::disjointCup(OrderedSet&& other) const& { return OrderedSet{*this}.disjointCup(std::move(other)); }
 
 OrderedSet OrderedSet::disjointCup(OrderedSet&& other) &&
 {
   // Special cases
-  if (isEmpty()) { 
+  if (isEmpty()) {
     return std::move(other);
   }
 
@@ -565,16 +530,12 @@ OrderedSet OrderedSet::disjointCup(OrderedSet&& other) &&
 
   OrdMDICollection result;
   if (_pieces.back() < other._pieces.front()) {
-    result.insert(result.end(), std::make_move_iterator(_pieces.begin())
-      , std::make_move_iterator(_pieces.end()));
-    result.insert(result.end(), std::make_move_iterator(other._pieces.begin())
-      , std::make_move_iterator(other._pieces.end()));
+    result.insert(result.end(), std::make_move_iterator(_pieces.begin()), std::make_move_iterator(_pieces.end()));
+    result.insert(result.end(), std::make_move_iterator(other._pieces.begin()), std::make_move_iterator(other._pieces.end()));
   } else if (other._pieces.back() < _pieces.front()) {
-    result.insert(result.end(), std::make_move_iterator(other._pieces.begin())
-      , std::make_move_iterator(other._pieces.end()));
-    result.insert(result.end(), std::make_move_iterator(_pieces.begin())
-      , std::make_move_iterator(_pieces.end()));
-  } else { 
+    result.insert(result.end(), std::make_move_iterator(other._pieces.begin()), std::make_move_iterator(other._pieces.end()));
+    result.insert(result.end(), std::make_move_iterator(_pieces.begin()), std::make_move_iterator(_pieces.end()));
+  } else {
     // General case
     auto it1 = _pieces.begin();
     auto end1 = _pieces.end();
@@ -589,10 +550,8 @@ OrderedSet OrderedSet::disjointCup(OrderedSet&& other) &&
         ++it2;
       }
     }
-    result.insert(result.end(), std::make_move_iterator(it1)
-      , std::make_move_iterator(end1));
-    result.insert(result.end(), std::make_move_iterator(it2)
-      , std::make_move_iterator(end2));
+    result.insert(result.end(), std::make_move_iterator(it1), std::make_move_iterator(end1));
+    result.insert(result.end(), std::make_move_iterator(it2), std::make_move_iterator(end2));
   }
 
   return OrderedSet{std::move(result)};
@@ -638,8 +597,7 @@ void OrderedSet::compact()
   OrdMDICollection result;
 
   if (!isEmpty()) {
-    MDISet set_result{std::make_move_iterator(_pieces.begin())
-      , std::make_move_iterator(_pieces.end())};
+    MDISet set_result{std::make_move_iterator(_pieces.begin()), std::make_move_iterator(_pieces.end())};
     MDISet to_erase;
     do {
       MDISet new_set_result;
@@ -690,8 +648,8 @@ rapidjson::Value toJSON(OrderedSet s, rapidjson::Document::AllocatorType& alloc)
   return result;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

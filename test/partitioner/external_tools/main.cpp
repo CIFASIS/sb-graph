@@ -25,6 +25,10 @@
 #include <vector>
 
 #include "graph_partitioner.hpp"
+#include <sbgraph/sbg/set_impl.hpp>
+
+static int number_of_executions = 15;
+static int number_of_cold_executions = 5;
 
 void usage()
 {
@@ -61,31 +65,93 @@ void parseArgs(int argc, char* argv[], std::string& sbg_json_input, int& partiti
     }
   }
 
-  if (sbg_json_input.empty() || partitions <= 0 || partition_method.empty() || imbalance < 0) {
+  if (sbg_json_input.empty() || partitions <= 0 || imbalance < 0) {
     usage();
     exit(EXIT_FAILURE);
   }
 }
 
+void addRecord(const std::string& filename, const std::string& method, int partitions,
+               const std::vector<std::chrono::duration<double>>& durations)
+{
+  // Check if the file already exists before we open it
+  bool exists = std::filesystem::exists(filename);
+
+  // Open in append mode
+  std::ofstream myFile(filename, std::ios::app);
+
+  if (!myFile.is_open()) {
+    std::cerr << "Error opening file!" << std::endl;
+    return;
+  }
+
+  // If the file is new, write the header first
+  if (!exists) {
+    myFile << "Method,Partitions";
+    for (size_t i = 0; i < number_of_executions - number_of_cold_executions; i++) {
+      myFile << ", exec " << i;
+    }
+    myFile << "\n";
+  }
+
+  // Add the new row
+  myFile << method << "," << partitions;
+  for (const auto& d : durations) {
+    myFile << "," << d.count();
+  }
+  myFile << "\n";
+
+  myFile.close();
+  std::cout << "Results in " << filename << std::endl;
+}
+
 int main(int argc, char* argv[])
 {
+  SBG::LIB::SET_IMPL.set_set_fact(SBG::LIB::SetKind::kOrdered);
+
   std::string json_file_name;
-  int partitions;
+  int parts;
   std::string partition_method;
   int imbalance;
 
-  parseArgs(argc, argv, json_file_name, partitions, partition_method, imbalance);
+  parseArgs(argc, argv, json_file_name, parts, partition_method, imbalance);
 
-  GraphPartitioner partitioner(json_file_name);
-  Partition partition = partitioner.createPartition(partition_method, partitions);
+  std::cout << "Partitioning " << json_file_name << " into " << parts << " parts using " << partition_method << std::endl;
+
+  std::vector<std::string> methods;
+  if (partition_method.empty()) {
+    methods = {"SBG", "Metis", "Scotch", "Kahip"};
+  } else {
+    methods = {partition_method};
+  }
+
+  GraphPartitioner partitioner(json_file_name, parts);
+  for (const auto& m : methods) {
+    std::vector<std::chrono::duration<double>> durations;
+
+    for (size_t i = 0; i < number_of_executions; i++) {
+      std::cout << "running " << i << " of " << number_of_executions << std::endl;
+      auto [partition, duration] = partitioner.createPartition(m, parts, i == number_of_executions - 1);
+
+      if (i < number_of_cold_executions) {
+        continue;
+      }
+
+      durations.push_back(duration);
+    }
+
+    std::filesystem::path json_file_name_path(json_file_name);
+
+    addRecord(json_file_name_path.filename().replace_extension("csv"), m, parts, durations);
+  }
 
   // write results to a file
-  std::filesystem::path json_filesystem_path(json_file_name);
-  json_filesystem_path = json_filesystem_path.replace_extension();
-  std::ofstream output_file(json_filesystem_path.filename().string() + "_" + partition_method + "_" + std::to_string(partitions) +
-                            "_output.txt");
-  std::for_each(partition.values.cbegin(), partition.values.cend(),
-                [&output_file](const auto& val) { output_file << std::to_string(val) << "\n"; });
+  // std::filesystem::path json_filesystem_path(json_file_name);
+  // json_filesystem_path = json_filesystem_path.replace_extension();
+  // std::ofstream output_file(json_filesystem_path.filename().string() + "_" + partition_method + "_" + std::to_string(partitions) +
+  //                           "_output.txt");
+  // std::for_each(partition.values.cbegin(), partition.values.cend(),
+  //               [&output_file](const auto& val) { output_file << std::to_string(val) << "\n"; });
 
   return 0;
 }

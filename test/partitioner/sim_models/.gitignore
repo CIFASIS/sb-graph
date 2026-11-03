@@ -1,0 +1,3 @@
+*.partition
+*.csv
+sim_failed/

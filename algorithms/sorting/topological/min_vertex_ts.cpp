@@ -44,9 +44,9 @@ PWMap MinVertexTS::extendRepetition()
   PWMap smap_plus;
   for (std::size_t k = 1; _depth >= k; ++k) {
     std::size_t sz = _repetitionSV.size();
-    Set domain_plus = Vmap.preImage(_repetitionSV[sz-k]);
+    Set domain_plus = Vmap.preImage(_repetitionSV[sz - k]);
     sz = _repetition_sort.size();
-    smap_plus.emplace(domain_plus, _repetition_sort[sz-k].law());
+    smap_plus.emplace(domain_plus, _repetition_sort[sz - k].law());
   }
 
   // Take out vertices that are assigned a value that is not in V.
@@ -81,8 +81,7 @@ PWMap MinVertexTS::repetition(const PWMap& Emap)
   Set dependent_vertices = dsbg_copy.mapD().image().intersection(plus_domain);
   PWMap rmap = PWMap{dependent_vertices}.combine(smap_plus).mapInf();
 
-  Set indep_vertices = plus_domain
-    .difference(rmap.preImage(dependent_vertices));
+  Set indep_vertices = plus_domain.difference(rmap.preImage(dependent_vertices));
   PWMap result = smap_plus.restrict(indep_vertices);
 
   return result;
@@ -92,7 +91,7 @@ PWMap MinVertexTS::repetition(const PWMap& Emap)
 
 IntTuple MinVertexTS::getVertex(Set old_Vj)
 {
-  Set V = _dsbg.V(); 
+  Set V = _dsbg.V();
   PWMap mapD = _dsbg.mapD();
 
   // Independent vertices with no incoming edges.
@@ -121,8 +120,7 @@ IntTuple MinVertexTS::getVertex(Set old_Vj)
 
 // Algorithm -------------------------------------------------------------------
 
-PWMap MinVertexTS::calculate(const DirectedSBG& dsbg
-  , const PWMap& scc_map)
+PWMap MinVertexTS::calculate(const DirectedSBG& dsbg, const PWMap& scc_map)
 {
   Util::DEBUG_LOG << "Topological sort dsbg:\n" << dsbg << "\n\n";
 
@@ -185,8 +183,8 @@ PWMap MinVertexTS::calculate(const DirectedSBG& dsbg
   return _smap;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

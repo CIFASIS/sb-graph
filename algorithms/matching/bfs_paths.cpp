@@ -47,7 +47,7 @@ Set BFSPaths::calculate(const DirectedSBG& dsbg, const Set& endings)
   // A record of allowed edges to keep out cycle edges
   Set E = dsbg.E();
   // Ingoing edges to vertices that reach endings
-  Set ingoing = mapD.preImage(endings); 
+  Set ingoing = mapD.preImage(endings);
   // A record of visited set-edges
   Set visitedSE;
   do {
@@ -61,11 +61,11 @@ Set BFSPaths::calculate(const DirectedSBG& dsbg, const Set& endings)
     // Edges that lead to a successor
     Set Ei = auxD.equalImage(ith_smap.composition(auxB));
     // Visited set-edges
-    Set repeatedSE = visitedSE.intersection(Emap.image(Ei)); 
+    Set repeatedSE = visitedSE.intersection(Emap.image(Ei));
     if (!repeatedSE.isEmpty()) {
       // Propose candidate successors for repetitive paths
       Set Eplus = Emap.preImage(repeatedSE);
-      PWMap smap_plus = auxB.restrict(Eplus).minAdj(auxD.restrict(Eplus)); 
+      PWMap smap_plus = auxB.restrict(Eplus).minAdj(auxD.restrict(Eplus));
       Util::DEBUG_LOG << "smap_plus: " << smap_plus << "\n";
       ith_smap = ith_smap.combine(smap_plus);
       visitedSE = visitedSE.difference(repeatedSE);
@@ -99,8 +99,8 @@ Set BFSPaths::calculate(const DirectedSBG& dsbg, const Set& endings)
   return P;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

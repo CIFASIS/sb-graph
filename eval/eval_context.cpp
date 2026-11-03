@@ -29,40 +29,22 @@ EvalContext::EvalContext() : arity_(1), venv_(), fenv_() {}
 
 // Getters ---------------------------------------------------------------------
 
-unsigned int EvalContext::arity() const
-{
-  return arity_;
-}
+unsigned int EvalContext::arity() const { return arity_; }
 
-VarEnv& EvalContext::venv()
-{
-  return venv_;
-}
+VarEnv& EvalContext::venv() { return venv_; }
 
-FuncEnv& EvalContext::fenv()
-{
-  return fenv_;
-}
+FuncEnv& EvalContext::fenv() { return fenv_; }
 
 // Setters ---------------------------------------------------------------------
 
-void EvalContext::setArity(unsigned int arity)
-{
-  arity_ = arity;
-}
+void EvalContext::setArity(unsigned int arity) { arity_ = arity; }
 
-void EvalContext::insertVariable(VarEnv::VKey key, VarEnv::VValue value)
-{
-  venv_.insert(key, value);
-}
+void EvalContext::insertVariable(VarEnv::VKey key, VarEnv::VValue value) { venv_.insert(key, value); }
 
-void EvalContext::insertFunction(FuncEnv::FKey key, FuncEnv::FValue value)
-{
-  fenv_.insert(key, value);
-}
+void EvalContext::insertFunction(FuncEnv::FKey key, FuncEnv::FValue value) { fenv_.insert(key, value); }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace Eval
+}  // namespace Eval
 
-} // namespace SBG
+}  // namespace SBG

@@ -44,16 +44,16 @@ namespace perf {
 
 namespace detail {
 
-using SBG::LIB::Int;
-using SBG::LIB::Rational;
-using SBG::LIB::detail::Interval;
-using SBG::LIB::Set;
-using SBG::LIB::Expression;
-using SBG::LIB::PWMap;
 using SBG::LIB::BipartiteSBG;
 using SBG::LIB::DirectedSBG;
-using SBG::LIB::Matching;
+using SBG::LIB::Expression;
+using SBG::LIB::Int;
 using SBG::LIB::MatchData;
+using SBG::LIB::Matching;
+using SBG::LIB::PWMap;
+using SBG::LIB::Rational;
+using SBG::LIB::Set;
+using SBG::LIB::detail::Interval;
 
 ////////////////////////////////////////////////////////////////////////////////
 // File Manipulation -----------------------------------------------------------
@@ -93,7 +93,7 @@ bool updateN(const std::string& filename, int N)
   return true;
 }
 
-template<typename SBGT>
+template <typename SBGT>
 SBGT generateSBG(std::string filename, int N, int copies)
 {
   std::streambuf* original_buf = std::cout.rdbuf();
@@ -105,7 +105,7 @@ SBGT generateSBG(std::string filename, int N, int copies)
 
   // Get graph from file
   SBGT g;
-  SBG::Eval::ProgramIO eval_result = SBG::Eval::parseEvalFile(filename); 
+  SBG::Eval::ProgramIO eval_result = SBG::Eval::parseEvalFile(filename);
   for (const SBG::Eval::ExprResult& ev : eval_result.exprs()) {
     SBG::Eval::ExprBaseType e = std::get<1>(ev);
     if (std::holds_alternative<SBGT>(e)) {
@@ -118,10 +118,8 @@ SBGT generateSBG(std::string filename, int N, int copies)
   return copy(copies, g);
 }
 
-template BipartiteSBG generateSBG<BipartiteSBG>(
-  std::string filename, int N, int copies);
-template DirectedSBG generateSBG<DirectedSBG>(
-  std::string filename, int N, int copies);
+template BipartiteSBG generateSBG<BipartiteSBG>(std::string filename, int N, int copies);
+template DirectedSBG generateSBG<DirectedSBG>(std::string filename, int N, int copies);
 
 MatchData calculateMatching(std::string filename, int N, int copies)
 {
@@ -130,7 +128,7 @@ MatchData calculateMatching(std::string filename, int N, int copies)
   Matching match_algorithm;
   MatchData match_result = match_algorithm.calculate(match_sbg);
 
-  return match_result;  
+  return match_result;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -144,12 +142,12 @@ std::pair<Set, Set> nonDisjointPieces(Int set_sz)
   Set s1;
   Set s2;
   for (unsigned int h = 0; h < set_sz; ++h) {
-    Interval i1{h*inter_sz, 1, (h + 1)*inter_sz - 1};
+    Interval i1{h * inter_sz, 1, (h + 1) * inter_sz - 1};
     Set jth_s1{i1.begin(), i1.step(), i1.end()};
     s1 = s1.disjointCup(jth_s1);
 
-    Int off = inter_sz/2;
-    Interval i2{off + (h*inter_sz), 1, off + (h + 1)*inter_sz - 1};
+    Int off = inter_sz / 2;
+    Interval i2{off + (h * inter_sz), 1, off + (h + 1) * inter_sz - 1};
     Set jth_s2{i2.begin(), i2.step(), i2.end()};
     s2 = s2.disjointCup(jth_s2);
   }
@@ -168,9 +166,9 @@ std::pair<Set, Set> interlacedPieces(Int set_sz)
   Set s1;
   Set s2;
   for (SBG::LIB::Int j = 0; j < set_sz; j += 2) {
-    Set jth_s1{j*inter_sz, 1, (j + 1)*inter_sz - 1};
+    Set jth_s1{j * inter_sz, 1, (j + 1) * inter_sz - 1};
     s1 = std::move(s1.disjointCup(jth_s1));
-    Set jth_s2{(j + 1)*inter_sz, 1, (j + 2)*inter_sz - 1};
+    Set jth_s2{(j + 1) * inter_sz, 1, (j + 2) * inter_sz - 1};
     s2 = std::move(s2.disjointCup(jth_s2));
   }
 
@@ -189,9 +187,9 @@ PWMap denseDom(Int map_sz)
   PWMap pw;
   for (unsigned int j = 0; j < map_sz; ++j) {
     Set domain;
-    Int offset = j*set_sz*inter_sz;
+    Int offset = j * set_sz * inter_sz;
     for (unsigned int h = 0; h < set_sz; ++h) {
-      Interval i{offset + (h*inter_sz), 1, offset + (h + 1)*inter_sz - 1};
+      Interval i{offset + (h * inter_sz), 1, offset + (h + 1) * inter_sz - 1};
       Set jth_domain{i.begin(), i.step(), i.end()};
       domain = std::move(domain).disjointCup(std::move(jth_domain));
     }
@@ -214,14 +212,14 @@ std::pair<PWMap, PWMap> minAdjMaps(Int map_sz)
   for (unsigned int j = 0; j < map_sz; ++j) {
     Set domain1;
     Set domain2;
-    Int offset = j*set_sz*inter_sz;
+    Int offset = j * set_sz * inter_sz;
     for (unsigned int h = 0; h < set_sz; ++h) {
-      Interval i1{offset + (h*inter_sz), 1, offset + (h + 1)*inter_sz - 1};
+      Interval i1{offset + (h * inter_sz), 1, offset + (h + 1) * inter_sz - 1};
       Set jth_domain1{i1.begin(), i1.step(), i1.end()};
       domain1 = std::move(domain1).disjointCup(std::move(jth_domain1));
 
-      Int offset2 = offset + inter_sz/2;
-      Interval i2{offset2 + (h*inter_sz), 1, offset2 + (h + 1)*inter_sz - 1};
+      Int offset2 = offset + inter_sz / 2;
+      Interval i2{offset2 + (h * inter_sz), 1, offset2 + (h + 1) * inter_sz - 1};
       Set jth_domain2{i2.begin(), i2.step(), i2.end()};
       domain2 = std::move(domain2).disjointCup(std::move(jth_domain2));
     }
@@ -247,14 +245,14 @@ std::pair<PWMap, PWMap> interlacedMaps(Int map_sz)
   for (unsigned int j = 0; j < map_sz; ++j) {
     Set domain1;
     Set domain2;
-    Int offset = j*set_sz*inter_sz;
+    Int offset = j * set_sz * inter_sz;
     for (unsigned int h = 0; h < set_sz; h += 2) {
-      Interval i1{offset + (h*inter_sz), 1, offset + (h + 1)*inter_sz - 1};
+      Interval i1{offset + (h * inter_sz), 1, offset + (h + 1) * inter_sz - 1};
       Set jth_domain1{i1.begin(), i1.step(), i1.end()};
       domain1 = std::move(domain1).disjointCup(std::move(jth_domain1));
 
       Int offset2 = offset + inter_sz;
-      Interval i2{offset2 + (h*inter_sz), 1, offset2 + (h + 1)*inter_sz - 1};
+      Interval i2{offset2 + (h * inter_sz), 1, offset2 + (h + 1) * inter_sz - 1};
       Set jth_domain2{i2.begin(), i2.step(), i2.end()};
       domain2 = std::move(domain2).disjointCup(std::move(jth_domain2));
     }
@@ -281,14 +279,14 @@ std::pair<PWMap, PWMap> nonDisjointMaps(Int map_sz)
   for (unsigned int j = 0; j < map_sz; ++j) {
     Set domain1;
     Set domain2;
-    Int offset = j*set_sz*inter_sz;
+    Int offset = j * set_sz * inter_sz;
     for (unsigned int h = 0; h < set_sz; ++h) {
-      Interval i1{offset + (h*inter_sz), 1, offset + (h + 1)*inter_sz - 1};
+      Interval i1{offset + (h * inter_sz), 1, offset + (h + 1) * inter_sz - 1};
       Set jth_domain1{i1.begin(), i1.step(), i1.end()};
       domain1 = std::move(domain1).disjointCup(std::move(jth_domain1));
 
-      Int offset2 = offset + inter_sz/2;
-      Interval i2{offset2 + (h*inter_sz), 1, offset2 + (h + 1)*inter_sz - 1};
+      Int offset2 = offset + inter_sz / 2;
+      Interval i2{offset2 + (h * inter_sz), 1, offset2 + (h + 1) * inter_sz - 1};
       Set jth_domain2{i2.begin(), i2.step(), i2.end()};
       domain2 = std::move(domain2).disjointCup(std::move(jth_domain2));
     }
@@ -313,9 +311,9 @@ PWMap reducibleMaps(Int map_sz)
   PWMap pw;
   for (unsigned int j = 0; j < map_sz; ++j) {
     Set domain;
-    Int offset = j*set_sz*inter_sz;
+    Int offset = j * set_sz * inter_sz;
     for (unsigned int h = 0; h < set_sz; ++h) {
-      Interval i{offset + (h*inter_sz), 1, offset + (h + 1)*inter_sz - 1};
+      Interval i{offset + (h * inter_sz), 1, offset + (h + 1) * inter_sz - 1};
       Set jth_domain{i.begin(), i.step(), i.end()};
       domain = std::move(domain).disjointCup(std::move(jth_domain));
     }
@@ -331,10 +329,8 @@ PWMap reducibleMaps(Int map_sz)
   return pw;
 }
 
+}  // namespace detail
 
+}  // namespace perf
 
-} // namespace detail
-
-} // namespace perf
-
-} // namespace SBG
+}  // namespace SBG

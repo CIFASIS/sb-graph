@@ -27,27 +27,26 @@ namespace LIB {
 std::ostream& operator<<(std::ostream& out, const Direction& direction)
 {
   switch (direction) {
-    case Direction::kForward: {
-      out << "forward";
-      break;
-    }
+  case Direction::kForward: {
+    out << "forward";
+    break;
+  }
 
-    case Direction::kBackward: {
-      out << "backward";
-      break;
-    }
+  case Direction::kBackward: {
+    out << "backward";
+    break;
+  }
 
-    default: {
-      Util::ERROR("Unsupported direction");
-      break;
-    }
+  default: {
+    Util::ERROR("Unsupported direction");
+    break;
+  }
   }
 
   return out;
 }
 
-MatchData::MatchData(BipartiteSBG bsbg, Set M, bool full_match)
-  : _bsbg(bsbg), _M(M), _full_match(full_match) {}
+MatchData::MatchData(BipartiteSBG bsbg, Set M, bool full_match) : _bsbg(bsbg), _M(M), _full_match(full_match) {}
 
 const BipartiteSBG& MatchData::bsbg() const { return _bsbg; }
 
@@ -67,6 +66,6 @@ std::ostream& operator<<(std::ostream& out, const MatchData& data)
   return out;
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

@@ -35,11 +35,8 @@ SBGLogger& SBGLogger::instance()
 
 void SBGLogger::setLevel(LogLevel lvl) { _level = lvl; }
 
-std::ostream& SBGLogger::log(LogLevel msg_lvl)
-{
-  return (msg_lvl <= _level) ? _file : null_stream;
-}
+std::ostream& SBGLogger::log(LogLevel msg_lvl) { return (msg_lvl <= _level) ? _file : null_stream; }
 
-} // namespace Util
+}  // namespace Util
 
-} // namespace SBG
+}  // namespace SBG

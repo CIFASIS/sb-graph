@@ -25,28 +25,26 @@ namespace AST {
 
 SBGProgram::SBGProgram() : _arity(1) {}
 
-SBGProgram::SBGProgram(StatementList stms, ExprList exprs)
-  : _arity(1), _stms(stms), _exprs(exprs) {}
+SBGProgram::SBGProgram(StatementList stms, ExprList exprs) : _arity(1), _stms(stms), _exprs(exprs) {}
 
-SBGProgram::SBGProgram(std::size_t arity, StatementList stms, ExprList exprs) 
-  : _arity(arity), _stms(stms), _exprs(exprs) {}
+SBGProgram::SBGProgram(std::size_t arity, StatementList stms, ExprList exprs) : _arity(arity), _stms(stms), _exprs(exprs) {}
 
 const std::size_t SBGProgram::arity() const { return _arity; }
 
-const StatementList& SBGProgram::stms() const { return _stms; }
+const StatementList &SBGProgram::stms() const { return _stms; }
 
-const ExprList& SBGProgram::exprs() const { return _exprs; }
+const ExprList &SBGProgram::exprs() const { return _exprs; }
 
 std::ostream &operator<<(std::ostream &out, const SBGProgram &prog)
 {
   if (!prog.stms().empty()) {
     out << prog.stms() << "\n";
   }
-  out << prog.exprs();  
+  out << prog.exprs();
 
   return out;
 }
 
-} // namespace AST
+}  // namespace AST
 
-} // namespace SBG
+}  // namespace SBG

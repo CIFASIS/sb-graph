@@ -31,15 +31,15 @@ namespace LIB {
 std::ostream& operator<<(std::ostream& out, const MatchKind kind)
 {
   switch (kind) {
-    case MatchKind::kBFSPaths: {
-      out << "BFS paths";
-      break;
-    }
+  case MatchKind::kBFSPaths: {
+    out << "BFS paths";
+    break;
+  }
 
-    default: {
-      Util::ERROR("Unsupported matching algorithm implementation");
-      break;
-    }
+  default: {
+    Util::ERROR("Unsupported matching algorithm implementation");
+    break;
+  }
   }
 
   return out;
@@ -57,6 +57,6 @@ const MatchKind& MatchImplementation::kind() const { return _kind; }
 
 void MatchImplementation::set_match_fact(MatchKind kind) { _kind = kind; }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

@@ -35,8 +35,9 @@ void InputTranslator::translate(EvalUserInput& input)
   EvalUserInput::MaybeInt pw = input.pw_impl();
   if (s && pw) {
     if (*s == 0 && *pw == 2) {
-      Util::ERROR("Domain ordered PWMap should be used with an ordered set"
-        " implementation\n");
+      Util::ERROR(
+          "Domain ordered PWMap should be used with an ordered set"
+          " implementation\n");
     } else {
       setSetFactory(*s);
       setPWFactory(*pw);
@@ -58,8 +59,8 @@ void InputTranslator::translate(EvalUserInput& input)
   }
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace Eval
+}  // namespace Eval
 
-} // namespace SBG
+}  // namespace SBG

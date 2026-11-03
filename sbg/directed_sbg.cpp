@@ -37,12 +37,10 @@ namespace LIB {
 
 DirectedSBG::DirectedSBG() : _V(), _Vmap(), _E(), _mapB(), _mapD(), _Emap() {}
 
-DirectedSBG::DirectedSBG(const Set& V, const PWMap& Vmap
-  , const PWMap& mapB, const PWMap& mapD
-  , const PWMap& Emap)
-  : _V(V), _Vmap(Vmap)
-    , _E(mapB.domain().intersection(mapD.domain()))
-    , _mapB(mapB), _mapD(mapD), _Emap(Emap) {}
+DirectedSBG::DirectedSBG(const Set& V, const PWMap& Vmap, const PWMap& mapB, const PWMap& mapD, const PWMap& Emap)
+    : _V(V), _Vmap(Vmap), _E(mapB.domain().intersection(mapD.domain())), _mapB(mapB), _mapD(mapD), _Emap(Emap)
+{
+}
 
 // Getters ---------------------------------------------------------------------
 
@@ -62,14 +60,12 @@ const PWMap& DirectedSBG::Emap() const { return _Emap; }
 
 void DirectedSBG::addSetVertex(const Set& vertices)
 {
-  if (!vertices.intersection(_V).isEmpty()){
-    Util::ERROR("Trying to add existing vertices: ", vertices
-    , " to DirectedSBG\n");
+  if (!vertices.intersection(_V).isEmpty()) {
+    Util::ERROR("Trying to add existing vertices: ", vertices, " to DirectedSBG\n");
   } else if (!vertices.isEmpty()) {
     Set set_vertices = _Vmap.image();
     std::size_t arity = vertices.arity();
-    IntTuple max = set_vertices.isEmpty() ? IntTuple{arity, 0}
-      : set_vertices.maxElem();
+    IntTuple max = set_vertices.isEmpty() ? IntTuple{arity, 0} : set_vertices.maxElem();
     _Vmap.emplace(vertices, max + IntTuple{arity, 1});
     _V = std::move(_V).cup(std::move(vertices));
   }
@@ -136,7 +132,6 @@ std::ostream& operator<<(std::ostream& out, const DirectedSBG& dg)
 
 DirectedSBG copy(unsigned int copies, DirectedSBG dsbg)
 {
-
   if (copies == 0) {
     Util::ERROR("DirectedSBG::copy: zeros copies is not allowed\n");
   }
@@ -153,21 +148,19 @@ DirectedSBG copy(unsigned int copies, DirectedSBG dsbg)
     IntTuple max_v = result.V().maxElem();
     dsbg.foreachSetVertex([&](const IntTuple& SV) {
       Set vertices = Vmap.preImage(Set{SV});
-     result.addSetVertex(vertices.translate(max_v));
+      result.addSetVertex(vertices.translate(max_v));
     });
 
     Expression offset_v;
     for (std::size_t k = 0; k < max_v.arity(); ++k) {
-      offset_v = offset_v.cartesianProduct(Expression{Rational{1}
-        , Rational{max_v[k]}});
+      offset_v = offset_v.cartesianProduct(Expression{Rational{1}, Rational{max_v[k]}});
     }
     PWMap offset_pw_v{Map{V, offset_v}};
 
     IntTuple max_e = result.E().maxElem();
     Expression offset_e;
     for (std::size_t k = 0; k < max_e.arity(); ++k) {
-      offset_e = offset_e.cartesianProduct(Expression{Rational{1}
-        , Rational{max_e[k]}});
+      offset_e = offset_e.cartesianProduct(Expression{Rational{1}, Rational{max_e[k]}});
     }
     PWMap offset_pw_e{Map{E, offset_e}};
     PWMap inverse_offset_pw_e = offset_pw_e.inverse();
@@ -186,6 +179,6 @@ DirectedSBG copy(unsigned int copies, DirectedSBG dsbg)
   return result;
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

@@ -25,31 +25,31 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// SCC implementations --------------------------------------------------------- 
+// SCC implementations ---------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 std::ostream& operator<<(std::ostream& out, const SCCKind kind)
 {
   switch (kind) {
-    case SCCKind::kMinReachV1: {
-      out << "minimum reachable V1";
-      break;
-    }
+  case SCCKind::kMinReachV1: {
+    out << "minimum reachable V1";
+    break;
+  }
 
-    case SCCKind::kMinReachV2: {
-      out << "minimum reachable V2";
-      break;
-    }
+  case SCCKind::kMinReachV2: {
+    out << "minimum reachable V2";
+    break;
+  }
 
-    case SCCKind::kMinReachV3: {
-      out << "minimum reachable V3";
-      break;
-    }
+  case SCCKind::kMinReachV3: {
+    out << "minimum reachable V3";
+    break;
+  }
 
-    default: {
-      Util::ERROR("Unsupported SCC implementation");
-      break;
-    }
+  default: {
+    Util::ERROR("Unsupported SCC implementation");
+    break;
+  }
   }
 
   return out;
@@ -67,6 +67,6 @@ const SCCKind& SCCImplementation::kind() const { return _kind; }
 
 void SCCImplementation::set_scc_fact(SCCKind kind) { _kind = kind; }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

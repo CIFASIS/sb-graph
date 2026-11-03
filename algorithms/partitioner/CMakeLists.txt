@@ -9,6 +9,11 @@ target_include_directories(sbg-part-lib
       ${PROJECT_SOURCE_DIR}
 )
 
+set(ENABLE_MEMORY_BENCHMARKING OFF)
+if(ENABLE_MEMORY_BENCHMARKING)
+    add_compile_definitions(USE_MEMORY_TRACKER)
+endif()
+
 target_sources(
     sbg-part-lib
     PRIVATE
@@ -17,7 +22,6 @@ target_sources(
         dfs_on_sbg.cpp
         kernighan_lin_partitioner.cpp
         partition_graph.cpp
-        partition_graph_cc.cpp
         partition_metrics_api.cpp
         partition_strategy.cpp
         weighted_sb_graph.cpp
@@ -51,6 +55,8 @@ target_sources(
         main.cpp
 )
 
+target_include_directories(sbg-partitioner PRIVATE ${PROJECT_SOURCE_DIR})
+
 target_link_libraries(
     sbg-partitioner
     PRIVATE
@@ -77,4 +83,12 @@ install(
             WORLD_READ
             WORLD_EXECUTE
     COMPONENT sbg-partitioner
+)
+
+install(
+    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sbgraph/algorithms/partitioner
+    FILES_MATCHING PATTERN "*.hpp"
+    PATTERN "partition_graph_cc.hpp" EXCLUDE
+    PATTERN "utils" EXCLUDE
 )

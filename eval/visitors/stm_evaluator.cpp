@@ -28,12 +28,9 @@ namespace detail {
 
 StmEvaluator::StmEvaluator(EvalContext& eval_ctx) : _eval_context(eval_ctx) {}
 
-EvalContext& StmEvaluator::eval_context() const
-{
-  return _eval_context;
-}
+EvalContext& StmEvaluator::eval_context() const { return _eval_context; }
 
-StmResult StmEvaluator::operator()(AST::Assign assgn) const 
+StmResult StmEvaluator::operator()(AST::Assign assgn) const
 {
   ExprEvaluator eval_expr(_eval_context);
   ExprBaseType e = boost::apply_visitor(eval_expr, assgn.right());
@@ -42,13 +39,10 @@ StmResult StmEvaluator::operator()(AST::Assign assgn) const
   return StmResult(assgn.left(), e);
 }
 
-StmResult StmEvaluator::operator()(AST::ConfigDims cfg) const
-{
-  return StmResult("", static_cast<LIB::Int>(cfg.arity()));
-}
+StmResult StmEvaluator::operator()(AST::ConfigDims cfg) const { return StmResult("", static_cast<LIB::Int>(cfg.arity())); }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace Eval
+}  // namespace Eval
 
-} // namespace SBG
+}  // namespace SBG

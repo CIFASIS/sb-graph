@@ -36,25 +36,25 @@ SCC::SCC() : _impl()
 {
   SCCKind kind = SCC_IMPL.kind();
   switch (kind) {
-    case SCCKind::kMinReachV1: {
-      _impl = detail::MinReachSCCV1{};
-      break;
-    }
+  case SCCKind::kMinReachV1: {
+    _impl = detail::MinReachSCCV1{};
+    break;
+  }
 
-    case SCCKind::kMinReachV2: {
-      _impl = detail::MinReachSCCV2{};
-      break;
-    }
+  case SCCKind::kMinReachV2: {
+    _impl = detail::MinReachSCCV2{};
+    break;
+  }
 
-    case SCCKind::kMinReachV3: {
-      _impl = detail::MinReachSCCV3{};
-      break;
-    }
+  case SCCKind::kMinReachV3: {
+    _impl = detail::MinReachSCCV3{};
+    break;
+  }
 
-    default: {
-      Util::ERROR("Unsupported SCC implementation");
-      break;
-    }
+  default: {
+    Util::ERROR("Unsupported SCC implementation");
+    break;
+  }
   }
 }
 
@@ -65,6 +65,6 @@ SCCData SCC::calculate(const DirectedSBG& dsbg)
   return std::visit([&](auto& a) { return a.calculate(dsbg); }, _impl);
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

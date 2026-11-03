@@ -56,7 +56,7 @@ Interval image(const Interval& i, const LinearExpr& linear_expr)
   Int new_begin = linear_expr.apply(i.begin());
   Rational m = linear_expr.slope();
   Int step = i.step();
-  Int new_step = m >= 0 ? (m*step).toInt() : (-m*step).toInt();
+  Int new_step = m >= 0 ? (m * step).toInt() : (-m * step).toInt();
   Int new_end = linear_expr.apply(i.end());
 
   return Interval{new_begin, new_step, new_end};
@@ -75,9 +75,8 @@ MultiDimInter image(const MultiDimInter& mdi, const ExpressionImpl& expr)
   return result;
 }
 
-template<typename CompactSetImplT, typename PieceT, typename ExprImplT>
-CompactSetImplT compactImage(const CompactSetImplT& s, const ExprImplT& expr
-  , bool is_injective)
+template <typename CompactSetImplT, typename PieceT, typename ExprImplT>
+CompactSetImplT compactImage(const CompactSetImplT& s, const ExprImplT& expr, bool is_injective)
 {
   CompactSetImplT result;
 
@@ -99,28 +98,20 @@ Set MapDetail::image(const Set& s, const Expression& expr)
 {
   bool is_injective = expr.isInjective();
   SetAccessKey key = SetAccess::key();
-  auto image_evaluator = Util::Overload {
-    [&](const UnorderedSet& a)
-    {
-      return key.createSet(detail::compactImage<UnorderedSet, MultiDimInter
-        , ExpressionImpl>(a, expr._impl, is_injective));
-    },
-    [&](const OrdUnidimDenseSet& a)
-    {
-      return key.createSet(detail::compactImage<OrdUnidimDenseSet, Interval
-        , LinearExpr>(a, expr._impl[0], is_injective));
-    },
-    [&](const OrderedSet& a)
-    {
-      return key.createSet(detail::compactImage<OrderedSet, MultiDimInter
-        , ExpressionImpl>(a, expr._impl, is_injective));
-    },
-    [&](const auto& a)
-    {
-      Util::ERROR("MapDetail::image: unsupported Set implementation\n");
-      return Set{SetKind::kUnordered};
-    }
-  };
+  auto image_evaluator =
+      Util::Overload{[&](const UnorderedSet& a) {
+                       return key.createSet(detail::compactImage<UnorderedSet, MultiDimInter, ExpressionImpl>(a, expr._impl, is_injective));
+                     },
+                     [&](const OrdUnidimDenseSet& a) {
+                       return key.createSet(detail::compactImage<OrdUnidimDenseSet, Interval, LinearExpr>(a, expr._impl[0], is_injective));
+                     },
+                     [&](const OrderedSet& a) {
+                       return key.createSet(detail::compactImage<OrderedSet, MultiDimInter, ExpressionImpl>(a, expr._impl, is_injective));
+                     },
+                     [&](const auto& a) {
+                       Util::ERROR("MapDetail::image: unsupported Set implementation\n");
+                       return Set{SetKind::kUnordered};
+                     }};
   return std::visit(image_evaluator, key.impl(s));
 }
 
@@ -152,7 +143,7 @@ MultiDimInter preImage(const MultiDimInter& mdi, const ExpressionImpl& expr)
   return result;
 }
 
-template<typename CompactSetImplT, typename PieceT, typename ExprImplT>
+template <typename CompactSetImplT, typename PieceT, typename ExprImplT>
 CompactSetImplT compactPreImage(const CompactSetImplT& s, const ExprImplT& expr)
 {
   CompactSetImplT result;
@@ -167,28 +158,18 @@ CompactSetImplT compactPreImage(const CompactSetImplT& s, const ExprImplT& expr)
 Set MapDetail::preImage(const Set& s, const Expression& expr)
 {
   SetAccessKey key = SetAccess::key();
-  auto pre_image_evaluator = Util::Overload {
-    [&](const UnorderedSet& a)
-    {
-      return key.createSet(detail::compactPreImage<UnorderedSet, MultiDimInter
-        , ExpressionImpl>(a, expr._impl));
-    },
-    [&](const OrdUnidimDenseSet& a)
-    {
-      return key.createSet(detail::compactPreImage<OrdUnidimDenseSet, Interval
-        , LinearExpr>(a, expr._impl[0]));
-    },
-    [&](const OrderedSet& a)
-    {
-      return key.createSet(detail::compactPreImage<OrderedSet, MultiDimInter
-        , ExpressionImpl>(a, expr._impl));
-    },
-    [&](const auto& a)
-    {
-      Util::ERROR("MapDetail::preImage: unsupported Set implementation\n");
-      return Set{SetKind::kUnordered};
-    }
-  };
+  auto pre_image_evaluator = Util::Overload{
+      [&](const UnorderedSet& a) {
+        return key.createSet(detail::compactPreImage<UnorderedSet, MultiDimInter, ExpressionImpl>(a, expr._impl));
+      },
+      [&](const OrdUnidimDenseSet& a) {
+        return key.createSet(detail::compactPreImage<OrdUnidimDenseSet, Interval, LinearExpr>(a, expr._impl[0]));
+      },
+      [&](const OrderedSet& a) { return key.createSet(detail::compactPreImage<OrderedSet, MultiDimInter, ExpressionImpl>(a, expr._impl)); },
+      [&](const auto& a) {
+        Util::ERROR("MapDetail::preImage: unsupported Set implementation\n");
+        return Set{SetKind::kUnordered};
+      }};
   return std::visit(pre_image_evaluator, key.impl(s));
 }
 
@@ -199,7 +180,7 @@ AtomicMap inverse(const Interval& i, const LinearExpr& linear_expr)
   Interval img = image(i, linear_expr);
   if (linear_expr.isConstant()) {
     return AtomicMap{img, LinearExpr{1, i.begin() - img.begin()}};
-  } 
+  }
 
   return AtomicMap{img, linear_expr.inverse()};
 }
@@ -221,14 +202,11 @@ AtomicMDMap inverse(const MultiDimInter& mdi, const ExpressionImpl& expr)
   return AtomicMDMap{result_domain, result_law};
 }
 
-template<typename CompactSetImplT, typename PieceT, typename ExprImplT>
-std::pair<CompactSetImplT, ExprImplT> compactInverse(const CompactSetImplT& s
-  , const ExprImplT& expr, bool is_injective)
+template <typename CompactSetImplT, typename PieceT, typename ExprImplT>
+std::pair<CompactSetImplT, ExprImplT> compactInverse(const CompactSetImplT& s, const ExprImplT& expr, bool is_injective)
 {
-  CompactSetImplT image = compactImage<CompactSetImplT, PieceT, ExprImplT>(
-     s, expr, is_injective);
-  Util::ERROR_UNLESS(s.cardinal() == image.cardinal(), "MapDetail/inverse: "
-    , "(s, expr) pair is not invertible\n");
+  CompactSetImplT image = compactImage<CompactSetImplT, PieceT, ExprImplT>(s, expr, is_injective);
+  Util::ERROR_UNLESS(s.cardinal() == image.cardinal(), "MapDetail/inverse: ", "(s, expr) pair is not invertible\n");
 
   ExprImplT result_law = detail::inverse(*(s.begin()), expr).second;
 
@@ -243,38 +221,29 @@ Map MapDetail::inverse(const Set& s, const Expression& expr)
 
   bool is_injective = expr.isInjective();
   SetAccessKey key = SetAccess::key();
-  auto inverse_evaluator = Util::Overload {
-    [&](const UnorderedSet& a)
-    {
-      auto [domain, law] = compactInverse<UnorderedSet, MultiDimInter
-        , ExpressionImpl>(a, expr._impl, is_injective);
-      return Map{key.createSet(domain), Expression{law}};
-    },
-    [&](const OrdUnidimDenseSet& a)
-    {
-      auto [domain, law] = compactInverse<OrdUnidimDenseSet, Interval
-        , LinearExpr>(a, expr._impl[0], is_injective);
-      return Map{key.createSet(domain), Expression{ExpressionImpl{law}}};
-    },
-    [&](const OrderedSet& a)
-    {
-      auto [domain, law] = compactInverse<OrderedSet, MultiDimInter
-        , ExpressionImpl>(a, expr._impl, is_injective);
-      return Map{key.createSet(domain), Expression{law}};
-    },
-    [&](const auto& a)
-    {
-      Util::ERROR("MapDetail::preImage: unsupported Set implementation\n");
-      return Set{SetKind::kUnordered};
-    }
-  };
+  auto inverse_evaluator =
+      Util::Overload{[&](const UnorderedSet& a) {
+                       auto [domain, law] = compactInverse<UnorderedSet, MultiDimInter, ExpressionImpl>(a, expr._impl, is_injective);
+                       return Map{key.createSet(domain), Expression{law}};
+                     },
+                     [&](const OrdUnidimDenseSet& a) {
+                       auto [domain, law] = compactInverse<OrdUnidimDenseSet, Interval, LinearExpr>(a, expr._impl[0], is_injective);
+                       return Map{key.createSet(domain), Expression{ExpressionImpl{law}}};
+                     },
+                     [&](const OrderedSet& a) {
+                       auto [domain, law] = compactInverse<OrderedSet, MultiDimInter, ExpressionImpl>(a, expr._impl, is_injective);
+                       return Map{key.createSet(domain), Expression{law}};
+                     },
+                     [&](const auto& a) {
+                       Util::ERROR("MapDetail::preImage: unsupported Set implementation\n");
+                       return Set{SetKind::kUnordered};
+                     }};
   return std::visit(inverse_evaluator, key.impl(s));
 }
 
 // Less image ------------------------------------------------------------------
 
-Interval lessImage(const LinearExpr& linear_expr1
-  , const LinearExpr& linear_expr2)
+Interval lessImage(const LinearExpr& linear_expr1, const LinearExpr& linear_expr2)
 {
   Rational m1 = linear_expr1.slope();
   Rational m2 = linear_expr2.slope();
@@ -292,12 +261,10 @@ Interval lessImage(const LinearExpr& linear_expr1
       if (ceil == floor) {
         Int floor_minus = floor == kNegInf ? kNegInf : floor - 1;
         Int ceil_plus = ceil == kPosInf ? kPosInf : ceil + 1;
-        Interval kth = m1 < m2 ? Interval{ceil_plus, 1, kPosInf}
-          : Interval {kNegInf, 1, floor_minus};
+        Interval kth = m1 < m2 ? Interval{ceil_plus, 1, kPosInf} : Interval{kNegInf, 1, floor_minus};
         return kth;
       } else {
-        Interval kth = m1 < m2 ? Interval{ceil, 1, kPosInf}
-          : Interval {kNegInf, 1, floor};
+        Interval kth = m1 < m2 ? Interval{ceil, 1, kPosInf} : Interval{kNegInf, 1, floor};
         return kth;
       }
     } else {
@@ -310,8 +277,7 @@ Interval lessImage(const LinearExpr& linear_expr1
   return Interval{};
 }
 
-std::vector<MultiDimInter> lessImage(const ExpressionImpl& expr1
-  , const ExpressionImpl& expr2)
+std::vector<MultiDimInter> lessImage(const ExpressionImpl& expr1, const ExpressionImpl& expr2)
 {
   std::vector<MultiDimInter> result;
 
@@ -346,9 +312,8 @@ std::vector<MultiDimInter> lessImage(const ExpressionImpl& expr1
   return result;
 }
 
-template<typename CompactSetImplT, typename PieceT, typename ExprImplT>
-void lessImage(const ExprImplT& expr1
-  , const ExprImplT& expr2, CompactSetImplT& result)
+template <typename CompactSetImplT, typename PieceT, typename ExprImplT>
+void lessImage(const ExprImplT& expr1, const ExprImplT& expr2, CompactSetImplT& result)
 {
   std::vector<PieceT> less_image = detail::lessImage(expr1, expr2);
 
@@ -362,37 +327,28 @@ Set MapDetail::lessImage(const Expression& expr1, const Expression& expr2)
   Set result;
 
   SetAccessKey key = SetAccess::key();
-  auto less_image_evaluator = Util::Overload {
-    [&](UnorderedSet&& a)
-    {
-      detail::lessImage<UnorderedSet, MultiDimInter, ExpressionImpl>(
-        expr1._impl, expr2._impl, a);
-      return key.createSet(a);
-    },
-    [&](OrdUnidimDenseSet&& a)
-    {
-      a.pushBack(detail::lessImage(expr1._impl[0], expr2._impl[0]));
-      return key.createSet(a);
-    },
-    [&](OrderedSet&& a)
-    {
-      detail::lessImage<OrderedSet, MultiDimInter, ExpressionImpl>(
-        expr1._impl, expr2._impl, a);
-      return key.createSet(a);
-    },
-    [&](auto&& a)
-    {
-      Util::ERROR("MapDetail::lessImage: unsupported Set implementation\n");
-      return Set{SetKind::kUnordered};
-    }
-  };
+  auto less_image_evaluator = Util::Overload{[&](UnorderedSet&& a) {
+                                               detail::lessImage<UnorderedSet, MultiDimInter, ExpressionImpl>(expr1._impl, expr2._impl, a);
+                                               return key.createSet(a);
+                                             },
+                                             [&](OrdUnidimDenseSet&& a) {
+                                               a.pushBack(detail::lessImage(expr1._impl[0], expr2._impl[0]));
+                                               return key.createSet(a);
+                                             },
+                                             [&](OrderedSet&& a) {
+                                               detail::lessImage<OrderedSet, MultiDimInter, ExpressionImpl>(expr1._impl, expr2._impl, a);
+                                               return key.createSet(a);
+                                             },
+                                             [&](auto&& a) {
+                                               Util::ERROR("MapDetail::lessImage: unsupported Set implementation\n");
+                                               return Set{SetKind::kUnordered};
+                                             }};
   return std::visit(less_image_evaluator, key.impl(result));
 }
 
 // Reduction -------------------------------------------------------------------
 
-void partition(const Interval& i, const LinearExpr& linear_expr
-  , AtomicMapVector& result)
+void partition(const Interval& i, const LinearExpr& linear_expr, AtomicMapVector& result)
 {
   Int h = linear_expr.offset().toInt();
   Int absh = std::abs(h);
@@ -436,7 +392,7 @@ AtomicMapVector reduce(const Interval& i, const LinearExpr& linear_expr)
   // Partition of the piece needed
   if (h % st == 0) {
     // Is convenient the partition of the piece?
-    if ((Int) i.cardinal() > h*h) {
+    if ((Int)i.cardinal() > h * h) {
       partition(i, linear_expr, result);
     } else {
       result.emplace_back(i, linear_expr);
@@ -445,7 +401,7 @@ AtomicMapVector reduce(const Interval& i, const LinearExpr& linear_expr)
     result.emplace_back(i, linear_expr);
   }
 
-  return result; 
+  return result;
 }
 
 bool isReductionEfficient(const ExpressionImpl& expr)
@@ -464,8 +420,7 @@ bool isReductionEfficient(const ExpressionImpl& expr)
   return count == 1;
 }
 
-AtomicMapVector reduce(const MultiDimInter& mdi, const ExpressionImpl& expr
-  , unsigned int& k_reduce)
+AtomicMapVector reduce(const MultiDimInter& mdi, const ExpressionImpl& expr, unsigned int& k_reduce)
 {
   // Identify reducible dimension k_reduce
   std::size_t arity = mdi.arity();
@@ -474,7 +429,7 @@ AtomicMapVector reduce(const MultiDimInter& mdi, const ExpressionImpl& expr
   for (std::size_t k = 0; k < arity; ++k) {
     LinearExpr linear_expr = expr[k];
     if (linear_expr.slope() == 1 && linear_expr.offset() != 0) {
-      k_reduce = k; 
+      k_reduce = k;
       reducible_interval = mdi[k];
       reducible_expr = linear_expr;
       break;
@@ -484,9 +439,8 @@ AtomicMapVector reduce(const MultiDimInter& mdi, const ExpressionImpl& expr
   return reduce(reducible_interval, reducible_expr);
 }
 
-template<typename CompactSetImplT>
-MapVector MapDetail::compactReduce(const CompactSetImplT& s
-  , const ExpressionImpl& expr)
+template <typename CompactSetImplT>
+MapVector MapDetail::compactReduce(const CompactSetImplT& s, const ExpressionImpl& expr)
 {
   MapVector result;
 
@@ -508,8 +462,7 @@ MapVector MapDetail::compactReduce(const CompactSetImplT& s
   return result;
 }
 
-MapVector MapDetail::reduce(const OrdUnidimDenseSet& s
-  , const ExpressionImpl& expr)
+MapVector MapDetail::reduce(const OrdUnidimDenseSet& s, const ExpressionImpl& expr)
 {
   MapVector result;
 
@@ -519,8 +472,7 @@ MapVector MapDetail::reduce(const OrdUnidimDenseSet& s
     for (const AtomicMap& r : reduced) {
       OrdUnidimDenseSet domain;
       domain.pushBack(r.first);
-      result.emplace_back(key.createSet(domain)
-        , Expression{ExpressionImpl{r.second}});
+      result.emplace_back(key.createSet(domain), Expression{ExpressionImpl{r.second}});
     }
   }
 
@@ -539,25 +491,13 @@ MapVector MapDetail::reduce(const Map& m)
   }
 
   SetAccessKey key = SetAccess::key();
-  auto reduce_evaluator = Util::Overload {
-    [&](const UnorderedSet& a)
-    {
-      return compactReduce<UnorderedSet>(a, law._impl);
-    },
-    [&](const OrdUnidimDenseSet& a)
-    {
-      return reduce(a, law._impl);
-    },
-    [&](const OrderedSet& a)
-    {
-      return compactReduce<OrderedSet>(a, law._impl);
-    },
-    [&](const auto& a)
-    {
-      Util::ERROR("MapDetail::reduce: unsupported Set implementation\n");
-      return Set{SetKind::kUnordered};
-    }
-  };
+  auto reduce_evaluator = Util::Overload{[&](const UnorderedSet& a) { return compactReduce<UnorderedSet>(a, law._impl); },
+                                         [&](const OrdUnidimDenseSet& a) { return reduce(a, law._impl); },
+                                         [&](const OrderedSet& a) { return compactReduce<OrderedSet>(a, law._impl); },
+                                         [&](const auto& a) {
+                                           Util::ERROR("MapDetail::reduce: unsupported Set implementation\n");
+                                           return Set{SetKind::kUnordered};
+                                         }};
   return std::visit(reduce_evaluator, key.impl(m.domain()));
 }
 
@@ -573,8 +513,7 @@ AtomicMap imageMultiplicity(const Interval& i, const LinearExpr& linear_expr)
   return AtomicMap{image, LinearExpr{0, 1}};
 }
 
-AtomicMDMap imageMultiplicity(const MultiDimInter& mdi
-  , const ExpressionImpl& expr)
+AtomicMDMap imageMultiplicity(const MultiDimInter& mdi, const ExpressionImpl& expr)
 {
   MultiDimInter result_mdi;
 
@@ -590,9 +529,8 @@ AtomicMDMap imageMultiplicity(const MultiDimInter& mdi
   return AtomicMDMap{result_mdi, result_expr};
 }
 
-template<typename CompactSetImplT, typename PieceT, typename ExprImplT>
-MapVector MapDetail::imageMultiplicity(const CompactSetImplT& s
-  , const ExprImplT& expr)
+template <typename CompactSetImplT, typename PieceT, typename ExprImplT>
+MapVector MapDetail::imageMultiplicity(const CompactSetImplT& s, const ExprImplT& expr)
 {
   MapVector result;
 
@@ -602,8 +540,7 @@ MapVector MapDetail::imageMultiplicity(const CompactSetImplT& s
 
     bool repeated = false;
     AtomicMDMap jth = detail::imageMultiplicity(p, expr);
-    Map p_multiplicity{key.createSet(CompactSetImplT{std::get<0>(jth)})
-      , std::get<1>(jth)};
+    Map p_multiplicity{key.createSet(CompactSetImplT{std::get<0>(jth)}), std::get<1>(jth)};
     for (const Map& m : result) {
       Set m_domain = m.domain();
       Set cap = m_domain.intersection(p_multiplicity.domain());
@@ -643,41 +580,27 @@ MapVector MapDetail::imageMultiplicity(const Map& m)
   }
 
   if (law.isConstant()) {
-    result.emplace_back(m.image(), Expression{IntTuple{domain.arity()
-      , m.domain().cardinal()}});
+    result.emplace_back(m.image(), Expression{IntTuple{domain.arity(), m.domain().cardinal()}});
     return result;
   }
 
   SetAccessKey key = SetAccess::key();
-  auto img_mult_evaluator = Util::Overload {
-    [&](const UnorderedSet& a)
-    {
-      return imageMultiplicity<UnorderedSet, MultiDimInter, ExpressionImpl>(
-        a, law._impl);
-    },
-    [&](const OrdUnidimDenseSet& a)
-    {
-      Util::ERROR("MapDetail::imageMultiplicity: OrdUnidimDenseSet already "
-        , "solved\n");
-      return MapVector{};
-    },
-    [&](const OrderedSet& a)
-    {
-      return imageMultiplicity<OrderedSet, MultiDimInter, ExpressionImpl>(
-        a, law._impl);
-    },
-    [&](const auto& a)
-    {
-      Util::ERROR("MapDetail::imageMultiplicity: unsupported Set "
-        , "implementation\n");
-      return MapVector{};
-    }
-  };
+  auto img_mult_evaluator =
+      Util::Overload{[&](const UnorderedSet& a) { return imageMultiplicity<UnorderedSet, MultiDimInter, ExpressionImpl>(a, law._impl); },
+                     [&](const OrdUnidimDenseSet& a) {
+                       Util::ERROR("MapDetail::imageMultiplicity: OrdUnidimDenseSet already ", "solved\n");
+                       return MapVector{};
+                     },
+                     [&](const OrderedSet& a) { return imageMultiplicity<OrderedSet, MultiDimInter, ExpressionImpl>(a, law._impl); },
+                     [&](const auto& a) {
+                       Util::ERROR("MapDetail::imageMultiplicity: unsupported Set ", "implementation\n");
+                       return MapVector{};
+                     }};
   return std::visit(img_mult_evaluator, key.impl(m.domain()));
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

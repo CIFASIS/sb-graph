@@ -54,7 +54,7 @@ Set LtRmapMRV::decreasingRepresentative()
   return decreasing_edges;
 }
 
-PWMap LtRmapMRV::repetition(const Set& E) 
+PWMap LtRmapMRV::repetition(const Set& E)
 {
   // Extend edges of the repetition.
   PWMap Emap = _dsbg.Emap();
@@ -75,7 +75,6 @@ PWMap LtRmapMRV::repetition(const Set& E)
 
   return smap_plus;
 }
-
 
 PWMap LtRmapMRV::calculate(const DirectedSBG& dsbg)
 {
@@ -100,7 +99,7 @@ PWMap LtRmapMRV::calculate(const DirectedSBG& dsbg)
 
     PWMap smap_plus;
     Set repeatedSE = visitedSE.intersection(Emap.image(E));
-    if (!repeatedSE.isEmpty()) { // Handle repetition.
+    if (!repeatedSE.isEmpty()) {  // Handle repetition.
       smap_plus = repetition(E);
     } else {
       visitedSE = std::move(visitedSE).disjointCup(Emap.image(E));
@@ -116,6 +115,6 @@ PWMap LtRmapMRV::calculate(const DirectedSBG& dsbg)
   return _rmap.mapInf();
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

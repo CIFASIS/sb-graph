@@ -31,16 +31,15 @@ namespace LIB {
 std::ostream& operator<<(std::ostream& out, const TSKind kind)
 {
   switch (kind) {
-    case TSKind::kMinVertex: {
-      out << "minimum vertex";
-      break;
-    }
+  case TSKind::kMinVertex: {
+    out << "minimum vertex";
+    break;
+  }
 
-    default: {
-      Util::ERROR("TSKind::operator<<: unsupported topological sorting "
-        , "algorithm implementation");
-      break;
-    }
+  default: {
+    Util::ERROR("TSKind::operator<<: unsupported topological sorting ", "algorithm implementation");
+    break;
+  }
   }
 
   return out;
@@ -58,6 +57,6 @@ const TSKind& TSImplementation::kind() const { return _kind; }
 
 void TSImplementation::set_ts_fact(TSKind kind) { _kind = kind; }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

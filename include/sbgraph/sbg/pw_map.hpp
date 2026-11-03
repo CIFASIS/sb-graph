@@ -275,6 +275,10 @@ inline void PWMap::emplace(Args&&... args)
   std::visit([&](auto& a) { a.emplace(std::forward<Args>(args)...); } , _impl);
 }
 
+// Non-member functions --------------------------------------------------------
+
+PWMap sort(const Set& s);
+
 } // namespace LIB
 
 }  // namespace SBG

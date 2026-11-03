@@ -18,9 +18,10 @@
  ******************************************************************************/
 
 #include <sbgraph/sbg/pw_map.hpp>
+#include <sbgraph/detail/util/defs.hpp>
+#include <sbgraph/detail/sbg/map_detail.hpp>
 #include <sbgraph/sbg/pwmap_impl.hpp>
 #include "util/debug.hpp"
-#include <sbgraph/detail/util/defs.hpp>
 
 #include <iostream>
 
@@ -473,6 +474,18 @@ rapidjson::Value PWMap::toJSON(rapidjson::Document::AllocatorType& alloc) const
 {
   return std::visit([&alloc](auto a) { return detail::toJSON(a, alloc); }
     , _impl);
+}
+
+// Non-member functions --------------------------------------------------------
+
+PWMap sort(const Set& s)
+{
+  PWMap result;
+  std::vector<Map> sorted = detail::MapDetail::sort(s);
+  for (const Map& m : sorted) {
+    result.insert(m);
+  }
+  return result;
 }
 
 }  // namespace LIB

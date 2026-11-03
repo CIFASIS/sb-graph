@@ -36,6 +36,11 @@ const Set& SortedSets::operator[](std::size_t k) const { return _sets[k]; }
 
 void SortedSets::pushBack(Set s) { _sets.push_back(s); }
 
+void SortedSets::dropLast(int n)
+{
+  _sets.erase(_sets.end() - n, _sets.end());
+}
+
 Set SortedSets::accumulated() const
 {
   Set result;
@@ -45,7 +50,7 @@ Set SortedSets::accumulated() const
   return result;
 }
 
-Set SortedSets::accumulated(int n) const
+Set SortedSets::last(int n) const
 {
   Set result;
   std::size_t sz = _sets.size();

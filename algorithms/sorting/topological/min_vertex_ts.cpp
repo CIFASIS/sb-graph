@@ -72,7 +72,7 @@ PWMap MinVertexTS::repetition(const PWMap& Emap)
   Set plus_domain = smap_plus.domain();
 
   // Delete set-edges that had an edge that was deleted up to the repetition.
-  Set Eplus = Emap.preImage(_repetitionSE.accumulated(_depth));
+  Set Eplus = Emap.preImage(_repetitionSE.last(_depth));
   DirectedSBG dsbg_copy = _dsbg;
   dsbg_copy.eraseEdges(Eplus);
 
@@ -84,6 +84,11 @@ PWMap MinVertexTS::repetition(const PWMap& Emap)
   Set indep_vertices = plus_domain
     .difference(rmap.preImage(dependent_vertices));
   PWMap result = smap_plus.restrict(indep_vertices);
+
+  _repetitionSV.dropLast(_depth);
+  _repetitionSE.dropLast(_depth);
+  auto end = _repetition_sort.end();
+  _repetition_sort.erase(end - _depth, end);
 
   return result;
 }

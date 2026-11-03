@@ -45,9 +45,10 @@ public:
   const Set& operator[](std::size_t k) const;
 
   void pushBack(Set s);
+  void dropLast(int n);
 
   Set accumulated() const;
-  Set accumulated(int n) const;
+  Set last(int n) const;
 
   int repetitionDepth() const;
 

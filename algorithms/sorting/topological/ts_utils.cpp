@@ -92,6 +92,32 @@ void checkSort(PWMap& smap, const DirectedSBG& dsbg)
   // Check if the sort is total.
   Set V = dsbg.V();
   Util::ERROR_UNLESS(domain == V && image == V.difference(starts), "checkSort: the order ", smap, " is partial\n");
+
+  // Delete dependencies of constant depth.
+  PWMap smap_copy = smap;
+  DirectedSBG copy = dsbg;
+  copy.eraseEdges(copy.mapB().preImage(fixed_points));
+  for (std::size_t j = 0; j < copy.Vmap().image().cardinal(); ++j) {
+    copy.eraseEdges(smap_copy.composition(copy.mapD()).equalImage(copy.mapB()));
+    smap_copy = smap_copy.composition(smap);
+  }
+
+  // Check order for long dependencies.
+  PWMap smap_inv = smap.restrict(copy.V().difference(fixed_points)).inverse();
+  copy.foreachSetEdge([&](const IntTuple& SE) {
+    Set E = copy.Emap().preImage(SE);
+    PWMap mapB = copy.mapB().restrict(E);
+    PWMap mapD = copy.mapD().restrict(E);
+
+    Set init = mapB.image();
+    PWMap rmap = PWMap{init}.combine(smap).mapInf();
+    Set intermediate = rmap.image(mapD.image());
+
+    rmap = PWMap{intermediate}.combine(smap_inv).mapInf();
+    Set before = rmap.preImage(init);
+
+    Util::ERROR_UNLESS(init.difference(before).isEmpty(), "checkSort: the order ", smap, " is partial\n");
+  });
 }
 
 }  // namespace LIB

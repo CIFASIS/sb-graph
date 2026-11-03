@@ -1,7 +1,7 @@
 /* Model for topological sorting testing =======================================
- * Description: 2D model of a SBG with a single hyperrectangle without
+ * Description: 3D model of a SBG with a single hyperrectangle without
    dependencies between vertices. 
- * Motivation: implement 2D topological sorting. Implement sorting between
+ * Motivation: implement 3D topological sorting. Implement sorting between
    partial sorts. SOLVED.
 ============================================================================= */
 

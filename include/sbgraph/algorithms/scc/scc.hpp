@@ -42,7 +42,7 @@ namespace detail {
 // SCC Algorithm implementations -----------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-using SCCImpl = std::variant<MinReachSCCV1, MinReachSCCV2>;
+using SCCImpl = std::variant<MinReachSCCV1, MinReachSCCV2, MinReachSCCV3>;
 
 } // namespace detail
 

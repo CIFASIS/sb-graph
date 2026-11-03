@@ -41,6 +41,11 @@ std::ostream& operator<<(std::ostream& out, const SCCKind kind)
       break;
     }
 
+    case SCCKind::kMinReachV3: {
+      out << "minimum reachable V3";
+      break;
+    }
+
     default: {
       Util::ERROR("Unsupported SCC implementation");
       break;

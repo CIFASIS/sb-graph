@@ -73,8 +73,8 @@ private:
 
   DirectedSBG _dsbg;
   PWMap _smap; ///< Path to MRV map.
-  PWMap _old_rmap; ///< MRV map in the previous iteration.
   PWMap _rmap; ///< MRV map.
+  PWMap _old_rmap; ///< MRV map.
   unsigned int _n; ///< Maximum repetition depth.
 };
 

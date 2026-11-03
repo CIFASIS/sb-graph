@@ -4,4 +4,5 @@ target_sources(
         min_vertex_ts.cpp
         topological_sorting.cpp
         ts_impl.cpp
+        ts_utils.cpp
 )

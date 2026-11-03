@@ -485,7 +485,9 @@ DomOrdPWMap DomOrdPWMap::mapInf() const
   result.compact();
 
   if (!result.domain().isEmpty()) {
-    for (const MapEntry& entry : result) {
+    Set unfixed = result.domain().difference(result.fixedPoints());
+    std::size_t j = result.restrict(unfixed)._pieces.size();
+    for (std::size_t h = 0; h < j; ++h) {
       result = composition(result).reduce();
     }
 

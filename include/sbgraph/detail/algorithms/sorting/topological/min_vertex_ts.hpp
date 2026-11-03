@@ -25,6 +25,8 @@
 #ifndef SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_MIN_VERTEX_TS_HPP_
 #define SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_MIN_VERTEX_TS_HPP_
 
+#include <sbgraph/detail/algorithms/sorting/topological/ts_utils.hpp>
+
 #include <sbgraph/sbg/directed_sbg.hpp>
 #include <sbgraph/sbg/expression.hpp>
 #include <sbgraph/sbg/integer.hpp>
@@ -62,19 +64,20 @@ private:
    * extends it for vertices in the same set-vertex as those that participate in
    * the recursive "path".
    */
-  std::tuple<Set, PWMap> detectRepetition(Set Vj, const DirectedSBG& dsbg);
+  PWMap extendRepetition();
 
   /**
    * @brief Handles a repetition.
    */
-  PWMap repetition(const Set& init_V, const DirectedSBG& dsbg);
+  PWMap repetition(const PWMap& Emap);
 
   DirectedSBG _dsbg;
   PWMap _smap;
   Set _priority;
-  Set _independent;
-  Set _visitedSV;
-  unsigned int _max_repetition_depth;
+  SortedSets _repetitionSV; ///< Visited set-vertices up to repetition.
+  SortedSets _repetitionSE; ///< Set-edges deleted up to repetition.
+  std::vector<Map> _repetition_sort; ///< Sorting up to repetition.
+  int _depth; ///< Repetition depth.
 };
 
 } // namespace detail

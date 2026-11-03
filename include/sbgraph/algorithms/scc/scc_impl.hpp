@@ -34,7 +34,7 @@ namespace LIB {
 // SCC implementations ---------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-enum class SCCKind { kMinReachV1, kMinReachV2 };
+enum class SCCKind { kMinReachV1, kMinReachV2, kMinReachV3 };
 
 std::ostream& operator<<(std::ostream& out, const SCCKind kind);
 

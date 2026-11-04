@@ -30,12 +30,17 @@ namespace LIB {
 // Topological Sorting Algorithm Interface -------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-TopologicalSorting::TopologicalSorting() : _impl()
+TopologicalSorting::TopologicalSorting() : _impl(detail::TwoPhasedTS{})
 {
   TSKind kind = TS_IMPL.kind();
   switch (kind) {
     case TSKind::kMinVertex: {
       _impl = detail::MinVertexTS{};
+      break;
+    }
+
+    case TSKind::kTwoPhases: {
+      _impl = detail::TwoPhasedTS{};
       break;
     }
 
@@ -46,12 +51,12 @@ TopologicalSorting::TopologicalSorting() : _impl()
   }  
 }
 
-PWMap TopologicalSorting::calculate(const DirectedSBG& dsbg, const PWMap& pmap)
+PWMap TopologicalSorting::calculate(TSInput input)
 {
   auto text = "Total topological sorting execution time";
   Util::Internal::TimeProfiler profiler{text};
 
-  return std::visit([&](auto& a) { return a.calculate(dsbg, pmap); }, _impl);
+  return std::visit([&](auto& a) { return a.calculate(input); }, _impl);
 }
 
 } // namespace LIB

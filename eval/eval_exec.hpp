@@ -44,6 +44,7 @@ private:
   boost::optional<int> _pw_impl;
   boost::optional<int> _scc_impl;
   boost::optional<int> _mfvs_impl;
+  boost::optional<int> _sort_impl;
 };
 
 } // namespace Eval

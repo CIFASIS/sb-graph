@@ -18,7 +18,6 @@
  ******************************************************************************/
 
 #include <sbgraph/detail/algorithms/sorting/topological/min_vertex_ts.hpp>
-#include <sbgraph/detail/algorithms/sorting/topological/ts_utils.hpp>
 #include "util/debug.hpp"
 #include "util/logger.hpp"
 
@@ -126,10 +125,11 @@ IntTuple MinVertexTS::getVertex(Set old_Vj)
 
 // Algorithm -------------------------------------------------------------------
 
-PWMap MinVertexTS::calculate(const DirectedSBG& dsbg
-  , const PWMap& scc_map)
+PWMap MinVertexTS::calculate(TSInput input)
 {
+  DirectedSBG dsbg = input.dsbg();
   Util::DEBUG_LOG << "Topological sort dsbg:\n" << dsbg << "\n\n";
+  PWMap scc_map = input.rmap();
 
   Set V = dsbg.V();
   if (V.isEmpty()) {
@@ -186,7 +186,6 @@ PWMap MinVertexTS::calculate(const DirectedSBG& dsbg
 
   _smap.compact();
   Util::DEBUG_LOG << "Topological sort result:\n" << _smap << "\n\n";
-  checkSort(_smap, dsbg);
   return _smap;
 }
 

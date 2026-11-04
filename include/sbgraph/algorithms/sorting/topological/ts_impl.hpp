@@ -34,7 +34,7 @@ namespace LIB {
 // Topological Sorting implementations -----------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-enum class TSKind { kMinVertex };
+enum class TSKind { kMinVertex, kTwoPhases };
 
 std::ostream& operator<<(std::ostream& out, const TSKind kind);
 

@@ -107,6 +107,7 @@ UserImplMap::StructImplMap tsMap()
 {
   UserImplMap::StructImplMap ts_mapping;
   ts_mapping[0] = LIB::TSKind::kMinVertex;
+  ts_mapping[1] = LIB::TSKind::kTwoPhases;
   ts_mapping.freeze();
   return ts_mapping;
 }
@@ -165,6 +166,15 @@ void setMFVSFactory(int mfvs_impl)
   LIB::MFVSKind mfvs_fact = std::get<LIB::MFVSKind>(
     detail::IMPL_MAP.getFactory("mfvs", mfvs_impl));
   LIB::MFVS_IMPL.set_mfvs_fact(mfvs_fact);
+
+  return;
+}
+
+void setTSFactory(int ts_impl)
+{
+  LIB::TSKind ts_fact = std::get<LIB::TSKind>(
+    detail::IMPL_MAP.getFactory("ts", ts_impl));
+  LIB::TS_IMPL.set_ts_fact(ts_fact);
 
   return;
 }

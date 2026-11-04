@@ -68,7 +68,7 @@ void printHeader(Util::prog_opts::variables_map vm)
 // Evaluation Executor ---------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-EvalExecutor::EvalExecutor() : _scc_impl(2), _mfvs_impl(2)
+EvalExecutor::EvalExecutor() : _scc_impl(1), _mfvs_impl(2), _sort_impl(1)
 {
   _config.add_options()
     ("set_impl,s", Util::prog_opts::value(&_set_impl),
@@ -90,7 +90,11 @@ EvalExecutor::EvalExecutor() : _scc_impl(2), _mfvs_impl(2)
      "Desired MFVS algorithm implementation:"
      "\n  - 0 for degree greedy MFVS"
      "\n  - 1 for smallest set-vertex MFVS"
-     "\n  - 2 for parallel SCC (default option)");
+     "\n  - 2 for parallel SCC (default option)")
+    ("sort_impl", Util::prog_opts::value(&_sort_impl),
+     "Desired topological sorting algorithm implementation:"
+     "\n  - 0 for minimum vertex sorting"
+     "\n  - 1 for two phased sorting (default option)");
 
   // First option without name is the input file
   _positional.add("input-file", 1);
@@ -127,6 +131,7 @@ detail::EvalUserInput EvalExecutor::chooseImplementation()
 
   result.set_scc_impl(_scc_impl);
   result.set_mfvs_impl(_mfvs_impl);
+  result.set_ts_impl(_sort_impl);
 
   return result;
 }

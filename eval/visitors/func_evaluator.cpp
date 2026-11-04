@@ -666,9 +666,14 @@ ExprBaseType BuiltInFunctions::topoSortEvaluator(const EBTList& args)
     , "topoSortEvaluator: wrong number of arguments\n");
 
   LIB::TopologicalSorting ts_impl;
+  LIB::TSInput input;
   const auto ts_evaluator = Util::Overload {
-    [&ts_impl](LIB::DirectedSBG a) { 
-      return ExprBaseType{ts_impl.calculate(a, SBG::LIB::PWMap{})};
+    [&](LIB::DirectedSBG a) {
+      input.set_dsbg(a);
+      input.set_rmap(LIB::PWMap{a.V()});
+      input.set_rmap_starts(LIB::PWMap{a.V()});
+      input.set_rmap_ends(LIB::PWMap{a.V()});
+      return ExprBaseType{ts_impl.calculate(input)};
     },
     [](auto a) {
       Util::ERROR("topoSortEvaluator: wrong argument ", a, " for sort\n"); 

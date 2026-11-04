@@ -5,4 +5,5 @@ target_sources(
         topological_sorting.cpp
         ts_impl.cpp
         ts_utils.cpp
+        two_phased_ts.cpp
 )

@@ -56,6 +56,11 @@ void InputTranslator::translate(EvalUserInput& input)
   if (mfvs) {
     setMFVSFactory(*mfvs);
   }
+
+  EvalUserInput::MaybeInt ts = input.ts_impl();
+  if (ts) {
+    setTSFactory(*ts);
+  }
 }
 
 } // namespace detail

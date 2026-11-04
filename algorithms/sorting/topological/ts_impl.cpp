@@ -36,6 +36,11 @@ std::ostream& operator<<(std::ostream& out, const TSKind kind)
       break;
     }
 
+    case TSKind::kTwoPhases: {
+      out << "two phases";
+      break;
+    }
+
     default: {
       Util::ERROR("TSKind::operator<<: unsupported topological sorting "
         , "algorithm implementation");
@@ -46,7 +51,7 @@ std::ostream& operator<<(std::ostream& out, const TSKind kind)
   return out;
 }
 
-TSImplementation::TSImplementation() : _kind(TSKind::kMinVertex) {}
+TSImplementation::TSImplementation() : _kind(TSKind::kTwoPhases) {}
 
 TSImplementation& TSImplementation::instance()
 {

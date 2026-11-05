@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1793723432749,
+  "lastUpdate": 1793888979790,
   "repoUrl": "https://github.com/CIFASIS/sb-graph",
   "entries": {
     "Benchmark": [
@@ -108,6 +108,114 @@ window.BENCHMARK_DATA = {
             "value": 567.884836,
             "unit": "ms",
             "extra": "build=0.2ms partition=567.7ms runs=[567.884836, 567.407933, 577.069478]"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "denise.marzorati@gmail.com",
+            "name": "kalashnikovni",
+            "username": "Kalashnikovni"
+          },
+          "committer": {
+            "email": "denise.marzorati@gmail.com",
+            "name": "kalashnikovni",
+            "username": "Kalashnikovni"
+          },
+          "distinct": true,
+          "id": "480ae3306722fba542f14fe345b2d1625da11fa5",
+          "message": "[iss-144]\n\n*<merge> origin/sb-graph-dev -> iss-144-new-topological-sorting\n\n*<feat>[Sorting]: added two phased implementation\n\n*<feat>[MinVertexTS]: delete processed repetition\n\n*<build>: improved flags for debug mode\n\n*<test>: corrected descriptions of tests\n\n*<refactor>: added sort for PWMap\n\n*<merge> origin/sb-graph-dev -> iss-144-new-topological-sorting\n\n*<feat>[Map]: added function that sorts a set",
+          "timestamp": "2026-11-05T11:27:05-03:00",
+          "tree_id": "ed810f340426fb1f648cef2fd8bac2f6b2f266a3",
+          "url": "https://github.com/CIFASIS/sb-graph/commit/480ae3306722fba542f14fe345b2d1625da11fa5"
+        },
+        "date": 1793888979055,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "advection2D size=1000 parts=4",
+            "value": 1.2460010000000001,
+            "unit": "ms",
+            "extra": "build=0.0ms partition=1.2ms runs=[1.2460010000000001, 1.2895560000000001, 1.22384]"
+          },
+          {
+            "name": "advection2D size=1000 parts=8",
+            "value": 2.559819,
+            "unit": "ms",
+            "extra": "build=0.0ms partition=2.5ms runs=[2.554576, 2.66006, 2.559819]"
+          },
+          {
+            "name": "advection2D size=1000 parts=16",
+            "value": 17.40547,
+            "unit": "ms",
+            "extra": "build=0.0ms partition=17.4ms runs=[17.40547, 17.4218, 16.873057]"
+          },
+          {
+            "name": "advection2D size=10000 parts=4",
+            "value": 1.222521,
+            "unit": "ms",
+            "extra": "build=0.0ms partition=1.2ms runs=[1.254183, 1.222521, 1.175044]"
+          },
+          {
+            "name": "advection2D size=100000 parts=4",
+            "value": 6.7034530000000006,
+            "unit": "ms",
+            "extra": "build=0.0ms partition=6.7ms runs=[6.758668, 6.696122000000001, 6.7034530000000006]"
+          },
+          {
+            "name": "air_conditioners size=1000 parts=4",
+            "value": 0.6186,
+            "unit": "ms",
+            "extra": "build=0.2ms partition=0.4ms runs=[0.6186, 0.569715, 0.697191]"
+          },
+          {
+            "name": "air_conditioners size=1000 parts=8",
+            "value": 1.0232459999999999,
+            "unit": "ms",
+            "extra": "build=0.3ms partition=0.7ms runs=[1.0593, 1.015523, 1.0232459999999999]"
+          },
+          {
+            "name": "air_conditioners size=1000 parts=16",
+            "value": 9.386223,
+            "unit": "ms",
+            "extra": "build=0.4ms partition=8.9ms runs=[9.386223, 9.7897, 9.302522999999999]"
+          },
+          {
+            "name": "air_conditioners size=10000 parts=4",
+            "value": 0.821969,
+            "unit": "ms",
+            "extra": "build=0.4ms partition=0.4ms runs=[0.7945679999999999, 0.821969, 0.840678]"
+          },
+          {
+            "name": "air_conditioners size=100000 parts=4",
+            "value": 0.788859,
+            "unit": "ms",
+            "extra": "build=0.3ms partition=0.4ms runs=[0.788859, 1.049655, 0.745493]"
+          },
+          {
+            "name": "air_conditioners_cont size=1000 parts=4",
+            "value": 368.78596899999997,
+            "unit": "ms",
+            "extra": "build=0.1ms partition=368.7ms runs=[375.050006, 368.78596899999997, 362.116215]"
+          },
+          {
+            "name": "air_conditioners_cont size=1000 parts=8",
+            "value": 8631.568733,
+            "unit": "ms",
+            "extra": "build=0.2ms partition=8631.4ms runs=[8740.047095, 8631.568733, 8587.977296000001]"
+          },
+          {
+            "name": "air_conditioners_cont size=10000 parts=4",
+            "value": 309.46779100000003,
+            "unit": "ms",
+            "extra": "build=0.1ms partition=309.3ms runs=[310.325049, 308.632645, 309.46779100000003]"
+          },
+          {
+            "name": "air_conditioners_cont size=100000 parts=4",
+            "value": 311.821882,
+            "unit": "ms",
+            "extra": "build=0.1ms partition=311.7ms runs=[313.87926500000003, 311.821882, 307.518619]"
           }
         ]
       }

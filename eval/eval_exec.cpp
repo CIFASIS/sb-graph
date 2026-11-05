@@ -56,8 +56,7 @@ void printHeader(Util::prog_opts::variables_map vm)
     std::cout << "Matching algorithm: " << LIB::MATCH_IMPL.kind() << "\n";
     std::cout << "SCC algorithm: " << LIB::SCC_IMPL.kind() << "\n";
     std::cout << "MFVS algorithm: " << LIB::MFVS_IMPL.kind() << "\n";
-    std::cout << "Topological sorting algorithm: " << LIB::TS_IMPL.kind()
-      << "\n";
+    std::cout << "Topological sorting algorithm: " << LIB::TS_IMPL.kind() << "\n";
   }
   std::cout << "-----------------------------------\n";
   std::cout << ">>>>>>>>>>> Eval result <<<<<<<<<<<\n";
@@ -108,8 +107,9 @@ detail::EvalUserInput EvalExecutor::chooseImplementation()
   detail::EvalUserInput result;
 
   detail::AutomImplVisitor autom_impl_visitor;
-  detail::EvalUserInput autom_impl = autom_impl_visitor.visit(Parser::parseFile(
-    *_input_file, false));
+  detail::EvalUserInput autom_impl = autom_impl_visitor.visit(
+    Parser::parseFile(*_input_file, false)
+  );
 
   result.set_set_impl(autom_impl.set_impl());
   result.set_pw_impl(autom_impl.pw_impl());
@@ -141,16 +141,16 @@ void EvalExecutor::execute(int argc, char* argv[])
   // Command line options handling ---------------------------------------------
 
   Util::prog_opts::variables_map vm;
-  store(Util::prog_opts::command_line_parser(argc, argv)
-    .options(_cmd_line_opts).positional(_positional).run(), vm);
+  store(Util::prog_opts::command_line_parser(argc, argv).options(_cmd_line_opts)
+    .positional(_positional).run(), vm);
   notify(vm);
 
   // Help handling -------------------------------------------------------------
- 
+
   if (vm.count("help")) {
     std::cout << "Usage: filename [options]\n";
     std::cout << "Command line options are prioritized over configuration file"
-      " options.";
+                 " options.";
     std::cout << _visible << "\n";
     return;
   }
@@ -163,8 +163,8 @@ void EvalExecutor::execute(int argc, char* argv[])
   }
 
   // Optional configuration file handling --------------------------------------
- 
-  if (_config_file) { 
+
+  if (_config_file) {
     std::ifstream config_fs{(*_config_file).c_str()};
     if (config_fs) {
       store(parse_config_file(config_fs, _cfg_file_opts), vm);
@@ -182,17 +182,16 @@ void EvalExecutor::execute(int argc, char* argv[])
     detail::EvalUserInput input = chooseImplementation();
     detail::InputTranslator input_translator;
     input_translator.translate(input);
-    ProgramIO eval_result = parseEvalFile(*_input_file); 
+    ProgramIO eval_result = parseEvalFile(*_input_file);
     printHeader(vm);
     std::cout << eval_result;
     Util::Internal::TimeProfiler::print_execution_time();
-  }
-  else {
+  } else {
     std::cout << "Usage: filename [options]\n";
     Util::ERROR("EvalExecutor: must provide a SBG program filename\n");
   }
 }
 
-} // namespace Eval
+}  // namespace Eval
 
-} // namespace SBG
+}  // namespace SBG

@@ -74,7 +74,7 @@ Set SortedSets::last(int n) const
 {
   Set result;
   std::size_t sz = _sets.size();
-  for (int j = sz-n; j < sz; ++j) {
+  for (int j = sz - n; j < sz; ++j) {
     result = std::move(result).disjointCup(_sets[j]);
   }
   return result;
@@ -193,8 +193,7 @@ void checkSort(PWMap& smap, const DirectedSBG& dsbg)
 
   // Check order for long dependencies.
   PWMap smap_inv = smap.restrict(copy.V().difference(fixed_points)).inverse();
-  copy.foreachSetEdge([&](const IntTuple& SE)
-  {
+  copy.foreachSetEdge([&](const IntTuple& SE) {
     Set E = copy.Emap().preImage(SE);
     PWMap mapB = copy.mapB().restrict(E);
     PWMap mapD = copy.mapD().restrict(E);
@@ -211,6 +210,6 @@ void checkSort(PWMap& smap, const DirectedSBG& dsbg)
   });
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

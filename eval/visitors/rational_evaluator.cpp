@@ -31,22 +31,18 @@ RationalEvaluator::RationalEvaluator() : _venv() {}
 
 RationalEvaluator::RationalEvaluator(VarEnv& venv) : _venv(venv) {}
 
-LIB::Rational RationalEvaluator::operator()(AST::Integer v) const
-{
-  return LIB::Rational{v};
-}
+LIB::Rational RationalEvaluator::operator()(AST::Integer v) const { return LIB::Rational{v}; }
 
 LIB::Rational RationalEvaluator::operator()(AST::Rational v) const
 {
   IntEvaluator visit_int{_venv};
-  return LIB::Rational(boost::apply_visitor(visit_int, v.numerator())
-                        , boost::apply_visitor(visit_int, v.denominator()));
+  return LIB::Rational(boost::apply_visitor(visit_int, v.numerator()), boost::apply_visitor(visit_int, v.denominator()));
 }
 
-LIB::Rational RationalEvaluator::operator()(AST::Name v) const 
+LIB::Rational RationalEvaluator::operator()(AST::Name v) const
 {
   auto var_definition = _venv.find(v);
-  if (var_definition != _venv.end()) { 
+  if (var_definition != _venv.end()) {
     ExprBaseType value = var_definition->second;
     if (std::holds_alternative<LIB::Rational>(value)) {
       return std::get<LIB::Rational>(value);
@@ -67,8 +63,8 @@ LIB::Rational RationalEvaluator::operator()(AST::Name v) const
   return 0;
 }
 
-LIB::Rational RationalEvaluator::operator()(AST::UnaryOp v) const 
-{ 
+LIB::Rational RationalEvaluator::operator()(AST::UnaryOp v) const
+{
   RationalEvaluator visit_rat{_venv};
   LIB::Rational result = boost::apply_visitor(visit_rat, v.expr());
   switch (v.op()) {
@@ -86,7 +82,7 @@ LIB::Rational RationalEvaluator::operator()(AST::UnaryOp v) const
   return 0;
 }
 
-LIB::Rational RationalEvaluator::operator()(AST::BinOp v) const 
+LIB::Rational RationalEvaluator::operator()(AST::BinOp v) const
 {
   LIB::Rational l = boost::apply_visitor(*this, v.left());
   LIB::Rational r = boost::apply_visitor(*this, v.right());
@@ -179,13 +175,10 @@ LIB::Rational RationalEvaluator::operator()(AST::DSBG v) const
   return 0;
 }
 
-LIB::Rational RationalEvaluator::operator()(AST::ParenExpr v) const
-{
-  return boost::apply_visitor(*this, v.pexpr());
-}
+LIB::Rational RationalEvaluator::operator()(AST::ParenExpr v) const { return boost::apply_visitor(*this, v.pexpr()); }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace Eval
+}  // namespace Eval
 
-} // namespace SBG
+}  // namespace SBG

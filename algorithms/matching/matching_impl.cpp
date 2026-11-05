@@ -57,6 +57,6 @@ const MatchKind& MatchImplementation::kind() const { return _kind; }
 
 void MatchImplementation::set_match_fact(MatchKind kind) { _kind = kind; }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

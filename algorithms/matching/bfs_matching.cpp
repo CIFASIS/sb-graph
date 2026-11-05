@@ -31,22 +31,17 @@ namespace detail {
 // BFS Matching Algorithm ------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-BFSMatching::ExitCondition::ExitCondition(bool full_match, bool found_paths)
-  : full_match_(full_match), found_paths_(found_paths) {}
+BFSMatching::ExitCondition::ExitCondition(bool full_match, bool found_paths) : full_match_(full_match), found_paths_(found_paths) {}
 
 bool BFSMatching::ExitCondition::full_match() { return full_match_; }
 
 bool BFSMatching::ExitCondition::found_paths() { return found_paths_; }
 
-bool BFSMatching::ExitCondition::isSatisfied()
-{
-  return full_match_ || !found_paths_;
-}
+bool BFSMatching::ExitCondition::isSatisfied() { return full_match_ || !found_paths_; }
 
 // Algorithm -------------------------------------------------------------------
 
-BFSMatching::BFSMatching() : _M(), _dsbg() , _direction(Direction::kForward)
-  , _X(), _Y() {}
+BFSMatching::BFSMatching() : _M(), _dsbg(), _direction(Direction::kForward), _X(), _Y() {}
 
 void BFSMatching::swapEdgesDirection(const Set& E)
 {
@@ -75,8 +70,7 @@ PWMap BFSMatching::partitionSubsetEdges() const
   std::size_t arity = free_edges.arity();
   unsigned int j = 1;
   PWMap Emap = _dsbg.Emap();
-  _dsbg.foreachSetEdge([&](const IntTuple& SE)
-  {
+  _dsbg.foreachSetEdge([&](const IntTuple& SE) {
     Set domain_edges = Emap.preImage(Set{SE});
 
     Expression matched_expr{IntTuple{arity, j}};
@@ -100,8 +94,7 @@ Set BFSMatching::directedStep(const Set& E)
   // Calculate unmatched vertices in the side determined by the current
   // direction of edges
   Set matched_forward_vertices = mapB.image(_M);
-  Set unmatched_forward_vertices
-    = _X.difference(matched_forward_vertices);
+  Set unmatched_forward_vertices = _X.difference(matched_forward_vertices);
 
   // Detect paths leading to unmatched_forward_vertices
   DirectedSBG restricted_dsbg{_dsbg.V(), _dsbg.Vmap(), mapB, mapD, Emap};
@@ -186,8 +179,8 @@ MatchData BFSMatching::calculate(const BipartiteSBG& bsbg)
   return result;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

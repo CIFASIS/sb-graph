@@ -32,22 +32,22 @@ IntEvaluator::IntEvaluator() : _venv() {}
 
 IntEvaluator::IntEvaluator(VarEnv &venv) : _venv(venv) {}
 
-LIB::Int IntEvaluator::operator()(AST::Integer v) const { return (LIB::Int) v; }
+LIB::Int IntEvaluator::operator()(AST::Integer v) const { return (LIB::Int)v; }
 
-LIB::Int IntEvaluator::operator()(AST::Rational v) const 
-{ 
+LIB::Int IntEvaluator::operator()(AST::Rational v) const
+{
   if (boost::apply_visitor(*this, v.denominator()) == 1) {
     return boost::apply_visitor(*this, v.numerator());
   }
 
   Util::ERROR("IntEvaluator: trying to evaluate Rational ", v, "\n");
-  return 0; 
+  return 0;
 }
 
-LIB::Int IntEvaluator::operator()(AST::Name v) const 
-{ 
+LIB::Int IntEvaluator::operator()(AST::Name v) const
+{
   auto var_definition = _venv.find(v);
-  if (var_definition != _venv.end()) { 
+  if (var_definition != _venv.end()) {
     ExprBaseType value = var_definition->second;
     if (std::holds_alternative<LIB::Int>(value)) {
       return std::get<LIB::Int>(value);
@@ -64,7 +64,7 @@ LIB::Int IntEvaluator::operator()(AST::Name v) const
   return 0;
 }
 
-LIB::Int IntEvaluator::operator()(AST::UnaryOp v) const 
+LIB::Int IntEvaluator::operator()(AST::UnaryOp v) const
 {
   LIB::Int x = boost::apply_visitor(*this, v.expr());
   switch (v.op()) {
@@ -79,7 +79,7 @@ LIB::Int IntEvaluator::operator()(AST::UnaryOp v) const
   }
 }
 
-LIB::Int IntEvaluator::operator()(AST::BinOp v) const 
+LIB::Int IntEvaluator::operator()(AST::BinOp v) const
 {
   LIB::Int l = boost::apply_visitor(*this, v.left());
   LIB::Int r = boost::apply_visitor(*this, v.right());
@@ -173,13 +173,10 @@ LIB::Int IntEvaluator::operator()(AST::DSBG v) const
   return 0;
 }
 
-LIB::Int IntEvaluator::operator()(AST::ParenExpr v) const
-{
-  return boost::apply_visitor(*this, v.pexpr());
-}
+LIB::Int IntEvaluator::operator()(AST::ParenExpr v) const { return boost::apply_visitor(*this, v.pexpr()); }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace Eval
+}  // namespace Eval
 
-} // namespace SBG
+}  // namespace SBG

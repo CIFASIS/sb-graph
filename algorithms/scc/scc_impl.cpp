@@ -25,7 +25,7 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// SCC implementations --------------------------------------------------------- 
+// SCC implementations ---------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 std::ostream& operator<<(std::ostream& out, const SCCKind kind)
@@ -67,6 +67,6 @@ const SCCKind& SCCImplementation::kind() const { return _kind; }
 
 void SCCImplementation::set_scc_fact(SCCKind kind) { _kind = kind; }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

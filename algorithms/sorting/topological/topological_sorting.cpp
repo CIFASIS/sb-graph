@@ -59,6 +59,6 @@ PWMap TopologicalSorting::calculate(TSInput input)
   return std::visit([&](auto& a) { return a.calculate(input); }, _impl);
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

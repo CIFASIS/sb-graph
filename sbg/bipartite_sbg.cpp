@@ -31,17 +31,13 @@ namespace LIB {
 
 // Constructors/Destructors ----------------------------------------------------
 
-BipartiteSBG::BipartiteSBG()
-  : _V(), _Vmap()
-  , _E(), _map1()
-  , _map2(), _Emap()
-  , _X(), _Y() {}
+BipartiteSBG::BipartiteSBG() : _V(), _Vmap(), _E(), _map1(), _map2(), _Emap(), _X(), _Y() {}
 
-BipartiteSBG::BipartiteSBG(const Set& V, const PWMap& Vmap
-  , const PWMap& map1, const PWMap& map2, const PWMap& Emap
-  , const Set& X, const Set& Y)
-  : _V(V), _Vmap(Vmap), _E(map1.domain().intersection(map2.domain()))
-    , _map1(map1), _map2(map2), _Emap(Emap), _X(X), _Y(Y) {}
+BipartiteSBG::BipartiteSBG(const Set& V, const PWMap& Vmap, const PWMap& map1, const PWMap& map2, const PWMap& Emap, const Set& X,
+                           const Set& Y)
+    : _V(V), _Vmap(Vmap), _E(map1.domain().intersection(map2.domain())), _map1(map1), _map2(map2), _Emap(Emap), _X(X), _Y(Y)
+{
+}
 
 // Getters ---------------------------------------------------------------------
 
@@ -67,13 +63,11 @@ void BipartiteSBG::addSetVertex(const Set& X, const Set& Y)
 {
   Set vertices = X.cup(Y);
   if (!vertices.intersection(_V).isEmpty()) {
-    Util::ERROR("BipartiteSBG::addSetVertex: trying to add existing vertices: "
-      , vertices, " to SBG\n");
+    Util::ERROR("BipartiteSBG::addSetVertex: trying to add existing vertices: ", vertices, " to SBG\n");
   } else if (!vertices.isEmpty()) {
     Set set_vertices = _Vmap.image();
     std::size_t arity = vertices.arity();
-    IntTuple max = set_vertices.isEmpty() ? IntTuple{arity, 0}
-      : set_vertices.maxElem();
+    IntTuple max = set_vertices.isEmpty() ? IntTuple{arity, 0} : set_vertices.maxElem();
     _Vmap.emplace(vertices, max + IntTuple{arity, 1});
     _X = std::move(_X).cup(X);
     _Y = std::move(_Y).cup(Y);
@@ -86,23 +80,20 @@ void BipartiteSBG::addSetEdge(const PWMap& pw1, const PWMap& pw2)
   Set edges1 = pw1.domain();
   Set edges2 = pw2.domain();
   if (edges1 != edges2) {
-    Util::ERROR("BipartiteSBG::addSetEdge: ", edges1, " is different from "
-      , edges2, "\n");
+    Util::ERROR("BipartiteSBG::addSetEdge: ", edges1, " is different from ", edges2, "\n");
   } else if (edges1.intersection(_E).isEmpty()) {
     Set edges = edges1;
     if (!edges.isEmpty()) {
       Set set_edges = _Emap.image();
       std::size_t arity = edges.arity();
-      IntTuple max = set_edges.isEmpty() ? IntTuple{arity, 0}
-        : set_edges.maxElem();
+      IntTuple max = set_edges.isEmpty() ? IntTuple{arity, 0} : set_edges.maxElem();
       _map1 = std::move(_map1).concatenation(pw1);
       _map2 = std::move(_map2).concatenation(pw2);
       _Emap.emplace(edges, max + IntTuple{arity, 1});
       _E = std::move(_E).cup(std::move(edges));
     }
   } else {
-    Util::ERROR("BipartiteSBG::addSetEdge: trying to add existing edges: "
-      , edges1, " to SBG\n");
+    Util::ERROR("BipartiteSBG::addSetEdge: trying to add existing edges: ", edges1, " to SBG\n");
   }
 }
 
@@ -152,16 +143,14 @@ BipartiteSBG copy(unsigned int copies, BipartiteSBG sbg)
 
     Expression offset_v;
     for (std::size_t k = 0; k < max_v.arity(); ++k) {
-      offset_v = offset_v.cartesianProduct(Expression{Rational{1}
-        , Rational{max_v[k]}});
+      offset_v = offset_v.cartesianProduct(Expression{Rational{1}, Rational{max_v[k]}});
     }
     PWMap offset_pw_v{Map{V, offset_v}};
 
     IntTuple max_e = result.E().maxElem();
     Expression offset_e;
     for (std::size_t k = 0; k < max_e.arity(); ++k) {
-      offset_e = offset_e.cartesianProduct(Expression{Rational{1}
-        , Rational{max_e[k]}});
+      offset_e = offset_e.cartesianProduct(Expression{Rational{1}, Rational{max_e[k]}});
     }
     PWMap offset_pw_e{Map{E, offset_e}};
     PWMap inverse_offset_pw_e = offset_pw_e.inverse();
@@ -180,6 +169,6 @@ BipartiteSBG copy(unsigned int copies, BipartiteSBG sbg)
   return result;
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

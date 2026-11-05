@@ -63,31 +63,27 @@ void printHeader(Util::prog_opts::variables_map vm)
 // Benchmark Executor ----------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-BMExecutor::BMExecutor()
-  : _benchmark(0), _set_impl(0), _pw_impl(0), _scc_impl(1)
+BMExecutor::BMExecutor() : _benchmark(0), _set_impl(0), _pw_impl(0), _scc_impl(1)
 {
-  _config.add_options()
-    ("benchmark,b", Util::prog_opts::value(&_benchmark), 
-     "Desired benchmark:"
-     "\n  - 0 for set benchmark"
-     "\n  - 1 for PWMap benchmark"
-     "\n  - 2 for matching benchmark"
-     "\n  - 3 for SCC benchmark")
-    ("set_impl,s", Util::prog_opts::value(&_set_impl),
-     " Desired set implementation:"
-     "\n  - 0 for unordered sets (default option)"
-     "\n  - 1 for ordered sets"
-     "\n  - 2 for unidimensional ordered dense sets")
-    ("pw_impl,p", Util::prog_opts::value(&_pw_impl),
-     " Desired PWMap implementation:"
-     "\n  - 0 for unordered PWMaps (default option)"
-     "\n  - 1 for ordered PWMaps"
-     "\n  - 2 for domain ordered PWMaps")
-    ("scc_impl", Util::prog_opts::value(&_scc_impl),
-     "Desired SCC algorithm implementation:"
-     "\n  - 0 for V1 of minimum reachable SCC"
-     "\n  - 1 for V2 of minimum reachable SCC (default option)")
-    ("boost", "Executes Boost Graph Library algorithms for scalar graphs");
+  _config.add_options()("benchmark,b", Util::prog_opts::value(&_benchmark),
+                        "Desired benchmark:"
+                        "\n  - 0 for set benchmark"
+                        "\n  - 1 for PWMap benchmark"
+                        "\n  - 2 for matching benchmark"
+                        "\n  - 3 for SCC benchmark")("set_impl,s", Util::prog_opts::value(&_set_impl),
+                                                     " Desired set implementation:"
+                                                     "\n  - 0 for unordered sets (default option)"
+                                                     "\n  - 1 for ordered sets"
+                                                     "\n  - 2 for unidimensional ordered dense sets")(
+      "pw_impl,p", Util::prog_opts::value(&_pw_impl),
+      " Desired PWMap implementation:"
+      "\n  - 0 for unordered PWMaps (default option)"
+      "\n  - 1 for ordered PWMaps"
+      "\n  - 2 for domain ordered PWMaps")("scc_impl", Util::prog_opts::value(&_scc_impl),
+                                           "Desired SCC algorithm implementation:"
+                                           "\n  - 0 for V1 of minimum reachable SCC"
+                                           "\n  - 1 for V2 of minimum reachable SCC (default option)")(
+      "boost", "Executes Boost Graph Library algorithms for scalar graphs");
 
   _positional.add("input-file", 1);
   _cmd_line_opts.add(_generic).add(_config).add(_hidden);
@@ -100,17 +96,15 @@ void BMExecutor::execute(int argc, char* argv[])
   // Command line options handling ---------------------------------------------
 
   Util::prog_opts::variables_map vm;
-  store(Util::prog_opts::command_line_parser(argc, argv)
-    .options(_cmd_line_opts).positional(_positional).allow_unregistered().run()
-    , vm);
+  store(Util::prog_opts::command_line_parser(argc, argv).options(_cmd_line_opts).positional(_positional).allow_unregistered().run(), vm);
   notify(vm);
 
   // Help handling -------------------------------------------------------------
- 
+
   if (vm.count("help")) {
     std::cout << "Usage: [input-file] [options]\n";
     std::cout << "Command line options are prioritized over configuration file"
-      " options.";
+                 " options.";
     std::cout << _visible << "\n";
     return;
   }
@@ -123,8 +117,8 @@ void BMExecutor::execute(int argc, char* argv[])
   }
 
   // Optional configuration file handling --------------------------------------
- 
-  if (_config_file) { 
+
+  if (_config_file) {
     std::ifstream config_fs{(*_config_file).c_str()};
     if (config_fs) {
       store(parse_config_file(config_fs, _cfg_file_opts), vm);
@@ -143,57 +137,53 @@ void BMExecutor::execute(int argc, char* argv[])
     if (_input_file) {
       registerBoostBenchmarks(*_input_file);
     } else {
-      Util::ERROR("BoostExecutor: must provide a SBG program filename to run "
-        , "Boost benchmark\n");
+      Util::ERROR("BoostExecutor: must provide a SBG program filename to run ", "Boost benchmark\n");
     }
   } else {
     switch (*_benchmark) {
-      case 0: {
-        registerSetBenchmarks();
-        break;
-      }
+    case 0: {
+      registerSetBenchmarks();
+      break;
+    }
 
-      case 1: {
-        registerPWMapBenchmarks();
-        break;
-      }
+    case 1: {
+      registerPWMapBenchmarks();
+      break;
+    }
 
-      case 2: {
-        if (_input_file) {
-          registerMatchingBenchmarks(*_input_file);
-        } else {
-          registerMatchingBenchmarks();
-        }
-        break;
+    case 2: {
+      if (_input_file) {
+        registerMatchingBenchmarks(*_input_file);
+      } else {
+        registerMatchingBenchmarks();
       }
+      break;
+    }
 
-      case 3: {
-        if (_input_file) {
-          registerSCCBenchmarks(*_input_file);
-        } else {
-          registerSCCBenchmarks();
-        }
-        break;
+    case 3: {
+      if (_input_file) {
+        registerSCCBenchmarks(*_input_file);
+      } else {
+        registerSCCBenchmarks();
       }
+      break;
+    }
 
-      default: {
-        break;
-      }
+    default: {
+      break;
+    }
     }
   }
 
-  Util::prog_opts::parsed_options parsed
-    = Util::prog_opts::command_line_parser(argc, argv).options(_cmd_line_opts)
-     .allow_unregistered().run();
-  std::vector<std::string> to_pass_further
-    = Util::prog_opts::collect_unrecognized(parsed.options
-      , Util::prog_opts::exclude_positional);
+  Util::prog_opts::parsed_options parsed =
+      Util::prog_opts::command_line_parser(argc, argv).options(_cmd_line_opts).allow_unregistered().run();
+  std::vector<std::string> to_pass_further = Util::prog_opts::collect_unrecognized(parsed.options, Util::prog_opts::exclude_positional);
   ::benchmark::Initialize(&argc, argv);
   ::benchmark::RunSpecifiedBenchmarks();
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace perf
+}  // namespace perf
 
-} // namespace SBG
+}  // namespace SBG

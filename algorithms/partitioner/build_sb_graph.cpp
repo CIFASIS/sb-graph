@@ -26,9 +26,11 @@
 #include <rapidjson/document.h>
 #include <rapidjson/pointer.h>
 #include <rapidjson/istreamwrapper.h>
+#include <set>
 #include <vector>
-#include <sbgraph/util/defs.hpp>
-#include <sbgraph/util/logger.hpp>
+#include <sbgraph/detail/util/defs.hpp>
+#include <sbg/set_detail.hpp>
+#include <util/logger.hpp>
 
 #include "build_sb_graph.hpp"
 #include "partition_graph.hpp"
@@ -41,6 +43,13 @@ using namespace rapidjson;
 using namespace std;
 
 using namespace SBG::LIB;
+using SBG::LIB::detail::ExpressionImpl;
+using SBG::LIB::detail::Interval;
+using SBG::LIB::detail::LinearExpr;
+using SBG::LIB::detail::MultiDimInter;
+using SBG::LIB::detail::OrderedSet;
+using SBG::LIB::detail::SetAccess;
+using SBG::LIB::detail::SetAccessKey;
 using namespace SBG::Util;
 
 namespace sbg_partitioner {
@@ -48,9 +57,24 @@ namespace sbg_partitioner {
 // Using an unnamed namespace to define functions with internal linkage
 namespace {
 
+/// Builds an expression from its linear expressions, one per dimension.
+Expression to_expression(const ExpressionImpl& exps)
+{
+  if (exps.empty()) {
+    return Expression();
+  }
+
+  Expression expression(exps.front().slope(), exps.front().offset());
+  for (size_t i = 1; i < exps.size(); i++) {
+    expression = expression.cartesianProduct(Expression(exps[i].slope(), exps[i].offset()));
+  }
+
+  return expression;
+}
+
 struct Var {
   string id;
-  vector<pair<INT, INT>> exps;
+  vector<pair<Int, Int>> exps;
   list<int> defs;
   unsigned cost = 1;
 };
@@ -124,7 +148,7 @@ vector<Var> read_var_object(const rapidjson::Value& var_array)
     assert(value.HasMember("exp") and value["exp"].IsArray());
     auto expressions = value["exp"].GetArray();
 
-    vector<pair<INT, INT>> exps;
+    vector<pair<Int, Int>> exps;
     // assert(expressions.Size() == 1 and "this is just for testing air conditioner example!!");
     for (const auto& exp_array : expressions) {
       assert(exp_array.IsArray());
@@ -208,9 +232,10 @@ map<int, Node> create_node_objects_from_json(const Document& document)
 /// Creates a set of nodes, taking into accout the offset of each one to avoid collisions.
 tuple<Set, NodeWeight> create_set_of_nodes(const map<int, Node>& nodes, map<int, int>& node_offsets, int& max_value)
 {
+  SetAccessKey key = SetAccess::key();
   // We start to build out set of intervals from 0
   int current_max = 0;
-  Set node_set = SET_FACT.createSet();
+  Set node_set;
   NodeWeight weights;
 
   for (const auto& [id, node] : nodes) {
@@ -219,7 +244,7 @@ tuple<Set, NodeWeight> create_set_of_nodes(const map<int, Node>& nodes, map<int,
     // Define the interval and add it to the node set taking into account the current offset
     // Create an offset for each equation node. We want that each equation has its
     // own domain.
-    SetPiece array_of_nodes;
+    MultiDimInter array_of_nodes;
     for (size_t i = 0; i < node.intervals.size(); i++) {
       const auto& node_interval = node.intervals[i];
 
@@ -244,7 +269,7 @@ tuple<Set, NodeWeight> create_set_of_nodes(const map<int, Node>& nodes, map<int,
         current_max = interval_end + 1;
       }
     }
-    node_set.emplaceBack(array_of_nodes);
+    node_set = node_set.cup(key.createSet(OrderedSet(array_of_nodes)));
   }
 
   // We save max value so edge domain will not collide with node domain
@@ -253,23 +278,23 @@ tuple<Set, NodeWeight> create_set_of_nodes(const map<int, Node>& nodes, map<int,
   return {node_set, weights};
 }
 
-vector<pair<Var, Exp>> read_left_vars(const Node& node, const string& var_id = "")
+vector<pair<Var, ExpressionImpl>> read_left_vars(const Node& node, const string& var_id = "")
 {
   const auto& l_nodes = node.lhs;
 
   assert(l_nodes.size() > 0);
 
-  vector<pair<Var, Exp>> exps;
+  vector<pair<Var, ExpressionImpl>> exps;
   for (const auto& l_node : l_nodes) {
     if (not var_id.empty() and l_node.id != var_id) {
       continue;
     }
 
     Var var = l_node;
-    Exp exp;
+    ExpressionImpl exp;
 
     for (const auto& values : var.exps) {
-      exp.emplaceBack(LExp(RATIONAL(values.first, 1), RATIONAL(values.second, 1)));
+      exp.push_back(LinearExpr(Rational(values.first, 1), Rational(values.second, 1)));
     }
 
     exps.push_back({var, exp});
@@ -282,30 +307,30 @@ vector<pair<Var, Exp>> read_left_vars(const Node& node, const string& var_id = "
 /// @param pre_image  Subset of the domain of the expression we want to connect
 /// @param edge_domain  Domain of the map
 /// @param var_exp  Original expression of the variable
-Map create_set_edge_map(const Set& pre_image, const Set& edge_domain, const Exp& var_exps, int set_offset)
+Map create_set_edge_map(const Set& pre_image, const Set& edge_domain, const ExpressionImpl& var_exps, int set_offset)
 {
   SBG::LIB::Map map;
 
-  Exp map_exps;
+  ExpressionImpl map_exps;
   int i = 0;
-  for (const auto& var_exp : var_exps.exps()) {
+  for (const auto& var_exp : var_exps) {
     // If the slope is 0, we just return the expression.
     if (var_exp.slope() == 0) {
       logging::sbg_log << "Creating constant interval" << endl;
-      INT offset = var_exp.offset().numerator();
+      Int offset = var_exp.offset().numerator();
       if (i == 0) {
         offset += set_offset;
       }
 
-      LExp map_exp(var_exp.slope(), offset);
-      map_exps.emplaceBack(map_exp);
+      LinearExpr map_exp(var_exp.slope(), offset);
+      map_exps.push_back(map_exp);
       i++;
 
       continue;
     }
 
     // We start from the original offset and substract the domain offset
-    INT offset = var_exp.offset().numerator();
+    Int offset = var_exp.offset().numerator();
     if (i == 0) {
       offset += set_offset;
     }
@@ -313,19 +338,19 @@ Map create_set_edge_map(const Set& pre_image, const Set& edge_domain, const Exp&
     offset = offset - edge_domain.minElem()[i];
 
     // Then we take the minimum element of the pre-image and add the offset
-    INT min_elem = pre_image.minElem()[i];
+    Int min_elem = pre_image.minElem()[i];
     offset += min_elem;
 
     // We set the offset
-    LExp map_exp = LExp(var_exp.slope(), RATIONAL(offset, 1));
+    LinearExpr map_exp = LinearExpr(var_exp.slope(), Rational(offset, 1));
 
-    map_exps.emplaceBack(map_exp);
+    map_exps.push_back(map_exp);
 
     i++;
   }
-  logging::sbg_log << "created " << i << " maps out of " << var_exps << endl;
+  logging::sbg_log << "created " << i << " maps out of " << to_expression(var_exps) << endl;
 
-  map = Map(edge_domain, map_exps);
+  map = Map(edge_domain, to_expression(map_exps));
 
   return map;
 }
@@ -333,26 +358,28 @@ Map create_set_edge_map(const Set& pre_image, const Set& edge_domain, const Exp&
 template <typename Set>
 Set get_node_domain(Node node)
 {
+  SetAccessKey key = SetAccess::key();
   // Domain of the node candidate
-  Set node_intervals = SET_FACT.createSet();
-  SetPiece node_set_piece;
+  Set node_intervals;
+  MultiDimInter node_set_piece;
   for (const auto& node_interval : node.intervals) {
     Interval interval(node_interval.first, 1, node_interval.second);
     node_set_piece.emplaceBack(interval);
   }
-  node_intervals.emplace(node_set_piece);
+  node_intervals = node_intervals.cup(key.createSet(OrderedSet(node_set_piece)));
 
   return node_intervals;
 }
 
 Set get_edge_domain(Set image_intersection_set, Set& edge_set, int& max_value)
 {
+  SetAccessKey key = SetAccess::key();
   logging::sbg_log << "get_edge_domain " << image_intersection_set << ", " << edge_set << endl;
 
-  Set edge_domain_set = SET_FACT.createSet();
+  Set edge_domain_set;
 
   // we know it only has one dimension, so we take the first one
-  auto image_intersection_first_set_piece = *image_intersection_set.begin();
+  auto image_intersection_first_set_piece = key.pieces(get<OrderedSet>(key.impl(image_intersection_set))).front();
   auto image_intersection_first_interval = image_intersection_first_set_piece[0];
   auto domain_offset = image_intersection_first_interval.end() - image_intersection_first_interval.begin();
 
@@ -360,46 +387,48 @@ Set get_edge_domain(Set image_intersection_set, Set& edge_set, int& max_value)
   edge_domain = Interval(max_value, 1, max_value + domain_offset);
   max_value = edge_domain.end() + 1;
 
-  edge_domain_set.emplaceBack(edge_domain);
+  edge_domain_set = edge_domain_set.cup(key.createSet(OrderedSet(edge_domain)));
 
   return edge_domain_set;
 }
 
-tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>& nodes, const map<int, int>& node_offsets, int& max_value, bool compact_maps)
+tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>& nodes, const map<int, int>& node_offsets, int& max_value,
+                                                      bool compact_maps)
 {
-  Set edge_set = SET_FACT.createSet();      // Our set of edges
-  PWMap rhs_maps = PW_FACT.createPWMap();  // Map object of one of the sides
-  PWMap lhs_maps = PW_FACT.createPWMap();  // Map object of one of the other side
-  EdgeCost costs;                          // Weight of edges
+  SetAccessKey key = SetAccess::key();
+  Set edge_set;              // Our set of edges
+  PWMap rhs_maps = PWMap();  // Map object of one of the sides
+  PWMap lhs_maps = PWMap();  // Map object of one of the other side
+  EdgeCost costs;            // Weight of edges
 
   for (const auto& [id, node] : nodes) {
     logging::sbg_log << "Looking for connections with " << id << endl;
 
     // Define the equation intervals (without offsets)
-    Set current_node_domain = SET_FACT.createSet();
-    SetPiece interval_set_piece;
+    Set current_node_domain;
+    MultiDimInter interval_set_piece;
     // assert(node.intervals.size() == 1);
     for (const auto& node_interval : node.intervals) {
       Interval interval(node_interval.first, 1, node_interval.second);
       interval_set_piece.emplaceBack(interval);
     }
-    current_node_domain.emplace(interval_set_piece);
+    current_node_domain = current_node_domain.cup(key.createSet(OrderedSet(interval_set_piece)));
 
-    vector<pair<Var, Exp>> this_node_exps = read_left_vars(node);
+    vector<pair<Var, ExpressionImpl>> this_node_exps = read_left_vars(node);
 
     // Now, iterate the right hand side expresions to connect them to their definitions.
     for (const Var& right_var : node.rhs) {
-      Exp right_exps;
+      ExpressionImpl right_exps;
       for (const auto& exp_values : right_var.exps) {
-        LExp right_exp = LExp(RATIONAL(exp_values.first, 1), RATIONAL(exp_values.second, 1));
-        right_exps.emplaceBack(right_exp);
+        LinearExpr right_exp = LinearExpr(Rational(exp_values.first, 1), Rational(exp_values.second, 1));
+        right_exps.push_back(right_exp);
       }
 
       // Now, calculate the image of the rhs expression
-      auto rhs_map = Map(current_node_domain, right_exps);
+      auto rhs_map = Map(current_node_domain, to_expression(right_exps));
       // This is the image *used* by this expression, wwe want to
       // check where is defined.
-      auto used_node_image = Map(current_node_domain, right_exps).image();
+      auto used_node_image = Map(current_node_domain, to_expression(right_exps)).image();
 
       // Definitions of this variable are on defs field. We want to check if
       // intersects with any node
@@ -418,7 +447,7 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
           }
 
           // Now, get the image.
-          auto node_candidate_CanonMap = Map(node_candidate_domain, node_candidate_exps);
+          auto node_candidate_CanonMap = Map(node_candidate_domain, to_expression(node_candidate_exps));
           auto node_candidate_image = node_candidate_CanonMap.image();
 
           // we want to see if the intersection of the images is not empty
@@ -437,57 +466,57 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
 
 #if CHECK_1_N_REL
           // we have to use the first map of candidate node
-          if (node_candidate_exps.exps()[0].slope() == 0) {
+          if (node_candidate_exps[0].slope() == 0) {
             logging::sbg_log << "This should be 1-N " << node_candidate_domain << endl;
             auto node_size = get_set_size(node_candidate_domain);
 
             Set edge_domain_set = get_edge_domain(image_intersection_set, edge_set, max_value);
-            SetPiece edge_domain_set_first_interval = *edge_domain_set.begin();
+            MultiDimInter edge_domain_set_first_interval = *edge_domain_set.begin();
 
-            SetPiece first_interval = *node_candidate_domain.begin();
+            MultiDimInter first_interval = *node_candidate_domain.begin();
             int offset = first_interval[0].begin() + node_offsets.at(i) - edge_domain_set_first_interval[0].begin();
             logging::sbg_log << "node offset " << node_offsets.at(i) << ", " << edge_domain_set << " so offset is " << offset << endl;
-            Map to_node_candidate = Map(edge_domain_set, LExp(1, RATIONAL(offset, 1)));
+            Map to_node_candidate = Map(edge_domain_set, Expression(Rational(1), Rational(offset, 1)));
             logging::sbg_log << "to_node_candidate " << to_node_candidate << endl;
 
             logging::sbg_log << to_node_candidate << endl;
 
-            auto im = Interval(node_candidate_exps.exps()[0].offset().numerator(), 1, node_candidate_exps.exps()[0].offset().numerator());
-            auto im_set = SET_FACT.createSet(im);
+            auto im = Interval(node_candidate_exps[0].offset().numerator(), 1, node_candidate_exps[0].offset().numerator());
+            auto im_set = key.createSet(OrderedSet(im));
 
             Map to_current_node = create_set_edge_map(im_set, edge_domain_set,
-                                                      Exp(LExp(0, node_candidate_exps.exps()[0].offset())), node_offsets.at(id));
+                                                      ExpressionImpl{LinearExpr(0, node_candidate_exps[0].offset())}, node_offsets.at(id));
             logging::sbg_log << "to_current_node " << to_current_node << endl;
 
-            lhs_maps.emplaceBack(to_current_node);
-            rhs_maps.emplaceBack(to_node_candidate);
+            lhs_maps.insert(to_current_node);
+            rhs_maps.insert(to_node_candidate);
 
             continue;
-          } else if (exp.exps()[0].slope() == 0) {
+          } else if (exp[0].slope() == 0) {
             logging::sbg_log << "This should be N-1" << endl;
             auto first_interval_current_node_domain = *current_node_domain.begin();
             auto node_size = first_interval_current_node_domain[0].end() - first_interval_current_node_domain[0].begin();
 
-            auto first_interval_image_intersection_set = *image_intersection_set.begin();
+            auto first_interval_image_intersection_set = key.pieces(get<OrderedSet>(key.impl(image_intersection_set))).front();
             auto image_intersection_set_interval =
                 Interval(first_interval_image_intersection_set[0].begin(), 1, first_interval_image_intersection_set[0].begin() + node_size);
-            image_intersection_set = SET_FACT.createSet(image_intersection_set_interval);
+            image_intersection_set = key.createSet(OrderedSet(image_intersection_set_interval));
 
             Set edge_domain_set = get_edge_domain(image_intersection_set, edge_set, max_value);
             auto edge_domain_set_first_interval = *edge_domain_set.begin();
 
             int offset = first_interval_current_node_domain[0].begin() + node_offsets.at(id) - edge_domain_set_first_interval[0].begin();
-            Map to_current_node = Map(edge_domain_set, LExp(1, RATIONAL(offset, 1)));
+            Map to_current_node = Map(edge_domain_set, Expression(Rational(1), Rational(offset, 1)));
             logging::sbg_log << "to_current_node " << to_current_node << endl;
 
-            auto im = Interval(exp.exps()[0].offset().numerator(), 1, exp.exps()[0].offset().numerator());
-            auto im_set = SET_FACT.createSet(im);
+            auto im = Interval(exp[0].offset().numerator(), 1, exp[0].offset().numerator());
+            auto im_set = key.createSet(OrderedSet(im));
             Map to_node_candidate = create_set_edge_map(im_set, edge_domain_set,
-                                                        Exp(LExp(0, node_candidate_exps.exps()[0].offset())), node_offsets.at(i));
+                                                        ExpressionImpl{LinearExpr(0, node_candidate_exps[0].offset())}, node_offsets.at(i));
             logging::sbg_log << "to_node_candidate " << to_node_candidate << endl;
 
-            lhs_maps.emplaceBack(to_current_node);
-            rhs_maps.emplaceBack(to_node_candidate);
+            lhs_maps.insert(to_current_node);
+            rhs_maps.insert(to_node_candidate);
 
             continue;
           }
@@ -498,12 +527,11 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
           Set edge_domain_set = get_edge_domain(image_intersection_set, edge_set_copy, max_value_copy);
 
           // Create map to node candidate
-          auto first_lhs_node_candidate =
-              Exp(LExp(RATIONAL(node_candidate.lhs[0].exps[0].first, 1), RATIONAL(node_candidate.lhs[0].exps[0].second, 1)));
-          auto pre_ima_candidate = node_candidate_CanonMap.dom();
+          auto first_lhs_node_candidate = ExpressionImpl{
+              LinearExpr(Rational(node_candidate.lhs[0].exps[0].first, 1), Rational(node_candidate.lhs[0].exps[0].second, 1))};
+          auto pre_ima_candidate = node_candidate_CanonMap.domain();
           logging::sbg_log << "pre_ima_candidate " << pre_ima_candidate << " from " << node_candidate_CanonMap << endl;
-          auto node_candidate_map =
-              create_set_edge_map(pre_ima_candidate, edge_domain_set, first_lhs_node_candidate, node_offsets.at(i));
+          auto node_candidate_map = create_set_edge_map(pre_ima_candidate, edge_domain_set, first_lhs_node_candidate, node_offsets.at(i));
           auto node_candidate_map_image = node_candidate_map.image();
           logging::sbg_log << "map is " << node_candidate_map << endl;
           logging::sbg_log << "image: " << node_candidate_map_image << endl;
@@ -511,16 +539,16 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
           // Create map to current node
           auto pre_image_current_node = rhs_map.preImage(image_intersection_set);
 
-          auto im_map = Map(pre_image_current_node, exp);
-          auto im = im_map.dom();
+          auto im_map = Map(pre_image_current_node, to_expression(exp));
+          auto im = im_map.domain();
           auto current_node_map = create_set_edge_map(im, edge_domain_set, exp, node_offsets.at(id));
           auto current_node_map_image = current_node_map.image();
           logging::sbg_log << "map is " << current_node_map << endl;
           logging::sbg_log << "image: " << current_node_map_image << endl;
 
           if (not(current_node_map_image == node_candidate_map_image)) {
-            lhs_maps.emplaceBack(current_node_map);
-            rhs_maps.emplaceBack(node_candidate_map);
+            lhs_maps.insert(current_node_map);
+            rhs_maps.insert(node_candidate_map);
             edge_set = edge_set_copy;
             max_value = max_value_copy;
           } else {
@@ -535,8 +563,8 @@ tuple<Set, PWMap, PWMap, EdgeCost> create_graph_edges(const std::map<int, Node>&
   }
 
   if (compact_maps) {
-    rhs_maps = rhs_maps.compact();
-    lhs_maps = lhs_maps.compact();
+    rhs_maps.compact();
+    lhs_maps.compact();
   }
 
   return {edge_set, rhs_maps, lhs_maps, costs};
@@ -558,41 +586,96 @@ SBG::LIB::WeightedSBGraph create_sb_graph(const std::map<int, Node>& nodes, bool
   auto [edge_set, left_maps, right_maps, costs] = create_graph_edges(nodes, node_offsets, max_value, compact_maps);
 
   // Now, let's create a graph
-  SBG::LIB::WeightedSBGraph graph(node_set, PW_FACT.createPWMap(), left_maps, right_maps, PW_FACT.createPWMap(),
-                                  PW_FACT.createPWMap());  // This will be our graph
+  SBG::LIB::WeightedSBGraph graph(node_set, PWMap(), left_maps, right_maps, PWMap());  // This will be our graph
 
   return graph;
 }
 
-unsigned add_adjacent_nodes(const Map& incoming_map, const Map& arrival_map, const Set& node, Set& adjacents)
+size_t add_adjacent_nodes(const Map& incoming_map, const Map& arrival_map, const Set& node, Set& adjacents)
 {
-  auto map_image = incoming_map.dom();
+  auto map_image = incoming_map.domain();
   auto node_map_intersection = map_image.intersection(node);
 
-  unsigned qty = 0;
+  size_t qty = 0;
   if (not node_map_intersection.isEmpty()) {
     auto pre_image = incoming_map.preImage(node_map_intersection);
     auto adjs = arrival_map.image(pre_image);
     qty += get_node_size(adjs, NodeWeight());
-    for_each(adjs.begin(), adjs.end(), [&adjacents](const auto& b) { adjacents.emplace(b); });
+    adjacents = adjacents.cup(adjs);
   }
 
   return qty;
 }
 
+/// @brief Splits the dimensions [dim, arity) of a set piece into its first n elements (in lexicographic
+/// order) and the remaining ones. It requires 0 < n < cardinal of those dimensions.
+/// @return a pair with the pieces of the taken elements and the pieces of the remaining ones.
+pair<vector<MultiDimInter>, vector<MultiDimInter>> split_first_elements(const MultiDimInter& piece, size_t dim, size_t n)
+{
+  const Interval& head = piece[dim];
+  const Int step = head.step();
+
+  size_t inner = 1;
+  for (size_t d = dim + 1; d < piece.arity(); d++) {
+    inner *= piece[d].cardinal();
+  }
+
+  // Builds [begin:step:end] x sub, or [begin:step:end] x piece[dim + 1 ..] when there is no sub.
+  auto make_piece = [&](Int begin, Int end, const MultiDimInter* sub) {
+    MultiDimInter result(Interval(begin, step, end));
+    if (sub) {
+      for (const Interval& i : *sub) {
+        result.emplaceBack(i);
+      }
+    } else {
+      for (size_t d = dim + 1; d < piece.arity(); d++) {
+        result.emplaceBack(piece[d]);
+      }
+    }
+    return result;
+  };
+
+  const size_t full = n / inner;
+  const size_t rest = n % inner;
+  const Int row = head.begin() + Int(full) * step;
+
+  vector<MultiDimInter> taken, remaining;
+  if (full > 0) {
+    taken.push_back(make_piece(head.begin(), row - step, nullptr));
+  }
+
+  Int next_row = row;
+  if (rest > 0) {
+    auto [sub_taken, sub_remaining] = split_first_elements(piece, dim + 1, rest);
+    for (const auto& sub : sub_taken) {
+      taken.push_back(make_piece(row, row, &sub));
+    }
+    for (const auto& sub : sub_remaining) {
+      remaining.push_back(make_piece(row, row, &sub));
+    }
+    next_row += step;
+  }
+
+  if (next_row <= head.end()) {
+    remaining.push_back(make_piece(next_row, head.end(), nullptr));
+  }
+
+  return make_pair(taken, remaining);
+}
+
 }  // namespace
 
-pair<SetPiece, SetPiece> cut_interval(const SetPiece& interval, int cut_value)
+pair<MultiDimInter, MultiDimInter> cut_interval(const MultiDimInter& interval, int cut_value)
 {
-  int interval_begin = interval.intervals().front().begin();
-  int interval_end = interval.intervals().front().end();
+  int interval_begin = interval[0].begin();
+  int interval_end = interval[0].end();
   Interval interval_1(interval_begin, 1, cut_value);
   Interval interval_2(cut_value + 1, 1, interval_end);
 
-  SetPiece set_1;
+  MultiDimInter set_1;
   set_1.emplaceBack(interval_1);
 
-  SetPiece set_2;
+  MultiDimInter set_2;
   set_2.emplaceBack(interval_2);
 
   return make_pair(set_1, set_2);
@@ -600,9 +683,10 @@ pair<SetPiece, SetPiece> cut_interval(const SetPiece& interval, int cut_value)
 
 size_t get_set_size(const Set& set)
 {
+  SetAccessKey key = SetAccess::key();
   size_t size = 0;
 
-  for (auto s : set) {
+  for (auto s : key.pieces(get<OrderedSet>(key.impl(set)))) {
     for (size_t i = 0; i < s.arity(); i++) {
       auto sp = s[i];
       size += sp.end() - sp.begin() + 1;
@@ -611,6 +695,8 @@ size_t get_set_size(const Set& set)
 
   return size;
 }
+
+Set to_set(const MultiDimInter& piece) { return SetAccess::key().createSet(OrderedSet(piece)); }
 
 SBG::LIB::WeightedSBGraph build_sb_graph(const string& filename, bool compact_maps)
 {
@@ -635,19 +721,21 @@ SBG::LIB::WeightedSBGraph build_sb_graph(const string& filename, bool compact_ma
 
 Set get_adjacents(const SBG::LIB::SBG& graph, const Set& node)
 {
-  Set adjacents = SET_FACT.createSet();
+  Set adjacents;
 
   // Fill adjacents
   unsigned acc = 0;
-  for (auto it1 = graph.map1().begin(), it2 = graph.map2().begin(); it1 != graph.map1().end() and it2 != graph.map2().end(); ++it1, ++it2) {
-    const auto map1 = *it1;
-    const auto map2 = *it2;
+  PWMap pw_map1 = graph.map1();
+  PWMap pw_map2 = graph.map2();
+  for (auto it1 = pw_map1.begin(), it2 = pw_map2.begin(); it1 != pw_map1.end() and it2 != pw_map2.end(); ++it1, ++it2) {
+    const Map& map1 = *it1;
+    const Map& map2 = *it2;
 
     acc += add_adjacent_nodes(map1, map2, node, adjacents);
 
-    auto map2_minus_map1_dom = map2.dom().difference(map1.dom());
+    auto map2_minus_map1_dom = map2.domain().difference(map1.domain());
     if (not map2_minus_map1_dom.isEmpty()) {
-      Map map2_ = Map(map2_minus_map1_dom, map2.exp());
+      Map map2_ = Map(map2_minus_map1_dom, map2.law());
 
       acc += add_adjacent_nodes(map2_, map1, node, adjacents);
     }
@@ -656,101 +744,82 @@ Set get_adjacents(const SBG::LIB::SBG& graph, const Set& node)
   return adjacents;
 }
 
-pair<Set, Set> cut_bidimensional_interval(const SetPiece& set_piece, size_t s)
+pair<Set, Set> cut_interval_by_dimension(const Set& set_piece, const NodeWeight& node_weight, std::size_t size)
 {
-  logging::sbg_log << "cutting interval " << set_piece << ", " << s << endl;
-
-  auto size_node_2 = get_node_size(SetPiece(set_piece.intervals()[1]), NodeWeight());
-
-  unsigned ammount_of_rows = s / size_node_2;
-
-  unsigned rest = s % size_node_2;
-
-  logging::sbg_log << "Ammount of rows " << ammount_of_rows << endl;
-
-  Set OrdSet_ret = SET_FACT.createSet();
-  SetPiece interval_2 = *set_piece.intervals().begin();
-
-  if (ammount_of_rows > 0) {
-    SetPiece interval_1;
-    tie(interval_1, interval_2) = cut_interval(set_piece.intervals().front(), set_piece.intervals().front().begin() + ammount_of_rows - 1);
-    logging::sbg_log << "Interval cut in " << ammount_of_rows << ": " << interval_1 << ", " << interval_2 << endl;
-    if (interval_2.arity() == 0 and rest > 0) {
-      interval_2 = Interval(interval_1.intervals().front().end(), 1, interval_1.intervals().front().end());
-    }
-    interval_1.emplaceBack(set_piece.intervals()[1]);
-    OrdSet_ret.emplace(interval_1);
-  }
-
-  if (rest > 0) {
-    SetPiece rest_set_piece;
-    rest_set_piece.emplaceBack(Interval(interval_2.intervals().front().begin(), 1, interval_2.intervals().front().begin()));
-    SetPiece interval_3, interval_4;
-    tie(interval_3, interval_4) = cut_interval(set_piece.intervals()[1], set_piece.intervals()[1].begin() + rest - 1);
-    rest_set_piece.emplaceBack(interval_3.intervals().front());
-
-    OrdSet_ret.emplace(rest_set_piece);
-  }
-
-  Set set = SET_FACT.createSet(set_piece);
-  Set remaining = set.difference(OrdSet_ret);
-
-  logging::sbg_log << "original " << set_piece << ", " << OrdSet_ret << ", " << remaining << endl;
-
-  return make_pair(OrdSet_ret, remaining);
-}
-
-pair<Set, Set> cut_interval_by_dimension(Set& set_piece, const NodeWeight& node_weight, std::size_t size)
-{
+  SetAccessKey key = SetAccess::key();
   if (set_piece.isEmpty()) {
-    return make_pair(SET_FACT.createSet(), SET_FACT.createSet());
+    return make_pair(Set(), Set());
   }
 
   if (size == 0) {
-    return make_pair(SET_FACT.createSet(), set_piece);
+    return make_pair(Set(), set_piece);
   }
 
-  size_t actual_size = size / unsigned(get_set_cost(*set_piece.begin(), node_weight));
+  // OrderedSet pieces are already sorted by minElem(), so we can walk them in lexicographic order.
+  OrderedSet::OrdMDICollection taken, remaining;
+  for (const MultiDimInter& piece : key.pieces(get<OrderedSet>(key.impl(set_piece)))) {
+    if (size == 0) {
+      remaining.push_back(piece);
+      continue;
+    }
 
-  SetPiece p_1, p_2;
-  auto i1 = *set_piece.begin();
-  tie(p_1, p_2) = cut_interval(i1.intervals().front(), i1.intervals().front().begin() + actual_size - 1);
-  return make_pair(SET_FACT.createSet(p_1), SET_FACT.createSet(p_2));
+    const size_t cost = unsigned(get_set_cost(piece, node_weight));
+    const size_t available = piece.cardinal();
+    const size_t n = min(available, size / cost);
+
+    if (n == 0) {
+      remaining.push_back(piece);
+      continue;
+    }
+
+    if (n == available) {
+      taken.push_back(piece);
+    } else {
+      auto [sub_taken, sub_remaining] = split_first_elements(piece, 0, n);
+      taken.insert(taken.end(), sub_taken.begin(), sub_taken.end());
+      remaining.insert(remaining.end(), sub_remaining.begin(), sub_remaining.end());
+    }
+
+    size -= n * cost;
+  }
+
+  // OrderedSet::cup expects its pieces sorted by minElem(). Pieces are disjoint by construction,
+  // but with multi-piece inputs a partial-row remainder can sort after a later untouched piece.
+  auto by_min_elem = [](const MultiDimInter& a, const MultiDimInter& b) { return a.minElem() < b.minElem(); };
+  std::sort(taken.begin(), taken.end(), by_min_elem);
+  std::sort(remaining.begin(), remaining.end(), by_min_elem);
+
+  return make_pair(key.createSet(OrderedSet(std::move(taken))), key.createSet(OrderedSet(std::move(remaining))));
 }
 
-unsigned get_node_size(const SetPiece& node, const NodeWeight& node_weight)
+size_t get_node_size(const MultiDimInter& node, const NodeWeight& node_weight)
 {
   int weight = get_set_cost(node, node_weight);
 
-  unsigned acc = node.intervals().front().end() - node.intervals().front().begin() + 1;
-
-  for (size_t i = 1; i < node.intervals().size(); i++) {
-    auto interval = node.intervals()[i];
-    acc = acc * (interval.end() - interval.begin() + 1);
-  }
-
+  size_t acc = node.cardinal();
   acc *= weight;
 
   return acc;
 }
 
-unsigned get_node_size(const Set& node, const NodeWeight& node_weight)
+size_t get_node_size(const Set& node, const NodeWeight& node_weight)
 {
+  SetAccessKey key = SetAccess::key();
   if (node.isEmpty()) {
     return 0;
   }
 
-  unsigned size = 0;
-  for (const auto& set_piece : node) {
+  size_t size = 0;
+  for (const auto& set_piece : key.pieces(get<OrderedSet>(key.impl(node)))) {
     size += get_node_size(set_piece, node_weight);
   }
 
   return size;
 }
 
-unsigned get_partition_size(const vector<SetPiece>& node, const NodeWeight& node_weight)
+size_t get_partition_size(const vector<Set>& node, const NodeWeight& node_weight)
 {
-  unsigned size = 0;
+  size_t size = 0;
   for (const auto& set_piece : node) {
     size += set_piece.cardinal();
   }
@@ -758,7 +827,7 @@ unsigned get_partition_size(const vector<SetPiece>& node, const NodeWeight& node
   return size;
 }
 
-unsigned get_edge_set_cost(const SBG::LIB::SetPiece& edges, const EdgeCost& edge_cost)
+unsigned get_edge_set_cost(const MultiDimInter& edges, const EdgeCost& edge_cost)
 {
   if (edges.isEmpty()) {
     return 0;
@@ -766,10 +835,10 @@ unsigned get_edge_set_cost(const SBG::LIB::SetPiece& edges, const EdgeCost& edge
 
   int weight = get_set_cost(edges, edge_cost);  // currently, all edges have cost 1
 
-  unsigned acc = edges.intervals().front().end() - edges.intervals().front().begin() + 1;
+  unsigned acc = edges[0].end() - edges[0].begin() + 1;
 
-  for (size_t i = 1; i < edges.intervals().size(); i++) {
-    auto interval = edges.intervals()[i];
+  for (size_t i = 1; i < edges.arity(); i++) {
+    auto interval = edges[i];
     acc = acc * (interval.end() - interval.begin() + 1);
   }
 
@@ -780,12 +849,13 @@ unsigned get_edge_set_cost(const SBG::LIB::SetPiece& edges, const EdgeCost& edge
 
 unsigned get_edge_set_cost(const SBG::LIB::Set& edges, const EdgeCost& edge_cost)
 {
+  SetAccessKey key = SetAccess::key();
   if (edges.isEmpty()) {
     return 0;
   }
 
   unsigned size = 0;
-  for (const auto& set_piece : edges) {
+  for (const auto& set_piece : key.pieces(get<OrderedSet>(key.impl(edges)))) {
     size += get_edge_set_cost(set_piece, edge_cost);
   }
 
@@ -794,18 +864,19 @@ unsigned get_edge_set_cost(const SBG::LIB::Set& edges, const EdgeCost& edge_cost
 
 void flatten_set(Set& set, const WeightedSBGraph& graph)
 {
+  SetAccessKey key = SetAccess::key();
   if ((not set.isEmpty()) and set.arity() > 1) {
     logging::sbg_log << "flatten_set for sets with " << set.arity() << " is not implemented" << endl;
     return;
   }
 
-  auto canonize = [](vector<SetPiece>& set_vector) {
+  auto canonize = [](vector<MultiDimInter>& set_vector) {
     if (set_vector.empty()) {
       return set_vector;
     }
 
     sort_partition_intervals(set_vector);
-    vector<SetPiece> new_set_vector = {*set_vector.begin()};
+    vector<MultiDimInter> new_set_vector = {*set_vector.begin()};
     for (size_t new_set_vector_idx = 0, set_vector_idx = 1; set_vector_idx < set_vector.size(); set_vector_idx++) {
       if (new_set_vector[new_set_vector_idx][0].end() + 1 == set_vector[set_vector_idx][0].begin()) {
         new_set_vector[new_set_vector_idx] =
@@ -819,17 +890,20 @@ void flatten_set(Set& set, const WeightedSBGraph& graph)
     return new_set_vector;
   };
 
-  Set new_partition = SET_FACT.createSet();
-  for (const auto& v : graph.V()) {
-    vector<SetPiece> set_piece_this_node_vector;
-    for (auto set_piece : set) {
+  Set new_partition;
+  for (const auto& v : key.pieces(get<OrderedSet>(key.impl(graph.V())))) {
+    vector<MultiDimInter> set_piece_this_node_vector;
+    for (auto set_piece : key.pieces(get<OrderedSet>(key.impl(set)))) {
       if (not v.intersection(set_piece).isEmpty()) {
         set_piece_this_node_vector.emplace_back(set_piece);
       }
     }
 
     set_piece_this_node_vector = canonize(set_piece_this_node_vector);
-    new_partition = new_partition.cup(from_vector(set_piece_this_node_vector));
+    vector<Set> set_this_vector_nodes;
+    for_each(set_piece_this_node_vector.begin(), set_piece_this_node_vector.end(),
+             [&set_this_vector_nodes, &key](const auto& sp) { set_this_vector_nodes.push_back(key.createSet(OrderedSet(sp))); });
+    new_partition = new_partition.cup(from_vector(set_this_vector_nodes));
   }
 
   auto diff = set.difference(new_partition);
@@ -840,76 +914,450 @@ void flatten_set(Set& set, const WeightedSBGraph& graph)
 
 SBG::LIB::WeightedSBGraph create_air_conditioners_graph()
 {
-  Set nodes = SET_FACT.createSet();
-  nodes.emplaceBack(Interval(0, 1, 99));     // th
-  nodes.emplaceBack(Interval(100, 1, 100));  // ierr
-  nodes.emplaceBack(Interval(101, 1, 101));  // ptotal
-  nodes.emplaceBack(Interval(102, 1, 103));  // ev_1
-  nodes.emplaceBack(Interval(104, 1, 105));  // ev_2
-  nodes.emplaceBack(Interval(106, 1, 106));  // ev_3
-  nodes.emplaceBack(Interval(107, 1, 107));  // ev_4
-  nodes.emplaceBack(Interval(108, 1, 108));  // ev_5
-  nodes.emplaceBack(Interval(109, 1, 158));  // ev_6
-  nodes.emplaceBack(Interval(159, 1, 208));  // ev_7
-  nodes.emplaceBack(Interval(209, 1, 308));  // ev_8
+  Set nodes;
+  nodes = nodes.cup(Set(0, 1, 99));     // th
+  nodes = nodes.cup(Set(100, 1, 100));  // ierr
+  nodes = nodes.cup(Set(101, 1, 101));  // ptotal
+  nodes = nodes.cup(Set(102, 1, 103));  // ev_1
+  nodes = nodes.cup(Set(104, 1, 105));  // ev_2
+  nodes = nodes.cup(Set(106, 1, 106));  // ev_3
+  nodes = nodes.cup(Set(107, 1, 107));  // ev_4
+  nodes = nodes.cup(Set(108, 1, 108));  // ev_5
+  nodes = nodes.cup(Set(109, 1, 158));  // ev_6
+  nodes = nodes.cup(Set(159, 1, 208));  // ev_7
+  nodes = nodes.cup(Set(209, 1, 308));  // ev_8
 
   // maps
-  PWMap lhs_maps = PW_FACT.createPWMap();
-  PWMap rhs_maps = PW_FACT.createPWMap();
+  PWMap lhs_maps = PWMap();
+  PWMap rhs_maps = PWMap();
 
-  lhs_maps.emplaceBack(Map(Interval(319, 1, 368), Exp(LExp(1, RATIONAL(-319, 1)))));  // E1
-  rhs_maps.emplaceBack(Map(Interval(319, 1, 368), Exp(LExp(1, RATIONAL(-210, 1)))));
+  lhs_maps.insert(Map(Set(319, 1, 368), Expression(Rational(1), Rational(-319, 1))));  // E1
+  rhs_maps.insert(Map(Set(319, 1, 368), Expression(Rational(1), Rational(-210, 1))));
 
-  lhs_maps.emplaceBack(Map(Interval(369, 1, 418), Exp(LExp(1, RATIONAL(-319, 1)))));  // E2
-  rhs_maps.emplaceBack(Map(Interval(369, 1, 418), Exp(LExp(1, RATIONAL(-210, 1)))));
+  lhs_maps.insert(Map(Set(369, 1, 418), Expression(Rational(1), Rational(-319, 1))));  // E2
+  rhs_maps.insert(Map(Set(369, 1, 418), Expression(Rational(1), Rational(-210, 1))));
 
-  lhs_maps.emplaceBack(Map(Interval(419, 1, 518), Exp(LExp(1, RATIONAL(-419, 1)))));  // E3
-  rhs_maps.emplaceBack(Map(Interval(419, 1, 518), Exp(LExp(1, RATIONAL(-210, 1)))));
+  lhs_maps.insert(Map(Set(419, 1, 518), Expression(Rational(1), Rational(-419, 1))));  // E3
+  rhs_maps.insert(Map(Set(419, 1, 518), Expression(Rational(1), Rational(-210, 1))));
 
-  lhs_maps.emplaceBack(Map(Interval(519, 1, 519), Exp(LExp(0, 100))));  // E4
-  rhs_maps.emplaceBack(Map(Interval(519, 1, 519), Exp(LExp(0, 106))));
+  lhs_maps.insert(Map(Set(519, 1, 519), Expression(Rational(0), 100)));  // E4
+  rhs_maps.insert(Map(Set(519, 1, 519), Expression(Rational(0), 106)));
 
-  lhs_maps.emplaceBack(Map(Interval(520, 1, 520), Exp(LExp(0, 100))));  // E5
-  rhs_maps.emplaceBack(Map(Interval(520, 1, 520), Exp(LExp(0, 107))));
+  lhs_maps.insert(Map(Set(520, 1, 520), Expression(Rational(0), 100)));  // E5
+  rhs_maps.insert(Map(Set(520, 1, 520), Expression(Rational(0), 107)));
 
-  lhs_maps.emplaceBack(Map(Interval(521, 1, 521), Exp(LExp(0, 100))));  // E6
-  rhs_maps.emplaceBack(Map(Interval(521, 1, 521), Exp(LExp(0, 108))));
+  lhs_maps.insert(Map(Set(521, 1, 521), Expression(Rational(0), 100)));  // E6
+  rhs_maps.insert(Map(Set(521, 1, 521), Expression(Rational(0), 108)));
 
-  lhs_maps.emplaceBack(Map(Interval(522, 1, 523), Exp(LExp(1, RATIONAL(-420, 1)))));  // E7
-  rhs_maps.emplaceBack(Map(Interval(522, 1, 523), Exp(LExp(1, RATIONAL(-418, 1)))));
+  lhs_maps.insert(Map(Set(522, 1, 523), Expression(Rational(1), Rational(-420, 1))));  // E7
+  rhs_maps.insert(Map(Set(522, 1, 523), Expression(Rational(1), Rational(-418, 1))));
 
-  lhs_maps.emplaceBack(Map(Interval(524, 1, 525), Exp(LExp(1, RATIONAL(-420, 1)))));  // E8
-  rhs_maps.emplaceBack(Map(Interval(524, 1, 525), Exp(LExp(0, 101))));
+  lhs_maps.insert(Map(Set(524, 1, 525), Expression(Rational(1), Rational(-420, 1))));  // E8
+  rhs_maps.insert(Map(Set(524, 1, 525), Expression(Rational(0), 101)));
 
-  lhs_maps.emplaceBack(Map(Interval(526, 1, 526), Exp(LExp(0, 106))));  // E9
-  rhs_maps.emplaceBack(Map(Interval(526, 1, 526), Exp(LExp(0, 108))));
+  lhs_maps.insert(Map(Set(526, 1, 526), Expression(Rational(0), 106)));  // E9
+  rhs_maps.insert(Map(Set(526, 1, 526), Expression(Rational(0), 108)));
 
-  lhs_maps.emplaceBack(Map(Interval(527, 1, 527), Exp(LExp(0, 107))));  // E10
-  rhs_maps.emplaceBack(Map(Interval(527, 1, 527), Exp(LExp(0, 108))));
+  lhs_maps.insert(Map(Set(527, 1, 527), Expression(Rational(0), 107)));  // E10
+  rhs_maps.insert(Map(Set(527, 1, 527), Expression(Rational(0), 108)));
 
-  lhs_maps.emplaceBack(Map(Interval(528, 1, 528), Exp(LExp(0, 101))));  // E11
-  rhs_maps.emplaceBack(Map(Interval(528, 1, 528), Exp(LExp(0, 108))));
+  lhs_maps.insert(Map(Set(528, 1, 528), Expression(Rational(0), 101)));  // E11
+  rhs_maps.insert(Map(Set(528, 1, 528), Expression(Rational(0), 108)));
 
-  lhs_maps.emplaceBack(Map(Interval(529, 1, 578), Exp(LExp(0, 102))));  // E12
-  rhs_maps.emplaceBack(Map(Interval(529, 1, 578), Exp(LExp(1, RATIONAL(-420, 1)))));
+  lhs_maps.insert(Map(Set(529, 1, 578), Expression(Rational(0), 102)));  // E12
+  rhs_maps.insert(Map(Set(529, 1, 578), Expression(Rational(1), Rational(-420, 1))));
 
-  lhs_maps.emplaceBack(Map(Interval(579, 1, 628), Exp(LExp(0, 103))));  // E13
-  rhs_maps.emplaceBack(Map(Interval(579, 1, 628), Exp(LExp(1, RATIONAL(-420, 1)))));
+  lhs_maps.insert(Map(Set(579, 1, 628), Expression(Rational(0), 103)));  // E13
+  rhs_maps.insert(Map(Set(579, 1, 628), Expression(Rational(1), Rational(-420, 1))));
 
-  lhs_maps.emplaceBack(Map(Interval(629, 1, 678), Exp(LExp(0, 108))));  // E14
-  rhs_maps.emplaceBack(Map(Interval(629, 1, 678), Exp(LExp(1, RATIONAL(-520, 1)))));
+  lhs_maps.insert(Map(Set(629, 1, 678), Expression(Rational(0), 108)));  // E14
+  rhs_maps.insert(Map(Set(629, 1, 678), Expression(Rational(1), Rational(-520, 1))));
 
-  lhs_maps.emplaceBack(Map(Interval(679, 1, 729), Exp(LExp(0, 108))));  // E15
-  rhs_maps.emplaceBack(Map(Interval(679, 1, 729), Exp(LExp(1, RATIONAL(-520, 1)))));
+  lhs_maps.insert(Map(Set(679, 1, 729), Expression(Rational(0), 108)));  // E15
+  rhs_maps.insert(Map(Set(679, 1, 729), Expression(Rational(1), Rational(-520, 1))));
 
-  auto vmap = PW_FACT.createPWMap();
-  auto vsap = PW_FACT.createPWMap();
-  auto emap = PW_FACT.createPWMap();
+  auto vmap = PWMap();
+  auto emap = PWMap();
 
   // Now, let's build a graph!
-  SBG::LIB::WeightedSBGraph graph(nodes, vmap, rhs_maps, lhs_maps, emap, vsap);  // This will be our graph
+  SBG::LIB::WeightedSBGraph graph(nodes, vmap, rhs_maps, lhs_maps, emap);  // This will be our graph
 
   return graph;
+}
+
+WeightedSBGraph create_air_conditioners_with_controller_graph(int size, int sections, bool duplicate_1_n_conns)
+{
+  SetAccessKey key = SetAccess::key();
+  int quarter = size / sections;
+  int start_q = (2 * size) + 13;
+
+  Set nodes;
+
+  // th [label="N1=th {0:999}"]
+  auto th = Interval(0, 1, size - 1);
+  nodes = nodes.cup(key.createSet(OrderedSet(th)));
+  int current_offset = size;
+
+  // ierr [label="N2=ierr{1000:1000}"]
+  int ierr_domain_init = current_offset;
+  auto ierr = Interval(current_offset, 1, current_offset);
+  nodes = nodes.cup(key.createSet(OrderedSet(ierr)));
+  current_offset += 1;
+
+  // ptotal [label="N3=ptotal {1001:1001}"]
+  int ptotal_domain_init = current_offset;
+  auto ptotal = Interval(current_offset, 1, current_offset);
+  nodes = nodes.cup(key.createSet(OrderedSet(ptotal)));
+  current_offset += 1;
+
+  // ev_1 [label="N4=ev_1 {1002:1005}"
+  int ev_1_domain_init = current_offset;
+  auto ev_1 = Interval(current_offset, 1, current_offset + sections - 1);
+  nodes = nodes.cup(key.createSet(OrderedSet(ev_1)));
+  current_offset += sections;
+
+  // ev_2 [label="N5=ev_2 {1006:1009}"]
+  int ev_2_domain_init = current_offset;
+  auto ev_2 = Interval(current_offset, 1, current_offset + sections - 1);
+  nodes = nodes.cup(key.createSet(OrderedSet(ev_2)));
+  current_offset += sections;
+
+  // ev_3 [label="N6=ev_3 {1010:1010}"]
+  int ev_3_domain_init = current_offset;
+  auto ev_3 = Interval(current_offset, 1, current_offset);
+  nodes = nodes.cup(key.createSet(OrderedSet(ev_3)));
+  current_offset += 1;
+
+  // ev_4 [label="N7=ev_4 {1011:1011}"]
+  int ev_4_domain_init = current_offset;
+  auto ev_4 = Interval(current_offset, 1, current_offset);
+  nodes = nodes.cup(key.createSet(OrderedSet(ev_4)));
+  current_offset += 1;
+
+  // ev_5 [label="N8=ev_5 {1012:1012}"]
+  int ev_5_domain_init = current_offset;
+  auto ev_5 = Interval(current_offset, 1, current_offset);
+  nodes = nodes.cup(key.createSet(OrderedSet(ev_5)));
+  current_offset += 1;
+
+  // ev_6 [label="N9=ev_6 {1013:2012}"]
+  int ev_6_domain_init = current_offset;
+  auto ev_6 = Interval(current_offset, 1, current_offset + (size - 1));
+  nodes = nodes.cup(key.createSet(OrderedSet(ev_6)));
+  current_offset += size;
+
+  // nodes from 10 to 13 in the example with 4 sections
+  // ev_7 [label="N10=ev_7 {2013:2262}"]
+  // ev_8 [label="N11=ev_8 {2263:2512}"]
+  // ev_9 [label="N12=ev_9 {2513:2762}"]
+  int part_total_domain_init = current_offset;
+  for (int i = 0; i < sections; i++) {
+    auto ev_i = Interval(current_offset, 1, current_offset + quarter - 1);
+    nodes = nodes.cup(key.createSet(OrderedSet(ev_i)));
+    current_offset += quarter;
+  }
+
+  // maps
+  PWMap rhs_maps = PWMap();
+  PWMap lhs_maps = PWMap();
+
+  // th -> ev_6 [label="<- {3013:4012} -> ", arrowhead="none"]
+  rhs_maps.insert(Map(Set(current_offset, 1, current_offset + (size - 1)), Expression(Rational(1), Rational(-current_offset, 1))));
+  lhs_maps.insert(
+      Map(Set(current_offset, 1, current_offset + (size - 1)), Expression(Rational(1), Rational(ev_6_domain_init - current_offset, 1))));
+  current_offset += size;
+
+  if (duplicate_1_n_conns) {
+    rhs_maps.insert(Map(Set(current_offset, 1, current_offset + (size - 1)), Expression(Rational(1), Rational(-current_offset, 1))));
+    lhs_maps.insert(
+        Map(Set(current_offset, 1, current_offset + (size - 1)), Expression(Rational(1), Rational(ev_6_domain_init - current_offset, 1))));
+    current_offset += size;
+  }
+
+  // th -> ev_7 [label="<- {4013:4262} -> ", arrowhead="none"]
+  // th -> ev_8 [label="<- {4263:4512} -> ", arrowhead="none"]
+  // th -> ev_9 [label="<- {4513:4762} -> ", arrowhead="none"]
+  // th -> ev_10 [label="<- {4763:5012} -> ", arrowhead="none"]
+  for (int i = 0; i < sections; i++) {
+    rhs_maps.insert(
+        Map(Set(current_offset, 1, current_offset + (quarter - 1)), Expression(Rational(1), Rational(-current_offset + i * quarter, 1))));
+    lhs_maps.insert(Map(Set(current_offset, 1, current_offset + (quarter - 1)),
+                        Expression(Rational(1), Rational(part_total_domain_init + i * quarter - current_offset, 1))));
+    current_offset += quarter;
+  }
+  if (duplicate_1_n_conns) {
+    for (int i = 0; i < sections; i++) {
+      rhs_maps.insert(
+          Map(Set(current_offset, 1, current_offset + (quarter - 1)), Expression(Rational(1), Rational(-current_offset + i * quarter, 1))));
+      lhs_maps.insert(Map(Set(current_offset, 1, current_offset + (quarter - 1)),
+                          Expression(Rational(1), Rational(part_total_domain_init + i * quarter - current_offset, 1))));
+      current_offset += quarter;
+    }
+  }
+
+  // ierr -> ev_3 [label="<- {5013:5013} -> ", arrowhead="none"]
+  rhs_maps.insert(Map(Set(current_offset, 1, current_offset), Expression(Rational(0), ierr_domain_init)));
+  lhs_maps.insert(Map(Set(current_offset, 1, current_offset), Expression(Rational(0), ev_3_domain_init)));
+  current_offset += 1;
+
+  // ierr -> ev_4 [label="<- {5014:5014} -> ", arrowhead="none"]
+  rhs_maps.insert(Map(Set(current_offset, 1, current_offset), Expression(Rational(0), ierr_domain_init)));
+  lhs_maps.insert(Map(Set(current_offset, 1, current_offset), Expression(Rational(0), ev_4_domain_init)));
+  current_offset += 1;
+
+  // ierr -> ev_5 [label="<- {5015:5015} -> ", arrowhead="none"]
+  rhs_maps.insert(Map(Set(current_offset, 1, current_offset), Expression(Rational(0), ierr_domain_init)));
+  lhs_maps.insert(Map(Set(current_offset, 1, current_offset), Expression(Rational(0), ev_5_domain_init)));
+  current_offset += 1;
+
+  // ptotal -> ev_1 [label="1001 <- {5016:5019} -> ", arrowhead="none"]
+  rhs_maps.insert(Map(Set(current_offset, 1, current_offset + sections - 1), Expression(Rational(0), ptotal_domain_init)));
+  lhs_maps.insert(
+      Map(Set(current_offset, 1, current_offset + sections - 1), Expression(Rational(1), Rational(ev_1_domain_init - current_offset, 1))));
+  current_offset += sections;
+
+  // ptotal -> ev_2 [label="1001 <- {5020:5023} -> ", arrowhead="none"]
+  rhs_maps.insert(Map(Set(current_offset, 1, current_offset + sections - 1), Expression(Rational(0), ptotal_domain_init)));
+  lhs_maps.insert(
+      Map(Set(current_offset, 1, current_offset + sections - 1), Expression(Rational(1), Rational(ev_2_domain_init - current_offset, 1))));
+  current_offset += sections;
+
+  // ptotal -> ev_5 [label="1001 <- {5024:5024} -> 1012", arrowhead="none"]
+  rhs_maps.insert(Map(Set(current_offset, 1, current_offset), Expression(Rational(0), ptotal_domain_init)));
+  lhs_maps.insert(Map(Set(current_offset, 1, current_offset), Expression(Rational(0), ev_5_domain_init)));
+  current_offset += 1;
+
+  // ev_1 -> ev_2 [label=" <- {5025:5028} -> ", arrowhead="none"]
+  rhs_maps.insert(
+      Map(Set(current_offset, 1, current_offset + sections - 1), Expression(Rational(1), Rational(ev_1_domain_init - current_offset, 1))));
+  lhs_maps.insert(
+      Map(Set(current_offset, 1, current_offset + sections - 1), Expression(Rational(1), Rational(ev_2_domain_init - current_offset, 1))));
+  current_offset += sections;
+
+  // ev_1 -> ev_7 [label="1002 <- {5029:5278} -> ", arrowhead="none"]
+  // ev_1 -> ev_8 [label="1003 <- {5279:5528} -> ", arrowhead="none"]
+  // ev_1 -> ev_9 [label="1004 <- {5529:5778} -> ", arrowhead="none"]
+  // ev_1 -> ev_10 [label="1005 <- {5779:6028} -> ", arrowhead="none"]
+  for (int i = 0; i < sections; i++) {
+    rhs_maps.insert(Map(Set(current_offset, 1, current_offset + quarter - 1), Expression(Rational(0), ev_1_domain_init)));
+    lhs_maps.insert(Map(Set(current_offset, 1, current_offset + quarter - 1),
+                        Expression(Rational(1), Rational(part_total_domain_init - current_offset + quarter * i, 1))));
+    current_offset += quarter;
+  }
+  if (duplicate_1_n_conns) {
+    for (int i = 0; i < sections; i++) {
+      rhs_maps.insert(Map(Set(current_offset, 1, current_offset + quarter - 1), Expression(Rational(0), ev_1_domain_init)));
+      lhs_maps.insert(Map(Set(current_offset, 1, current_offset + quarter - 1),
+                          Expression(Rational(1), Rational(part_total_domain_init - current_offset + quarter * i, 1))));
+      current_offset += quarter;
+    }
+  }
+
+  // ev_3 -> ev_5 [label="1010 <- {6029:6029} -> 1012", arrowhead="none"]
+  rhs_maps.insert(Map(Set(current_offset, 1, current_offset), Expression(Rational(0), ev_3_domain_init)));
+  lhs_maps.insert(Map(Set(current_offset, 1, current_offset), Expression(Rational(0), ev_5_domain_init)));
+  current_offset += 1;
+
+  // ev_4 -> ev_5 [label="1011 <- {6030:6030} -> 1012", arrowhead="none"]
+  rhs_maps.insert(Map(Set(current_offset, 1, current_offset), Expression(Rational(0), ev_4_domain_init)));
+  lhs_maps.insert(Map(Set(current_offset, 1, current_offset), Expression(Rational(0), ev_5_domain_init)));
+  current_offset += 1;
+
+  // ev_5 -> ev_7 [label="1012 <- {6031:6280} -> ", arrowhead="none"]
+  // ev_5 -> ev_8 [label="1012 <- {6281:6530} -> ", arrowhead="none"]
+  // ev_5 -> ev_9 [label="1012 <- {6531:6780} -> ", arrowhead="none"]
+  // ev_5 -> ev_10 [label="1012 <- {6781:7030} -> ", arrowhead="none"]
+  for (int i = 0; i < sections; i++) {
+    rhs_maps.insert(Map(Set(current_offset, 1, current_offset + quarter - 1), Expression(Rational(0), ev_5_domain_init)));
+    lhs_maps.insert(Map(Set(current_offset, 1, current_offset + quarter - 1),
+                        Expression(Rational(1), Rational(-current_offset + part_total_domain_init + i * quarter, 1))));
+    current_offset += quarter;
+  }
+
+  auto vmap = PWMap();
+  auto emap = PWMap();
+
+  // Now, let's build a graph!
+  SBG::LIB::WeightedSBGraph graph(nodes, vmap, lhs_maps, rhs_maps, emap);  // This will be our graph
+
+  cout << graph << endl;
+
+  return graph;
+}
+
+WeightedSBGraph create_advection2D_graph(int size)
+{
+  Set nodes;
+
+  // Real u[N,N];
+  nodes = nodes.cup(Set(0, 1, size - 1).cartesianProduct(Set(0, 1, size - 1)));
+  int current_offset_1 = size;
+  int current_offset_2 = size;
+
+  // maps
+  PWMap rhs_maps = PWMap();
+  PWMap lhs_maps = PWMap();
+
+  // Borders
+  // for i in 2:N loop
+  //   der(u[i,1])=-ax*u[i,1]/dx - ay*(u[i,1] - u[i-1,1])/dy + r*(u[i,1]^2-u[i,1]^3);
+  // end for;
+  rhs_maps.insert(Map(Set(current_offset_1, 1, current_offset_1 + size - 2).cartesianProduct(Set(current_offset_2, 1, current_offset_2)),
+                      Expression(Rational(1), Rational(-current_offset_1 + 1, 1))
+                          .cartesianProduct(Expression(Rational(0), 0))));  // row fixed in 1 (first one)
+  lhs_maps.insert(Map(Set(current_offset_1, 1, current_offset_1 + size - 2).cartesianProduct(Set(current_offset_2, 1, current_offset_2)),
+                      Expression(Rational(1), Rational(-current_offset_1, 1)).cartesianProduct(Expression(Rational(0), 0))));
+  current_offset_1 += size - 1;
+  current_offset_2 += 1;
+
+  // Borders
+  // for j in 2:N loop
+  //   der(u[1,j])=-ax*(u[1,j] - u[1,j-1])/dx - ay*u[1,j]/dy + r*(u[1,j]^2-u[1,j]^3);
+  // end for;
+  rhs_maps.insert(Map(Set(current_offset_1, 1, current_offset_1).cartesianProduct(Set(current_offset_2, 1, current_offset_2 + size - 2)),
+                      Expression(Rational(0), 0)
+                          .cartesianProduct(Expression(Rational(1), Rational(-current_offset_2 + 1, 1)))));  // row fixed in 1 (first one)
+  lhs_maps.insert(Map(Set(current_offset_1, 1, current_offset_1).cartesianProduct(Set(current_offset_2, 1, current_offset_2 + size - 2)),
+                      Expression(Rational(0), 0).cartesianProduct(Expression(Rational(1), Rational(-current_offset_2, 1)))));
+  current_offset_1 += 1;
+  current_offset_2 += size - 1;
+
+  // Rest of the grid.
+  // for i in 2:N, j in 2:N loop
+  // der(u[i, j]) -> u[i,j-1]
+  rhs_maps.insert(
+      Map(Set(current_offset_1, 1, current_offset_1 + size - 2).cartesianProduct(Set(current_offset_2, 1, current_offset_2 + size - 2)),
+          Expression(Rational(1), Rational(-current_offset_1 + 1, 1))
+              .cartesianProduct(Expression(Rational(1), Rational(-current_offset_2 + 1, 1)))));  // row fixed in 1 (first one)
+  lhs_maps.insert(
+      Map(Set(current_offset_1, 1, current_offset_1 + size - 2).cartesianProduct(Set(current_offset_2, 1, current_offset_2 + size - 2)),
+          Expression(Rational(1), Rational(-current_offset_1 + 1, 1))
+              .cartesianProduct(Expression(Rational(1), Rational(-current_offset_2, 1)))));
+  current_offset_1 += size - 1;
+  current_offset_2 += size - 1;
+  // der(u[i, j]) -> u[i-1,j])
+  rhs_maps.insert(
+      Map(Set(current_offset_1, 1, current_offset_1 + size - 2).cartesianProduct(Set(current_offset_2, 1, current_offset_2 + size - 2)),
+          Expression(Rational(1), Rational(-current_offset_1 + 1, 1))
+              .cartesianProduct(Expression(Rational(1), Rational(-current_offset_2 + 1, 1)))));  // row fixed in 1 (first one)
+  lhs_maps.insert(
+      Map(Set(current_offset_1, 1, current_offset_1 + size - 2).cartesianProduct(Set(current_offset_2, 1, current_offset_2 + size - 2)),
+          Expression(Rational(1), Rational(-current_offset_1, 1))
+              .cartesianProduct(Expression(Rational(1), Rational(-current_offset_2 + 1, 1)))));
+  current_offset_1 += size - 1;
+  current_offset_2 += size - 1;
+
+  auto vmap = PWMap();
+  auto emap = PWMap();
+
+  // Now, let's build a graph!
+  SBG::LIB::WeightedSBGraph graph(nodes, vmap, rhs_maps, lhs_maps, emap);  // This will be our graph
+
+  // cout << graph << endl;
+
+  return graph;
+}
+
+WeightedSBGraph create_starpu_graph(int size)
+{
+  // Tiles A[N,N]
+  Set nodes = Set(0, 1, size - 1).cartesianProduct(Set(0, 1, size - 1));
+  int current_offset_1 = size;
+  int current_offset_2 = size;
+
+  // maps
+  PWMap rhs_maps = PWMap();  // edge -> (X, Y), the dependent tile
+  PWMap lhs_maps = PWMap();  // edge -> the tile (X, Y) depends on
+
+  // dgetrf_nopiv on (k, k) affects the tiles of row k and column k after it:
+  //   (k, Y) depends on (k, k), for Y in k+1:N-1
+  //   (X, k) depends on (k, k), for X in k+1:N-1
+  // Edge (current_offset_1 + X, current_offset_2 + Y) stands for tile (X, Y), so each
+  // off-diagonal tile has one edge, and its pivot is (k, k) with k = min(X, Y).
+  Set getrf_edges;
+  for (int k = 0; k < size - 1; k++) {
+    // row k, right of the diagonal
+    Set domain =
+        Set(current_offset_1 + k, 1, current_offset_1 + k).cartesianProduct(Set(current_offset_2 + k + 1, 1, current_offset_2 + size - 1));
+    // column k, below the diagonal
+    domain = domain.cup(
+        Set(current_offset_1 + k + 1, 1, current_offset_1 + size - 1).cartesianProduct(Set(current_offset_2 + k, 1, current_offset_2 + k)));
+
+    lhs_maps.insert(Map(domain, Expression(Rational(0), k).cartesianProduct(Expression(Rational(0), k))));  // -> (k, k)
+    getrf_edges = getrf_edges.cup(domain);
+  }
+  // -> (X, Y): the edge grid translated back to the tile grid
+  rhs_maps.insert(Map(
+      getrf_edges,
+      Expression(Rational(1), Rational(-current_offset_1, 1)).cartesianProduct(Expression(Rational(1), Rational(-current_offset_2, 1)))));
+  current_offset_1 += size;
+  current_offset_2 += size;
+
+  // dtrsm on (X, k) and (k, Y) affects dgemm on (X, Y) at step k:
+  //   (X, Y) depends on (X, k) and on (k, Y), for X, Y in k+1:N-1
+  // Edge (current_offset_1 + X, current_offset_2 + Y) stands for tile (X, Y), and the
+  // offsets move after each map so the edge domains don't overlap.
+  for (int k = 0; k < size - 1; k++) {
+    // (X, Y) -> (X, k), previous element in the same row
+    Set domain = Set(current_offset_1 + k + 1, 1, current_offset_1 + size - 1)
+                     .cartesianProduct(Set(current_offset_2 + k + 1, 1, current_offset_2 + size - 1));
+    rhs_maps.insert(Map(
+        domain,
+        Expression(Rational(1), Rational(-current_offset_1, 1)).cartesianProduct(Expression(Rational(1), Rational(-current_offset_2, 1)))));
+    lhs_maps.insert(Map(domain, Expression(Rational(1), Rational(-current_offset_1, 1)).cartesianProduct(Expression(Rational(0), k))));
+    current_offset_1 += size;
+    current_offset_2 += size;
+
+    // (X, Y) -> (k, Y), previous element in the same column
+    domain = Set(current_offset_1 + k + 1, 1, current_offset_1 + size - 1)
+                 .cartesianProduct(Set(current_offset_2 + k + 1, 1, current_offset_2 + size - 1));
+    rhs_maps.insert(Map(
+        domain,
+        Expression(Rational(1), Rational(-current_offset_1, 1)).cartesianProduct(Expression(Rational(1), Rational(-current_offset_2, 1)))));
+    lhs_maps.insert(Map(domain, Expression(Rational(0), k).cartesianProduct(Expression(Rational(1), Rational(-current_offset_2, 1)))));
+    current_offset_1 += size;
+    current_offset_2 += size;
+  }
+
+  auto vmap = PWMap();
+  auto emap = PWMap();
+
+  rhs_maps.compact();
+  lhs_maps.compact();
+
+  // Now, let's build a graph!
+  SBG::LIB::WeightedSBGraph graph(nodes, vmap, rhs_maps, lhs_maps, emap);  // This will be our graph
+
+  return graph;
+}
+
+Set split_sets_according_to_relations(const WeightedSBGraph& sb_graph)
+{
+  set<int> endpoints = {};
+  SetAccessKey key = SetAccess::key();
+  PWMap pw_map1 = sb_graph.map1();
+  PWMap pw_map2 = sb_graph.map2();
+  for (auto it1 = pw_map1.begin(), it2 = pw_map2.begin(); it1 != pw_map1.end() and it2 != pw_map2.end(); ++it1, ++it2) {
+    const Interval im1 = key.pieces(get<OrderedSet>(key.impl((*it1).image()))).front()[0];
+    endpoints.insert(im1.begin());
+    endpoints.insert(im1.end() + 1);
+
+    const Interval im2 = key.pieces(get<OrderedSet>(key.impl((*it2).image()))).front()[0];
+    endpoints.insert(im2.begin());
+    endpoints.insert(im2.end() + 1);
+  }
+
+  auto vertices = Set();
+  for (auto it = endpoints.begin();;) {
+    int current = *it;
+    ++it;
+    if (it == endpoints.end()) {
+      break;
+    }
+    vertices = vertices.cup(Set(current, 1, *it - 1));
+  }
+
+  return vertices;
 }
 
 }  // namespace sbg_partitioner

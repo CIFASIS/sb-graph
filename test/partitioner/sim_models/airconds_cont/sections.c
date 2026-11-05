@@ -1,6 +1,6 @@
-int 
-getSection(int i)
+int getSection(int i)
 {
- int ret = ((i-1)/1000)+1;
+  int partition_size = 1000;
+  int ret = ((i - 1) / partition_size) + 1;
   return (ret);
 }

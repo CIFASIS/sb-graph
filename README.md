@@ -95,6 +95,32 @@ extension. The bin/sbg-parser and bin/sbg-eval binaries accept these files as
 their input. Also, the `make test` command in the root directory will execute
 all of the existing tests.
 
+## Partitioner Benchmark
+
+`test/partitioner/benchmark/run_benchmark.py` runs `sbg-partitioner` over a
+fixed set of models, sizes and partition counts, checks that every run
+succeeds, and reports the median execution time (build + partition) across a
+few repetitions. To run it locally:
+
+```
+cmake --build build --target sbg-partitioner
+python3 test/partitioner/benchmark/run_benchmark.py \
+    --binary build/algorithms/partitioner/sbg-partitioner \
+    --output bench.json
+```
+
+The `partitioner-benchmark` GitHub workflow runs this on every push and on
+pull requests targeting `sb-graph-dev`. Results are compared against the
+latest history stored on the `gh-pages` branch
+(`dev/bench/partitioner`, viewable as a chart if GitHub Pages is enabled for
+that branch); only pushes to `sb-graph-dev` update that history. If any case
+is more than 20% slower than the stored baseline, the workflow fails and
+GitHub e-mails whoever pushed the change (per their notification settings).
+
+One case, `air_conditioners_cont` with size 1000 and 16 partitions, is
+excluded: the KL refinement does not converge for it in a reasonable time.
+This is tracked as a separate issue, not a benchmark limitation.
+
 ## Licensing
 
 Please see the file called LICENSE.

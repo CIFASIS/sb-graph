@@ -63,6 +63,6 @@ Set MinFeedbackVertexSet::calculate(const DirectedSBG& dsbg)
   return std::visit([&](auto& a) { return a.calculate(dsbg); }, _impl);
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

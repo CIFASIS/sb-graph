@@ -67,6 +67,6 @@ std::ostream& operator<<(std::ostream& out, const MatchData& data)
   return out;
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

@@ -25,7 +25,7 @@ namespace SBG {
 namespace LIB {
 
 ////////////////////////////////////////////////////////////////////////////////
-// MFVS implementations -------------------------------------------------------- 
+// MFVS implementations --------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
 std::ostream& operator<<(std::ostream& out, const MFVSKind kind)
@@ -67,6 +67,6 @@ const MFVSKind& MFVSImplementation::kind() const { return _kind; }
 
 void MFVSImplementation::set_mfvs_fact(MFVSKind kind) { _kind = kind; }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

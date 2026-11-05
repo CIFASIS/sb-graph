@@ -65,11 +65,8 @@ PWMapImplementation& PWMapImplementation::instance()
 
 const PWMapKind& PWMapImplementation::kind() const { return _kind; }
 
-void PWMapImplementation::set_pwmap_fact(PWMapKind kind)
-{
-  _kind = kind;
-}
+void PWMapImplementation::set_pwmap_fact(PWMapKind kind) { _kind = kind; }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

@@ -38,7 +38,7 @@ namespace detail {
 GreedyMFVS::GreedyMFVS() {}
 
 /**
- * @brief It calculates the minimum vertex with maximum degree. 
+ * @brief It calculates the minimum vertex with maximum degree.
  */
 IntTuple maxDegreeVertex(const DirectedSBG& dsbg)
 {
@@ -104,8 +104,8 @@ Set GreedyMFVS::calculate(const DirectedSBG& input_dsbg) const
   return fvs_result;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

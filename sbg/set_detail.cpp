@@ -34,7 +34,7 @@ SetImpl SetAccessKey::impl(Set s) const { return s._impl; }
 
 Set SetAccessKey::createSet(SetImpl s_impl) const { return Set{s_impl}; }
 
-template<typename SetImplT>
+template <typename SetImplT>
 std::vector<IntTuple> SetAccessKey::flatten(const SetImplT& s) const
 {
   std::vector<IntTuple> result;
@@ -46,13 +46,13 @@ std::vector<IntTuple> SetAccessKey::flatten(const SetImplT& s) const
     IntTuple min_elem = mdi.minElem();
     IntTuple x = min_elem;
     unsigned int mdi_sz = mdi.cardinal();
-    unsigned int div = mdi_sz; 
+    unsigned int div = mdi_sz;
     for (unsigned int j = 0; j < mdi_sz; ++j) {
       unsigned int rem = j;
       for (std::size_t k = arity; k > 0; --k) {
-        Interval i = mdi[k-1];
+        Interval i = mdi[k - 1];
         unsigned int kth_card = i.cardinal();
-        x[k] = i.begin() + i.step()*fmod(rem, kth_card);
+        x[k] = i.begin() + i.step() * fmod(rem, kth_card);
         rem /= kth_card;
       }
     }
@@ -76,39 +76,20 @@ std::vector<IntTuple> SetAccessKey::flatten(const OrdUnidimDenseSet& s) const
 
 std::vector<IntTuple> SetAccessKey::flatten(const Set& s) const
 {
-  auto flatten_evaluator = Util::Overload {
-    [&](const UnorderedSet& a)
-    {
-      return flatten<UnorderedSet>(a);
-    },
-    [&](const OrdUnidimDenseSet& a)
-    {
-      return flatten(a);
-    },
-    [&](const OrderedSet& a)
-    {
-      return flatten<OrderedSet>(a);
-    },
-    [&](const auto& a) { return std::vector<Int>{}; }
-  };
+  auto flatten_evaluator = Util::Overload{
+      [&](const UnorderedSet& a) { return flatten<UnorderedSet>(a); }, [&](const OrdUnidimDenseSet& a) { return flatten(a); },
+      [&](const OrderedSet& a) { return flatten<OrderedSet>(a); }, [&](const auto& a) { return std::vector<Int>{}; }};
   return std::visit(flatten_evaluator, s._impl);
 }
 
-OrderedSet::OrdMDICollection SetAccessKey::pieces(OrderedSet s) const
-{
-  return s._pieces;
-}
+OrderedSet::OrdMDICollection SetAccessKey::pieces(OrderedSet s) const { return s._pieces; }
 
-OrdUnidimDenseSet::OrdIntervalCollection SetAccessKey::pieces(
-  OrdUnidimDenseSet s) const
-{
-  return s._pieces;
-}
+OrdUnidimDenseSet::OrdIntervalCollection SetAccessKey::pieces(OrdUnidimDenseSet s) const { return s._pieces; }
 
 SetAccessKey SetAccess::key() { return SetAccessKey{}; };
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

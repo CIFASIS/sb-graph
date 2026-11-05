@@ -25,9 +25,9 @@ namespace AST {
 
 Assign::Assign(Name left, Expr right) : _left(left), _right(right) {}
 
-const Name& Assign::left() const { return _left; }
+const Name &Assign::left() const { return _left; }
 
-const Expr& Assign::right() const { return _right; }
+const Expr &Assign::right() const { return _right; }
 
 std::ostream &operator<<(std::ostream &out, const Assign &asgn)
 {
@@ -36,7 +36,8 @@ std::ostream &operator<<(std::ostream &out, const Assign &asgn)
   return out;
 }
 
-ConfigDims::ConfigDims(std::size_t arity) : _arity(arity) {
+ConfigDims::ConfigDims(std::size_t arity) : _arity(arity)
+{
   if (arity > 0) {
     _arity = arity;
   }
@@ -68,6 +69,6 @@ std::ostream &operator<<(std::ostream &out, const StatementList &stml)
   return out;
 }
 
-} // namespace AST
+}  // namespace AST
 
-} // namespace SBG
+}  // namespace SBG

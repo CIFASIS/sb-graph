@@ -29,25 +29,17 @@ namespace detail {
 // Map entry -------------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-MapEntry::MapEntry(const Set& s, const Expression& expr)
-  : _map(s, expr), _perimeter(s.perimeter()) {}
+MapEntry::MapEntry(const Set& s, const Expression& expr) : _map(s, expr), _perimeter(s.perimeter()) {}
 
-MapEntry::MapEntry(const Map& m)
-  : _map(m), _perimeter(m.domain().perimeter()) {}
+MapEntry::MapEntry(const Map& m) : _map(m), _perimeter(m.domain().perimeter()) {}
 
 const Map& MapEntry::map() const { return _map; }
 
 const Perimeter& MapEntry::perimeter() const { return _perimeter; }
 
-bool MapEntry::operator==(const MapEntry& other) const
-{
-  return _map == other._map;
-}
+bool MapEntry::operator==(const MapEntry& other) const { return _map == other._map; }
 
-bool MapEntry::operator<(const MapEntry& other) const 
-{
-  return _perimeter.min() < other._perimeter.min();
-}
+bool MapEntry::operator<(const MapEntry& other) const { return _perimeter.min() < other._perimeter.min(); }
 
 MaybeMapEntry MapEntry::compact(const MapEntry& other) const
 {
@@ -58,9 +50,9 @@ MaybeMapEntry MapEntry::compact(const MapEntry& other) const
 
   return {};
 }
-	
-} // namespace detail
 
-} // namespace LIB
+}  // namespace detail
 
-} // namespace SBG
+}  // namespace LIB
+
+}  // namespace SBG

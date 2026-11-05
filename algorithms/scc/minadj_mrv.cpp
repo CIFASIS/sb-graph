@@ -144,7 +144,7 @@ PWMap MinAdjMRV::calculate(const DirectedSBG& dsbg)
 
         Util::DEBUG_LOG << "rmap after rec: " << rmap << "\n\n";
       }
-    } while (!Vc.isEmpty()); 
+    } while (!Vc.isEmpty());
 
     return rmap;
   }
@@ -152,6 +152,6 @@ PWMap MinAdjMRV::calculate(const DirectedSBG& dsbg)
   return PWMap{};
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

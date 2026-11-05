@@ -30,8 +30,8 @@ namespace detail {
 
 ProgramEvaluator::ProgramEvaluator() {}
 
-ProgramIO ProgramEvaluator::evaluate(AST::SBGProgram p) const 
-{ 
+ProgramIO ProgramEvaluator::evaluate(AST::SBGProgram p) const
+{
   std::size_t arity = 1;
 
   EvalContext eval_context;
@@ -62,8 +62,8 @@ ProgramIO ProgramEvaluator::evaluate(AST::SBGProgram p) const
   return ProgramIO{arity, stms, exprs};
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace Eval
+}  // namespace Eval
 
-} // namespace SBG
+}  // namespace SBG

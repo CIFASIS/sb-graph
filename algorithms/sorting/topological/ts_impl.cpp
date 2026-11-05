@@ -63,6 +63,6 @@ const TSKind& TSImplementation::kind() const { return _kind; }
 
 void TSImplementation::set_ts_fact(TSKind kind) { _kind = kind; }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

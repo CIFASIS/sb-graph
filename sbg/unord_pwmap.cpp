@@ -36,33 +36,31 @@ namespace detail {
 // Auxiliary definitions -------------------------------------------------------
 
 class MapLess {
-public:
-  bool operator()(const Map& a, const Map& b) const {
-    return a.domain().minElem() < b.domain().minElem();
-  }
+  public:
+  bool operator()(const Map& a, const Map& b) const { return a.domain().minElem() < b.domain().minElem(); }
 };
 
 // Constructors/Destructors ----------------------------------------------------
 
 UnordPWMap::UnordPWMap() : _pieces() {}
 
-UnordPWMap::UnordPWMap(const Set& s) : _pieces() {
+UnordPWMap::UnordPWMap(const Set& s) : _pieces()
+{
   if (!s.isEmpty()) {
     _pieces.emplace_back(s, Expression{s.arity(), 1, 0});
   }
 }
 
-UnordPWMap::UnordPWMap(const Map& m) : _pieces() {
+UnordPWMap::UnordPWMap(const Map& m) : _pieces()
+{
   if (!m.domain().isEmpty()) {
     _pieces.push_back(m);
   }
 }
 
-UnordPWMap::UnordPWMap(const UnordPWMap::UnordMapCollection& pieces)
-  : _pieces(pieces) {}
+UnordPWMap::UnordPWMap(const UnordPWMap::UnordMapCollection& pieces) : _pieces(pieces) {}
 
-UnordPWMap::UnordPWMap(UnordPWMap::UnordMapCollection&& pieces)
-  : _pieces(std::move(pieces)) {}
+UnordPWMap::UnordPWMap(UnordPWMap::UnordMapCollection&& pieces) : _pieces(std::move(pieces)) {}
 
 // Getters ---------------------------------------------------------------------
 
@@ -102,7 +100,7 @@ void UnordPWMap::pushBack(Map&& m)
 
 // Operators -------------------------------------------------------------------
 
-bool UnordPWMap::operator==(const UnordPWMap& other) const 
+bool UnordPWMap::operator==(const UnordPWMap& other) const
 {
   if (domain() != other.domain()) {
     return false;
@@ -134,17 +132,14 @@ bool UnordPWMap::operator==(const UnordPWMap& other) const
   return true;
 }
 
-bool UnordPWMap::operator!=(const UnordPWMap& other) const
-{ 
-  return !(*this == other);
-}
+bool UnordPWMap::operator!=(const UnordPWMap& other) const { return !(*this == other); }
 
 UnordPWMap UnordPWMap::operator+(const UnordPWMap& other) const
 {
   UnordPWMap result;
-  
-  for (const Map& m1 : _pieces) { 
-    for (const Map& m2 : other._pieces) { 
+
+  for (const Map& m1 : _pieces) {
+    for (const Map& m2 : other._pieces) {
       result.pushBack(m1 + m2);
     }
   }
@@ -182,7 +177,7 @@ std::size_t UnordPWMap::arity() const
 
 bool UnordPWMap::isEmpty() const { return _pieces.empty(); }
 
-Set UnordPWMap::domain() const &
+Set UnordPWMap::domain() const&
 {
   Set result;
 
@@ -226,10 +221,7 @@ Set UnordPWMap::image() const
   return result;
 }
 
-Set UnordPWMap::image(const Set& subdom) const
-{
-  return restrict(subdom).image();
-}
+Set UnordPWMap::image(const Set& subdom) const { return restrict(subdom).image(); }
 
 Set UnordPWMap::preImage(const Set& subcodom) const
 {
@@ -257,7 +249,7 @@ UnordPWMap UnordPWMap::composition(const UnordPWMap& other) const
 {
   UnordPWMap result;
 
-  for (const Map& m1 : _pieces) { 
+  for (const Map& m1 : _pieces) {
     for (const Map& m2 : other._pieces) {
       result.pushBack(m1.composition(m2));
     }
@@ -316,20 +308,11 @@ Set UnordPWMap::fixedPoints() const
 
 // Extra operations ------------------------------------------------------------
 
-UnordPWMap UnordPWMap::concatenation(const UnordPWMap& other) const &
-{
-  return UnordPWMap{*this}.concatenation(other);
-}
+UnordPWMap UnordPWMap::concatenation(const UnordPWMap& other) const& { return UnordPWMap{*this}.concatenation(other); }
 
-UnordPWMap UnordPWMap::concatenation(const UnordPWMap& other) &&
-{
-  return std::move(*this).concatenation(UnordPWMap{other});
-}
+UnordPWMap UnordPWMap::concatenation(const UnordPWMap& other) && { return std::move(*this).concatenation(UnordPWMap{other}); }
 
-UnordPWMap UnordPWMap::concatenation(UnordPWMap&& other) const &
-{
-  return UnordPWMap{*this}.concatenation(std::move(other));
-}
+UnordPWMap UnordPWMap::concatenation(UnordPWMap&& other) const& { return UnordPWMap{*this}.concatenation(std::move(other)); }
 
 UnordPWMap UnordPWMap::concatenation(UnordPWMap&& other) &&
 {
@@ -342,30 +325,19 @@ UnordPWMap UnordPWMap::concatenation(UnordPWMap&& other) &&
   }
 
   UnordMapCollection result;
-  result.insert(result.end(), std::make_move_iterator(_pieces.begin())
-    , std::make_move_iterator(_pieces.end()));
-  result.insert(result.end(), std::make_move_iterator(other._pieces.begin())
-    , std::make_move_iterator(other._pieces.end()));
+  result.insert(result.end(), std::make_move_iterator(_pieces.begin()), std::make_move_iterator(_pieces.end()));
+  result.insert(result.end(), std::make_move_iterator(other._pieces.begin()), std::make_move_iterator(other._pieces.end()));
 
   return UnordPWMap{std::move(result)};
 }
 
-UnordPWMap UnordPWMap::combine(const UnordPWMap& other) const &
-{
-  return UnordPWMap{*this}.combine(other);
-}
+UnordPWMap UnordPWMap::combine(const UnordPWMap& other) const& { return UnordPWMap{*this}.combine(other); }
 
-UnordPWMap UnordPWMap::combine(const UnordPWMap& other) &&
-{
-  return std::move(*this).combine(UnordPWMap{other});
-}
+UnordPWMap UnordPWMap::combine(const UnordPWMap& other) && { return std::move(*this).combine(UnordPWMap{other}); }
 
-UnordPWMap UnordPWMap::combine(UnordPWMap&& other) const &
-{
-  return UnordPWMap{*this}.combine(std::move(other));
-}
+UnordPWMap UnordPWMap::combine(UnordPWMap&& other) const& { return UnordPWMap{*this}.combine(std::move(other)); }
 
-UnordPWMap UnordPWMap::combine(UnordPWMap&& other) && 
+UnordPWMap UnordPWMap::combine(UnordPWMap&& other) &&
 {
   if (isEmpty()) {
     return std::move(other);
@@ -390,7 +362,7 @@ UnordPWMap UnordPWMap::min(const UnordPWMap& other) const
   }
 
   Set min_in_pw1 = lessImage(other);
-  return restrict(min_in_pw1).combine(other.restrict(domain())); 
+  return restrict(min_in_pw1).combine(other.restrict(domain()));
 }
 
 UnordPWMap UnordPWMap::max(const UnordPWMap& other) const
@@ -401,7 +373,7 @@ UnordPWMap UnordPWMap::max(const UnordPWMap& other) const
 
   Set min_in_pw1 = lessImage(other);
   Set less_eq_in_pw1 = min_in_pw1.disjointCup(equalImage(other));
-  return other.restrict(less_eq_in_pw1).combine(restrict(other.domain())); 
+  return other.restrict(less_eq_in_pw1).combine(restrict(other.domain()));
 }
 
 UnordPWMap UnordPWMap::minAdj(const UnordPWMap& other) const
@@ -417,7 +389,7 @@ UnordPWMap UnordPWMap::minAdj(const UnordPWMap& other) const
         Set repeated = min_adj_domain.intersection(visited);
         if (!repeated.isEmpty()) {
           UnordPWMap min_adj_pw{std::move(min_adj)};
-          UnordPWMap min_adj_repeated = min_adj_pw.restrict(repeated); 
+          UnordPWMap min_adj_repeated = min_adj_pw.restrict(repeated);
           UnordPWMap result_repeated = result.restrict(repeated);
           UnordPWMap min_map = min_adj_repeated.min(result_repeated);
           UnordPWMap min_adj_result = min_map.combine(std::move(min_adj_pw));
@@ -447,7 +419,7 @@ UnordPWMap UnordPWMap::maxAdj(const UnordPWMap& other) const
         Set repeated = max_adj_domain.intersection(visited);
         if (!repeated.isEmpty()) {
           UnordPWMap max_adj_pw{std::move(max_adj)};
-          UnordPWMap max_adj_repeated = max_adj_pw.restrict(repeated); 
+          UnordPWMap max_adj_repeated = max_adj_pw.restrict(repeated);
           UnordPWMap result_repeated = result.restrict(repeated);
           UnordPWMap max_map = max_adj_repeated.max(result_repeated);
           UnordPWMap max_adj_result = max_map.combine(std::move(max_adj_pw));
@@ -501,7 +473,7 @@ Set UnordPWMap::lessImage(const UnordPWMap& other) const
     }
   }
 
-  return min_in_pw1; 
+  return min_in_pw1;
 }
 
 UnordPWMap UnordPWMap::imageMultiplicity() const
@@ -516,7 +488,7 @@ UnordPWMap UnordPWMap::imageMultiplicity() const
   }
 
   return result;
-} 
+}
 
 void UnordPWMap::compact()
 {
@@ -569,8 +541,7 @@ void UnordPWMap::compact()
 
 // Non-member functions --------------------------------------------------------
 
-rapidjson::Value toJSON(UnordPWMap pw
-  , rapidjson::Document::AllocatorType& alloc)
+rapidjson::Value toJSON(UnordPWMap pw, rapidjson::Document::AllocatorType& alloc)
 {
   rapidjson::Value result{rapidjson::kArrayType};
 
@@ -582,9 +553,8 @@ rapidjson::Value toJSON(UnordPWMap pw
   return result;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG;
-
+}  // namespace SBG

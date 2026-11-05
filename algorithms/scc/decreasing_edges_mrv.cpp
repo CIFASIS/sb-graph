@@ -48,12 +48,12 @@ PWMap LtEdgesMRV::detectRepetition(const PWMap& decreasing_smap) const
 {
   // Get repetitive paths.
   Set Vj = decreasing_smap.domain().difference(decreasing_smap.image());
-  Set repetitive_vertices = Vj; ///< Vertices traversed by the repetition.
+  Set repetitive_vertices = Vj;  ///< Vertices traversed by the repetition.
   for (unsigned int j = 0; j < _n; ++j) {
     Vj = _smap.image(Vj);
     repetitive_vertices = repetitive_vertices.disjointCup(repetitive_vertices);
   }
-  
+
   return decreasing_smap.combine(_smap).restrict(repetitive_vertices);
 }
 
@@ -76,13 +76,10 @@ PWMap LtEdgesMRV::repetition(const PWMap& decreasing_smap) const
 
   // Keep endings of the paths untouched.
   Set decreasing_repd = _rmap.preImage(_rmap.image(mapD.image(E_repetition)));
-  smap_plus = smap_plus.restrict(
-    smap_plus.domain().difference(decreasing_repd)
-  );
+  smap_plus = smap_plus.restrict(smap_plus.domain().difference(decreasing_repd));
 
   return smap_plus;
 }
-
 
 PWMap LtEdgesMRV::calculate(const DirectedSBG& dsbg)
 {
@@ -121,7 +118,7 @@ PWMap LtEdgesMRV::calculate(const DirectedSBG& dsbg)
     if (!repeatedSE.isEmpty()) {
       smap_plus = repetition(decreasing_smap);
       visitedSE = visitedSE.difference(Emap.image(globalE));
-      globalE  = Set{};
+      globalE = Set{};
       _n = 0;
     } else {
       visitedSE = std::move(visitedSE).disjointCup(Emap.image(Pj));
@@ -140,6 +137,6 @@ PWMap LtEdgesMRV::calculate(const DirectedSBG& dsbg)
   return _rmap;
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

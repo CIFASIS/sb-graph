@@ -67,6 +67,6 @@ const SetKind& SetImplementation::kind() const { return _kind; }
 
 void SetImplementation::set_set_fact(SetKind kind) { _kind = kind; }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

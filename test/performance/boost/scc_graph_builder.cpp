@@ -45,9 +45,7 @@ std::size_t EdgeHash::operator()(const Edge& e) const
 // Builder for the algebraic loop detection stage ------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-SCCGraphBuilder::SCCGraphBuilder(BipartiteGraph&& bgraph
-  , VertexVector&& matching)
-  : _bgraph(bgraph), _matching(matching) {}
+SCCGraphBuilder::SCCGraphBuilder(BipartiteGraph&& bgraph, VertexVector&& matching) : _bgraph(bgraph), _matching(matching) {}
 
 DirectedGraph SCCGraphBuilder::build()
 {
@@ -56,8 +54,7 @@ DirectedGraph SCCGraphBuilder::build()
   return build(number_vertices, edges);
 }
 
-DirectedGraph SCCGraphBuilder::build(SBG::LIB::Int number_vertices
-  , EdgeVector& E)
+DirectedGraph SCCGraphBuilder::build(SBG::LIB::Int number_vertices, EdgeVector& E)
 {
   return DirectedGraph(E.begin(), E.end(), number_vertices);
 }
@@ -96,10 +93,8 @@ EdgeVector SCCGraphBuilder::getEdgeList()
     // Detect unmatched edge
     if (match_u != v) {
       Vertex match_v = _matching[v];
-      Vertex newv = v < match_v ? _vertex_map[Edge(v, match_v)]
-        : _vertex_map[Edge(match_v, v)];
-      Vertex newu = u < match_u ? _vertex_map[Edge(u, match_u)]
-        : _vertex_map[Edge(match_u, u)];
+      Vertex newv = v < match_v ? _vertex_map[Edge(v, match_v)] : _vertex_map[Edge(match_v, v)];
+      Vertex newu = u < match_u ? _vertex_map[Edge(u, match_u)] : _vertex_map[Edge(match_u, u)];
       Edge e_result(newv, newu);
       if (!partition[u] && partition[v]) {
         result.emplace_back(Edge(newu, newv));
@@ -112,8 +107,8 @@ EdgeVector SCCGraphBuilder::getEdgeList()
   return result;
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace perf
+}  // namespace perf
 
-} // namespace SBG
+}  // namespace SBG

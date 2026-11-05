@@ -33,8 +33,8 @@ namespace perf {
 
 namespace detail {
 
-using SBG::LIB::detail::Interval;
 using SBG::LIB::Set;
+using SBG::LIB::detail::Interval;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Benchmarks ------------------------------------------------------------------
@@ -125,25 +125,22 @@ static void BM_SetCompact(benchmark::State& state)
 void registerSetBenchmarks()
 {
   BENCHMARK(BM_SetEq)->RangeMultiplier(10)->Range(10, 1e3)->Complexity();
-  
+
   BENCHMARK(BM_SetCap)->RangeMultiplier(10)->Range(10, 1e3)->Complexity();
-  
+
   BENCHMARK(BM_SetCup)->RangeMultiplier(10)->Range(10, 1e3)->Complexity();
-  
-  BENCHMARK(BM_SetComplement)->RangeMultiplier(10)->Range(10, 1e3)
-    ->Complexity();
-  
+
+  BENCHMARK(BM_SetComplement)->RangeMultiplier(10)->Range(10, 1e3)->Complexity();
+
   BENCHMARK(BM_SetDiff)->RangeMultiplier(10)->Range(10, 1e3)->Complexity();
-  
-  BENCHMARK(BM_SetDisjointUnion)->RangeMultiplier(10)->Range(10, 1e3)
-    ->Complexity();
-  
-  BENCHMARK(BM_SetCompact)->RangeMultiplier(10)->Range(10, 1e2)
-    ->Complexity();
+
+  BENCHMARK(BM_SetDisjointUnion)->RangeMultiplier(10)->Range(10, 1e3)->Complexity();
+
+  BENCHMARK(BM_SetCompact)->RangeMultiplier(10)->Range(10, 1e2)->Complexity();
 }
 
-} // namespace detail
+}  // namespace detail
 
-} // namespace perf
+}  // namespace perf
 
-} // namespace SBG
+}  // namespace SBG

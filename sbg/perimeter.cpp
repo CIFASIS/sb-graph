@@ -27,8 +27,7 @@ namespace LIB {
 // Set perimeter ---------------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-Perimeter::Perimeter(const IntTuple& min, const IntTuple& max)
-  : _min(min), _max(max) {}
+Perimeter::Perimeter(const IntTuple& min, const IntTuple& max) : _min(min), _max(max) {}
 
 const IntTuple& Perimeter::min() const { return _min; }
 
@@ -42,10 +41,10 @@ bool Perimeter::overlap(const Perimeter& other) const
       return false;
     }
   }
-  
+
   return true;
 }
 
-} // namespace LIB
+}  // namespace LIB
 
-} // namespace SBG
+}  // namespace SBG

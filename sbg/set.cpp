@@ -37,25 +37,25 @@ Set::Set() : _impl()
 {
   SetKind kind = SET_IMPL.kind();
   switch (kind) {
-  case SetKind::kUnordered: {
-    _impl = detail::UnorderedSet{};
-    break;
-  }
+    case SetKind::kUnordered: {
+      _impl = detail::UnorderedSet{};
+      break;
+    }
 
-  case SetKind::kOrdered: {
-    _impl = detail::OrderedSet{};
-    break;
-  }
+    case SetKind::kOrdered: {
+      _impl = detail::OrderedSet{};
+      break;
+    }
 
-  case SetKind::kOrdUnidimDense: {
-    _impl = detail::OrdUnidimDenseSet{};
-    break;
-  }
+    case SetKind::kOrdUnidimDense: {
+      _impl = detail::OrdUnidimDenseSet{};
+      break;
+    }
 
-  default: {
-    Util::ERROR("Unsupported ", kind, " Set implementation\n");
-    break;
-  }
+    default: {
+      Util::ERROR("Unsupported ", kind, " Set implementation\n");
+      break;
+    }
   }
 }
 
@@ -63,25 +63,25 @@ Set::Set(const IntTuple& x) : _impl()
 {
   SetKind kind = SET_IMPL.kind();
   switch (kind) {
-  case SetKind::kUnordered: {
-    _impl = detail::UnorderedSet{x};
-    break;
-  }
+    case SetKind::kUnordered: {
+      _impl = detail::UnorderedSet{x};
+      break;
+    }
 
-  case SetKind::kOrdered: {
-    _impl = detail::OrderedSet{x};
-    break;
-  }
+    case SetKind::kOrdered: {
+      _impl = detail::OrderedSet{x};
+      break;
+    }
 
-  case SetKind::kOrdUnidimDense: {
-    _impl = detail::OrdUnidimDenseSet{x[0]};
-    break;
-  }
+    case SetKind::kOrdUnidimDense: {
+      _impl = detail::OrdUnidimDenseSet{x[0]};
+      break;
+    }
 
-  default: {
-    Util::ERROR("Unsupported ", kind, " Set implementation\n");
-    break;
-  }
+    default: {
+      Util::ERROR("Unsupported ", kind, " Set implementation\n");
+      break;
+    }
   }
 }
 
@@ -89,25 +89,25 @@ Set::Set(IntTuple&& x) : _impl()
 {
   SetKind kind = SET_IMPL.kind();
   switch (kind) {
-  case SetKind::kUnordered: {
-    _impl = detail::UnorderedSet{x};
-    break;
-  }
+    case SetKind::kUnordered: {
+      _impl = detail::UnorderedSet{x};
+      break;
+    }
 
-  case SetKind::kOrdered: {
-    _impl = detail::OrderedSet{x};
-    break;
-  }
+    case SetKind::kOrdered: {
+      _impl = detail::OrderedSet{x};
+      break;
+    }
 
-  case SetKind::kOrdUnidimDense: {
-    _impl = detail::OrdUnidimDenseSet{x[0]};
-    break;
-  }
+    case SetKind::kOrdUnidimDense: {
+      _impl = detail::OrdUnidimDenseSet{x[0]};
+      break;
+    }
 
-  default: {
-    Util::ERROR("Unsupported ", kind, " Set implementation\n");
-    break;
-  }
+    default: {
+      Util::ERROR("Unsupported ", kind, " Set implementation\n");
+      break;
+    }
   }
 }
 
@@ -115,25 +115,25 @@ Set::Set(const Int lo, const Int step, const Int hi) : _impl()
 {
   SetKind kind = SET_IMPL.kind();
   switch (kind) {
-  case SetKind::kUnordered: {
-    _impl = detail::UnorderedSet{detail::Interval(lo, step, hi)};
-    break;
-  }
+    case SetKind::kUnordered: {
+      _impl = detail::UnorderedSet{detail::Interval(lo, step, hi)};
+      break;
+    }
 
-  case SetKind::kOrdered: {
-    _impl = detail::OrderedSet{detail::Interval(lo, step, hi)};
-    break;
-  }
+    case SetKind::kOrdered: {
+      _impl = detail::OrderedSet{detail::Interval(lo, step, hi)};
+      break;
+    }
 
-  case SetKind::kOrdUnidimDense: {
-    _impl = detail::OrdUnidimDenseSet{detail::Interval(lo, step, hi)};
-    break;
-  }
+    case SetKind::kOrdUnidimDense: {
+      _impl = detail::OrdUnidimDenseSet{detail::Interval(lo, step, hi)};
+      break;
+    }
 
-  default: {
-    Util::ERROR("Unsupported ", kind, " Set implementation\n");
-    break;
-  }
+    default: {
+      Util::ERROR("Unsupported ", kind, " Set implementation\n");
+      break;
+    }
   }
 }
 
@@ -141,25 +141,25 @@ Set::Set(const FixedPointsInfo& info) : _impl()
 {
   SetKind kind = SET_IMPL.kind();
   switch (kind) {
-  case SetKind::kUnordered: {
-    _impl = detail::UnorderedSet{info};
-    break;
-  }
+    case SetKind::kUnordered: {
+      _impl = detail::UnorderedSet{info};
+      break;
+    }
 
-  case SetKind::kOrdered: {
-    _impl = detail::OrderedSet{info};
-    break;
-  }
+    case SetKind::kOrdered: {
+      _impl = detail::OrderedSet{info};
+      break;
+    }
 
-  case SetKind::kOrdUnidimDense: {
-    _impl = detail::OrdUnidimDenseSet{info};
-    break;
-  }
+    case SetKind::kOrdUnidimDense: {
+      _impl = detail::OrdUnidimDenseSet{info};
+      break;
+    }
 
-  default: {
-    Util::ERROR("Unsupported ", kind, " Set implementation\n");
-    break;
-  }
+    default: {
+      Util::ERROR("Unsupported ", kind, " Set implementation\n");
+      break;
+    }
   }
 }
 

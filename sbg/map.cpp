@@ -167,8 +167,9 @@ Map Map::minAdj(const Map& other) const
   if (_law.isInjective()) {
     result_expr = other._law.composition(_law.inverse());
   } else {
-    Set image2 = other.image(this_other_dom);
-    result_expr = Expression{image2.minElem()};
+    IntTuple min1 = image(this_other_dom).minElem();
+    IntTuple min2 = other.image(this_other_dom).minElem();
+    result_expr = Expression{arity(), 1, 0} + Expression{min2 - min1};
   }
 
   return Map{result_domain, result_expr};

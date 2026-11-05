@@ -25,6 +25,7 @@
 #define SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_TOPOLOGICAL_SORTING_HPP_
 
 #include <sbgraph/detail/algorithms/sorting/topological/min_vertex_ts.hpp>
+#include <sbgraph/detail/algorithms/sorting/topological/two_phased_ts.hpp>
 #include <sbgraph/sbg/directed_sbg.hpp>
 
 namespace SBG {
@@ -37,7 +38,7 @@ namespace detail {
 // Topological Sorting Algorithm Implementations -------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-using TSImpl = std::variant<MinVertexTS>;
+using TSImpl = std::variant<MinVertexTS, TwoPhasedTS>;
 
 } // namespace detail
 
@@ -49,7 +50,7 @@ class TopologicalSorting {
 public:
   TopologicalSorting();
 
-  PWMap calculate(const DirectedSBG& dsbg, const PWMap& pmap);
+  PWMap calculate(TSInput input);
 
 private:
   detail::TSImpl _impl;

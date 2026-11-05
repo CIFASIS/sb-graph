@@ -41,7 +41,7 @@ endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   add_compile_definitions(SBG_PARTITIONER_LOGGING)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -Wall ") # -Werror
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb -Wall -fsanitize=address")
 else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-reorder -fconcepts -O3")
 endif()

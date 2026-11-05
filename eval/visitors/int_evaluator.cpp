@@ -68,14 +68,14 @@ LIB::Int IntEvaluator::operator()(AST::UnaryOp v) const
 {
   LIB::Int x = boost::apply_visitor(*this, v.expr());
   switch (v.op()) {
-  case AST::UnOp::oppo: {
-    return -x;
-  }
+    case AST::UnOp::oppo: {
+      return -x;
+    }
 
-  default: {
-    Util::ERROR("IntEvaluator: BinOp ", v.op(), " unsupported\n");
-    return 0;
-  }
+    default: {
+      Util::ERROR("IntEvaluator: BinOp ", v.op(), " unsupported\n");
+      return 0;
+    }
   }
 }
 
@@ -84,26 +84,26 @@ LIB::Int IntEvaluator::operator()(AST::BinOp v) const
   LIB::Int l = boost::apply_visitor(*this, v.left());
   LIB::Int r = boost::apply_visitor(*this, v.right());
   switch (v.op()) {
-  case AST::Op::add: {
-    return l + r;
-  }
+    case AST::Op::add: {
+      return l + r;
+    }
 
-  case AST::Op::sub: {
-    return l - r;
-  }
+    case AST::Op::sub: {
+      return l - r;
+    }
 
-  case AST::Op::mult: {
-    return l * r;
-  }
+    case AST::Op::mult: {
+      return l * r;
+    }
 
-  case AST::Op::expo: {
-    return pow(l, r);
-  }
+    case AST::Op::expo: {
+      return pow(l, r);
+    }
 
-  default: {
-    Util::ERROR("IntEvaluator: BinOp ", v.op(), " unsupported\n");
-    return 0;
-  }
+    default: {
+      Util::ERROR("IntEvaluator: BinOp ", v.op(), " unsupported\n");
+      return 0;
+    }
   }
 }
 

@@ -67,26 +67,33 @@ void printHeader(Util::prog_opts::variables_map vm)
 // Evaluation Executor ---------------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-EvalExecutor::EvalExecutor() : _scc_impl(2), _mfvs_impl(2)
+EvalExecutor::EvalExecutor() : _scc_impl(1), _mfvs_impl(2), _sort_impl(1)
 {
-  _config.add_options()("set_impl,s", Util::prog_opts::value(&_set_impl),
-                        " Desired set implementation:"
-                        "\n  - 0 for unordered sets (default option)"
-                        "\n  - 1 for ordered sets"
-                        "\n  - 2 for unidimensional ordered dense sets")("pw_impl,p", Util::prog_opts::value(&_pw_impl),
-                                                                         " Desired PWMap implementation:"
-                                                                         "\n  - 0 for unordered PWMaps (default option)"
-                                                                         "\n  - 1 for ordered PWMaps"
-                                                                         "\n  - 2 for domain ordered PWMaps")(
-      "scc_impl", Util::prog_opts::value(&_scc_impl),
-      "Desired SCC algorithm implementation:"
-      "\n  - 0 for V1 of minimum reachable SCC"
-      "\n  - 1 for V2 of minimum reachable SCC"
-      "\n  - 2 for V3 of minimum reachable SCC (default option)")("mfvs_impl", Util::prog_opts::value(&_mfvs_impl),
-                                                                  "Desired MFVS algorithm implementation:"
-                                                                  "\n  - 0 for degree greedy MFVS"
-                                                                  "\n  - 1 for smallest set-vertex MFVS"
-                                                                  "\n  - 2 for parallel SCC (default option)");
+  _config.add_options()
+    ("set_impl,s", Util::prog_opts::value(&_set_impl),
+     " Desired set implementation:"
+     "\n  - 0 for unordered sets (default option)"
+     "\n  - 1 for ordered sets"
+     "\n  - 2 for unidimensional ordered dense sets")
+    ("pw_impl,p", Util::prog_opts::value(&_pw_impl),
+     " Desired PWMap implementation:"
+     "\n  - 0 for unordered PWMaps (default option)"
+     "\n  - 1 for ordered PWMaps"
+     "\n  - 2 for domain ordered PWMaps")
+    ("scc_impl", Util::prog_opts::value(&_scc_impl),
+     "Desired SCC algorithm implementation:"
+     "\n  - 0 for V1 of minimum reachable SCC"
+     "\n  - 1 for V2 of minimum reachable SCC"
+     "\n  - 2 for V3 of minimum reachable SCC (default option)")
+    ("mfvs_impl", Util::prog_opts::value(&_mfvs_impl),
+     "Desired MFVS algorithm implementation:"
+     "\n  - 0 for degree greedy MFVS"
+     "\n  - 1 for smallest set-vertex MFVS"
+     "\n  - 2 for parallel SCC (default option)")
+    ("sort_impl", Util::prog_opts::value(&_sort_impl),
+     "Desired topological sorting algorithm implementation:"
+     "\n  - 0 for minimum vertex sorting"
+     "\n  - 1 for two phased sorting (default option)");
 
   // First option without name is the input file
   _positional.add("input-file", 1);
@@ -100,7 +107,9 @@ detail::EvalUserInput EvalExecutor::chooseImplementation()
   detail::EvalUserInput result;
 
   detail::AutomImplVisitor autom_impl_visitor;
-  detail::EvalUserInput autom_impl = autom_impl_visitor.visit(Parser::parseFile(*_input_file, false));
+  detail::EvalUserInput autom_impl = autom_impl_visitor.visit(
+    Parser::parseFile(*_input_file, false)
+  );
 
   result.set_set_impl(autom_impl.set_impl());
   result.set_pw_impl(autom_impl.pw_impl());
@@ -122,6 +131,7 @@ detail::EvalUserInput EvalExecutor::chooseImplementation()
 
   result.set_scc_impl(_scc_impl);
   result.set_mfvs_impl(_mfvs_impl);
+  result.set_ts_impl(_sort_impl);
 
   return result;
 }
@@ -131,7 +141,8 @@ void EvalExecutor::execute(int argc, char* argv[])
   // Command line options handling ---------------------------------------------
 
   Util::prog_opts::variables_map vm;
-  store(Util::prog_opts::command_line_parser(argc, argv).options(_cmd_line_opts).positional(_positional).run(), vm);
+  store(Util::prog_opts::command_line_parser(argc, argv).options(_cmd_line_opts)
+    .positional(_positional).run(), vm);
   notify(vm);
 
   // Help handling -------------------------------------------------------------

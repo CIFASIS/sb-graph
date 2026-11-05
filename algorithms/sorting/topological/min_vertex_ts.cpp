@@ -18,7 +18,6 @@
  ******************************************************************************/
 
 #include <sbgraph/detail/algorithms/sorting/topological/min_vertex_ts.hpp>
-#include <sbgraph/detail/algorithms/sorting/topological/ts_utils.hpp>
 #include "util/debug.hpp"
 #include "util/logger.hpp"
 
@@ -72,7 +71,7 @@ PWMap MinVertexTS::repetition(const PWMap& Emap)
   Set plus_domain = smap_plus.domain();
 
   // Delete set-edges that had an edge that was deleted up to the repetition.
-  Set Eplus = Emap.preImage(_repetitionSE.accumulated(_depth));
+  Set Eplus = Emap.preImage(_repetitionSE.last(_depth));
   DirectedSBG dsbg_copy = _dsbg;
   dsbg_copy.eraseEdges(Eplus);
 
@@ -83,6 +82,11 @@ PWMap MinVertexTS::repetition(const PWMap& Emap)
 
   Set indep_vertices = plus_domain.difference(rmap.preImage(dependent_vertices));
   PWMap result = smap_plus.restrict(indep_vertices);
+
+  _repetitionSV.dropLast(_depth);
+  _repetitionSE.dropLast(_depth);
+  auto end = _repetition_sort.end();
+  _repetition_sort.erase(end - _depth, end);
 
   return result;
 }
@@ -118,11 +122,13 @@ IntTuple MinVertexTS::getVertex(Set old_Vj)
   return Vj.minElem();
 }
 
-// Algorithm -------------------------------------------------------------------
+//| Algorithm -------------------------------------------------------------------
 
-PWMap MinVertexTS::calculate(const DirectedSBG& dsbg, const PWMap& scc_map)
+PWMap MinVertexTS::calculate(TSInput input)
 {
+  DirectedSBG dsbg = input.dsbg();
   Util::DEBUG_LOG << "Topological sort dsbg:\n" << dsbg << "\n\n";
+  PWMap scc_map = input.rmap();
 
   Set V = dsbg.V();
   if (V.isEmpty()) {
@@ -179,7 +185,6 @@ PWMap MinVertexTS::calculate(const DirectedSBG& dsbg, const PWMap& scc_map)
 
   _smap.compact();
   Util::DEBUG_LOG << "Topological sort result:\n" << _smap << "\n\n";
-  checkSort(_smap, dsbg);
   return _smap;
 }
 

@@ -304,20 +304,20 @@ std::ostream& operator<<(std::ostream& out, const DSBG& dg)
 std::ostream& operator<<(std::ostream& out, const UnOp& op)
 {
   switch (op) {
-  case UnOp::oppo:
-    out << "-";
-    break;
+    case UnOp::oppo:
+      out << "-";
+      break;
 
-  case UnOp::card:
-    out << "#";
-    break;
+    case UnOp::card:
+      out << "#";
+      break;
 
-  case UnOp::comp:
-    out << "\'";
-    break;
+    case UnOp::comp:
+      out << "\'";
+      break;
 
-  default:
-    break;
+    default:
+      break;
   }
 
   return out;
@@ -326,44 +326,44 @@ std::ostream& operator<<(std::ostream& out, const UnOp& op)
 std::ostream& operator<<(std::ostream& out, const Op& op)
 {
   switch (op) {
-  case Op::add:
-    out << "+";
-    break;
+    case Op::add:
+      out << "+";
+      break;
 
-  case Op::sub:
-    out << "-";
-    break;
+    case Op::sub:
+      out << "-";
+      break;
 
-  case Op::mult:
-    out << "*";
-    break;
+    case Op::mult:
+      out << "*";
+      break;
 
-  case Op::expo:
-    out << "^";
-    break;
+    case Op::expo:
+      out << "^";
+      break;
 
-  case Op::eq:
-    out << "==";
-    break;
+    case Op::eq:
+      out << "==";
+      break;
 
-  case Op::less:
-    out << "<";
-    break;
+    case Op::less:
+      out << "<";
+      break;
 
-  case Op::cap:
-    out << "/\\";
-    break;
+    case Op::cap:
+      out << "/\\";
+      break;
 
-  case Op::cup:
-    out << "\\/";
-    break;
+    case Op::cup:
+      out << "\\/";
+      break;
 
-  case Op::diff:
-    out << "\\";
-    break;
+    case Op::diff:
+      out << "\\";
+      break;
 
-  default:
-    break;
+    default:
+      break;
   }
 
   return out;
@@ -382,13 +382,13 @@ bool UnaryOp::operator==(const UnaryOp& other) const { return _op == other._op &
 std::ostream& operator<<(std::ostream& out, const UnaryOp& uop)
 {
   switch (uop.op()) {
-  case UnOp::comp:
-    out << uop.expr() << uop.op();
-    break;
+    case UnOp::comp:
+      out << uop.expr() << uop.op();
+      break;
 
-  default:
-    out << uop.op() << uop.expr();
-    break;
+    default:
+      out << uop.op() << uop.expr();
+      break;
   }
 
   return out;

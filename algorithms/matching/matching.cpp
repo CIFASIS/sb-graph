@@ -34,15 +34,15 @@ Matching::Matching() : _impl()
 {
   MatchKind kind = MATCH_IMPL.kind();
   switch (kind) {
-  case MatchKind::kBFSPaths: {
-    _impl = detail::BFSMatching{};
-    break;
-  }
+    case MatchKind::kBFSPaths: {
+      _impl = detail::BFSMatching{};
+      break;
+    }
 
-  default: {
-    Util::ERROR("Unsupported matching algorithm implementation");
-    break;
-  }
+    default: {
+      Util::ERROR("Unsupported matching algorithm implementation");
+      break;
+    }
   }
 }
 

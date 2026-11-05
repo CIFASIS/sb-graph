@@ -31,25 +31,25 @@ namespace LIB {
 std::ostream& operator<<(std::ostream& out, const SetKind kind)
 {
   switch (kind) {
-  case SetKind::kUnordered: {
-    out << "unordered";
-    break;
-  }
+    case SetKind::kUnordered: {
+      out << "unordered";
+      break;
+    }
 
-  case SetKind::kOrdered: {
-    out << "ordered";
-    break;
-  }
+    case SetKind::kOrdered: {
+      out << "ordered";
+      break;
+    }
 
-  case SetKind::kOrdUnidimDense: {
-    out << "uni-dimensional ordered dense";
-    break;
-  }
+    case SetKind::kOrdUnidimDense: {
+      out << "uni-dimensional ordered dense";
+      break;
+    }
 
-  default: {
-    Util::ERROR("Unsupported ", kind, " Set implementation\n");
-    break;
-  }
+    default: {
+      Util::ERROR("Unsupported ", kind, " Set implementation\n");
+      break;
+    }
   }
 
   return out;

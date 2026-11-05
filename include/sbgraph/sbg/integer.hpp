@@ -96,6 +96,7 @@ public:
   bool operator<=(const IntTuple& other) const;
 
   IntTuple operator+(const IntTuple& other) const;
+  IntTuple operator-(const IntTuple& other) const;
 
   /**
    * @brief Number of dimensions of the integer tuple, i.e. arity(1, 1, 1) = 3.

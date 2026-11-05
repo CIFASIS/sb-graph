@@ -31,25 +31,25 @@ namespace LIB {
 std::ostream& operator<<(std::ostream& out, PWMapKind kind)
 {
   switch (kind) {
-  case PWMapKind::kUnordered: {
-    out << "unordered";
-    break;
-  }
+    case PWMapKind::kUnordered: {
+      out << "unordered";
+      break;
+    }
 
-  case PWMapKind::kOrdered: {
-    out << "ordered";
-    break;
-  }
+    case PWMapKind::kOrdered: {
+      out << "ordered";
+      break;
+    }
 
-  case PWMapKind::kDomOrdered: {
-    out << "domain ordered";
-    break;
-  }
+    case PWMapKind::kDomOrdered: {
+      out << "domain ordered";
+      break;
+    }
 
-  default: {
-    Util::ERROR("Unsupported ", kind, " implementation\n");
-    break;
-  }
+    default: {
+      Util::ERROR("Unsupported ", kind, " implementation\n");
+      break;
+    }
   }
 
   return out;

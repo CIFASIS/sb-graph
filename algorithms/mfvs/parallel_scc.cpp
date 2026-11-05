@@ -45,7 +45,7 @@ void ParallelSCCMFVS::reduceGraph()
 
   // Erase vertices that belong to a singleton SCC.
   PWMap mmap = _rmap.imageMultiplicity();
-  Set one{SBG::LIB::IntTuple{_dsbg.V().arity(), 1}};
+  Set one{IntTuple{_dsbg.V().arity(), 1}};
   _dsbg.eraseVertices(mmap.preImage(one));
 }
 

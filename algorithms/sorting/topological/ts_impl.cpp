@@ -31,21 +31,27 @@ namespace LIB {
 std::ostream& operator<<(std::ostream& out, const TSKind kind)
 {
   switch (kind) {
-  case TSKind::kMinVertex: {
-    out << "minimum vertex";
-    break;
-  }
+    case TSKind::kMinVertex: {
+      out << "minimum vertex";
+      break;
+    }
 
-  default: {
-    Util::ERROR("TSKind::operator<<: unsupported topological sorting ", "algorithm implementation");
-    break;
-  }
+    case TSKind::kTwoPhases: {
+      out << "two phases";
+      break;
+    }
+
+    default: {
+      Util::ERROR("TSKind::operator<<: unsupported topological sorting "
+        , "algorithm implementation");
+      break;
+    }
   }
 
   return out;
 }
 
-TSImplementation::TSImplementation() : _kind(TSKind::kMinVertex) {}
+TSImplementation::TSImplementation() : _kind(TSKind::kTwoPhases) {}
 
 TSImplementation& TSImplementation::instance()
 {

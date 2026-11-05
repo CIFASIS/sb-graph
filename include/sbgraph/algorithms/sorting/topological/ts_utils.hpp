@@ -31,6 +31,27 @@ namespace SBG {
 
 namespace LIB {
 
+class TSInput {
+public:
+  TSInput() = default;
+
+  const DirectedSBG& dsbg() const;
+  const PWMap& rmap() const;
+  const PWMap& rmap_starts() const;
+  const PWMap& rmap_ends() const;
+
+  void set_dsbg(DirectedSBG dsbg);
+  void set_rmap(PWMap rmap);
+  void set_rmap_starts(PWMap rmap_starts);
+  void set_rmap_ends(PWMap rmap_ends);
+
+private:
+  DirectedSBG _dsbg;
+  PWMap _rmap;
+  PWMap _rmap_starts;
+  PWMap _rmap_ends;
+};
+
 /**
  * @class SortedSets
  * @brief Auxiliary structure to keep track of visited set-vertices and
@@ -45,14 +66,42 @@ public:
   const Set& operator[](std::size_t k) const;
 
   void pushBack(Set s);
+  void dropLast(int n);
 
   Set accumulated() const;
-  Set accumulated(int n) const;
+  Set last(int n) const;
 
   int repetitionDepth() const;
 
 private:
   std::vector<Set> _sets; 
+};
+
+/**
+ * @class SortedMaps
+ * @brief Auxiliary structure to keep track of calculated successors during the
+ * topological sorting.
+ */
+class SortedMaps {
+public:
+  SortedMaps() = default;
+  SortedMaps(PWMap Vmap);
+
+  std::size_t size() const;
+  PWMap& operator[](std::size_t k);
+  const PWMap& operator[](std::size_t k) const;
+
+  void pushBack(PWMap pw);
+  void dropLast(int n);
+
+  Set accumulatedDomain() const;
+  PWMap last(int n) const;
+
+  int repetitionDepth() const;
+
+private:
+  std::vector<PWMap> _maps; 
+  PWMap _Vmap;
 };
 
 /**

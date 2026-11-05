@@ -17,7 +17,7 @@
 
  ******************************************************************************/
 
-#include <sbgraph/detail/algorithms/sorting/topological/ts_utils.hpp>
+#include <sbgraph/algorithms/sorting/topological/ts_utils.hpp>
 #include "util/debug.hpp"
 #include "util/logger.hpp"
 
@@ -28,6 +28,26 @@ namespace SBG {
 
 namespace LIB {
 
+// TSInput ---------------------------------------------------------------------
+
+const DirectedSBG& TSInput::dsbg() const { return _dsbg; }
+
+const PWMap& TSInput::rmap() const { return _rmap; }
+
+const PWMap& TSInput::rmap_starts() const { return _rmap_starts; }
+
+const PWMap& TSInput::rmap_ends() const { return _rmap_ends; }
+
+void TSInput::set_dsbg(DirectedSBG dsbg) { _dsbg = dsbg; }
+
+void TSInput::set_rmap(PWMap rmap) { _rmap = rmap; }
+
+void TSInput::set_rmap_starts(PWMap rmap_starts) { _rmap_starts = rmap_starts; }
+
+void TSInput::set_rmap_ends(PWMap rmap_ends) { _rmap_ends = rmap_ends; }
+
+// SortedSets ------------------------------------------------------------------
+
 std::size_t SortedSets::size() const { return _sets.size(); }
 
 Set& SortedSets::operator[](std::size_t k) { return _sets[k]; }
@@ -35,6 +55,11 @@ Set& SortedSets::operator[](std::size_t k) { return _sets[k]; }
 const Set& SortedSets::operator[](std::size_t k) const { return _sets[k]; }
 
 void SortedSets::pushBack(Set s) { _sets.push_back(s); }
+
+void SortedSets::dropLast(int n)
+{
+  _sets.erase(_sets.end() - n, _sets.end());
+}
 
 Set SortedSets::accumulated() const
 {
@@ -45,7 +70,7 @@ Set SortedSets::accumulated() const
   return result;
 }
 
-Set SortedSets::accumulated(int n) const
+Set SortedSets::last(int n) const
 {
   Set result;
   std::size_t sz = _sets.size();
@@ -68,16 +93,77 @@ int SortedSets::repetitionDepth() const
   return result;
 }
 
+// SortedMaps ------------------------------------------------------------------
+
+SortedMaps::SortedMaps(PWMap Vmap) : _Vmap(Vmap) {}
+
+std::size_t SortedMaps::size() const { return _maps.size(); }
+
+PWMap& SortedMaps::operator[](std::size_t k) { return _maps[k]; }
+
+const PWMap& SortedMaps::operator[](std::size_t k) const { return _maps[k]; }
+
+void SortedMaps::pushBack(PWMap pw) { _maps.push_back(pw); }
+
+void SortedMaps::dropLast(int n)
+{
+  _maps.erase(_maps.end() - n, _maps.end());
+}
+
+Set SortedMaps::accumulatedDomain() const
+{
+  Set result;
+  for (const PWMap& pw : _maps) {
+    result = std::move(result).disjointCup(pw.domain());
+  }
+  return result;
+}
+
+PWMap SortedMaps::last(int n) const
+{
+  PWMap result;
+  std::size_t sz = _maps.size();
+  for (int j = sz-n; j < sz; ++j) {
+    result = std::move(result).concatenation(_maps[j]);
+  }
+  return result;
+}
+
+int SortedMaps::repetitionDepth() const
+{
+  PWMap repeated = _maps.back();
+  int result = 0;
+  for (int j = _maps.size() - 2; j >= 0; --j) {
+    ++result;
+    PWMap jth = _maps[j];
+    for (const Map& jthm : jth) {
+      Set jth_SV = _Vmap.image(jthm.domain());
+      for (const Map& repeatm : repeated) {
+        Set repeat_SV = _Vmap.image(repeatm.domain());
+        if (!jth_SV.intersection(repeat_SV).isEmpty()
+          && jthm.law() == repeatm.law()) {
+          return result;
+        }
+      }
+    }
+  }
+  return 0;
+}
+
+// Check sort ------------------------------------------------------------------
+
 void checkSort(PWMap& smap, const DirectedSBG& dsbg)
 {
   // Check that the order is unique.
   Set fixed_points = smap.fixedPoints();
-  Util::ERROR_UNLESS(fixed_points.cardinal() == 1, "checkSort: the order ", smap, " has multiple ends\n");
+  Util::ERROR_UNLESS(fixed_points.cardinal() == 1
+    , "checkSort: the order ", smap, " has multiple starts\n");
 
   Set domain = smap.domain();
   Set image = smap.image();
   Set starts = domain.difference(image);
-  Util::ERROR_UNLESS(starts.cardinal() == 1, "checkSort: the order ", smap, " has multiple starts\n");
+  Util::ERROR_UNLESS(starts.cardinal() == 1
+    , "checkSort: the order ", smap, " has multiple ends\n");
 
   // Check if it is injective, that is, if is an actual order.
   Set visited_img;
@@ -91,7 +177,10 @@ void checkSort(PWMap& smap, const DirectedSBG& dsbg)
 
   // Check if the sort is total.
   Set V = dsbg.V();
-  Util::ERROR_UNLESS(domain == V && image == V.difference(starts), "checkSort: the order ", smap, " is partial\n");
+  Util::ERROR_UNLESS(domain == V && image == V.difference(starts)
+    , "checkSort: the order ", smap, " is partial\n"
+    , "Not in domain: ", V.difference(domain), "\n"
+    , "Not in image: ", V.difference(image), "\n");
 
   // Delete dependencies of constant depth.
   PWMap smap_copy = smap;
@@ -116,7 +205,8 @@ void checkSort(PWMap& smap, const DirectedSBG& dsbg)
     rmap = PWMap{intermediate}.combine(smap_inv).mapInf();
     Set before = rmap.preImage(init);
 
-    Util::ERROR_UNLESS(init.difference(before).isEmpty(), "checkSort: the order ", smap, " is partial\n");
+    Util::ERROR_UNLESS(init.difference(before).isEmpty()
+      , "checkSort: the order ", smap, " is partial\n");
   });
 }
 

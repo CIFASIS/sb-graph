@@ -55,14 +55,14 @@ LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::UnaryOp v) const
   LIB::detail::LinearExpr le = boost::apply_visitor(*this, v.expr());
 
   switch (v.op()) {
-  case AST::UnOp::oppo: {
-    return LIB::detail::LinearExpr{-le.slope(), -le.offset()};
-  }
+    case AST::UnOp::oppo: {
+      return LIB::detail::LinearExpr{-le.slope(), -le.offset()};
+    }
 
-  default: {
-    Util::ERROR("LinearExprEvaluator: UnaryOp ", v.op(), " is not arithmetic\n");
-    break;
-  }
+    default: {
+      Util::ERROR("LinearExprEvaluator: UnaryOp ", v.op(), " is not arithmetic\n");
+      break;
+    }
   };
 
   return LIB::detail::LinearExpr{};
@@ -74,31 +74,31 @@ LIB::detail::LinearExpr LinearExprEvaluator::operator()(AST::BinOp v) const
   LIB::detail::LinearExpr vr = boost::apply_visitor(*this, v.right());
 
   switch (v.op()) {
-  case AST::Op::add: {
-    return LIB::detail::LinearExpr{vl.slope() + vr.slope(), vl.offset() + vr.offset()};
-  }
-
-  case AST::Op::sub: {
-    return LIB::detail::LinearExpr{vl.slope() - vr.slope(), vl.offset() - vr.offset()};
-  }
-
-  case AST::Op::mult: {
-    if (vl.slope() == 0 && vr.slope() == 0) {
-      return LIB::detail::LinearExpr{0, vr.offset() * vl.offset()};
-    } else if (vl.slope() == 0) {
-      return LIB::detail::LinearExpr{vl.offset() * vr.slope(), vl.offset() * vr.offset()};
-    } else if (vr.slope() == 0) {
-      return LIB::detail::LinearExpr{vl.slope() * vr.offset(), vl.offset() * vr.offset()};
+    case AST::Op::add: {
+      return LIB::detail::LinearExpr{vl.slope() + vr.slope(), vl.offset() + vr.offset()};
     }
 
-    Util::ERROR("LinearExprEvaluator: expression ", v, " is not linear\n");
-    break;
-  }
+    case AST::Op::sub: {
+      return LIB::detail::LinearExpr{vl.slope() - vr.slope(), vl.offset() - vr.offset()};
+    }
 
-  default: {
-    Util::ERROR("LinearExprEvaluator: BinOp ", v.op(), " is not arithmetic\n");
-    break;
-  }
+    case AST::Op::mult: {
+      if (vl.slope() == 0 && vr.slope() == 0) {
+        return LIB::detail::LinearExpr{0, vr.offset() * vl.offset()};
+      } else if (vl.slope() == 0) {
+        return LIB::detail::LinearExpr{vl.offset() * vr.slope(), vl.offset() * vr.offset()};
+      } else if (vr.slope() == 0) {
+        return LIB::detail::LinearExpr{vl.slope() * vr.offset(), vl.offset() * vr.offset()};
+      }
+
+      Util::ERROR("LinearExprEvaluator: expression ", v, " is not linear\n");
+      break;
+    }
+
+    default: {
+      Util::ERROR("LinearExprEvaluator: BinOp ", v.op(), " is not arithmetic\n");
+      break;
+    }
   };
 
   return LIB::detail::LinearExpr{};

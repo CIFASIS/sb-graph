@@ -48,6 +48,7 @@ namespace detail {
 using AtomicMap = std::pair<Interval, LinearExpr>;
 using AtomicMapVector = std::vector<AtomicMap>;
 using AtomicMDMap = std::pair<MultiDimInter, ExpressionImpl>;
+using AtomicMDMapVector = std::vector<AtomicMDMap>;
 using MapVector = std::vector<Map>;
 
 class MapDetail {
@@ -56,10 +57,14 @@ public:
   static Set preImage(const Set& s, const Expression& expr);
   static Map inverse(const Set& s, const Expression& expr);
   static Set lessImage(const Expression& expr1, const Expression& expr2);
+  static MapVector sort(const Set& s);
   static MapVector reduce(const Map& m);
   static MapVector imageMultiplicity(const Map& m);
 
 private:
+  template<typename CompactSetImplT, typename PieceT>
+  static MapVector sort(const CompactSetImplT& s);
+
   template<typename CompactSetImplT>
   static MapVector compactReduce(const CompactSetImplT& s
     , const ExpressionImpl& expr);

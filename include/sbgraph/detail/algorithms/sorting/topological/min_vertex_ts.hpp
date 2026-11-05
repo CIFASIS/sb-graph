@@ -25,7 +25,7 @@
 #ifndef SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_MIN_VERTEX_TS_HPP_
 #define SBGRAPH_ALGORITHMS_SORTING_TOPOLOGICAL_MIN_VERTEX_TS_HPP_
 
-#include <sbgraph/detail/algorithms/sorting/topological/ts_utils.hpp>
+#include <sbgraph/algorithms/sorting/topological/ts_utils.hpp>
 
 #include <sbgraph/sbg/directed_sbg.hpp>
 #include <sbgraph/sbg/expression.hpp>
@@ -54,7 +54,7 @@ public:
    * vertex without dependencies. It also implements different strategies to
    * sort a large number of vertices.
    */
-  PWMap calculate(const DirectedSBG& dsbg, const PWMap& pmap);
+  PWMap calculate(TSInput input);
 
 private:
   IntTuple getVertex(Set old_Vj);

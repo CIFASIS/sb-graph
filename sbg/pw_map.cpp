@@ -18,9 +18,10 @@
  ******************************************************************************/
 
 #include <sbgraph/sbg/pw_map.hpp>
+#include <sbgraph/detail/util/defs.hpp>
+#include <sbgraph/detail/sbg/map_detail.hpp>
 #include <sbgraph/sbg/pwmap_impl.hpp>
 #include "util/debug.hpp"
-#include <sbgraph/detail/util/defs.hpp>
 
 #include <iostream>
 
@@ -63,25 +64,25 @@ PWMap::PWMap() : _impl()
 {
   PWMapKind kind = PWMAP_IMPL.kind();
   switch (kind) {
-  case PWMapKind::kUnordered: {
-    _impl = detail::UnordPWMap{};
-    break;
-  }
+    case PWMapKind::kUnordered: {
+      _impl = detail::UnordPWMap{};
+      break;
+    }
 
-  case PWMapKind::kOrdered: {
-    _impl = detail::OrdPWMap{};
-    break;
-  }
+    case PWMapKind::kOrdered: {
+      _impl = detail::OrdPWMap{};
+      break;
+    }
 
-  case PWMapKind::kDomOrdered: {
-    _impl = detail::DomOrdPWMap{};
-    break;
-  }
+    case PWMapKind::kDomOrdered: {
+      _impl = detail::DomOrdPWMap{};
+      break;
+    }
 
-  default: {
-    Util::ERROR("Unsupported ", kind, " PWMap implementation\n");
-    break;
-  }
+    default: {
+      Util::ERROR("Unsupported ", kind, " PWMap implementation\n");
+      break;
+    }
   }
 }
 
@@ -89,25 +90,25 @@ PWMap::PWMap(Set s) : _impl()
 {
   PWMapKind kind = PWMAP_IMPL.kind();
   switch (kind) {
-  case PWMapKind::kUnordered: {
-    _impl = detail::UnordPWMap{s};
-    break;
-  }
+    case PWMapKind::kUnordered: {
+      _impl = detail::UnordPWMap{s};
+      break;
+    }
 
-  case PWMapKind::kOrdered: {
-    _impl = detail::OrdPWMap{s};
-    break;
-  }
+    case PWMapKind::kOrdered: {
+      _impl = detail::OrdPWMap{s};
+      break;
+    }
 
-  case PWMapKind::kDomOrdered: {
-    _impl = detail::DomOrdPWMap{s};
-    break;
-  }
+    case PWMapKind::kDomOrdered: {
+      _impl = detail::DomOrdPWMap{s};
+      break;
+    }
 
-  default: {
-    Util::ERROR("Unsupported ", kind, " PWMap implementation\n");
-    break;
-  }
+    default: {
+      Util::ERROR("Unsupported ", kind, " PWMap implementation\n");
+      break;
+    }
   }
 }
 
@@ -115,25 +116,25 @@ PWMap::PWMap(Map m) : _impl()
 {
   PWMapKind kind = PWMAP_IMPL.kind();
   switch (kind) {
-  case PWMapKind::kUnordered: {
-    _impl = detail::UnordPWMap{m};
-    break;
-  }
+    case PWMapKind::kUnordered: {
+      _impl = detail::UnordPWMap{m};
+      break;
+    }
 
-  case PWMapKind::kOrdered: {
-    _impl = detail::OrdPWMap{m};
-    break;
-  }
+    case PWMapKind::kOrdered: {
+      _impl = detail::OrdPWMap{m};
+      break;
+    }
 
-  case PWMapKind::kDomOrdered: {
-    _impl = detail::DomOrdPWMap{m};
-    break;
-  }
+    case PWMapKind::kDomOrdered: {
+      _impl = detail::DomOrdPWMap{m};
+      break;
+    }
 
-  default: {
-    Util::ERROR("Unsupported ", kind, " PWMap implementation\n");
-    break;
-  }
+    default: {
+      Util::ERROR("Unsupported ", kind, " PWMap implementation\n");
+      break;
+    }
   }
 }
 
@@ -427,6 +428,18 @@ void PWMap::compact()
 rapidjson::Value PWMap::toJSON(rapidjson::Document::AllocatorType& alloc) const
 {
   return std::visit([&alloc](auto a) { return detail::toJSON(a, alloc); }, _impl);
+}
+
+// Non-member functions --------------------------------------------------------
+
+PWMap sort(const Set& s)
+{
+  PWMap result;
+  std::vector<Map> sorted = detail::MapDetail::sort(s);
+  for (const Map& m : sorted) {
+    result.insert(m);
+  }
+  return result;
 }
 
 }  // namespace LIB

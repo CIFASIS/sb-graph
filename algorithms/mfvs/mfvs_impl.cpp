@@ -31,25 +31,25 @@ namespace LIB {
 std::ostream& operator<<(std::ostream& out, const MFVSKind kind)
 {
   switch (kind) {
-  case MFVSKind::kGreedy: {
-    out << "maximum degree greedy";
-    break;
-  }
+    case MFVSKind::kGreedy: {
+      out << "maximum degree greedy";
+      break;
+    }
 
-  case MFVSKind::kSmallSV: {
-    out << "smallest set-vertex";
-    break;
-  }
+    case MFVSKind::kSmallSV: {
+      out << "smallest set-vertex";
+      break;
+    }
 
-  case MFVSKind::kParallelSCC: {
-    out << "maximum degree from smallest set-vertex of each SCC";
-    break;
-  }
+    case MFVSKind::kParallelSCC: {
+      out << "maximum degree from smallest set-vertex of each SCC";
+      break;
+    }
 
-  default: {
-    Util::ERROR("MFVSKind::operator<<: unsupported MFVS implementation");
-    break;
-  }
+    default: {
+      Util::ERROR("MFVSKind::operator<<: unsupported MFVS implementation");
+      break;
+    }
   }
 
   return out;

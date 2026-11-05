@@ -31,25 +31,25 @@ namespace LIB {
 std::ostream& operator<<(std::ostream& out, const SCCKind kind)
 {
   switch (kind) {
-  case SCCKind::kMinReachV1: {
-    out << "minimum reachable V1";
-    break;
-  }
+    case SCCKind::kMinReachV1: {
+      out << "minimum reachable V1";
+      break;
+    }
 
-  case SCCKind::kMinReachV2: {
-    out << "minimum reachable V2";
-    break;
-  }
+    case SCCKind::kMinReachV2: {
+      out << "minimum reachable V2";
+      break;
+    }
 
-  case SCCKind::kMinReachV3: {
-    out << "minimum reachable V3";
-    break;
-  }
+    case SCCKind::kMinReachV3: {
+      out << "minimum reachable V3";
+      break;
+    }
 
-  default: {
-    Util::ERROR("Unsupported SCC implementation");
-    break;
-  }
+    default: {
+      Util::ERROR("Unsupported SCC implementation");
+      break;
+    }
   }
 
   return out;

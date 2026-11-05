@@ -105,6 +105,8 @@ public:
 
   OrdPWMap imageMultiplicity() const;
 
+  OrdPWMap offsetImage(const Expression& off) const;
+
   void compact();
 
 private:

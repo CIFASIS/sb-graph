@@ -370,13 +370,15 @@ AtomicMDMapVector sort(const MultiDimInter& mdi)
   std::size_t arity = mdi.arity();
   MultiDimInter copy = mdi;
   ExpressionImpl expr{arity, LinearExpr{1, 0}};
-  for (std::size_t k = 0; k < arity; ++k) {
-    AtomicMapVector kth_result = sort(mdi[k]);
-    copy[k] = kth_result[0].first;
-    expr[k] = kth_result[0].second;
-    result.emplace_back(copy, expr);
-    copy[k] = kth_result[1].first;
-    expr[k] = LinearExpr{1, mdi[k].end() - mdi[k].begin()};
+  if (copy.cardinal() > 1) {
+    for (std::size_t k = 0; k < arity; ++k) {
+      AtomicMapVector kth_result = sort(mdi[k]);
+      copy[k] = kth_result[0].first;
+      expr[k] = kth_result[0].second;
+      result.emplace_back(copy, expr);
+      copy[k] = kth_result[1].first;
+      expr[k] = LinearExpr{1, mdi[k].end() - mdi[k].begin()};
+    }
   }
   result.emplace_back(
     MultiDimInter{mdi.minElem()}, ExpressionImpl{arity, LinearExpr{1, 0}}
@@ -394,24 +396,29 @@ MapVector MapDetail::sort(const CompactSetImplT& s)
   SetAccessKey key = SetAccess::key();
   std::size_t arity = s.arity();
   IntTuple last_max{s.arity(), 0};
+  Set visited;
   for (const PieceT& p : s) {
     unsigned int h = 0;
     auto sorted = detail::sort(p);
     for (const auto& m : sorted) {
       CompactSetImplT domain;
       domain.pushBack(m.first);
+      Expression expr;
       if (j == 0 || h + 1 < sorted.size()) {
-        result.emplace_back(
-          key.createSet(domain), Expression{ExpressionImpl{m.second}}
-        );
+        expr = Expression{ExpressionImpl{m.second}};
       } else {
         IntTuple minimum = p.minElem();
-        Expression expr;
         for (std::size_t k = 0; k < arity; ++k) {
-          expr = expr.cartesianProduct(Expression{Rational{1}, last_max[k] - minimum[k]});
+          expr = expr.cartesianProduct(
+            Expression{Rational{1}, last_max[k] - minimum[k]}
+          );
         }
-        result.emplace_back(key.createSet(domain), expr);
       }
+      Set dom = key.createSet(domain).difference(visited);
+      if (!dom.isEmpty()) {
+        result.emplace_back(dom, expr);
+      }
+      visited = dom.cup(std::move(visited));
       ++h;
     }
     ++j;

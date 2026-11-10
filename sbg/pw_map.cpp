@@ -420,6 +420,15 @@ PWMap PWMap::imageMultiplicity() const
   return std::visit([](const auto& a) { return PWMap{a.imageMultiplicity()}; }, _impl);
 }
 
+PWMap PWMap::offsetImage(const Expression& off) const
+{
+  return std::visit([&](const auto& a) -> PWMap
+    {
+      return PWMap{a.offsetImage(off)};
+    }
+    , _impl);
+}
+
 void PWMap::compact()
 {
   std::visit([](auto& a) { a.compact(); }, _impl);

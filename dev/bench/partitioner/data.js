@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794317356610,
+  "lastUpdate": 1794318026461,
   "repoUrl": "https://github.com/CIFASIS/sb-graph",
   "entries": {
     "Benchmark": [
@@ -648,6 +648,114 @@ window.BENCHMARK_DATA = {
             "value": 447.90386,
             "unit": "ms",
             "extra": "build=0.1ms partition=447.8ms runs=[450.815715, 447.375381, 447.90386]"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "denise.marzorati@gmail.com",
+            "name": "Denise M",
+            "username": "Kalashnikovni"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5b1384bee67f546ab6f4777fe4ecc5440fa04d30",
+          "message": "<ci>: change alert handling in partitioner benchmark",
+          "timestamp": "2026-11-10T10:25:05-03:00",
+          "tree_id": "68fccdc1251347e8daee117427fe7c60f5b13bcd",
+          "url": "https://github.com/CIFASIS/sb-graph/commit/5b1384bee67f546ab6f4777fe4ecc5440fa04d30"
+        },
+        "date": 1794318026051,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "advection2D size=1000 parts=4",
+            "value": 1.9945599999999999,
+            "unit": "ms",
+            "extra": "build=0.0ms partition=2.0ms runs=[2.131723, 1.982351, 1.9945599999999999]"
+          },
+          {
+            "name": "advection2D size=1000 parts=8",
+            "value": 4.661791,
+            "unit": "ms",
+            "extra": "build=0.0ms partition=4.6ms runs=[4.328259, 4.661791, 4.835172]"
+          },
+          {
+            "name": "advection2D size=1000 parts=16",
+            "value": 29.671883,
+            "unit": "ms",
+            "extra": "build=0.0ms partition=29.6ms runs=[29.979740999999997, 29.671883, 29.569353000000003]"
+          },
+          {
+            "name": "advection2D size=10000 parts=4",
+            "value": 1.986101,
+            "unit": "ms",
+            "extra": "build=0.0ms partition=2.0ms runs=[1.976971, 2.007001, 1.986101]"
+          },
+          {
+            "name": "advection2D size=100000 parts=4",
+            "value": 11.717553,
+            "unit": "ms",
+            "extra": "build=0.0ms partition=11.7ms runs=[11.828442, 11.606994, 11.717553]"
+          },
+          {
+            "name": "air_conditioners size=1000 parts=4",
+            "value": 0.88044,
+            "unit": "ms",
+            "extra": "build=0.3ms partition=0.6ms runs=[0.88044, 0.84842, 0.90174]"
+          },
+          {
+            "name": "air_conditioners size=1000 parts=8",
+            "value": 1.5088320000000002,
+            "unit": "ms",
+            "extra": "build=0.3ms partition=1.2ms runs=[1.466271, 1.6514900000000001, 1.5088320000000002]"
+          },
+          {
+            "name": "air_conditioners size=1000 parts=16",
+            "value": 16.127355,
+            "unit": "ms",
+            "extra": "build=0.3ms partition=15.9ms runs=[16.055824, 16.412169000000002, 16.127355]"
+          },
+          {
+            "name": "air_conditioners size=10000 parts=4",
+            "value": 0.909454,
+            "unit": "ms",
+            "extra": "build=0.3ms partition=0.6ms runs=[0.8983939999999999, 0.9419250000000001, 0.909454]"
+          },
+          {
+            "name": "air_conditioners size=100000 parts=4",
+            "value": 0.912239,
+            "unit": "ms",
+            "extra": "build=0.3ms partition=0.6ms runs=[0.912239, 0.8898780000000001, 0.921387]"
+          },
+          {
+            "name": "air_conditioners_cont size=1000 parts=4",
+            "value": 651.700881,
+            "unit": "ms",
+            "extra": "build=0.2ms partition=651.5ms runs=[663.132365, 651.700881, 647.775935]"
+          },
+          {
+            "name": "air_conditioners_cont size=1000 parts=8",
+            "value": 15342.163864,
+            "unit": "ms",
+            "extra": "build=0.3ms partition=15341.9ms runs=[15382.954196, 15024.743336, 15342.163864]"
+          },
+          {
+            "name": "air_conditioners_cont size=10000 parts=4",
+            "value": 565.564356,
+            "unit": "ms",
+            "extra": "build=0.2ms partition=565.4ms runs=[579.436322, 563.866853, 565.564356]"
+          },
+          {
+            "name": "air_conditioners_cont size=100000 parts=4",
+            "value": 573.576916,
+            "unit": "ms",
+            "extra": "build=0.2ms partition=573.4ms runs=[573.576916, 589.602475, 570.479756]"
           }
         ]
       }

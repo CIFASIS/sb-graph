@@ -40,6 +40,11 @@ Tearing::Tearing() : _impl()
       break;
     }
 
+    case TearingKind::kTearingMD: {
+      _impl = detail::TearingMD{};
+      break;
+    }
+
     default: {
       Util::ERROR("Unsupported Tearing implementation");
       break;

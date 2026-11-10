@@ -27,6 +27,7 @@
 #include <sbgraph/sbg/directed_sbg.hpp>
 #include <sbgraph/algorithms/tearing/tearing_data.hpp>
 #include <sbgraph/detail/algorithms/tearing/tearing_v1.hpp>
+#include <sbgraph/detail/algorithms/tearing/tearing_md.hpp>
 #include <variant>
 
 namespace SBG {
@@ -39,7 +40,8 @@ namespace detail {
 // Tearing Algorithm implementations -------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-using TearingImpl = std::variant<TearingV1>;
+using TearingImpl = std::variant<TearingV1, TearingMD>;
+
 
 } // namespace detail
 

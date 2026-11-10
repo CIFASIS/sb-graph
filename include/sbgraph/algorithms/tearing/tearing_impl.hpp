@@ -34,14 +34,14 @@ namespace LIB {
 // Tearing implementations -----------------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////
 
-enum class TearingKind { kTearingV1 };
+enum class TearingKind { kTearingV1, kTearingMD };
 
 std::ostream& operator<<(std::ostream& out, const TearingKind kind);
 
 #define TEARING_IMPL TearingImplementation::instance()
 
 /**
- * @brief Singleton that keeps record of the chosen SCC implementation. 
+ * @brief Singleton that keeps record of the chosen Tearing implementation. 
  */
 class TearingImplementation {
 public:

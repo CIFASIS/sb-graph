@@ -32,6 +32,8 @@ namespace SBG {
 
 namespace LIB {
 
+namespace detail {
+
 ////////////////////////////////////////////////////////////////////////////////
 // Tearing Algorithm Implementation (concrete strategy) ----------
 ////////////////////////////////////////////////////////////////////////////////
@@ -58,11 +60,6 @@ class TearingV1 {
   void init(const DirectedSBG& dsbg);
 
   /**
-   * @brief It calculates the maximum degree Set-Vertex. 
-   */
-  Set getMaxDegreeSetVertex(const Set& V, const DirectedSBG& dsbg);
-
-  /**
    * @brief Calculates the tearing set-vertex
    */
   Set getTearingSV(const PWMap rmap);
@@ -73,6 +70,8 @@ class TearingV1 {
   PWMap _finalMapB; ///< Output DSBG mapB
   PWMap _finalMapD; ///< Output DSBG mapD
 };
+
+} // namespace detail
 
 } // namespace LIB
 

@@ -36,6 +36,11 @@ std::ostream& operator<<(std::ostream& out, const TearingKind kind)
       break;
     }
 
+    case TearingKind::kTearingMD: {
+      out << "Tearing MD";
+      break;
+    }
+
     default: {
       Util::ERROR("Unsupported Tearing implementation");
       break;

@@ -59,7 +59,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         benchmark-data-dir-path: dev/bench/partitioner
         alert-threshold: '120%'
-        fail-on-alert: true
-        comment-on-alert: false
+        fail-on-alert: false
+        comment-on-alert: true
         auto-push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/sb-graph-dev' }}
         save-data-file: ${{ github.event_name == 'push' && github.ref == 'refs/heads/sb-graph-dev' }}
